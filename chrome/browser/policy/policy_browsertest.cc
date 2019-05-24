@@ -1261,10 +1261,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* const profile = GetProfileForActiveUser();
   PrefService* prefs = profile->GetPrefs();
 
   // Set locale and preferred languages to "en-US".
@@ -1284,10 +1281,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
 IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedLanguages) {
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* const profile = GetProfileForActiveUser();
   const PrefService* prefs = profile->GetPrefs();
 
   // Verifies that the default locale has been overridden by policy
@@ -1317,10 +1311,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* const profile = GetProfileForActiveUser();
 
   chromeos::input_method::InputMethodManager* imm =
       chromeos::input_method::InputMethodManager::Get();
@@ -1387,6 +1378,49 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
   EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[0]));
   EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
+}
+
+class StartupBrowserWindowLaunchSuppressedTest : public LoginPolicyTestBase {
+ public:
+  StartupBrowserWindowLaunchSuppressedTest() = default;
+
+  void SetUpPolicy(bool enabled) {
+    std::unique_ptr<base::DictionaryValue> policy =
+        std::make_unique<base::DictionaryValue>();
+
+    policy->SetKey(key::kStartupBrowserWindowLaunchSuppressed,
+                   base::Value(enabled));
+
+    user_policy_helper()->SetPolicy(*policy, base::DictionaryValue());
+  }
+
+  void CheckLaunchedBrowserCount(unsigned int count) {
+    SkipToLoginScreen();
+    LogIn(kAccountId, kAccountPassword, kEmptyServices);
+
+    Profile* const profile = GetProfileForActiveUser();
+
+    ASSERT_EQ(count, chrome::GetBrowserCount(profile));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StartupBrowserWindowLaunchSuppressedTest);
+};
+
+// Test that the browser window is not launched when
+// StartupBrowserWindowLaunchSuppressed is set to true.
+IN_PROC_BROWSER_TEST_F(StartupBrowserWindowLaunchSuppressedTest,
+                       TrueDoesNotAllowBrowserWindowLaunch) {
+  SetUpPolicy(true);
+  CheckLaunchedBrowserCount(0u);
+}
+
+// Test that the browser window is launched when
+// StartupBrowserWindowLaunchSuppressed is set to false.
+IN_PROC_BROWSER_TEST_F(StartupBrowserWindowLaunchSuppressedTest,
+                       FalseAllowsBrowserWindowLaunch) {
+  SetUpPolicy(false);
+  CheckLaunchedBrowserCount(1u);
 }
 
 #endif  // defined(OS_CHROMEOS)

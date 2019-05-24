@@ -286,19 +286,28 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
   // before calling this function. However chromeos/login/login_utils.cc
   // calls this function directly (see comments there) so it has to be checked
   // again.
-  bool silent_launch = command_line.HasSwitch(switches::kSilentLaunch);
 
 #if defined(KIOSK_NEXT)
+  // FeatureList::IsEnabled has side effects so we call it first before doing
+  // an early return if possible
   DCHECK(!chromeos::ProfileHelper::IsSigninProfile(profile));
   if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
     const PrefService* prefs = profile->GetPrefs();
     if (prefs->GetBoolean(ash::prefs::kKioskNextShellEnabled)) {
-      silent_launch = true;
+      return true;
     }
   }
-#endif
+#endif  // defined(KIOSK_NEXT)
 
-  return silent_launch;
+  if (command_line.HasSwitch(switches::kSilentLaunch))
+    return true;
+
+#if defined(OS_CHROMEOS)
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kStartupBrowserWindowLaunchSuppressed);
+#endif  // defined(OS_CHROMEOS)
+
+  return false;
 }
 
 }  // namespace

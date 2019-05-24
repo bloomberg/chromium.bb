@@ -298,6 +298,7 @@ extern const char kKerberosRememberPasswordEnabled[];
 extern const char kKerberosAddAccountsAllowed[];
 extern const char kKerberosAccounts[];
 extern const char kAppReinstallRecommendationEnabled[];
+extern const char kStartupBrowserWindowLaunchSuppressed[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];

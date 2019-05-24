@@ -16906,6 +16906,7 @@ Called by update_net_error_codes.py.-->
   <int value="565" label="PolicyDictionaryMultipleSourceMergeList"/>
   <int value="566" label="CommandLineFlagSecurityWarningsEnabled"/>
   <int value="567" label="RelaunchHeadsUpPeriod"/>
+  <int value="568" label="StartupBrowserWindowLaunchSuppressed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

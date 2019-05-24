@@ -41,6 +41,8 @@ class LoginPolicyTestBase : public chromeos::OobeBaseTest {
     return user_policy_helper_.get();
   }
 
+  Profile* GetProfileForActiveUser();
+
   void SkipToLoginScreen();
   // Should match ShowSigninScreenForTest method in SigninScreenHandler.
   void LogIn(const std::string& user_id,

@@ -4868,5 +4868,15 @@
     "pref_mappings": [
       { "pref": "browser_switcher.keep_last_tab" }
     ]
+  },
+
+  "StartupBrowserWindowLaunchSuppressed": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "StartupBrowserWindowLaunchSuppressed": false
+    },
+    "pref_mappings": [
+      { "pref": "startup_browser_window_launch_suppressed" }
+    ]
   }
 }

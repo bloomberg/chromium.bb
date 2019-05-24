@@ -945,6 +945,10 @@ const char kKerberosAccounts[] = "kerberos.accounts";
 const char kAppReinstallRecommendationEnabled[] =
     "zero_state_app_install_recommendation.enabled";
 
+// A boolean pref that when set to true, prevents the browser window from
+// launching at the start of the session.
+const char kStartupBrowserWindowLaunchSuppressed[] =
+    "startup_browser_window_launch_suppressed";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

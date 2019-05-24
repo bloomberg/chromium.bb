@@ -16046,6 +16046,25 @@
 
           On Windows, this policy is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain or Windows 10 Pro or Enterprise instances that are enrolled for device management.''',
     },
+    {
+      'name': 'StartupBrowserWindowLaunchSuppressed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:76-'],
+      'tags': [],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 568,
+      'caption': '''Suppress launching of browser window''',
+      'desc': '''This policy controls whether the browser window should be launched at the start of the session.
+
+          If this policy is enabled, the browser window will not be launched.
+
+          If this policy is disabled or not set, the browser window is allowed to launch. Note that the browser window might not launch due to other policies or command-line flags.''',
+    },
   ],
 
   'messages': {
@@ -16742,5 +16761,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546],
-  'highest_id_currently_used': 567
+  'highest_id_currently_used': 568
 }

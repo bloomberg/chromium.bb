@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "content/public/browser/notification_service.h"
@@ -70,6 +71,15 @@ std::string LoginPolicyTestBase::GetAccount() const {
 
 std::string LoginPolicyTestBase::GetIdToken() const {
   return std::string();
+}
+
+Profile* LoginPolicyTestBase::GetProfileForActiveUser() {
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+
+  EXPECT_NE(user, nullptr);
+
+  return chromeos::ProfileHelper::Get()->GetProfileByUser(user);
 }
 
 void LoginPolicyTestBase::GetMandatoryPoliciesValue(
