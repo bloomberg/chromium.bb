@@ -672,6 +672,9 @@ const char kEnableAccessibilityTabSwitcher[] =
 // unresponsive web content.
 const char kEnableHungRendererInfoBar[] = "enable-hung-renderer-infobar";
 
+// Forces the night mode to be enabled.
+const char kForceEnableNightMode[] = "force-enable-night-mode";
+
 // Forces the update menu badge to show.
 const char kForceShowUpdateMenuBadge[] = "force-show-update-menu-badge";
 

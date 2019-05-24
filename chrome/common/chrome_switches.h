@@ -199,6 +199,7 @@ extern const char kLocalNtpReload[];
 extern const char kAuthAndroidNegotiateAccountType[];
 extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableHungRendererInfoBar[];
+extern const char kForceEnableNightMode[];
 extern const char kForceShowUpdateMenuBadge[];
 extern const char kForceShowUpdateMenuItemCustomSummary[];
 extern const char kForceUpdateMenuType[];

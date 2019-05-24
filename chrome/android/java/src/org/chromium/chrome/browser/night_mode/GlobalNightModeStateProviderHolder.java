@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.night_mode;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatDelegate;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
@@ -23,14 +25,21 @@ public class GlobalNightModeStateProviderHolder {
      * Created when night mode is not available or not supported.
      */
     private static class DummyNightModeStateProvider implements NightModeStateProvider {
+        final boolean mIsNightModeForceEnabled;
+
         private DummyNightModeStateProvider() {
-            // Always stay in light mode if night mode is not available.
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            mIsNightModeForceEnabled =
+                    CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_ENABLE_NIGHT_MODE);
+            // Always stay in night mode if night mode is force enabled, and always stay in light
+            // mode if night mode is not available.
+            AppCompatDelegate.setDefaultNightMode(mIsNightModeForceEnabled
+                            ? AppCompatDelegate.MODE_NIGHT_YES
+                            : AppCompatDelegate.MODE_NIGHT_NO);
         }
 
         @Override
         public boolean isInNightMode() {
-            return false;
+            return mIsNightModeForceEnabled;
         }
 
         @Override
@@ -48,7 +57,8 @@ public class GlobalNightModeStateProviderHolder {
      */
     public static NightModeStateProvider getInstance() {
         if (sInstance == null) {
-            if (!NightModeUtils.isNightModeSupported()
+            if (CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_ENABLE_NIGHT_MODE)
+                    || !NightModeUtils.isNightModeSupported()
                     || !FeatureUtilities.isNightModeAvailable()) {
                 sInstance = new DummyNightModeStateProvider();
             } else {

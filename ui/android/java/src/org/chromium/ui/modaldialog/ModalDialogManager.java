@@ -10,8 +10,10 @@ import android.support.annotation.Nullable;
 import android.util.SparseArray;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.ui.UiSwitches;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
@@ -229,6 +231,10 @@ public class ModalDialogManager {
      */
     public void showDialog(
             PropertyModel model, @ModalDialogType int dialogType, boolean showAsNext) {
+        if (CommandLine.getInstance().hasSwitch(UiSwitches.ENABLE_SCREENSHOT_UI_MODE)) {
+            return;
+        }
+
         List<PropertyModel> dialogs = mPendingDialogs.get(dialogType);
         if (dialogs == null) mPendingDialogs.put(dialogType, dialogs = new ArrayList<>());
 
