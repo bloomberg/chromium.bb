@@ -32,6 +32,7 @@ extern const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2;
 extern const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillSaveCardImprovedUserConsent;
+extern const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;
 extern const base::Feature kAutofillSendOnlyCountryInGetUploadDetails;
 extern const base::Feature kAutofillUpstream;
@@ -43,6 +44,16 @@ extern const base::Feature kAutofillUpstreamDisallowJcb;
 extern const base::Feature kAutofillUpstreamEditableCardholderName;
 extern const base::Feature kAutofillUpstreamEditableExpirationDate;
 extern const base::Feature kAutofillUsePaymentsCustomerData;
+
+extern const char kAutofillSaveCreditCardUsesImprovedMessagingParamName[];
+extern const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard[];
+extern const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails[];
+extern const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard[];
+extern const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard[];
 
 // For testing purposes; not to be launched.  When enabled, Chrome Upstream
 // always requests that the user enters/confirms cardholder name in the

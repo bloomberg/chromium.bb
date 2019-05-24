@@ -33441,6 +33441,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="AutofillEnforceMinRequiredFieldsForUpload:disabled"/>
   <int value="-1311133348" label="VrBrowsingNativeAndroidUi:enabled"/>
   <int value="-1310737697" label="MaterialDesignSettings:enabled"/>
+  <int value="-1309828996"
+      label="AutofillSaveCreditCardUsesImprovedMessaging:enabled"/>
   <int value="-1308600417" label="NewNetErrorPageUI:disabled"/>
   <int value="-1304957199" label="OfflinePagesShowAlternateDinoPage:enabled"/>
   <int value="-1304758527" label="SyncSendTabToSelf:disabled"/>
@@ -34011,6 +34013,8 @@ from previous Chrome versions.
   <int value="-457174225" label="Av1Decoder:enabled"/>
   <int value="-456321929" label="ForceEnableSystemAec:disabled"/>
   <int value="-455203267" label="use_new_features_summary"/>
+  <int value="-450976085"
+      label="AutofillSaveCreditCardUsesImprovedMessaging:disabled"/>
   <int value="-449465495" label="disable-browser-task-scheduler"/>
   <int value="-438379844" label="SwapSideVolumeButtonsForOrientation:enabled"/>
   <int value="-436470115" label="TouchpadAndWheelScrollLatching:enabled"/>

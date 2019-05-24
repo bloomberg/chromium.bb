@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -210,12 +211,42 @@ base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
     case BubbleType::LOCAL_SAVE:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
-    case BubbleType::UPLOAD_SAVE:
+    case BubbleType::UPLOAD_SAVE: {
+      if (!base::FeatureList::IsEnabled(
+              features::kAutofillSaveCardImprovedUserConsent)) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
+      }
+      std::string param = base::GetFieldTrialParamValueByFeature(
+          features::kAutofillSaveCreditCardUsesImprovedMessaging,
+          features::kAutofillSaveCreditCardUsesImprovedMessagingParamName);
+      if (param ==
+          features::
+              kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_STORE_CARD);
+      }
+      if (param ==
+          features::
+              kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_STORE_BILLING_DETAILS);
+      }
+      if (param ==
+          features::
+              kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_ADD_CARD);
+      }
+      if (param ==
+          features::
+              kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_COPY_TEST_CONFIRM_AND_SAVE_CARD);
+      }
       return l10n_util::GetStringUTF16(
-          base::FeatureList::IsEnabled(
-              features::kAutofillSaveCardImprovedUserConsent)
-              ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V4
-              : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V4);
+    }
     case BubbleType::SIGN_IN_PROMO:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       if (AccountConsistencyModeManager::IsDiceEnabledForProfile(
@@ -245,11 +276,50 @@ base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
       OfferStoreUnmaskedCards(
           web_contents_->GetBrowserContext()->IsOffTheRecord()) &&
       !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
+  // TODO(crbug.com/961082): Might need to revisit strings for name fix flow.
   if (options_.should_request_name_from_user) {
     return l10n_util::GetStringUTF16(
         offer_to_save_on_device_message
             ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME_AND_DEVICE
             : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME);
+  }
+
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardImprovedUserConsent)) {
+    return l10n_util::GetStringUTF16(
+        offer_to_save_on_device_message
+            ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_DEVICE
+            : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3);
+  }
+
+  std::string param = base::GetFieldTrialParamValueByFeature(
+      features::kAutofillSaveCreditCardUsesImprovedMessaging,
+      features::kAutofillSaveCreditCardUsesImprovedMessagingParamName);
+  if (param ==
+          features::
+              kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard ||
+      param ==
+          features::
+              kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails) {
+    return l10n_util::GetStringUTF16(
+        offer_to_save_on_device_message
+            ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_STORE_WITH_DEVICE
+            : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_STORE);
+  }
+  if (param ==
+      features::kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard) {
+    return l10n_util::GetStringUTF16(
+        offer_to_save_on_device_message
+            ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_ADD_CARD_WITH_DEVICE
+            : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_ADD_CARD);
+  }
+  if (param ==
+      features::
+          kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard) {
+    return l10n_util::GetStringUTF16(
+        offer_to_save_on_device_message
+            ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_CONFIRM_AND_SAVE_CARD_WITH_DEVICE
+            : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_COPY_TEST_CONFIRM_AND_SAVE_CARD);
   }
   return l10n_util::GetStringUTF16(
       offer_to_save_on_device_message
@@ -260,8 +330,38 @@ base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
 base::string16 SaveCardBubbleControllerImpl::GetAcceptButtonText() const {
   switch (current_bubble_type_) {
     case BubbleType::LOCAL_SAVE:
-    case BubbleType::UPLOAD_SAVE:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+    case BubbleType::UPLOAD_SAVE: {
+      if (!base::FeatureList::IsEnabled(
+              features::kAutofillSaveCardImprovedUserConsent)) {
+        return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+      }
+      std::string param = base::GetFieldTrialParamValueByFeature(
+          features::kAutofillSaveCreditCardUsesImprovedMessaging,
+          features::kAutofillSaveCreditCardUsesImprovedMessagingParamName);
+      if (param ==
+              features::
+                  kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard ||
+          param ==
+              features::
+                  kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_STORE);
+      }
+      if (param ==
+          features::
+              kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_ADD);
+      }
+      if (param ==
+          features::
+              kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_CONFIRM_AND_SAVE);
+      }
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+    }
     case BubbleType::MANAGE_CARDS:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DONE);
     case BubbleType::SIGN_IN_PROMO:
@@ -275,8 +375,31 @@ base::string16 SaveCardBubbleControllerImpl::GetAcceptButtonText() const {
 base::string16 SaveCardBubbleControllerImpl::GetDeclineButtonText() const {
   switch (current_bubble_type_) {
     case BubbleType::LOCAL_SAVE:
-    case BubbleType::UPLOAD_SAVE:
       return l10n_util::GetStringUTF16(IDS_NO_THANKS);
+    case BubbleType::UPLOAD_SAVE: {
+      // There is no decline button when experiment is off.
+      DCHECK(base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardImprovedUserConsent));
+      std::string param = base::GetFieldTrialParamValueByFeature(
+          features::kAutofillSaveCreditCardUsesImprovedMessaging,
+          features::kAutofillSaveCreditCardUsesImprovedMessagingParamName);
+      if (param ==
+              features::
+                  kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard ||
+          param ==
+              features::
+                  kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_DECLINE_COPY_TEST_STORE);
+      }
+      if (param ==
+          features::
+              kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_PROMPT_DECLINE_COPY_TEST_ADD);
+      }
+      return l10n_util::GetStringUTF16(IDS_NO_THANKS);
+    }
     case BubbleType::MANAGE_CARDS:
     case BubbleType::SIGN_IN_PROMO:
     case BubbleType::FAILURE:

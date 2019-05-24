@@ -20,6 +20,20 @@
 namespace autofill {
 namespace features {
 
+const char kAutofillSaveCreditCardUsesImprovedMessagingParamName[] =
+    "AutofillSaveCreditCardUsesImprovedMessaging";
+
+const char kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard[] =
+    "Store Card";
+const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails
+        [] = "Store Billing Details";
+const char kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard[] =
+    "Add Card";
+const char
+    kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard[] =
+        "Confirm & Save Card";
+
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -84,6 +98,12 @@ const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
 // title string.
 const base::Feature kAutofillSaveCardImprovedUserConsent{
     "AutofillSaveCardImprovedUserConsent", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls what title and bubble label for the credit card upload bubble are
+// shown to users.
+const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging{
+    "AutofillSaveCreditCardUsesImprovedMessaging",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether experiment ids should be sent through
 // Google Payments RPCs or not.

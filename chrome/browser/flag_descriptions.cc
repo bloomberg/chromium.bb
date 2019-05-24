@@ -465,6 +465,12 @@ const char kEnableAutofillSaveCardImprovedUserConsentDescription[] =
     "If enabled, adds a [No thanks] button to credit card save bubbles and "
     "updates their title headers.";
 
+const char kEnableAutofillSaveCreditCardUsesImprovedMessagingName[] =
+    "Enable new title and button label for credit card upload bubble";
+const char kEnableAutofillSaveCreditCardUsesImprovedMessagingDescription[] =
+    "If enabled, four variations of new messaging will be used in credit card "
+    "upload bubble.";
+
 const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[] =
     "Send experiment flag IDs in calls to Google Payments";
 const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
