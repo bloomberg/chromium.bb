@@ -24,6 +24,16 @@
         width: 40px;
       }
 
+      .account-list-item {
+        padding-inline-end: 8px;
+        padding-inline-start: 0;
+      }
+
+      .account-manager-description {
+        /* Up to 70 characters. */
+        max-width: 35em;
+      }
+
       #outer {
         margin-inline-end: var(--cr-section-padding);
         margin-inline-start: 60px;
@@ -34,7 +44,11 @@
       }
 
       #account-list-header {
-        padding-bottom: 1em;
+        padding-bottom: 8px;
+      }
+
+      #add-account-button {
+        margin-top: 16px;
       }
 
       #add-account-icon {
@@ -43,6 +57,10 @@
         height: 24px;
         margin-inline-end: 0.5em;
         width: 24px;
+      }
+
+      .signed-out-text {
+        color: var(--google-red-600);
       }
 
       .error-badge {
@@ -67,7 +85,7 @@
     </style>
 
     <div class="settings-box first">
-      <span>
+      <span class="account-manager-description">
         $i18n{accountManagerDescription}
         <a href="$i18nRaw{accountManagerLearnMoreUrl}" target="_blank">
           $i18n{learnMore}
@@ -92,7 +110,7 @@
 
     <div id="outer" class="layout vertical nowrap">
       <template is="dom-repeat" id="account-list" items="[[accounts_]]">
-        <div class="settings-box">
+        <div class="settings-box account-list-item">
 
           <div class="profile-icon"
               style="background-image: [[getIconImageSet_(item.pic)]]">
@@ -109,7 +127,7 @@
               </template>
               <!-- Else, display a re-authentication message -->
               <template is="dom-if" if="[[!item.isSignedIn]]">
-                <span style="color:red">
+                <span class="signed-out-text">
                   [[getAccountManagerSignedOutName_(item.unmigrated)]]
                 </span>
               </template>
