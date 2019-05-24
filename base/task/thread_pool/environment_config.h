@@ -42,8 +42,6 @@ constexpr EnvironmentParams kEnvironmentParams[] = {
     {"BackgroundBlocking", base::ThreadPriority::BACKGROUND},
 };
 
-size_t BASE_EXPORT GetEnvironmentIndexForTraits(const TaskTraits& traits);
-
 // Returns true if this platform supports having WorkerThreads running with a
 // background priority.
 bool BASE_EXPORT CanUseBackgroundPriorityForWorkerThread();

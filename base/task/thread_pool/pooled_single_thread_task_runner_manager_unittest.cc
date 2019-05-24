@@ -83,15 +83,6 @@ void CaptureThreadRef(PlatformThreadRef* thread_ref) {
   *thread_ref = PlatformThread::CurrentRef();
 }
 
-void CaptureThreadPriority(ThreadPriority* thread_priority) {
-  ASSERT_TRUE(thread_priority);
-  *thread_priority = PlatformThread::GetCurrentThreadPriority();
-}
-
-void CaptureThreadName(std::string* thread_name) {
-  *thread_name = PlatformThread::GetName();
-}
-
 void ShouldNotRun() {
   ADD_FAILURE() << "Ran a task that shouldn't run.";
 }
@@ -261,79 +252,121 @@ class PooledSingleThreadTaskRunnerManagerCommonTest
 }  // namespace
 
 TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, PrioritySetCorrectly) {
+  const struct {
+    TaskTraits traits;
+    ThreadPriority expected_thread_priority;
+  } test_cases[] = {
+      {TaskTraits(TaskPriority::BEST_EFFORT),
+       CanUseBackgroundPriorityForWorkerThread() ? ThreadPriority::BACKGROUND
+                                                 : ThreadPriority::NORMAL},
+      {TaskTraits(TaskPriority::BEST_EFFORT, ThreadPolicy::PREFER_BACKGROUND),
+       CanUseBackgroundPriorityForWorkerThread() ? ThreadPriority::BACKGROUND
+                                                 : ThreadPriority::NORMAL},
+      {TaskTraits(TaskPriority::BEST_EFFORT, ThreadPolicy::MUST_USE_FOREGROUND),
+       ThreadPriority::NORMAL},
+      {TaskTraits(TaskPriority::USER_VISIBLE), ThreadPriority::NORMAL},
+      {TaskTraits(TaskPriority::USER_VISIBLE, ThreadPolicy::PREFER_BACKGROUND),
+       ThreadPriority::NORMAL},
+      {TaskTraits(TaskPriority::USER_VISIBLE,
+                  ThreadPolicy::MUST_USE_FOREGROUND),
+       ThreadPriority::NORMAL},
+      {TaskTraits(TaskPriority::USER_BLOCKING), ThreadPriority::NORMAL},
+      {TaskTraits(TaskPriority::USER_BLOCKING, ThreadPolicy::PREFER_BACKGROUND),
+       ThreadPriority::NORMAL},
+      {TaskTraits(TaskPriority::USER_BLOCKING,
+                  ThreadPolicy::MUST_USE_FOREGROUND),
+       ThreadPriority::NORMAL}};
+
   // Why are events used here instead of the task tracker?
   // Shutting down can cause priorities to get raised. This means we have to use
   // events to determine when a task is run.
-  scoped_refptr<SingleThreadTaskRunner> task_runner_background =
-      CreateTaskRunner({TaskPriority::BEST_EFFORT});
-  scoped_refptr<SingleThreadTaskRunner> task_runner_normal =
-      CreateTaskRunner({TaskPriority::USER_VISIBLE});
-
-  ThreadPriority thread_priority_background;
-  task_runner_background->PostTask(
-      FROM_HERE, BindOnce(&CaptureThreadPriority, &thread_priority_background));
-  WaitableEvent waitable_event_background;
-  task_runner_background->PostTask(
-      FROM_HERE,
-      BindOnce(&WaitableEvent::Signal, Unretained(&waitable_event_background)));
-
-  ThreadPriority thread_priority_normal;
-  task_runner_normal->PostTask(
-      FROM_HERE, BindOnce(&CaptureThreadPriority, &thread_priority_normal));
-  WaitableEvent waitable_event_normal;
-  task_runner_normal->PostTask(
-      FROM_HERE,
-      BindOnce(&WaitableEvent::Signal, Unretained(&waitable_event_normal)));
-
-  waitable_event_background.Wait();
-  waitable_event_normal.Wait();
-
-  if (CanUseBackgroundPriorityForWorkerThread())
-    EXPECT_EQ(ThreadPriority::BACKGROUND, thread_priority_background);
-  else
-    EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_background);
-  EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_normal);
+  for (auto& test_case : test_cases) {
+    WaitableEvent event;
+    CreateTaskRunner(test_case.traits)
+        ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                     EXPECT_EQ(test_case.expected_thread_priority,
+                               PlatformThread::GetCurrentThreadPriority());
+                     event.Signal();
+                   }));
+    event.Wait();
+  }
 }
 
 TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, ThreadNamesSet) {
-  constexpr TaskTraits foo_traits = {TaskPriority::BEST_EFFORT,
-                                     TaskShutdownBehavior::BLOCK_SHUTDOWN};
-  scoped_refptr<SingleThreadTaskRunner> foo_task_runner =
-      CreateTaskRunner(foo_traits);
-  std::string foo_captured_name;
-  foo_task_runner->PostTask(FROM_HERE,
-                            BindOnce(&CaptureThreadName, &foo_captured_name));
+  const std::string maybe_shared(
+      GetParam() == SingleThreadTaskRunnerThreadMode::DEDICATED ? ""
+                                                                : "Shared");
+  const std::string background =
+      "^ThreadPoolSingleThread" + maybe_shared + "Background\\d+$";
+  const std::string foreground =
+      "^ThreadPoolSingleThread" + maybe_shared + "Foreground\\d+$";
+  const std::string background_blocking =
+      "^ThreadPoolSingleThread" + maybe_shared + "BackgroundBlocking\\d+$";
+  const std::string foreground_blocking =
+      "^ThreadPoolSingleThread" + maybe_shared + "ForegroundBlocking\\d+$";
 
-  constexpr TaskTraits user_blocking_traits = {
-      TaskPriority::USER_BLOCKING, MayBlock(),
-      TaskShutdownBehavior::BLOCK_SHUTDOWN};
-  scoped_refptr<SingleThreadTaskRunner> user_blocking_task_runner =
-      single_thread_task_runner_manager_
-          ->CreateSingleThreadTaskRunnerWithTraits(user_blocking_traits,
-                                                   GetParam());
+  const struct {
+    TaskTraits traits;
+    std::string expected_thread_name;
+  } test_cases[] = {
+      // Non-MayBlock()
+      {TaskTraits(TaskPriority::BEST_EFFORT),
+       CanUseBackgroundPriorityForWorkerThread() ? background : foreground},
+      {TaskTraits(TaskPriority::BEST_EFFORT, ThreadPolicy::PREFER_BACKGROUND),
+       CanUseBackgroundPriorityForWorkerThread() ? background : foreground},
+      {TaskTraits(TaskPriority::BEST_EFFORT, ThreadPolicy::MUST_USE_FOREGROUND),
+       foreground},
+      {TaskTraits(TaskPriority::USER_VISIBLE), foreground},
+      {TaskTraits(TaskPriority::USER_VISIBLE, ThreadPolicy::PREFER_BACKGROUND),
+       foreground},
+      {TaskTraits(TaskPriority::USER_VISIBLE,
+                  ThreadPolicy::MUST_USE_FOREGROUND),
+       foreground},
+      {TaskTraits(TaskPriority::USER_BLOCKING), foreground},
+      {TaskTraits(TaskPriority::USER_BLOCKING, ThreadPolicy::PREFER_BACKGROUND),
+       foreground},
+      {TaskTraits(TaskPriority::USER_BLOCKING,
+                  ThreadPolicy::MUST_USE_FOREGROUND),
+       foreground},
 
-  std::string user_blocking_captured_name;
-  user_blocking_task_runner->PostTask(
-      FROM_HERE, BindOnce(&CaptureThreadName, &user_blocking_captured_name));
+      // MayBlock()
+      {TaskTraits(TaskPriority::BEST_EFFORT, MayBlock()),
+       CanUseBackgroundPriorityForWorkerThread() ? background_blocking
+                                                 : foreground_blocking},
+      {TaskTraits(TaskPriority::BEST_EFFORT, ThreadPolicy::PREFER_BACKGROUND,
+                  MayBlock()),
+       CanUseBackgroundPriorityForWorkerThread() ? background_blocking
+                                                 : foreground_blocking},
+      {TaskTraits(TaskPriority::BEST_EFFORT, ThreadPolicy::MUST_USE_FOREGROUND,
+                  MayBlock()),
+       foreground_blocking},
+      {TaskTraits(TaskPriority::USER_VISIBLE, MayBlock()), foreground_blocking},
+      {TaskTraits(TaskPriority::USER_VISIBLE, ThreadPolicy::PREFER_BACKGROUND,
+                  MayBlock()),
+       foreground_blocking},
+      {TaskTraits(TaskPriority::USER_VISIBLE, ThreadPolicy::MUST_USE_FOREGROUND,
+                  MayBlock()),
 
-  test::ShutdownTaskTracker(&task_tracker_);
+       foreground_blocking},
+      {TaskTraits(TaskPriority::USER_BLOCKING, MayBlock()),
+       foreground_blocking},
+      {TaskTraits(TaskPriority::USER_BLOCKING, ThreadPolicy::PREFER_BACKGROUND,
+                  MayBlock()),
+       foreground_blocking},
+      {TaskTraits(TaskPriority::USER_BLOCKING,
+                  ThreadPolicy::MUST_USE_FOREGROUND, MayBlock()),
+       foreground_blocking}};
 
-  EXPECT_NE(std::string::npos,
-            foo_captured_name.find(
-                kEnvironmentParams[GetEnvironmentIndexForTraits(foo_traits)]
-                    .name_suffix));
-  EXPECT_NE(
-      std::string::npos,
-      user_blocking_captured_name.find(
-          kEnvironmentParams[GetEnvironmentIndexForTraits(user_blocking_traits)]
-              .name_suffix));
-
-  if (GetParam() == SingleThreadTaskRunnerThreadMode::DEDICATED) {
-    EXPECT_EQ(std::string::npos, foo_captured_name.find("Shared"));
-    EXPECT_EQ(std::string::npos, user_blocking_captured_name.find("Shared"));
-  } else {
-    EXPECT_NE(std::string::npos, foo_captured_name.find("Shared"));
-    EXPECT_NE(std::string::npos, user_blocking_captured_name.find("Shared"));
+  for (auto& test_case : test_cases) {
+    WaitableEvent event;
+    CreateTaskRunner(test_case.traits)
+        ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                     EXPECT_THAT(PlatformThread::GetName(),
+                                 ::testing::MatchesRegex(
+                                     test_case.expected_thread_name));
+                     event.Signal();
+                   }));
+    event.Wait();
   }
 }
 
@@ -408,7 +441,7 @@ TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, CanRunPolicyLoad) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    AllModes,
+    SharedAndDedicated,
     PooledSingleThreadTaskRunnerManagerCommonTest,
     ::testing::Values(SingleThreadTaskRunnerThreadMode::SHARED,
                       SingleThreadTaskRunnerThreadMode::DEDICATED));

@@ -13,6 +13,7 @@ TEST(TaskTraitsTest, Default) {
   EXPECT_FALSE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
+  EXPECT_EQ(ThreadPolicy::PREFER_BACKGROUND, traits.thread_policy());
   EXPECT_FALSE(traits.may_block());
   EXPECT_FALSE(traits.with_base_sync_primitives());
 }
@@ -22,6 +23,7 @@ TEST(TaskTraitsTest, TaskPriority) {
   EXPECT_TRUE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
+  EXPECT_EQ(ThreadPolicy::PREFER_BACKGROUND, traits.thread_policy());
   EXPECT_FALSE(traits.may_block());
   EXPECT_FALSE(traits.with_base_sync_primitives());
 }
@@ -31,6 +33,17 @@ TEST(TaskTraitsTest, TaskShutdownBehavior) {
   EXPECT_FALSE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::BLOCK_SHUTDOWN, traits.shutdown_behavior());
+  EXPECT_EQ(ThreadPolicy::PREFER_BACKGROUND, traits.thread_policy());
+  EXPECT_FALSE(traits.may_block());
+  EXPECT_FALSE(traits.with_base_sync_primitives());
+}
+
+TEST(TaskTraitsTest, ThreadPolicy) {
+  constexpr TaskTraits traits = {ThreadPolicy::MUST_USE_FOREGROUND};
+  EXPECT_FALSE(traits.priority_set_explicitly());
+  EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
+  EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
+  EXPECT_EQ(ThreadPolicy::MUST_USE_FOREGROUND, traits.thread_policy());
   EXPECT_FALSE(traits.may_block());
   EXPECT_FALSE(traits.with_base_sync_primitives());
 }
@@ -40,6 +53,7 @@ TEST(TaskTraitsTest, MayBlock) {
   EXPECT_FALSE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
+  EXPECT_EQ(ThreadPolicy::PREFER_BACKGROUND, traits.thread_policy());
   EXPECT_TRUE(traits.may_block());
   EXPECT_FALSE(traits.with_base_sync_primitives());
 }
@@ -49,30 +63,33 @@ TEST(TaskTraitsTest, WithBaseSyncPrimitives) {
   EXPECT_FALSE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
+  EXPECT_EQ(ThreadPolicy::PREFER_BACKGROUND, traits.thread_policy());
   EXPECT_FALSE(traits.may_block());
   EXPECT_TRUE(traits.with_base_sync_primitives());
 }
 
 TEST(TaskTraitsTest, MultipleTraits) {
-  constexpr TaskTraits traits = {TaskPriority::BEST_EFFORT,
-                                 TaskShutdownBehavior::BLOCK_SHUTDOWN,
-                                 MayBlock(), WithBaseSyncPrimitives()};
+  constexpr TaskTraits traits = {
+      TaskPriority::BEST_EFFORT, TaskShutdownBehavior::BLOCK_SHUTDOWN,
+      ThreadPolicy::MUST_USE_FOREGROUND, MayBlock(), WithBaseSyncPrimitives()};
   EXPECT_TRUE(traits.priority_set_explicitly());
   EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::BLOCK_SHUTDOWN, traits.shutdown_behavior());
+  EXPECT_EQ(ThreadPolicy::MUST_USE_FOREGROUND, traits.thread_policy());
   EXPECT_TRUE(traits.may_block());
   EXPECT_TRUE(traits.with_base_sync_primitives());
 }
 
 TEST(TaskTraitsTest, Copy) {
-  constexpr TaskTraits traits = {TaskPriority::BEST_EFFORT,
-                                 TaskShutdownBehavior::BLOCK_SHUTDOWN,
-                                 MayBlock(), WithBaseSyncPrimitives()};
+  constexpr TaskTraits traits = {
+      TaskPriority::BEST_EFFORT, TaskShutdownBehavior::BLOCK_SHUTDOWN,
+      ThreadPolicy::MUST_USE_FOREGROUND, MayBlock(), WithBaseSyncPrimitives()};
   constexpr TaskTraits traits_copy(traits);
   EXPECT_EQ(traits.priority_set_explicitly(),
             traits_copy.priority_set_explicitly());
   EXPECT_EQ(traits.priority(), traits_copy.priority());
   EXPECT_EQ(traits.shutdown_behavior(), traits_copy.shutdown_behavior());
+  EXPECT_EQ(traits.thread_policy(), traits_copy.thread_policy());
   EXPECT_EQ(traits.may_block(), traits_copy.may_block());
   EXPECT_EQ(traits.with_base_sync_primitives(),
             traits_copy.with_base_sync_primitives());

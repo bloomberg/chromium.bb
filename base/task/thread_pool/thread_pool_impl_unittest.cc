@@ -82,8 +82,12 @@ bool GetIOAllowed() {
 // to run a Task with |traits|.
 // Note: ExecutionMode is verified inside TestTaskFactory.
 void VerifyTaskEnvironment(const TaskTraits& traits, test::PoolType pool_type) {
-  EXPECT_EQ(CanUseBackgroundPriorityForWorkerThread() &&
-                    traits.priority() == TaskPriority::BEST_EFFORT
+  const bool should_run_at_background_thread_priority =
+      CanUseBackgroundPriorityForWorkerThread() &&
+      traits.priority() == TaskPriority::BEST_EFFORT &&
+      traits.thread_policy() == ThreadPolicy::PREFER_BACKGROUND;
+
+  EXPECT_EQ(should_run_at_background_thread_priority
                 ? ThreadPriority::BACKGROUND
                 : ThreadPriority::NORMAL,
             PlatformThread::GetCurrentThreadPriority());
@@ -94,41 +98,36 @@ void VerifyTaskEnvironment(const TaskTraits& traits, test::PoolType pool_type) {
   EXPECT_EQ(traits.may_block(), GetIOAllowed());
 #endif
 
-  const std::string current_thread_name(PlatformThread::GetName());
+  const std::string thread_name(PlatformThread::GetName());
   const bool is_single_threaded =
-      (current_thread_name.find("SingleThread") != std::string::npos);
-  const bool is_best_effort = (traits.priority() == TaskPriority::BEST_EFFORT);
+      (thread_name.find("SingleThread") != std::string::npos);
 
 #if HAS_NATIVE_THREAD_POOL()
   // Native thread groups do not provide the ability to name threads.
   if (pool_type == test::PoolType::NATIVE && !is_single_threaded &&
-      !is_best_effort) {
+      !should_run_at_background_thread_priority) {
     return;
   }
 #endif
 
   // Verify that the thread the task is running on is named as expected.
-  EXPECT_NE(std::string::npos, current_thread_name.find("ThreadPool"));
+  EXPECT_THAT(thread_name, ::testing::HasSubstr("ThreadPool"));
+
+  EXPECT_THAT(thread_name,
+              ::testing::HasSubstr(should_run_at_background_thread_priority
+                                       ? "Background"
+                                       : "Foreground"));
 
   if (is_single_threaded) {
-    // For now, single-threaded best-effort tasks run on their own threads.
-    // TODO(fdoray): Run single-threaded best-effort tasks on foreground workers
-    // on platforms that don't support background thread priority.
-    EXPECT_NE(
-        std::string::npos,
-        current_thread_name.find(is_best_effort ? "Background" : "Foreground"));
-
     // SingleThread workers discriminate blocking/non-blocking tasks.
-    EXPECT_EQ(traits.may_block(),
-              current_thread_name.find("Blocking") != std::string::npos);
+    if (traits.may_block()) {
+      EXPECT_THAT(thread_name, ::testing::HasSubstr("Blocking"));
+    } else {
+      EXPECT_THAT(thread_name,
+                  ::testing::Not(::testing::HasSubstr("Blocking")));
+    }
   } else {
-    EXPECT_NE(std::string::npos,
-              current_thread_name.find(
-                  CanUseBackgroundPriorityForWorkerThread() && is_best_effort
-                      ? "Background"
-                      : "Foreground"));
-
-    EXPECT_EQ(std::string::npos, current_thread_name.find("Blocking"));
+    EXPECT_THAT(thread_name, ::testing::Not(::testing::HasSubstr("Blocking")));
   }
 }
 
@@ -219,22 +218,27 @@ class ThreadPostingTasks : public SimpleThread {
 };
 
 // Returns a vector with a TraitsExecutionModePair for each valid combination of
-// {ExecutionMode, TaskPriority, MayBlock()}.
+// {ExecutionMode, TaskPriority, ThreadPolicy, MayBlock()}.
 std::vector<TraitsExecutionModePair> GetTraitsExecutionModePair() {
   std::vector<TraitsExecutionModePair> params;
 
-  const TaskSourceExecutionMode execution_modes[] = {
+  constexpr TaskSourceExecutionMode execution_modes[] = {
       TaskSourceExecutionMode::kParallel, TaskSourceExecutionMode::kSequenced,
       TaskSourceExecutionMode::kSingleThread};
+  constexpr ThreadPolicy thread_policies[] = {
+      ThreadPolicy::PREFER_BACKGROUND, ThreadPolicy::MUST_USE_FOREGROUND};
 
   for (TaskSourceExecutionMode execution_mode : execution_modes) {
-    for (size_t priority_index = static_cast<size_t>(TaskPriority::LOWEST);
-         priority_index <= static_cast<size_t>(TaskPriority::HIGHEST);
-         ++priority_index) {
-      const TaskPriority priority = static_cast<TaskPriority>(priority_index);
-      params.push_back(TraitsExecutionModePair({priority}, execution_mode));
-      params.push_back(
-          TraitsExecutionModePair({priority, MayBlock()}, execution_mode));
+    for (ThreadPolicy thread_policy : thread_policies) {
+      for (size_t priority_index = static_cast<size_t>(TaskPriority::LOWEST);
+           priority_index <= static_cast<size_t>(TaskPriority::HIGHEST);
+           ++priority_index) {
+        const TaskPriority priority = static_cast<TaskPriority>(priority_index);
+        params.push_back(
+            TraitsExecutionModePair({priority, thread_policy}, execution_mode));
+        params.push_back(TraitsExecutionModePair(
+            {priority, thread_policy, MayBlock()}, execution_mode));
+      }
     }
   }
 
@@ -948,17 +952,28 @@ TEST_P(ThreadPoolImplTest, WorkerThreadObserver) {
   // should be created for each SingleThreadTaskRunnerThreadMode (8 on Windows).
   const int kExpectedNumPoolWorkers =
       CanUseBackgroundPriorityForWorkerThread() ? 2 : 1;
+  const int kExpectedNumSharedSingleThreadedWorkers =
+      CanUseBackgroundPriorityForWorkerThread() ? 4 : 2;
+  const int kExpectedNumDedicatedSingleThreadedWorkers = 4;
+
+  const int kExpectedNumCOMSharedSingleThreadedWorkers =
 #if defined(OS_WIN)
-  const int kExpectedNumSingleThreadedWorkersPerMode = 8;
+      kExpectedNumSharedSingleThreadedWorkers;
 #else
-  const int kExpectedNumSingleThreadedWorkersPerMode = 4;
+      0;
 #endif
-  constexpr int kNumSingleThreadTaskRunnerThreadModes = 2;
+  const int kExpectedNumCOMDedicatedSingleThreadedWorkers =
+#if defined(OS_WIN)
+      kExpectedNumDedicatedSingleThreadedWorkers;
+#else
+      0;
+#endif
 
   EXPECT_CALL(observer, OnWorkerThreadMainEntry())
-      .Times(kExpectedNumPoolWorkers +
-             kNumSingleThreadTaskRunnerThreadModes *
-                 kExpectedNumSingleThreadedWorkersPerMode);
+      .Times(kExpectedNumPoolWorkers + kExpectedNumSharedSingleThreadedWorkers +
+             kExpectedNumDedicatedSingleThreadedWorkers +
+             kExpectedNumCOMSharedSingleThreadedWorkers +
+             kExpectedNumCOMDedicatedSingleThreadedWorkers);
 
   // Infinite detach time to prevent workers from invoking
   // OnWorkerThreadMainExit() earlier than expected.
@@ -1021,14 +1036,16 @@ TEST_P(ThreadPoolImplTest, WorkerThreadObserver) {
 
   // Release single-threaded workers. This should cause dedicated workers to
   // invoke OnWorkerThreadMainExit().
-  observer.AllowCallsOnMainExit(kExpectedNumSingleThreadedWorkersPerMode);
+  observer.AllowCallsOnMainExit(kExpectedNumDedicatedSingleThreadedWorkers +
+                                kExpectedNumCOMDedicatedSingleThreadedWorkers);
   task_runners.clear();
   observer.WaitCallsOnMainExit();
 
   // Join all remaining workers. This should cause shared single-threaded
   // workers and thread pool workers to invoke OnWorkerThreadMainExit().
   observer.AllowCallsOnMainExit(kExpectedNumPoolWorkers +
-                                kExpectedNumSingleThreadedWorkersPerMode);
+                                kExpectedNumSharedSingleThreadedWorkers +
+                                kExpectedNumCOMSharedSingleThreadedWorkers);
   TearDown();
   observer.WaitCallsOnMainExit();
 }

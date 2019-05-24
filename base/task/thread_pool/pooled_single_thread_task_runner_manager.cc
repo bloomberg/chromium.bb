@@ -54,6 +54,16 @@ namespace {
 // ThreadPool.
 bool g_manager_is_alive = false;
 
+size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
+  const bool is_background =
+      traits.priority() == TaskPriority::BEST_EFFORT &&
+      traits.thread_policy() == ThreadPolicy::PREFER_BACKGROUND &&
+      CanUseBackgroundPriorityForWorkerThread();
+  if (traits.may_block() || traits.with_base_sync_primitives())
+    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
+  return is_background ? BACKGROUND : FOREGROUND;
+}
+
 // Allows for checking the PlatformThread::CurrentRef() against a set
 // PlatformThreadRef atomically without using locks.
 class AtomicThreadRefChecker {

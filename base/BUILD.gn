@@ -2661,6 +2661,7 @@ test("base_unittests") {
     "task/task_traits_unittest.cc",
     "task/thread_pool/can_run_policy_test.h",
     "task/thread_pool/delayed_task_manager_unittest.cc",
+    "task/thread_pool/environment_config_unittest.cc",
     "task/thread_pool/pooled_single_thread_task_runner_manager_unittest.cc",
     "task/thread_pool/priority_queue_unittest.cc",
     "task/thread_pool/sequence_sort_key_unittest.cc",

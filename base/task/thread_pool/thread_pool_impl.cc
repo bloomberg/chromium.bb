@@ -416,6 +416,7 @@ const ThreadGroup* ThreadPoolImpl::GetThreadGroupForTraits(
 
 ThreadGroup* ThreadPoolImpl::GetThreadGroupForTraits(const TaskTraits& traits) {
   if (traits.priority() == TaskPriority::BEST_EFFORT &&
+      traits.thread_policy() == ThreadPolicy::PREFER_BACKGROUND &&
       background_thread_group_) {
     return background_thread_group_.get();
   }

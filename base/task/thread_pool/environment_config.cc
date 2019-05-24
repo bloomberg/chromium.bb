@@ -11,15 +11,9 @@
 namespace base {
 namespace internal {
 
-size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
-  const bool is_background =
-      traits.priority() == base::TaskPriority::BEST_EFFORT;
-  if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
-  return is_background ? BACKGROUND : FOREGROUND;
-}
+namespace {
 
-bool CanUseBackgroundPriorityForWorkerThread() {
+bool CanUseBackgroundPriorityForWorkerThreadImpl() {
   // When Lock doesn't handle multiple thread priorities, run all
   // WorkerThread with a normal priority to avoid priority inversion when a
   // thread running with a normal priority tries to acquire a lock held by a
@@ -39,6 +33,14 @@ bool CanUseBackgroundPriorityForWorkerThread() {
 #endif  // defined(OS_ANDROID)
 
   return true;
+}
+
+}  // namespace
+
+bool CanUseBackgroundPriorityForWorkerThread() {
+  static const bool can_use_background_priority_for_worker_thread =
+      CanUseBackgroundPriorityForWorkerThreadImpl();
+  return can_use_background_priority_for_worker_thread;
 }
 
 }  // namespace internal
