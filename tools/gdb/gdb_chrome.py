@@ -25,6 +25,7 @@ import datetime
 import gdb
 import gdb.printing
 import os
+import re
 import sys
 
 sys.path.insert(
@@ -436,6 +437,81 @@ pp_set.add_printer('content::RenderProcessHostImpl',
 
 gdb.printing.register_pretty_printer(gdb, pp_set, replace=_DEBUGGING)
 """Implementations of inlined libc++ std container functions."""
+
+
+def gdb_running_under_rr():
+  try:
+    # rr defines the when command to return the current event number.
+    gdb.execute('when')
+
+    # If there was no error executing the command, we are running under rr.
+    return True
+  except gdb.error:
+    return False
+
+
+def find_nearest_frame_matching(frame, predicate):
+  while frame and not predicate(frame):
+    frame = frame.older()
+  return frame
+
+
+class ReverseCallback(gdb.Command):
+  """Find when the currently running callback was created."""
+
+  def __init__(self):
+    super(ReverseCallback, self).__init__("reverse-callback", gdb.COMMAND_USER)
+
+  def invoke(self, arg, from_tty):
+    if not gdb_running_under_rr():
+      raise gdb.error('reverse-callback requires debugging under rr: ' +
+                      'https://rr-project.org/')
+
+    # Find the stack frame which extracts the bind state from the task.
+    bind_state_frame = find_nearest_frame_matching(
+        gdb.selected_frame(),
+        lambda frame : frame.function() and
+            re.match('^base::internal::Invoker<base::internal::BindState<.*>' +
+                     '::RunOnce\(base::internal::BindStateBase\*\)$',
+                     frame.function().name))
+    if bind_state_frame is None:
+      raise Exception(
+          'base::internal::Invoker frame not found; are you in a callback?')
+    bind_state_frame.select()
+
+    # Disable all existing breakpoints.
+    was_enabled = []
+    for breakpoint in gdb.breakpoints():
+      was_enabled.append(breakpoint.enabled)
+      breakpoint.enabled = False
+
+    # Break on the initialization of the BindState.
+    storage_address = gdb.parse_and_eval('storage')
+    watchpoint = gdb.Breakpoint('*' + str(storage_address), gdb.BP_WATCHPOINT)
+
+    # Find the construction.
+    gdb.execute('reverse-continue')
+
+    # Restore breakpoints
+    watchpoint.delete()
+    for breakpoint, enabled in zip(gdb.breakpoints(), was_enabled):
+      breakpoint.enabled = enabled
+
+    # Find the stack frame which created the BindState.
+    def in_bindstate(frame):
+      return frame.function() and frame.function().name.startswith(
+          'base::internal::BindState<')
+
+    creation_frame = find_nearest_frame_matching(
+        find_nearest_frame_matching(gdb.selected_frame(), in_bindstate),
+        lambda frame: not in_bindstate(frame))
+
+    # The callback creates the bindstate, step up once more to get the creator
+    # of the callback.
+    creation_frame.older().select()
+
+
+ReverseCallback()
 
 
 @class_methods.Class('std::__1::vector', template_types=['T'])
