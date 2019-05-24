@@ -315,12 +315,8 @@ static void set_good_speed_features_framesize_independent(
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
     sf->use_accurate_subpel_search = USE_2_TAPS;
     sf->adaptive_rd_thresh = 2;
-    if (cpi->oxcf.enable_smooth_interintra) {
-      sf->disable_smooth_interintra =
-          (boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame)
-              ? 0
-              : 1;
-    }
+    if (cpi->oxcf.enable_smooth_interintra)
+      sf->disable_smooth_interintra = boosted ? 0 : 1;
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
     sf->gm_search_type = GM_DISABLE_SEARCH;
     sf->prune_comp_search_by_single_result = 2;
