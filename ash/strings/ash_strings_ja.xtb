@@ -98,7 +98,6 @@
 <translation id="239188844683466770">サイレント モードを切り替え</translation>
 <translation id="2412593942846481727">アップデートが利用可能</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> は <ph name="DOMAIN" /> が管理する管理対象セッションです</translation>
-<translation id="2416346634399901812"><ph name="NETWORK_NAME" /> に接続されています</translation>
 <translation id="2427507373259914951">左クリック</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">通知</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">このデバイスの管理者は以下を行うことができます。</translation>
 <translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4281007048406351813">タイマーに 1 分追加</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> を有効化しています</translation>
 <translation id="4296136865091727875"><ph name="COUNT" /> 件の通知をすべて消去</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">ハイ コントラストのキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
@@ -431,7 +429,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">電波: 強い</translation>
 <translation id="7837740436429729974">タイムアップ</translation>
-<translation id="7842211907556571265"><ph name="NETWORK_NAME" /> に接続しています</translation>
 <translation id="7842569679327885685">警告: 試験運用版の機能</translation>
 <translation id="7846634333498149051">キーボード</translation>
 <translation id="7868900307798234037">指紋によるロック解除</translation>

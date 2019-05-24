@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Activar o desactivar la función "No interrumpir"</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> es una sesión administrada por <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Conexión establecida con <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Clic con botón izquierdo</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Antes de aceptar, debes confirmar que aparece la siguiente clave de contraseña en el dispositivo: <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
@@ -158,6 +157,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> podrá acceder más tarde.</translation>
 <translation id="3321628682574733415">Código parental incorrecto</translation>
 <translation id="332587331255250389">Reemplaza la batería</translation>
+<translation id="3335825575923019462">¿Confirmas que quieres inhabilitar los clics automáticos?</translation>
 <translation id="3351879221545518001">Estás transmitiendo la pantalla.</translation>
 <translation id="3364721542077212959">Herramientas de pluma stylus</translation>
 <translation id="3368922792935385530">Conectado</translation>
@@ -217,7 +217,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4269883910223712419">El administrador de este dispositivo puede hacer lo siguiente:</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4281007048406351813">Agregar 1 minuto al cronómetro</translation>
-<translation id="4292681942966152062">Activando la red <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Borrar las <ph name="COUNT" /> notificaciones</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Presionaste la combinación de teclas para activar el modo de contraste alto. ¿Quieres activarlo?</translation>
@@ -400,6 +399,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7377169924702866686">Bloq Mayús está activado.</translation>
+<translation id="7378594059915113390">Controles de contenido multimedia</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Se cambió la conexión de red</translation>
 <translation id="7405710164030118432">Para desbloquear el dispositivo, ingresa el código de acceso parental de Family Link</translation>
@@ -429,7 +429,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> y <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Señal fuerte</translation>
 <translation id="7837740436429729974">Tiempo agotado</translation>
-<translation id="7842211907556571265">Conectando a <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advertencia: Función experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
 <translation id="7868900307798234037">Desbloqueando con huella digital</translation>
@@ -485,6 +484,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8649101189709089199">Seleccionar para pronunciar</translation>
 <translation id="8652175077544655965">Cerrar configuración</translation>
 <translation id="8653151467777939995">Mostrar la configuración de las notificaciones: Están activadas</translation>
+<translation id="8664483332071009680">¿Quieres inhabilitar los clics automáticos?</translation>
 <translation id="8664753092453405566">Mostrar la lista de redes: <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>

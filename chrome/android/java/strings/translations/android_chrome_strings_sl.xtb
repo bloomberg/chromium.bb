@@ -94,6 +94,7 @@
 <translation id="1670399744444387456">Osnovno</translation>
 <translation id="1671236975893690980">Prenos na čakanju …</translation>
 <translation id="1672586136351118594">Tega ne prikaži več</translation>
+<translation id="1679068421605151609">Razvijalska orodja</translation>
 <translation id="1692118695553449118">Sinhroniziranje je vklopljeno</translation>
 <translation id="169515064810179024">Spletnim mestom prepreči dostop do tipal gibanja</translation>
 <translation id="1717218214683051432">Tipala gibanja</translation>
@@ -830,6 +831,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7062545763355031412">Sprejmi in preklopi račun</translation>
 <translation id="7063006564040364415">Povezave s strežnikom za sinhronizacijo ni bilo mogoče vzpostaviti.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 izbran}one{# izbran}two{# izbrana}few{# izbrani}other{# izbranih}}</translation>
+<translation id="7071521146534760487">Upravljanje računa</translation>
 <translation id="7077143737582773186">SD kartica</translation>
 <translation id="7087918508125750058">Št. izbranih: <ph name="ITEM_COUNT" />. Možnosti so na voljo na zgornjem delu zaslona.</translation>
 <translation id="7121362699166175603">Izbriše zgodovino in samodokončanja v naslovni vrstici. V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>

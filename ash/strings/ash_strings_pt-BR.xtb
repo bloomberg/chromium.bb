@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Alternar "Não perturbe"</translation>
 <translation id="2412593942846481727">Atualização disponível</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> é uma sessão gerenciada por <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Conectado a <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Clicar com o botão esquerdo</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Antes de aceitar, verifique se esta senha aparece no dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notificações</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">O administrador deste dispositivo pode:</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4281007048406351813">Adicionar 1 min ao timer</translation>
-<translation id="4292681942966152062">Ativando <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Limpar todas as <ph name="COUNT" /> notificações</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Você pressionou o atalho de teclado para o alto contraste. Gostaria de ativá-lo?</translation>
@@ -432,7 +430,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinal forte</translation>
 <translation id="7837740436429729974">Tempo esgotado</translation>
-<translation id="7842211907556571265">Conectando-se a <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Aviso: recurso experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
 <translation id="7868900307798234037">Desbloqueio com impressão digital</translation>

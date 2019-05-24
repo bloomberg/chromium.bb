@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Přepnout možnost Nerušit</translation>
 <translation id="2412593942846481727">K dispozici je aktualizace</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> je návštěvy spravovaná doménou <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Připojeno k síti <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Kliknutí levým tlačítkem</translation>
 <translation id="2429753432712299108">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. Než toto povolení schválíte, zkontrolujte si, zda je na zařízení zobrazen následující přístupový klíč: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Oznámení</translation>
@@ -158,6 +157,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se i nadále bude moci přihlásit.</translation>
 <translation id="3321628682574733415">Nesprávný kód rodiče</translation>
 <translation id="332587331255250389">Vyměňte prosím baterii</translation>
+<translation id="3335825575923019462">Opravdu automatická kliknutí chcete vypnout?</translation>
 <translation id="3351879221545518001">Právě odesíláte obrazovku.</translation>
 <translation id="3364721542077212959">Nástroje pro dotykové pero</translation>
 <translation id="3368922792935385530">Připojeno</translation>
@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Zvýraznit ukazatel myši</translation>
 <translation id="3513798432020909783">Správce účtu: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE" /> (vyžaduje restart)</translation>
+<translation id="3576141592585647168">Změnit časové pásmo</translation>
 <translation id="3595596368722241419">Baterie je nabitá</translation>
 <translation id="3606978283550408104">Je připojen hmatový displej.</translation>
 <translation id="3621202678540785336">Vstup</translation>
@@ -216,7 +217,6 @@
 <translation id="4269883910223712419">Administrátor zařízení má následující možnosti:</translation>
 <translation id="4279490309300973883">Zrcadlení</translation>
 <translation id="4281007048406351813">Přidat k časovači 1 min</translation>
-<translation id="4292681942966152062">Aktivace sítě <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Vymazat všechna oznámení (<ph name="COUNT" />)</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Stiskli jste klávesovou zkratku pro vysoký kontrast. Chcete ho zapnout?</translation>
@@ -355,6 +355,7 @@
 <translation id="6559976592393364813">Zeptejte se administrátora</translation>
 <translation id="6585808820553845416">Relace skončí za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Vyhledávací tlačítko + Shift + K</translation>
+<translation id="6637729079642709226">Změnit čas</translation>
 <translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="6665545700722362599">Udělit webům, aplikacím a rozšířením oprávnění používat služby určování polohy, mikrofon či fotoaparát zařízení nebo další funkce</translation>
@@ -399,6 +400,7 @@
 <translation id="7348093485538360975">Softwarová klávesnice</translation>
 <translation id="735745346212279324">Síť VPN je odpojena</translation>
 <translation id="7377169924702866686">Caps Lock je zapnutý.</translation>
+<translation id="7378594059915113390">Ovládání médií</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />s</translation>
 <translation id="7398254312354928459">Přepnuto na jinou síť</translation>
 <translation id="7405710164030118432">Chcete-li zařízení odemknout, zadejte svůj rodičovský přístupový kód služby Family Link</translation>
@@ -428,7 +430,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Silný signál</translation>
 <translation id="7837740436429729974">Čas vypršel</translation>
-<translation id="7842211907556571265">Připojování k síti <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Upozornění: Experimentální funkce</translation>
 <translation id="7846634333498149051">Klávesnice</translation>
 <translation id="7868900307798234037">Odemknutí otiskem prstu</translation>
@@ -484,6 +485,7 @@
 <translation id="8649101189709089199">Poslech vybraného textu</translation>
 <translation id="8652175077544655965">Zavřít nastavení</translation>
 <translation id="8653151467777939995">Zobrazit nastavení oznámení. Oznámení jsou zapnutá</translation>
+<translation id="8664483332071009680">Zakázat automatická kliknutí?</translation>
 <translation id="8664753092453405566">Zobrazit seznam sítí. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Byla připojena nabíječka s nízkým napětím</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">Metoda zadávání: <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Chcete-li provést akci s oznámením, odemkněte zařízení jako <ph name="LOGIN_ID" /></translation>
 <translation id="8995603266996330174">Správce: <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Zadejte svůj rodičovský přístupový kód služby Family Link.</translation>
 <translation id="9029474291399787231">Je k dispozici aktualizace přehrávače Adobe Flash Player</translation>
 <translation id="9056839673611986238">V zařízení bude obnovena předchozí verze systému</translation>
 <translation id="9070640332319875144">Nastavení Asistenta</translation>

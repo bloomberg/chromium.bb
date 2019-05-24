@@ -43,7 +43,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1773601347087397504">Pata msaada wa kutumia Chrome OS</translation>
 <translation id="1795405610103747296">Sakinisha Chrome kwenye simu yako. Tutatuma SMS kwenye simu yako: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Kwa kuzima kipengele hiki, unaweza kuingia katika tovuti za Google kama vile Gmail bila kuingia katika akaunti ya Chrome</translation>
-<translation id="1815759068706561639"><ph name="FILE_NAME" /> ni hatari, kwa hivyo Chromium imeizuia. Unalindwa kupitia mipangilio ya Ulinzi wa Hali ya Juu.</translation>
 <translation id="1860536484129686729">Chrome inahitaji ruhusa ya kufikia kamera yako katika tovuti hii</translation>
 <translation id="1873233029667955273">Google Chrome si kivinjari chako chaguomsingi</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -69,7 +68,6 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="2429317896000329049">Google Chrome haikuweza kusawazisha data yako kwa sababu Usawazishaji haupatikani kwa kikoa chako.</translation>
 <translation id="2467438592969358367">Google Chrome ingependa kuhamisha manenosiri yako. Andika nenosiri lako la Windows ili uruhusu shughuli hii.</translation>
 <translation id="2485422356828889247">Ondoa</translation>
-<translation id="2521856951867783208">Huenda faili hii ni hatari, kwa hivyo Chrome imeizuia. Unalindwa kupitia mipangilio ya Ulinzi wa Hali ya Juu.</translation>
 <translation id="2534507159460261402">Google Pay (imenakiliwa kwenye Chrome)</translation>
 <translation id="2535429035253759792">Msimamizi wako anakushauri uwashe Chrome upya ili utumie sasisho hili</translation>
 <translation id="2580411288591421699">Huwezi kusakinisha toleo la Google Chrome ambalo tayari linatumika. Tafadhali funga Google Chrome na ujaribu tena.</translation>
@@ -106,7 +104,6 @@ Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagi
 <translation id="3451115285585441894">Inaongeza kwenye Chrome...</translation>
 <translation id="345171907106878721">Jiongeze kwenye Chrome</translation>
 <translation id="3479552764303398839">Sio sasa</translation>
-<translation id="3481286511616257896">Huenda <ph name="FILE_NAME" /> ni hatari, kwa hivyo Chrome imeizuia. Unalindwa kupitia mipangilio ya Ulinzi wa Hali ya Juu.</translation>
 <translation id="34857402635545079">Futa pia data kutoka Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome inahitaji kufikia maelezo ya mahali ulipo ili kuyashiriki na tovuti hii</translation>
 <translation id="3576528680708590453">Msimamizi wa mfumo unaotumia ameweka mipangilio ya Google Chrome ifungue kivinjari mbadala ili kufikia <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -232,7 +229,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="7459554271817304652">Sanidi Usawazishaji ili kuhifadhi vipengele vyako vya kivinjari vilivyobinafsishwa kwenye mtandao na uvifikie kutoka Google Chrome kwenye kompyuta yoyote.</translation>
 <translation id="7473136999113284234">Chrome husasisha kiotomatiki ili uwe na toleo jipya zaidi wakati wowote.</translation>
 <translation id="7486227612705979895">Chrome itafikia Hifadhi yako ili kutoa mapendekezo kwenye sehemu ya anwani</translation>
-<translation id="748945194546522577">Faili hii ni hatari, kwa hivyo Chrome imeizuia. Unalindwa kupitia mipangilio ya Ulinzi wa Hali ya Juu.</translation>
 <translation id="7531671357096394523">Funga nakala zote za Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Onyesha Mfumo wa Uendeshaji wa Chrome katika lugha hii</translation>
@@ -240,7 +236,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="7589360514048265910">Kompyuta hii haitapokea tena masasisho ya Google Chrome kwa sababu Mac OS X 10.9 haitumiki tena.</translation>
 <translation id="7592736734348559088">Google Chrome haikuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yanahitaji kusasishwa.</translation>
 <translation id="7626032353295482388">Karibu kwenye Chrome</translation>
-<translation id="7636297873481318396">Faili hii ni hatari, kwa hivyo Chrome imeizuia. Unalindwa kupitia mipangilio ya Ulinzi wa Hali ya Juu.</translation>
 <translation id="7641148173327520642">Msimamizi wa mfumo unaotumia ameweka mipangilio ya Google Chrome ifungue <ph name="ALTERNATIVE_BROWSER_NAME" /> ili kufikia <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Nembo ya Chrome Enterprise</translation>
 <translation id="7747138024166251722">Kisakinishi hakikuweza kuunda saraka la muda. Tafadhali chunguza nafasi iliyo wazi kwenye diski na ruhusa ya kusakinisha programu.</translation>

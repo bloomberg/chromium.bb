@@ -98,7 +98,6 @@
 <translation id="239188844683466770">"Bitte nicht stören" aktivieren/deaktivieren</translation>
 <translation id="2412593942846481727">Update verfügbar</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ist eine verwaltete Sitzung, die von <ph name="DOMAIN" /> verwaltet wird</translation>
-<translation id="2416346634399901812">Verbunden mit <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Linksklick</translation>
 <translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">Der Administrator dieses Geräts kann Folgendes tun:</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
 <translation id="4281007048406351813">Timer um 1 Min. verlängern</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> wird aktiviert</translation>
 <translation id="4296136865091727875">Alle <ph name="COUNT" /> Benachrichtigungen löschen</translation>
 <translation id="4321179778687042513">Strg</translation>
 <translation id="4321776623976362024">Sie haben die Tastenkombination für den Modus "Hoher Kontrast" gedrückt. Möchten Sie ihn aktivieren?</translation>
@@ -430,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> und <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Starkes Signal</translation>
 <translation id="7837740436429729974">Die Zeit ist um</translation>
-<translation id="7842211907556571265">Verbindung zu <ph name="NETWORK_NAME" /> wird hergestellt</translation>
 <translation id="7842569679327885685">Achtung: Experimentelle Funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
 <translation id="7868900307798234037">Entsperren mit Fingerabdruck</translation>

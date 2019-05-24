@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Prebacivanje načina Ne uznemiravaj</translation>
 <translation id="2412593942846481727">Dostupno je ažuriranje</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> predstavlja upravljanu sesiju kojom upravlja <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Povezano s mrežom <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Lijevi klik</translation>
 <translation id="2429753432712299108">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Prije prihvaćanja provjerite prikazuje li se na njemu ovaj pristupni ključ: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Obavijesti</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">Administrator ovog uređaja ima sljedeće mogućnosti:</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4281007048406351813">Dodaj odbrojavanju 1 min</translation>
-<translation id="4292681942966152062">Aktiviranje mreže <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Brisanje svih obavijesti (<ph name="COUNT" />)</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Pritisnuli ste tipkovni prečac za visoki kontrast. Želite li ga uključiti?</translation>
@@ -430,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Jak signal</translation>
 <translation id="7837740436429729974">Vrijeme je isteklo</translation>
-<translation id="7842211907556571265">Povezivanje s mrežom <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Upozorenje: eksperimentalna značajka</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>
 <translation id="7868900307798234037">Otključavanje otiskom prsta</translation>

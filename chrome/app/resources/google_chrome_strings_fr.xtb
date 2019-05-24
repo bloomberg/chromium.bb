@@ -42,7 +42,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1773601347087397504">Obtenir de l'aide sur l'utilisation de Chrome OS</translation>
 <translation id="1795405610103747296">Installez Chrome sur votre téléphone. Vous recevrez un SMS au numéro suivant : <ph name="PHONE_NUMBER" />.</translation>
 <translation id="1812689907177901597">Désactiver cette option vous permet de vous connecter à des sites Google tels que Gmail sans vous connecter à Chrome</translation>
-<translation id="1815759068706561639">Chrome a bloqué le fichier <ph name="FILE_NAME" />, car ce dernier est dangereux. Vous êtes protégé par le Programme Protection Avancée.</translation>
 <translation id="1860536484129686729">Chrome a besoin de votre autorisation pour accéder à votre appareil photo pour ce site</translation>
 <translation id="1873233029667955273">Google Chrome n'est pas votre navigateur par défaut</translation>
 <translation id="1874309113135274312">Version bêta de Google Chrome (mDNS-In)</translation>
@@ -68,7 +67,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2429317896000329049">Impossible de synchroniser vos données dans Google Chrome, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="2467438592969358367">Google Chrome veut exporter vos mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
-<translation id="2521856951867783208">Chrome a bloqué ce fichier, car ce dernier peut être dangereux. Vous êtes protégé par le Programme Protection Avancée.</translation>
 <translation id="2534507159460261402">Google Pay (copiée dans Chrome)</translation>
 <translation id="2535429035253759792">Votre administrateur vous demande de relancer Chrome pour installer cette mise à jour</translation>
 <translation id="2580411288591421699">Impossible d'installer la version de Google Chrome qui est en cours d'exécution. Fermez Google Chrome et réessayez.</translation>
@@ -105,7 +103,6 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="3451115285585441894">Ajout à Google Chrome en cours…</translation>
 <translation id="345171907106878721">Ajouter un utilisateur à Chrome</translation>
 <translation id="3479552764303398839">Pas maintenant</translation>
-<translation id="3481286511616257896">Chrome a bloqué le fichier <ph name="FILE_NAME" />, car ce dernier peut être dangereux. Vous êtes protégé par le Programme Protection Avancée.</translation>
 <translation id="34857402635545079">Effacer également les données issues de Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome a besoin d'accéder à votre position pour la partager avec ce site</translation>
 <translation id="3576528680708590453">Votre administrateur système a configuré Google Chrome de sorte qu'un autre navigateur s'ouvre pour accéder à <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -232,7 +229,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7459554271817304652">Configurez la synchronisation pour enregistrer sur le Web les fonctionnalités personnalisées de votre navigateur et y accéder à partir de Google Chrome sur n'importe quel ordinateur.</translation>
 <translation id="7473136999113284234">Chrome est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version.</translation>
 <translation id="7486227612705979895">Chromium va accéder à votre Drive pour proposer des suggestions dans la barre d'adresse</translation>
-<translation id="748945194546522577">Chrome a bloqué ce fichier, car ce dernier est dangereux. Vous êtes protégé par le Programme Protection Avancée.</translation>
 <translation id="7531671357096394523">Fermez toutes les copies de Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome pour les développeurs</translation>
 <translation id="7552219221109926349">Afficher Chrome OS dans cette langue</translation>
@@ -240,7 +236,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7589360514048265910">Cet ordinateur ne recevra plus les mises à jour de Google Chrome, car la compatibilité avec Mac OS X 10.9 n'est plus assurée.</translation>
 <translation id="7592736734348559088">Impossible de synchroniser vos données dans Google Chrome, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="7626032353295482388">Bienvenue dans Chrome</translation>
-<translation id="7636297873481318396">Chrome a bloqué ce fichier, car ce dernier est dangereux. Vous êtes protégé par le Programme Protection Avancée.</translation>
 <translation id="7641148173327520642">Votre administrateur système a configuré Google Chrome de sorte que <ph name="ALTERNATIVE_BROWSER_NAME" /> s'ouvre pour accéder à <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logo Chrome Enterprise</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>

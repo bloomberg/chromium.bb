@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Washa au uzime kipengee cha Usinisumbue</translation>
 <translation id="2412593942846481727">Sasisho linapatikana</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ni kipindi kinachodhibitiwa ambacho kinasimamiwa na <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Umeunganishwa kwenye <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Mbofyo wa kushoto</translation>
 <translation id="2429753432712299108">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Kabla hujakubali, tafadhali thibitisha kwamba nenosiri hili linaonyeshwa kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Arifa</translation>
@@ -158,6 +157,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> bado anaweza kuingia katika akaunti baadaye.</translation>
 <translation id="3321628682574733415">Msimbo wa mzazi si sahihi</translation>
 <translation id="332587331255250389">Tafadhali badilisha betri</translation>
+<translation id="3335825575923019462">Je, una uhakika ungependa kuzima mibofyo ya kiotomatiki?</translation>
 <translation id="3351879221545518001">Kwa sasa unatuma skrini.</translation>
 <translation id="3364721542077212959">Zana za stylus</translation>
 <translation id="3368922792935385530">Umeunganishwa</translation>
@@ -216,7 +216,6 @@
 <translation id="4269883910223712419">Msimamizi wa kifaa hiki ana uwezo wa:</translation>
 <translation id="4279490309300973883">Kuakisi</translation>
 <translation id="4281007048406351813">Ongeza dakika 1 kwenye kipima muda</translation>
-<translation id="4292681942966152062">Inawasha <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Futa arifa zote <ph name="COUNT" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Umebofya mikato ya kibodi ya utofautishaji wa juu. Ungependa kuuwasha?</translation>
@@ -399,6 +398,7 @@
 <translation id="7348093485538360975">Kibodi ya skrini</translation>
 <translation id="735745346212279324">VPN imekatwa muunganisho</translation>
 <translation id="7377169924702866686">Caps Lock imewashwa.</translation>
+<translation id="7378594059915113390">Vidhibiti vya Maudhui</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />: sekunde <ph name="SECONDS_REMAINING" /></translation>
 <translation id="7398254312354928459">Imebadilisha muunganisho wa mtandao</translation>
 <translation id="7405710164030118432">Ili ufungue kifaa, weka msimbo wa ufikiaji wa mzazi katika Family Link</translation>
@@ -429,7 +429,6 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="7814236020522506259"><ph name="HOUR" /> na <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Mtandao ni thabiti</translation>
 <translation id="7837740436429729974">Muda umekwisha</translation>
-<translation id="7842211907556571265">Inaunganisha kwenye <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Ilani: Kipengele cha majaribio</translation>
 <translation id="7846634333498149051">Kibodi</translation>
 <translation id="7868900307798234037">Inafungua kwa kutumia alama ya kidole</translation>
@@ -485,6 +484,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8649101189709089199">Chagua ili Izungumze</translation>
 <translation id="8652175077544655965">Funga mipangilio</translation>
 <translation id="8653151467777939995">Onyesha mipangilio ya arifa. Umewasha arifa</translation>
+<translation id="8664483332071009680">Je, ungependa kuzima mibofyo ya kiotomatiki?</translation>
 <translation id="8664753092453405566">Onyesha orodha ya mitandao. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chaja ya nguvu ya chini imeunganishwa</translation>

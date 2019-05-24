@@ -3127,6 +3127,17 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6923366716660828830">Menentukan nama penyedia carian lalai. Jika dibiarkan kosong atau tidak ditetapkan, nama hos yang ditentukan oleh URL carian akan digunakan.
 
           Dasar ini hanya dipertimbangkan jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
+<translation id="6924223708804692571">Melumpuhkan bahasa semak ejaan secara paksa. Bahasa tidak dikenali dalam senarai itu akan diabaikan.
+
+      Jika anda mendayakan dasar ini, semak ejaan akan dilumpuhkan untuk bahasa yang dinyatakan. Pengguna masih boleh mendayakan atau melumpuhkan semak ejaan untuk bahasa yang tidak disenaraikan.
+
+      Jika anda tidak menetapkan dasar ini atau anda melumpuhkan dasar ini, tiada perubahan akan berlaku kepada pilihan semak ejaan pengguna.
+
+      Jika dasar <ph name="SPELLCHECK_ENABLED_POLICY_NAME" />ditetapkan kepada palsu, dasar ini tidak akan memberikan kesan.
+
+      Jika bahasa disertakan dalam kedua-dua dasar, dasar <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> akan diutamakan dan bahasa semak ejaan akan didayakan.
+
+      Bahasa yang disokong pada masa ini ialah: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Dayakan pencetakan dupleks pinggir panjang</translation>
 <translation id="6931242315485576290">Lumpuhkan penyegerakan data dengan Google</translation>
 <translation id="6936894225179401731">Menentukan jumlah maksimum sambungan serentak pada pelayan proksi.

@@ -98,7 +98,6 @@
 <translation id="239188844683466770">'Niet storen' schakelen</translation>
 <translation id="2412593942846481727">Update beschikbaar</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> is een beheerde sessie die wordt beheerd door <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Verbonden met <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Klik met linkermuisknop</translation>
 <translation id="2429753432712299108">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Bevestig vóór het accepteren dat de volgende toegangscode op dat apparaat wordt weergegeven: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Meldingen</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">De beheerder van dit apparaat kan het volgende doen:</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4281007048406351813">1 min toevoegen aan timer</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> activeren</translation>
 <translation id="4296136865091727875">Alle <ph name="COUNT" /> meldingen wissen</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Je hebt op de sneltoets voor hoog contrast gedrukt. Wil je deze functie inschakelen?</translation>
@@ -430,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> en <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sterk signaal</translation>
 <translation id="7837740436429729974">De tijd is om</translation>
-<translation id="7842211907556571265">Verbinding maken met <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Waarschuwing: Experimentele functie</translation>
 <translation id="7846634333498149051">Toetsenbord</translation>
 <translation id="7868900307798234037">Ontgrendelen met vingerafdruk</translation>

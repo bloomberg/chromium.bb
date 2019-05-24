@@ -94,6 +94,7 @@
 <translation id="1670399744444387456">Msingi</translation>
 <translation id="1671236975893690980">Inasubiri kupakua...</translation>
 <translation id="1672586136351118594">Usionyeshe tena</translation>
+<translation id="1679068421605151609">Zana za Wasadini Programu</translation>
 <translation id="1692118695553449118">Usawazishajii umewashwa</translation>
 <translation id="169515064810179024">Zuia tovuti zisifikie vitambuzi vya mwendo</translation>
 <translation id="1717218214683051432">Vitambuzi vya mwendo</translation>
@@ -830,6 +831,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7062545763355031412">Kubali na ubadilishe akaunti</translation>
 <translation id="7063006564040364415">Haikuweza kuunganisha kwenye seva ya usawazishaji.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 kimechaguliwa}other{# vimechaguliwa}}</translation>
+<translation id="7071521146534760487">Dhibiti akaunti</translation>
 <translation id="7077143737582773186">Kadi ya SD</translation>
 <translation id="7087918508125750058">Imechagua <ph name="ITEM_COUNT" />. Chaguo zinapatikana karibu na sehemu ya juu ya skrini</translation>
 <translation id="7121362699166175603">Hufuta historia na ukamilishaji kiotomatiki kwenye sehemu ya anwani. Huenda Akaunti yako ya Google ikawa na aina nyingine za historia ya kuvinjari kwenye <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>

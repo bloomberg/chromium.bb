@@ -1220,6 +1220,7 @@
 <translation id="2870909136778269686">Oppdaterer …</translation>
 <translation id="2871813825302180988">Denne kontoen er allerede i bruk på denne enheten.</translation>
 <translation id="287286579981869940">Legg til <ph name="PROVIDER_NAME" /></translation>
+<translation id="2872961005593481000">Slå av</translation>
 <translation id="2874343608108773609">For å få passordene dine på alle enhetene du bruker, logg på Chrome.</translation>
 <translation id="2874939134665556319">Forrige spor</translation>
 <translation id="2875698561019555027">(Chrome-feilsider)</translation>
@@ -2880,7 +2881,6 @@
 <translation id="5518584115117143805">Sertifikat for kryptering av e-post</translation>
 <translation id="5521078259930077036">Er dette startsiden du forventet?</translation>
 <translation id="5522156646677899028">Denne utvidelsen inneholder et alvorlig sikkerhetsproblem.</translation>
-<translation id="5523201311986093262">Bakgrunner</translation>
 <translation id="5525677322972469346">Opprett en ny administrert bruker</translation>
 <translation id="5526701598901867718">Alle (usikre)</translation>
 <translation id="5526745900034778153">Logg på igjen for å gjenoppta synkroniseringen</translation>
@@ -3564,7 +3564,6 @@
 <translation id="656293578423618167">Filbanen- eller -navnet er for langt. Lagre med et annet navn eller på et annet sted.</translation>
 <translation id="6567688344210276845">Kan ikke laste inn ikonet «<ph name="ICON" />» for sidehandling.</translation>
 <translation id="6571979863037191371">Koble telefonen fra Chromebook. De kobles ikke lenger sammen automatisk.</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> lastes sjelden ned og kan inneholde skadelig programvare. Du er beskyttet av Avansert beskyttelse.</translation>
 <translation id="657402800789773160">&amp;Last inn denne siden på nytt</translation>
 <translation id="6577284282025554716">Nedlasting avbrutt: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Kryptér synkroniserte passord med Google-brukernavnet og -passordet ditt</translation>
@@ -5171,7 +5170,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Vil du oppdatere passordet for <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Administratoren din har deaktivert tilgang til lokale filer på maskinen din</translation>
-<translation id="9041909613332246191">Denne filen lastes sjelden ned og kan være farlig. Du er beskyttet av Avansert beskyttelse.</translation>
 <translation id="9042858701776831292">Google Play Butikk-programmer trenger kanskje tilgang til eksterne lagringsenheter for å lese og skrive til filer og mapper på disse.</translation>
 <translation id="9042893549633094279">Personvern og sikkerhet</translation>
 <translation id="904451693890288097">Skriv inn passordet for «<ph name="DEVICE_NAME" />»:</translation>
@@ -5258,7 +5256,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9179734824669616955">Sett opp Linux (Beta) på <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">Denne prosessen kan ta noen minutter. Starter Linux-beholderen.</translation>
 <translation id="9180380851667544951">Nettstedet kan dele skjermen din</translation>
-<translation id="9185926955514281189">Farger og temaer</translation>
 <translation id="9188441292293901223">Du må oppdatere telefonen til en nyere versjon av Android for å låse opp <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9188732951356337132">Send bruks- og diagnostikkdata. Denne enheten sender for øyeblikket diagnostikk-, enhets- og appbruksdata til Google automatisk. Disse dataene brukes ikke til å identifisere barnet ditt, men bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Hvis du har slått på innstillingen for annen nett- og appaktivitet for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. <ph name="BEGIN_LINK2" />Finn ut mer<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + forhåndsdelt nøkkel</translation>

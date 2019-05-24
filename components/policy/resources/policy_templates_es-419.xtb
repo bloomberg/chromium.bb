@@ -1037,6 +1037,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se establece la política AutoplayAllowed como falsa, podrá reproducirse cualquier patrón de URL incluido en esta política.
 
       Si cambias esta política cuando <ph name="PRODUCT_NAME" /> se está ejecutando, solo se aplicará a las pestañas abiertas nuevas. Por lo tanto, es posible que algunas pestañas todavía muestren el comportamiento anterior.</translation>
+<translation id="284288632677954003">URL de un archivo XML que contiene URL que nunca deben abrirse en otro navegador</translation>
 <translation id="285480231336205327">Habilitar el modo de contraste alto</translation>
 <translation id="2854919890879212089">Hace que <ph name="PRODUCT_NAME" /> use la impresora predeterminada del sistema como la opción predeterminada en Vista previa de impresión, en lugar de la impresora que se usó de forma más reciente.
 
@@ -1207,6 +1208,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3096595567015595053">Lista de complementos habilitados</translation>
 <translation id="3101501961102569744">Elegir cómo especificar la configuración del servidor proxy</translation>
 <translation id="3101709781009526431">Fecha y hora</translation>
+<translation id="3114411414586006215">Esta política controla la lista de sitios web que nunca se abren en un navegador alternativo.
+
+      Ten en cuenta que se pueden agregar elementos a esta lista a través de la política <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Si no se establece esta política, no se agregan sitios web a la lista.
+
+      Si se establece, cada elemento será tratado como regla, similar a la política <ph name="URL_LIST_POLICY_NAME" />. Sin embargo, la lógica se invertirá: las reglas que coincidan no se abrirán en un navegador alternativo.
+
+      A diferencia de <ph name="URL_LIST_POLICY_NAME" />, las reglas se aplican en ambas direcciones. Esto significa que, cuando el complemento de Internet Explorer está presente y habilitado, también controla si <ph name="IE_PRODUCT_NAME" /> puede abrir estas URL en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Advertencia: La encriptación DHE se quitará por completo de <ph name="PRODUCT_NAME" /> después de la versión 57 (alrededor de marzo de 2017), por lo que esta política dejará de funcionar en ese momento.
 
       Si no se establece esta política o se establece como falsa, los paquetes de encriptación DHE en TLS no se habilitarán. De lo contrario, se puede establecer como verdadera para habilitar los paquetes de encriptación DHE y mantener la compatibilidad con un servidor desactualizado. Esta medida es un recurso temporal, y el servidor debe reconfigurarse.
@@ -1397,6 +1407,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3550875587920006460">Permite establecer un cronograma personalizado para la búsqueda de actualizaciones. Se aplica a todos los usuarios y todas las interfaces del dispositivo. El dispositivo buscará actualizaciones según el cronograma que indiques. Debe quitarse la política para cancelar más búsquedas de actualizaciones programadas.</translation>
 <translation id="355118380775352753">Sitios web que se abren en un navegador alternativo</translation>
 <translation id="3554984410014457319">Permitir que el Asistente de Google escuche la frase de activación de voz</translation>
+<translation id="3557208865710006939">Habilita a la fuerza el corrector ortográfico de idiomas. Se omitirán los idiomas que no se reconozcan en la lista.
+
+      Si se habilita esta política, se habilitará el corrector ortográfico para los idiomas especificados, además de los idiomas en los que el usuario haya habilitado el corrector ortográfico.
+
+      Si esta política no se configura o se inhabilita, no se implementarán cambios en las preferencias del usuario con respecto al corrector ortográfico.
+
+      Si se establece la política <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> como falsa, esta no tendrá efecto.
+
+      Si un idioma aparece en esta política y en la política <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, esta política tendrá prioridad y se habilitará el corrector ortográfico para este idioma.
+
+      Actualmente, los idiomas compatibles son los siguientes: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Los usuarios pueden configurar un canal de versiones del Sistema operativo Chrome</translation>
 <translation id="3575011234198230041">Autenticación HTTP</translation>
 <translation id="3577251398714997599">Configuración de anuncios para sitios con anuncios intrusivos</translation>
@@ -1748,6 +1769,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
           Si no la estableces, inicialmente las teclas especiales estarán inhabilitadas, pero el usuario podrá habilitarlas en cualquier momento.</translation>
+<translation id="4171331498167688968">Si la política se establece como falsa, se permitirá que el software de terceros introduzca código ejecutable en los procesos de Chrome. Si la política no se establece o se establece como verdadera, el software de terceros no podrá introducir código ejecutable en los procesos de Chrome.
+
+      Más allá del valor de esta política, el navegador por el momento no impedirá que software de terceros introduzca código ejecutable en los procesos en una máquina que se una a un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Configuración predeterminada de <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para la validación del token de autenticación del cliente de acceso remoto</translation>
 <translation id="4203389617541558220">Limita el tiempo de actividad del dispositivo mediante la programación de reinicio automático.
@@ -2101,6 +2125,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
 <translation id="5090209345759901501">Extender la configuración del contenido Flash a todo el contenido</translation>
+<translation id="5090791951240382356">Permitir la combinación de políticas de diccionarios con diferentes fuentes</translation>
 <translation id="5093540029655764852">Especifica la frecuencia (en días) con la que un cliente cambia su contraseña de la cuenta de máquina. El cliente genera la contraseña de forma aleatoria, y el usuario no puede verla.
 
       Al igual que las contraseñas de usuario, las contraseñas de la cuenta de máquina deben cambiarse periódicamente. Si inhabilitas esta política, o si se establece una gran cantidad de días, los posibles atacantes disponen de más tiempo para descubrir la contraseña de la cuenta de máquina y usarla.
@@ -3007,6 +3032,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       </translation>
 <translation id="6922884955650325312">Bloquear el complemento <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Especifica el nombre del proveedor de búsqueda predeterminado. Si se deja vacío o si no se configura, se usará el nombre de host especificado por la URL de búsqueda. Esta política solo se considera si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
+<translation id="6924223708804692571">Inhabilita a la fuerza el corrector ortográfico de idiomas. Se omitirán los idiomas que no se reconozcan en esa lista.
+
+      Si habilitas esta política, se inhabilitará el corrector ortográfico para los idiomas especificados. El usuario podrá habilitar o inhabilitar el corrector ortográfico para los idiomas que no están en la lista.
+
+      Si esta política no se configura o se inhabilita, no se implementarán cambios en las preferencias del usuario con respecto al corrector ortográfico.
+
+      Si se establece la política <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> como falsa, esta no tendrá efecto.
+
+      Si un idioma aparece en esta política y en la política <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, esta política tendrá prioridad y se habilitará el corrector ortográfico para este idioma.
+
+      Actualmente, los idiomas compatibles son los siguientes: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Habilitar la impresión doble con bordes largos</translation>
 <translation id="6931242315485576290">Inhabilitar la sincronización de datos con Google</translation>
 <translation id="6936894225179401731">Especifica la cantidad máxima de conexiones simultáneas con el servidor proxy.
@@ -3143,6 +3179,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se configura esta política, se fijará el conjunto de aplicaciones y el usuario no podrá cambiarlo.
 
       Si no se configura esta política, el usuario podrá cambiar la lista de aplicaciones fijas en el menú de aplicaciones.</translation>
+<translation id="713121532817834879">Esta política es una URL que redirecciona a un archivo XML en el mismo formato que la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer. De esta manera, se cargan reglas de un archivo XML sin la necesidad de compartir esas reglas con Internet Explorer.
+
+      Las reglas de este archivo XML se aplican de la misma manera que <ph name="GREYLIST_POLICY_NAME" />, es decir, impiden que <ph name="PRODUCT_NAME" /> abra el navegador alternativo y que el navegador alternativo abra <ph name="PRODUCT_NAME" />.
+
+      Si no se establece la política o no se determina una URL válida, <ph name="PRODUCT_NAME" /> no la utiliza como fuente de reglas para cambiar de navegador.
+
+      Cuando esta política se establece con una URL válida, <ph name="PRODUCT_NAME" /> descarga la lista de sitios de esa URL y aplica las reglas como si se hubieran configurado con la política <ph name="SITELIST_POLICY_NAME" />.
+
+      Para obtener más información sobre la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer, consulta: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Las URL que recibirán acceso a dispositivos de captura de video sin solicitarlo</translation>
 <translation id="7138678301420049075">Otros</translation>
 <translation id="7140629953254369759">Indica a <ph name="PRODUCT_OS_NAME" /> que use la configuración del programador de tareas identificada con el nombre indicado.
@@ -3190,6 +3235,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           La reproducción automática solo se permite para los sitios indicados explícitamente en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Si quieres habilitar la reproducción automática para todos los sitios, agrega http://* y https://* a esta lista.
 
           Si no estableces esta política, el usuario podrá cambiar la configuración de forma manual.</translation>
+<translation id="7222749588229362483">Permite que se combinen las políticas seleccionadas cuando provienen de diferentes fuentes, con los mismos alcances y niveles.
+
+        Esta acción combina las claves de primer nivel del diccionario de cada fuente. En caso de conflicto entre las claves, se aplicará la clave que provenga de la fuente de mayor prioridad.
+
+        Si la lista incluye una política, en caso de que haya un conflicto entre dos fuentes con los mismos alcances y niveles, se fusionarán los valores en un nuevo diccionario de políticas.
+
+        Si la lista incluye una política, en caso de que haya un conflicto entre dos fuentes y entre los alcances y niveles, se aplicará la política con la prioridad más alta.
+
+        Si la lista no incluye una política, en caso de que haya un conflicto entre dos fuentes, alcances o niveles, se aplicará la política con la prioridad más alta.</translation>
 <translation id="7229975860249300121">Contiene una expresión regular que se usa para determinar qué Cuentas de Google se pueden establecer como las principales del navegador en <ph name="PRODUCT_NAME" /> (es decir, la cuenta que se elige en el proceso de aceptación de la sincronización).
 
       Si un usuario intenta establecer una cuenta principal en el navegador con un nombre de usuario que no coincida con este patrón, se mostrará un error.
@@ -3821,6 +3875,12 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si se establece en "Reemplazar", la política del usuario en las GPO del usuario se reemplaza por la política del usuario en las GPO de la computadora (se ignoran las GPO del usuario).</translation>
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
+<translation id="8465746466645315861">Si no se establece esta política, el usuario podrá habilitar o inhabilitar el corrector ortográfico en la configuración de idiomas.
+
+      Si se establece esta política como verdadera, se habilitará el corrector ortográfico y el usuario no podrá inhabilitarlo. En <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> y <ph name="LINUX_OS_NAME" />, se puede activar y desactivar el corrector ortográfico por separado para cada idioma, por lo que el usuario podrá inhabilitarlo desactivando la opción en todos los idiomas. Para evitarlo, es posible usar la política <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> para que el corrector ortográfico quede habilitado en ciertos idiomas.
+
+      Si se establece la política como falsa, el corrector ortográfico estará inhabilitado y el usuario no podrá habilitarlo. Las políticas <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> y <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> no tienen efecto cuando se establece esta política como falsa.
+      </translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre ventanas emergentes</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Recorta las partes confidenciales por motivos de seguridad y privacidad de las URL de https:// antes de enviarlas a secuencias de comandos PAC (Configuración automática de proxy) que usa <ph name="PRODUCT_NAME" /> en la resolución del proxy.

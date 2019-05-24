@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Изменить настройки режима "Не беспокоить"</translation>
 <translation id="2412593942846481727">Доступно обновление</translation>
 <translation id="2413728805700750528">Управляемый сеанс "<ph name="DISPLAY_NAME" />" выполняется в домене <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Подключено к сети "<ph name="NETWORK_NAME" />"</translation>
 <translation id="2427507373259914951">Нажатие на левую кнопку мыши</translation>
 <translation id="2429753432712299108">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Проверьте, отображается ли на нем код: <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Уведомления</translation>
@@ -158,6 +157,7 @@
 <translation id="3308453408813785101">Пользователь <ph name="USER_EMAIL_ADDRESS" /> сможет войти в аккаунт позже.</translation>
 <translation id="3321628682574733415">Неверный родительский код доступа</translation>
 <translation id="332587331255250389">Замените батарею в стилусе.</translation>
+<translation id="3335825575923019462">Вы уверены, что хотите отключить функцию автоматического нажатия?</translation>
 <translation id="3351879221545518001">Вы транслируете изображение своего экрана.</translation>
 <translation id="3364721542077212959">Инструменты стилуса</translation>
 <translation id="3368922792935385530">Подключено</translation>
@@ -216,7 +216,6 @@
 <translation id="4269883910223712419">Администратор этого устройства имеет возможность:</translation>
 <translation id="4279490309300973883">Отражение</translation>
 <translation id="4281007048406351813">Добавить к таймеру 1 мин.</translation>
-<translation id="4292681942966152062">Активация сети "<ph name="NETWORK_NAME" />"</translation>
 <translation id="4296136865091727875">Удалить все уведомления: <ph name="COUNT" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Вы нажали сочетание клавиш для включения режима высокой контрастности. Выполнить это действие?</translation>
@@ -399,6 +398,7 @@
 <translation id="7348093485538360975">Экранная клавиатура</translation>
 <translation id="735745346212279324">VPN-соединение прервано</translation>
 <translation id="7377169924702866686">Включен режим Caps Lock.</translation>
+<translation id="7378594059915113390">Элементы управления медиафайлами</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> сек.</translation>
 <translation id="7398254312354928459">Установлено соединение с другой сетью</translation>
 <translation id="7405710164030118432">Чтобы разблокировать устройство, введите родительский код доступа Family Link.</translation>
@@ -428,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">хороший сигнал</translation>
 <translation id="7837740436429729974">Время истекло</translation>
-<translation id="7842211907556571265">Подключение к сети "<ph name="NETWORK_NAME" />"</translation>
 <translation id="7842569679327885685">Внимание! Экспериментальная функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
 <translation id="7868900307798234037">Экран разблокирован с помощью отпечатка пальца</translation>
@@ -484,6 +483,7 @@
 <translation id="8649101189709089199">Озвучивание при нажатии</translation>
 <translation id="8652175077544655965">Закрыть настройки</translation>
 <translation id="8653151467777939995">Показать настройки уведомлений. Уведомления включены.</translation>
+<translation id="8664483332071009680">Отключить функцию автоматического нажатия?</translation>
 <translation id="8664753092453405566">Показать список сетей. <ph name="STATE_TEXT" />.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Подключено маломощное зарядное устройство</translation>

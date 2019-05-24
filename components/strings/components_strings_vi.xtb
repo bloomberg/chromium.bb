@@ -29,6 +29,7 @@
 <translation id="1113869188872983271">&amp;Hoàn tác sắp xếp lại</translation>
 <translation id="1125573121925420732">Cảnh báo hiển thị khi trang web cập nhật bảo mật là điều bình thường. Việc này sẽ sớm được cải tiến.</translation>
 <translation id="1126551341858583091">Kích thước trên bộ nhớ cục bộ là <ph name="CRASH_SIZE" />.</translation>
+<translation id="1127259989763091435">Xác nhận và lưu thẻ vào Tài khoản Google?</translation>
 <translation id="112840717907525620">Bộ nhớ đệm chính sách OK</translation>
 <translation id="1131264053432022307">Hình ảnh bạn đã sao chép</translation>
 <translation id="1150979032973867961">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
@@ -145,6 +146,7 @@
 <translation id="1656489000284462475">Nhận hàng</translation>
 <translation id="1662550410081243962">Lưu và điền phương thức thanh toán</translation>
 <translation id="1663943134801823270">Thẻ và địa chỉ từ Chrome. Bạn có thể quản lý thẻ và địa chỉ trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
+<translation id="1669987054044193553">Xác nhận và lưu</translation>
 <translation id="1671391448414634642">Kể từ bây giờ trở đi, các trang viết bằng <ph name="SOURCE_LANGUAGE" /> sẽ được dịch sang <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Google Chrome tìm cách kết nối với <ph name="SITE" /> tại thời điểm này, trang web đã gửi lại thông tin đăng nhập không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Google Chrome đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="168841957122794586">Chứng chỉ máy chủ chứa khóa mật mã yếu.</translation>
@@ -206,6 +208,7 @@
     cung cấp một chính sách không hợp lệ, khiến cho trình duyệt
     không hoàn tất được yêu cầu truy cập vào <ph name="SITE" /> của bạn.</translation>
 <translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
+<translation id="202813660234680402">Không, không thêm</translation>
 <translation id="2030481566774242610">Ý của bạn là <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kiểm tra proxy và tường lửa<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch.</translation>
@@ -371,6 +374,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này là từ <ph name="DOMAIN2" />. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="2948083400971632585">Bạn có thể tắt mọi proxy được định cấu hình cho kết nối từ trang cài đặt.</translation>
+<translation id="295526156371527179">Cảnh báo: Chính sách này không phải là từ điển nên không được hợp nhất dưới dạng từ điển như chỉ định trong chính sách.</translation>
 <translation id="2955913368246107853">Đóng thanh tìm</translation>
 <translation id="2969319727213777354">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chrome không thể xác minh các chứng chỉ này.</translation>
 <translation id="2970515157925768593">Có thể thay đổi từ xa quá trình thiết lập tài khoản và thiết bị của bạn.</translation>
@@ -691,6 +695,7 @@
 <translation id="4738601419177586157">Đề xuất tìm kiếm <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Quản lý mật khẩu…</translation>
 <translation id="4744603770635761495">Đường dẫn thực thi</translation>
+<translation id="47454865135383664">Thêm thẻ vào Tài khoản Google?</translation>
 <translation id="4750917950439032686">Thông tin của bạn (ví dụ: mật khẩu hoặc số thẻ tín dụng) sẽ được bảo mật khi được gửi tới trang web này.</translation>
 <translation id="4756388243121344051">&amp;Lịch sử</translation>
 <translation id="4758311279753947758">Thêm thông tin liên hệ</translation>
@@ -786,6 +791,7 @@
 <translation id="5251803541071282808">Đám mây</translation>
 <translation id="5252000469029418751">C7 (Phong bì)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5273658854610202413">Cảnh báo: Chính sách này không được hợp nhất như chỉ định trong chính sách PolicyDictionaryMultipleSourceMergeList vì chính sách này không thuộc các chính sách từ điển có thể hợp nhất.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">Kết thúc</translation>
 <translation id="5284909709419567258">Địa chỉ mạng</translation>
@@ -909,6 +915,7 @@
 <translation id="5922853866070715753">Sắp hoàn tất</translation>
 <translation id="5932224571077948991">Trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
 <translation id="5946937721014915347">Đang mở <ph name="SITE_NAME" />…</translation>
+<translation id="5947933617628957894">Có, thêm</translation>
 <translation id="5951495562196540101">Không thể đăng ký bằng tài khoản người dùng thông thường (có sẵn giấy phép theo gói).</translation>
 <translation id="5967592137238574583">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="5967867314010545767">Xóa khỏi lịch sử</translation>
@@ -986,6 +993,7 @@
 <translation id="6414888972213066896">Bạn đã hỏi cha mẹ mình xem có thể truy cập vào trang này hay không</translation>
 <translation id="6415778972515849510">Chromium có thể giúp bạn bảo vệ Tài khoản Google của mình và đổi mật khẩu.</translation>
 <translation id="6417515091412812850">Không thể kiểm tra liệu chứng chỉ đã bị thu hồi hay chưa.</translation>
+<translation id="6431585503458005759">Không lưu</translation>
 <translation id="6433490469411711332">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> đã từ chối kết nối.</translation>
 <translation id="6434309073475700221">Hủy</translation>
@@ -999,7 +1007,9 @@
 <translation id="6489534406876378309">Bắt đầu tải lên sự cố</translation>
 <translation id="6499038740797743453">Đặt lại mật khẩu?</translation>
 <translation id="6507833130742554667">Thẻ tín dụng và thẻ ghi nợ được chấp nhận.</translation>
+<translation id="650855688985305916">Có, lưu</translation>
 <translation id="6508722015517270189">Khởi động lại Chrome</translation>
+<translation id="6517596291481585650">Cảnh báo: Chính sách này không phải là danh sách nên không được hợp nhất dưới dạng danh sách như chỉ định trong chính sách.</translation>
 <translation id="6529602333819889595">&amp;Làm lại xóa</translation>
 <translation id="6534179046333460208">Đề xuất Web trong cuộc sống</translation>
 <translation id="6554795675067793129">Tài khoản của bạn do <ph name="ENROLLMENT_DOMAIN" /> quản lý.</translation>
@@ -1025,6 +1035,7 @@
 <translation id="6670613747977017428">Quay lại trang an toàn.</translation>
 <translation id="6671697161687535275">Bạn muốn xóa đề xuất biểu mẫu khỏi Chromium?</translation>
 <translation id="6685834062052613830">Đăng xuất và hoàn thành quá trình thiết lập</translation>
+<translation id="6689271823431384964">Chrome đang đề xuất lưu thẻ của bạn vào Tài khoản Google vì bạn đã đăng nhập. Bạn có thể thay đổi hành động này trong phần cài đặt. Tên chủ thẻ được lấy từ tài khoản của bạn.</translation>
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="6710594484020273272">&lt;Nhập cụm từ tìm kiếm&gt;</translation>
 <translation id="671076103358959139">Mã đăng ký:</translation>
@@ -1134,6 +1145,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7313965965371928911">Cảnh báo <ph name="BEGIN_LINK" />Duyệt web an toàn<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Trợ giúp kết nối</translation>
+<translation id="733354035281974745">Ghi đè tài khoản trên thiết bị</translation>
 <translation id="7334320624316649418">&amp;Làm lại sắp xếp lại</translation>
 <translation id="733923710415886693">Chứng chỉ của máy chủ đã không được tiết lộ qua Tính minh bạch của chứng chỉ.</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1339,6 +1351,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Nếu bạn hiểu các rủi ro về bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang này<ph name="END_LINK" /> trước khi các chương trình độc hại bị xóa.</translation>
 <translation id="8349305172487531364">Thanh dấu trang</translation>
+<translation id="836241887727198552">Lưu thẻ vào Tài khoản Google?</translation>
 <translation id="8363502534493474904">Tắt chế độ trên máy bay</translation>
 <translation id="8364627913115013041">Chưa được đặt.</translation>
 <translation id="8368476060205742148">Dịch vụ của Google Play</translation>
@@ -1381,6 +1394,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8620436878122366504">Cha mẹ của bạn chưa phê duyệt trang web</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Lưu thẻ này vào thiết bị này</translation>
+<translation id="8626112503828625890">Lưu chi tiết thanh toán vào Tài khoản Google?</translation>
 <translation id="8663226718884576429">Tóm tắt đơn hàng, <ph name="TOTAL_LABEL" />, chi tiết khác</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, câu trả lời, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>

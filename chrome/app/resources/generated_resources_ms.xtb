@@ -1225,6 +1225,7 @@
 <translation id="2870909136778269686">Mengemas kini...</translation>
 <translation id="2871813825302180988">Akaun ini telah digunakan pada peranti ini.</translation>
 <translation id="287286579981869940">Tambahkan <ph name="PROVIDER_NAME" />...</translation>
+<translation id="2872961005593481000">Mematikan</translation>
 <translation id="2874343608108773609">Log masuk ke Chrome untuk mendapatkan kata laluan pada semua peranti anda.</translation>
 <translation id="2874939134665556319">Lagu sebelumnya</translation>
 <translation id="2875698561019555027">(Halaman ralat Chrome)</translation>
@@ -2888,7 +2889,6 @@
 <translation id="5518584115117143805">Sijil Penyulitan E-mel</translation>
 <translation id="5521078259930077036">Adakah ini halaman utama yang anda jangkakan?</translation>
 <translation id="5522156646677899028">Sambungan ini mengandungi kelemahan keselamatan yang serius.</translation>
-<translation id="5523201311986093262">Latar belakang</translation>
 <translation id="5525677322972469346">Buat pengguna di bawah seliaan baharu</translation>
 <translation id="5526701598901867718">Semua (tidak selamat)</translation>
 <translation id="5526745900034778153">Log masuk sekali lagi untuk menyambung semula penyegerakan</translation>
@@ -3572,7 +3572,6 @@
 <translation id="656293578423618167">Laluan atau nama fail terlalu panjang. Sila simpan dengan nama yang lebih pendek atau ke lokasi lain.</translation>
 <translation id="6567688344210276845">Tidak dapat memuatkan ikon '<ph name="ICON" />' untuk tindakan halaman.</translation>
 <translation id="6571979863037191371">Putuskan sambungan telefon anda daripada Chromebook. Kedua-dua peranti ini tidak akan menyambung secara automatik lagi.</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> tidak biasa dimuat turun dan mungkin berbahaya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="657402800789773160">&amp;Muatkan Semula Halaman Ini</translation>
 <translation id="6577284282025554716">Muat turun dibatalkan: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Sulitkan kata laluan yang disegerakkan dengan nama pengguna dan kata laluan Google anda</translation>
@@ -5182,7 +5181,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Kemas kini kata laluan untuk <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Akses kepada fail setempat pada mesin anda dilumpuhkan oleh pentadbir anda</translation>
-<translation id="9041909613332246191">Fail ini tidak lazim dimuat turun dan mungkin berbahaya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="9042858701776831292">Aplikasi Gedung Google Play mungkin memerlukan akses kepada peranti storan luar untuk membaca dan menulis fail dan folder padanya.</translation>
 <translation id="9042893549633094279">Privasi dan keselamatan</translation>
 <translation id="904451693890288097">Sila masukkan kekunci laluan untuk "<ph name="DEVICE_NAME" />":</translation>
@@ -5269,7 +5267,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9179734824669616955">Sediakan Linux (Beta) pada <ph name="DEVICE_TYPE" /> anda</translation>
 <translation id="9180281769944411366">Proses ini mungkin mengambil masa beberapa minit. Memulakan bekas Linux.</translation>
 <translation id="9180380851667544951">Tapak boleh berkongsi skrin anda</translation>
-<translation id="9185926955514281189">Warna dan tema</translation>
 <translation id="9188441292293901223">Sila kemas kini telefon anda kepada versi Android yang lebih baharu untuk membuka kunci <ph name="DEVICE_TYPE" /> ini.</translation>
 <translation id="9188732951356337132">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK2" />Ketahui Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + kekunci praperkongsian</translation>

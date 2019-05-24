@@ -32,7 +32,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1929939181775079593">Chromium nereaguje. Chcete ho spustiť znova?</translation>
 <translation id="1966382378801805537">Chromium nedokáže určiť alebo nastaviť predvolený prehliadač</translation>
 <translation id="2008474315282236005">Táto akcia odstráni zo zariadenia jednu položku. Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do prehliadača Chromium ako <ph name="USER_EMAIL" />.</translation>
-<translation id="2037988709973327241"><ph name="FILE_NAME" /> je nebezpečný súbor, a preto ho Chromium zablokoval. Bráni vás rozšírená ochrana.</translation>
 <translation id="2117378023188580026">Správca vás žiada o reštartovanie prehliadača Chromium na použitie tejto aktualizácie</translation>
 <translation id="2119636228670142020">Informácie o systéme &amp;Chromium OS</translation>
 <translation id="2178765360243863853">Mali by ste reštartovať Chromium</translation>
@@ -65,7 +64,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3068515742935458733">Pomôcť zlepšiť prehliadač Chromium odosielaním správ o zlyhaní a <ph name="UMA_LINK" /> spoločnosti Google</translation>
 <translation id="3103660991484857065">Inštalačný program pri dekomprimácii archívu zlyhal. Stiahnite prehliadač Chromium znova.</translation>
 <translation id="3130323860337406239">Chromium používa váš mikrofón.</translation>
-<translation id="3154325651427862069"><ph name="FILE_NAME" /> môže byť nebezpečný súbor, a preto ho Chromium zablokoval. Bráni vás rozšírená ochrana.</translation>
 <translation id="3155163173539279776">Znova spustiť prehliadač Chromium</translation>
 <translation id="3179665906251668410">Otvoriť odkaz v okne inko&amp;gnito prehliadača Chromium</translation>
 <translation id="3190315855212034486">Prehliadač Chromium zlyhal. Chcete ho spustiť znova?</translation>
@@ -93,7 +91,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="388648406173476553">Prispôsobte a ovládajte Chromium. Vyžaduje sa vaša pozornosť. Podrobnosti získate kliknutím.</translation>
 <translation id="3889543394854987837">Ak chcete otvoriť prehliadač Chromium a začať prehliadať, kliknite na svoje meno.</translation>
 <translation id="3898493977366060150">Prehliadanie webu pomocou inteligentných doplnkov Googlu</translation>
-<translation id="3931244652999881512">Tento súbor je nebezpečný, a preto ho prehliadač Chromium zablokoval. Bráni vás rozšírená ochrana.</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS sa reštartuje o 1 hodinu}few{Chromium OS sa reštartuje o # hodiny}many{Chromium OS sa reštartuje o # hodiny}other{Chromium OS sa reštartuje o # hodín}}</translation>
 <translation id="4036079820698952681">Nahláste <ph name="BEGIN_LINK" />aktuálne nastavenia<ph name="END_LINK" /> a pomôžte tak zlepšiť prehliadač Chromium</translation>
 <translation id="4050175100176540509">V najnovšej verzii sú k dispozícii dôležité vylepšenia zabezpečenia a nové funkcie.</translation>
@@ -142,7 +139,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5680901439334282664">prihláste sa do prehliadača Chromium</translation>
 <translation id="5698481217667032250">Zobraziť Chromium v tomto jazyku</translation>
 <translation id="5712253116097046984">Správca vás žiada o reštartovanie systému Chromium OS na použitie tejto aktualizácie</translation>
-<translation id="5726979195371243087">Tento súbor môže byť nebezpečný, a preto ho prehliadač Chromium zablokoval. Bráni vás rozšírená ochrana.</translation>
 <translation id="5756484659843248772">V tomto jazyku sa zobrazuje používateľské rozhranie systému Chromium OS</translation>
 <translation id="5768914737813585044">Zobraziť Chromium OS v tomto jazyku</translation>
 <translation id="5796460469508169315">Prehliadač Chromium je takmer pripravený</translation>

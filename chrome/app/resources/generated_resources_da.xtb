@@ -1222,6 +1222,7 @@
 <translation id="2870909136778269686">Opdaterer…</translation>
 <translation id="2871813825302180988">Denne konto anvendes allerede på denne enhed.</translation>
 <translation id="287286579981869940">Tilføj <ph name="PROVIDER_NAME" />...</translation>
+<translation id="2872961005593481000">Sluk</translation>
 <translation id="2874343608108773609">Log ind på Chrome for at få dine adgangskoder på alle dine enheder.</translation>
 <translation id="2874939134665556319">Forrige nummer</translation>
 <translation id="2875698561019555027">(Chrome-fejlsider)</translation>
@@ -2885,7 +2886,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5518584115117143805">Certifikat til kryptering af mail</translation>
 <translation id="5521078259930077036">Var det den startside, du forventede?</translation>
 <translation id="5522156646677899028">Denne udvidelse indeholder en alvorlig sikkerhedsbrist.</translation>
-<translation id="5523201311986093262">Baggrunde</translation>
 <translation id="5525677322972469346">Opret en ny administreret bruger</translation>
 <translation id="5526701598901867718">Alle (ikke sikkert)</translation>
 <translation id="5526745900034778153">Log ind igen for at genoptage synkroniseringen</translation>
@@ -3570,7 +3570,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="656293578423618167">Filstien eller -navnet er for langt. Gem med et kortere navn eller på en anden placering.</translation>
 <translation id="6567688344210276845">Ikonet '<ph name="ICON" />' for sidehandling kunne ikke indlæses.</translation>
 <translation id="6571979863037191371">Afbryd forbindelsen mellem din telefon og din Chromebook. Der oprettes ikke længere automatisk forbindelse.</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> downloades normalt ikke og kan være skadelig. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="657402800789773160">&amp;Genindlæs denne side</translation>
 <translation id="6577284282025554716">Downloaden blev annulleret: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Kryptér synkroniserede adgangskoder med brugernavnet og adgangskoden til din Google-konto</translation>
@@ -5179,7 +5178,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Vil du opdatere adgangskoden til <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Din administrator har deaktiveret adgangen til lokale filer på din maskine</translation>
-<translation id="9041909613332246191">Denne fil downloades normalt ikke og kan være skadelig. Du beskyttes af Avanceret beskyttelse.</translation>
 <translation id="9042858701776831292">Apps i Google Play Butik kan kræve adgang til eksterne lagerenheder for at læse og skrive filer og mapper på dem.</translation>
 <translation id="9042893549633094279">Sikkerhed og privatliv</translation>
 <translation id="904451693890288097">Angiv adgangskoden for "<ph name="DEVICE_NAME" />":</translation>
@@ -5266,7 +5264,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9179734824669616955">Konfigurer Linux (beta) på din <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">Denne proces kan tage et par minutter. Linux-containeren startes.</translation>
 <translation id="9180380851667544951">Websitet kan dele din skærm</translation>
-<translation id="9185926955514281189">Farver og temaer</translation>
 <translation id="9188441292293901223">Opdater din telefon til en nyere version af Android for at låse denne <ph name="DEVICE_TYPE" /> op.</translation>
 <translation id="9188732951356337132">Send brugs- og diagnosticeringsdata. Denne enhed sender i øjeblikket automatisk diagnosticerings- og enhedsdata samt data om brug af apps til Google. Disse data bruges ikke til at identificere dit barn. De bruges kun til forbedring af bl.a. systemets og appens stabilitet. Visse samlede data hjælper også Google-apps og -partnere, f.eks. Android-udviklere. Hvis indstillingen til yderligere web- og appaktivitet er aktiveret for dit barn, gemmes disse data muligvis på barnets Google-konto. <ph name="BEGIN_LINK2" />Få flere oplysninger<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + forhåndsdelt nøgle</translation>

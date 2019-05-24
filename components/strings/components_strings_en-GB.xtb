@@ -135,6 +135,7 @@
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Can't save card</translation>
 <translation id="1639239467298939599">Loading</translation>
 <translation id="1640180200866533862">User policies</translation>
 <translation id="1640244768702815859">Try <ph name="BEGIN_LINK" />visiting the site's homepage<ph name="END_LINK" />.</translation>
@@ -243,6 +244,7 @@
 <translation id="2230458221926704099">Fix your connection using the <ph name="BEGIN_LINK" />diagnostics app<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Send now</translation>
 <translation id="225207911366869382">This value is deprecated for this policy.</translation>
+<translation id="2257315177824333709">Sorry, your card can't be saved at the moment</translation>
 <translation id="2262243747453050782">HTTP error</translation>
 <translation id="2263079731045660823">Update credit card auto-fill info in Chrome settings</translation>
 <translation id="2270484714375784793">Phone number</translation>
@@ -272,6 +274,7 @@
 <translation id="2392959068659972793">Show policies with no value set</translation>
 <translation id="239429038616798445">This delivery method isn’t available. Try a different method.</translation>
 <translation id="2396249848217231973">&amp;Undo delete</translation>
+<translation id="2409589295040002961">Your administrator can change your browser setup remotely. Activity on this device may also be managed outside of Chrome. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="2418081434543109369">The server that you are going to, <ph name="ORIGIN" />, has requested that a security policy will be applied to all requests to it. But it has now failed to deliver a policy, which prevents the browser from fulfilling your request for <ph name="SITE" />.</translation>
@@ -332,6 +335,7 @@
 <translation id="2721148159707890343">Request succeeded</translation>
 <translation id="2728127805433021124">Server's certificate is signed using a weak signature algorithm.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Running Connectivity Diagnostics<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">More than one source with conflicting values is present for this policy!</translation>
 <translation id="2738330467931008676">Choose pickup address</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Remove selected items</translation>
@@ -989,6 +993,7 @@
 <translation id="6433490469411711332">Edit contact info</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> refused to connect.</translation>
 <translation id="6434309073475700221">Discard</translation>
+<translation id="6440503408713884761">Ignored</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Add more information</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1004,6 +1009,7 @@
 <translation id="6517596291481585650">Warning: This policy was not merged as a list as specified by policy because it is not a list.</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
 <translation id="6534179046333460208">Physical Web suggestions</translation>
+<translation id="6545864417968258051">Bluetooth scanning</translation>
 <translation id="6554795675067793129">Your account is managed by <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Redo</translation>
 <translation id="6563469144985748109">Your manager hasn't approved it yet</translation>
@@ -1020,6 +1026,7 @@
 <translation id="6626291197371920147">Add valid card number</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
 <translation id="6630809736994426279">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to install dangerous programs on your Mac that steal or delete your information (for example, photos, passwords, messages and credit cards). <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">More than one source is present for the policy, but the values are the same.</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{None}=1{From 1 site (you won't be signed out of your Google Account)}other{From # sites (you won't be signed out of your Google Account)}}</translation>

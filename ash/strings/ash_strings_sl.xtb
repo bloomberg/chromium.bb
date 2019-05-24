@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Preklop načina »ne moti«</translation>
 <translation id="2412593942846481727">Na voljo je posodobitev</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> je upravljana seja, ki jo upravlja <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Povezava z omrežjem <ph name="NETWORK_NAME" /> je vzpostavljena</translation>
 <translation id="2427507373259914951">Levi klik</translation>
 <translation id="2429753432712299108">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi dovoljenje za seznanjanje. Preden sprejmete, se prepričajte, da je na napravi prikazano to geslo: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Obvestila</translation>
@@ -158,6 +157,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se še vedno lahko prijavi pozneje.</translation>
 <translation id="3321628682574733415">Nepravilna koda starša</translation>
 <translation id="332587331255250389">Zamenjajte baterijo</translation>
+<translation id="3335825575923019462">Ali ste prepričani, da želite onemogočiti samodejne klike?</translation>
 <translation id="3351879221545518001">Trenutno predvajate vsebino zaslona.</translation>
 <translation id="3364721542077212959">Orodja pisala</translation>
 <translation id="3368922792935385530">Povezano</translation>
@@ -216,7 +216,6 @@
 <translation id="4269883910223712419">Skrbniku te naprave je omogočeno to:</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4281007048406351813">Dodaj 1 min časovniku</translation>
-<translation id="4292681942966152062">Aktiviranje omrežja <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Izbris vseh <ph name="COUNT" /> obvestil</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Pritisnili ste bližnjično tipko za visoki kontrast. Ali ga želite vklopiti?</translation>
@@ -399,6 +398,7 @@
 <translation id="7348093485538360975">Zaslonska tipkovnica</translation>
 <translation id="735745346212279324">Povezava z navideznim zasebnim omrežjem je prekinjena</translation>
 <translation id="7377169924702866686">Tipka Caps Lock je vklopljena.</translation>
+<translation id="7378594059915113390">Kontrolniki predstavnosti</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />.<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Preklopljena omrežna povezava</translation>
 <translation id="7405710164030118432">Če želite odkleniti napravo, vnesite kodo starša za dostop iz Family Linka.</translation>
@@ -428,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> in <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Močan signal</translation>
 <translation id="7837740436429729974">Čas je potekel</translation>
-<translation id="7842211907556571265">Vzpostavljanje povezave z omrežjem <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Opozorilo: poskusna funkcija</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>
 <translation id="7868900307798234037">Odklepanje s prstnim odtisom</translation>
@@ -484,6 +483,7 @@
 <translation id="8649101189709089199">Izberite in poslušajte</translation>
 <translation id="8652175077544655965">Zapiranje nastavitev</translation>
 <translation id="8653151467777939995">Prikaz nastavitev obvestil. Obvestila so vklopljena.</translation>
+<translation id="8664483332071009680">Želite onemogočiti samodejne klike?</translation>
 <translation id="8664753092453405566">Prikaz seznama omrežij. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Priključen je nizkoenergijski polnilnik</translation>

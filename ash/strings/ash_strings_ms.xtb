@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Togol Jangan ganggu</translation>
 <translation id="2412593942846481727">Kemas kini tersedia</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ialah sesi terurus yang diurus oleh <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Disambungkan ke <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Klik kiri</translation>
 <translation id="2429753432712299108">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sebelum menerimanya, sila sahkan bahawa kekunci laluan ini dipaparkan pada peranti tersebut: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
@@ -218,7 +217,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4269883910223712419">Pentadbir peranti ini berkeupayaan untuk:</translation>
 <translation id="4279490309300973883">Pencerminan</translation>
 <translation id="4281007048406351813">Tambah 1 min pada pemasa</translation>
-<translation id="4292681942966152062">Mengaktifkan <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Kosongkan kesemua <ph name="COUNT" /> pemberitahuan</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Anda menekan pintasan papan kekunci untuk kontras tinggi. Adakah anda ingin menghidupkannya?</translation>
@@ -431,7 +429,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> dan <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Isyarat kuat</translation>
 <translation id="7837740436429729974">Masa tamat</translation>
-<translation id="7842211907556571265">Menyambung ke <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Amaran: Ciri percubaan</translation>
 <translation id="7846634333498149051">Papan kekunci</translation>
 <translation id="7868900307798234037">Membuka kunci dengan cap jari</translation>

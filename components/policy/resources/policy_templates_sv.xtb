@@ -1073,6 +1073,7 @@
       Om principen AutoplayAllowed är inställd på Falskt tillåts automatisk uppspelning fortfarande för alla webbadressmönster som angetts i den här principen.
 
       Observera att om principen ändras medan <ph name="PRODUCT_NAME" /> körs gäller principen bara för nya flikar som öppnas. Därför kan vissa flikar fortfarande fungera som de gjorde innan.</translation>
+<translation id="284288632677954003">Webbadress till en XML-fil som innehåller webbadresser som aldrig ska aktivera ett webbläsarbyte.</translation>
 <translation id="285480231336205327">Aktivera läge för hög kontrast</translation>
 <translation id="2854919890879212089">Gör att datorns standardskrivare används som standardval för Förhandsgranskning i <ph name="PRODUCT_NAME" /> i stället för den senast använda skrivaren.
 
@@ -1245,6 +1246,15 @@
 <translation id="3096595567015595053">Lista med aktiverade plugin-program</translation>
 <translation id="3101501961102569744">Välj hur inställningar för proxyserver ska anges</translation>
 <translation id="3101709781009526431">Datum och tid</translation>
+<translation id="3114411414586006215">Den här principen styr listan med webbplatser som aldrig aktiverar ett webbläsarbyte.
+
+      Observera att element även kan läggas till i listan via principen <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Om den här principen inte är inställd läggs inga webbplatser till i listan.
+
+      När den här principen har ställts in hanteras varje punkt som en regel på samma sätt som principen <ph name="URL_LIST_POLICY_NAME" />. Logiken är dock omvänd: regler som matchar öppnar inte en alternativ webbläsare.
+
+      Till skillnad från <ph name="URL_LIST_POLICY_NAME" /> tillämpas regler i båda riktningarna. Det innebär att när tillägg finns och är aktiverade i Internet Explorer, styr den även om <ph name="IE_PRODUCT_NAME" /> ska öppna dessa webbadresser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Varning: DHE kommer att helt tas bort från <ph name="PRODUCT_NAME" /> efter version 57 (runt mars 2017) och den här principen upphör då att fungera.
 
       Om principen inte har ställts in eller är inställd på falskt kommer DHE-krypteringssviter i TLS inte att aktiveras. Principen kan ställas in som sant för att aktivera DHE-krypteringssviter och om kompatibilitet med en föråldrad server önskas bibehållas. Detta är en nödlösning, och servern bör omkonfigureras.
@@ -1443,6 +1453,17 @@
 <translation id="3550875587920006460">Gör det möjligt att ställa in ett anpassat schema för sökning efter uppdateringar. Detta gäller alla användare och alla gränssnitt på enheten. Om principen anges söker enheten efter uppdateringar utifrån detta schema. Om inga fler schemalagda sökningar efter uppdateringar ska göras måste principen tas bort.</translation>
 <translation id="355118380775352753">Webbplatser som ska öppnas i alternativa webbläsare</translation>
 <translation id="3554984410014457319">Tillåt Google-assistenten att lyssna efter röstaktiveringsfrasen</translation>
+<translation id="3557208865710006939">Aktivera alltid språk för stavningskontroll. Okända språk i listan ignoreras.
+
+      När principen är aktiverad aktiveras stavningskontroll på de angivna språken, utöver de språk som användaren har aktiverat stavningskontroll för.
+
+      Om principen inte ställs in eller inaktiveras gäller användarens inställningar för stavningskontroll som de är.
+
+      Om principen <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> är inställd på falskt har den här principen ingen effekt.
+
+      Om ett språk ingår i både den här principen och principen <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, prioriteras den här principen och språket för stavningskontroll aktiveras.
+
+      För närvarande stöds följande språk: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Användare kan konfigurera lanseringskanalen för Chrome OS</translation>
 <translation id="3575011234198230041">HTTP-autentisering</translation>
 <translation id="3577251398714997599">Annonsinställningar för webbplatser med påträngande annonser</translation>
@@ -1787,6 +1808,9 @@
           Om principen har ställts in kan användarna inte ändra eller åsidosätta den.
 
           Om principen saknar inställning är tröga tangenter inaktiverat från start, men funktionen kan aktiveras av användaren när som helst.</translation>
+<translation id="4171331498167688968">Om principen är inställd på falskt är det tillåtet för programvara från tredje part att injicera körbar kod i Chrome-processer. Om principen har lämnats utan inställning eller ställts in på sant blockeras injicering av körbar kod i Chrome-processer från tredjepartsprogram.
+
+      Oavsett principens värde kommer webbläsaren inte att förhindra att tredjepartsprogram injicerar körbar kod i dess processer på en dator som ingår i en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="4183229833636799228">Standardinställning för <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Webbadress för validering av autentiseringstoken för fjärråtkomstklient</translation>
 <translation id="4203389617541558220">Begränsa enhetens drifttid genom att schemalägga automatiska omstarter.
@@ -2155,6 +2179,7 @@
           Den här principen är bara tillgänglig i Windows-instanser som är kopplade till en <ph name="MS_AD_NAME" />-domän, eller i Windows 10 Pro- eller Enterprise-instanser som är registrerade i enhetshantering.</translation>
 <translation id="5085647276663819155">Inaktivera förhandsgranskning av utskrift</translation>
 <translation id="5090209345759901501">Utöka inställningen för Flash-innehåll till allt innehåll</translation>
+<translation id="5090791951240382356">Tillåt att ordboksprinciper från olika källor kombineras</translation>
 <translation id="5093540029655764852">Anger frekvensen (i dagar) med vilken en klient byter lösenordet till kontot på sin lokala dator. Lösenordet genereras slumpmässigt av klienten och är inte synligt för användaren.
 
       Datorns lösenord bör ändras regelbundet, precis som användarnas lösenord. Om principen inaktiveras eller ett stort antal dagar mellan ändringarna anges kan det ha en negativ inverkan på säkerheten eftersom obehöriga får längre tid på sig att kapa och utnyttja datorns lösenord.
@@ -3102,6 +3127,17 @@
 <translation id="6923366716660828830">Policyn anger namnet på standardsökleverantören. Om värdet lämnas tomt eller inte anges används det värdnamn som angavs av sökadressen.
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="6924223708804692571">Inaktivera alltid språk för stavningskontroll. Okända språk i listan ignoreras.
+
+      När principen är aktiverad inaktiveras stavningskontroll på de angivna språken. Användarna kan fortfarande aktivera eller inaktivera stavningskontroll på språk som inte finns i listan.
+
+      Om principen inte ställs in eller inaktiveras gäller användarens inställningar för stavningskontroll som de är.
+
+      Om principen <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> är inställd på falskt har den här principen ingen effekt.
+
+      Om ett språk är med i både den här principen och principen <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, prioriteras den senare och språket för stavningskontroll aktiveras.
+
+      För närvarande stöds följande språk: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Aktivera stående dubbelsidig utskrift</translation>
 <translation id="6931242315485576290">Inaktivera synkronisering av data med Google</translation>
 <translation id="6936894225179401731">Policyn anger det maximala antalet anslutningar till proxyservern som kan göras samtidigt.
@@ -3250,6 +3286,15 @@
       Om den här policyn är konfigurerad är appuppsättningen fast och kan inte ändras av användaren.
 
       Om den här policyn inte ställs in kan användaren ändra listan med fasta appar i startfältet.</translation>
+<translation id="713121532817834879">Den här principen är en webbadress som pekar på en XML-fil med samma format som Internet Explorers princip <ph name="IEEM_SITELIST_POLICY" />. Detta läser in regler från en XML-fil utan att reglerna delas med Internet Explorer.
+
+      Reglerna i XML-filen gäller på samma sätt som <ph name="GREYLIST_POLICY_NAME" />. Reglerna förhindrar alltså att <ph name="PRODUCT_NAME" /> öppnar den alternativa webbläsaren och att den alternativa webbläsaren öppnar <ph name="PRODUCT_NAME" />.
+
+      När principen saknar inställning eller inte har ställts in på en giltig webbadress använder <ph name="PRODUCT_NAME" /> den inte som källa till regler som inte aktiverar ett webbläsarbyte.
+
+      När principen är inställd på en giltig webbadress hämtar <ph name="PRODUCT_NAME" /> webbplatslistan från webbadressen och tillämpar reglerna som om de hade konfigurerats med principen <ph name="SITELIST_POLICY_NAME" />.
+
+      Mer information om principen <ph name="IEEM_SITELIST_POLICY" /> i Internet Explorer finns på https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Webbadresser som ska beviljas åtkomst till videoinspelningsenheter utan meddelande</translation>
 <translation id="7138678301420049075">Övrigt</translation>
 <translation id="7140629953254369759">Anger att schemaläggningskonfigurationen med det angivna namnet ska användas i <ph name="PRODUCT_OS_NAME" />.
@@ -3298,6 +3343,15 @@
           Automatisk uppspelning tillåts endast för domäner som har angetts i principen <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Om du vill aktivera automatisk uppspelning för alla webbplatser kan du lägga till http://* och https://* på denna lista.
 
           Om denna princip inte anges kan användaren ändra denna inställning manuellt.</translation>
+<translation id="7222749588229362483">Valda principer med samma omfattning och nivå kan slås samman när de kommer från olika källor.
+
+        Sammanslagningen består i att nycklar på första nivån i ordboken från varje källa slås samman. Om det finns en konflikt mellan nycklar används nyckeln från den källa som har högst prioritet.
+
+        Om en princip finns i listan slås värdena samman i en ny principordbok om det uppstår en konflikt mellan två källor och dessa har samma omfattning och nivå.
+
+        Om en princip finns i listan och det uppstår en konflikt mellan två källor som har olika omfattning och/eller nivå tillämpas principen med högst prioritet.
+
+        Om en princip inte finns i listan och det uppstår en konflikt mellan källorna, omfattningen och/eller nivån tillämpas principen med högst prioritet.</translation>
 <translation id="7229975860249300121">Innehåller ett reguljärt uttryck som används för att styra vilka Google-konton som får vara primärt webbläsarkonto i <ph name="PRODUCT_NAME" /> (dvs. det konto som anges i samband med valet att använda synkronisering).
 
       Ett felmeddelande visas om en användare försöker ange ett primärt webbläsarkonto med ett användarnamn som inte matchar detta mönster. 
@@ -3932,6 +3986,12 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       Om Replace anges för principen ersätts användarpolicyn i användarens GPO:er av användarpolicyn i datorns GPO:er (användarens GPO:er ignoreras).</translation>
 <translation id="8465065632133292531">Parametrar för webbadress för Instant som använder POST</translation>
+<translation id="8465746466645315861">Om principen inte är inställd kan användarna aktivera eller inaktivera stavningskontroll i språkinställningarna.
+
+      Om principen är inställd på sant är stavningskontroll aktiverad och kan inte inaktiveras av användarna. I <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> och <ph name="LINUX_OS_NAME" /> kan språk för stavningskontroll aktiveras och inaktiveras var för sig, så användaren kan fortfarande inaktivera stavningskontroll genom att stänga av alla språk. Du kan undvika detta genom att ställa in principen <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> så att specifika språk måste vara aktiverade.
+
+      Om principen är inställd på falskt är stavningskontroll inaktiverad och kan inte aktiveras av användaren. Principerna <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> och <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> har ingen effekt när den här principen är inställd på falskt.
+      </translation>
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Principen gör att webbadresser som använder https:// rensas på delar som kan vara känsliga i sekretess- eller säkerhetshänseende innan webbadresserna skickas vidare till PAC-skript (Proxy Auto Config) som används av <ph name="PRODUCT_NAME" /> vid proxymatchning.

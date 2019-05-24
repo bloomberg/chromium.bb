@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Укључите/искључите Не узнемиравај</translation>
 <translation id="2412593942846481727">Доступно је ажурирање</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> је сесија којом управља <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Повезани сте са мрежом <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Леви клик</translation>
 <translation id="2429753432712299108">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Пре него што му је дате, уверите се да је ова шифра приказана на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Обавештења</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">Администратор овог уређаја може:</translation>
 <translation id="4279490309300973883">Пресликавање</translation>
 <translation id="4281007048406351813">Додај 1 мин у тајмер</translation>
-<translation id="4292681942966152062">Активира се <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Обришите сва обавештења (<ph name="COUNT" />)</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Притиснули сте тастерску пречицу за високи контраст. Желите ли да је укључите?</translation>
@@ -430,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Јак сигнал</translation>
 <translation id="7837740436429729974">Време је истекло</translation>
-<translation id="7842211907556571265">Повезујете се са мрежом <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Упозорење: Експериментална функција</translation>
 <translation id="7846634333498149051">Тастатура</translation>
 <translation id="7868900307798234037">Откључавање помоћу отиска прста</translation>

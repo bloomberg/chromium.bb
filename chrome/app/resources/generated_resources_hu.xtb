@@ -1225,6 +1225,7 @@
 <translation id="2870909136778269686">Frissítés...</translation>
 <translation id="2871813825302180988">Ez a fiók már használatban van ezen az eszközön.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> hozzáadása...</translation>
+<translation id="2872961005593481000">Leállítás</translation>
 <translation id="2874343608108773609">Ha az összes eszközén szeretné elérni könyvjelzőit, jelentkezzen be a Chrome-ba.</translation>
 <translation id="2874939134665556319">Előző szám</translation>
 <translation id="2875698561019555027">(Chrome-hibaoldalak)</translation>
@@ -2888,7 +2889,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5518584115117143805">E-mail titkosítási tanúsítvány</translation>
 <translation id="5521078259930077036">Erre a kezdőoldalra számított?</translation>
 <translation id="5522156646677899028">Ez a bővítmény komoly biztonsági rést tartalmaz.</translation>
-<translation id="5523201311986093262">Hátterek</translation>
 <translation id="5525677322972469346">Új felügyelt felhasználó létrehozása</translation>
 <translation id="5526701598901867718">Mind (nem biztonságos)</translation>
 <translation id="5526745900034778153">Jelentkezzen be a szinkronizálás folytatásához</translation>
@@ -3573,7 +3573,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="656293578423618167">A fájl elérési útja vagy neve túl hosszú. Kérjük, mentse rövidebb névvel, illetve másik helyre.</translation>
 <translation id="6567688344210276845">Nem sikerült a(z) '<ph name="ICON" />' ikon betöltése az oldalművelethez.</translation>
 <translation id="6571979863037191371">Telefon leválasztása a Chromebookról. Ezt követően nem kapcsolódnak majd egymáshoz automatikusan.</translation>
-<translation id="6573998787994398565">A(z) <ph name="FILE_NAME" /> fájlt nem gyakran töltik le, és veszélyes lehet. Az Ön biztonságáról a Speciális védelem gondoskodik.</translation>
 <translation id="657402800789773160">Az oldal új&amp;ratöltése</translation>
 <translation id="6577284282025554716">Letöltés megszakítva: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Szinkronizált jelszavak titkosítása Google-felhasználónevével és -jelszavával</translation>
@@ -5182,7 +5181,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Szeretné frissíteni a(z) <ph name="ORIGIN" /> jelszavát?</translation>
 <translation id="9041692268811217999">A rendszergazda letiltotta a számítógép helyi fájljaihoz való hozzáférést</translation>
-<translation id="9041909613332246191">Ezt a fájlt nem töltik le gyakran, és veszélyes lehet. Az Ön biztonságáról a Speciális védelem gondoskodik.</translation>
 <translation id="9042858701776831292">A Google Play Áruház alkalmazásai hozzáférést kérhetnek a külső tárolóeszközökhöz, hogy olvasni tudják a rajtuk lévő fájlokat és mappákat, illetve írni tudjanak rájuk.</translation>
 <translation id="9042893549633094279">Adatvédelem és biztonság</translation>
 <translation id="904451693890288097">Kérjük, adja meg a(z) "<ph name="DEVICE_NAME" />" jelszavát:</translation>
@@ -5269,7 +5267,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="9179734824669616955">A Linux (béta) beállítása a(z) <ph name="DEVICE_TYPE" /> eszközön</translation>
 <translation id="9180281769944411366">Ez a folyamat néhány percet is igénybe vehet. A Linux-tároló indítása folyamatban van.</translation>
 <translation id="9180380851667544951">A webhely megoszthatja a képernyőjét</translation>
-<translation id="9185926955514281189">Színek és témák</translation>
 <translation id="9188441292293901223">Kérjük, frissítse telefonja operációs rendszerét az Android egy újabb verziójára, hogy feloldhassa <ph name="DEVICE_TYPE" /> eszközét.</translation>
 <translation id="9188732951356337132">Használati és diagnosztikai adatok küldése. Ez az eszköz jelenleg automatikusan küld diagnosztikai, eszköz- és alkalmazáshasználati adatokat a Google-nak. Az adatok a rendszer- és alkalmazásstabilitás javításában, valamint más fejlesztésekben segítenek, nem használjuk fel őket az Ön gyermekének azonosítására. Bizonyos összesített adatok a Google-alkalmazásoknak és -partnereknek, például az Android-fejlesztőknek is segítenek. Ha az Internetes és alkalmazástevékenységek beállítás is be van kapcsolva a gyermekénél, akkor a rendszer ezeket az adatokat mentheti a gyermek Google-fiókjába. <ph name="BEGIN_LINK2" />További információ.<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + előre megosztott kulcs</translation>

@@ -43,7 +43,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1773601347087397504">Pomoc s používáním systému Chrome OS</translation>
 <translation id="1795405610103747296">Nainstalujte si Chrome do telefonu. Zašleme vám SMS na telefon <ph name="PHONE_NUMBER" />.</translation>
 <translation id="1812689907177901597">Pokud tuto možnost vypnete, budete se moci přihlásit k většině webů Google, jako je Gmail, aniž byste se přihlásili do Chromu</translation>
-<translation id="1815759068706561639">Soubor <ph name="FILE_NAME" /> je nebezpečný, proto jej Chrome zablokoval. Jste chráněni pokročilou ochranou.</translation>
 <translation id="1860536484129686729">Chrome pro tento web potřebuje oprávnění k přístupu k fotoaparátu</translation>
 <translation id="1873233029667955273">Google Chrome není vaším výchozím prohlížečem</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -69,7 +68,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="2429317896000329049">Google Chrome nemohl synchronizovat vaše data, protože Synchronizace ve vaší doméně není k dispozici.</translation>
 <translation id="2467438592969358367">Google Chrome chce exportovat vaše hesla. Tato akce vyžaduje zadání hesla systému Windows.</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
-<translation id="2521856951867783208">Tento soubor může být nebezpečný, proto jej Chrome zablokoval. Jste chráněni pokročilou ochranou.</translation>
 <translation id="2534507159460261402">Google Pay (zkopírováno do Chromu)</translation>
 <translation id="2535429035253759792">Váš administrátor vás žádá, abyste kvůli použití této aktualizace Chrome restartovali</translation>
 <translation id="2580411288591421699">Nelze nainstalovat verzi aplikace Google Chrome, která je právě spuštěná. Ukončete aplikaci Google Chrome a opakujte akci.</translation>
@@ -106,7 +104,6 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="3451115285585441894">Přidává se do prohlížeče Chrome...</translation>
 <translation id="345171907106878721">Přidejte do Chromu svůj účet</translation>
 <translation id="3479552764303398839">Teď ne</translation>
-<translation id="3481286511616257896">Soubor <ph name="FILE_NAME" /> může být nebezpečný, proto jej Chrome zablokoval. Jste chráněni pokročilou ochranou.</translation>
 <translation id="34857402635545079">Vymazat také data z Chromu (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome potřebuje přístup k vaší poloze, aby ji mohl sdílet s tímto webem</translation>
 <translation id="3576528680708590453">Administrátor systému nakonfiguroval prohlížeč Google Chrome tak, aby pro přístup k adrese <ph name="TARGET_URL_HOSTNAME" /> otevřel alternativní prohlížeč.</translation>
@@ -149,6 +146,7 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="4750550185319565338">Chcete-li aktivovat plugin <ph name="PLUGIN_NAME" />, restartujte Chrome</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Tento soubor může být nebezpečný, proto jej Chrome zablokoval.</translation>
+<translation id="479167709087336770">Tato funkce využívá stejnou službu kontroly pravopisu, jaká se používá ve vyhledávání Google. Text, který v prohlížeči zadáte, se odešle do Googlu. Toto chování můžete kdykoliv změnit v nastavení.</translation>
 <translation id="4891791193823137474">Nechat aplikaci Google Chrome spuštěnou na pozadí</translation>
 <translation id="4895437082222824641">Otevřít odkaz na nové kar&amp;tě Chrome</translation>
 <translation id="4921569541910214635">Sdílíte počítač s dalšími uživateli? Nyní si Chrome můžete nastavit podle svých představ.</translation>
@@ -207,6 +205,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="6634887557811630702">Google Chrome je aktuální.</translation>
 <translation id="6676384891291319759">Přístup k internetu</translation>
 <translation id="6679975945624592337">Nechat Google Chrome běžet na pozadí</translation>
+<translation id="6750954913813541382">Text zadaný v prohlížeči odesílá Chrome kvůli opravě pravopisných chyb do Googlu</translation>
 <translation id="677276454032249905">Přesto Chrome ukončit?</translation>
 <translation id="683440813066116847">Pravidlo příchozího provozu pro aplikaci Google Chrome Canary, které povolí provoz mDNS.</translation>
 <translation id="686561893457936865">Vezměte si Chrome všude s sebou</translation>
@@ -232,7 +231,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7459554271817304652">Chcete-li uložit personalizované funkce prohlížeče na web a získat k nim přístup z prohlížeče Google Chrome v libovolném prohlížeči, nastavte synchronizaci.</translation>
 <translation id="7473136999113284234">Chrome se automaticky aktualizuje, abyste měli vždy nejaktuálnější verzi.</translation>
 <translation id="7486227612705979895">Chrome bude za účelem zobrazování návrhů v adresním řádku číst váš obsah na Disku</translation>
-<translation id="748945194546522577">Tento soubor je nebezpečný, proto jej Chrome zablokoval. Jste chráněni pokročilou ochranou.</translation>
 <translation id="7531671357096394523">Ukončete všechny kopie Chromu</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Zobrazit Chrome OS v tomto jazyce</translation>
@@ -240,7 +238,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7589360514048265910">Tento počítač již nebude dostávat aktualizace Google Chrome, protože systém Mac OS X 10.9 již není podporován.</translation>
 <translation id="7592736734348559088">Google Chrome vaše data nemohl synchronizovat, protože vaše přihlašovací údaje nejsou aktuální.</translation>
 <translation id="7626032353295482388">Vítá vás Chrome</translation>
-<translation id="7636297873481318396">Tento soubor je nebezpečný, proto jej Chrome zablokoval. Chrání vás pokročilá ochrana.</translation>
 <translation id="7641148173327520642">Administrátor systému nakonfiguroval prohlížeč Google Chrome tak, aby pro přístup k adrese <ph name="TARGET_URL_HOSTNAME" /> otevřel prohlížeč <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7651907282515937834">Logo Chrome Enterprise</translation>
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>

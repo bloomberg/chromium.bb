@@ -1224,6 +1224,7 @@
 <translation id="2870909136778269686">Atualizando...</translation>
 <translation id="2871813825302180988">Esta conta já está sendo usada neste dispositivo.</translation>
 <translation id="287286579981869940">Adicionar <ph name="PROVIDER_NAME" />...</translation>
+<translation id="2872961005593481000">Encerrar</translation>
 <translation id="2874343608108773609">Para ter suas senhas em todos os seus dispositivos, faça login no Chrome.</translation>
 <translation id="2874939134665556319">Faixa anterior</translation>
 <translation id="2875698561019555027">Páginas de erro do Chrome</translation>
@@ -2887,7 +2888,6 @@
 <translation id="5518584115117143805">Certificado de criptografia de e-mail</translation>
 <translation id="5521078259930077036">Esta é a página inicial que você esperava?</translation>
 <translation id="5522156646677899028">Esta extensão contém uma grave vulnerabilidade de segurança.</translation>
-<translation id="5523201311986093262">Planos de fundo</translation>
 <translation id="5525677322972469346">Criar um novo usuário supervisionado</translation>
 <translation id="5526701598901867718">Todos (não seguro)</translation>
 <translation id="5526745900034778153">Faça login novamente para retomar a sincronização</translation>
@@ -3573,7 +3573,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="656293578423618167">O caminho ou nome do arquivo é muito longo. Salve com um nome mais curto ou em outro local.</translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação da página.</translation>
 <translation id="6571979863037191371">Desconecte o smartphone do Chromebook. Eles não serão mais conectados automaticamente.</translation>
-<translation id="6573998787994398565">O arquivo <ph name="FILE_NAME" /> não costuma ser transferido por download e pode ser perigoso. Você pode contar com o Proteção Avançada.</translation>
 <translation id="657402800789773160">&amp;Recarregar esta página</translation>
 <translation id="6577284282025554716">Download cancelado: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Criptografar senhas sincronizadas com seu nome de usuário e senha do Google</translation>
@@ -5183,7 +5182,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Atualizar senha para <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">O acesso a arquivos locais no seu computador foi desativado pelo administrador</translation>
-<translation id="9041909613332246191">Esse arquivo não é transferido com frequência e pode ser perigoso. Você pode contar com o Proteção Avançada.</translation>
 <translation id="9042858701776831292">Os aplicativos da Google Play Store podem exigir acesso a dispositivos de armazenamento externo para a leitura e a gravação de arquivos e pastas.</translation>
 <translation id="9042893549633094279">Privacidade e segurança</translation>
 <translation id="904451693890288097">Insira a chave de acesso para "<ph name="DEVICE_NAME" />":</translation>
@@ -5270,7 +5268,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="9179734824669616955">Configurar o Linux (Beta) no <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">O processo pode levar alguns minutos. Iniciando o contêiner Linux.</translation>
 <translation id="9180380851667544951">O site pode compartilhar sua tela</translation>
-<translation id="9185926955514281189">Cores e temas</translation>
 <translation id="9188441292293901223">Atualize o Android do seu smartphone para uma versão mais recente a fim de desbloquear este <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9188732951356337132">Envie dados de uso e diagnóstico. No momento, este dispositivo está enviando automaticamente ao Google dados de diagnóstico, de uso de apps e do dispositivo. Eles não serão usados para identificar seu filho e ajudarão a melhorar o sistema, a estabilidade de apps e muito mais. Alguns dados agregados também ajudarão os apps do Google e os nossos parceiros, como os desenvolvedores Android. Se a configuração "Atividade na Web e de apps adicional" estiver ativada para seu filho, esses dados poderão ser salvos na Conta do Google dele. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSEC + chave pré-compartilhada</translation>

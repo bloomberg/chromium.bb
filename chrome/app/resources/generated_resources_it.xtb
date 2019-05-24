@@ -1222,6 +1222,7 @@
 <translation id="2870909136778269686">Aggiornamento in corso...</translation>
 <translation id="2871813825302180988">Questo account è già in uso su questo dispositivo.</translation>
 <translation id="287286579981869940">Aggiungi <ph name="PROVIDER_NAME" />...</translation>
+<translation id="2872961005593481000">Spegni</translation>
 <translation id="2874343608108773609">Accedi a Chrome per trovare le tue password su tutti i dispositivi.</translation>
 <translation id="2874939134665556319">Traccia precedente</translation>
 <translation id="2875698561019555027">(pagine di errore Chrome)</translation>
@@ -2883,7 +2884,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5518584115117143805">Certificato crittografia email</translation>
 <translation id="5521078259930077036">È la pagina iniziale prevista?</translation>
 <translation id="5522156646677899028">Questa estensione contiene una grave vulnerabilità di sicurezza.</translation>
-<translation id="5523201311986093262">Sfondi</translation>
 <translation id="5525677322972469346">Crea un nuovo utente supervisionato</translation>
 <translation id="5526701598901867718">Tutto (non sicuro)</translation>
 <translation id="5526745900034778153">Accedi nuovamente per riprendere la sincronizzazione</translation>
@@ -3567,7 +3567,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="656293578423618167">Il percorso o il nome del file è troppo lungo. Salva il file con un nome più corto o in un'altra posizione.</translation>
 <translation id="6567688344210276845">Impossibile caricare l'icona "<ph name="ICON" />" per l'azione della pagina.</translation>
 <translation id="6571979863037191371">Scollega il telefono dal Chromebook. I due dispositivi non si connetteranno più automaticamente.</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> non viene scaricato spesso e potrebbe essere pericoloso. La sicurezza è garantita dalla protezione avanzata.</translation>
 <translation id="657402800789773160">&amp;Ricarica questa pagina</translation>
 <translation id="6577284282025554716">Download annullato: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Cripta le password sincronizzate con la password e il nome utente del tuo Account Google</translation>
@@ -5173,7 +5172,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Aggiornare la password per <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">L'accesso ai file locali sul computer è stato disattivato dall'amministratore</translation>
-<translation id="9041909613332246191">Questo file non viene scaricato spesso e potrebbe essere pericoloso. La sicurezza è garantita dalla protezione avanzata.</translation>
 <translation id="9042858701776831292">Le applicazioni del Google Play Store potrebbero richiedere di accedere a dispositivi di archiviazione esterni per leggere i file e le cartelle presenti.</translation>
 <translation id="9042893549633094279">Privacy e sicurezza</translation>
 <translation id="904451693890288097">Inserisci la passkey di "<ph name="DEVICE_NAME" />":</translation>
@@ -5260,7 +5258,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9179734824669616955">Configura Linux (beta) sul tuo <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">Questa procedura potrebbe richiedere alcuni minuti. Avvio del container Linux in corso.</translation>
 <translation id="9180380851667544951">Il sito può condividere lo schermo</translation>
-<translation id="9185926955514281189">Colori e temi</translation>
 <translation id="9188441292293901223">Aggiorna il telefono a una versione più recente di Android per sbloccare questo dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9188732951356337132">Invia dati diagnostici e sull'utilizzo. Questo dispositivo attualmente invia a Google dati diagnostici e sull'utilizzo delle app e del dispositivo. Non verranno utilizzati per identificare tuo figlio e contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Se l'impostazione Attività web e app aggiuntiva è attiva per tuo figlio, questi dati potrebbero essere salvati nel suo Account Google. <ph name="BEGIN_LINK2" />Ulteriori informazioni<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + chiave precondivisa</translation>

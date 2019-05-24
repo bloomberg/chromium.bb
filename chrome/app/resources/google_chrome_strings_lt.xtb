@@ -43,7 +43,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1773601347087397504">Gauti su „Chrome“ OS naudojimu susijusios pagalbos</translation>
 <translation id="1795405610103747296">Įdiekite „Chrome“ telefone. Išsiųsime SMS pranešimą jūsų telefono numeriu: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Jei išjungsite šį nustatymą, prie „Google“ svetainių galėsite prisijungti kaip prie „Gmail“ neprisijungę prie „Chrome“</translation>
-<translation id="1815759068706561639">Failas „<ph name="FILE_NAME" />“ pavojingas, todėl „Chrome“ jį užblokavo. Jus saugo Papildomos apsaugos programa.</translation>
 <translation id="1860536484129686729">„Chrome“ reikia leidimo, kad galėtų naudoti fotoaparatą šioje svetainėje</translation>
 <translation id="1873233029667955273">„Google Chrome“ nėra numatytoji naršyklė</translation>
 <translation id="1874309113135274312">„Google Chrome“ beta („mDNS-In“)</translation>
@@ -69,7 +68,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="2429317896000329049">„Google Chrome“ negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="2467438592969358367">„Google Chrome“ nori eksportuoti jūsų slaptažodžius. Įveskite „Windows“ slaptažodį, kad tai leistumėte.</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
-<translation id="2521856951867783208">Šis failas gali būti pavojingas, todėl „Chrome“ jį užblokavo. Jus saugo Papildomos apsaugos programa.</translation>
 <translation id="2534507159460261402">„Google Pay“ (nukopijuota į „Chrome“)</translation>
 <translation id="2535429035253759792">Administratorius prašo paleisti iš naujo „Chrome“, kad galėtų pritaikyti šį naujinį</translation>
 <translation id="2580411288591421699">Negalima įdiegti tos pačios „Google Chrome“ versijos, kuri dabar paleista. Uždarykite „Google Chrome“ ir bandykite dar kartą.</translation>
@@ -106,7 +104,6 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="3451115285585441894">Pridedama prie „Chrome“...</translation>
 <translation id="345171907106878721">Pridėkite save prie „Chrome“</translation>
 <translation id="3479552764303398839">Ne dabar</translation>
-<translation id="3481286511616257896">Failas „<ph name="FILE_NAME" />“ gali būti pavojingas, todėl „Chrome“ jį užblokavo. Jus saugo Papildomos apsaugos programa.</translation>
 <translation id="34857402635545079">Taip pat išvalyti duomenis iš „Chrome“ (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">„Chrome“ reikia leidimo, kad galėtų naudoti vietovės informaciją ir bendrinti ją su šia svetaine</translation>
 <translation id="3576528680708590453">Sistemos administratorius sukonfigūravo „Google Chrome“ atidaryti alternatyvią naršyklę, norint pasiekti <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -233,7 +230,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7459554271817304652">Nustatykite sinchronizavimą, kad žiniatinklyje išsaugotumėte suasmenintas naršyklės funkcijas ir pasiektumėte jas iš „Google Chrome“ bet kuriuo kompiuteriu.</translation>
 <translation id="7473136999113284234">„Chrome“ atnaujinama automatiškai, todėl visada naudojatės naujausia versija.</translation>
 <translation id="7486227612705979895">„Chrome“ turės prieigą prie Disko, kad galėtų teikti pasiūlymus adreso juostoje</translation>
-<translation id="748945194546522577">Šis failas pavojingas, todėl „Chrome“ jį užblokavo. Jus saugo Papildomos apsaugos programa.</translation>
 <translation id="7531671357096394523">Uždarykite visas „Chrome“ kopijas.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Pateikti „Chrome“ OS šia kalba</translation>
@@ -241,7 +237,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7589360514048265910">Šiame kompiuteryje nebebus gaunami „Google Chrome“ naujiniai, nes 10.9 versijos „Mac OS X“ nebepalaikoma.</translation>
 <translation id="7592736734348559088">„Google Chrome“ negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="7626032353295482388">Sveiki, tai „Chrome“</translation>
-<translation id="7636297873481318396">Šis failas pavojingas, todėl „Chrome“ jį užblokavo. Jus saugo Papildomos apsaugos programa.</translation>
 <translation id="7641148173327520642">Sistemos administratorius sukonfigūravo „Google Chrome“ atidaryti alternatyvią naršyklę <ph name="ALTERNATIVE_BROWSER_NAME" />, norint pasiekti <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">„Chrome Enterprise“ logotipas</translation>
 <translation id="7747138024166251722">Diegimo programai nepavyko sukurti laikino katalogo. Patikrinkite, ar yra laisvos vietos diske ir, ar leidžiama įdiegti programinę įrangą.</translation>

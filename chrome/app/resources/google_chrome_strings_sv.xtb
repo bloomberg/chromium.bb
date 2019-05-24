@@ -43,7 +43,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1773601347087397504">Få hjälp med att använda Chrome OS</translation>
 <translation id="1795405610103747296">Installera Chrome på mobilen. Vi skickar ett sms till mobilen: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Om du inaktiverar detta kan du logga in på Googles webbplatser, till exempel Gmail, utan att logga in i Chrome</translation>
-<translation id="1815759068706561639"><ph name="FILE_NAME" /> är farlig och har blockerats av Chrome. Du skyddas med Avancerat skydd.</translation>
 <translation id="1860536484129686729">Du behöver ge Chrome behörighet att använda kameran på webbplatsen</translation>
 <translation id="1873233029667955273">Google Chrome är inte din standardwebbläsare</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-in)</translation>
@@ -69,7 +68,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="2429317896000329049">Google Chrome kunde inte synkronisera data eftersom synkronisering inte är tillgängligt för din domän.</translation>
 <translation id="2467438592969358367">Lösenorden exporteras från Google Chrome. Skriv ditt Windows-lösenord om du tillåter detta.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
-<translation id="2521856951867783208">Filen kan vara farlig och har blockerats av Chrome. Du skyddas med Avancerat skydd.</translation>
 <translation id="2534507159460261402">Google Pay (har kopierats till Chrome)</translation>
 <translation id="2535429035253759792">Administratören meddelar att du bör starta om Chrome så att uppdateringen tillämpas</translation>
 <translation id="2580411288591421699">Det går inte att installera samma version av Google Chrome som redan körs. Stäng Google Chrome och försök igen.</translation>
@@ -106,7 +104,6 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="3451115285585441894">Lägger till i Chrome ...</translation>
 <translation id="345171907106878721">Lägg till dig själv i Chrome</translation>
 <translation id="3479552764303398839">Inte nu</translation>
-<translation id="3481286511616257896"><ph name="FILE_NAME" /> kan vara skadlig och har blockerats av Chrome. Du skyddas med Avancerat skydd.</translation>
 <translation id="34857402635545079">Rensa även data från Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Du behöver ge Chrome åtkomst till din plats om den ska kunna delas med webbplatsen</translation>
 <translation id="3576528680708590453">Systemadministratören har konfigurerat Google Chrome så att <ph name="TARGET_URL_HOSTNAME" /> öppnas i en annan webbläsare.</translation>
@@ -232,7 +229,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7459554271817304652">Ställ in synkronisering och spara dina anpassade webbläsarfunktioner på Internet så att du kan använda dem i Google Chrome på vilken dator som helst.</translation>
 <translation id="7473136999113284234">Chrome uppdateras automatiskt så att du alltid har den senaste versionen.</translation>
 <translation id="7486227612705979895">Chrome får åtkomst till din Drive så att du kan få förslag därifrån i adressfältet</translation>
-<translation id="748945194546522577">Filen är farlig och har blockerats av Chrome. Du skyddas med Avancerat skydd.</translation>
 <translation id="7531671357096394523">Stäng alla kopior av Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Visa Chrome OS på det här språket.</translation>
@@ -240,7 +236,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7589360514048265910">Den här datorn får inte längre uppdateringar för Google Chrome eftersom Mac OS X 10.9 inte längre stöds.</translation>
 <translation id="7592736734348559088">Google Chrome kunde inte synkronisera data eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="7626032353295482388">Välkommen till Chrome</translation>
-<translation id="7636297873481318396">Filen är farlig och har blockerats av Chrome. Du skyddas med Avancerat skydd.</translation>
 <translation id="7641148173327520642">Systemadministratören har konfigurerat Google Chrome så att <ph name="TARGET_URL_HOSTNAME" /> öppnas i <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7651907282515937834">Logotyp för Chrome Enterprise</translation>
 <translation id="7747138024166251722">Det gick inte att skapa en tillfällig katalog för installationsfilen. Kontrollera diskutrymmet och att du har behörighet att installera program.</translation>

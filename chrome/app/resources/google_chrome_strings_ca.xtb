@@ -39,7 +39,6 @@
 <translation id="1773601347087397504">Obtén ajuda per a l'ús de Chrome OS</translation>
 <translation id="1795405610103747296">Instal·la Chrome al telèfon. T'enviarem un SMS al telèfon: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">En desactivar aquesta opció, pots iniciar la sessió en llocs web de Google, com ara Gmail, sense iniciar la sessió a Chrome</translation>
-<translation id="1815759068706561639">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè és perillós. La Protecció avançada et protegeix.</translation>
 <translation id="1860536484129686729">Per visitar aquest lloc web, Chrome necessita permís per accedir a la càmera</translation>
 <translation id="1873233029667955273">Google Chrome no és el navegador predeterminat</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -65,7 +64,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="2429317896000329049">Google Chrome no ha pogut sincronitzar les dades perquè la sincronització no està disponible per al vostre domini.</translation>
 <translation id="2467438592969358367">Google Chrome vol exportar les teves contrasenyes. Escriu la contrasenya de Windows per permetre-ho.</translation>
 <translation id="2485422356828889247">Desinstal·la</translation>
-<translation id="2521856951867783208">Chrome ha bloquejat aquest fitxer perquè pot ser perillós. La Protecció avançada et protegeix.</translation>
 <translation id="2534507159460261402">Google Pay (copiada a Chrome)</translation>
 <translation id="2535429035253759792">L'administrador et demana que reiniciïs Chrome per aplicar aquesta actualització</translation>
 <translation id="2580411288591421699">No es pot instal·lar la mateixa versió de Google Chrome que s'executa actualment. Tanqueu Google Chrome i torneu-ho a provar.</translation>
@@ -102,7 +100,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="3451115285585441894">S'està afegint a Chrome...</translation>
 <translation id="345171907106878721">Afegeix-me a Chrome</translation>
 <translation id="3479552764303398839">Ara no</translation>
-<translation id="3481286511616257896">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè pot ser perillós. La Protecció avançada et protegeix.</translation>
 <translation id="34857402635545079">Esborra també les dades de Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome necessita accedir a la teva ubicació per compartir-la amb aquest lloc web</translation>
 <translation id="3576528680708590453">L'administrador del sistema ha configurat Google Chrome perquè obri un navegador alternatiu per accedir a <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -224,7 +221,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7459554271817304652">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol ordinador mitjançant Google Chrome.</translation>
 <translation id="7473136999113284234">Chrome s'actualitza automàticament perquè en tingueu sempre la versió més recent.</translation>
 <translation id="7486227612705979895">Chrome accedirà a Drive per fer suggeriments a la barra d'adreces</translation>
-<translation id="748945194546522577">Chrome ha bloquejat aquest fitxer perquè és perillós. La Protecció avançada et protegeix.</translation>
 <translation id="7531671357096394523">Tanca totes les còpies de Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Mostra Chrome OS en aquest idioma</translation>
@@ -232,7 +228,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7589360514048265910">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome perquè Mac OS X 10.9 ja no és compatible.</translation>
 <translation id="7592736734348559088">Google Chrome no ha pogut sincronitzar les dades perquè els detalls d'inici de sessió del compte no estan actualitzats.</translation>
 <translation id="7626032353295482388">Et donem la benvinguda a Chrome</translation>
-<translation id="7636297873481318396">Chrome ha bloquejat aquest fitxer perquè és perillós. La Protecció avançada et protegeix.</translation>
 <translation id="7641148173327520642">L'administrador del sistema ha configurat Google Chrome perquè obri <ph name="ALTERNATIVE_BROWSER_NAME" /> per accedir a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logotip de Chrome Enterprise</translation>
 <translation id="7747138024166251722">L'instal·lador no ha pogut crear un directori temporal. Comprova que hi ha espai lliure al disc i que tens permís per instal·lar el programari.</translation>

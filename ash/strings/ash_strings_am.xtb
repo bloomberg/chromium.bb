@@ -98,7 +98,6 @@
 <translation id="239188844683466770">አትረብሽ የሚለውን አብራ ወይም አጥፋ</translation>
 <translation id="2412593942846481727">ዝማኔ ይገኛል</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> በ<ph name="DOMAIN" /> የሚተዳደር ክፍለ-ጊዜ ነው</translation>
-<translation id="2416346634399901812">ከ<ph name="NETWORK_NAME" /> ጋር ተገናኝቷል</translation>
 <translation id="2427507373259914951">የግራ ጠቅታ</translation>
 <translation id="2429753432712299108">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። ከመቀበልዎ በፊት እባክዎ ይህ የይለፍ ቃል በዚያ መሣሪያ ላይ የሚታይ መሆኑን ያረጋግጡ፦ <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
@@ -216,7 +215,6 @@
 <translation id="4269883910223712419">የዚህ መሣሪያ የሚከተሉትን የማድረግ ችሎታ አለው፦</translation>
 <translation id="4279490309300973883">በማንጸባረቅ ላይ</translation>
 <translation id="4281007048406351813">ወደ ጊዜ ቆጣሪው 1 ደቂቃ ያክሉ</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" />ን በማግበር ላይ</translation>
 <translation id="4296136865091727875">ሁሉንም <ph name="COUNT" /> ማሳወቂያዎች አጽዳ</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">የከፍተኛ ንጽጽር የቁልፍ ሰሌዳ አቋራጩን ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
@@ -428,7 +426,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> እና <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">ጠንካራ ሲግናል</translation>
 <translation id="7837740436429729974">ጊዜው አብቅቷል</translation>
-<translation id="7842211907556571265">ከ<ph name="NETWORK_NAME" /> ጋር በመገናኘት ላይ...</translation>
 <translation id="7842569679327885685">ማስጠንቀቂያ፦ የሙከራ ባህሪ</translation>
 <translation id="7846634333498149051">የቁልፍ ሰሌዳ</translation>
 <translation id="7868900307798234037">በጣት አሻራ በመክፈት ላይ</translation>

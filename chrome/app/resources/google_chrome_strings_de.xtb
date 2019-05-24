@@ -39,7 +39,6 @@
 <translation id="1773601347087397504">Hilfe für Chrome OS aufrufen</translation>
 <translation id="1795405610103747296">Installieren Sie Chrome auf Ihrem Smartphone. Wir senden Ihnen eine SMS an: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Wenn Sie diese Einstellung deaktivieren, können Sie sich auf Websites von Google wie beispielsweise Gmail anmelden, ohne sich auch in Chrome anmelden zu müssen</translation>
-<translation id="1815759068706561639"><ph name="FILE_NAME" /> ist schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
 <translation id="1860536484129686729">Chrome benötigt für diese Website die Berechtigung, auf Ihre Kamera zuzugreifen</translation>
 <translation id="1873233029667955273">Google Chrome ist nicht als Ihr Standardbrowser festgelegt</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -65,7 +64,6 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2429317896000329049">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht zur Verfügung steht.</translation>
 <translation id="2467438592969358367">Google Chrome möchte Ihre Passwörter exportieren. Wenn Sie dies zulassen möchten, geben Sie Ihr Windows-Passwort ein.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
-<translation id="2521856951867783208">Diese Datei ist eventuell schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
 <translation id="2534507159460261402">Google Pay (in Chrome kopiert)</translation>
 <translation id="2535429035253759792">Laut Ihrem Administrator sollten Sie Chrome neu starten, um dieses Update durchzuführen</translation>
 <translation id="2580411288591421699">Die Google Chrome-Version kann nicht installiert werden, da sie aktuell ausgeführt wird. Schließen Sie Google Chrome und versuchen Sie es erneut.</translation>
@@ -102,7 +100,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="3451115285585441894">Wird zu Chrome hinzugefügt...</translation>
 <translation id="345171907106878721">Mich zu Chrome hinzufügen</translation>
 <translation id="3479552764303398839">Jetzt nicht</translation>
-<translation id="3481286511616257896"><ph name="FILE_NAME" /> ist eventuell schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
 <translation id="34857402635545079">Daten aus Chrome ebenfalls löschen (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen</translation>
 <translation id="3576528680708590453">Ihr Systemadministrator hat Google Chrome so konfiguriert, dass <ph name="TARGET_URL_HOSTNAME" /> in einem alternativen Browser geöffnet wird.</translation>
@@ -224,7 +221,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7459554271817304652">Richten Sie die Synchronisierung ein, um Ihre personalisierten Browserfunktionen online zu speichern und über Google Chrome auf jedem Computer darauf zuzugreifen.</translation>
 <translation id="7473136999113284234">Chrome wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen.</translation>
 <translation id="7486227612705979895">Chrome greift auf Google Drive zu, um in der Adressleiste Vorschläge zu machen</translation>
-<translation id="748945194546522577">Diese Datei ist schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
 <translation id="7531671357096394523">Alle Instanzen von Chrome schließen.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OS in dieser Sprache anzeigen</translation>
@@ -232,7 +228,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7589360514048265910">Für diesen Computer wird es keine weiteren Google Chrome-Updates mehr geben, da Mac OS X 10.9 nicht mehr unterstützt wird.</translation>
 <translation id="7592736734348559088">Google Chrome konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos nicht mehr aktuell sind.</translation>
 <translation id="7626032353295482388">Willkommen bei Chrome</translation>
-<translation id="7636297873481318396">Diese Datei ist schädlich und wurde von Chrome blockiert. Sie werden durch das erweiterte Sicherheitsprogramm geschützt.</translation>
 <translation id="7641148173327520642">Ihr Systemadministrator hat Google Chrome so konfiguriert, dass <ph name="ALTERNATIVE_BROWSER_NAME" /> für den Zugriff auf <ph name="TARGET_URL_HOSTNAME" /> geöffnet wird.</translation>
 <translation id="7651907282515937834">Logo von Chrome Enterprise</translation>
 <translation id="7747138024166251722">Das Installationsprogramm konnte kein temporäres Verzeichnis erstellen. Überprüfen Sie, ob freier Speicherplatz und die Rechte zum Installieren von Software vorhanden sind.</translation>

@@ -98,7 +98,6 @@
 <translation id="239188844683466770">切换“请勿打扰”模式</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
 <translation id="2413728805700750528">“<ph name="DISPLAY_NAME" />”是一个由 <ph name="DOMAIN" /> 管理的受管理自助服务终端</translation>
-<translation id="2416346634399901812">已连接到<ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">点击鼠标左键</translation>
 <translation id="2429753432712299108">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。在接受之前，请确保该设备上显示以下配对密钥：<ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">通知</translation>
@@ -216,7 +215,6 @@
 <translation id="4269883910223712419">此设备的管理员能够：</translation>
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4281007048406351813">给定时器加 1 分钟</translation>
-<translation id="4292681942966152062">正在启用<ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">清除所有 <ph name="COUNT" /> 条通知</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">您按下了高对比度的键盘快捷键。要开启这项功能吗？</translation>
@@ -429,7 +427,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">信号较强</translation>
 <translation id="7837740436429729974">时间到</translation>
-<translation id="7842211907556571265">正在连接到<ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">警告：实验性功能</translation>
 <translation id="7846634333498149051">键盘</translation>
 <translation id="7868900307798234037">正在使用指纹解锁</translation>

@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Open all</translation>
 <translation id="1430915738399379752">Print</translation>
 <translation id="1436290164580597469">Enter passphrase to start sync.</translation>
+<translation id="1449835205994625556">Hide password</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> items</translation>
 <translation id="1491277525950327607">Double tap to toggle setting</translation>
 <translation id="152234381334907219">Never Saved</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Clear Browsing Data</translation>
 <translation id="1820259098641718022">Added to Reading List</translation>
 <translation id="1828824471510190776">Suggest  Password…</translation>
+<translation id="1870148520156231997">Reveal password</translation>
 <translation id="1876721852596493031">Send usage data</translation>
 <translation id="1886928167269928266">Beginning of Time</translation>
 <translation id="1911619930368729126">Upload to Google Drive</translation>
@@ -130,7 +132,7 @@
 <translation id="2800683595868705743">Leave Tab Switcher</translation>
 <translation id="2830972654601096923">Manage Addresses…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2840687315230832938">Initial Sync Setup Not Finished</translation>
+<translation id="2840687315230832938">Initial sync setup not finished</translation>
 <translation id="2843803966603263712">Reset Translate Settings</translation>
 <translation id="2858204748079866344">To protect your privacy, Chrome will not auto-fill your password in this field.</translation>
 <translation id="285960592395650245">Retry Download</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Page load progress bar, <ph name="EMAIL" /> loaded.</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="4004204301268239848">Passwords are saved in your Google Account so that you can use them on any device.</translation>
+<translation id="4006921758705478413">Send to your devices</translation>
 <translation id="4038354071007134711">No application on this device can open the file.</translation>
 <translation id="4042870976416480368">Find in Page</translation>
 <translation id="4049507953662678203">Make sure you have a network connection, and try again.</translation>
@@ -267,6 +270,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4904877109095351937">Mark Read</translation>
 <translation id="4930268273022498155">Delete existing data. You can retrieve it by switching back to <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Sorry, there was a problem sharing your item.</translation>
+<translation id="4945756290001680296">Access password settings</translation>
 <translation id="4979397965658815378">Sign in with your Google Account to get your bookmarks, passwords, history and other settings on all your devices</translation>
 <translation id="5005498671520578047">Copy password</translation>
 <translation id="5010803260590204777">Open an incognito tab to browse the web privately.</translation>
@@ -520,6 +524,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8976382372951310360">Help</translation>
 <translation id="8981454092730389528">Google Activity Controls</translation>
 <translation id="8985320356172329008">Signed In to Google as</translation>
+<translation id="9016406938567631235">Sending...</translation>
 <translation id="902659348151742535">Google may use your browsing history to personalise Search, ads and other Google services.</translation>
 <translation id="9034759925968272072">You won't be signed out of your Google Account. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Bandwidth</translation>

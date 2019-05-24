@@ -94,6 +94,7 @@
 <translation id="1670399744444387456">Basic</translation>
 <translation id="1671236975893690980">Download pending...</translation>
 <translation id="1672586136351118594">Don‘t show again</translation>
+<translation id="1679068421605151609">Developer Tools</translation>
 <translation id="1692118695553449118">Sync is on</translation>
 <translation id="169515064810179024">Block sites from accessing motion sensors</translation>
 <translation id="1717218214683051432">Motion sensors</translation>
@@ -579,6 +580,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5324858694974489420">Parental Settings</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5335288049665977812">Allow sites to run JavaScript (recommended)</translation>
+<translation id="5357811892247919462">Tab received</translation>
 <translation id="5363230136052241468">Tap the home button to load the new tab page</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> open tab, tap to switch tabs}other{<ph name="OPEN_TABS_MANY" /> open tabs, tap to switch tabs}}</translation>
 <translation id="5391532827096253100">Your connection to this site is not secure. Site information</translation>

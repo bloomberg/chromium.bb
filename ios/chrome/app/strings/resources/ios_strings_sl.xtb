@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">Napaka</translation>
 <translation id="1172898394251786223">Naslednje polje</translation>
 <translation id="1176932207622159128">Slike ni mog. shran.</translation>
+<translation id="1180526666083833456">Sinhronizacija in prilagajanje med napravami.</translation>
 <translation id="1181037720776840403">Odstrani</translation>
 <translation id="1201530049782216880">New Incognito Tab</translation>
 <translation id="1209206284964581585">Zaenkrat skrij</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">Last 4 Weeks</translation>
 <translation id="1407135791313364759">Odpri vse</translation>
 <translation id="1430915738399379752">Natisni</translation>
+<translation id="1436290164580597469">Vnesite geslo, če želite začeti sinhronizacijo.</translation>
 <translation id="145015347812617860">Št. elementov: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Dvakrat se dotaknite, da preklopite nastavitev</translation>
 <translation id="152234381334907219">Nikoli shranjeno</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">Pokaži geslo</translation>
 <translation id="2481538920734869610">DODAJ RAČUN</translation>
 <translation id="2497852260688568942">Sinhronizacijo je onemogočil skrbnik</translation>
+<translation id="2500374554657206846">Možnosti shranjevanja gesel</translation>
 <translation id="2523363575747517183">To spletno mesto nenehno poskuša odpreti drugo aplikacijo.</translation>
 <translation id="2529021024822217800">Odpri vse</translation>
+<translation id="2570206273416014374">Pošilja nekatere piškotke in iskanja iz naslovne vrstice ter iskalnega polja privzetemu iskalniku.</translation>
 <translation id="2572712655377361602">Pravilnik o napravah je blokiral dostop do fotografij.</translation>
 <translation id="2584132361465095047">Dodajanje računa ...</translation>
 <translation id="2625189173221582860">Geslo kopirano</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">Zapri vse zavihke brez beleženja zgodovine</translation>
 <translation id="3533436815740441613">Nov zavihek</translation>
 <translation id="3551320343578183772">Zapri zavihek</translation>
+<translation id="3581564640715911333">Ponudi prevajanje strani v drugih jezikih</translation>
 <translation id="3588820906588687999">Odpri sliko na novem zavihku</translation>
 <translation id="3603009562372709545">Kopiraj URL povezave</translation>
 <translation id="3607167657931203000">Autofill Data</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">Vnaprej naloži spletne strani</translation>
 <translation id="3691593122358196899">Zaznamek ustvarjen v mapi <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
+<translation id="3775743491439407556">Sinhronizacija ne deluje</translation>
 <translation id="3779810277399252432">Ni internetne povezave.</translation>
 <translation id="3783017676699494206">Shrani sliko</translation>
 <translation id="3789841737615482174">Namesti</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">Če želite optično prebrati kodo QR, v nastavitvah omogočite fotoaparat</translation>
 <translation id="4281844954008187215">Pogoji storitve</translation>
 <translation id="430793432425771671">Sinhroniziraj vse</translation>
+<translation id="4338650699862464074">Googlu pošlje URL-je strani, ki jih obiščete.</translation>
 <translation id="4359125752503270327">This page will open in another application.</translation>
 <translation id="4370827530403103842">Sync isn't working. Tap to fix.</translation>
 <translation id="4375040482473363939">Iskanje kod QR</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Obvestilo o zasebnosti</translation>
+<translation id="4454246407045105932">Dodajanje jezika</translation>
 <translation id="4476574785019001431">Nastavitve</translation>
 <translation id="4496373720959965247">Dodajte zavihke in preklapljate med stranmi</translation>
 <translation id="4508750114462689118">Zapri predstavitev prijave</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">Iskanje z Googlom</translation>
 <translation id="4619615317237390068">Zavihki iz drugih naprav</translation>
 <translation id="4620246317052452550">Prebrane strani</translation>
+<translation id="4630540211544979320">Prevajanje strani</translation>
 <translation id="4636930964841734540">Informacije</translation>
 <translation id="4659667755519643272">Enter Tab Switcher</translation>
 <translation id="4666531726415300315">Prijavljeni ste kot <ph name="EMAIL" />.
@@ -248,7 +257,9 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 
 Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 neprebran članek s seznama za branje.</translation>
+<translation id="4818522717893377262">Dodaj jezik …</translation>
 <translation id="481968316161811770">Cookies, Site Data</translation>
+<translation id="4833786495304741580">Samodejno pošilja statistične podatke o uporabi in poročila o zrušitvah Googlu.</translation>
 <translation id="4840495572919996524">Vaši zaznamki, zgodovina, gesla in drugo ne bodo več sinhronizirani z Google Računom.</translation>
 <translation id="4854345657858711387">Nastavitev gesla</translation>
 <translation id="4860895144060829044">Pokličite</translation>
@@ -289,6 +300,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5548760955356983418">Handoff lets you start browsing a website on this device and then easily continue on your Mac. The current open website will appear in the Dock of your Mac.
 
 Handoff must also be enabled in the General section of Settings, and your devices must use the same iCloud account.</translation>
+<translation id="5551897871312988470">Ponudi prevajanje</translation>
 <translation id="5556459405103347317">Znova naloži</translation>
 <translation id="5614553682702429503">Želite shraniti geslo?</translation>
 <translation id="5626245204502895507">Datoteke trenutno ni mogoče prenesti.</translation>
@@ -336,6 +348,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6187302354554850004">Nazadnje sinhronizirano: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Neprebrano</translation>
 <translation id="6196207969502475924">Glasovno iskanje</translation>
+<translation id="6219688215832490856">Nikoli ne prevedi</translation>
 <translation id="6254066287920239840">Povezave namesto v brskalniku odpri v aplikaciji.</translation>
 <translation id="6255097610484507482">Urejanje kreditne kartice</translation>
 <translation id="6303969859164067831">Odjava in izklop sinhronizacije</translation>
@@ -390,6 +403,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6973630695168034713">Mape</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6988572888918530647">Upravljanje računa za Google</translation>
 <translation id="7004499039102548441">Nedavni zavihki</translation>
 <translation id="7006788746334555276">Nastavitve vsebine</translation>
 <translation id="7015203776128479407">Začetna nastavitev sinhronizacije ni bila dokončana. Sinhronizacija je izklopljena.</translation>
@@ -460,6 +474,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8059533439631660104">Strni razdelek.</translation>
 <translation id="806745655614357130">Podatki naj bodo ločeni</translation>
 <translation id="8073670137947914548">Prenos končan</translation>
+<translation id="8073872304774253879">Izboljšanje iskanja in brskanja</translation>
 <translation id="8076014560081431679">Shranjene nastavitve spletnih mest ne bodo izbrisane in morda odražajo vaše brskalne navade. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Prenos datotek je na voljo. Možnosti so na voljo pri dnu zaslona.</translation>
 <translation id="8131740175452115882">Potrdi</translation>

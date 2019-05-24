@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Slå Forstyr ikke til eller fra</translation>
 <translation id="2412593942846481727">Der er en tilgængelig opdatering</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> er en session, der administreres af <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Forbundet til <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Venstreklik</translation>
 <translation id="2429753432712299108">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifikationer</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">Administratoren af denne enhed kan gøre følgende:</translation>
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="4281007048406351813">Føj 1 minut til timeren</translation>
-<translation id="4292681942966152062">Aktiverer <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Ryd alle <ph name="COUNT" /> notifikationer</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Du trykkede på tastaturgenvejen for høj kontrast. Vil du aktivere indstillingen?</translation>
@@ -431,7 +429,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Stærkt signal</translation>
 <translation id="7837740436429729974">Tiden er gået</translation>
-<translation id="7842211907556571265">Opretter forbindelse til <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advarsel! Eksperimentel funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
 <translation id="7868900307798234037">Låser op med fingeraftryk</translation>

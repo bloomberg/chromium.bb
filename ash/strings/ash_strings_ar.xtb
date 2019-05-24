@@ -98,7 +98,6 @@
 <translation id="239188844683466770">تبديل حالة "الرجاء عدم الإزعاج"</translation>
 <translation id="2412593942846481727">هناك تحديث جديد</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> هي جلسة مُدارة بواسطة <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">تم الاتصال بشبكة <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">النقر بالزر الأيسر</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. قبل القبول، يُرجى التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">الإشعارات</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">يمتلك مشرف هذا الجهاز القدرة على ما يلي:</translation>
 <translation id="4279490309300973883">النسخ المطابق</translation>
 <translation id="4281007048406351813">إضافة دقيقة واحدة إلى الموقِّت</translation>
-<translation id="4292681942966152062">جارٍ تفعيل <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">محو جميع الإشعارات التي يبلغ عددها <ph name="COUNT" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">لقد ضغطت على اختصار لوحة المفاتيح للتباين العالي. هل ترغب في تفعيله؟</translation>
@@ -431,7 +429,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> و<ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">إشارة قوية</translation>
 <translation id="7837740436429729974">انتهى الوقت</translation>
-<translation id="7842211907556571265">جارٍ الاتصال بشبكة <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">تحذير: ميزة تجريبية</translation>
 <translation id="7846634333498149051">لوحة المفاتيح</translation>
 <translation id="7868900307798234037">فتح القفل باستخدام بصمة الإصبع</translation>

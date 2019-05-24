@@ -1222,6 +1222,7 @@
 <translation id="2870909136778269686">S'estan actualitzant...</translation>
 <translation id="2871813825302180988">Aquest compte ja s'utilitza en aquest dispositiu.</translation>
 <translation id="287286579981869940">Afegeix <ph name="PROVIDER_NAME" />...</translation>
+<translation id="2872961005593481000">Apaga</translation>
 <translation id="2874343608108773609">Inicia la sessió a Chrome per tenir les contrasenyes en tots els teus dispositius.</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2875698561019555027">(Pàgines d'error de Chrome)</translation>
@@ -2883,7 +2884,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5518584115117143805">Certificat d'encriptació de correu electrònic</translation>
 <translation id="5521078259930077036">Aquesta pàgina d'inici és la que esperàveu?</translation>
 <translation id="5522156646677899028">Aquesta extensió conté una vulnerabilitat de seguretat greu.</translation>
-<translation id="5523201311986093262">Fons</translation>
 <translation id="5525677322972469346">Crea un usuari supervisat nou</translation>
 <translation id="5526701598901867718">Tots (opció no segura)</translation>
 <translation id="5526745900034778153">Torna a iniciar la sessió per reprendre la sincronització</translation>
@@ -3568,7 +3568,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="656293578423618167">El camí o el nom del fitxer és massa llarg. Deseu-ho amb un nom més curt o en una altra ubicació.</translation>
 <translation id="6567688344210276845">No s'ha pogut carregar la icona "<ph name="ICON" />" per a l'acció de la pàgina.</translation>
 <translation id="6571979863037191371">Desconnecta el telèfon i el dispositiu Chromebook. Es deixaran de connectar automàticament.</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> no se sol baixar i podria ser perillós. La Protecció avançada et protegeix.</translation>
 <translation id="657402800789773160">&amp;Torna a carregar aquesta pàgina</translation>
 <translation id="6577284282025554716">Baixada cancel·lada: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Encripta les contrasenyes sincronitzades amb el teu nom d'usuari i la teva contrasenya de Google</translation>
@@ -5174,7 +5173,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Vols actualitzar la contrasenya per a <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">L'administrador ha desactivat l'accés als fitxers locals de l'ordinador</translation>
-<translation id="9041909613332246191">Aquest fitxer no se sol baixar i podria ser perillós. La Protecció avançada et protegeix.</translation>
 <translation id="9042858701776831292">Pot ser que les aplicacions de Google Play Store requereixin accés a dispositius d'emmagatzematge extern per llegir-hi i escriure-hi fitxers i carpetes.</translation>
 <translation id="9042893549633094279">Privadesa i seguretat</translation>
 <translation id="904451693890288097">Introduïu la contrasenya per a "<ph name="DEVICE_NAME" />":</translation>
@@ -5261,7 +5259,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9179734824669616955">Configura Linux (versió beta) a <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">Aquest procés pot tardar uns quants minuts. S'està iniciant el contenidor de Linux.</translation>
 <translation id="9180380851667544951">El lloc web pot compartir la pantalla</translation>
-<translation id="9185926955514281189">Colors i temes</translation>
 <translation id="9188441292293901223">Feu l'actualització del telèfon a una versió més recent d'Android per desbloquejar aquest dispositiu <ph name="DEVICE_TYPE" /></translation>
 <translation id="9188732951356337132">Envia dades d'ús i de diagnòstic. En aquests moments aquest dispositiu envia automàticament a Google dades de diagnòstic, del dispositiu i d''ús d'aplicacions. Aquestes dades no es faran servir per identificar el teu fill i ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. Si l'opció Activitat al web i en aplicacions addicional està activada per al teu fill, és possible que aquestes dades es desin al seu Compte de Google. <ph name="BEGIN_LINK2" />Més informació<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + clau precompartida</translation>

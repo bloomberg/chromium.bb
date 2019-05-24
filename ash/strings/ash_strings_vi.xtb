@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Bật/tắt trạng thái Không làm phiền</translation>
 <translation id="2412593942846481727">Đã có bản cập nhật</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> là một phiên được <ph name="DOMAIN" /> quản lý</translation>
-<translation id="2416346634399901812">Đã kết nối với <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Nhấp chuột trái</translation>
 <translation id="2429753432712299108">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Trước khi chấp nhận, vui lòng xác nhận rằng mã xác nhận này đã hiển thị trên thiết bị đó: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Thông báo</translation>
@@ -158,6 +157,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> vẫn có thể đăng nhập vào lúc khác.</translation>
 <translation id="3321628682574733415">Mã dành cho cha mẹ không chính xác</translation>
 <translation id="332587331255250389">Vui lòng thay pin</translation>
+<translation id="3335825575923019462">Bạn có chắc chắn muốn tắt tính năng nhấp tự động không?</translation>
 <translation id="3351879221545518001">Bạn hiện đang truyền màn hình.</translation>
 <translation id="3364721542077212959">Công cụ bút cảm ứng</translation>
 <translation id="3368922792935385530">Đã kết nối</translation>
@@ -216,7 +216,6 @@
 <translation id="4269883910223712419">Quản trị viên của thiết bị này có thể:</translation>
 <translation id="4279490309300973883">Đang phản chiếu</translation>
 <translation id="4281007048406351813">Thêm 1 phút vào bộ hẹn giờ</translation>
-<translation id="4292681942966152062">Đang kích hoạt <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Xóa tất cả <ph name="COUNT" /> thông báo</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Bạn đã nhấn phím tắt của chế độ tương phản cao. Bạn có muốn bật chế độ này không?</translation>
@@ -400,6 +399,7 @@
 <translation id="7348093485538360975">Bàn phím ảo</translation>
 <translation id="735745346212279324">Đã ngắt kết nối VPN</translation>
 <translation id="7377169924702866686">Caps Lock đang bật.</translation>
+<translation id="7378594059915113390">Các chức năng điều khiển nội dung đa phương tiện</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />giây</translation>
 <translation id="7398254312354928459">Đã chuyển kết nối mạng</translation>
 <translation id="7405710164030118432">Để mở khóa thiết bị này, hãy nhập mã truy cập Family Link dành cho cha mẹ của bạn</translation>
@@ -429,7 +429,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Tín hiệu mạnh</translation>
 <translation id="7837740436429729974">Hết giờ</translation>
-<translation id="7842211907556571265">Đang kết nối với <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Cảnh báo: Tính năng thử nghiệm</translation>
 <translation id="7846634333498149051">Bàn phím</translation>
 <translation id="7868900307798234037">Mở khóa bằng vân tay</translation>
@@ -485,6 +484,7 @@
 <translation id="8649101189709089199">Chọn để nói</translation>
 <translation id="8652175077544655965">Đóng cài đặt</translation>
 <translation id="8653151467777939995">Hiển thị các tùy chọn cài đặt thông báo. Thông báo đang bật</translation>
+<translation id="8664483332071009680">Tắt tính năng nhấp tự động?</translation>
 <translation id="8664753092453405566">Hiển thị danh sách mạng. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Đã kết nối bộ sạc công suất thấp</translation>

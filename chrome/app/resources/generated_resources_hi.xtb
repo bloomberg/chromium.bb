@@ -1217,6 +1217,7 @@
 <translation id="2870909136778269686">अपडेट हो रहे हैं...</translation>
 <translation id="2871813825302180988">यह खाता पहले से ही इस डिवाइस पर उपयोग किया जा रहा है.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> जोड़ें...</translation>
+<translation id="2872961005593481000">शट डाउन करें</translation>
 <translation id="2874343608108773609">अपने सभी डिवाइस पर अपने पासवर्ड पाने के लिए, Chrome में साइन इन करें.</translation>
 <translation id="2874939134665556319">पिछला ट्रैक</translation>
 <translation id="2875698561019555027">(Chrome गड़बड़ी पृष्‍ठ)</translation>
@@ -3554,7 +3555,6 @@
 <translation id="656293578423618167">फ़ाइल पाथ या नाम बहुत बड़ा है.  कृपया छोटे नाम के साथ या किसी दूसरी जगह पर सेव करें.</translation>
 <translation id="6567688344210276845">पेज कार्रवाई के लिए '<ph name="ICON" />' आइकन लोड नहीं किया जा सका.</translation>
 <translation id="6571979863037191371">अपने फ़ोन को अपने Chromebook से डिसकनेक्ट करें. अब वे अपने आप नहीं जुड़ेंगे.</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> फ़ाइल आम तौर पर डाउनलोड नहीं की जाती है और यह खतरनाक हो सकती है. आप 'बेहतर सुरक्षा' के ज़रिए सुरक्षित हैं.</translation>
 <translation id="657402800789773160">&amp;यह पेज फिर से लोड करें</translation>
 <translation id="6577284282025554716">डाउनलोड रोका गया: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">सिंक किए गए पासवर्ड अपने Google उपयोगकर्ता नाम और पासवर्ड से एन्क्रिप्ट करें</translation>
@@ -5148,7 +5148,6 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> के लिए पासवर्ड अपडेट करें?</translation>
 <translation id="9041692268811217999">आपके एडमिन ने आपकी मशीन पर स्थानीय फ़ाइलों की एक्सेस बंद कर दी है</translation>
-<translation id="9041909613332246191">यह फ़ाइल आमतौर पर डाउनलोड नहीं की जाती है और यह खतरनाक हो सकती है. आप 'बेहतर सुरक्षा' के ज़रिए सुरक्षित हैं.</translation>
 <translation id="9042893549633094279">निजता और सुरक्षा</translation>
 <translation id="904451693890288097">कृपया "<ph name="DEVICE_NAME" />" के लिए पासकुंजी दर्ज करें:</translation>
 <translation id="9044646465488564462">नेटवर्क से कनेक्ट करने में विफल रहा: <ph name="DETAILS" /></translation>

@@ -94,6 +94,7 @@
 <translation id="1670399744444387456">基本</translation>
 <translation id="1671236975893690980">正在等待下载…</translation>
 <translation id="1672586136351118594">不再显示</translation>
+<translation id="1679068421605151609">开发者工具</translation>
 <translation id="1692118695553449118">同步功能已开启</translation>
 <translation id="169515064810179024">禁止网站使用动态传感器</translation>
 <translation id="1717218214683051432">动态传感器</translation>
@@ -916,7 +917,7 @@
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐号</translation>
-<translation id="766587987807204883">预提取的报道会显示在此处，即使在离线状态下也可供阅读</translation>
+<translation id="766587987807204883">报道会显示在此处，即使在离线状态下也可以阅读</translation>
 <translation id="7682724950699840886">请尝试按以下提示操作：确保您的设备上有足够的空间，然后重新尝试导出。</translation>
 <translation id="7698359219371678927">在 <ph name="APP_NAME" /> 中创建电子邮件</translation>
 <translation id="7704317875155739195">自动填充搜索字词和网址</translation>

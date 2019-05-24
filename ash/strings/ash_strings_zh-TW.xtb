@@ -98,7 +98,6 @@
 <translation id="239188844683466770">切換「零打擾」模式</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
 <translation id="2413728805700750528">「<ph name="DISPLAY_NAME" />」是由 <ph name="DOMAIN" /> 管理的工作階段</translation>
-<translation id="2416346634399901812">已連線至<ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">按左鍵</translation>
 <translation id="2429753432712299108">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。接受要求前，請確認裝置顯示以下密碼金鑰：<ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">通知</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">這部裝置的管理員擁有下列權限：</translation>
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4281007048406351813">將計時器時間增加 1 分鐘</translation>
-<translation id="4292681942966152062">正在啟動<ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">清除全部 <ph name="COUNT" /> 則通知</translation>
 <translation id="4321179778687042513">Ctrl</translation>
 <translation id="4321776623976362024">你按下了高對比的鍵盤快速鍵。確定要啟用這項功能嗎？</translation>
@@ -430,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
 <translation id="7829386189513694949">訊號穩定</translation>
 <translation id="7837740436429729974">時間到</translation>
-<translation id="7842211907556571265">正在連線至<ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">警告：實驗功能</translation>
 <translation id="7846634333498149051">鍵盤</translation>
 <translation id="7868900307798234037">指紋辨識成功，正在解鎖</translation>

@@ -1224,6 +1224,7 @@
 <translation id="2870909136778269686">Updaten...</translation>
 <translation id="2871813825302180988">Dit account wordt al gebruikt op dit apparaat.</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> toevoegen…</translation>
+<translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2874343608108773609">Log in bij Chrome om je wachtwoorden op te halen op al je apparaten.</translation>
 <translation id="2874939134665556319">Vorig nummer</translation>
 <translation id="2875698561019555027">(Chrome-foutpagina's)</translation>
@@ -2887,7 +2888,6 @@
 <translation id="5518584115117143805">Coderingscertificaat voor e-mail</translation>
 <translation id="5521078259930077036">Is dit de homepage die je had verwacht?</translation>
 <translation id="5522156646677899028">Deze extensie bevat een groot beveiligingsprobleem.</translation>
-<translation id="5523201311986093262">Achtergronden</translation>
 <translation id="5525677322972469346">Een nieuwe gebruiker met beperkte rechten maken</translation>
 <translation id="5526701598901867718">Alle (onbeveiligd)</translation>
 <translation id="5526745900034778153">Log opnieuw in om door te gaan met synchroniseren</translation>
@@ -3571,7 +3571,6 @@
 <translation id="656293578423618167">Het bestandspad of de bestandsnaam is te lang. Sla op met een kortere naam of op een andere locatie.</translation>
 <translation id="6567688344210276845">Kan pictogram '<ph name="ICON" />' voor pagina-actie niet laden.</translation>
 <translation id="6571979863037191371">Koppel je telefoon los van je Chromebook. Ze maken niet meer automatisch verbinding.</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> wordt niet vaak gedownload en kan gevaarlijk zijn. Je bent beschermd met Geavanceerde beveiliging.</translation>
 <translation id="657402800789773160">&amp;Laad pagina opnieuw</translation>
 <translation id="6577284282025554716">Download geannuleerd: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Gesynchroniseerde wachtwoorden versleutelen met je Google-gebruikersnaam en -wachtwoord</translation>
@@ -5180,7 +5179,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Wachtwoord updaten voor <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Toegang tot lokale bestanden op je computer is door je beheerder uitgeschakeld</translation>
-<translation id="9041909613332246191">Dit bestand wordt niet vaak gedownload en kan gevaarlijk zijn. Je bent beschermd met Geavanceerde beveiliging.</translation>
 <translation id="9042858701776831292">Google Play Store-apps hebben mogelijk toegang nodig tot externe opslagapparaten zodat ze bestanden en mappen op deze apparaten kunnen lezen en schrijven.</translation>
 <translation id="9042893549633094279">Privacy en beveiliging</translation>
 <translation id="904451693890288097">Voer de toegangscode voor '<ph name="DEVICE_NAME" />' in:</translation>
@@ -5267,7 +5265,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9179734824669616955">Linux (bèta) op je <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">Dit proces kan enkele minuten duren. De Linux-container wordt gestart.</translation>
 <translation id="9180380851667544951">Site kan je scherm delen</translation>
-<translation id="9185926955514281189">Kleuren en thema's</translation>
 <translation id="9188441292293901223">Werk je telefoon bij naar een nieuwere versie van Android om dit <ph name="DEVICE_TYPE" /> te ontgrendelen.</translation>
 <translation id="9188732951356337132">Verzend gebruiks- en diagnostische gegevens. Dit apparaat verzendt momenteel automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google. Deze gegevens worden niet gebruikt om je kind te identificeren en helpen om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld voor je kind, kunnen deze gegevens worden opgeslagen in het Google-account van je kind. <ph name="BEGIN_LINK2" />Meer informatie<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + eerder gedeelde sleutel</translation>

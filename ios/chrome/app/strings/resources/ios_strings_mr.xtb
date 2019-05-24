@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">एरर</translation>
 <translation id="1172898394251786223">पुढील फील्ड</translation>
 <translation id="1176932207622159128">इमेज सेव्ह करू शकत नाही</translation>
+<translation id="1180526666083833456">डिव्हाइसवर सिंक आणि पर्सनलाइझ करा</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
 <translation id="1201530049782216880">नवीन गुप्त टॅब</translation>
 <translation id="1209206284964581585">आतासाठी लपवा</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">मागील 4 आठवडे</translation>
 <translation id="1407135791313364759">सर्व उघडा</translation>
 <translation id="1430915738399379752">प्रिंट</translation>
+<translation id="1436290164580597469">सिंक सुरू करण्यासाठी पासफ्रेझ एंटर करा.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> आयटम</translation>
 <translation id="1491277525950327607">सेटिंग टॉगल करण्यासाठी दोनदा टॅप करा</translation>
 <translation id="152234381334907219">कधीही सेव्ह न केलेले</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">पासवर्ड दर्शवा</translation>
 <translation id="2481538920734869610">खाते जोडा</translation>
 <translation id="2497852260688568942">तुमच्या अॅडमिनिस्ट्रेटरने सिंक अक्षम केले आहे</translation>
+<translation id="2500374554657206846">पासवर्ड सेव्ह करण्यासाठी पर्याय</translation>
 <translation id="2523363575747517183">ही वेबसाइट वारंवार दुसरे अ‍ॅप्लिकेशन उघडण्याचा प्रयत्न करत आहे.</translation>
 <translation id="2529021024822217800">सर्व उघडा</translation>
+<translation id="2570206273416014374">ॲड्रेस बार आणि सर्च बॉक्समधून तुमच्या डीफॉल्ट शोध इंजिनला काही कुकी आणि शोध पाठवते.</translation>
 <translation id="2572712655377361602">डिव्हाइस धोरणाने तुमच्या फोटोंंचा अॅक्सेस ब्लॉक केला</translation>
 <translation id="2584132361465095047">खाते जोडा...</translation>
 <translation id="2625189173221582860">पासवर्ड कॉपी केला</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">सर्व गुप्त टॅब बंद करा</translation>
 <translation id="3533436815740441613">नवीन टॅब</translation>
 <translation id="3551320343578183772">टॅब बंद करा</translation>
+<translation id="3581564640715911333">पेजचे अन्य भाषांमध्ये भाषांतर उपलब्ध करा</translation>
 <translation id="3588820906588687999">नवीन टॅबमध्ये इमेज उघडा</translation>
 <translation id="3603009562372709545">लिंक URL कॉपी करा</translation>
 <translation id="3607167657931203000">अॉटोफिल डेटा</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
 <translation id="3771033907050503522">गुप्त टॅब</translation>
+<translation id="3775743491439407556">सिंक काम करत नाही</translation>
 <translation id="3779810277399252432">कोणतेही इंटरनेट कनेक्शन नाही.</translation>
 <translation id="3783017676699494206">इमेज सेव्ह करा</translation>
 <translation id="3789841737615482174">स्थापना करा</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">QR कोड स्कॅन करण्‍यासाठी, सेटिंग्ज मधून कॅमेरा सुरू करा</translation>
 <translation id="4281844954008187215">सेवा अटी</translation>
 <translation id="430793432425771671">प्रत्येकगोष्ट संंकालित करा</translation>
+<translation id="4338650699862464074">तुम्ही भेट दिलेल्या पेजच्या URL Google ला पाठवते.</translation>
 <translation id="4359125752503270327">हे पेज दुसऱ्या ॲप्समध्ये उघडेल.</translation>
 <translation id="4370827530403103842">संकालन कार्य करत नाही. निराकरण करण्यासाठी टॅप करा.</translation>
 <translation id="4375040482473363939">QR कोड शोध</translation>
 <translation id="4378154925671717803">फोन</translation>
 <translation id="441868831736628555">गोपनीयता सूचना</translation>
+<translation id="4454246407045105932">भाषा जोडा</translation>
 <translation id="4476574785019001431">सेटिंग्ज</translation>
 <translation id="4496373720959965247">टॅब जोडा आणि पेजदरम्यान स्विच करा</translation>
 <translation id="4508750114462689118">साइन-इन प्रोमो बंद करा</translation>
@@ -235,6 +243,7 @@
 <translation id="461440297010471931">Google ने शोधत आहे</translation>
 <translation id="4619615317237390068">अन्य डिव्हाइसेसमधील टॅब</translation>
 <translation id="4620246317052452550">तुम्ही वाचलेली पृष्‍ठे</translation>
+<translation id="4630540211544979320">पेजचे भाषांतर करा</translation>
 <translation id="4636930964841734540">माहिती</translation>
 <translation id="4659667755519643272">टॅब स्विचर प्रविष्‍ट करा</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> म्हणून साइन इन केले.
@@ -249,7 +258,9 @@
 
 हे सेटिंग बदलण्यासाठी, <ph name="BEGIN_LINK" />सिंक रीसेट करा<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">एक न वाचलेला वाचन सूची लेख.</translation>
+<translation id="4818522717893377262">भाषा जोडा…</translation>
 <translation id="481968316161811770">कुकीज, साइट डेटा</translation>
+<translation id="4833786495304741580">Google ला वापर आकडेवारी आणि क्रॅश अहवाल आपोआप पाठवते.</translation>
 <translation id="4840495572919996524">तुमचे बुकमार्क, इतिहास, पासवर्ड आणि बरेच काही आता तुमच्या Google खातेमध्ये सिंक केले जाणार नाही</translation>
 <translation id="4854345657858711387">पासकोड सेट करा</translation>
 <translation id="4860895144060829044">कॉल करा</translation>
@@ -290,6 +301,7 @@
 <translation id="5548760955356983418">Handoff तुम्हाला या डिव्हाइसवर ब्राउझिंग प्रारंभ करू आणि त्यानंतर आपल्या Mac वर सहजपणे सुरू ठेऊ देते. वर्तमान उघडलेली वेबसाइट आपल्या Mac च्या डॉकवर दिसून येईल.
 
 सेटिंग्जच्या सामान्य विभागामध्ये Handoff सक्षम केलेले असणे आवश्यक आहे आणि आपल्या डिव्हाइसेसने समान iCloud खाते वापरणे आवश्यक आहे.</translation>
+<translation id="5551897871312988470">भाषांतर उपलब्ध करा</translation>
 <translation id="5556459405103347317">रीलोड करा</translation>
 <translation id="5614553682702429503">पासवर्ड सेव्ह करायचा आहे का?</translation>
 <translation id="5626245204502895507">यावेळी फाईल डाऊनलोड केली जाऊ शकली नाही.</translation>
@@ -337,6 +349,7 @@
 <translation id="6187302354554850004">अखेरचे संंकालित: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">न वाचलेले</translation>
 <translation id="6196207969502475924">व्हॉइस शोध</translation>
+<translation id="6219688215832490856">कधीही भाषांतर करू नका</translation>
 <translation id="6254066287920239840">ब्राउझर ऐवजी ॲपमध्ये लिंक उघडा.</translation>
 <translation id="6255097610484507482">क्रेडिट कार्ड संपादित करा</translation>
 <translation id="6303969859164067831">साइन आउट करा आणि सिंक बंद करा</translation>
@@ -391,6 +404,7 @@
 <translation id="6945221475159498467">निवडा</translation>
 <translation id="6973630695168034713">फोल्डर</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
+<translation id="6988572888918530647">तुमचे Google खाते व्यवस्थापित करा</translation>
 <translation id="7004499039102548441">अलीकडील टॅब</translation>
 <translation id="7006788746334555276">आशय सेटिंग्ज</translation>
 <translation id="7015203776128479407">सुरुवातीचे सिंक सेट करणे पूर्ण झाले नाही. सिंक बंद आहे.</translation>
@@ -461,6 +475,7 @@
 <translation id="8059533439631660104">विभाग संकुचित करा.</translation>
 <translation id="806745655614357130">माझा डेटा स्वतंत्र ठेवा</translation>
 <translation id="8073670137947914548">डाउनलोड पूर्ण झाले</translation>
+<translation id="8073872304774253879">शोध आणि ब्राउझ करणे उत्तम बनवा</translation>
 <translation id="8076014560081431679">सेव्ह केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">फाइल डाउनलोड उपलब्ध आहे. स्क्रीनच्या तळाशी पर्याय उपलब्ध आहेत.</translation>
 <translation id="8131740175452115882">पुष्टी करा</translation>

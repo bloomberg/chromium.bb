@@ -1073,6 +1073,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je pravilnik AutoplayAllowed nastavljen na »False«, bo za vzorce URL-jev, nastavljene v tem pravilniku, predvajanje še vedno dovoljeno.
 
       Upoštevajte: če se izdelek <ph name="PRODUCT_NAME" /> izvaja in se ta pravilnik spremeni, bo uveljavljen samo za novo odprte zavihke. Nekateri zavihki bodo zato morda še vedno delovali po starem.</translation>
+<translation id="284288632677954003">URL ali datoteka XML z URL-ji, ki naj nikoli ne sprožijo preklopa brskalnika.</translation>
 <translation id="285480231336205327">Omogoči visokokontrastni način</translation>
 <translation id="2854919890879212089">Povzroči, da <ph name="PRODUCT_NAME" /> kot privzeto možnost v predogledu tiskanja uporabi sistemsko privzet tiskalnik namesto nazadnje uporabljenega tiskalnika.
 
@@ -1245,6 +1246,15 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3096595567015595053">Seznam omogočenih vtičnikov</translation>
 <translation id="3101501961102569744">Izberite, kako določiti nastavitve strežnika proxy</translation>
 <translation id="3101709781009526431">Datum in ura</translation>
+<translation id="3114411414586006215">Ta pravilnik nadzira seznam spletnih mest, ki ne bodo nikoli povzročila preklopa brskalnika.
+
+      Upoštevajte, da je mogoče elemente tudi dodati na ta seznam s pravilnikom <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Če ta pravilnik ni nastavljen, nobeno spletno mesto ni dodano na seznam.
+
+      Če je ta pravilnik nastavljen, je vsak element obravnavan kot pravilo, podobno kot pri pravilniku <ph name="URL_LIST_POLICY_NAME" />. Vendar je tukaj logika obratna: pravila, ki se ujemajo, ne odprejo nadomestnega brskalnika.
+
+      Drugače kot pri pravilniku <ph name="URL_LIST_POLICY_NAME" /> se pravila uporabljajo v obeh smereh. Če je torej nameščen in omogočen dodatek za Internet Explorer, ta prav tako nadzira, ali naj izdelek <ph name="IE_PRODUCT_NAME" /> odpre te URL-je v izdelku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Opozorilo: DHE bo v celoti odstranjen iz programa <ph name="PRODUCT_NAME" /> po različici 57 (okoli marca 2017) in ta pravilnik bo takrat prenehal delovati.
 
       Če pravilnik ni nastavljen ali je onemogočen, šifrirne zbirke DHE v protokolu TLS ne bodo omogočene, sicer pa je lahko omogočen zaradi omogočanja šifrirnih zbirk DHE in ohranjanja združljivosti z zastarelim strežnikom. To je začasen ukrep in strežnik je treba na novo konfigurirati.
@@ -1443,6 +1453,17 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3550875587920006460">Omogoča nastavitev razporeda po meri za preverjanje, ali so na voljo posodobitve. To velja za vse uporabnike in vse vmesnike v napravi. Ko je pravilnik nastavljen, bo naprava preverjala, ali so na voljo posodobitve, glede na razpored. Ta pravilnik je treba odstraniti, če želite preklicati nadaljnja načrtovana preverjanja, ali je na voljo posodobitev.</translation>
 <translation id="355118380775352753">Spletna mesta za odpiranje v nadomestnem brskalniku</translation>
 <translation id="3554984410014457319">Omogočanje Pomočniku Google, da posluša, ali je izgovorjena besedna zveza za glasovno aktiviranje</translation>
+<translation id="3557208865710006939">Vsili omogočanje jezikov za preverjanje črkovanja. Neprepoznani jeziki na seznamu so prezrti.
+
+      Če omogočite ta pravilnik, je preverjanje črkovanja omogočeno za navedene jezike poleg jezikov, za katere je uporabnik omogočil preverjanje črkovanja.
+
+      Če ne nastavite tega pravilnika ali ga onemogočite, ni sprememb uporabnikovih nastavitev preverjanja črkovanja.
+
+      Če je pravilnik <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> onemogočen, ta pravilnik nima učinka.
+
+      Če je jezik vključen v ta pravilnik in pravilnik <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, ima ta pravilnik prednost in jezik za preverjanje črkovanja je omogočen.
+
+      Za zdaj so podprti jeziki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Uporabniki lahko konfigurirajo kanal za izdaje sistema OS Chrome</translation>
 <translation id="3575011234198230041">Preverjanje pristnosti HTTP</translation>
 <translation id="3577251398714997599">Nastavitve oglasov za spletna mesta z vsiljivimi oglasi</translation>
@@ -1797,6 +1818,9 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
 
           Če tega pravilnika ne nastavite, je zaklepanje tipk prvotno onemogočeno, vendar ga lahko uporabnik kadar koli omogoči.</translation>
+<translation id="4171331498167688968">Če je pravilnik onemogočen, lahko programska oprema drugih ponudnikov vstavlja izvedljivo kodo v Chromove procese. Če pravilnik ni nastavljen ali je omogočen, programska oprema drugih ponudnikov ne more vstavljati izvedljive kode v Chromove procese.
+
+      Ne glede na vrednost tega pravilnika brskalnik programski opremi drugih ponudnikov trenutno ne bo preprečil vstavljanja izvedljive kode v procese brskalnika v računalniku, ki je pridružen v domeno <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Privzeta nastavitev za <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL za preverjanje žetona za preverjanje pristnosti odjemalca za oddaljeni dostop</translation>
 <translation id="4203389617541558220">Omejitev časa delovanja naprave z načrtovanjem samodejnih vnovičnih zagonov.
@@ -2165,6 +2189,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="5085647276663819155">Onemogoči predogled tiskanja</translation>
 <translation id="5090209345759901501">Razširitev nastavitve za vsebino Flash na vso vsebino</translation>
+<translation id="5090791951240382356">Omogočanje združevanja pravilnikov o slovarjih iz različnih virov</translation>
 <translation id="5093540029655764852">Določa, kako pogosto (v dnevih) odjemalec spremeni geslo računa v napravi. Geslo naključno generira odjemalec in ni vidno uporabniku.
 
       Tako kot gesla uporabnikov je treba redno spreminjati tudi gesla računov v napravi. Če onemogočite ta pravilnik ali nastavite veliko število dni, lahko to negativno vpliva na varnost, saj morebitnim napadalcem daje več časa, da uganejo geslo računa v napravi in ga uporabijo.
@@ -3111,6 +3136,17 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6923366716660828830">Določa ime privzetega ponudnika iskanja. Če pravilnik ostane prazen ali če ni nastavljen, bo uporabljeno ime gostitelja, določeno z URL-jem iskanja.
 
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
+<translation id="6924223708804692571">Vsili onemogočanje jezikov za preverjanje črkovanja. Neprepoznani jeziki na tem seznamu so prezrti.
+
+      Če omogočite ta pravilnik, je preverjanje črkovanja onemogočeno za navedene jezike. Uporabnik lahko še vedno omogoči ali onemogoči preverjanje črkovanja za jezike, ki niso na seznamu.
+
+      Če ne nastavite tega pravilnika ali ga onemogočite, ni sprememb uporabnikovih nastavitev preverjanja črkovanja.
+
+      Če je pravilnik <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> onemogočen, ta pravilnik nima učinka.
+
+      Če je jezik vključen v ta pravilnik in pravilnik <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, ima slednji pravilnik prednost in jezik za preverjanje črkovanja je omogočen.
+
+      Za zdaj so podprti jeziki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Omogočanje obojestranskega tiskanja z dolgim robom</translation>
 <translation id="6931242315485576290">Onemogoči sinhroniziranje podatkov z Googlom</translation>
 <translation id="6936894225179401731">Določa največje število hkratnih povezav v strežnik proxy.
@@ -3259,6 +3295,15 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je pravilnik nastavljen, je seznam aplikacij fiksen in ga uporabnik ne more spreminjati.
 
       Če pravilnik ni nastavljen, lahko uporabnik spremeni seznam pripetih aplikacij v zaganjalniku.</translation>
+<translation id="713121532817834879">Ta pravilnik je URL, ki kaže na datoteko XML v isti obliki, kakršen je pravilnik <ph name="IEEM_SITELIST_POLICY" /> za Internet Explorer. Pravila nalaga iz datoteke XML, ne da bi ta pravila delil z Internet Explorerjem.
+
+      Pravila v tej datoteki XML se uporabljajo enako kot pravilnik <ph name="GREYLIST_POLICY_NAME" />. Ta pravila torej izdelku <ph name="PRODUCT_NAME" /> preprečujejo odpiranje v nadomestnem brskalniku in prav tako preprečujejo nadomestnemu brskalniku odpiranje v izdelku <ph name="PRODUCT_NAME" />.
+
+      Če ta pravilnik ni nastavljen ali ni nastavljen na veljaven URL, ga izdelek <ph name="PRODUCT_NAME" /> ne uporablja kot vir pravil, ki ne sprožijo preklopa brskalnika.
+
+      Če je ta pravilnik nastavljen na veljaven URL, <ph name="PRODUCT_NAME" /> prenese seznam spletnih mest s tega URL-ja in uporabi pravila, kot bi bila konfigurirana s pravilnikom <ph name="SITELIST_POLICY_NAME" />.
+
+      Več informacij o pravilniku <ph name="IEEM_SITELIST_POLICY" /> za Internet Explorer je na voljo tukaj: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem videa</translation>
 <translation id="7138678301420049075">Drugo</translation>
 <translation id="7140629953254369759">Operacijskemu sistemu <ph name="PRODUCT_OS_NAME" /> sporoči, naj uporabi konfiguracijo sistema za razporejanje opravil, ki jo določa navedeno ime.
@@ -3307,6 +3352,15 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Samodejno predvajanje je dovoljeno samo za domene, ki so izrecno navedene v pravilniku <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Če želite samodejno predvajanje omogočiti za vsa spletna mesta, razmislite o tem, da bi na ta seznam dodali http://* in https://*.
 
           Če ta pravilnik ni nastavljen, bo lahko uporabnik to nastavitev spremenil ročno.</translation>
+<translation id="7222749588229362483">Omogoča, da se izbrani pravilniki združijo, če izvirajo iz različnih virov, vendar so enakih obsegov in ravni.
+
+        Do združevanja pride tako, da se združijo slovarski ključi prve ravni iz vsakega vira. V primeru spora med ključi, je uporabljen ključ, ki prihaja iz vira z največjo prednostjo.
+
+        Če je pravilnik na seznamu, bodo v primeru spora med viroma, če sta enakih obsegov in ravni, vrednosti združene v novem slovarju pravilnikov.
+
+        Če je pravilnik na seznamu, bo v primeru spora med viroma, ki sta tudi različnih obsegov in/ali ravni, uporabljen pravilnik z največjo prednostjo.
+
+        Če pravilnika ni na seznamu, bo v primeru spora med viroma, obsegi in/ali ravnijo uporabljen pravilnik z največjo prednostjo.</translation>
 <translation id="7229975860249300121">Vsebuje regularni izraz, ki se uporablja za ugotavljanje, katere Google Račune je mogoče nastaviti kot primarne račune brskalnika v brskalniku <ph name="PRODUCT_NAME" /> (tj. račun, ki je izbran med potekom omogočanja sinhronizacije).
 
       Če uporabnik poskusi nastaviti primarni račun brskalnika z uporabniškim imenom, ki se ne ujema s tem vzorcem, se prikaže ustrezna napaka.
@@ -3941,6 +3995,12 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Če je pravilnik nastavljen na »Replace«, je uporabniški pravilnik v predmetih pravilnika skupine uporabnika nadomeščen z uporabniškim pravilnikom v predmetih pravilnika skupine računalnika (predmeti pravilnika skupine uporabnika so prezrti).</translation>
 <translation id="8465065632133292531">Parametri za takojšnji URL, ki uporablja POST</translation>
+<translation id="8465746466645315861">Če ta pravilnik ni nastavljen, uporabnik lahko omogoči ali onemogoči preverjanje črkovanja v jezikovnih nastavitvah.
+
+      Če je ta pravilnik omogočen, je preverjanje črkovanja omogočeno in uporabnik ga ne more onemogočiti. V operacijskih sistemih <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> in <ph name="LINUX_OS_NAME" /> je mogoče vklopiti ali izklopiti posamezne jezike za preverjanje črkovanja, tako da lahko uporabnik pravzaprav še vedno onemogoči preverjanje črkovanja tako, da izklopi vse jezike za preverjanje črkovanja. Če se želite temu izogniti, lahko uporabite pravilnik <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, s katerim vsilite, da so določeni jeziki za preverjanje črkovanja omogočeni.
+
+      Če je ta pravilnik onemogočen, je preverjanje črkovanja onemogočeno in ga uporabnik ne more omogočiti. Pravilnika <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> in <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> nimata učinka, če je ta pravilnik onemogočen.
+      </translation>
 <translation id="847472800012384958">Nobenemu mestu ne dovoli prikaza pojavnih oken</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Iz URL-jev s protokolom https:// odstrani občutljive dele glede zasebnosti in varnosti, preden jih posreduje skriptom PAC (samodejno konfiguriranje strežnika proxy), ki jih med razreševanjem strežnika proxy uporablja <ph name="PRODUCT_NAME" />.

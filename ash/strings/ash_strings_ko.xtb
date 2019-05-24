@@ -98,7 +98,6 @@
 <translation id="239188844683466770">방해 금지 모드 전환</translation>
 <translation id="2412593942846481727">업데이트 가능</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" />은(는) <ph name="DOMAIN" />에서 관리하는 관리 세션입니다.</translation>
-<translation id="2416346634399901812"><ph name="NETWORK_NAME" />에 연결됨</translation>
 <translation id="2427507373259914951">왼쪽 클릭</translation>
 <translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">알림</translation>
@@ -158,6 +157,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" />님은 나중에도 로그인할 수 있습니다.</translation>
 <translation id="3321628682574733415">잘못된 부모 코드</translation>
 <translation id="332587331255250389">배터리를 교체해 주세요</translation>
+<translation id="3335825575923019462">자동 클릭을 사용 중지하시겠습니까?</translation>
 <translation id="3351879221545518001">현재 화면을 전송하고 있습니다.</translation>
 <translation id="3364721542077212959">스타일러스 도구</translation>
 <translation id="3368922792935385530">연결됨</translation>
@@ -216,7 +216,6 @@
 <translation id="4269883910223712419">이 기기의 관리자는 다음과 같은 작업을 할 수 있습니다.</translation>
 <translation id="4279490309300973883">미러링</translation>
 <translation id="4281007048406351813">타이머에 1분 추가</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> 활성화 중</translation>
 <translation id="4296136865091727875">알림 <ph name="COUNT" />개 모두 지우기</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">고대비 단축키를 누르셨습니다. 사용 설정할까요?</translation>
@@ -399,6 +398,7 @@
 <translation id="7348093485538360975">터치 키보드</translation>
 <translation id="735745346212279324">VPN 연결 끊김</translation>
 <translation id="7377169924702866686">Caps Lock이 켜져 있습니다.</translation>
+<translation id="7378594059915113390">미디어 컨트롤</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />초</translation>
 <translation id="7398254312354928459">네트워크 연결 전환됨</translation>
 <translation id="7405710164030118432">기기의 잠금을 해제하려면 Family Link 부모 액세스 코드를 입력하세요.</translation>
@@ -428,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" />시간 <ph name="MINUTE" />분</translation>
 <translation id="7829386189513694949">신호 강함</translation>
 <translation id="7837740436429729974">시간 종료</translation>
-<translation id="7842211907556571265"><ph name="NETWORK_NAME" />에 연결 중</translation>
 <translation id="7842569679327885685">경고: 실험 기능</translation>
 <translation id="7846634333498149051">키보드</translation>
 <translation id="7868900307798234037">지문으로 잠금 해제</translation>
@@ -484,6 +483,7 @@
 <translation id="8649101189709089199">텍스트 읽어주기</translation>
 <translation id="8652175077544655965">설정 닫기</translation>
 <translation id="8653151467777939995">알림 설정을 표시합니다. 알림이 사용 설정되어 있습니다.</translation>
+<translation id="8664483332071009680">자동 클릭을 사용 중지하시겠습니까?</translation>
 <translation id="8664753092453405566">네트워크 목록을 표시합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>

@@ -42,7 +42,6 @@
 <translation id="1773601347087397504">Chrome OS वापरून मदत मिळवा </translation>
 <translation id="1795405610103747296">Chrome तुमच्या फोनवर इंस्टॉल करा. आम्ही तुमच्या या फोनवर एक SMS पाठवू: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">हे बंद करून, तुम्ही Chrome वर साइन इन न करता Gmail सारख्या Google सायटींवर साइन इन करू शकता</translation>
-<translation id="1815759068706561639"><ph name="FILE_NAME" /> धोकादायक आहे, त्यामुळे Chrome ने ती ब्लॉक केली आहे. तुम्ही प्रगत संरक्षणाद्वारे संरक्षित आहात.</translation>
 <translation id="1860536484129686729">या साइटसाठी Chrome ला तुमचा कॅमेरा अॅक्सेस करण्याची परवानगी हवी आहे</translation>
 <translation id="1873233029667955273">Google Chrome तुमचा डीफॉल्ट ब्राउझर नाही</translation>
 <translation id="1874309113135274312">Google Chrome बीटा (mDNS-In)</translation>
@@ -68,7 +67,6 @@
 <translation id="2429317896000329049">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="2467438592969358367">Google Chrome ला तुमचे पासवर्ड निर्यात करायचे आहेत. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="2485422356828889247">अनइंस्टॉल करा</translation>
-<translation id="2521856951867783208">ही फाईल कदाचित धोकादायक असू शकते, त्यामुळे Chrome ने ती ब्लॉक केली आहे. तुम्ही प्रगत संरक्षणाद्वारे संरक्षित आहात.</translation>
 <translation id="2534507159460261402">Google Pay (Chrome वर कॉपी केले)</translation>
 <translation id="2535429035253759792">हे अपडेट लागू करण्यासाठी तुमच्या अॅडमिनिस्ट्रेटरने तुम्हाला Chrome पुन्हा लाँच करण्यास सांगितले आहे</translation>
 <translation id="2580411288591421699">सध्या चालत असलेली Google Chrome ची समान आवृत्ती इंस्टॉल करू शकत नाही. कृपया Google Chrome बंद करा आणि पुन्हा प्रयत्न करा.</translation>
@@ -104,7 +102,6 @@
 <translation id="3451115285585441894">Chrome मध्‍ये जोडत आहे...</translation>
 <translation id="345171907106878721">Chrome वर आपल्या स्वतःस जोडा</translation>
 <translation id="3479552764303398839">सध्या नाही</translation>
-<translation id="3481286511616257896"><ph name="FILE_NAME" /> धोकादायक असू शकते, त्यामुळे Chrome ने ती ब्लॉक केली आहे. तुम्ही प्रगत संरक्षणाद्वारे संरक्षित आहात.</translation>
 <translation id="34857402635545079">Chrome (<ph name="URL" />) वरील डेटा देखील साफ करा</translation>
 <translation id="3503306920980160878">तुमचे स्थान या साइटसोबत शेअर करण्यासाठी Chrome ला तुमच्या स्थानाचा अ‍ॅक्सेस हवा आहे</translation>
 <translation id="3576528680708590453">तुमच्या सिस्टम अ‍ॅडमिनिस्ट्रेटरने <ph name="TARGET_URL_HOSTNAME" /> ॲक्‍सेस करण्याकरिता पर्यायी ब्राउझर उघडण्यासाठी Google Chrome कॉन्फिगर केले आहे.</translation>
@@ -229,7 +226,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7459554271817304652">तुमची पर्सनलाइझ केलेली ब्राउझर वैशिष्ट्ये सेव्ह करण्यासाठी सिंक सेट करा आणि कोणत्याही कॉंप्युटरवरील Google Chrome वरून ते अॅक्सेस करा.</translation>
 <translation id="7473136999113284234">Chrome स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते.</translation>
 <translation id="7486227612705979895">ॲड्रेस बारमध्ये सूचना देण्यासाठी Chrome तुमची ड्राइव्ह ॲक्सेस करेल</translation>
-<translation id="748945194546522577">ही फाईल धोकादायक आहे, त्यामुळे Chrome ने ती ब्लॉक केली आहे. तुम्ही प्रगत संरक्षणाद्वारे संरक्षित आहात.</translation>
 <translation id="7531671357096394523">Chrome च्या सर्व प्रती बंद करा.</translation>
 <translation id="7535429826459677826">Google Chrome विकासक</translation>
 <translation id="7552219221109926349">Chrome OS या भाषेत डिस्प्ले करा</translation>
@@ -237,7 +233,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7589360514048265910">यापुढे Mac OS X 10.9 ला सपोर्ट नसल्यामुळे, या कॉंप्युटरला इथून पुढे Google Chrome चे अपडेट मिळणार नाहीत.</translation>
 <translation id="7592736734348559088">तुमचे खाते साइन इन तपशील कालबाह्य झाल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="7626032353295482388">Chrome मध्ये स्वागत आहे</translation>
-<translation id="7636297873481318396">ही फाईल धोकादायक आहे, त्यामुळे Chrome ने ती ब्लॉक केली आहे. तुम्ही प्रगत संरक्षणाद्वारे संरक्षित आहात.</translation>
 <translation id="7641148173327520642">तुमच्या सिस्टम अ‍ॅडमिनिस्ट्रेटरने <ph name="TARGET_URL_HOSTNAME" /> अ‍ॅक्सेस करण्यासाठी <ph name="ALTERNATIVE_BROWSER_NAME" /> उघडण्याकरिता Google Chrome कॉन्फिगर केले आहे.</translation>
 <translation id="7651907282515937834">Chrome एंटरप्राइझ लोगो</translation>
 <translation id="7747138024166251722">इन्स्टॉलर तात्पुरती डिरेक्टरी तयार करू शकत नाही. कृपया सॉफ्टवेअर इंस्टॉल करण्यासाठी रिक्त डिस्क स्थान आणि परवानगी पहा.</translation>

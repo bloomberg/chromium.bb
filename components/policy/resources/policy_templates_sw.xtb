@@ -1045,6 +1045,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
       Sera ya kucheza Kiotomatiki ikiwekwa kuwa Sivyo basi ruwaza yoyote ya URL iliyowekwa katika sera hii bado itaruhusiwa kucheza.
 
       Kumbuka kuwa kama <ph name="PRODUCT_NAME" /> inafanya kazi na sera hii ibadilike, sera itatumika tu kwenye vichupo viwili vinavyofunguliwa baada ya hatua hii. Kwa hivyo huenda baadhi ya vichupo vitatumia sera ya awali.</translation>
+<translation id="284288632677954003">URL ya faili ya XML ambayo ina URL ambazo hazipaswi kuanzisha ubadilishaji wa kivinjari.</translation>
 <translation id="285480231336205327">Wezesha modi ya juu ya kulinganua</translation>
 <translation id="2854919890879212089">Mipangilio hii husababisha <ph name="PRODUCT_NAME" /> kutumia printa chaguomsingi ya mfumo kama uteuzi chaguomsingi katika Onyesho la Kuchungulia la Printa badala ya printa iliyotumika hivi majuzi.
 
@@ -1215,6 +1216,15 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 <translation id="3096595567015595053">Orodha ya programu jalizi zilizowezeshwa</translation>
 <translation id="3101501961102569744">Chagua jinsi ya kubainisha mipangilio ya seva mbadala</translation>
 <translation id="3101709781009526431">Tarehe na wakati</translation>
+<translation id="3114411414586006215">Sera hii inadhibiti orodha ya tovuti ambazo hazitawahi kusababisha kivinjari kubadilishwa.
+
+      Kumbuka kuwa unaweza pia kuongeza vipengee kwenye orodha hii kupitia sera ya <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Iwapo hujaweka mipangilio ya sera hii, hamna tovuti zitakazoongezwa kwenye orodha.
+
+      Sera hii ikiwekwa, kila kipengele huchukuliwa kama kipengele kinachofanana na sera ya <ph name="URL_LIST_POLICY_NAME" />. Hata hivyo, mantiki inaweza kubadilishwa; sheria ambazo zinalingana hazitafungua kivinjari mbadala.
+
+      Tofauti na <ph name="URL_LIST_POLICY_NAME" />, sheria zinatumika katika pande zote mbili. Yaani, wakati programu jalizi ya Internet Explorer inapatikana na imewashwa, inadhibiti ikiwa <ph name="IE_PRODUCT_NAME" /> inahitaji kufungua au kutofungua URL hizi kwenye <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Onyo: DHE itaondolewa kabisa kwenye <ph name="PRODUCT_NAME" /> baada ya toleo la 57 (kufikia Machi 2017) na sera hii itaacha kufanya kazi wakati huo.
 
       Sera hii isipowekwa, au ikiwekwa kuwa sivyo, basi mipangilio ya kriptografia ya DHE katika TLS haitawashwa. La sivyo, inaweza kuwekwa kuwa ndivyo ili kuwasha mipangilio ya kriptografia ya DHE na kudumisha uoanifu na seva iliyokwisha muda. Huu ni mkakati wa muda tu na seva inapaswa kuwekwa mipangilio upya.
@@ -1415,6 +1425,17 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3550875587920006460">Huruhusu kuweka ratiba maalum ili kuangalia masasisho. Hali hii inaathiri watumiaji na violesura vyote katika kifaa. Baada ya kuwekwa, kifaa kitatafuta masasisho kulingana na ratiba. Ni sharti sera hii iondolewe ili kughairi ukaguzi wowote ulioratibiwa wa masasisho.</translation>
 <translation id="355118380775352753">Tovuti zinazofunguka katika kivinjari mbadala</translation>
 <translation id="3554984410014457319">Ruhusu programu ya Mratibu wa Google isikilize kifungu cha kuwasha sauti</translation>
+<translation id="3557208865710006939">Hulazimisha kuwasha sera ya kikagua tahajia katika lugha. Lugha ambazo hazijatambuliwa katika orodha hazitazingatiwa.
+
+      Ukiwasha sera hii, kikagua tahajia kitawashwa kwa ajili ya lugha ulizobainisha, pamoja na lugha ambako mtumiaji amewasha kikagua tahajia.
+
+      Usipoweka sera hii, au ukiizima, hakutakuwa na mabadiliko kwenye mapendeleo ya mtumiaji kwenye kikagua tahajia.
+
+      Ikiwa sera ya <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> imewekwa kuwa sivyo, sera hii haina athari.
+
+      Ikiwa lugha imejumuishwa katika sera hii na sera ya <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, sera hii inapewa kipaumbele na lugha inayotumia kikagua tahajia huwashwa.
+
+      Lugha ambazo zinatumika kwa sasa: Kiafrikana, Kibulgaria, Kikatalani, Kicheki, Kiholanzi, Kigiriki, Kiingereza cha Australia, Kiingereza cha Kanada, Kiingereza cha Uingereza, Kiingereza cha Marekani, Kihispania, Kihispania cha Marekani Kusini, Kihispania cha Ajentina, Kihispania cha Uhispania, Kihispania cha Meksiko, Kihispania cha Marekani, Kiestonia, Kiajemi, Kifarosi, Kifaransa, Kiyahudi, Kihindi, Kikoresia, Kihungari, Kiindonesia, Kiitaliano, Kikorea, Kilasembagi, Kiflemil, Kibokmali cha Norwe, Kiholanzi, Kipolandi, Kireno cha Brazil, Kireno cha Ulaya, Kiromania, Kirusi, Kislovakia, Kislovenia, Kialbania, Kiserbia, Kiswidi, Kitamili, Kitajiki, Kituruki, Kiukraini, Kivietinamu.</translation>
 <translation id="356579196325389849">Watumiaji wanaweza kuweka mipangilio ya kituo cha matoleo ya Mfumo wa Uendeshaji wa Chrome</translation>
 <translation id="3575011234198230041">Uthibitishaji wa HTTP</translation>
 <translation id="3577251398714997599">Mipangilio ya matangazo kwa tovuti zilizo na matangazo yanayokatiza matumizi</translation>
@@ -1770,6 +1791,9 @@ kawaida la Duka la Chrome kwenye Wavuti. Kwa maelezo zaidi kuhusu jinsi ya kupan
           Ukiweka sera hii, watumiaji hawawezi kuibadilisha au kuibatilisha.
 
           Sera hii isipowekwa, kipengele cha vitufe vinavyonata huzimwa mwanzoni lakini kinaweza kuwashwa na mtumiaji wakati wowote.</translation>
+<translation id="4171331498167688968">Kama sera imewekwa kuwa sivyo basi programu ya kampuni nyingine itazuiwa kuingiza msimbo unaoweza kutekelezwa katika michakato ya Chrome. Kama sera haijawekwa au imewekwa kuwa ndivyo, programu ya kampuni nyingine itaruhusiwa kuingiza msimbo unaoweza kutekelezwa katika michakato ya Chrome.
+
+      Bila kujali thamani ya sera hii, kivinjari kwa sasa hakitazuia programu za kampuni nyingine kuingiza msimbo unaoweza kutekeleza michakato yake kwenye mashine ambayo imeunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Mipangilio chaguomsingi ya <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL ya kuidhinisha tokeni ya kuthibitisha seva teja ya ufikiaji wa mbali</translation>
 <translation id="4203389617541558220">Pima muda wa kuwaka wa kifaa kwa kuratibu kuwasha tena kiotomatiki.
@@ -2131,6 +2155,7 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
           Sera hii inapatikana kwenye matukio ya Windows ambayo yameunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />. au matukio ya Windows 10 Pro au Enterprise yaliyojumuishwa katika usimamizi wa kifaa.</translation>
 <translation id="5085647276663819155">Lemaza Uhakiki wa Uchapishaji</translation>
 <translation id="5090209345759901501">Panua mipangilio ya maudhui ya Flash kujumuisha maudhui yote</translation>
+<translation id="5090791951240382356">Ruhusu uunganishaji wa sera za kamusi kutoka vyanzo tofauti</translation>
 <translation id="5093540029655764852">Hubainisha muda (katika siku) ambayo mteja huchukua ili kubadilisha nenosiri la akaunti ya mashine. Nenosiri huzalishwa bila mpangilio wowote na mteja na halionekani kwa mtumiaji. 
 
       Kama ilivyo katika manenosiri ya mtumiaji, ni sharti manenosiri ya mashine yabadilishwe mara kwa mara. Kuzima sera hii au kuweka idadi nyingi ya siku kunaweza kuwa na athari mbaya kwa usalama kwa sababu hali hii huwapa wavamizi wa akaunti muda zaidi wa kupata na kutumia nenosiri la akaunti ya mashine.
@@ -3068,6 +3093,17 @@ Ikiwa sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
 <translation id="6923366716660828830">Inabainisha jina la mtoaji wa utafutaji chaguo -msingi. Likiachwa tupu au bila kuwekwa, jina la mpangishaji lililobainishwa na URL ya utafutaji litatumiwa.
 
           Sera hii inazingatiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' itawezeshwa.</translation>
+<translation id="6924223708804692571">Hulazimisha kuzima kikagua tahajia katika lugha. Lugha ambazo hazijatambuliwa katika orodha hii hazitazingatiwa.
+
+      Ukiwasha sera hii, kikagua tahajia kitazimwa kwa lugha ulizobainisha. Mtumiaji bado anaweza kuwasha au kuzima kikagua tahajia kwa lugha ambazo hazipo kwenye orodha.
+
+      Usipoweka sera hii, au ukiizima, hakutakuwa na mabadiliko kwenye mapendeleo ya mtumiaji kwenye kikagua tahajia.
+
+      Ikiwa sera ya <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> imewekwa kuwa sivyo, sera hii haina athari.
+
+      Ikiwa lugha imejumuishwa katika sera hii na sera ya <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, sera hii inapewa kipaumbele na lugha inayotumia kikagua tahajia huwashwa.
+
+      Lugha ambazo zinatumika kwa sasa: Kiafrikana, Kibulgaria, Kikatalani, Kicheki, Kiholanzi, Kigiriki, Kiingereza cha Australia, Kiingereza cha Kanada, Kiingereza cha Uingereza, Kiingereza cha Marekani, Kihispania, Kihispania cha Marekani Kusini, Kihispania cha Ajentina, Kihispania cha Uhispania, Kihispania cha Meksiko, Kihispania cha Marekani, Kiestonia, Kiajemi, Kifarosi, Kifaransa, Kiyahudi, Kihindi, Kikoresia, Kihungari, Kiindonesia, Kiitaliano, Kikorea, Kilasembagi, Kiflemil, Kibokmali cha Norwe, Kiholanzi, Kipolandi, Kireno cha Brazil, Kireno cha Ulaya, Kiromania, Kirusi, Kislovakia, Kislovenia, Kialbania, Kiserbia, Kiswidi, Kitamili, Kitajiki, Kituruki, Kiukraini, Kivietinamu.</translation>
 <translation id="6926703471186170050">Ruhusu uchapishaji wa pande mbili ukurasa ukiwa mlalo</translation>
 <translation id="6931242315485576290">Lemaza usawazishaji wa data iliyna Google</translation>
 <translation id="6936894225179401731">Inabainisha idadi ya juu ya miunganisho sawia katika seva ya proksi.
@@ -3215,6 +3251,15 @@ Ikiwa sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
       Ikiwa sera hii itasanidiwa, uwekaji wa programu ni wa kudumu na hauwezi kubadilishwa na mtumiaji..
 
       Ikiwa sera hii itaachwa bila kuwekwa, huenda mtumiaji akabadilisha orodha ya programu zilizobanwa katika kizinduzi.</translation>
+<translation id="713121532817834879">Sera hii ni URL inayorejelea faili ya XML katika muundo sawa na sera ya Internet Explorer ya <ph name="IEEM_SITELIST_POLICY" />. Sera hii hupakia sheria kutoka faili ya XML, bila kushiriki sheria hizo na Internet Explorer.
+
+      Sheria katika faili ya XML hutumika kwa njia sawa kama <ph name="GREYLIST_POLICY_NAME" />. Sheria hizi huzuia <ph name="PRODUCT_NAME" /> kufungua kivinjari mbadala na pia huzuia kivinjari mbadala kufungua <ph name="PRODUCT_NAME" />.
+
+      Sera hii isipowekwa, au ispowekwa kuwa URL sahihi, <ph name="PRODUCT_NAME" /> haiitumii kama chanzo cha sheria ambazo zinaanzisha ubadilishaji wa kivinjari.
+
+      Sera hii inapowekwa kuwa URL sahihi, <ph name="PRODUCT_NAME" /> inapakua orodha ya tovuti kutoka URL hiyo na hutumia sheria kama mipangilio iliyowekwa kwa kutumia sera ya <ph name="SITELIST_POLICY_NAME" />.
+
+      Kwa maelezo zaidi kuhusu sera ya Internet Explorer ya <ph name="IEEM_SITELIST_POLICY" />: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL ambazo zitapewa ufikiaji wa vifaa vya kunasa video bila ushawishi</translation>
 <translation id="7138678301420049075">Nyingine</translation>
 <translation id="7140629953254369759">Huelekeza <ph name="PRODUCT_OS_NAME" /> kutumia mipangilio ya kiweka ratiba ya majukumu iliyobainishwa kwa jina mahususi.
@@ -3261,6 +3306,15 @@ inapatikana tu kwenye Windows na ${safari} inapatikana tu kwenye Windows na Mac 
           Uchezaji tena wa kiotomatiki huruhusiwa kwa vikoa vilivyoorodheshwa wazi katika sera ya <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Kama ungependa kuwasha uchezaji kiotomatiki wa tovuti zote zingatia kuongeza http://* na https://* kwenye orodha hii.
 
          Ikiwa sera hii itaachwa bila kuwekwa, mtumiaji ataweza kubadilisha mipangilio hii yeye mwenyewe.</translation>
+<translation id="7222749588229362483">Huruhusu sera zilizochaguliwa kuunganishwa wakati zinatoka kwenye vyanzo tofauti vilivyo na upeo na viwango sawa.
+
+        Uunganishaji hujumuisha kuunganisha funguo za kamusi za kiwango cha kwanza kutoka kila chanzo. Katika hali ambapo mgogoro umetokea kati ya funguo, ufunguo unaotoka kwenye chanzo cha kipaumbele cha juu zaidi utatumiwa.
+
+        Ikiwa sera ipo kwenye orodha, katika hali ambapo mgogoro umetokea kati ya vyanzo viwili, ikizingatiwa kwamba vina upeo na viwango sawa, thamani zitaunganishwa na kuwa kamusi mpya ya sera.
+
+        Ikiwa sera ipo kwenye orodha, katika hali ambapo mgogoro umetokea kati ya vyanzo viwili na pia kati ya upeo na/au viwango tofauti, sera inayopewa kipaumbele cha juu zaidi itatumiwa.
+
+        Ikiwa sera haipo kwenye orodha, katika hali ambapo mgogoro umetokea kati ya vyanzo, upeo na/au viwango, sera inayopewa kipaumbele cha juu zaidi itatumiwa.</translation>
 <translation id="7229975860249300121">Inajumuisha kilinganishi ambacho kinatumiwa kubainisha aina za akaunti za Google ambazo zinaweza kuwekwa kuwa kivinjari cha akaunti ya msingi katika <ph name="PRODUCT_NAME" /> (yaani akaunti ambayo inachaguliwa wakati wa mchakato wa kuchagua kutekeleza Usawazishaji).
 
       Hitilafu inayofaa itaonyeshwa iwapo mtumiaji atajaribu kuweka akaunti ya msingi ya kivinjari pamoja na jina la mtumiaji ambalo halilingani na mchoro huu.
@@ -3884,6 +3938,12 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
 
       Kama sera imewekwa kuwa 'Badilisha', sera ya mtumiaji katika GPO za mtumiaji inabadilishwa na sera ya mtumiaji katika GPO za kompyuta (GPO za mtumiaji hazizingatiwi).</translation>
 <translation id="8465065632133292531">Vigezo vya URL ya papo hapo inayotumia POST</translation>
+<translation id="8465746466645315861">Sera hii isipowekwa, mtumiaji anaweza kuwasha au kuzima kikagua tahajia katika mipangilio ya lugha.
+
+      Ikiwa sera hii imewekwa kuwa ndivyo, kikagua tahajia kinawashwa na mtumiaji hawezi kukizima. Kwenye <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> na <ph name="LINUX_OS_NAME" />, lugha zinazotumia kikagua tahajia zinaweza kubadilishwa moja baada ya nyingine, kwa hivyo mtumiaji anaweza kuzima kikagua tahajia kwa kugeuza kila lugha inayokitumia. Ili uepuke hili, sera ya <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> inaweza kutumiwa kulazimisha lugha mahususi zinazotumia kikagua tahajia kuwashwa.
+
+      Sera hii ikiwekwa kuwa sivyo, kikagua tahajia kinazimwa na mtumiaji hawezi kukiwasha. Sera za <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> na <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> hazina athari wakati sera hii imewekwa kuwa sivyo.
+      </translation>
 <translation id="847472800012384958">Usiruhusu tovuti yoyote kuonyesha madirisha ibukizi</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Huondoa faragha na sehemu nyeti za usalama za URL za https:// kabla ya kuzipeleka kwenye hati za PAC (Proxy Auto Config) zinazotumika na <ph name="PRODUCT_NAME" /> wakati wa kuweka seva mbadala.

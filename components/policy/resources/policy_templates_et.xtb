@@ -1252,13 +1252,13 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="3101709781009526431">Kuupäev ja kellaaeg</translation>
 <translation id="3114411414586006215">Reegel haldab loendit veebisaitidest, mis ei põhjusta kunagi brauserivahetust.
 
-      Pange tähele, et reegliga <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> saab elemente sellesse loendisse ka lisada.
+      Pange tähele, et sellesse loendisse saab üksusi lisada ka reegliga <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
 
       Kui reegel on määramata, ei lisata loendisse ühtki veebisaiti.
 
       Kui reegel on määratud, käsitletakse iga üksust reeglina (sarnaselt reegliga <ph name="URL_LIST_POLICY_NAME" />). Loogika on aga vastupidine: kattuvaid reegleid ei avata alternatiivses brauseris.
 
-      Erinevalt reeglist <ph name="URL_LIST_POLICY_NAME" /> kehtivad reeglid mõlemas suunas. See tähendab, et kui Internet Exploreri pistikprogramm on olemas ja lubatud, haldab see ka seda, kas<ph name="IE_PRODUCT_NAME" /> peaks avama need URL-id teenuses <ph name="PRODUCT_NAME" />.</translation>
+      Erinevalt reeglist <ph name="URL_LIST_POLICY_NAME" /> kehtivad reeglid mõlemas suunas. See tähendab, et kui Internet Exploreri pistikprogramm on olemas ja lubatud, haldab see ka seda, kas <ph name="IE_PRODUCT_NAME" /> peaks avama need URL-id teenuses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Hoiatus. DHE eemaldatakse teenusest <ph name="PRODUCT_NAME" /> pärast versiooni 57 täielikult (umbes 2017. aasta märtsis) ja edaspidi see reegel enam ei tööta.
 
       Kui reegel on määramata või selle väärtuseks on määratud Väär, ei ole DHE šifreerimiskomplektid TLS-is lubatud. Selle väärtuseks võib olla määratud ka Tõene, et lubada DHE šifreerimiskomplektid ja et säilitada ühilduvus aegunud serveriga. See on ajutine meede ja server tuleks ümber seadistada.

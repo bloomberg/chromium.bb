@@ -1223,6 +1223,7 @@
 <translation id="2870909136778269686">更新中…</translation>
 <translation id="2871813825302180988">已有人在這個裝置上使用這個帳戶。</translation>
 <translation id="287286579981869940">新增 <ph name="PROVIDER_NAME" />...</translation>
+<translation id="2872961005593481000">關閉</translation>
 <translation id="2874343608108773609">如要取得你在所有裝置上的密碼，請登入 Chrome。</translation>
 <translation id="2874939134665556319">上一首曲目</translation>
 <translation id="2875698561019555027">(Chrome 錯誤頁面)</translation>
@@ -2885,7 +2886,6 @@
 <translation id="5518584115117143805">電子郵件加密憑證</translation>
 <translation id="5521078259930077036">這是你想要的首頁嗎？</translation>
 <translation id="5522156646677899028">這個擴充功能內含嚴重安全性漏洞。</translation>
-<translation id="5523201311986093262">背景</translation>
 <translation id="5525677322972469346">建立新的受監管使用者</translation>
 <translation id="5526701598901867718">全部 (不安全)</translation>
 <translation id="5526745900034778153">如要繼續同步處理，請重新登入</translation>
@@ -3569,7 +3569,6 @@
 <translation id="656293578423618167">檔案路徑或檔案名稱過長。請縮短檔案名稱或選擇其他儲存位置。</translation>
 <translation id="6567688344210276845">無法載入網頁動作的圖示「<ph name="ICON" />」。</translation>
 <translation id="6571979863037191371">中斷手機與 Chromebook 的連線後，這兩個裝置就不會再自動連線。</translation>
-<translation id="6573998787994398565">一般使用者不常下載 <ph name="FILE_NAME" />，代表這個檔案可能不安全。你已啟用進階保護功能。</translation>
 <translation id="657402800789773160">重新載入這個網頁(&amp;R)</translation>
 <translation id="6577284282025554716">已取消下載：<ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">使用你的 Google 使用者名稱與密碼將經過同步處理的密碼加密</translation>
@@ -5176,7 +5175,6 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">要更新 <ph name="ORIGIN" /> 的密碼嗎？</translation>
 <translation id="9041692268811217999">管理員停用了電腦本機檔案的存取權</translation>
-<translation id="9041909613332246191">一般使用者不常下載這個檔案，代表這個檔案可能不安全。你已啟用進階保護功能。</translation>
 <translation id="9042858701776831292">Google Play 商店應用程式可能會要求存取外部儲存裝置，以便讀取和寫入其中的檔案和資料夾。</translation>
 <translation id="9042893549633094279">隱私權和安全性</translation>
 <translation id="904451693890288097">請輸入「<ph name="DEVICE_NAME" />」的密碼金鑰：</translation>
@@ -5263,7 +5261,6 @@
 <translation id="9179734824669616955">在 <ph name="DEVICE_TYPE" /> 上設定 Linux (測試版)</translation>
 <translation id="9180281769944411366">正在啟動 Linux 容器，過程可能需要幾分鐘。</translation>
 <translation id="9180380851667544951">網站可以分享你的螢幕畫面</translation>
-<translation id="9185926955514281189">顏色和主題</translation>
 <translation id="9188441292293901223">你必須將手機更新至較新的 Android 版本，才能為這台 <ph name="DEVICE_TYPE" /> 解鎖。</translation>
 <translation id="9188732951356337132">傳送使用狀況與診斷資料。這個裝置目前會自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google。這些資料將有助於系統和應用程式提高穩定性及做出其他改善，並不會用於識別貴子女的身分。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。如果貴子女的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到他們的 Google 帳戶。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + 預先共用金鑰</translation>

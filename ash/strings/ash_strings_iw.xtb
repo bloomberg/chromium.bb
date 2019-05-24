@@ -98,7 +98,6 @@
 <translation id="239188844683466770">הפעלה או השבתה של מצב 'נא לא להפריע'</translation>
 <translation id="2412593942846481727">יש עדכון זמין</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> הוא סשן מנוהל שמנוהל על-ידי <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">יש חיבור אל <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">לחיצה שמאלית</translation>
 <translation id="2429753432712299108">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה. לפני שתאשר, ודא שמפתח הסיסמה הבא מוצג במכשיר הזה: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">התראות</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">מנהל המכשיר הזה יכול:</translation>
 <translation id="4279490309300973883">שיקוף</translation>
 <translation id="4281007048406351813">הוספת דקה לטיימר</translation>
-<translation id="4292681942966152062">המערכת מפעילה את <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">ניקוי כל <ph name="COUNT" /> ההתראות</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">הקשת על מקש הקיצור של ניגודיות גבוהה. להפעיל אותה?</translation>
@@ -432,7 +430,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> ו-<ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">אות חזק</translation>
 <translation id="7837740436429729974">עבר הזמן</translation>
-<translation id="7842211907556571265">המערכת מתחברת אל <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">אזהרה: תכונה ניסיונית</translation>
 <translation id="7846634333498149051">מקלדת</translation>
 <translation id="7868900307798234037">ביטול נעילה באמצעות טביעת אצבע</translation>

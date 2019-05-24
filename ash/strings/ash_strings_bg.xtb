@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Превключване на режима „Не безпокойте“</translation>
 <translation id="2412593942846481727">Налице е актуализация</translation>
 <translation id="2413728805700750528">„<ph name="DISPLAY_NAME" />“ е сесия, управлявана от <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Установена е връзка (<ph name="NETWORK_NAME" />)</translation>
 <translation id="2427507373259914951">Кликване с левия бутон</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Известия</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">Администраторът на това устройство може:</translation>
 <translation id="4279490309300973883">Дублиране</translation>
 <translation id="4281007048406351813">Добавяне на 1 минута към таймера</translation>
-<translation id="4292681942966152062">Мрежата се активира (<ph name="NETWORK_NAME" />)</translation>
 <translation id="4296136865091727875">Изчистване на всичките <ph name="COUNT" /> известия</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Използвахте клавишната комбинация за режима на висок контраст. Искате ли да го включите?</translation>
@@ -430,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> и <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">силен сигнал</translation>
 <translation id="7837740436429729974">Времето изтече</translation>
-<translation id="7842211907556571265">Установява се връзка (<ph name="NETWORK_NAME" />)</translation>
 <translation id="7842569679327885685">Предупреждение: Експериментална функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
 <translation id="7868900307798234037">Отключване с отпечатък</translation>

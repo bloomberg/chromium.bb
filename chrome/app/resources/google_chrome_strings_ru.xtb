@@ -39,7 +39,6 @@
 <translation id="1773601347087397504">Помощь по использованию Chrome OS</translation>
 <translation id="1795405610103747296">Установите Chrome на телефон. Мы отправим вам SMS на номер <ph name="PHONE_NUMBER" />.</translation>
 <translation id="1812689907177901597">Отключив эту функцию, вы сможете входить в систему на сайтах Google (например, Gmail) без необходимости выполнять вход в Chrome.</translation>
-<translation id="1815759068706561639">Chrome заблокировал файл <ph name="FILE_NAME" /> как опасный. Вы пользуетесь Дополнительной защитой.</translation>
 <translation id="1860536484129686729">Для этого сайта Chrome запрашивает доступ к камере.</translation>
 <translation id="1873233029667955273">Google Chrome не является браузером по умолчанию.</translation>
 <translation id="1874309113135274312">Google Chrome (бета, mDNS-In)</translation>
@@ -65,7 +64,6 @@
 <translation id="2429317896000329049">Google Chrome не удалось синхронизировать данные, поскольку служба Sync недоступна для вашего домена.</translation>
 <translation id="2467438592969358367">Чтобы экспортировать пароли из Google Chrome, введите пароль своего аккаунта Windows.</translation>
 <translation id="2485422356828889247">Удалить</translation>
-<translation id="2521856951867783208">Chrome заблокировал этот файл как потенциально опасный. Вы пользуетесь Дополнительной защитой.</translation>
 <translation id="2534507159460261402">Google Pay (скопирована в Chrome)</translation>
 <translation id="2535429035253759792">Администратор просит перезапустить Chrome для установки обновления</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
@@ -102,7 +100,6 @@
 <translation id="3451115285585441894">Установка...</translation>
 <translation id="345171907106878721">Добавить пользователя Chrome</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
-<translation id="3481286511616257896">Chrome заблокировал файл <ph name="FILE_NAME" /> как потенциально опасный. Вы пользуетесь Дополнительной защитой.</translation>
 <translation id="34857402635545079">Также удалить данные из Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="3576528680708590453">Ваш системный администратор задал настройки, согласно которым Google Chrome должен запускать альтернативный браузер для доступа к сайту <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -224,7 +221,6 @@
 <translation id="7459554271817304652">Чтобы сохранить персонализированные функции для работы в Интернете и получить доступ к ним из Google Chrome на любом компьютере, необходимо настроить синхронизацию.</translation>
 <translation id="7473136999113284234">Chrome обновляется автоматически, поэтому у вас всегда будет установлена последняя версия.</translation>
 <translation id="7486227612705979895">Chrome получит доступ к Google Диску, чтобы вы могли просматривать рекомендации в адресной строке</translation>
-<translation id="748945194546522577">Chrome заблокировал этот файл как опасный. Вы пользуетесь Дополнительной защитой.</translation>
 <translation id="7531671357096394523">Закройте все экземпляры Chrome</translation>
 <translation id="7535429826459677826">Google Chrome для разработчиков</translation>
 <translation id="7552219221109926349">Отображать Chrome OS на этом языке</translation>
@@ -232,7 +228,6 @@
 <translation id="7589360514048265910">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Mac OS X 10.9 прекращена.</translation>
 <translation id="7592736734348559088">Google Chrome не удалось синхронизировать данные, поскольку ваши учетные данные устарели.</translation>
 <translation id="7626032353295482388">Добро пожаловать в Chrome!</translation>
-<translation id="7636297873481318396">Chrome заблокировал этот файл как опасный. Вы пользуетесь Дополнительной защитой.</translation>
 <translation id="7641148173327520642">Ваш системный администратор задал настройки, согласно которым Google Chrome должен запускать <ph name="ALTERNATIVE_BROWSER_NAME" /> для доступа к сайту <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Логотип Chrome Enterprise</translation>
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>

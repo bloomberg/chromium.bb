@@ -94,6 +94,7 @@
 <translation id="1670399744444387456">ప్రాథమికం</translation>
 <translation id="1671236975893690980">డౌన్‌లోడ్ పెండింగ్‌లో ఉంది…</translation>
 <translation id="1672586136351118594">మళ్లీ చూపవద్దు</translation>
+<translation id="1679068421605151609">డెవలపర్ సాధనాలు</translation>
 <translation id="1692118695553449118">సమకాలీకరణ ఆన్‌లో ఉంది</translation>
 <translation id="169515064810179024">మోషన్ సెన్సార్‌లను యాక్సెస్ చేయనీయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="1717218214683051432">మోషన్ సెన్సార్‌లు</translation>
@@ -546,7 +547,7 @@
 <translation id="5073204694187207510">పూర్తి స్క్రీన్ గ్రిడ్‌‌ను దాచిపెట్టు</translation>
 <translation id="5082793167783849073">పేజీలను సమూహంగా వర్గీకరించడం ద్వారా వేగంగా సరిపోల్చండి. ప్రారంభించడానికి, లింక్‌ను తాకి &amp; అలాగే నొక్కి ఉంచండి.</translation>
 <translation id="5087580092889165836">కార్డ్‌ను జోడించు</translation>
-<translation id="5098406615395468004">నా యాప్‌లకు జోడించండి</translation>
+<translation id="5098406615395468004">నా యాప్‌లకు జోడించు</translation>
 <translation id="5100237604440890931">కుదించబడింది - విస్తరింపజేయడానికి క్లిక్ చేయండి.</translation>
 <translation id="510275257476243843">1 గంట మిగిలి ఉంది</translation>
 <translation id="5123685120097942451">అజ్ఞాత ట్యాబ్</translation>
@@ -830,6 +831,7 @@
 <translation id="7062545763355031412">అంగీకరిస్తున్నాను, ఖాతాలను మార్చు</translation>
 <translation id="7063006564040364415">సింక్ సర్వర్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ఎంచుకోబడింది}other{# ఎంచుకోబడ్డాయి}}</translation>
+<translation id="7071521146534760487">ఖాతాను నిర్వహిస్తుంది</translation>
 <translation id="7077143737582773186">SD కార్డ్</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి.  ఎంపికలు స్క్రీన్ పైభాగానికి సమీపంలో అందుబాటులో ఉన్నాయి</translation>
 <translation id="7121362699166175603">చిరునామా బార్‌లో చరిత్ర, స్వీయపూరింపులను తొలగిస్తుంది. మీ Google ఖాతా <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />లో ఇతర రూపాల్లో ఉన్న బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు.</translation>

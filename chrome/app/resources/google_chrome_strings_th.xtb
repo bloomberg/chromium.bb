@@ -39,7 +39,6 @@
 <translation id="1773601347087397504">รับความช่วยเหลือเกี่ยวกับการใช้ Chrome OS</translation>
 <translation id="1795405610103747296">ติดตั้ง Chrome ในโทรศัพท์ เราจะส่ง SMS ไปยังโทรศัพท์ของคุณ: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">เมื่อปิดการตั้งค่านี้ คุณจะลงชื่อเข้าใช้เว็บไซต์ของ Google อย่างเช่น Gmail ได้โดยไม่ต้องลงชื่อเข้าใช้ Chrome</translation>
-<translation id="1815759068706561639"><ph name="FILE_NAME" /> เป็นอันตราย Chrome จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="1860536484129686729">Chrome ต้องการสิทธิ์เข้าถึงกล้องถ่ายรูปของคุณสำหรับเว็บไซต์นี้</translation>
 <translation id="1873233029667955273">Google Chrome ไม่ใช่เบราว์เซอร์เริ่มต้น</translation>
 <translation id="1874309113135274312">Google Chrome เบต้า (mDNS-In)</translation>
@@ -65,7 +64,6 @@
 <translation id="2429317896000329049">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากไม่สามารถใช้การซิงค์กับโดเมนของคุณ</translation>
 <translation id="2467438592969358367">Google Chrome ต้องการส่งออกรหัสผ่านของคุณ พิมพ์รหัสผ่าน Windows เพื่ออนุญาตให้ดำเนินการ</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
-<translation id="2521856951867783208">ไฟล์นี้อาจเป็นอันตราย Chrome จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="2534507159460261402">Google Pay (คัดลอกไปยัง Chrome)</translation>
 <translation id="2535429035253759792">ผู้ดูแลระบบขอให้คุณเปิด Chrome ขึ้นมาใหม่เพื่อใช้การอัปเดตนี้</translation>
 <translation id="2580411288591421699">ไม่สามารถติดตั้ง Google Chrome รุ่นเดียวกับที่กำลังเรียกใช้อยู่ได้ โปรดปิด Google Chrome แล้วลองใหม่อีกครั้ง</translation>
@@ -102,7 +100,6 @@
 <translation id="3451115285585441894">กำลังเพิ่มลงใน Chrome...</translation>
 <translation id="345171907106878721">เพิ่มตัวคุณเองใน Chrome</translation>
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
-<translation id="3481286511616257896"><ph name="FILE_NAME" /> อาจเป็นอันตราย Chrome จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="34857402635545079">ล้างข้อมูลจาก Chrome (<ph name="URL" />) ด้วย</translation>
 <translation id="3503306920980160878">Chrome ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับเว็บไซต์นี้</translation>
 <translation id="3576528680708590453">ผู้ดูแลระบบของคุณกำหนดค่าให้ Google Chrome เปิดเบราว์เซอร์สำรองเพื่อเข้าถึง <ph name="TARGET_URL_HOSTNAME" /></translation>
@@ -225,7 +222,6 @@
 <translation id="7459554271817304652">ตั้งค่าการซิงค์เพื่อบัน​​ทึกฟีเจอร์เบราว์เซอร์ในแบบของคุณไปยังเว็บและเข้าถึงได้จาก Google Chrome บนคอมพิวเตอร์เครื่องใดก็ได้</translation>
 <translation id="7473136999113284234">Chrome จะอัปเดตโดยอัตโนมัติเพื่อให้คุณได้ใช้เวอร์ชันใหม่ล่าสุดอยู่เสมอ</translation>
 <translation id="7486227612705979895">Chrome จะเข้าถึงไดรฟ์ของคุณเพื่อแสดงคำแนะนำในแถบที่อยู่</translation>
-<translation id="748945194546522577">ไฟล์นี้อันตราย Chrome จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="7531671357096394523">ปิด Chrome ทุกสำเนา</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">แสดง Chrome OS ในภาษานี้</translation>
@@ -233,7 +229,6 @@
 <translation id="7589360514048265910">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome อีก เนื่องจากระบบไม่รองรับ Mac OS X 10.9 แล้ว</translation>
 <translation id="7592736734348559088">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="7626032353295482388">ยินดีต้อนรับสู่ Chrome</translation>
-<translation id="7636297873481318396">ไฟล์นี้อันตราย Chrome จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="7641148173327520642">ผู้ดูแลระบบได้กำหนดค่าให้ Google Chrome เปิด <ph name="ALTERNATIVE_BROWSER_NAME" /> เพื่อเข้าถึง <ph name="TARGET_URL_HOSTNAME" /></translation>
 <translation id="7651907282515937834">โลโก้ Chrome Enterprise</translation>
 <translation id="7747138024166251722">โปรแกรมติดตั้งสร้างไดเรกทอรีชั่วคราวไม่ได้ โปรดตรวจสอบพื้นที่ดิสก์ว่างและการอนุญาตให้ติดตั้งซอฟต์แวร์</translation>

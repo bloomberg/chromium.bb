@@ -1224,6 +1224,7 @@
 <translation id="2870909136778269686">Se actualizează...</translation>
 <translation id="2871813825302180988">Acest cont este deja utilizat pe acest dispozitiv.</translation>
 <translation id="287286579981869940">Adaugă <ph name="PROVIDER_NAME" />...</translation>
+<translation id="2872961005593481000">Închide</translation>
 <translation id="2874343608108773609">Pentru a accesa parolele pe toate dispozitivele, conectează-te la Chrome.</translation>
 <translation id="2874939134665556319">Melodia anterioară</translation>
 <translation id="2875698561019555027">(pagini de erori Chrome)</translation>
@@ -2887,7 +2888,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5518584115117143805">Certificat de criptare a e-mailurilor</translation>
 <translation id="5521078259930077036">Aceasta este pagina de pornire la care vă așteptați?</translation>
 <translation id="5522156646677899028">Această extensie conține o vulnerabilitate gravă a securității.</translation>
-<translation id="5523201311986093262">Fundaluri</translation>
 <translation id="5525677322972469346">Creați un nou utilizator monitorizat</translation>
 <translation id="5526701598901867718">Toate (nesigur)</translation>
 <translation id="5526745900034778153">Conectează-te din nou pentru a relua sincronizarea</translation>
@@ -3571,7 +3571,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="656293578423618167">Calea sau numele fișierului sunt prea lungi. Salvați utilizând un nume mai scurt sau într-o altă locație.</translation>
 <translation id="6567688344210276845">Nu se poate încărca pictograma „<ph name="ICON" />” pentru acțiunea paginii.</translation>
 <translation id="6571979863037191371">Deconectează telefonul de la Chromebook. Ele nu se vor mai conecta automat.</translation>
-<translation id="6573998787994398565">Fișierul <ph name="FILE_NAME" /> nu este descărcat de obicei și poate fi periculos. Te apără Protecția avansată.</translation>
 <translation id="657402800789773160">&amp;Reîncarcă această pagină</translation>
 <translation id="6577284282025554716">Descărcare anulată: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Criptează parolele sincronizate folosind numele de utilizator și parola Google</translation>
@@ -5180,7 +5179,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Actualizezi parola pentru <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Accesul la fișierele de pe computer este dezactivat de administrator</translation>
-<translation id="9041909613332246191">Acest fișier nu este descărcat de obicei și ar putea fi periculos. Te apără Protecția avansată.</translation>
 <translation id="9042858701776831292">Aplicațiile din Google Play Store pot necesita acces la dispozitivele de stocare externe pentru a citi și scrie fișierele și dosarele din ele.</translation>
 <translation id="9042893549633094279">Confidențialitate și securitate</translation>
 <translation id="904451693890288097">Introduceți codul PIN pentru „<ph name="DEVICE_NAME" />":</translation>
@@ -5267,7 +5265,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9179734824669616955">Configurează Linux (Beta) pe dispozitivul <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">Poate dura câteva minute. Se pornește containerul Linux.</translation>
 <translation id="9180380851667544951">Site-ul poate permite accesul la ecranul tău</translation>
-<translation id="9185926955514281189">Culori și teme</translation>
 <translation id="9188441292293901223">Pentru a debloca acest dispozitiv <ph name="DEVICE_TYPE" />, actualizează-ți telefonul la o versiune Android mai nouă.</translation>
 <translation id="9188732951356337132">Trimite date de utilizare și diagnosticare. Momentan, dispozitivul trimite automat date de diagnosticare și de utilizare a dispozitivului și aplicațiilor la Google. Acestea nu vor fi folosite la identificarea copilului și vor ajuta la stabilitatea sistemului, a aplicațiilor și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Dacă ai activat setarea Activitatea suplimentară de pe web și din aplicații pentru copilul tău, aceste date pot fi salvate în Contul său Google. <ph name="BEGIN_LINK2" />Află mai multe<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + cheia predistribuită</translation>

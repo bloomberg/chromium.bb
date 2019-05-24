@@ -15,6 +15,7 @@
 <translation id="1165039591588034296">ఎర్రర్</translation>
 <translation id="1172898394251786223">తర్వాతి ఫీల్డ్</translation>
 <translation id="1176932207622159128">చిత్రాన్ని సేవ్ చేయడం సాధ్యపడలేదు</translation>
+<translation id="1180526666083833456">అన్ని పరికరాలలో సింక్ చేయండి మరియు వ్యక్తిగతీకరించండి.</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
 <translation id="1201530049782216880">కొత్త అజ్ఞాత ట్యాబ్</translation>
 <translation id="1209206284964581585">ప్రస్తుతానికి దాచు</translation>
@@ -37,6 +38,7 @@
 <translation id="1400642268715879018">గత 4 వారాలు</translation>
 <translation id="1407135791313364759">అన్నీ తెరువు</translation>
 <translation id="1430915738399379752">ముద్రించు</translation>
+<translation id="1436290164580597469">సింక్ చేయడం ప్రారంభించడానికి రహస్య పదబంధాన్ని నమోదు చేయండి.</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> అంశాలు</translation>
 <translation id="1491277525950327607">సెట్టింగ్‌ను టోగుల్ చేయడానికి రెండుసార్లు నొక్కండి</translation>
 <translation id="152234381334907219">ఎప్పటికి సేవ్ చెయ్యబడవు</translation>
@@ -105,8 +107,10 @@
 <translation id="2435457462613246316">పాస్‌వర్డ్‌ను చూపించు</translation>
 <translation id="2481538920734869610">ఖాతాను జోడించు</translation>
 <translation id="2497852260688568942">సింక్‌ను మీ నిర్వాహకులు నిలిపివేశారు</translation>
+<translation id="2500374554657206846">పాస్‌వర్డ్‌ను సేవ్ చేసే ఎంపికలు</translation>
 <translation id="2523363575747517183">ఈ వెబ్‌సైట్ మరో అప్లికేషన్‌ను తెరవడానికి పలుసార్లు ప్రయత్నిస్తోంది.</translation>
 <translation id="2529021024822217800">అన్నీ తెరువు</translation>
+<translation id="2570206273416014374">చిరునామా బార్ మరియు శోధన బాక్స్‌లోని కొన్ని కుక్కీలు, శోధనలను మీ డిఫాల్ట్ శోధన ఇంజిన్‌కు పంపుతుంది.</translation>
 <translation id="2572712655377361602">ఒక పరికర విధానం మీ ఫోటోలకు యాక్సెస్‌ను బ్లాక్ చేసింది</translation>
 <translation id="2584132361465095047">ఖాతాను జోడించు…</translation>
 <translation id="2625189173221582860">పాస్‌వర్డ్ కాపీ చేయబడింది</translation>
@@ -178,6 +182,7 @@
 <translation id="3533202363250687977">అజ్ఞాత ట్యాబ్‌లన్నీ మూసివేయి</translation>
 <translation id="3533436815740441613">కొత్త ట్యాబ్</translation>
 <translation id="3551320343578183772">ట్యాబ్‌ను మూసివేయి</translation>
+<translation id="3581564640715911333">ఇతర భాషలలో ఉన్న పేజీలను అనువదించడాన్ని ఆఫర్ చేస్తుంది</translation>
 <translation id="3588820906588687999">చిత్రాన్ని కొత్త ట్యాబ్‌లో తెరువు</translation>
 <translation id="3603009562372709545">లింక్ URLను కాపీ చేయి</translation>
 <translation id="3607167657931203000">స్వీయపూర్తి డేటా</translation>
@@ -185,6 +190,7 @@
 <translation id="3638472932233958418">వెబ్‌పేజీలను ముందే లోడ్ చేయి</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" />కి బుక్‌మార్క్ చేయబడింది</translation>
 <translation id="3771033907050503522">అజ్ఞాత ట్యాబ్‌లు</translation>
+<translation id="3775743491439407556">సింక్ పని చేయడం లేదు</translation>
 <translation id="3779810277399252432">ఇంటర్నెట్ కనెక్షన్ లేదు.</translation>
 <translation id="3783017676699494206">చిత్రాన్ని సేవ్ చేయి</translation>
 <translation id="3789841737615482174">ఇన్‌స్టాల్ చేయి</translation>
@@ -219,11 +225,13 @@
 <translation id="4272631900155121838">QR కోడ్‌ను స్కాన్ చేయడానికి, సెట్టింగ్‌ల్లో కెమెరాను ప్రారంభించండి</translation>
 <translation id="4281844954008187215">సేవా నిబంధనలు</translation>
 <translation id="430793432425771671">ప్రతి ఒక్కటీ సమకాలీకరించండి</translation>
+<translation id="4338650699862464074">మీరు సందర్శించే పేజీల URLలను Googleకు పంపుతుంది.</translation>
 <translation id="4359125752503270327">ఈ పేజీ మరొక అప్లికేషన్‌లో తెరవబడుతుంది.</translation>
 <translation id="4370827530403103842">సమకాలీకరణ పని చేయడం లేదు. పరిష్కరించడానికి నొక్కండి.</translation>
 <translation id="4375040482473363939">QR కోడ్ శోధన</translation>
 <translation id="4378154925671717803">ఫోన్</translation>
 <translation id="441868831736628555">గోప్యతా నోటీసు</translation>
+<translation id="4454246407045105932">భాషను జోడించండి</translation>
 <translation id="4476574785019001431">సెట్టింగ్‌లు</translation>
 <translation id="4496373720959965247">ట్యాబ్‌లను జోడించండి మరియు పేజీల మధ్య మారండి</translation>
 <translation id="4508750114462689118">సైన్ ఇన్ ప్రోమోను మూసివేయండి</translation>
@@ -234,6 +242,7 @@
 <translation id="461440297010471931">Googleతో శోధిస్తోంది</translation>
 <translation id="4619615317237390068">ఇతర పరికరాల్లోని ట్యాబ్‌లు</translation>
 <translation id="4620246317052452550">మీరు చదివిన పేజీలు</translation>
+<translation id="4630540211544979320">పేజీలను అనువదించు</translation>
 <translation id="4636930964841734540">సమాచారం</translation>
 <translation id="4659667755519643272">ట్యాబ్ స్విచర్‌లోకి ప్రవేశించు</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" />గా సైన్ ఇన్ చేశారు.
@@ -248,7 +257,9 @@
 
 ఈ సెట్టింగ్‌ని మార్చడం కోసం, <ph name="BEGIN_LINK" />సమకాలీకరణను రీసెట్ చేయండి<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">చదవాల్సిన జాబితాలో 1 కథనం ఉంది.</translation>
+<translation id="4818522717893377262">భాషను జోడించు...</translation>
 <translation id="481968316161811770">కుక్కీలు, సైట్ డేటా</translation>
+<translation id="4833786495304741580">Googleకు ఆటోమేటిక్‌గా వినియోగ గణాంకాలు, క్రాష్ నివేదికలను పంపుతుంది.</translation>
 <translation id="4840495572919996524">మీ బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు మరియు మరిన్ని ఇప్పటి నుండి మీ Google ఖాతాకి సమకాలీకరించబడవు.</translation>
 <translation id="4854345657858711387">పాస్‌కోడ్‌ని సెట్ చేయండి</translation>
 <translation id="4860895144060829044">కాల్ చేయండి</translation>
@@ -289,6 +300,7 @@
 <translation id="5548760955356983418">ఈ పరికరంలో వెబ్‌సైట్‌ను బ్రౌజ్ చేయడాన్ని ప్రారంభించి, ఆ తర్వాత దాన్ని మీ Macలో సులభంగా కొనసాగించడానికి హ్యాండ్‌ఆఫ్ మిమ్మల్ని అనుమతిస్తుంది. ప్రస్తుతం తెరిచిన వెబ్‌సైట్ మీ Mac డాక్‌లో కనిపిస్తుంది.
 
 హ్యాండ్‌ఆఫ్‌ను తప్పనిసరిగా సాధారణ సెట్టింగ్‌ల విభాగంలో కూడా ప్రారంభించాలి. మీ పరికరాలు తప్పనిసరిగా ఒకే iCloud ఖాతాను ఉపయోగించాలి.</translation>
+<translation id="5551897871312988470">అనువదించడం ఆఫర్ చేస్తుంది</translation>
 <translation id="5556459405103347317">మళ్లీ లోడ్ చేయి</translation>
 <translation id="5614553682702429503">పాస్‌వర్డ్‌ను సేవ్ చేయాలా?</translation>
 <translation id="5626245204502895507">ఫైల్‌ను ఈ సమయంలో డౌన్‌‌లోడ్ చేయడం సాధ్యపడలేదు.</translation>
@@ -336,6 +348,7 @@
 <translation id="6187302354554850004">చివరగా సమకాలీకరించింది: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">చదవనివి</translation>
 <translation id="6196207969502475924">వాయిస్ శోధన</translation>
+<translation id="6219688215832490856">ఎన్నటికీ అనువదించవద్దు</translation>
 <translation id="6254066287920239840">లింక్‌లను బ్రౌజర్‌కు బదులుగా యాప్‌లో తెరవండి.</translation>
 <translation id="6255097610484507482">క్రెడిట్ కార్డ్‌ను సవరించు</translation>
 <translation id="6303969859164067831">సైన్ అవుట్ చేసి, సమకాలీకరణను ఆఫ్ చేయండి</translation>
@@ -390,6 +403,7 @@
 <translation id="6945221475159498467">ఎంచుకోండి</translation>
 <translation id="6973630695168034713">ఫోల్డర్‌లు</translation>
 <translation id="6979158407327259162">Google డిస్క్</translation>
+<translation id="6988572888918530647">మీ Google ఖాతాను నిర్వహించండి</translation>
 <translation id="7004499039102548441">ఇటీవలి ట్యాబ్‌లు</translation>
 <translation id="7006788746334555276">కంటెంట్ సెట్టింగ్‌లు</translation>
 <translation id="7015203776128479407">ప్రాథమిక సింక్ సెటప్ పూర్తి కాలేదు. సింక్ ఆఫ్‌లో ఉంది.</translation>
@@ -460,6 +474,7 @@
 <translation id="8059533439631660104">విభాగాన్ని కుదిస్తుంది.</translation>
 <translation id="806745655614357130">నా డేటాను విడిగా ఉంచండి</translation>
 <translation id="8073670137947914548">డౌన్‌లోడ్ పూర్తయింది</translation>
+<translation id="8073872304774253879">శోధనలు మరియు బ్రౌజింగ్‌ను మరింత మెరుగుపరచండి</translation>
 <translation id="8076014560081431679">సేవ్ చేసిన సైట్ సెట్టింగ్‌లు తొలగించబడవు, ఇవి మీ బ్రౌజింగ్ అలవాట్లను ప్రదర్శించవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">ఫైల్ డౌన్‌లోడ్ అందుబాటులో ఉంది. ఎంపికలు స్క్రీన్ దిగువ భాగంలో అందుబాటులో ఉంటాయి.</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>

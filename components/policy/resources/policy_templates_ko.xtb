@@ -1072,6 +1072,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       AutoplayAllowed 정책이 False로 설정된 경우 정책에 설정된 URL 패턴은 계속해서 자동재생이 허용됩니다.
 
       <ph name="PRODUCT_NAME" />이(가) 실행 중일 때 정책이 변경되면 새로 열린 탭에만 정책이 적용됩니다. 따라서 일부 탭에서는 이전 동작이 유지될 수 있습니다.</translation>
+<translation id="284288632677954003">브라우저 전환을 실행해서는 안 되는 URL이 포함된 XML 파일의 URL입니다.</translation>
 <translation id="285480231336205327">고대비 모드 사용</translation>
 <translation id="2854919890879212089"><ph name="PRODUCT_NAME" />이(가) 가장 최근에 사용한 프린터 대신 시스템 기본 프린터를 인쇄 미리보기에서 기본으로 선택하게 합니다.
 
@@ -1244,6 +1245,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="3096595567015595053">사용 가능한 플러그인 목록</translation>
 <translation id="3101501961102569744">프록시 서버 설정을 지정하는 방법 선택</translation>
 <translation id="3101709781009526431">날짜 및 시간</translation>
+<translation id="3114411414586006215">이 정책은 브라우저 전환을 실행하지 않는 웹사이트 목록을 제어합니다.
+
+      <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> 정책을 통해서도 이 목록에 요소를 추가할 수 있습니다.
+
+      정책이 설정되지 않으면 목록에 어떠한 웹사이트도 추가되지 않습니다.
+
+      정책이 설정되면 <ph name="URL_LIST_POLICY_NAME" /> 정책과 비슷하게 각 항목이 규칙으로 취급됩니다. 하지만 사용되는 논리는 반대입니다. 규칙이 일치하면 대체 브라우저가 열리지 않습니다.
+
+      <ph name="URL_LIST_POLICY_NAME" /> 정책과는 다르게 규칙이 양방향으로 적용됩니다. 즉, Internet Explorer 부가기능이 있으며 사용 설정된 경우 <ph name="IE_PRODUCT_NAME" />이(가) <ph name="PRODUCT_NAME" />에서 이 URL을 열어야 하는지 여부도 제어합니다.</translation>
 <translation id="3117676313396757089">경고: 버전 57(2017년 3월경)부터 <ph name="PRODUCT_NAME" />에서 DHE가 완전히 제거되며 이후 이 정책은 적용되지 않습니다.
 
       이 정책이 설정되지 않았거나 'false'로 설정된 경우 TLS DHE 암호화 기술이 사용 설정되지 않습니다. 반대로 정책을 'true'로 설정하면 DHE 암호화 기술을 사용하도록 설정하여 오래된 서버와의 호환성을 유지할 수 있습니다. 이는 임시 조치이며 서버는 다시 구성해야 합니다.
@@ -1443,6 +1453,17 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="3550875587920006460">맞춤 일정 설정을 사용하여 업데이트를 확인합니다. 이 정책은 기기의 모든 사용자와 인터페이스에 적용됩니다. 설정하면 기기에서 이 일정에 따라 업데이트를 확인합니다. 예정된 업데이트 확인을 취소하려면 이 정책을 삭제해야 합니다.</translation>
 <translation id="355118380775352753">대체 브라우저에서 열리는 웹사이트</translation>
 <translation id="3554984410014457319">Google 어시스턴트가 음성 활성화 문구를 감지하도록 허용</translation>
+<translation id="3557208865710006939">맞춤법 검사 언어를 강제 사용 설정합니다. 목록에서 인식할 수 없는 언어는 무시됩니다.
+
+      정책을 사용 설정하면 사용자가 맞춤법 검사를 사용 설정한 언어 외에도 지정된 언어의 맞춤법 검사가 사용 설정됩니다.
+
+      정책이 설정되어 있지 않거나 사용 중지되어 있으면 사용자의 맞춤법 검사 환경설정이 변경되지 않습니다.
+
+      <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> 정책이 false로 설정되어 있으면 이 정책이 효력을 갖지 않습니다.
+
+      언어가 이 정책과 <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> 정책에 모두 포함된 경우 이 정책이 우선순위를 가지며 맞춤법 검사 언어가 사용 설정됩니다.
+
+      현재 지원되는 언어는 af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi입니다.</translation>
 <translation id="356579196325389849">사용자가 Chrome OS 출시 채널을 구성할 수 있습니다.</translation>
 <translation id="3575011234198230041">HTTP 인증</translation>
 <translation id="3577251398714997599">방해가 되는 광고가 포함된 사이트의 광고 설정</translation>
@@ -1796,6 +1817,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책을 설정하면 사용자가 변경하거나 재정의할 수 없습니다.
 
           이 정책이 설정되지 않은 경우 처음에는 고정키가 사용 중지되어 있으나 사용자가 언제든지 사용하도록 설정할 수 있습니다.</translation>
+<translation id="4171331498167688968">이 정책이 false로 설정되면 타사 소프트웨어에서 Chrome의 프로세스에 실행 가능한 코드를 삽입할 수 있습니다. 정책이 설정되어 있지 않거나 true로 설정되면 타사 소프트웨어에서 Chrome의 프로세스에 실행 가능한 코드를 삽입할 수 없습니다.
+
+      정책의 값과 관계없이 브라우저는 현재 <ph name="MS_AD_NAME" /> 도메인에 연결된 컴퓨터에서 타사 소프트웨어가 프로세스에 실행 가능한 코드를 삽입하는 것을 차단하지 않습니다.</translation>
 <translation id="4183229833636799228">기본 <ph name="FLASH_PLUGIN_NAME" /> 설정</translation>
 <translation id="4192388905594723944">원격 액세스 클라이언트 인증 토큰을 확인하기 위한 URL</translation>
 <translation id="4203389617541558220">자동 재부팅을 예약하여 기기 가동 시간을 제한합니다.
@@ -2164,6 +2188,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책은 <ph name="MS_AD_NAME" /> 도메인에 참여하는 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴트에서만 사용할 수 있습니다.</translation>
 <translation id="5085647276663819155">인쇄 미리보기 사용 안함</translation>
 <translation id="5090209345759901501">플래시 콘텐츠 설정을 모든 콘텐츠로 확장</translation>
+<translation id="5090791951240382356">출처가 서로 다른 사전 정책의 병합 허용</translation>
 <translation id="5093540029655764852">클라이언트가 기기 계정 비밀번호를 변경하는 속도(일 단위)를 지정합니다. 비밀번호는 클라이언트에서 임의로 생성되며 사용자에게 표시되지 않습니다.
 
       사용자 비밀번호와 마찬가지로 기기 비밀번호도 정기적으로 변경됩니다. 정책을 사용 중지하거나 너무 높은 값으로 설정하면 잠재적인 공격자가 기기 계정 비밀번호를 찾아 사용할 가능성이 높아지므로 보안에 부정적인 영향을 미칠 수 있습니다.
@@ -3108,6 +3133,17 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="6923366716660828830">기본 검색 공급자 이름을 지정합니다. 비워 두었거나 설정하지 않은 경우 검색 URL에서 지정한 호스트 이름이 사용됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
+<translation id="6924223708804692571">맞춤법 검사 언어를 강제로 사용 중지합니다. 목록에서 인식할 수 없는 언어는 무시됩니다.
+
+      이 정책을 사용하면 지정된 언어의 맞춤법 검사가 사용 중지됩니다. 사용자는 계속해서 목록에 포함되지 않은 언어의 맞춤법 검사를 사용 또는 사용 중지할 수 있습니다.
+
+      정책이 설정되어 있지 않거나 사용 중지되어 있으면 사용자의 맞춤법 검사 환경설정이 변경되지 않습니다.
+
+      <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> 정책이 false로 설정되어 있으면 이 정책이 효력을 갖지 않습니다.
+
+      언어가 이 정책과 <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 정책에 모두 포함된 경우 후자가 우선순위를 가지며 맞춤법 검사 언어가 사용 설정됩니다.
+
+      현재 지원되는 언어는 af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi입니다.</translation>
 <translation id="6926703471186170050">긴 쪽 양면 인쇄 사용 설정</translation>
 <translation id="6931242315485576290">Google과 데이터 동기화 사용 중지</translation>
 <translation id="6936894225179401731">프록시 서버에 동시 연결할 수 있는 최대 수를 지정합니다.
@@ -3256,6 +3292,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       해당 정책이 설정된 경우 애플리케이션이 고정되어 사용자가 변경할 수 없습니다.
 
       해당 정책이 설정되지 않은 경우 사용자는 런처에서 고정된 앱의 목록을 변경할 수 있습니다.</translation>
+<translation id="713121532817834879">이 정책은 Internet Explorer의 <ph name="IEEM_SITELIST_POLICY" /> 정책과 동일한 형식의 XML 파일로 연결되는 URL입니다. 정책은 XML 파일에서 규칙을 로드하지만 Internet Explorer와 공유하지는 않습니다.
+
+      이 XML 파일에 있는 규칙은 <ph name="GREYLIST_POLICY_NAME" />과(와) 동일하게 적용됩니다. 즉, 이 규칙은 <ph name="PRODUCT_NAME" />이(가) 다른 브라우저를 열지 못하게 하며, 다른 브라우저에서 <ph name="PRODUCT_NAME" />을(를) 열지 못하게 합니다.
+
+      정책이 설정되지 않거나 유효한 URL로 설정되지 않으면 <ph name="PRODUCT_NAME" />이(가) 브라우저 전환을 실행하지 않는 규칙의 출처로 정책을 사용하지 않습니다.
+
+      정책이 유효한 URL로 설정되면 <ph name="PRODUCT_NAME" />이(가) URL로부터 사이트 목록을 다운로드하며, <ph name="SITELIST_POLICY_NAME" /> 정책으로 규칙이 설정된 경우 규칙을 적용합니다.
+
+      Internet Explorer의 <ph name="IEEM_SITELIST_POLICY" /> 정책은 https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode에서 자세히 살펴보세요.</translation>
 <translation id="7132877481099023201">별도 메시지를 표시하지 않고 동영상 캡처 기기에 대한 액세스 권한이 부여되는 URL입니다.</translation>
 <translation id="7138678301420049075">기타</translation>
 <translation id="7140629953254369759"><ph name="PRODUCT_OS_NAME" />이(가) 지정된 이름으로 식별된 작업 스케줄러 설정을 사용하도록 지시합니다.
@@ -3304,6 +3349,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 자동 재생은 <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> 정책에 명시적으로 나열되어 있는 도메인에만 허용됩니다. 모든 사이트에서 자동 재생을 사용 설정하려면 이 목록에 http://* 및 https://*을 추가하는 것을 고려해 보세요.
 
 이 정책을 설정하지 않고 넘어가면 사용자는 이후에 이 설정을 직접 변경할 수 있습니다.</translation>
+<translation id="7222749588229362483">범위 및 수준이 같다면 출처가 서로 다를 경우에도 선택한 정책을 병합하도록 허용합니다.
+
+        각 출처의 사전에 있는 첫 번째 수준 키를 병합합니다. 키가 충돌하는 경우 우선순위가 가장 높은 출처의 키가 적용됩니다.
+
+        정책이 목록에 포함되어 있고 두 출처 간에 충돌이 발생하는 경우 범위 및 수준이 동일하다면 값을 병합하여 새로운 정책 사전이 만들어집니다.
+
+        정책이 목록에 포함되어 있고 두 출처 간에 충돌이 있으나 범위 또는 수준이 다른 경우 우선순위가 가장 높은 정책이 적용됩니다.
+
+        정책이 목록에 포함되어 있지 않고 출처, 범위 또는 수준 간에 충돌이 있는 경우 우선순위가 가장 높은 정책이 적용됩니다.</translation>
 <translation id="7229975860249300121"><ph name="PRODUCT_NAME" />에서 어떤 Google 계정이 브라우저 기본 계정(동기화 선택 과정에서 선택된 계정)으로 설정될 수 있는지 결정하는 데 사용되는 정규 표현식을 포함합니다. 동기화 선택 과정에서 선택된 계정입니다.
 
       사용자가 이 패턴과 일치하지 않는 사용자 이름으로 브라우저 기본 계정을 설정하려고 시도하면 적절한 오류가 표시됩니다.
@@ -3940,6 +3994,12 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       이 정책이 '대체'로 설정되면 사용자 GPO에 있는 사용자 정책이 컴퓨터 GPO에 있는 사용자 정책으로 대체됩니다(사용자 GPO가 무시됨).</translation>
 <translation id="8465065632133292531">POST를 사용하는 인스턴트 URL용 매개변수</translation>
+<translation id="8465746466645315861">이 정책을 설정하지 않으면 사용자가 언어 설정에서 맞춤법 검사를 사용하거나 사용 중지할 수 있습니다.
+
+      정책이 true로 설정되면 맞춤법 검사가 사용 설정되며 사용자가 사용 중지할 수 없습니다. <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" />, <ph name="LINUX_OS_NAME" />에서는 맞춤법 검사 언어를 개별적으로 전환해 사용 또는 사용 중지할 수 있기 때문에 사용자가 모든 맞춤법 검사 언어를 사용 중지함으로써 맞춤법 검사를 실질적으로 사용 중지할 수 있습니다. 이러한 상황을 방지하려면 <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 정책을 사용해 특정 맞춤법 검사 언어가 강제로 사용되도록 설정하세요.
+
+      정책이 false로 설정되면 맞춤법 검사가 사용 중지되며 사용자가 사용 설정할 수 없습니다. 정책이 false로 설정되면 <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> 및 <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> 정책이 효력을 갖지 않습니다.
+      </translation>
 <translation id="847472800012384958">모든 사이트에서 팝업 표시 허용 안함</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">https:// URL의 개인정보 보호 및 보안 관련 민감한 부분을 제거한 후 프록시 확인 시 <ph name="PRODUCT_NAME" />에 의해 사용된 PAC 스크립트(Proxy 자동 설정)에 전달합니다.

@@ -448,7 +448,7 @@
 <translation id="168991973552362966">הוספת מדפסת קרובה</translation>
 <translation id="1689945336726856614">העתקת &amp;כתובת אתר</translation>
 <translation id="1692109533452028989">‏Chrome שולח אל Google את הטקסט שמקלידים בדפדפן</translation>
-<translation id="1692115862433274081">שימוש בחשבון אחר</translation>
+<translation id="1692115862433274081">חשבון אחר</translation>
 <translation id="1692602667007917253">אופס, משהו השתבש</translation>
 <translation id="1692799361700686467">‏קובצי Cookie מאתרים מרובים מותרים.</translation>
 <translation id="1697150536837697295">אומנות</translation>
@@ -1146,7 +1146,7 @@
 <translation id="2751739896257479635">‏אימות שלב 2 של EAP</translation>
 <translation id="2755367719610958252">נהל תכונות נגישות</translation>
 <translation id="275662540872599901">מסך כבוי</translation>
-<translation id="2761898608071930085">שימוש בחשבון אחר</translation>
+<translation id="2761898608071930085">חשבון אחר</translation>
 <translation id="2762441749940182211">לא ניתן להשתמש במצלמה בדף זה</translation>
 <translation id="2765217105034171413">קטן</translation>
 <translation id="276969039800130567">מחובר באמצעות חשבון <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -1221,6 +1221,7 @@
 <translation id="2870909136778269686">מעדכן....</translation>
 <translation id="2871813825302180988">חשבון זה כבר נמצא בשימוש במכשיר זה.</translation>
 <translation id="287286579981869940">הוסף את <ph name="PROVIDER_NAME" />...</translation>
+<translation id="2872961005593481000">כיבוי</translation>
 <translation id="2874343608108773609">‏כדי שהסיסמאות שלך יהיו זמינות בכל המכשירים, צריך להיכנס ל-Chrome.</translation>
 <translation id="2874939134665556319">הרצועה הקודמת</translation>
 <translation id="2875698561019555027">‏(דפי שגיאה ב-Chrome)</translation>
@@ -2884,7 +2885,6 @@
 <translation id="5518584115117143805">אישור הצפנת אימייל</translation>
 <translation id="5521078259930077036">האם זהו דף הבית שציפית לראות?</translation>
 <translation id="5522156646677899028">התוסף הזה מכיל נקודת תורפה חמורה באבטחה.</translation>
-<translation id="5523201311986093262">רקעים</translation>
 <translation id="5525677322972469346">צור משתמש חדש בפיקוח</translation>
 <translation id="5526701598901867718">הכול (לא מאובטח)</translation>
 <translation id="5526745900034778153">צריך להיכנס מחדש כדי להמשיך את הסינכרון</translation>
@@ -3568,7 +3568,6 @@
 <translation id="656293578423618167">הנתיב או שם הקובץ ארוך מדי. שמור בשם קצר יותר או למיקום אחר.</translation>
 <translation id="6567688344210276845">לא היתה אפשרות לטעון את האייקון '<ph name="ICON" />' עבור פעולת דף.</translation>
 <translation id="6571979863037191371">‏ניתוק הטלפון מה-Chromebook. השניים לא יתחברו יותר באופן אוטומטי.</translation>
-<translation id="6573998787994398565">הורדה של הקובץ <ph name="FILE_NAME" /> אינה נפוצה והוא עשוי להיות מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="657402800789773160">&amp;טען דף זה מחדש</translation>
 <translation id="6577284282025554716">ההורדה בוטלה: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">‏הצפנת סיסמאות מסונכרנות עם שם המשתמש והסיסמה שלך ב-Google</translation>
@@ -5176,7 +5175,6 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">האם לעדכן את הסיסמה של <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">הגישה לקבצים מקומיים במחשב שלך מושבתת על-ידי מנהל המערכת</translation>
-<translation id="9041909613332246191">הורדת הקובץ הזה אינה נפוצה והקובץ עלול להיות מסוכן. ההגנה המתקדמת שומרת עליך.</translation>
 <translation id="9042858701776831292">‏ייתכן שאפליקציות של חנות Google Play יזדקקו לגישה אל התקני אחסון חיצוניים כדי לקרוא ולכתוב קבצים ותיקיות בהתקנים האלו.</translation>
 <translation id="9042893549633094279">פרטיות ואבטחה</translation>
 <translation id="904451693890288097">הזן סיסמה עבור "<ph name="DEVICE_NAME" />":</translation>
@@ -5263,7 +5261,6 @@
 <translation id="9179734824669616955">‏הגדרת Linux (בטא) ב-<ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">‏הפעולה עשויה להימשך מספר דקות. מתבצעת הפעלה של הקונטיינר של Linux.</translation>
 <translation id="9180380851667544951">האתר רשאי לשתף את המסך</translation>
-<translation id="9185926955514281189">צבעים ועיצובים</translation>
 <translation id="9188441292293901223">‏יש לעדכן את הטלפון לגרסה חדשה יותר של Android כדי לבטל את הנעילה של <ph name="DEVICE_TYPE" /> זה.</translation>
 <translation id="9188732951356337132">‏שליחה של נתוני אבחון ונתונים על השימוש. המכשיר הזה שולח עכשיו אל Google באופן אוטומטי נתוני אבחון ונתונים לגבי השימוש במכשיר ובאפליקציות. נתונים אלה לא ישמשו כדי לזהות את הילד/ה שלך, והם יעזרו לשמור על יציבות המערכת והאפליקציות, כמו גם לביצוע שיפורים אחרים. חלק מהנתונים הנצברים יעזרו גם לאפליקציות ולשותפים של Google, כמו מפתחי Android. אם הופעלה בשביל הילד/ה שלך האפשרות 'פעילות באתרי אינטרנט ובאפליקציות נוספים', ייתכן שהנתונים יישמרו בחשבון Google שלו/ה. <ph name="BEGIN_LINK2" />מידע נוסף<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">‏L2TP/‏IPSec + מפתח משותף מראש</translation>

@@ -6,7 +6,7 @@
 <translation id="1115445892567829615">Chromium আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
 <translation id="113122355610423240">Chromium আপনার ডিফল্ট ব্রাউজার</translation>
 <translation id="1170115874949214249">আপনার ফোনে Chromium ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট রিকভারি ফোন নম্বরে একটি এসএমএস পাঠাব।</translation>
-<translation id="1174473354587728743">একটি কম্পিউটার শেয়ার করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chromium কে সেট আপ করতে পারেন৷</translation>
+<translation id="1174473354587728743">একটি কম্পিউটার শেয়ার করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chromium কে সেট-আপ করতে পারেন৷</translation>
 <translation id="1185134272377778587">Chromium সম্পর্কে</translation>
 <translation id="1209657686917656928">{0,plural, =0{Chromium এখন রিলঞ্চ হবে}=1{Chromium ১ সেকেন্ডের মধ্যে রিলঞ্চ হবে}one{Chromium # সেকেন্ডের মধ্যে রিলঞ্চ হবে}other{Chromium # সেকেন্ডের মধ্যে রিলঞ্চ হবে}}</translation>
 <translation id="1267419686153937460">{0,plural, =1{একদিনের মধ্যে Chromium রিলঞ্চ করুন}one{# দিনের মধ্যে Chromium রিলঞ্চ করুন}other{# দিনের মধ্যে Chromium রিলঞ্চ করুন}}</translation>
@@ -30,11 +30,10 @@
 <translation id="1929939181775079593">Chromium সাড়া দিচ্ছে না৷ আবার শুরু করবেন?</translation>
 <translation id="1966382378801805537">Chromium ডিফল্ট ব্রাউজার নির্ধারণ বা সেট করতে পারছে না</translation>
 <translation id="2008474315282236005">এটি এই ডিভাইস থেকে ১টি আইটেম মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chromium-এ <ph name="USER_EMAIL" /> হিসেবে সাইন-ইন করুন।</translation>
-<translation id="2037988709973327241"><ph name="FILE_NAME" /> বিপজ্জনক তাই Chromium এটিকে ব্লক করেছে। আপনি উন্নত সুরক্ষার দ্বারা সুরক্ষিত।</translation>
 <translation id="2117378023188580026">এই আপডেটটি প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর চান যে আপনি Chromium আবার চালু করুন</translation>
 <translation id="2119636228670142020">&amp;Chromium OS সম্পর্কে</translation>
 <translation id="2178765360243863853">আপনার এখনই Chromium আবার চালু করা উচিত</translation>
-<translation id="2241627712206172106">যদি আপনি একটি কম্পিউটার শেয়ার করেন, তাহলে বন্ধু ও পরিবারের লোকজন পৃথকভাবে ব্রাউজ করতে পারবেন এবং তাদের ইচ্ছা অনুযায়ী Chromium-এর সেট আপ করতে পারবেন৷</translation>
+<translation id="2241627712206172106">যদি আপনি একটি কম্পিউটার শেয়ার করেন, তাহলে বন্ধু ও পরিবারের লোকজন পৃথকভাবে ব্রাউজ করতে পারবেন এবং তাদের ইচ্ছা অনুযায়ী Chromium-এর সেট-আপ করতে পারবেন৷</translation>
 <translation id="2265088490657775772">আপনার iPhone এ Chromium ইনস্টল করুন</translation>
 <translation id="2347108572062610441">আপনি Chromium চালু করলে কোন পৃষ্ঠাটি দেখানো হবে তা এই এক্সটেনশনটি পরিবর্তন করেছে।</translation>
 <translation id="2396765026452590966">আপনি Chromium চালু করলে কোন পৃষ্ঠাটি দেখানো হবে তা "<ph name="EXTENSION_NAME" />" এক্সটেনশনটি পরিবর্তন করেছে।</translation>
@@ -63,7 +62,6 @@
 <translation id="3068515742935458733">Google-এ  <ph name="UMA_LINK" /> ও ক্র্যাশ রিপোর্ট পাঠিয়ে Chromium আরও ভালো করতে সাহায্য করুন</translation>
 <translation id="3103660991484857065">ইনস্টলার আর্কাইভ আনকমপ্রেস করতে পারেনি৷ অনুগ্রহ করে Chromium আবার ডাউনলোড করুন৷</translation>
 <translation id="3130323860337406239">Chromium আপনার মাইক্রোফোন ব্যবহার করছে৷</translation>
-<translation id="3154325651427862069"><ph name="FILE_NAME" /> বিপজ্জনক হতে পারে তাই Chromium এটিকে ব্লক করেছে। আপনি উন্নত সুরক্ষার দ্বারা সুরক্ষিত।</translation>
 <translation id="3155163173539279776">Chromium আবার লঞ্চ করুন</translation>
 <translation id="3179665906251668410">Chromium ছদ্মবেশী উইন্ডোতে লিঙ্ক খুলুন</translation>
 <translation id="3190315855212034486">ওহো! Chromium ক্র্যাশ করেছে৷ এখন আবার শুরু করবেন?</translation>
@@ -91,7 +89,6 @@
 <translation id="388648406173476553">Chromium কাস্টমাইজ ও নিয়ন্ত্রণ করুন। একটি বিষয়ে আপনার নজর দেওয়া দরকার - বিস্তারিত বিবরণের জন্য ক্লিক করুন।</translation>
 <translation id="3889543394854987837">Chromium খোলার জন্য আপনার নামের উপরে ক্লিক করুন এবং ব্রাউজ করা শুরু করুন৷</translation>
 <translation id="3898493977366060150">Google স্মার্ট ব্যবহার করে ওয়েব ব্রাউজিং</translation>
-<translation id="3931244652999881512">এই ফাইলটি বিপজ্জনক তাই Chromium এটিকে ব্লক করেছে। আপনি উন্নত সুরক্ষার দ্বারা সুরক্ষিত।</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS ১ ঘণ্টার মধ্যে রিস্টার্ট হবে}one{Chromium OS # ঘণ্টার মধ্যে রিস্টার্ট হবে}other{Chromium OS # ঘণ্টার মধ্যে রিস্টার্ট হবে}}</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />বর্তমান সেটিংস<ph name="END_LINK" />-এর রিপোর্ট করে Chromium-কে আরও ভালো করে তুলতে সাহায্য করুন</translation>
 <translation id="4050175100176540509">গুরুত্বপূর্ণ নিরাপত্তা উন্নতি এবং নতুন বৈশিষ্ট্যগুলি সর্বশেষ ভার্সনে উপলভ্য।</translation>
@@ -140,7 +137,6 @@
 <translation id="5680901439334282664">Chromium-এ সাইন-ইন করুন</translation>
 <translation id="5698481217667032250">এই ভাষায় Chromium প্রদর্শন করুন</translation>
 <translation id="5712253116097046984">এই আপডেটটি প্রয়োগ করার জন্য আপনার অ্যাডমিনিস্ট্রেটর চান যে আপনি Chromium OS রিস্টার্ট করুন</translation>
-<translation id="5726979195371243087">এই ফাইলটি বিপজ্জনক হতে পারে তাই Chromium এটিকে ব্লক করেছে। আপনি উন্নত সুরক্ষার দ্বারা সুরক্ষিত।</translation>
 <translation id="5756484659843248772">Chromium OS UI-এ দেখানোর জন্য এই ভাষা ব্যবহার করা হয়</translation>
 <translation id="5768914737813585044">এই ভাষায় Chromium OS প্রদর্শন করুন</translation>
 <translation id="5796460469508169315">Chromium প্রায় প্রস্তুত।</translation>

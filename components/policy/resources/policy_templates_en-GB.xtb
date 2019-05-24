@@ -397,6 +397,7 @@
       found, access will be automatically denied.  Wildcard patterns are not
       allowed.</translation>
 <translation id="1634989431648355062">Allow the <ph name="FLASH_PLUGIN_NAME" /> plug-in on these sites</translation>
+<translation id="1645793986494086629">Schema:</translation>
 <translation id="1653229475925941921">If this policy is set, it controls the type of screen magnifier that is enabled. Setting the policy to 'None' disables the screen magnifier.
 
           If you set this policy, users cannot change or override it.
@@ -605,6 +606,7 @@
 <translation id="2014757022750736514">Controls the behaviour of the sign-in screen, where users log in to their accounts. Settings include who can log in, what type of accounts are allowed, what authentication methods should be used, as well as general accessibility, input method and locale settings.</translation>
 <translation id="201557587962247231">Frequency of device status report uploads</translation>
 <translation id="2017301949684549118">URLs for web apps to be silently installed.</translation>
+<translation id="2017459564744167827">See <ph name="REFERENCE_URL" /> for more information about schema and formatting.</translation>
 <translation id="2018836497795982119">Specifies the period in milliseconds at which the device management service is queried for user policy information.
 
       Setting this policy overrides the default value of 3 hours. Valid values for this policy are in the range from 1,800,000 (30 minutes) to 86,400,000 (1 day). Any values not in this range will be clamped to the respective boundary. If the platform supports policy notifications, the refresh delay will be set to 24 hours because it is expected that policy notifications will force a refresh automatically whenever policy changes.
@@ -822,6 +824,11 @@
 <translation id="2463034609187171371">Enable DHE cipher suites in TLS</translation>
 <translation id="2463365186486772703">Application locale</translation>
 <translation id="2466131534462628618">Captive portal authentication ignores proxy</translation>
+<translation id="2471748297300970300">If disabled, prevents security warnings from appearing when Chrome is launched with some potentially dangerous command-line flags.
+
+          If enabled or unset, security warnings are displayed when some command-line flags are used to launch Chrome.
+
+          On Windows, this policy is only available on instances that are joined to a <ph name="MS_AD_NAME" /> domain or Windows 10 Pro or Enterprise instances that are enrolled for device management.</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
 <translation id="2483146640187052324">Predict network actions on any network connection</translation>
 <translation id="2484208301968418871">This policy controls the application of the SafeSites URL filter.
@@ -1097,6 +1104,7 @@
           |created_time_millis| is the UTC timestamp for the override creation; it is sent as a String because the timestamp wouldn't fit in an integer. It is used to determine whether this override should still be applied. If the current active time limit feature (time usage limit or time window limit) started after the override was created, it should not take action. Also, if the override was created before the last change of the active time_window_limit or time_usage_window, it should not be applied.
 
           Multiple overrides may be sent; the newest valid entry is the one that is going to be applied.</translation>
+<translation id="2901725272378498025">Enable security warnings for command-line flags</translation>
 <translation id="2905984450136807296">Authentication data cache lifetime</translation>
 <translation id="2906874737073861391">List of AppPack extensions</translation>
 <translation id="2907992746861405243">Controls which printers from the <ph name="BULK_PRINTERS_POLICY" /> are available to users.
@@ -1672,6 +1680,11 @@
 <translation id="3963602271515417124">If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
 
           If it is set to false, or if it is not set, no certificate will be generated and calls to the enterprise.platformKeys extension API will fail.</translation>
+<translation id="3964262920683972987">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format and its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If the device wallpaper policy is set, the Chrome OS device will download and use the wallpaper image on the login screen if no user has yet signed in to the device. Once the user logs in, the user's wallpaper policy kicks in.
+
+      If the device wallpaper policy is left not set, it's the user's wallpaper policy to decide what to show if the user's wallpaper policy is set.</translation>
 <translation id="3965339130942650562">Timeout until idle user log-out is executed</translation>
 <translation id="3973371701361892765">Never auto-hide the shelf</translation>
 <translation id="3984028218719007910">Determines whether <ph name="PRODUCT_OS_NAME" /> keeps local account data after logout. If set to true, no persistent accounts are kept by <ph name="PRODUCT_OS_NAME" /> and all data from the user session will be discarded after logout. If this policy is set to false or not configured, the device may keep (encrypted) local user data.</translation>
@@ -1737,6 +1750,17 @@
 <translation id="4056910949759281379">Disable SPDY protocol</translation>
 <translation id="408029843066770167">Allow queries to a Google time service</translation>
 <translation id="408076456549153854">Enable browser sign-in</translation>
+<translation id="40853027210512570">Overrides <ph name="PRODUCT_NAME" /> default printer selection rules.
+
+      This policy determines the rules for selecting the default printer in <ph name="PRODUCT_NAME" /> which happens the first time that the print function is used with a profile.
+
+      When this policy is set, <ph name="PRODUCT_NAME" /> will attempt to find a printer matching all of the specified attributes, and select it as default printer. The first printer found matching the policy is selected; in case of non-unique match any matching printer can be selected, depending on the order printers are discovered.
+
+      If this policy is not set or matching printer is not found within the timeout, the printer defaults to built-in PDF printer or no printer selected, when PDF printer is not available.
+
+      Printers connected to <ph name="CLOUD_PRINT_NAME" /> are considered <ph name="PRINTER_TYPE_CLOUD" />; the rest of the printers are classified as <ph name="PRINTER_TYPE_LOCAL" />.
+      Omitting a field means all values match, for example, not specifying connectivity will cause Print Preview to initiate the discovery of all kinds of printers, local and cloud.
+      Regular expression patterns must follow the JavaScript RegExp syntax and matches are case sensitive.</translation>
 <translation id="4088589230932595924">Incognito mode forced.</translation>
 <translation id="4088983553732356374">Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.
 
@@ -2191,6 +2215,7 @@
       When this policy is left unset, or is set to true, Chrome will keep at least one tab open, after switching to an alternative browser.
 
       When this policy is set to false, Chrome will close the tab after switching to an alternative browser, even if it was the last tab. This will cause Chrome to exit completely.</translation>
+<translation id="5102203758995933166">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format.</translation>
 <translation id="5105313908130842249">Screen lock delay when running on battery power</translation>
 <translation id="5108031557082757679">Disabled enterprise device printers</translation>
 <translation id="5124368997194894978">Enable boot on AC (alternating current)</translation>
@@ -2390,6 +2415,24 @@
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5423197884968724595">Android WebView restriction name:</translation>
 <translation id="5424147596523390018">Allow all colour modes</translation>
+<translation id="5427879482805712214">This policy allows you to configure the avatar image representing the user on the login screen. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME" /> can download the avatar image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format and its size must not exceed 512 KB. The URL must be accessible without any authentication.
+
+      The avatar image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME" /> will download and use the avatar image.
+
+      If you set this policy, users cannot change or override it.
+
+      If the policy is left not set, the user can choose the avatar image representing them on the login screen.</translation>
+<translation id="5432219358069697932">This policy allows you to configure the wallpaper image that is shown on the desktop and on the login screen background for the user. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME" /> can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format and its file size must not exceed 16 MB. The URL must be accessible without any authentication.
+
+      The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME" /> will download and use the wallpaper image.
+
+      If you set this policy, users cannot change or override it.
+
+      If the policy is left not set, the user can choose an image to be shown on the desktop and on the login screen background.</translation>
 <translation id="5437733496511628148">Enabling this setting prevents cookies from being set by web page elements that are not from the domain that is in the browser's address bar.
 
       Disabling this setting allows cookies to be set by web page elements that are not from the domain that is in the browser's address bar and prevents users from changing this setting.
@@ -2856,6 +2899,7 @@
 <translation id="6310223829319187614">Enable domain name autocomplete during user sign in</translation>
 <translation id="6315673513957120120">Chrome shows a warning page when users navigate to sites that have SSL errors. By default or when this policy is set to true, users are allowed to click through these warning pages.
       Setting this policy to false disallows users to click through any warning page.</translation>
+<translation id="6319198883324703402">Set the time of the first user relaunch notification</translation>
 <translation id="6352543686437322588">A device-local account to auto-login after a delay.
 
       If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The device-local account must already be configured (see |DeviceLocalAccounts|).
@@ -3213,6 +3257,7 @@
       Google may associate these logs, by means of a session ID, with other logs collected by the Google service itself; this is intended to make debugging easier.
       </translation>
 <translation id="706669471845501145">Allow SITE to show desktop notifications?</translation>
+<translation id="7068108874199666656">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format.</translation>
 <translation id="7070525176564511548">Password entry is required every week (168 hours)</translation>
 <translation id="7072208053150563108">Machine password change rate</translation>
 <translation id="7079519252486108041">Block pop-ups on these sites</translation>
@@ -3230,6 +3275,7 @@
           This policy only takes effect if the <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> policy is disabled. Otherwise, this policy is ignored because the screen dim delay is determined by a machine-learning model.
 
           The scale factor must be 100% or more.</translation>
+<translation id="710003290625031750">Expanded schema description:</translation>
 <translation id="7106631983877564505">Enable lock when <ph name="PRODUCT_OS_NAME" /> devices become idle or suspended.
 
       If you enable this setting, users will be asked for a password to unlock the device from sleep.
@@ -3819,6 +3865,9 @@
       If the policy is set to true, the device will use a 24-hour clock format. If the policy is set to false, the device will use a 12-hour clock format.
 
       If this policy is not set, the device will default to a 24-hour clock format.</translation>
+<translation id="8113421140338762630">Allows you to set the time period, in milliseconds, between the first notification that a <ph name="PRODUCT_OS_NAME" /> device must be restarted to apply a pending update and the end of the time period specified by the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> policy.
+
+      If not set, the default period of 86400000 milliseconds (one day) is used for <ph name="PRODUCT_OS_NAME" /> devices.</translation>
 <translation id="8114382167597081590">Do not enforce Restricted Mode on YouTube</translation>
 <translation id="8118665053362250806">Set media disk cache size</translation>
 <translation id="8124468781472887384">Device printers configuration access policy.</translation>
@@ -4030,6 +4079,11 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8544465954173828789">Allow SMS messages to be synced from phone to Chromebook.</translation>
 <translation id="8548832052135586762">Sets printing to colour only, monochrome only or no colour mode restriction. Unset policy is treated as no restriction.</translation>
 <translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
+<translation id="8566729013138025202">Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.
+
+      This policy can be used to configure which Android apps are automatically installed on the device.
+
+      To pin apps to the launcher, see PinnedLauncherApps.</translation>
 <translation id="8566842294717252664">Hide the web store from the New Tab Page and app launcher</translation>
 <translation id="8569734380847633643">
           If the policy is set to false, <ph name="PRODUCT_OS_NAME" /> will disable Wi-Fi and users cannot re-enable it.
@@ -4242,6 +4296,14 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8942616385591203339">This policy controls if Sync Consent can be shown to the user during first sign-in. It should be set to false if Sync Consent is never needed for the user.
       If set to false, Sync Consent will not be displayed.
       If set to true or unset, Sync Consent can be displayed.</translation>
+<translation id="894510252300143386">Configures extension management settings for <ph name="PRODUCT_NAME" />.
+
+          This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
+
+          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE" />, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          For Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
+          </translation>
 <translation id="8947415621777543415">Report device location</translation>
 <translation id="8951350807133946005">Set disk cache directory</translation>
 <translation id="8952317565138994125">Disables data synchronisation in <ph name="PRODUCT_NAME" /> using Google-hosted synchronisation services and prevents users from changing this setting.

@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Toggle Do not disturb</translation>
 <translation id="2412593942846481727">Update available</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> is a managed session managed by <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Connected to <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Left click</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -173,6 +172,7 @@
 <translation id="3510164367642747937">Highlight mouse cursor</translation>
 <translation id="3513798432020909783">Account managed by <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Change back to "<ph name="FROM_LOCALE" />" (requires restart)</translation>
+<translation id="3576141592585647168">Change timezone</translation>
 <translation id="3595596368722241419">Battery full</translation>
 <translation id="3606978283550408104">Braille display connected.</translation>
 <translation id="3621202678540785336">Input</translation>
@@ -217,7 +217,6 @@
 <translation id="4269883910223712419">The admin of this device has the ability to:</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4281007048406351813">Add 1 min to timer</translation>
-<translation id="4292681942966152062">Activating <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Clear all <ph name="COUNT" /> notifications</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">You pressed the keyboard shortcut for high contrast. Do you want to turn it on?</translation>
@@ -356,6 +355,7 @@
 <translation id="6559976592393364813">Ask administrator</translation>
 <translation id="6585808820553845416">Session ends in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
+<translation id="6637729079642709226">Change time</translation>
 <translation id="6650933572246256093">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6665545700722362599">Grant websites, apps and extensions permission to use location services, the device’s microphone, camera or other features</translation>
@@ -430,7 +430,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> and <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Strong signal</translation>
 <translation id="7837740436429729974">Time's up</translation>
-<translation id="7842211907556571265">Connecting to <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Warning: Experimental feature</translation>
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7868900307798234037">Unlocking with fingerprint</translation>
@@ -512,6 +511,7 @@
 <translation id="8990809378771970590">Using <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Unlock device as <ph name="LOGIN_ID" /> to perform the notification action</translation>
 <translation id="8995603266996330174">Managed by <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Enter Family Link parent access code.</translation>
 <translation id="9029474291399787231">Adobe Flash Player update available</translation>
 <translation id="9056839673611986238">Device will be rolled back</translation>
 <translation id="9070640332319875144">Assistant settings</translation>

@@ -39,7 +39,6 @@
 <translation id="1773601347087397504">Obțineți ajutor în legătură cu utilizarea sistemului de operare Chrome</translation>
 <translation id="1795405610103747296">Instalează Chrome pe telefon. Vom trimite un SMS pe telefonul tău: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">Dacă dezactivezi, te poți conecta la site-uri Google ca Gmail fără a te conecta la Chrome</translation>
-<translation id="1815759068706561639">Fișierul <ph name="FILE_NAME" /> este periculos și, prin urmare, Chrome l-a blocat. Te apără Protecția avansată.</translation>
 <translation id="1860536484129686729">Chrome are nevoie de permisiune ca să acceseze camera foto pentru acest site</translation>
 <translation id="1873233029667955273">Google Chrome nu este browserul prestabilit</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
@@ -65,7 +64,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2429317896000329049">Google Chrome nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
 <translation id="2467438592969358367">Google Chrome vrea să îți exporte parolele. Pentru a permite asta, introdu parola pentru Windows.</translation>
 <translation id="2485422356828889247">Dezinstalează</translation>
-<translation id="2521856951867783208">Este posibil ca fișierul să fie periculos și, prin urmare, Chrome l-a blocat. Te apără Protecția avansată.</translation>
 <translation id="2534507159460261402">Google Pay (copiat în Chrome)</translation>
 <translation id="2535429035253759792">Administratorul solicită să relansezi Chrome pentru a aplica această actualizare</translation>
 <translation id="2580411288591421699">Nu se poate instala aceeași versiune Google Chrome care rulează în prezent. Închide Google Chrome și încearcă din nou.</translation>
@@ -102,7 +100,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="3451115285585441894">Se adaugă la Chrome...</translation>
 <translation id="345171907106878721">Adăugați-vă la Chrome</translation>
 <translation id="3479552764303398839">Nu acum</translation>
-<translation id="3481286511616257896">Este posibil ca fișierul <ph name="FILE_NAME" /> să fie periculos, așadar Chrome l-a blocat. Te apără Protecția avansată.</translation>
 <translation id="34857402635545079">Șterge și datele din Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome are nevoie de acces la locația ta ca să permită accesul la locație pentru acest site</translation>
 <translation id="3576528680708590453">Administratorul sistemului a configurat Google Chrome astfel încât să deschidă un browser secundar pentru a accesa <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -224,7 +221,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7459554271817304652">Configurați sincronizarea pentru a salva funcțiile personalizate ale browserului pe web și accesați-le din Google Chrome de pe orice computer.</translation>
 <translation id="7473136999113284234">Chrome se actualizează automat, deci vei avea întotdeauna cea mai recentă versiune.</translation>
 <translation id="7486227612705979895">Chrome îți va accesa spațiul de stocare Drive pentru a face sugestii în bara de adrese</translation>
-<translation id="748945194546522577">Fișierul este periculos, așadar Chrome l-a blocat. Te apără Protecția avansată.</translation>
 <translation id="7531671357096394523">Închide toate copiile de Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Afișează sistemul de operare Chrome în această limbă</translation>
@@ -232,7 +228,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7589360514048265910">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Mac OS X 10.9 nu mai este acceptat.</translation>
 <translation id="7592736734348559088">Google Chrome nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
 <translation id="7626032353295482388">Bun venit la Chrome</translation>
-<translation id="7636297873481318396">Fișierul este periculos, așadar Chrome l-a blocat. Te apără Protecția avansată.</translation>
 <translation id="7641148173327520642">Administratorul sistemului a configurat Google Chrome să deschidă <ph name="ALTERNATIVE_BROWSER_NAME" /> pentru a accesa <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Sigla Chrome Enterprise</translation>
 <translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verifică dacă există suficient spațiu liber și dacă ai drepturile necesare pentru a instala software-ul.</translation>

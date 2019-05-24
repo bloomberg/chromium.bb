@@ -1224,6 +1224,7 @@
 <translation id="2870909136778269686">Memperbarui...</translation>
 <translation id="2871813825302180988">Akun ini sudah digunakan di perangkat ini.</translation>
 <translation id="287286579981869940">Menambahkan <ph name="PROVIDER_NAME" />...</translation>
+<translation id="2872961005593481000">Matikan</translation>
 <translation id="2874343608108773609">Untuk mendapatkan sandi di semua perangkat Anda, login ke Chrome.</translation>
 <translation id="2874939134665556319">Lagu sebelumnya</translation>
 <translation id="2875698561019555027">(Halaman kesalahan Chrome)</translation>
@@ -2885,7 +2886,6 @@
 <translation id="5518584115117143805">Sertifikat Enkripsi Email</translation>
 <translation id="5521078259930077036">Apakah ini beranda yang Anda harapkan?</translation>
 <translation id="5522156646677899028">Ekstensi ini berisi kerentanan keamanan serius.</translation>
-<translation id="5523201311986093262">Latar belakang</translation>
 <translation id="5525677322972469346">Buat pengguna baru yang dilindungi</translation>
 <translation id="5526701598901867718">Semua (tidak aman)</translation>
 <translation id="5526745900034778153">Login lagi untuk melanjutkan sinkronisasi</translation>
@@ -3569,7 +3569,6 @@
 <translation id="656293578423618167">Jalur atau nama file terlalu panjang. Simpan dengan nama yang lebih pendek atau ke lokasi lain.</translation>
 <translation id="6567688344210276845">Tidak dapat memuat ikon '<ph name="ICON" />' untuk tindakan halaman.</translation>
 <translation id="6571979863037191371">Putuskan hubungan ponsel Anda dari Chromebook. Keduanya tidak akan lagi terhubung secara otomatis.</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> tidak biasa didownload dan mungkin berbahaya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="657402800789773160">&amp;Muat Ulang Halaman Ini</translation>
 <translation id="6577284282025554716">Download dibatalkan: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Enkripsikan sandi yang disinkronkan dengan nama pengguna dan sandi Google Anda</translation>
@@ -5178,7 +5177,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">Perbarui sandi untuk <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Akses ke file lokal di komputer Anda dinonaktifkan oleh administrator</translation>
-<translation id="9041909613332246191">File ini tidak biasa didownload dan mungkin berbahaya. Anda dilindungi oleh Perlindungan Lanjutan.</translation>
 <translation id="9042858701776831292">Aplikasi Google Play Store dapat meminta akses ke perangkat penyimpanan eksternal untuk membaca dan menulis file dan folder di perangkat tersebut.</translation>
 <translation id="9042893549633094279">Privasi dan keamanan</translation>
 <translation id="904451693890288097">Masukkan kunci sandi untuk "<ph name="DEVICE_NAME" />":</translation>
@@ -5265,7 +5263,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9179734824669616955">Siapkan Linux (Beta) di <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">Proses ini dapat memerlukan waktu beberapa menit. Memulai container Linux.</translation>
 <translation id="9180380851667544951">Situs dapat membagikan layar Anda</translation>
-<translation id="9185926955514281189">Warna dan tema</translation>
 <translation id="9188441292293901223">Perbarui ponsel Anda ke versi Android yang lebih baru untuk membuka <ph name="DEVICE_TYPE" /> ini.</translation>
 <translation id="9188732951356337132">Kirim data penggunaan dan diagnostik. Perangkat ini saat ini otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini tidak akan digunakan untuk mengidentifikasi anak Anda serta akan membantu sistem dan stabilitas aplikasi serta peningkatan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan untuk anak Anda, data ini mungkin akan disimpan ke Akun Google miliknya. <ph name="BEGIN_LINK2" />Pelajari Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + kunci yang dibagikan sebelumnya</translation>

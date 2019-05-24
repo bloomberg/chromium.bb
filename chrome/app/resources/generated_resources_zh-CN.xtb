@@ -802,7 +802,7 @@
 <translation id="2241053333139545397">读取和更改您在一些网站上的数据</translation>
 <translation id="2241634353105152135">仅一次</translation>
 <translation id="2242687258748107519">文件信息</translation>
-<translation id="2246549592927364792">从 Google 获取图片说明？</translation>
+<translation id="2246549592927364792">要从 Google 获取图片说明吗？</translation>
 <translation id="224940702122312781">此网页会消耗很多网络数据流量。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系统查看器打开</translation>
@@ -1212,6 +1212,7 @@
 <translation id="2870909136778269686">正在更新…</translation>
 <translation id="2871813825302180988">已有人在此设备上使用该帐号。</translation>
 <translation id="287286579981869940">添加“<ph name="PROVIDER_NAME" />”…</translation>
+<translation id="2872961005593481000">关机</translation>
 <translation id="2874343608108773609">要将您的密码同步到您的所有设备上，请登录 Chrome。</translation>
 <translation id="2874939134665556319">上一曲</translation>
 <translation id="2875698561019555027">（Chrome 错误页面）</translation>
@@ -1706,7 +1707,7 @@
 <translation id="3664511988987167893">扩展程序图标</translation>
 <translation id="3665589677786828986">Chrome检测到您的部分设置被其他程序篡改了，因此已将这些设置重置为原始默认设置。</translation>
 <translation id="3668570675727296296">语言设置</translation>
-<translation id="366867565525278777">安装失败，因为存储空间不足。需要至少 <ph name="INSTALL_SIZE" /> 的可用空间。要释放空间，请从设备存储空间中删除文件。</translation>
+<translation id="366867565525278777">安装失败，因为存储空间不足。至少需要 <ph name="INSTALL_SIZE" /> 的可用空间。要释放空间，请从设备存储空间中删除文件。</translation>
 <translation id="3668801437375206837">为了更好地诊断蓝牙问题，Google 用户可以在反馈报告中包含其他蓝牙日志。此选项处于选中状态时，您的报告中将包含来自当前会话的 btsnoop 和 HCI 日志，这些日志经过处理，尽可能移除了个人身份信息。只有 Listnr 的 Chrome 操作系统产品组管理员可以访问这些日志。这些日志将于 90 天后被完全清除。</translation>
 <translation id="3668823961463113931">处理程序</translation>
 <translation id="3670113805793654926">来自任何供应商的设备</translation>
@@ -3547,7 +3548,6 @@
 <translation id="656293578423618167">该文件的路径或名称过长。请以较短的名称保存或保存到其他位置。</translation>
 <translation id="6567688344210276845">无法加载网页操作的“<ph name="ICON" />”图标。</translation>
 <translation id="6571979863037191371">断开手机与 Chromebook 的连接。断开后，它们将无法再自动连接。</translation>
-<translation id="6573998787994398565"><ph name="FILE_NAME" /> 属于不常下载的内容，可能含有危险因素。您已注册“高级保护”计划，因此受其保护。</translation>
 <translation id="657402800789773160">重新加载此页(&amp;R)</translation>
 <translation id="6577284282025554716">已取消下载“<ph name="FILE_NAME" />”</translation>
 <translation id="6578664922716508575">使用您的 Google 用户名和密码加密已同步的密码</translation>
@@ -4361,7 +4361,7 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />注意<ph name="END_BOLD" />：在恢复过程中，系统将会重新启动。</translation>
 <translation id="7829298379596169484">正在存取音频输入</translation>
-<translation id="7830594666202422257">已连接到 Linux</translation>
+<translation id="7830594666202422257">连接到 Linux</translation>
 <translation id="7831491651892296503">配置网络时出错</translation>
 <translation id="7831754656372780761">“<ph name="TAB_TITLE" />”<ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">结束时间</translation>
@@ -5139,7 +5139,6 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">要更新 <ph name="ORIGIN" /> 的密码吗？</translation>
 <translation id="9041692268811217999">您的管理员已禁止访问您计算机上的本地文件</translation>
-<translation id="9041909613332246191">此文件属于不常下载的内容，可能含有危险因素。您已注册“高级保护”计划，因此受其保护。</translation>
 <translation id="9042893549633094279">隐私设置和安全性</translation>
 <translation id="904451693890288097">请输入“<ph name="DEVICE_NAME" />”的配对密钥：</translation>
 <translation id="9044646465488564462">无法连接到网络：<ph name="DETAILS" /></translation>

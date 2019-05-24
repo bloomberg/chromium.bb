@@ -1061,6 +1061,7 @@
       AutoplayAllowed politikası False (Yanlış) değerine ayarlanırsa bu politikada ayarlanan herhangi bir URL kalıbının oynatılmasına izin verilmeye devam edilir.
 
       <ph name="PRODUCT_NAME" /> çalışırken bu politika değişirse, değişikliğin yalnızca yeni açılan sekmeler için geçerli olacağını unutmayın. Dolayısıyla bazı sekmeler hâlâ önceki davranışı sergiliyor olabilir.</translation>
+<translation id="284288632677954003">Hiçbir zaman bir tarayıcı anahtarını tetiklememesi gereken URL'ler içeren bir XML dosyasının URL'si.</translation>
 <translation id="285480231336205327">Yüksek kontrast modunu etkinleştir</translation>
 <translation id="2854919890879212089"><ph name="PRODUCT_NAME" /> ürününün, Baskı Önizleme'de varsayılan seçenek olarak en son kullanılan yazıcı yerine sistem varsayılan yazıcısını kullanmasına neden olur.
 
@@ -1232,6 +1233,15 @@
 <translation id="3096595567015595053">Etkin eklentilerin listesi</translation>
 <translation id="3101501961102569744">Proxy sunucu ayarlarının nasıl belirtileceğini seç</translation>
 <translation id="3101709781009526431">Tarih ve saat</translation>
+<translation id="3114411414586006215">Bu politika, hiçbir zaman tarayıcı geçişine neden olmayacak web sitelerinin listesini kontrol eder.
+
+      Bu listeye <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> politikası aracılığıyla öğeler eklenebileceğini de unutmayın.
+
+      Bu politika ayarlanmadan bırakılırsa listeye hiçbir web sitesi eklenmez.
+
+      Bu politika ayarlandığında, <ph name="URL_LIST_POLICY_NAME" /> politikasına benzer şekilde her bir öğe kural olarak ele alınır. Bununla birlikte, mantık tersinedir: Eşleşen kurallar, alternatif bir tarayıcı açmaz.
+
+      <ph name="URL_LIST_POLICY_NAME" /> politikasından farklı olarak, kurallar her iki yönde de uygulanır. Diğer bir deyişle, Internet Explorer eklentisi varsa ve etkinse bu eklenti aynı zamanda <ph name="IE_PRODUCT_NAME" /> tarayıcısının bu URL'leri <ph name="PRODUCT_NAME" /> ile açıp açmayacağını da kontrol eder.</translation>
 <translation id="3117676313396757089">Uyarı: DHE, sürüm 57'den sonra (yaklaşık olarak Mart 2017'de) <ph name="PRODUCT_NAME" /> ürününden tamamen kaldırılacak ve sonrasında bu politika çalışmayacaktır.
 
       Politika ayarlanmamışsa veya yanlış seçeneğine ayarlanmışsa, TLS'deki DHE şifre paketleri etkinleştirilmez. Aksi takdirde, DHE şifre paketlerinin etkinleştirilmesi ve eski bir sunucuyla uyumluluğun korunması için doğru seçeneğine ayarlanabilir. Bu geçici bir tedbirdir ve sunucu yeniden yapılandırılmalıdır.
@@ -1428,6 +1438,17 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3550875587920006460">Güncellemeleri kontrol etmek için özel bir programın belirlenmesini sağlar. Bu, tüm kullanıcılar ve cihazdaki tüm arayüzler için geçerlidir. Bu belirlendikten sonra cihaz, güncellemeleri programa göre kontrol edecektir. Programlanmış diğer güncelleme kontrollerini iptal etmek için politikanın kaldırılması gerekir.</translation>
 <translation id="355118380775352753">Alternatif tarayıcıda açılacak web siteleri</translation>
 <translation id="3554984410014457319">Google Asistan'ın sesli etkinleştirme ifadesini dinlemesine izin ver</translation>
+<translation id="3557208865710006939">Yazım denetimi dillerini zorla etkinleştirir. Listedeki tanınmayan diller yoksayılır.
+
+      Bu politikayı etkinleştirirseniz, yazım denetimi, kullanıcının yazım denetimini etkinleştirdiği dillerin yanı sıra belirtilen diller için de etkinleştirilir.
+
+      Bu politikayı ayarlamazsanız veya devre dışı bırakırsanız, kullanıcının yazım denetimi tercihlerinde değişiklik yapılmaz.
+
+      <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> politikası false (yanlış) değerine ayarlanırsa bu politikanın herhangi bir etkisi olmaz.
+
+      Bir dil hem bu politikada hem de <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> politikasında yer alıyorsa, bu politikaya öncelik verilir ve yazım denetimi dili etkinleştirilir.
+
+      Şu anda desteklenen diller şunlardır: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Kullanıcılar Chrome OS sürümü kanalını yapılandırabilir</translation>
 <translation id="3575011234198230041">HTTP kimlik doğrulaması</translation>
 <translation id="3577251398714997599">Araya giren reklamların yer aldığı siteler için reklam ayarı</translation>
@@ -1778,6 +1799,9 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
           Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlarlar.
 
           Bu politika ayarlanmadan bırakılırsa yapışkan tuşlar başlangıçta devre dışıdır ancak kullanıcı dilediği zaman etkinleştirebilir.</translation>
+<translation id="4171331498167688968">Bu politika false (yanlış) değerine ayarlanırsa üçüncü taraf yazılımlarının Chrome işlemlerine çalıştırılabilir kod yerleştirmelerine izin verilir. Politika ayarlanmazsa veya true (doğru) değerine ayarlanırsa üçüncü taraf yazılımlarının Chrome işlemlerine çalıştırılabilir kod yerleştirmeleri engellenir.
+
+      Bu politikanın değerinden bağımsız olarak, tarayıcı şu anda üçüncü taraf yazılımlarının <ph name="MS_AD_NAME" /> alanına katılmış bir makinedeki işlemlerine çalıştırılabilir kod yerleştirmesini engellemeyecektir.</translation>
 <translation id="4183229833636799228">Varsayılan <ph name="FLASH_PLUGIN_NAME" /> ayarı</translation>
 <translation id="4192388905594723944">Uzaktan erişim istemci kimlik doğrulama jetonunu doğrulama URL'si</translation>
 <translation id="4203389617541558220">Otomatik yeniden başlatmalar planlayarak cihazın açık olduğu süreyi sınırlandır.
@@ -2147,6 +2171,7 @@ politikayı geçersiz kılamaz.
           Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
 <translation id="5085647276663819155">Baskı Önizlemeyi Devre Dışı Bırak</translation>
 <translation id="5090209345759901501">Flash içeriği ayarını tüm içeriği kapsayacak şekilde genişlet</translation>
+<translation id="5090791951240382356">Farklı kaynaklara ait sözlük politikalarını birleştirmeye izin ver</translation>
 <translation id="5093540029655764852">Bir istemcinin makine hesap şifresini değiştirme sıklığını (gün olarak) belirtir. Şifre istemci tarafından rastgele oluşturulur ve kullanıcı tarafından görülemez.
 
       Kullanıcı şifreleri gibi makine şifrelerinin de düzenli aralıklarla değiştirilmesi gerekir. Bu politikanın devre dışı bırakılması veya yüksek bir gün sayısının belirlenmesi, potansiyel saldırganlara makine hesap şifresini bulup kullanmaları için daha fazla vakit vereceğinden güvenlik üzerinde olumsuz bir etki yaratabilir.
@@ -3075,6 +3100,17 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6923366716660828830">Varsayılan arama sağlayıcısının adını belirtir. Boş bırakılır veya ayarlanmazsa, arama URL'sinin belirttiği ana makine adı kullanılır.
 
           Bu politika, yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirildiğinde dikkate alınır.</translation>
+<translation id="6924223708804692571">Yazım denetimi dillerini zorla devre dışı bırakır. Bu listedeki tanınmayan diller yoksayılır.
+
+      Bu politikayı etkinleştirirseniz, yazım denetimi belirtilen diller için devre dışı bırakılır. Kullanıcı, listede yer almayan diller için yazım denetimini etkinleştirebilir veya devre dışı bırakabilir.
+
+      Bu politikayı ayarlamazsanız veya devre dışı bırakırsanız, kullanıcının yazım denetimi tercihlerinde değişiklik yapılmaz.
+
+      <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> politikası false (yanlış) değerine ayarlanırsa bu politikanın herhangi bir etkisi olmaz.
+
+      Bir dil hem bu politikada hem de <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> politikasında yer alıyorsa ikincisine öncelik verilir ve yazım denetimi dili etkinleştirilir.
+
+      Şu anda desteklenen diller şunlardır: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Uzun kenar dupleks yazdırmayı etkinleştir</translation>
 <translation id="6931242315485576290">Google ile veri senkronizasyonunu devre dışı bırak</translation>
 <translation id="6936894225179401731">Proxy sunucuyla aynı anda yapılabilecek maksimum bağlantı sayısını belirtir.
@@ -3222,6 +3258,15 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politika yapılandırılırsa, uygulama seti sabittir ve kullanıcı tarafından değiştirilemez.
 
       Bu politika ayarlanmadan bırakılırsa, kullanıcı başlatıcıdaki sabitlenmiş uygulamalar listesini değiştirebilir.</translation>
+<translation id="713121532817834879">Bu politika, Internet Explorer'ın <ph name="IEEM_SITELIST_POLICY" /> politikasıyla aynı biçimde bir XML dosyasına yönlendiren bir URL'dir. Bu politika, bir XML dosyasından kurallar yükler, ancak bu kuralları Internet Explorer ile paylaşmaz.
+
+      Bu XML dosyasındaki kurallar, <ph name="GREYLIST_POLICY_NAME" /> ile aynı şekilde uygulanır. Diğer bir deyişle, bu kurallar <ph name="PRODUCT_NAME" /> ürününün alternatif tarayıcıyı açmasını ve ayrıca, alternatif tarayıcının <ph name="PRODUCT_NAME" /> ürününü açmasını engeller.
+
+      Bu politika ayarlanmadan bırakılırsa veya geçerli bir URL'ye ayarlanmazsa <ph name="PRODUCT_NAME" />, bunu tarayıcı geçişini tetiklemeyen bir kural kaynağı olarak kullanmaz.
+
+      Bu politika geçerli bir URL'ye ayarlandığında, <ph name="PRODUCT_NAME" />, site listesini o URL'den indirir ve kuralları, <ph name="SITELIST_POLICY_NAME" /> politikasıyla yapılandırılmışlar gibi uygular.
+
+      Internet Explorer'ın <ph name="IEEM_SITELIST_POLICY" /> politikası hakkında daha fazla bilgiyi https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode adresinde bulabilirsiniz</translation>
 <translation id="7132877481099023201">Soru sorulmadan video yakalama cihazlarına erişim verilecek URL'ler</translation>
 <translation id="7138678301420049075">Diğer</translation>
 <translation id="7140629953254369759"><ph name="PRODUCT_OS_NAME" /> işletim sistemine, belirtilen adla tanımlanan görev planlayıcı yapılandırmasını kullanma talimatı verir.
@@ -3270,6 +3315,15 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
           Otomatik oynatma özelliği yalnızca <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> politikasında açıkça listelenen alan adlarında kullanılabilir. Otomatik oynatma özelliğini tüm sitelerde etkinleştirmek istiyorsanız bu listeye http://* ve https://* ekleme seçeneğini değerlendirin.
 
           Bu politika ayarlanmadan bırakılırsa kullanıcı bu ayarı manuel olarak değiştirebilir.</translation>
+<translation id="7222749588229362483">Seçilen politikaların, farklı kaynaklardan geldiklerinde aynı kapsam ve düzeyle birleştirilmesine olanak verir.
+
+        Birleştirme, her bir kaynaktaki sözlük ilk düzey anahtarlarının birleştirilmesinden oluşur. Anahtarlar arasında çakışma olması durumunda, en yüksek önceliğe sahip kaynaktan gelen anahtar uygulanır.
+
+        Bir politika listede varsa iki kaynak arasında uyuşmazlık olması durumunda, aynı kapsamlara ve düzeye sahip olmaları koşuluyla, değerler yeni bir politika sözlüğü halinde birleştirilir.
+
+        Bir politika listede varsa, iki kaynak arasında ve ayrıca farklı kapsamlar ve/veya düzey arasında uyuşmazlık olması durumunda, en yüksek önceliğe sahip politika uygulanır.
+
+        Bir politika listede yoksa, kaynaklar, kapsamlar ve/veya düzey arasında uyuşmazlık olması durumunda, en yüksek önceliğe sahip politika uygulanır.</translation>
 <translation id="7229975860249300121"><ph name="PRODUCT_NAME" /> dahilinde hangi Google hesaplarının tarayıcı birincil hesapları (senkronizasyonu etkinleştirme akışında seçilen hesap) olarak ayarlanabileceğini belirlemek için kullanılan normal bir ifade içerir.
 
       Bir kullanıcı bu kalıba uymayan bir kullanıcı adıyla tarayıcı birincil hesabını ayarlamaya çalışırsa ilgili bir hata görüntülenir.
@@ -3903,6 +3957,12 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 
       Bu politika "Değiştir" olarak ayarlanırsa, kullanıcı GPO'larındaki kullanıcı politikası, bilgisayar GPO'larındaki kullanıcı politikasıyla değiştirilir (kullanıcı GPO'ları yoksayılır).</translation>
 <translation id="8465065632133292531">POST kullanan anlık URL parametreleri</translation>
+<translation id="8465746466645315861">Bu politika ayarlanmazsa kullanıcı, dil ayarlarında yazım denetimini etkinleştirebilir veya devre dışı bırakabilir.
+
+      Bu politika true (doğru) değerine ayarlanırsa yazım denetimi etkinleştirilir ve kullanıcı bunu devre dışı bırakamaz. <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> ve <ph name="LINUX_OS_NAME" /> işletim sistemlerinde, yazım denetimi dilleri ayrı ayrı açılıp kapatılabilir. Böylece kullanıcı, yazım denetimi yapılan tüm dilleri kapatarak da yazım denetimini etkin bir şekilde devre dışı bırakabilir. Bunu önlemek için <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> politikası, belirli yazım denetimi dillerinin etkinleştirilmesini zorlamak amacıyla kullanılabilir.
+
+      Bu politika false (yanlış) değerine ayarlanırsa yazım denetimi devre dışı bırakılır ve kullanıcı bunu etkinleştiremez. Bu politika false (yanlış) değerine ayarlandığında, <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> ve <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> politikalarının herhangi bir etkisi olmaz.
+      </translation>
 <translation id="847472800012384958">Hiçbir sitenin pop-up göstermesine izin verme</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">https:// URL'lerini, proxy çözümlemesi sırasında <ph name="PRODUCT_NAME" /> tarafından kullanılan PAC (Proxy Otomatik Yapılandırması) komut dosyalarına geçirmeden önce URL'lerin gizlilik ve güvenlik açısından hassas bölümlerini ayırır.

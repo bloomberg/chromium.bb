@@ -98,7 +98,6 @@
 <translation id="239188844683466770">व्यत्यय आणू नका टॉगल करा</translation>
 <translation id="2412593942846481727">अपडेट उपलब्ध आहे</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> हे <ph name="DOMAIN" /> द्वारे व्यवस्थापित केलेले एक सेशन आहे</translation>
-<translation id="2416346634399901812"><ph name="NETWORK_NAME" /> शी कनेक्ट केले</translation>
 <translation id="2427507373259914951">लेफ्ट क्लिक करा</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. स्वीकार करण्यापूर्वी, कृपया त्या डिव्हाइसवर ही पासकी दर्शवली असल्याची पुष्टी करा: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">सूचना</translation>
@@ -158,6 +157,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> नंतरही साइन इन करू शकतो.</translation>
 <translation id="3321628682574733415">चुकीचा पालक कोड</translation>
 <translation id="332587331255250389">कृपया बॅटरी बदला</translation>
+<translation id="3335825575923019462">तुम्हाला नक्की ऑटोमॅटिक क्लिक बंद करायचे आहे का?</translation>
 <translation id="3351879221545518001">तुम्ही सध्या स्क्रीन कास्ट करत आहात.</translation>
 <translation id="3364721542077212959">स्टायलस टूल</translation>
 <translation id="3368922792935385530">कनेक्ट केले</translation>
@@ -216,7 +216,6 @@
 <translation id="4269883910223712419">या डिव्हाइसचे प्रशासन पुढील गोष्टी करू शकते:</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4281007048406351813">टायमरला एक मिनिट जोडा</translation>
-<translation id="4292681942966152062"><ph name="NETWORK_NAME" /> अ‍ॅक्टिव्हेट करत आहे</translation>
 <translation id="4296136865091727875">सर्व <ph name="COUNT" /> सूचना साफ करा</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">तुम्ही उच्च कॉंट्रास्टसाठी कीबोर्ड शॉर्टकट दाबला आहे. तुम्हाला ते सुरू करायचे आहे का?</translation>
@@ -399,6 +398,7 @@
 <translation id="7348093485538360975">ऑन-स्क्रीन कीबोर्ड</translation>
 <translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
 <translation id="7377169924702866686">Caps Lock सुरू आहे.</translation>
+<translation id="7378594059915113390">मीडिया नियंत्रणे</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />से</translation>
 <translation id="7398254312354928459">नेटवर्क कनेक्शन स्विच केले</translation>
 <translation id="7405710164030118432">डिव्हाइस अनलॉक करण्यासाठी, तुमचा Family Link पालक ॲक्सेस कोड एंटर करा</translation>
@@ -428,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> आणि <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">मजबूत सिग्नल</translation>
 <translation id="7837740436429729974">वेळ संपली</translation>
-<translation id="7842211907556571265"><ph name="NETWORK_NAME" /> शी कनेक्ट करत आहे</translation>
 <translation id="7842569679327885685">चेतावणी: प्रयोगात्मक वैशिष्ट्य</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
 <translation id="7868900307798234037">फिंगरप्रिंटने अनलॉक करत आहे</translation>
@@ -484,6 +483,7 @@
 <translation id="8649101189709089199">बोलण्यासाठी निवडा</translation>
 <translation id="8652175077544655965">सेटिंग्ज बंद करा</translation>
 <translation id="8653151467777939995">सूचना सेटिंग्ज दाखवा. सूचना सुरू आहेत</translation>
+<translation id="8664483332071009680">ऑटोमॅटिक क्लिक बंद करायचे का?</translation>
 <translation id="8664753092453405566">नेटवर्क सूची दाखवा. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">निम्न-उर्जेचे चार्जर कनेक्ट केले</translation>

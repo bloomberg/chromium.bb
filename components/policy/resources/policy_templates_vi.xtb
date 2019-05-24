@@ -1067,6 +1067,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đặt chính sách AutoplayAllowed thành False, thì các mẫu URL được đặt trong chính sách này sẽ vẫn được phép phát.
 
       Lưu ý rằng, nếu <ph name="PRODUCT_NAME" /> đang chạy và chính sách này thay đổi, thì chính sách này sẽ chỉ áp dụng cho các tab mới mở. Vì vậy, một số tab có thể vẫn tuân theo hành vi trước đó.</translation>
+<translation id="284288632677954003">URL của một tệp XML chứa các URL sẽ không bao giờ kích hoạt quá trình chuyển trình duyệt.</translation>
 <translation id="285480231336205327">Bật chế độ tương phản cao</translation>
 <translation id="2854919890879212089">Cài đặt <ph name="PRODUCT_NAME" /> để chọn máy in có sẵn trong hệ thống làm máy in mặc định trong mục Xem trước bản in thay cho máy in đã sử dụng gần đây nhất.
 
@@ -1237,6 +1238,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3096595567015595053">Danh sách plugin được kích hoạt</translation>
 <translation id="3101501961102569744">Chọn cách chỉ định cài đặt máy chủ proxy</translation>
 <translation id="3101709781009526431">Ngày và giờ</translation>
+<translation id="3114411414586006215">Chính sách này kiểm soát danh sách các trang web không bao giờ kích hoạt quá trình chuyển trình duyệt.
+
+      Xin lưu ý rằng bạn cũng có thể thêm các thành phần vào danh sách này thông qua chính sách <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Khi bạn không đặt chính sách này thì sẽ không có trang web nào được thêm vào danh sách.
+
+      Khi bạn đặt chính sách này, mỗi mục sẽ được coi là một quy tắc, tương tự như chính sách <ph name="URL_LIST_POLICY_NAME" />. Tuy nhiên, logic bị đảo ngược: các quy tắc trùng khớp sẽ không mở một trình duyệt thay thế.
+
+      Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụng cho cả hai hướng. Tức là, khi có tiện ích bổ trợ Internet Explorer và tiện ích này được bật, thì chính sách này cũng sẽ kiểm soát việc <ph name="IE_PRODUCT_NAME" /> có mở những URL này trong <ph name="PRODUCT_NAME" /> hay không.</translation>
 <translation id="3117676313396757089">Cảnh báo: DHE sẽ bị xóa hoàn toàn khỏi <ph name="PRODUCT_NAME" /> sau phiên bản 57 (khoảng tháng 3 năm 2017) và chính sách này sẽ ngừng hoạt động sau đó.
 
       Nếu chính sách này không được đặt hoặc được đặt thành false thì bộ mã hóa DHE trong TLS sẽ không được bật. Ngoài ra, chính sách có thể được đặt thành true để bật bộ mã hóa DHE và duy trì khả năng tương thích với các máy chủ lỗi thời. Đây là một biện pháp tạm thời và cần phải định cấu hình lại máy chủ.
@@ -1435,6 +1445,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3550875587920006460">Cho phép đặt một lịch biểu tùy chỉnh để kiểm tra bản cập nhật. Tùy chọn này áp dụng cho mọi người dùng và tất cả giao diện trên thiết bị. Sau khi bạn đặt, thiết bị sẽ kiểm tra bản cập nhật theo lịch biểu. Bạn phải xóa chính sách này để hủy bất kỳ hoạt động kiểm tra bản cập nhật theo lịch biểu nào khác.</translation>
 <translation id="355118380775352753">Các trang web sẽ mở trong trình duyệt thay thế</translation>
 <translation id="3554984410014457319">Cho phép Trợ lý Google nghe cụm từ kích hoạt bằng giọng nói</translation>
+<translation id="3557208865710006939">Buộc bật ngôn ngữ có tính năng kiểm tra chính tả. Các ngôn ngữ không nhận dạng được trong danh sách đó sẽ bị bỏ qua.
+
+      Nếu bạn bật chính sách này, thì tính năng kiểm tra chính tả sẽ được bật cho các ngôn ngữ đã chỉ định, ngoài các ngôn ngữ mà người dùng đã bật tính năng kiểm tra chính tả.
+
+      Nếu bạn tắt hoặc không đặt chính sách này, thì sẽ không có sự thay đổi nào đối với tùy chọn kiểm tra chính tả của người dùng.
+
+      Nếu bạn đặt chính sách <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> thành false, thì chính sách này sẽ không có hiệu lực.
+
+      Nếu một ngôn ngữ có trong cả chính sách này lẫn chính sách <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, thì chính sách này được ưu tiên và ngôn ngữ có tính năng kiểm tra chính tả đó sẽ được bật.
+
+      Các ngôn ngữ hiện được hỗ trợ là: tiếng Afrikaans - Nam Phi, tiếng Bulgaria, tiếng Catalan, tiếng Séc, tiếng Đan Mạch, tiếng Đức, tiếng Hy Lạp, tiếng Anh - Úc, tiếng Anh - Canada, tiếng Anh - Anh, tiếng Anh - Mỹ, tiếng Tây Ban Nha, tiếng Tây Ban Nha-419, tiếng Tây Ban Nha - Argentina, tiếng Tây Ban Nha - Tây Ban Nha, tiếng Tây Ban Nha - Mexico, tiếng Tây Ban Nha - Mỹ, tiếng Estonia, tiếng Ba Tư, tiếng Faroe, tiếng Pháp, tiếng Do Thái, tiếng Hindi, tiếng Croatia, tiếng Hungary, tiếng Indonesia, tiếng Ý, tiếng Hàn, tiếng Lithuania, tiếng Latvia, tiếng Bokmål, tiếng Hà Lan, tiếng Ba Lan, tiếng Bồ Đào Nha - Brazil, tiếng Bồ Đào Nha - Bồ Đào Nha, tiếng Rumani, tiếng Nga, tiếng Serbo - Croatia, tiếng Slovak, tiếng Slovenia, tiếng Albania, tiếng Serbia, tiếng Thụy Điển, tiếng Tamil, tiếng Tajik, tiếng Thổ Nhĩ Kỳ, tiếng Ukraina, tiếng Việt.</translation>
 <translation id="356579196325389849">Người dùng có thể định cấu hình kênh phát hành Chrome OS</translation>
 <translation id="3575011234198230041">Xác thực HTTP</translation>
 <translation id="3577251398714997599">Cài đặt quảng cáo cho các trang web chứa quảng cáo xâm nhập</translation>
@@ -1789,6 +1810,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hoặc ghi đè chính sách.
 
           Nếu bạn không đặt chính sách này, thì ban đầu, các phím cố định sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
+<translation id="4171331498167688968">Nếu bạn đặt chính sách này thành false, thì phần mềm bên thứ ba sẽ được phép đưa mã thực thi vào các quy trình của Chrome. Nếu bạn không đặt chính sách này hoặc đặt chính sách này thành true, thì phần mềm bên thứ ba sẽ không được phép đưa mã thực thi vào các quy trình của Chrome.
+
+      Bất kể chính sách này có giá trị như thế nào, thì trình duyệt cũng sẽ không ngăn cản phần mềm bên thứ ba đưa mã thực thi vào các quy trình của trình duyệt trên một máy liên kết với miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Cài đặt <ph name="FLASH_PLUGIN_NAME" /> mặc định</translation>
 <translation id="4192388905594723944">URL để xác thực mã thông báo xác thực ứng dụng truy cập từ xa</translation>
 <translation id="4203389617541558220">Giới hạn thời gian hoạt động của thiết bị bằng cách lên lịch tự động khởi động lại.
@@ -2155,6 +2179,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="5085647276663819155">Vô hiệu hóa xem trước bản in</translation>
 <translation id="5090209345759901501">Mở rộng cài đặt nội dung Flash cho tất cả nội dung</translation>
+<translation id="5090791951240382356">Cho phép hợp nhất các chính sách từ điển thuộc các nguồn khác nhau</translation>
 <translation id="5093540029655764852">Chỉ định tần suất (tính theo ngày) mà một máy khách sẽ thay đổi mật khẩu tài khoản cho máy của mình. Mật khẩu do máy khách tạo ngẫu nhiên và không hiển thị với người dùng.
 
       Giống như mật khẩu người dùng, mật khẩu máy cũng nên được thay đổi thường xuyên. Tắt chính sách này hoặc đặt số ngày dài có thể ảnh hưởng tiêu cực đến tính bảo mật vì điều này sẽ giúp cho kẻ tấn công có thêm thời gian tìm ra mật khẩu tài khoản của máy và sử dụng mật khẩu này.
@@ -3096,6 +3121,17 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6923366716660828830">Chỉ định tên của nhà cung cấp dịch vụ tìm kiếm mặc định. Nếu để trống hoặc không đặt, tên máy chủ lưu trữ do URL tìm kiếm chỉ định sẽ được sử dụng.
 
           Chính sách này chỉ được xem xét nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
+<translation id="6924223708804692571">Buộc tắt các ngôn ngữ có tính năng kiểm tra chính tả. Các ngôn ngữ không nhận dạng được trong danh sách đó sẽ bị bỏ qua.
+
+      Nếu bạn bật chính sách này, thì tính năng kiểm tra chính tả sẽ bị tắt đối với các ngôn ngữ đã chỉ định. Người dùng vẫn có thể bật hoặc tắt tính năng kiểm tra chính tả đối với các ngôn ngữ không có trong danh sách.
+
+      Nếu bạn tắt hoặc không đặt chính sách này, thì sẽ không có sự thay đổi nào đối với tùy chọn kiểm tra chính tả của người dùng.
+
+      Nếu bạn đặt chính sách <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> thành false, thì chính sách này sẽ không có hiệu lực.
+
+      Nếu một ngôn ngữ có trong cả chính sách này lẫn chính sách <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, thì chính sách nhắc đến sau được ưu tiên và ngôn ngữ có tính năng kiểm tra chính tả đó sẽ được bật.
+
+      Các ngôn ngữ hiện được hỗ trợ là: tiếng Afrikaans - Nam Phi, tiếng Bulgaria, tiếng Catalan, tiếng Séc, tiếng Đan Mạch, tiếng Đức, tiếng Hy Lạp, tiếng Anh - Úc, tiếng Anh - Canada, tiếng Anh - Anh, tiếng Anh - Mỹ, tiếng Tây Ban Nha, tiếng Tây Ban Nha-419, tiếng Tây Ban Nha - Argentina, tiếng Tây Ban Nha - Tây Ban Nha, tiếng Tây Ban Nha - Mexico, tiếng Tây Ban Nha - Mỹ, tiếng Estonia, tiếng Ba Tư, tiếng Faroe, tiếng Pháp, tiếng Do Thái, tiếng Hindi, tiếng Croatia, tiếng Hungary, tiếng Indonesia, tiếng Ý, tiếng Hàn, tiếng Lithuania, tiếng Latvia, tiếng Bokmål, tiếng Hà Lan, tiếng Ba Lan, tiếng Bồ Đào Nha - Brazil, tiếng Bồ Đào Nha - Bồ Đào Nha, tiếng Rumani, tiếng Nga, tiếng Serbo - Croatia, tiếng Slovak, tiếng Slovenia, tiếng Albania, tiếng Serbia, tiếng Thụy Điển, tiếng Tamil, tiếng Tajik, tiếng Thổ Nhĩ Kỳ, tiếng Ukraina, tiếng Việt.</translation>
 <translation id="6926703471186170050">Bật chế độ in hai mặt với cạnh dài</translation>
 <translation id="6931242315485576290">Tắt đồng bộ hóa dữ liệu với Google</translation>
 <translation id="6936894225179401731">Chỉ định số lượng tối đa kết nối đồng thời tới máy chủ proxy.
@@ -3243,6 +3279,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu chính sách này được định cấu hình, bộ ứng dụng sẽ được cố định và người dùng không thể thay đổi được.
 
       Nếu chính sách này không được đặt, người dùng có thể thay đổi danh sách các ứng dụng được ghim trong trình chạy.</translation>
+<translation id="713121532817834879">Chính sách này là một URL trỏ tới tệp XML có cùng định dạng với chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer. URL này sẽ tải các quy tắc từ một tệp XML nhưng không chia sẻ những quy tắc đó với Internet Explorer.
+
+      Các quy tắc trong tệp XML này được áp dụng giống như <ph name="GREYLIST_POLICY_NAME" />. Tức là, các quy tắc này không cho phép <ph name="PRODUCT_NAME" /> mở trình duyệt thay thế, đồng thời ngăn trình duyệt thay thế mở <ph name="PRODUCT_NAME" />.
+
+      Khi bạn không đặt chính sách này hoặc đặt chính sách này thành một URL không hợp lệ, <ph name="PRODUCT_NAME" /> sẽ không dùng chính sách này làm nguồn quy tắc không kích hoạt quá trình chuyển trình duyệt.
+
+      Khi bạn đặt chính sách này thành một URL hợp lệ, <ph name="PRODUCT_NAME" /> sẽ tải danh sách trang web xuống từ URL đó, rồi áp dụng các quy tắc như thể được định cấu hình bằng chính sách <ph name="SITELIST_POLICY_NAME" />.
+
+      Để biết thêm thông tin về chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer, hãy truy cập vào trang web: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Các URL sẽ được cấp quyền truy cập thiết bị quay video mà không cần phải hiển thị lời nhắc</translation>
 <translation id="7138678301420049075">Khác</translation>
 <translation id="7140629953254369759">Hướng dẫn <ph name="PRODUCT_OS_NAME" /> sử dụng cấu hình bộ lập lịch tác vụ dựa trên tên được chỉ định.
@@ -3291,6 +3336,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Chỉ các miền nêu rõ ràng trong chính sách <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> mới được phép tự động phát lại. Nếu bạn muốn bật tự động phát lại cho tất cả các trang web, hãy cân nhắc việc thêm http://* và https://* vào danh sách này.
 
           Nếu bạn không đặt chính sách này, người dùng sẽ có thể thay đổi cài đặt này theo cách thủ công.</translation>
+<translation id="7222749588229362483">Cho phép hợp nhất các chính sách đã chọn khi các chính sách đó thuộc nhiều nguồn, có cùng phạm vi và cấp độ.
+
+        Quá trình hợp nhất bao gồm việc hợp nhất các khóa ở cấp độ đầu tiên của từ điển thuộc mỗi nguồn. Trong trường hợp xảy ra xung đột giữa các khóa, thì khóa thuộc nguồn có mức ưu tiên cao nhất sẽ được áp dụng.
+
+        Nếu một chính sách có trong danh sách, trong trường hợp xảy ra xung đột giữa 2 nguồn có cùng phạm vi và cấp độ, thì các giá trị sẽ được hợp nhất thành một từ điển chính sách mới.
+
+        Nếu một chính sách có trong danh sách, trong trường hợp xảy ra xung đột giữa 2 nguồn cũng như giữa các phạm vi và/hoặc cấp độ khác nhau, thì chính sách có mức ưu tiên cao nhất sẽ được áp dụng.
+
+        Nếu một chính sách không có trong danh sách, trong trường hợp xảy ra bất kỳ xung đột nào giữa các nguồn, phạm vi và/hoặc cấp độ, thì chính sách có mức ưu tiên cao nhất sẽ được áp dụng.</translation>
 <translation id="7229975860249300121">Có chứa một biểu thức chính quy dùng để xác định Tài khoản Google nào có thể đặt làm tài khoản chính của trình duyệt trong <ph name="PRODUCT_NAME" /> (tức là tài khoản này được chọn trong quy trình chọn tham gia Đồng bộ hóa).
 
       Một lỗi phù hợp sẽ hiển thị nếu người dùng cố gắng đặt tài khoản chính của trình duyệt bằng một tên người dùng không khớp với mẫu này.
@@ -3916,6 +3970,12 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Nếu bạn đặt chính sách thành 'Thay thế', thì chính sách người dùng trong GPO người dùng sẽ được thay thế bằng chính sách người dùng trong GPO máy tính (GPO người dùng sẽ bị bỏ qua).</translation>
 <translation id="8465065632133292531">Tham số cho URL tức thì sử dụng POST</translation>
+<translation id="8465746466645315861">Nếu bạn không đặt chính sách này, thì người dùng có thể bật hoặc tắt tính năng kiểm tra chính tả trong phần cài đặt ngôn ngữ.
+
+      Nếu bạn đặt chính sách này thành true, thì tính năng kiểm tra chính tả sẽ bật và người dùng không thể tắt tính năng này. Trên <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> và <ph name="LINUX_OS_NAME" />, bạn có thể bật hoặc tắt riêng các ngôn ngữ có tính năng kiểm tra chính tả. Vì vậy, người dùng vẫn có thể tắt tính năng kiểm tra chính tả một cách hiệu quả bằng cách tắt từng ngôn ngữ có tính năng kiểm tra chính tả. Để tránh trường hợp này, bạn có thể dùng chính sách <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> để buộc bật các ngôn ngữ có tính năng kiểm tra chính tả cụ thể.
+
+      Nếu bạn đặt chính sách này thành false, thì tính năng kiểm tra chính tả sẽ tắt và người dùng không thể bật tính năng này. Chính sách <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> và <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> không có hiệu lực khi bạn đặt chính sách này thành false.
+      </translation>
 <translation id="847472800012384958">Không cho phép bất kỳ trang web nào hiển thị cửa sổ bật lên</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Tách các phần nhạy cảm liên quan bảo mật và quyền riêng tư khỏi các URL https:// trước khi chuyển các URL này đến các tập lệnh PAC (Tự động định cấu hình proxy) được <ph name="PRODUCT_NAME" /> sử dụng trong quá trình phân giải proxy.

@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Comută Nu deranja</translation>
 <translation id="2412593942846481727">Actualizare disponibilă</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> este o sesiune gestionată de <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Conectat la <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Clic stânga</translation>
 <translation id="2429753432712299108">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Înainte de a continua, verificați dacă această parolă apare pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notificări</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">Administratorul acestui dispozitiv poate:</translation>
 <translation id="4279490309300973883">Oglindire</translation>
 <translation id="4281007048406351813">Adaugă un minut la temporizator</translation>
-<translation id="4292681942966152062">Se activează <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Șterge toate cele <ph name="COUNT" /> notificări</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Ai accesat comanda rapidă de la tastatură pentru contrast ridicat. Vrei să-l activezi?</translation>
@@ -430,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Semnal puternic</translation>
 <translation id="7837740436429729974">Timpul a expirat!</translation>
-<translation id="7842211907556571265">Se conectează la <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Avertisment: funcție experimentală</translation>
 <translation id="7846634333498149051">Tastatură</translation>
 <translation id="7868900307798234037">Deblochează cu amprenta</translation>

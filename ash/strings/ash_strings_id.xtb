@@ -98,7 +98,6 @@
 <translation id="239188844683466770">Alihkan mode Jangan ganggu</translation>
 <translation id="2412593942846481727">Update tersedia</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> adalah sesi terkelola yang dikelola oleh <ph name="DOMAIN" /></translation>
-<translation id="2416346634399901812">Terhubung ke <ph name="NETWORK_NAME" /></translation>
 <translation id="2427507373259914951">Klik kiri</translation>
 <translation id="2429753432712299108">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Sebelum menerima, konfirmasikan bahwa kunci sandi ini ditampilkan pada perangkat tersebut: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifikasi</translation>
@@ -217,7 +216,6 @@
 <translation id="4269883910223712419">Admin perangkat ini memiliki kemampuan untuk:</translation>
 <translation id="4279490309300973883">Mencerminkan</translation>
 <translation id="4281007048406351813">Tambahkan 1 mnt ke timer</translation>
-<translation id="4292681942966152062">Mengaktifkan <ph name="NETWORK_NAME" /></translation>
 <translation id="4296136865091727875">Hapus semua (<ph name="COUNT" />) notifikasi</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Anda menekan pintasan keyboard untuk kontras tinggi. Ingin mengaktifkannya?</translation>
@@ -430,7 +428,6 @@
 <translation id="7814236020522506259"><ph name="HOUR" /> dan <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinyal kuat</translation>
 <translation id="7837740436429729974">Waktu habis</translation>
-<translation id="7842211907556571265">Menyambungkan ke <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Peringatan: Fitur eksperimental</translation>
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7868900307798234037">Membuka kunci dengan sidik jari</translation>

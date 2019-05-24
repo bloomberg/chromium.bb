@@ -30,7 +30,6 @@
 <translation id="1929939181775079593">Chromium ไม่ตอบสนอง เปิดใหม่เลยหรือไม่</translation>
 <translation id="1966382378801805537">Chromium ไม่สามารถกำหนดหรือตั้งค่าเบราว์เซอร์เริ่มต้น</translation>
 <translation id="2008474315282236005">การดำเนินการนี้จะลบ 1 รายการออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chromium ด้วย <ph name="USER_EMAIL" /></translation>
-<translation id="2037988709973327241"><ph name="FILE_NAME" /> เป็นอันตราย Chromium จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="2117378023188580026">ผู้ดูแลระบบขอให้คุณเปิด Chromium ขึ้นมาใหม่เพื่อใช้การอัปเดตนี้</translation>
 <translation id="2119636228670142020">เกี่ยวกับ &amp;Chromium OS</translation>
 <translation id="2178765360243863853">คุณควรรีสตาร์ท Chromium เลย</translation>
@@ -63,7 +62,6 @@
 <translation id="3068515742935458733">ช่วยทำให้ Chromium ดียิ่งขึ้นโดยการส่งรายงานข้อขัดข้องและ <ph name="UMA_LINK" /> ไปยัง Google</translation>
 <translation id="3103660991484857065">โปรแกรมติดตั้งคลายการบีบอัดการเก็บข้อมูลไม่ได้ โปรดดาวน์โหลด Chromium อีกครั้ง</translation>
 <translation id="3130323860337406239">Chromium ใช้ไมโครโฟนของคุณอยู่</translation>
-<translation id="3154325651427862069"><ph name="FILE_NAME" /> อาจเป็นอันตราย Chromium จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="3155163173539279776">เรียกใช้งาน Chromium อีกครั้ง</translation>
 <translation id="3179665906251668410">เปิดลิงก์ในหน้าต่างที่ไม่ระบุตัวตนของ Chromium</translation>
 <translation id="3190315855212034486">อ้าว! Chromium ขัดข้อง เปิดใหม่ตอนนี้หรือไม่</translation>
@@ -91,7 +89,6 @@
 <translation id="388648406173476553">ปรับแต่งและควบคุม Chromium มีสิ่งที่คุณจำเป็นต้องทราบ โปรดคลิกเพื่อดูรายละเอียด</translation>
 <translation id="3889543394854987837">คลิกชื่อของคุณเพื่อเปิด Chromium และเริ่มท่องเว็บ</translation>
 <translation id="3898493977366060150">การท่องเว็บพร้อมฟีเจอร์เจ๋งๆ จาก Google</translation>
-<translation id="3931244652999881512">ไฟล์นี้อันตราย Chromium จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS จะรีสตาร์ทใน 1 ชั่วโมง}other{Chromium OS จะรีสตาร์ทใน # ชั่วโมง}}</translation>
 <translation id="4036079820698952681">ช่วยให้ Chromium ดียิ่งขึ้นด้วยการรายงาน<ph name="BEGIN_LINK" />การตั้งค่าปัจจุบัน<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">การปรับปรุงด้านความปลอดภัยที่สำคัญและฟีเจอร์ใหม่ๆ พร้อมให้บริการในเวอร์ชันล่าสุด</translation>
@@ -140,7 +137,6 @@
 <translation id="5680901439334282664">ลงชื่อเข้าใช้ Chromium</translation>
 <translation id="5698481217667032250">แสดง Chromium ในภาษานี้</translation>
 <translation id="5712253116097046984">ผู้ดูแลระบบขอให้คุณรีสตาร์ท Chromium OS เพื่อใช้การอัปเดตนี้</translation>
-<translation id="5726979195371243087">ไฟล์นี้อาจเป็นอันตราย Chromium จึงบล็อกไว้ คุณได้รับการปกป้องโดยการปกป้องขั้นสูงแล้ว</translation>
 <translation id="5756484659843248772">นี่เป็นภาษาที่ใช้ในการแสดง UI ของ Chromium OS</translation>
 <translation id="5768914737813585044">แสดงระบบปฏิบัติการ Chromium ในภาษานี้</translation>
 <translation id="5796460469508169315">Chromium เกือบจะพร้อมใช้งานแล้ว</translation>
