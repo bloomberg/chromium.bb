@@ -63,9 +63,8 @@ VkResult CreateExternalVkImage(SharedContextState* context_state,
       .tiling = VK_IMAGE_TILING_OPTIMAL,
       .usage = usage,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .queueFamilyIndexCount = context_state->vk_context_provider()
-                                   ->GetDeviceQueue()
-                                   ->GetVulkanQueueIndex(),
+      .queueFamilyIndexCount = 0,
+      .pQueueFamilyIndices = nullptr,
       .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
   };
 
