@@ -278,17 +278,29 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
     this.refreshingVideoDeviceIds_ = false;
   });
 
-  this.deviceResolutions_ = this.videoDevices_.then((devices) => {
-    return Promise.all(devices.map((d) => Promise.all([
-      d,
-      cca.mojo.getPhotoResolutions(d.deviceId),
-      cca.mojo.getVideoConfigs(d.deviceId)
-          .then((v) => v.filter(([, , fps]) => fps >= 24).map(([w,
-                                                                h]) => [w, h])),
-    ])));
-  });
+  this.deviceResolutions_ =
+      this.videoDevices_
+          .then((devices) => {
+            return Promise.all(devices.map((d) => Promise.all([
+              d,
+              cca.mojo.getPhotoResolutions(d.deviceId),
+              cca.mojo.getVideoConfigs(d.deviceId)
+                  .then(
+                      (v) => v.filter(([, , fps]) => fps >= 24)
+                                 .map(([w, h]) => [w, h])),
+            ])));
+          })
+          .catch((e) => {
+            cca.state.set('no-resolution-settings', true);
+            throw e;
+          });
 
-  this.deviceResolutions_.then((deviceResolutions) => {
+  (async () => {
+    try {
+      var deviceResolutions = await this.deviceResolutions_;
+    } catch (e) {
+      return;
+    }
     let frontSetting = null;
     let backSetting = null;
     let externalSettings = [];
@@ -314,7 +326,7 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
         frontSetting && [frontSetting[0], frontSetting[2]],
         backSetting && [backSetting[0], backSetting[2]],
         externalSettings.map(([deviceId, , videoRs]) => [deviceId, videoRs]));
-  });
+  })();
 };
 
 /**
@@ -348,6 +360,8 @@ cca.views.camera.Options.prototype.videoDeviceIds = function() {
  * @async
  * @param {string} deviceId Device id of the video device.
  * @return {[ResolList, ResolList]} Supported photo and video resolutions.
+ * @throws {Error} May fail on HALv1 device without capability of querying
+ *     supported resolutions.
  */
 cca.views.camera.Options.prototype.getDeviceResolutions =
     async function(deviceId) {

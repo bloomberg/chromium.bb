@@ -1025,6 +1025,10 @@ body._10sec .description span[i18n-content=label_timer_10s],
   background-image: url(../images/settings_timer_duration.svg);
 }
 
+body.no-resolution-settings #settings-resolution {
+  display: none;
+}
+
 #settings-resolution .icon {
   background-image: url(../images/settings_resolution.svg);
 }

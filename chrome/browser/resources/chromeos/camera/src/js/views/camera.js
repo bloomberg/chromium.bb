@@ -240,9 +240,16 @@ cca.views.Camera.prototype.stop_ = function() {
 cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
   let supportedModes = null;
   for (const mode of this.modes_.getModeCandidates()) {
-    const previewRs = (await this.options_.getDeviceResolutions(deviceId))[1];
-    for (const [[width, height], previewCandidates] of this.modes_
-             .getResolutionCandidates(mode, deviceId, previewRs)) {
+    try {
+      const previewRs = (await this.options_.getDeviceResolutions(deviceId))[1];
+      var resolCandidates =
+          this.modes_.getResolutionCandidates(mode, deviceId, previewRs);
+    } catch (e) {
+      // Assume the exception here is thrown from error of HALv1 not support
+      // resolution query, fallback to use v1 constraints-candidates.
+      resolCandidates = this.modes_.getResolutionCandidatesV1(mode, deviceId);
+    }
+    for (const [captureResolution, previewCandidates] of resolCandidates) {
       for (const constraints of previewCandidates) {
         try {
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -256,7 +263,8 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
           await this.preview_.start(stream);
           this.facingMode_ = this.options_.updateValues(constraints, stream);
           await this.modes_.updateModeSelectionUI(supportedModes);
-          await this.modes_.updateMode(mode, stream, deviceId, width, height);
+          await this.modes_.updateMode(
+              mode, stream, deviceId, captureResolution);
           cca.nav.close('warning', 'no-camera');
           return true;
         } catch (e) {
