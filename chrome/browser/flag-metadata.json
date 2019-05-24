@@ -1421,8 +1421,8 @@
   },
   {
     "name": "enable-reader-mode-in-cct",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "mdjones" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-reopen-tab-in-product-help",
@@ -2619,8 +2619,8 @@
   },
   {
     "name": "reader-mode-heuristics",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "mdjones" ],
+    "expiry_milestone": 78
   },
   {
     "name": "reduced-referrer-granularity",
