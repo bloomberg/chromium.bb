@@ -111,16 +111,18 @@ OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
              : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
-// Applies |new_bounds| to |widget|, animating and observing the transform if
-// necessary.
+// Applies |new_bounds_in_screen| to |widget|, animating and observing the
+// transform if necessary.
 void SetWidgetBoundsAndMaybeAnimateTransform(
     views::Widget* widget,
-    const gfx::Rect& new_bounds,
+    const gfx::Rect& new_bounds_in_screen,
     OverviewAnimationType animation_type,
     ui::ImplicitAnimationObserver* observer) {
   aura::Window* window = widget->GetNativeWindow();
   gfx::RectF previous_bounds = gfx::RectF(window->GetBoundsInScreen());
-  window->SetBounds(new_bounds);
+  window->SetBoundsInScreen(
+      new_bounds_in_screen,
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window));
   if (animation_type == OVERVIEW_ANIMATION_NONE)
     return;
 
