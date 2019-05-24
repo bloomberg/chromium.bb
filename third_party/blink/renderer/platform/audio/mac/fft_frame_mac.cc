@@ -38,6 +38,7 @@
 namespace blink {
 
 const int kMaxFFTPow2Size = 24;
+const int kMinFFTPow2Size = 2;
 
 FFTSetup* FFTFrame::fft_setups_ = nullptr;
 
@@ -122,7 +123,15 @@ FFTSetup FFTFrame::FftSetupForSize(unsigned fft_size) {
   return fft_setups_[pow2size];
 }
 
-void FFTFrame::Initialize() {}
+int FFTFrame::MinFFTSize() {
+  return 1 << kMinFFTPow2Size;
+}
+
+int FFTFrame::MaxFFTSize() {
+  return 1 << kMaxFFTPow2Size;
+}
+
+void FFTFrame::Initialize(float sample_rate) {}
 
 void FFTFrame::Cleanup() {
   if (!fft_setups_)

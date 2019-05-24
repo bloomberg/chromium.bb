@@ -122,8 +122,6 @@ void BaseAudioContext::Initialize() {
   if (IsDestinationInitialized())
     return;
 
-  FFTFrame::Initialize();
-
   audio_worklet_ = MakeGarbageCollected<AudioWorklet>(this);
 
   if (destination_node_) {
@@ -142,6 +140,8 @@ void BaseAudioContext::Initialize() {
 
     if (Tracker())
       Tracker()->DidCreateBaseAudioContext(this);
+
+    FFTFrame::Initialize(sampleRate());
   }
 }
 

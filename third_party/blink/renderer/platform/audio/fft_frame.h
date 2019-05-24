@@ -45,6 +45,7 @@
 #elif defined(WTF_USE_WEBAUDIO_FFMPEG)
 struct RDFTContext;
 #elif defined(WTF_USE_WEBAUDIO_PFFFT)
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/pffft/src/pffft.h"
 #endif
 
@@ -67,9 +68,21 @@ class PLATFORM_EXPORT FFTFrame {
   FFTFrame(const FFTFrame& frame);
   ~FFTFrame();
 
-  static void Initialize();
+  // Returns the smallest and largest supported FFT lengths.
+  static int MinFFTSize();
+  static int MaxFFTSize();
+
+  // Perform any initialization needed.  Must be called from the main thread.
+  static void Initialize(float sample_rate);
   static void Cleanup();
+
+  // Compute the FFT of |data|, storing the resulting FFT in |real_data_| and
+  // |imag_data_|.  |data| MUST have size at least |fft_size_| elements.
   void DoFFT(const float* data);
+
+  // Compute the inverse FFT using the FFT data in |real_data_| and
+  // |imag_data_|.  The inverse is saved in |data|.  |data| MUST have size at
+  // least |fft_size_| elements.
   void DoInverseFFT(float* data);
 
   float* RealData() { return real_data_.Data(); }
@@ -147,21 +160,40 @@ class PLATFORM_EXPORT FFTFrame {
   float* GetUpToDateComplexData();
   AudioFloatArray complex_data_;
 #elif defined(WTF_USE_WEBAUDIO_PFFFT)
-  // Create and return the setup data for an FFT (forward or ivnerse) of the
-  // given size.
-  static PFFFT_Setup* ContextForSize(unsigned fft_size);
+  // Thin wrapper around PFFFT_Setup so we can call the appropriate PFFFT
+  // routines to construct or release the PFFFT_Setup objects.
+  class FFTSetup {
+   public:
+    FFTSetup(unsigned fft_size);
+    ~FFTSetup();
+    PFFFT_Setup* GetSetup() const { return setup_; }
 
-  // The context can be used for both forward and inverse transforms.
-  // TODO(rtoy): Consider using an array to hold the possible contexts since the
-  // contexts are read-only after creation and can be shared between FFTFrame
-  // objects.
-  PFFFT_Setup* context_;
+   private:
+    PFFFT_Setup* setup_;
+  };
+
+  // Returns the vector that holds all of the possible FFTSetup objects.  This
+  // should be setup in the |Initialize()| method that is called when a context
+  // is created.
+  static Vector<std::unique_ptr<FFTSetup>>& FFTSetups();
+
+  // Initialize an entry in FFTSetups for an FFT of order |fft_order|.  This can
+  // be called from any thread, but if a new FFTSetup needs to be allocated,
+  // then it MUST happen on the main thread.
+  static void InitializeFFTSetupForSize(wtf_size_t fft_order);
+
+  // Get the PFFFT_Setup that is appropriate for an FFT of order
+  // |fft_order|. This can be called from any thread.
+  // |InitializeFFTSetupForSize()| must be called for this size before calling
+  // |FFTSetupForSize()|.
+  static PFFFT_Setup* FFTSetupForSize(wtf_size_t fft_order);
 
   // Work array for converting PFFFT results to and from the format expected in
   // |real_data_| and |imag_datra_|.
   AudioFloatArray complex_data_;
 
-  // Work array used by the PFFFT transform routines.
+  // Work array used by the PFFFT transform routines.  For real FFTs, this must
+  // be the same size as the FFT size.
   AudioFloatArray pffft_work_;
 #endif
 };
