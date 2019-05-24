@@ -32,11 +32,11 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/app/builtin_service_manifests.h"
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
 #include "chrome/app/chrome_content_gpu_overlay_manifest.h"
 #include "chrome/app/chrome_content_renderer_overlay_manifest.h"
 #include "chrome/app/chrome_content_utility_overlay_manifest.h"
-#include "chrome/app/chrome_packaged_service_manifests.h"
 #include "chrome/app/chrome_renderer_manifest.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
@@ -3888,29 +3888,6 @@ void ChromeContentBrowserClient::BindInterfaceRequest(
     gpu_binder_registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
-void ChromeContentBrowserClient::RegisterIOThreadServiceHandlers(
-    content::ServiceManagerConnection* connection) {
-  connection->AddServiceRequestHandler(
-      chrome::mojom::kServiceName,
-      ChromeService::GetInstance()->CreateChromeServiceRequestHandler());
-
-#if defined(OS_ANDROID)
-  connection->AddServiceRequestHandler(
-      proxy_resolver::mojom::kProxyResolverServiceName,
-      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
-        service_manager::Service::RunAsyncUntilTermination(
-            std::make_unique<proxy_resolver::ProxyResolverService>(
-                std::move(request)));
-      }));
-  connection->AddServiceRequestHandler(
-      "download_manager", base::BindRepeating(&StartDownloadManager));
-#endif
-
-  connection->AddServiceRequestHandler(
-      heap_profiling::mojom::kServiceName,
-      heap_profiling::HeapProfilingService::GetServiceFactory());
-}
-
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
 #if defined(OS_WIN)
@@ -4037,16 +4014,17 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 #endif
 }
 
-void ChromeContentBrowserClient::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
+void ChromeContentBrowserClient::RunServiceInstance(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
+  const std::string& service_name = identity.name();
   if (service_name == prefs::mojom::kLocalStateServiceName) {
     if (!g_browser_process || !g_browser_process->pref_service_factory())
       return;
 
     service_manager::Service::RunAsyncUntilTermination(
         g_browser_process->pref_service_factory()->CreatePrefService(
-            std::move(request)));
+            std::move(*receiver)));
     return;
   }
 
@@ -4060,14 +4038,14 @@ void ChromeContentBrowserClient::HandleServiceRequest(
   if (run_quarantine_service_in_process &&
       service_name == quarantine::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<quarantine::QuarantineService>(std::move(request)));
+        std::make_unique<quarantine::QuarantineService>(std::move(*receiver)));
     return;
   }
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   if (service_name == media::mojom::kMediaServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
-        media::CreateMediaService(std::move(request)));
+        media::CreateMediaService(std::move(*receiver)));
     return;
   }
 #endif
@@ -4078,8 +4056,8 @@ void ChromeContentBrowserClient::HandleServiceRequest(
       service_name == simple_browser::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<simple_browser::SimpleBrowserService>(
-            std::move(request), simple_browser::SimpleBrowserService::
-                                    UIInitializationMode::kUseEnvironmentUI));
+            std::move(*receiver), simple_browser::SimpleBrowserService::
+                                      UIInitializationMode::kUseEnvironmentUI));
     return;
   }
 #endif
@@ -4090,36 +4068,66 @@ void ChromeContentBrowserClient::HandleServiceRequest(
       service_name == chromeos::cellular_setup::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::cellular_setup::CellularSetupService>(
-            std::move(request)));
+            std::move(*receiver)));
     return;
   }
 
   if (service_name == chromeos::secure_channel::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::secure_channel::SecureChannelService>(
-            std::move(request)));
+            std::move(*receiver)));
     return;
   }
 
   if (service_name == chromeos::printing::mojom::kCupsProxyServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::printing::CupsProxyService>(
-            std::move(request)));
+            std::move(*receiver)));
     return;
   }
 
   if (service_name == chromeos::network_config::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::network_config::NetworkConfigService>(
-            std::move(request)));
+            std::move(*receiver)));
     return;
   }
 
-  auto service = ash_service_registry::HandleServiceRequest(service_name,
-                                                            std::move(request));
+  auto service = ash_service_registry::HandleServiceRequest(
+      service_name, std::move(*receiver));
   if (service)
     service_manager::Service::RunAsyncUntilTermination(std::move(service));
 #endif  // defined(OS_CHROMEOS)
+}
+
+void ChromeContentBrowserClient::RunServiceInstanceOnIOThread(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
+  if (identity.name() == chrome::mojom::kServiceName) {
+    ChromeService::GetInstance()->CreateChromeServiceRequestHandler().Run(
+        std::move(*receiver));
+    return;
+  }
+
+#if defined(OS_ANDROID)
+  if (identity.name() == proxy_resolver::mojom::kProxyResolverServiceName) {
+    service_manager::Service::RunAsyncUntilTermination(
+        std::make_unique<proxy_resolver::ProxyResolverService>(
+            std::move(*receiver)));
+    return;
+  }
+
+  if (identity.name() == "download_manager") {
+    StartDownloadManager(std::move(*receiver));
+    return;
+  }
+#endif
+
+  if (identity.name() == heap_profiling::mojom::kServiceName) {
+    heap_profiling::HeapProfilingService::GetServiceFactory().Run(
+        std::move(*receiver));
+    return;
+  }
 }
 
 base::Optional<service_manager::Manifest>
@@ -4128,11 +4136,6 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     return GetChromeContentBrowserOverlayManifest();
   if (name == content::mojom::kGpuServiceName)
     return GetChromeContentGpuOverlayManifest();
-  if (name == content::mojom::kPackagedServicesServiceName) {
-    service_manager::Manifest overlay;
-    overlay.packaged_services = GetChromePackagedServiceManifests();
-    return overlay;
-  }
   if (name == content::mojom::kRendererServiceName)
     return GetChromeContentRendererOverlayManifest();
   if (name == content::mojom::kUtilityServiceName)
@@ -4142,15 +4145,17 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
 
 std::vector<service_manager::Manifest>
 ChromeContentBrowserClient::GetExtraServiceManifests() {
-  return std::vector<service_manager::Manifest> {
-    GetChromeRendererManifest(),
+  auto manifests = GetChromeBuiltinServiceManifests();
+  manifests.push_back(GetChromeRendererManifest());
+
 #if BUILDFLAG(ENABLE_NACL)
-        GetNaClLoaderManifest(),
+  manifests.push_back(GetNaClLoaderManifest());
 #if defined(OS_WIN) && defined(ARCH_CPU_X86)
-        GetNaClBrokerManifest(),
+  manifests.push_back(GetNaClBrokerManifest());
 #endif  // defined(OS_WIN)
 #endif  // BUILDFLAG(ENABLE_NACL)
-  };
+
+  return manifests;
 }
 
 std::vector<std::string> ChromeContentBrowserClient::GetStartupServices() {

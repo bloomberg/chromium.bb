@@ -34,6 +34,7 @@ class ShellWebClient : public WebClient {
       service_manager::mojom::ServiceRequest request) override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
+  std::vector<service_manager::Manifest> GetExtraServiceManifests() override;
   void BindInterfaceRequestFromMainFrame(
       WebState* web_state,
       const std::string& interface_name,

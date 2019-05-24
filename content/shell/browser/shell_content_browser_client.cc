@@ -183,15 +183,6 @@ const service_manager::Manifest& GetContentGpuOverlayManifest() {
   return *manifest;
 }
 
-const service_manager::Manifest& GetContentPackagedServicesOverlayManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest {
-    service_manager::ManifestBuilder()
-        .PackageService(echo::GetManifest())
-        .Build()
-  };
-  return *manifest;
-}
-
 const service_manager::Manifest& GetContentRendererOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
@@ -309,13 +300,13 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
       base::BindRepeating(&base::ASCIIToUTF16, "Echo Service");
 }
 
-void ShellContentBrowserClient::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
+void ShellContentBrowserClient::RunServiceInstance(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  if (service_name == media::mojom::kMediaServiceName) {
+  if (identity.name() == media::mojom::kMediaServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
-        media::CreateMediaServiceForTesting(std::move(request)));
+        media::CreateMediaServiceForTesting(std::move(*receiver)));
   }
 #endif
 }
@@ -331,8 +322,6 @@ base::Optional<service_manager::Manifest>
 ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetContentBrowserOverlayManifest();
-  if (name == content::mojom::kPackagedServicesServiceName)
-    return GetContentPackagedServicesOverlayManifest();
   if (name == content::mojom::kGpuServiceName)
     return GetContentGpuOverlayManifest();
   if (name == content::mojom::kRendererServiceName)
@@ -341,6 +330,12 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     return GetContentUtilityOverlayManifest();
 
   return base::nullopt;
+}
+
+std::vector<service_manager::Manifest>
+ShellContentBrowserClient::GetExtraServiceManifests() {
+  return std::vector<service_manager::Manifest>{echo::GetManifest(
+      service_manager::Manifest::ExecutionMode::kOutOfProcessBuiltin)};
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(

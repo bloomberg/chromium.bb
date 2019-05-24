@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/chrome_packaged_service_manifests.h"
+#include "chrome/app/builtin_service_manifests.h"
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
@@ -38,8 +38,10 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/feature_list.h"
 #include "chrome/services/util_win/public/cpp/manifest.h"
 #include "chrome/services/wifi_util_win/public/cpp/manifest.h"
+#include "components/services/quarantine/quarantine_features_win.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -73,6 +75,26 @@
 #endif
 
 namespace {
+
+// TODO(https://crbug.com/781334): Remove these helpers and just update the
+// manifest definitions to be marked out-of-process. This is here only to avoid
+// extra churn when transitioning away from content_packaged_services.
+service_manager::Manifest MakeOutOfProcess(
+    const service_manager::Manifest& manifest) {
+  service_manager::Manifest copy(manifest);
+  copy.options.execution_mode =
+      service_manager::Manifest::ExecutionMode::kOutOfProcessBuiltin;
+  return copy;
+}
+
+template <typename Predicate>
+service_manager::Manifest MakeOutOfProcessIf(
+    Predicate predicate,
+    const service_manager::Manifest& manifest) {
+  if (predicate())
+    return MakeOutOfProcess(manifest);
+  return manifest;
+}
 
 const service_manager::Manifest& GetChromeManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
@@ -126,51 +148,61 @@ const service_manager::Manifest& GetAndroidDownloadManagerManifest() {
 }  // namespace
 
 const std::vector<service_manager::Manifest>&
-GetChromePackagedServiceManifests() {
+GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       GetChromeManifest(),
-      GetFileUtilManifest(),
-      GetNoopManifest(),
-      patch::GetManifest(),
-      unzip::GetManifest(),
-      proxy_resolver::GetManifest(),
-      prefs::GetLocalStateManifest(),
+      MakeOutOfProcess(GetFileUtilManifest()),
+      MakeOutOfProcess(GetNoopManifest()),
+      MakeOutOfProcess(patch::GetManifest()),
+      MakeOutOfProcess(unzip::GetManifest()),
+      MakeOutOfProcess(proxy_resolver::GetManifest()),
+      MakeOutOfProcess(prefs::GetLocalStateManifest()),
+#if defined(OS_WIN)
+      MakeOutOfProcessIf(
+          [] {
+            return base::FeatureList::IsEnabled(
+                quarantine::kOutOfProcessQuarantine);
+          },
+          quarantine::GetQuarantineManifest()),
+#else
       quarantine::GetQuarantineManifest(),
+#endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-      GetRemovableStorageWriterManifest(),
+      MakeOutOfProcess(GetRemovableStorageWriterManifest()),
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-      GetMediaGalleryUtilManifest(),
+      MakeOutOfProcess(GetMediaGalleryUtilManifest()),
 #endif
 #if BUILDFLAG(ENABLE_PRINTING)
-      printing::GetPdfCompositorManifest(),
+      MakeOutOfProcess(printing::GetPdfCompositorManifest()),
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-      GetChromePrintingManifest(),
+      MakeOutOfProcess(GetChromePrintingManifest()),
 #endif
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
-      GetXrDeviceServiceManifest(),
+      MakeOutOfProcess(GetXrDeviceServiceManifest()),
 #endif
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS) || \
-    BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
+#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
       simple_browser::GetManifest(),
+#elif BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
+      MakeOutOfProcess(simple_browser::GetManifest()),
 #endif
 #if defined(OS_WIN)
-      GetUtilWinManifest(),
-      GetWifiUtilWinManifest(),
+      MakeOutOfProcess(GetUtilWinManifest()),
+      MakeOutOfProcess(GetWifiUtilWinManifest()),
 #endif
 #if defined(OS_ANDROID)
       GetAndroidDownloadManagerManifest(),
 #else
-      mirroring::GetManifest(),
-      GetProfileImportManifest(),
+      MakeOutOfProcess(mirroring::GetManifest()),
+      MakeOutOfProcess(GetProfileImportManifest()),
 #endif
 #if defined(OS_CHROMEOS)
       ash::GetManifest(),
-      GetCupsIppParserManifest(),
+      MakeOutOfProcess(GetCupsIppParserManifest()),
       chromeos::cellular_setup::GetManifest(),
-      chromeos::printing::GetCupsProxyManifest(),
-      chromeos::ime::GetManifest(),
+      MakeOutOfProcess(chromeos::printing::GetCupsProxyManifest()),
+      MakeOutOfProcess(chromeos::ime::GetManifest()),
       chromeos::network_config::GetManifest(),
       chromeos::secure_channel::GetManifest(),
 #endif

@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/services/heap_profiling",
   "+content/public/child",
   "+content/public/utility",
 ]

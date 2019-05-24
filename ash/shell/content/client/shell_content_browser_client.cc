@@ -7,8 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/manifest.h"
-#include "ash/public/cpp/test_manifest.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
@@ -43,15 +41,6 @@ const service_manager::Manifest& GetAshShellBrowserOverlayManifest() {
   return *manifest;
 }
 
-const service_manager::Manifest& GetAshShellPackagedServicesOverlayManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest{
-      service_manager::ManifestBuilder()
-          .PackageService(service_manager::Manifest(ash::GetManifest())
-                              .Amend(ash::GetManifestOverlayForTesting()))
-          .Build()};
-  return *manifest;
-}
-
 }  // namespace
 
 ShellContentBrowserClient::ShellContentBrowserClient()
@@ -79,9 +68,6 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   // This is necessary for outgoing interface requests.
   if (name == content::mojom::kBrowserServiceName)
     return GetAshShellBrowserOverlayManifest();
-
-  if (name == content::mojom::kPackagedServicesServiceName)
-    return GetAshShellPackagedServicesOverlayManifest();
 
   return base::nullopt;
 }

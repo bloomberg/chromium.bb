@@ -24,7 +24,6 @@
 #include "ios/web/public/web_thread.h"
 #include "ios/web/service_manager_connection_impl.h"
 #import "ios/web/web_browser_manifest.h"
-#import "ios/web/web_packaged_services_manifest.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
@@ -61,6 +60,48 @@ service_manager::Manifest GetWebSystemManifest() {
   return manifest;
 }
 
+using ServiceRunner = base::RepeatingCallback<void(
+    const service_manager::Identity&,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)>;
+
+class BrowserServiceManagerDelegate
+    : public service_manager::ServiceManager::Delegate {
+ public:
+  BrowserServiceManagerDelegate(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      ServiceRunner service_runner)
+      : task_runner_(std::move(task_runner)),
+        service_runner_(std::move(service_runner)) {}
+  ~BrowserServiceManagerDelegate() override = default;
+
+  bool RunBuiltinServiceInstanceInCurrentProcess(
+      const service_manager::Identity& identity,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+      override {
+    task_runner_->PostTask(FROM_HERE, base::BindOnce(service_runner_, identity,
+                                                     std::move(receiver)));
+    return true;
+  }
+
+  std::unique_ptr<service_manager::ServiceProcessHost>
+  CreateProcessHostForBuiltinServiceInstance(
+      const service_manager::Identity& identity) override {
+    return nullptr;
+  }
+
+  std::unique_ptr<service_manager::ServiceProcessHost>
+  CreateProcessHostForServiceExecutable(
+      const base::FilePath& executable_path) override {
+    return nullptr;
+  }
+
+ private:
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const ServiceRunner service_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserServiceManagerDelegate);
+};
+
 }  // namespace
 
 // State which lives on the IO thread and drives the ServiceManager.
@@ -69,14 +110,15 @@ class ServiceManagerContext::InProcessServiceManagerContext
  public:
   InProcessServiceManagerContext() {}
 
-  void Start(
-      service_manager::mojom::ServicePtrInfo packaged_services_service_info,
-      std::vector<service_manager::Manifest> manifests) {
+  void Start(mojo::PendingRemote<service_manager::mojom::Service> system_remote,
+             std::vector<service_manager::Manifest> manifests,
+             ServiceRunner service_runner) {
     base::PostTaskWithTraits(
         FROM_HERE, {WebThread::IO},
         base::BindOnce(&InProcessServiceManagerContext::StartOnIOThread, this,
-                       std::move(manifests),
-                       std::move(packaged_services_service_info)));
+                       std::move(manifests), std::move(system_remote),
+                       base::SequencedTaskRunnerHandle::Get(),
+                       std::move(service_runner)));
   }
 
   void ShutDown() {
@@ -89,23 +131,28 @@ class ServiceManagerContext::InProcessServiceManagerContext
  private:
   friend class base::RefCountedThreadSafe<InProcessServiceManagerContext>;
 
-  ~InProcessServiceManagerContext() {}
+  ~InProcessServiceManagerContext() = default;
 
   // Creates the ServiceManager and registers the packaged services service
   // with it, connecting the other end of the packaged services serviceto
   // |packaged_services_service_info|.
   void StartOnIOThread(
       std::vector<service_manager::Manifest> manifests,
-      service_manager::mojom::ServicePtrInfo packaged_services_service_info) {
+      mojo::PendingRemote<service_manager::mojom::Service> system_remote,
+      scoped_refptr<base::SequencedTaskRunner> service_task_runner,
+      ServiceRunner service_runner) {
     service_manager_ = std::make_unique<service_manager::ServiceManager>(
-        manifests, service_manager::ServiceManager::ServiceExecutablePolicy::
-                       kNotSupported);
+        manifests,
+        std::make_unique<BrowserServiceManagerDelegate>(
+            std::move(service_task_runner), std::move(service_runner)));
 
+    mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
     service_manager_->RegisterService(
-        service_manager::Identity(mojom::kPackagedServicesServiceName,
+        service_manager::Identity(mojom::kSystemServiceName,
                                   service_manager::kSystemInstanceGroup,
                                   base::Token{}, base::Token::CreateRandom()),
-        std::move(packaged_services_service_info), mojo::NullReceiver());
+        std::move(system_remote), metadata.BindNewPipeAndPassReceiver());
+    metadata->SetPID(base::GetCurrentProcId());
   }
 
   void ShutDownOnIOThread() {
@@ -118,40 +165,23 @@ class ServiceManagerContext::InProcessServiceManagerContext
 };
 
 ServiceManagerContext::ServiceManagerContext() {
-  const std::vector<service_manager::Manifest> manifests = {
-      GetWebSystemManifest(), GetWebBrowserManifest(),
-      GetWebPackagedServicesManifest()};
+  std::vector<service_manager::Manifest> manifests = {GetWebSystemManifest(),
+                                                      GetWebBrowserManifest()};
+  for (auto& manifest : GetWebClient()->GetExtraServiceManifests())
+    manifests.push_back(std::move(manifest));
+
+  mojo::PendingRemote<service_manager::mojom::Service> system_remote;
+  ServiceManagerConnection::Set(ServiceManagerConnection::Create(
+      system_remote.InitWithNewPipeAndPassReceiver(),
+      base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO})));
+  auto* system_connection = ServiceManagerConnection::Get();
 
   in_process_context_ = base::MakeRefCounted<InProcessServiceManagerContext>();
-  service_manager::mojom::ServicePtr packaged_services_service;
-  service_manager::mojom::ServiceRequest packaged_services_request =
-      mojo::MakeRequest(&packaged_services_service);
-  in_process_context_->Start(packaged_services_service.PassInterface(),
-                             std::move(manifests));
-
-  packaged_services_connection_ = ServiceManagerConnection::Create(
-      std::move(packaged_services_request),
-      base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO}));
-  packaged_services_connection_->SetDefaultServiceRequestHandler(
-      base::BindRepeating(&ServiceManagerContext::OnUnhandledServiceRequest,
+  in_process_context_->Start(
+      std::move(system_remote), std::move(manifests),
+      base::BindRepeating(&ServiceManagerContext::RunService,
                           weak_ptr_factory_.GetWeakPtr()));
-
-  service_manager::mojom::ServicePtrInfo root_browser_service;
-  ServiceManagerConnection::Set(ServiceManagerConnection::Create(
-      mojo::MakeRequest(&root_browser_service),
-      base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO})));
-  auto* browser_connection = ServiceManagerConnection::Get();
-
-  mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
-  packaged_services_connection_->GetConnector()->RegisterServiceInstance(
-      service_manager::Identity(mojom::kSystemServiceName,
-                                service_manager::kSystemInstanceGroup,
-                                base::Token{}, base::Token::CreateRandom()),
-      std::move(root_browser_service), metadata.BindNewPipeAndPassReceiver());
-  metadata->SetPID(base::GetCurrentProcId());
-
-  packaged_services_connection_->Start();
-  browser_connection->Start();
+  system_connection->Start();
 }
 
 ServiceManagerContext::~ServiceManagerContext() {
@@ -165,13 +195,14 @@ ServiceManagerContext::~ServiceManagerContext() {
     ServiceManagerConnection::Destroy();
 }
 
-void ServiceManagerContext::OnUnhandledServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
+void ServiceManagerContext::RunService(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   std::unique_ptr<service_manager::Service> service =
-      GetWebClient()->HandleServiceRequest(service_name, std::move(request));
+      GetWebClient()->HandleServiceRequest(identity.name(),
+                                           std::move(receiver));
   if (!service) {
-    LOG(ERROR) << "Ignoring unhandled request for service: " << service_name;
+    LOG(ERROR) << "Ignoring unhandled request for service: " << identity.name();
     return;
   }
 

@@ -559,10 +559,10 @@ source_set("chrome_content_utility_overlay_manifest") {
   ]
 }
 
-source_set("chrome_packaged_service_manifests") {
+source_set("builtin_service_manifests") {
   sources = [
-    "chrome_packaged_service_manifests.cc",
-    "chrome_packaged_service_manifests.h",
+    "builtin_service_manifests.cc",
+    "builtin_service_manifests.h",
   ]
 
   deps = [
@@ -572,6 +572,7 @@ source_set("chrome_packaged_service_manifests") {
     "//chrome/services/file_util/public/cpp:manifest",
     "//chrome/services/noop/public/cpp:manifest",
     "//components/services/patch/public/cpp:manifest",
+    "//components/services/quarantine",
     "//components/services/quarantine/public/cpp:manifest",
     "//components/services/unzip/public/cpp:manifest",
     "//components/spellcheck/common:interfaces",
@@ -654,11 +655,11 @@ source_set("chrome_renderer_manifest") {
 
 source_set("chrome_service_manifests") {
   public_deps = [
+    ":builtin_service_manifests",
     ":chrome_content_browser_overlay_manifest",
     ":chrome_content_gpu_overlay_manifest",
     ":chrome_content_renderer_overlay_manifest",
     ":chrome_content_utility_overlay_manifest",
-    ":chrome_packaged_service_manifests",
     ":chrome_renderer_manifest",
   ]
 }

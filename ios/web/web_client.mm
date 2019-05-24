@@ -92,6 +92,10 @@ base::Optional<service_manager::Manifest> WebClient::GetServiceManifestOverlay(
   return base::nullopt;
 }
 
+std::vector<service_manager::Manifest> WebClient::GetExtraServiceManifests() {
+  return {};
+}
+
 void WebClient::AllowCertificateError(
     WebState* web_state,
     int cert_error,

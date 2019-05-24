@@ -57,18 +57,33 @@ const std::vector<Manifest>& GetTestManifests() {
            .Build(),
        ManifestBuilder()
            .WithServiceName(kTestAppName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
+                            .Build())
            .ExposeCapability(
                kTestLifecycleControlCapability,
                Manifest::InterfaceList<test::mojom::LifecycleControl>())
            .Build(),
        ManifestBuilder()
            .WithServiceName(kTestParentName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
+                            .Build())
            .ExposeCapability(kTestParentCapability,
                              Manifest::InterfaceList<test::mojom::Parent>())
            .RequireCapability(kTestAppName, kTestLifecycleControlCapability)
            .Build(),
        ManifestBuilder()
            .WithServiceName(kTestPackageName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
+                            .Build())
            .ExposeCapability(
                kTestLifecycleControlCapability,
                Manifest::InterfaceList<test::mojom::LifecycleControl>())

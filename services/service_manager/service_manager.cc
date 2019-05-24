@@ -44,7 +44,7 @@ const char kCapability_ServiceManager[] = "service_manager:service_manager";
 
 #if defined(OS_WIN)
 const char kServiceExecutableExtension[] = ".service.exe";
-#else
+#elif !defined(OS_IOS)
 const char kServiceExecutableExtension[] = ".service";
 #endif
 
@@ -84,6 +84,7 @@ class DefaultServiceProcessHost : public ServiceProcessHost {
     return mojo::NullRemote();
 #else
     // TODO(https://crbug.com/781334): Support sandboxing.
+    CHECK_EQ(sandbox_type, SANDBOX_TYPE_NO_SANDBOX);
     return launcher_
         .Start(identity, SANDBOX_TYPE_NO_SANDBOX, std::move(callback))
         .PassInterface();
@@ -117,7 +118,8 @@ class DefaultServiceManagerDelegate : public ServiceManager::Delegate {
   }
 
   std::unique_ptr<ServiceProcessHost>
-  CreateProcessHostForBuiltinServiceInstance() override {
+  CreateProcessHostForBuiltinServiceInstance(
+      const Identity& identity) override {
     return nullptr;
   }
 
@@ -286,16 +288,56 @@ ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
 
     target_instance->BindProcessMetadataReceiver(std::move(metadata_receiver));
     target_instance->StartWithRemote(std::move(remote));
-  } else {
-    base::FilePath service_exe_root;
-    CHECK(base::PathService::Get(base::DIR_ASSETS, &service_exe_root));
-    if (!target_instance->StartWithExecutablePath(
-            service_exe_root.AppendASCII(manifest->service_name +
-                                         kServiceExecutableExtension),
-            UtilitySandboxTypeFromString(manifest->options.sandbox_type))) {
-      DestroyInstance(target_instance);
-      return nullptr;
+    return target_instance;
+  }
+
+  switch (manifest->options.execution_mode) {
+    case Manifest::ExecutionMode::kInProcessBuiltin: {
+      mojo::PendingRemote<mojom::Service> remote;
+      if (!delegate_->RunBuiltinServiceInstanceInCurrentProcess(
+              target_instance->identity(),
+              remote.InitWithNewPipeAndPassReceiver())) {
+        DestroyInstance(target_instance);
+        return nullptr;
+      }
+      target_instance->StartWithRemote(std::move(remote));
+      break;
     }
+
+#if !defined(OS_IOS)
+    case Manifest::ExecutionMode::kOutOfProcessBuiltin: {
+      auto process_host = delegate_->CreateProcessHostForBuiltinServiceInstance(
+          target_instance->identity());
+      if (!process_host ||
+          !target_instance->StartWithProcessHost(
+              std::move(process_host),
+              UtilitySandboxTypeFromString(manifest->options.sandbox_type))) {
+        DestroyInstance(target_instance);
+        return nullptr;
+      }
+      break;
+    }
+
+    case Manifest::ExecutionMode::kStandaloneExecutable: {
+      base::FilePath service_exe_root;
+      CHECK(base::PathService::Get(base::DIR_ASSETS, &service_exe_root));
+      auto process_host = delegate_->CreateProcessHostForServiceExecutable(
+          service_exe_root.AppendASCII(manifest->service_name +
+                                       kServiceExecutableExtension));
+      if (!process_host ||
+          !target_instance->StartWithProcessHost(
+              std::move(process_host),
+              UtilitySandboxTypeFromString(manifest->options.sandbox_type))) {
+        DestroyInstance(target_instance);
+        return nullptr;
+      }
+      break;
+    }
+#else   // !defined(OS_IOS)
+    default:
+      NOTREACHED();
+      return nullptr;
+#endif  // !defined(OS_IOS)
   }
 
   return target_instance;

@@ -39,6 +39,11 @@ const std::vector<Manifest>& GetTestManifests() {
            .Build(),
        service_manager::ManifestBuilder()
            .WithServiceName(kAppName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
+                            .Build())
            .ExposeCapability(kTestServiceCapability,
                              Manifest::InterfaceList<mojom::TestService>())
            .Build()}};

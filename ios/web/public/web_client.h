@@ -156,6 +156,12 @@ class WebClient {
   virtual base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name);
 
+  // Allows the embedder to provide manifests for additional services available
+  // at runtime. Any extra manifests returned by this method should have
+  // corresponding logic to actually run the service on-demand in
+  // |HandleServiceRequest()|.
+  virtual std::vector<service_manager::Manifest> GetExtraServiceManifests();
+
   // Allows the embedder to bind an interface request for a WebState-scoped
   // interface that originated from the main frame of |web_state|. Called if
   // |web_state| could not bind the request for |interface_name| itself.

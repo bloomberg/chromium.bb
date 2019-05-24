@@ -691,6 +691,9 @@ ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo() =
     default;
 
 ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
+    const OutOfProcessServiceInfo&) = default;
+
+ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
     const ProcessNameCallback& process_name_callback)
     : process_name_callback(process_name_callback) {}
 
@@ -705,9 +708,13 @@ ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
 ContentBrowserClient::OutOfProcessServiceInfo::~OutOfProcessServiceInfo() =
     default;
 
-void ContentBrowserClient::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {}
+void ContentBrowserClient::RunServiceInstance(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}
+
+void ContentBrowserClient::RunServiceInstanceOnIOThread(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}
 
 bool ContentBrowserClient::ShouldTerminateOnServiceQuit(
     const service_manager::Identity& id) {

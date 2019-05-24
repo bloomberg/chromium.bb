@@ -64,6 +64,7 @@ jumbo_source_set("browser") {
     "//components/payments/content/icon",
     "//components/rappor",
     "//components/services/filesystem:lib",
+    "//components/services/heap_profiling/public/cpp:manifest",
     "//components/services/leveldb:lib",
     "//components/tracing",
     "//components/tracing:startup_tracing",
@@ -121,6 +122,8 @@ jumbo_source_set("browser") {
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:constants",
     "//media/mojo/services",
+    "//media/mojo/services:cdm_manifest",
+    "//media/mojo/services:media_manifest",
     "//media/webrtc",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
@@ -134,14 +137,17 @@ jumbo_source_set("browser") {
     "//printing/buildflags",
     "//services/audio:lib",
     "//services/audio/public/cpp",
+    "//services/audio/public/cpp:manifest",
     "//services/audio/public/mojom",
     "//services/content:impl",
     "//services/content/public/cpp",
     "//services/content/public/mojom",
     "//services/data_decoder/public/cpp",
+    "//services/data_decoder/public/cpp:manifest",
     "//services/data_decoder/public/mojom",
     "//services/device:lib",
     "//services/device/public/cpp:device_features",
+    "//services/device/public/cpp:manifest",
     "//services/device/public/cpp/geolocation",
     "//services/device/public/mojom",
     "//services/device/public/mojom:generic_sensor",
@@ -149,13 +155,17 @@ jumbo_source_set("browser") {
     "//services/file/public/mojom",
     "//services/media_session:lib",
     "//services/media_session/public/cpp",
+    "//services/media_session/public/cpp:manifest",
     "//services/media_session/public/mojom",
     "//services/metrics",
+    "//services/metrics/public/cpp:manifest",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/network:network_service",
     "//services/network/public/cpp",
+    "//services/network/public/cpp:manifest",
     "//services/network/public/mojom",
     "//services/resource_coordinator:lib",
+    "//services/resource_coordinator/public/cpp:manifest",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager",
     "//services/service_manager/embedder",
@@ -164,15 +174,18 @@ jumbo_source_set("browser") {
     "//services/service_manager/public/mojom",
     "//services/service_manager/zygote:zygote_buildflags",
     "//services/shape_detection:lib",
+    "//services/shape_detection/public/cpp:manifest",
     "//services/shape_detection/public/mojom",
     "//services/tracing:lib",
     "//services/tracing:manifest",
     "//services/tracing/public/cpp",
     "//services/video_capture:lib",
     "//services/video_capture/public/cpp",
+    "//services/video_capture/public/cpp:manifest",
     "//services/video_capture/public/mojom:constants",
     "//services/video_capture/public/uma",
     "//services/viz/privileged/interfaces",
+    "//services/viz/public/cpp:manifest",
     "//services/viz/public/interfaces",
     "//services/ws/public/cpp/gpu",
     "//skia",
@@ -574,6 +587,8 @@ jumbo_source_set("browser") {
     "browsing_data/storage_partition_http_cache_data_remover.h",
     "browsing_instance.cc",
     "browsing_instance.h",
+    "builtin_service_manifests.cc",
+    "builtin_service_manifests.h",
     "byte_stream.cc",
     "byte_stream.h",
     "cache_storage/cache_storage.cc",
@@ -2001,6 +2016,7 @@ jumbo_source_set("browser") {
   if (is_linux) {
     deps += [
       "//components/services/font:lib",
+      "//components/services/font/public/cpp:manifest",
       "//components/services/font/public/interfaces",
       "//services/service_manager/zygote",
     ]
@@ -2572,7 +2588,10 @@ jumbo_source_set("browser") {
   }
 
   if (enable_cros_libassistant) {
-    deps += [ "//chromeos/services/assistant/public/mojom" ]
+    deps += [
+      "//chromeos/services/assistant/public/cpp:audio_decoder_manifest",
+      "//chromeos/services/assistant/public/mojom",
+    ]
   }
 
   if (use_aura) {

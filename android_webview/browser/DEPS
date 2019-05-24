@@ -26,6 +26,7 @@ include_rules = [
   "+components/printing/common",
   "+components/safe_browsing",
   "+components/security_interstitials",
+  "+components/services/heap_profiling",
   "+components/spellcheck/browser",
   "+components/spellcheck/common",
   "+components/url_formatter",

@@ -49,12 +49,15 @@ class ServiceManager : public Service {
     // created, the instance should bind to |receiver|. Returns |true| if the
     // instance was created or |false| otherwise (e.g. the service was unknown
     // or in-process instances are not supported by the runtime environment).
+    //
+    // This is only called for services with the ExecutionMode
+    // |kInProcessBuiltin|.
     virtual bool RunBuiltinServiceInstanceInCurrentProcess(
         const Identity& identity,
         mojo::PendingReceiver<mojom::Service> receiver) = 0;
 
     // Creates a new ServiceProcessHost to host an out-of-process service
-    // instance.
+    // instance for a service using ExecuteMode |kOutOfProcessBuiltin|.
     //
     // May return null if builtin out-of-process services are not supported by
     // the runtime environment.
@@ -64,10 +67,11 @@ class ServiceManager : public Service {
     // Chromium process launching logic today is still buried in the Content
     // layer.
     virtual std::unique_ptr<ServiceProcessHost>
-    CreateProcessHostForBuiltinServiceInstance() = 0;
+    CreateProcessHostForBuiltinServiceInstance(const Identity& identity) = 0;
 
     // Creates a new ServiceProcessHost to host an out-of-process service
-    // instance for a service using a standalone executable.
+    // instance for a service using a standalone executable (i.e. ExecuteMode in
+    // the manifest is |kStandaloneExecutable|).
     //
     // May return null if service executables are not supported by the runtime
     // environment.

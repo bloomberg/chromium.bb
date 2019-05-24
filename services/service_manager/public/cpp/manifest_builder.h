@@ -162,6 +162,11 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ManifestOptionsBuilder {
     return *this;
   }
 
+  ManifestOptionsBuilder& WithExecutionMode(Manifest::ExecutionMode mode) {
+    options_.execution_mode = mode;
+    return *this;
+  }
+
   ManifestOptionsBuilder& WithSandboxType(const char* sandbox_type) {
     options_.sandbox_type = sandbox_type;
     return *this;

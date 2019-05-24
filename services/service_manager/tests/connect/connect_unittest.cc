@@ -67,6 +67,9 @@ const std::vector<Manifest>& GetTestManifests() {
            .WithServiceName(kTestAppName)
            .WithOptions(ManifestOptionsBuilder()
                             .CanConnectToInstancesInAnyGroup(true)
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
                             .Build())
            .ExposeCapability(
                kIdentityTestCapability,
@@ -84,6 +87,11 @@ const std::vector<Manifest>& GetTestManifests() {
            .Build(),
        ManifestBuilder()
            .WithServiceName(kTestClassAppName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
+                            .Build())
            .ExposeCapability(
                kConnectClassCapability,
                Manifest::InterfaceList<test::mojom::ClassInterface>())
@@ -91,9 +99,21 @@ const std::vector<Manifest>& GetTestManifests() {
                kConnectTestServiceCapability,
                Manifest::InterfaceList<test::mojom::ConnectTestService>())
            .Build(),
-       ManifestBuilder().WithServiceName(kTestExeName).Build(),
+       ManifestBuilder()
+           .WithServiceName(kTestExeName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
+                            .Build())
+           .Build(),
        ManifestBuilder()
            .WithServiceName(kTestPackageName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
+                            .Build())
            .ExposeCapability(
                kConnectTestServiceCapability,
                Manifest::InterfaceList<test::mojom::ConnectTestService>())
@@ -129,6 +149,9 @@ const std::vector<Manifest>& GetTestManifests() {
                             .WithInstanceSharingPolicy(
                                 service_manager::Manifest::
                                     InstanceSharingPolicy::kSharedAcrossGroups)
+                            .WithExecutionMode(
+                                Manifest::ExecutionMode::kStandaloneExecutable)
+                            .WithSandboxType("none")
                             .Build())
            .Build(),
        ManifestBuilder()

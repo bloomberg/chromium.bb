@@ -42,12 +42,14 @@
 #include "media/cdm/cdm_proxy.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom-forward.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/mojom/service.mojom-forward.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -176,7 +178,6 @@ class RenderProcessHost;
 class RenderViewHost;
 class ResourceContext;
 class SerialDelegate;
-class ServiceManagerConnection;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class StoragePartition;
@@ -999,17 +1000,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) {}
 
-  // Registers services to be run in the browser process. |connection| is the
-  // ServiceManagerConnection service are registered with. Use
-  // |ServiceManagerConnection::AddServiceRequestHandler| to register each
-  // service.
-  //
-  // NOTE: This should ONLY be overridden to register services which MUST run on
-  // the IO thread. For other in-process services, use |HandleServiceRequest|
-  // below.
-  virtual void RegisterIOThreadServiceHandlers(
-      ServiceManagerConnection* connection) {}
-
   virtual void OverrideOnBindInterface(
       const service_manager::BindSourceInfo& remote_info,
       const std::string& name,
@@ -1019,6 +1009,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   struct CONTENT_EXPORT OutOfProcessServiceInfo {
     OutOfProcessServiceInfo();
+    OutOfProcessServiceInfo(const OutOfProcessServiceInfo&);
     OutOfProcessServiceInfo(const ProcessNameCallback& process_name_callback);
     OutOfProcessServiceInfo(const ProcessNameCallback& process_name_callback,
                             const std::string& process_group);
@@ -1031,6 +1022,10 @@ class CONTENT_EXPORT ContentBrowserClient {
     // If provided, a string which groups this service into a process shared
     // by other services using the same string.
     base::Optional<std::string> process_group;
+
+    // If |true| the service is run in the GPU process rather than a standalone
+    // service process.
+    bool run_in_gpu_process = false;
   };
 
   using OutOfProcessServiceMap = std::map<std::string, OutOfProcessServiceInfo>;
@@ -1040,15 +1035,26 @@ class CONTENT_EXPORT ContentBrowserClient {
   // to use for the service's host process when launched.
   virtual void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) {}
 
-  // Handles a Service request for the service named |service_name|. If the
-  // client knows how to run |service_name|, it should bind |request|
-  // accordingly. Note that this runs on the main thread, so if a service may
-  // need to start and run on the IO thread while the main thread is blocking on
-  // something, the service should instead by registered in
-  // |RegisterIOThreadServiceHandlers| above.
-  virtual void HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request);
+  // Handles a service instance request for a new service instance with identity
+  // |identity|. If the client knows how to run the named service, it should
+  // bind |*receiver| accordingly, in the browser process.
+  //
+  // Note that this runs on the main thread, so if a service may need to start
+  // and run on the IO thread while the main thread is blocking on something,
+  // the service request should instead be handled by
+  // |RunServiceInstanceOnIOThread| below.
+  virtual void RunServiceInstance(
+      const service_manager::Identity& identity,
+      mojo::PendingReceiver<service_manager::mojom::Service>* receiver);
+
+  // Handles an incoming service instance request on the IO thread.
+  //
+  // NOTE: This should ONLY be overridden to register services which MUST run on
+  // the browser's IO thread. For other in-process services, use
+  // |RunServiceInstance| above.
+  virtual void RunServiceInstanceOnIOThread(
+      const service_manager::Identity& identity,
+      mojo::PendingReceiver<service_manager::mojom::Service>* receiver);
 
   // Allows the embedder to terminate the browser if a specific service instance
   // quits or crashes.

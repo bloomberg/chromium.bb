@@ -108,13 +108,13 @@ ShellWebClient::GetServiceManifestOverlay(base::StringPiece name) {
         .Build();
   }
 
-  if (name == mojom::kPackagedServicesServiceName) {
-    return service_manager::ManifestBuilder()
-        .PackageService(echo::GetManifest())
-        .Build();
-  }
-
   return base::nullopt;
+}
+
+std::vector<service_manager::Manifest>
+ShellWebClient::GetExtraServiceManifests() {
+  return std::vector<service_manager::Manifest>{echo::GetManifest(
+      service_manager::Manifest::ExecutionMode::kInProcessBuiltin)};
 }
 
 void ShellWebClient::BindInterfaceRequestFromMainFrame(

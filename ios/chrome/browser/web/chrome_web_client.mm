@@ -159,9 +159,12 @@ base::Optional<service_manager::Manifest>
 ChromeWebClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == web::mojom::kBrowserServiceName)
     return GetChromeWebBrowserOverlayManifest();
-  if (name == web::mojom::kPackagedServicesServiceName)
-    return GetChromeWebPackagedServicesOverlayManifest();
   return base::nullopt;
+}
+
+std::vector<service_manager::Manifest>
+ChromeWebClient::GetExtraServiceManifests() {
+  return GetChromeWebPackagedServicesOverlayManifest().packaged_services;
 }
 
 void ChromeWebClient::GetAdditionalWebUISchemes(

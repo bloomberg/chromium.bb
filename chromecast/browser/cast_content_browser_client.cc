@@ -831,11 +831,12 @@ void CastContentBrowserClient::GetApplicationMediaInfo(
   *mixer_audio_enabled = true;
 }
 
-void CastContentBrowserClient::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
+void CastContentBrowserClient::RunServiceInstance(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  if (service_name == ::media::mojom::kMediaServiceName) {
+  if (identity.name() == ::media::mojom::kMediaServiceName) {
+    service_manager::mojom::ServiceRequest request(std::move(*receiver));
     GetMediaTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&CreateMediaService, this, std::move(request)));
@@ -844,11 +845,23 @@ void CastContentBrowserClient::HandleServiceRequest(
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
-  if (service_name == external_mojo::BrokerService::kServiceName) {
-    StartExternalMojoBrokerService(std::move(request));
+  if (identity.name() == external_mojo::BrokerService::kServiceName) {
+    StartExternalMojoBrokerService(std::move(*receiver));
     return;
   }
 #endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
+}
+
+void CastContentBrowserClient::RunServiceInstanceOnIOThread(
+    const service_manager::Identity& identity,
+    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
+#if !defined(OS_FUCHSIA)
+  if (identity.name() == heap_profiling::mojom::kServiceName) {
+    heap_profiling::HeapProfilingService::GetServiceFactory().Run(
+        std::move(*receiver));
+    return;
+  }
+#endif  // !defined(OS_FUCHSIA)
 }
 
 base::Optional<service_manager::Manifest>
@@ -856,12 +869,17 @@ CastContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece service_name) {
   if (service_name == content::mojom::kBrowserServiceName)
     return GetCastContentBrowserOverlayManifest();
-  if (service_name == content::mojom::kPackagedServicesServiceName)
-    return GetCastContentPackagedServicesOverlayManifest();
   if (service_name == content::mojom::kRendererServiceName)
     return GetCastContentRendererOverlayManifest();
 
   return base::nullopt;
+}
+
+std::vector<service_manager::Manifest>
+CastContentBrowserClient::GetExtraServiceManifests() {
+  // NOTE: This could be simplified and the list of manifests could be inlined.
+  // Not done yet since it would require touching downstream cast code.
+  return GetCastContentPackagedServicesOverlayManifest().packaged_services;
 }
 
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
@@ -1073,15 +1091,6 @@ bool CastContentBrowserClient::DoesSiteRequireDedicatedProcess(
 
 std::string CastContentBrowserClient::GetUserAgent() const {
   return chromecast::shell::GetUserAgent();
-}
-
-void CastContentBrowserClient::RegisterIOThreadServiceHandlers(
-    content::ServiceManagerConnection* connection) {
-#if !defined(OS_FUCHSIA)
-  connection->AddServiceRequestHandler(
-      heap_profiling::mojom::kServiceName,
-      heap_profiling::HeapProfilingService::GetServiceFactory());
-#endif  // !defined(OS_FUCHSIA)
 }
 
 void CastContentBrowserClient::CreateGeneralAudienceBrowsingService() {

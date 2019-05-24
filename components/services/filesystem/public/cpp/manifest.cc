@@ -14,9 +14,12 @@ const service_manager::Manifest& GetManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName("filesystem")
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("none")
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithSandboxType("none")
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kStandaloneExecutable)
+                  .Build())
           .ExposeCapability(
               "filesystem:filesystem",
               service_manager::Manifest::InterfaceList<mojom::FileSystem>())

@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -62,9 +61,11 @@ class ServiceInstance : public mojom::Connector,
   // Starts this instance using an already-established Service pipe.
   void StartWithRemote(mojo::PendingRemote<mojom::Service> remote);
 
+#if !defined(OS_IOS)
   // Starts this instance from a path to a service executable on disk.
-  bool StartWithExecutablePath(const base::FilePath& path,
-                               SandboxType sandbox_type);
+  bool StartWithProcessHost(std::unique_ptr<ServiceProcessHost> host,
+                            SandboxType sandbox_type);
+#endif  // !defined(OS_IOS)
 
   // Binds an endpoint for this instance to receive metadata about its
   // corresponding service process, if any.

@@ -15,7 +15,10 @@
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/service_process_host.h"
+
+#if !defined(OS_IOS)
 #include "services/service_manager/service_process_launcher.h"
+#endif  // !defined(OS_IOS)
 
 namespace service_manager {
 
@@ -233,28 +236,24 @@ void ServiceInstance::StartWithRemote(
   service_manager_->NotifyServiceCreated(*this);
 }
 
-bool ServiceInstance::StartWithExecutablePath(const base::FilePath& path,
-                                              SandboxType sandbox_type) {
-#if defined(OS_IOS)
-  // iOS does not support launching services in their own processes.
-  NOTREACHED();
-  return false;
-#else
+#if !defined(OS_IOS)
+bool ServiceInstance::StartWithProcessHost(
+    std::unique_ptr<ServiceProcessHost> host,
+    SandboxType sandbox_type) {
   DCHECK(!service_remote_);
-  DCHECK(!path.empty());
   DCHECK(!process_host_);
-  process_host_ =
-      service_manager_->delegate_->CreateProcessHostForServiceExecutable(path);
-  if (!process_host_)
+
+  auto remote = host->Launch(
+      identity_, sandbox_type,
+      base::BindOnce(&ServiceInstance::SetPID, weak_ptr_factory_.GetWeakPtr()));
+  if (!remote)
     return false;
 
-  StartWithRemote(
-      process_host_->Launch(identity_, sandbox_type,
-                            base::BindOnce(&ServiceInstance::SetPID,
-                                           weak_ptr_factory_.GetWeakPtr())));
+  process_host_ = std::move(host);
+  StartWithRemote(std::move(remote));
   return true;
-#endif
 }
+#endif  // !defined(OS_IOS)
 
 void ServiceInstance::BindProcessMetadataReceiver(
     mojo::PendingReceiver<mojom::ProcessMetadata> receiver) {

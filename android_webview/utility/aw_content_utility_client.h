@@ -5,8 +5,7 @@
 #ifndef ANDROID_WEBVIEW_UTILITY_AW_CONTENT_UTILITY_CLIENT_H_
 #define ANDROID_WEBVIEW_UTILITY_AW_CONTENT_UTILITY_CLIENT_H_
 
-#include <memory>
-
+#include "base/macros.h"
 #include "content/public/utility/content_utility_client.h"
 
 namespace android_webview {
@@ -18,9 +17,6 @@ class AwContentUtilityClient : public content::ContentUtilityClient {
 
   // content::ContentUtilityClient:
   void UtilityThreadStarted() override;
-  bool HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AwContentUtilityClient);
