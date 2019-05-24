@@ -237,7 +237,12 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
     if (background_type == SHELF_BACKGROUND_MAXIMIZED) {
       opaque_background_.SetRoundedCornerRadius({0, 0, 0, 0});
     } else {
-      opaque_background_.SetRoundedCornerRadius({radius, radius, 0, 0});
+      opaque_background_.SetRoundedCornerRadius({
+          shelf->SelectValueForShelfAlignment(radius, 0, radius),
+          shelf->SelectValueForShelfAlignment(radius, radius, 0),
+          shelf->SelectValueForShelfAlignment(0, radius, 0),
+          shelf->SelectValueForShelfAlignment(0, 0, radius),
+      });
       opaque_background_.AddCacheRenderSurfaceRequest();
     }
   } else {
