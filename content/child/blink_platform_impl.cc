@@ -137,6 +137,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP;
     case WebLocalizedString::kAXMediaOverflowButtonHelp:
       return IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP;
+    case WebLocalizedString::kAXMediaTouchLessSeekAction:
+      return IDS_AX_MEDIA_TOUCHLESS_SEEK_ACTION;
+    case WebLocalizedString::kAXMediaTouchLessVolumeAction:
+      return IDS_AX_MEDIA_TOUCHLESS_VOLUME_ACTION;
     case WebLocalizedString::kAXMillisecondFieldText:
       return IDS_AX_MILLISECOND_FIELD_TEXT;
     case WebLocalizedString::kAXMinuteFieldText:

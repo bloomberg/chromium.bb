@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_shared_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_impl.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -42,6 +43,16 @@ void MediaControlsTouchlessTimeDisplayElement::UpdateTimeDisplay() {
   builder.Append(" / ");
   builder.Append(MediaControlsSharedHelpers::FormatTime(duration_));
   setInnerText(builder.ToAtomicString(), ASSERT_NO_EXCEPTION);
+
+  StringBuilder aria_label;
+  aria_label.Append(GetLocale().QueryString(
+      WebLocalizedString::kAXMediaCurrentTimeDisplay,
+      MediaControlsSharedHelpers::FormatTime(current_time_)));
+  aria_label.Append(" ");
+  aria_label.Append(GetLocale().QueryString(
+      WebLocalizedString::kAXMediaTimeRemainingDisplay,
+      MediaControlsSharedHelpers::FormatTime(duration_)));
+  setAttribute(html_names::kAriaLabelAttr, aria_label.ToAtomicString());
 }
 
 }  // namespace blink
