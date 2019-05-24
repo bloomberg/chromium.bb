@@ -90,6 +90,8 @@ using pASurfaceTransaction_setBufferDataSpace =
 // ASurfaceTransactionStats
 using pASurfaceTransactionStats_getPresentFenceFd =
     int (*)(ASurfaceTransactionStats* stats);
+using pASurfaceTransactionStats_getLatchTime =
+    int64_t (*)(ASurfaceTransactionStats* stats);
 using pASurfaceTransactionStats_getASurfaceControls =
     void (*)(ASurfaceTransactionStats* stats,
              ASurfaceControl*** surface_controls,
@@ -154,6 +156,7 @@ struct SurfaceControlMethods {
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferDataSpace);
 
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getPresentFenceFd);
+    LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getLatchTime);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getASurfaceControls);
     LOAD_FUNCTION(main_dl_handle,
                   ASurfaceTransactionStats_releaseASurfaceControls);
@@ -187,6 +190,8 @@ struct SurfaceControlMethods {
   // TransactionStats methods.
   pASurfaceTransactionStats_getPresentFenceFd
       ASurfaceTransactionStats_getPresentFenceFdFn;
+  pASurfaceTransactionStats_getLatchTime
+      ASurfaceTransactionStats_getLatchTimeFn;
   pASurfaceTransactionStats_getASurfaceControls
       ASurfaceTransactionStats_getASurfaceControlsFn;
   pASurfaceTransactionStats_releaseASurfaceControls
@@ -244,6 +249,13 @@ SurfaceControl::TransactionStats ToTransactionStats(
   transaction_stats.present_fence = base::ScopedFD(
       SurfaceControlMethods::Get().ASurfaceTransactionStats_getPresentFenceFdFn(
           stats));
+  transaction_stats.latch_time =
+      base::TimeTicks() +
+      base::TimeDelta::FromNanoseconds(
+          SurfaceControlMethods::Get().ASurfaceTransactionStats_getLatchTimeFn(
+              stats));
+  if (transaction_stats.latch_time == base::TimeTicks())
+    transaction_stats.latch_time = base::TimeTicks::Now();
 
   ASurfaceControl** surface_controls = nullptr;
   size_t size = 0u;

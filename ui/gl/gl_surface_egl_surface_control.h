@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/android/scoped_hardware_buffer_handle.h"
+#include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -122,6 +123,18 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   };
   using ResourceRefs = base::flat_map<ASurfaceControl*, ResourceRef>;
 
+  struct PendingPresentationCallback {
+    PendingPresentationCallback();
+    ~PendingPresentationCallback();
+
+    PendingPresentationCallback(PendingPresentationCallback&& other);
+    PendingPresentationCallback& operator=(PendingPresentationCallback&& other);
+
+    base::TimeTicks latch_time;
+    base::ScopedFD present_fence;
+    PresentationCallback callback;
+  };
+
   void CommitPendingTransaction(const gfx::Rect& damage_rect,
                                 SwapCompletionCallback completion_callback,
                                 PresentationCallback callback);
@@ -133,6 +146,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
       PresentationCallback presentation_callback,
       ResourceRefs released_resources,
       SurfaceControl::TransactionStats transaction_stats);
+
+  void CheckPendingPresentationCallbacks();
 
   gfx::Rect ApplyDisplayInverse(const gfx::Rect& input) const;
 
@@ -154,6 +169,10 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   // Transactions waiting to be applied once the previous transaction is acked.
   std::queue<SurfaceControl::Transaction> pending_transaction_queue_;
 
+  // PresentationCallbacks for transactions which have been acked but their
+  // present fence has not fired yet.
+  std::queue<PendingPresentationCallback> pending_presentation_callback_queue_;
+
   // The list of Surfaces and the corresponding state based on the most recent
   // updates.
   std::vector<SurfaceState> surface_list_;
@@ -174,8 +193,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   bool transaction_ack_pending_ = false;
 
   gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
-
   EGLSurface offscreen_surface_;
+  base::CancelableOnceClosure check_pending_presentation_callback_queue_task_;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_;

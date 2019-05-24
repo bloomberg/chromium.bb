@@ -12,11 +12,13 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_transform_utils.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 #include "ui/gl/gl_utils.h"
 
@@ -366,6 +368,9 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     PresentationCallback presentation_callback,
     ResourceRefs released_resources,
     SurfaceControl::TransactionStats transaction_stats) {
+  TRACE_EVENT0("gpu",
+               "GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread");
+
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK(transaction_ack_pending_);
 
@@ -374,12 +379,12 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
   // The presentation feedback callback must run after swap completion.
   std::move(completion_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
 
-  // TODO(khushalsagar): Maintain a queue of present fences so we poll to see if
-  // they are signaled every frame, and get a signal timestamp to feed into this
-  // feedback.
-  gfx::PresentationFeedback feedback(base::TimeTicks::Now(), base::TimeDelta(),
-                                     0 /* flags */);
-  std::move(presentation_callback).Run(feedback);
+  PendingPresentationCallback pending_cb;
+  pending_cb.latch_time = transaction_stats.latch_time;
+  pending_cb.present_fence = std::move(transaction_stats.present_fence);
+  pending_cb.callback = std::move(presentation_callback);
+  pending_presentation_callback_queue_.push(std::move(pending_cb));
+  CheckPendingPresentationCallbacks();
 
   const bool has_context = context_->MakeCurrent(this);
   for (auto& surface_stat : transaction_stats.surface_stats) {
@@ -412,6 +417,54 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     transaction_ack_pending_ = true;
     pending_transaction_queue_.front().Apply();
     pending_transaction_queue_.pop();
+  }
+}
+
+void GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks() {
+  TRACE_EVENT0("gpu",
+               "GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks");
+  check_pending_presentation_callback_queue_task_.Cancel();
+
+  while (!pending_presentation_callback_queue_.empty()) {
+    auto& pending_cb = pending_presentation_callback_queue_.front();
+
+    base::TimeTicks signal_time;
+    auto status =
+        pending_cb.present_fence.is_valid()
+            ? GLFenceAndroidNativeFenceSync::GetStatusChangeTimeForFence(
+                  pending_cb.present_fence.get(), &signal_time)
+            : GLFenceAndroidNativeFenceSync::kInvalid;
+    if (status == GLFenceAndroidNativeFenceSync::kNotSignaled)
+      break;
+
+    auto flags = gfx::PresentationFeedback::kHWCompletion |
+                 gfx::PresentationFeedback::kVSync;
+    if (status == GLFenceAndroidNativeFenceSync::kInvalid) {
+      signal_time = pending_cb.latch_time;
+      flags = 0u;
+    }
+
+    TRACE_EVENT_INSTANT0(
+        "gpu",
+        "GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks - "
+        "presentation_feedback",
+        TRACE_EVENT_SCOPE_THREAD);
+    gfx::PresentationFeedback feedback(signal_time, base::TimeDelta(), flags);
+    std::move(pending_cb.callback).Run(feedback);
+    pending_presentation_callback_queue_.pop();
+  }
+
+  // If there are unsignaled fences and we don't have any pending transactions,
+  // schedule a task to poll the fences again. If there is a pending transaction
+  // already, then we'll poll when that transaction is acked.
+  if (!pending_presentation_callback_queue_.empty() &&
+      pending_transaction_queue_.empty()) {
+    check_pending_presentation_callback_queue_task_.Reset(base::BindOnce(
+        &GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks,
+        weak_factory_.GetWeakPtr()));
+    gpu_task_runner_->PostDelayedTask(
+        FROM_HERE, check_pending_presentation_callback_queue_task_.callback(),
+        base::TimeDelta::FromSeconds(1) / 60);
   }
 }
 
@@ -449,5 +502,15 @@ GLSurfaceEGLSurfaceControl::ResourceRef::ResourceRef(ResourceRef&& other) =
 GLSurfaceEGLSurfaceControl::ResourceRef&
 GLSurfaceEGLSurfaceControl::ResourceRef::operator=(ResourceRef&& other) =
     default;
+
+GLSurfaceEGLSurfaceControl::PendingPresentationCallback::
+    PendingPresentationCallback() = default;
+GLSurfaceEGLSurfaceControl::PendingPresentationCallback::
+    ~PendingPresentationCallback() = default;
+GLSurfaceEGLSurfaceControl::PendingPresentationCallback::
+    PendingPresentationCallback(PendingPresentationCallback&& other) = default;
+GLSurfaceEGLSurfaceControl::PendingPresentationCallback&
+GLSurfaceEGLSurfaceControl::PendingPresentationCallback::operator=(
+    PendingPresentationCallback&& other) = default;
 
 }  // namespace gl

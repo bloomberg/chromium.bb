@@ -86,6 +86,7 @@ class GL_EXPORT SurfaceControl {
     // display.
     base::ScopedFD present_fence;
     std::vector<SurfaceStats> surface_stats;
+    base::TimeTicks latch_time;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TransactionStats);
