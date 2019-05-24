@@ -13,11 +13,11 @@
   <release seq="1">
     <structures>
       <structure name="IDR_OS_SETTINGS_A11Y_PAGE_JS"
-                 file="a11y_page/a11y_page.js"
+                 file="chromeos/os_a11y_page/os_a11y_page.js"
                  preprocess="true"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_A11Y_PAGE_HTML"
-                 file="a11y_page/a11y_page.html"
+                 file="chromeos/os_a11y_page/os_a11y_page.html"
                  type="chrome_html"
                  preprocess="true"
                  allowexternalscript="true" />

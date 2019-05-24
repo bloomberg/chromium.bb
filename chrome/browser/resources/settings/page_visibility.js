@@ -8,6 +8,7 @@
  * project is completed this can be changed to only consider incognito and
  * guest mode. https://crbug.com/950007
  * @typedef {{
+ *   a11y: (boolean|undefined|A11yPageVisibility),
  *   advancedSettings: (boolean|undefined),
  *   appearance: (boolean|undefined|AppearancePageVisibility),
  *   autofill: (boolean|undefined),
@@ -26,6 +27,13 @@
  * }}
  */
 let PageVisibility;
+
+/**
+ * @typedef {{
+ *   webstoreLink: boolean,
+ * }}
+ */
+let A11yPageVisibility;
 
 /**
  * @typedef {{
@@ -129,6 +137,9 @@ cr.define('settings', function() {
         googleDrive: false,
         smbShares: false,
       },
+      a11y: {
+        webstoreLink: showOSSettings,
+      },
       extensions: false,
       printing: showOSSettings,
     };
@@ -171,6 +182,9 @@ cr.define('settings', function() {
       downloads: {
         googleDrive: showOSSettings,
         smbShares: showOSSettings,
+      },
+      a11y: {
+        webstoreLink: showOSSettings,
       },
       extensions: true,
       printing: showOSSettings,
