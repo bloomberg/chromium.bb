@@ -15,10 +15,6 @@
 #include "ui/native_theme/native_theme_dark_aura.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/views/linux_ui/linux_ui.h"
-#endif
-
 namespace {
 
 SkColor GetColorFromNativeTheme(ui::NativeTheme::ColorId color_id,
@@ -27,11 +23,6 @@ SkColor GetColorFromNativeTheme(ui::NativeTheme::ColorId color_id,
 #if defined(USE_AURA) || defined(OS_MACOSX)
   if (tint == OmniboxTint::DARK)
     native_theme = ui::NativeThemeDarkAura::instance();
-#endif
-#if defined(USE_X11)
-  // Note: passing null to GetNativeTheme() always returns the native GTK theme.
-  if (tint == OmniboxTint::NATIVE && views::LinuxUI::instance())
-    native_theme = views::LinuxUI::instance()->GetNativeTheme(nullptr);
 #endif
   if (!native_theme)
     native_theme = ui::NativeTheme::GetInstanceForNativeUi();
@@ -53,8 +44,6 @@ SkColor GetOmniboxColor(OmniboxPart part,
                         OmniboxPartState state) {
   using NativeId = ui::NativeTheme::ColorId;
 
-  // Note this will use LIGHT for OmniboxTint::NATIVE.
-  // TODO(https://crbug.com/819452): Determine the role GTK should play in this.
   bool dark = tint == OmniboxTint::DARK;
 
   // For high contrast, selected rows use inverted colors to stand out more.

@@ -1202,23 +1202,12 @@ void LocationBarView::OnOmniboxHovered(bool is_hovering) {
 }
 
 OmniboxTint LocationBarView::CalculateTint() const {
+  if (GetNativeTheme()->SystemDarkModeEnabled())
+    return OmniboxTint::DARK;
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
-  if (theme_service->UsingDefaultTheme()) {
-    if (profile()->IsIncognitoProfile() ||
-        GetNativeTheme()->SystemDarkModeEnabled()) {
-      return OmniboxTint::DARK;
-    }
-
-    return OmniboxTint::LIGHT;
-  }
-
-  // Check for GTK on Desktop Linux.
-  if (theme_service->IsSystemThemeDistinctFromDefaultTheme() &&
-      theme_service->UsingSystemTheme())
-    return OmniboxTint::NATIVE;
-
-  return GetNativeTheme()->SystemDarkModeEnabled() ? OmniboxTint::DARK
-                                                   : OmniboxTint::LIGHT;
+  return (theme_service->UsingDefaultTheme() && profile()->IsIncognitoProfile())
+             ? OmniboxTint::DARK
+             : OmniboxTint::LIGHT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
