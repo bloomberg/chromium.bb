@@ -356,18 +356,6 @@
 
 namespace {
 
-#if defined(OS_ANDROID)
-// Deprecated 4/2018.
-const char kDismissedPhysicalWebPageSuggestions[] =
-    "ntp_suggestions.physical_web.dismissed_ids";
-// Deprecated 5/2018.
-const char kDismissedRecentOfflineTabSuggestions[] =
-    "ntp_suggestions.offline_pages.recent_tabs.dismissed_ids";
-#else
-// Deprecated 1/2018.
-const char kShowFirstRunBubbleOption[] = "show-first-run-bubble-option";
-#endif  // defined(OS_ANDROID)
-
 #if defined(OS_WIN)
 // Deprecated 6/2018.
 const char kResetHasSeenWin10PromoPage[] =
@@ -461,11 +449,6 @@ const char kBookmarkAppCreationLaunchType[] =
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
-#if defined(OS_ANDROID)
-  registry->RegisterListPref(kDismissedPhysicalWebPageSuggestions);
-  registry->RegisterListPref(kDismissedRecentOfflineTabSuggestions);
-#endif
-
   registry->RegisterListPref(kDnsPrefetchingStartupList);
   registry->RegisterListPref(kDnsPrefetchingHostReferralList);
 
@@ -588,8 +571,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   task_manager::TaskManagerInterface::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
   enterprise_reporting::RegisterPrefs(registry);
-  // Obsolete. See MigrateObsoleteBrowserPrefs().
-  registry->RegisterIntegerPref(kShowFirstRunBubbleOption, 0);
 #if !defined(OS_CHROMEOS)
   RegisterDefaultBrowserPromptPrefs(registry);
 #endif  // !defined(OS_CHROMEOS)
@@ -987,15 +968,7 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
   // Added 9/2018
   local_state->ClearPref(
       metrics::prefs::kStabilityCrashCountWithoutGmsCoreUpdateObsolete);
-#else
-  // Added 1/2018.
-  local_state->ClearPref(kShowFirstRunBubbleOption);
 #endif  // defined(OS_ANDROID)
-
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  // Added 5/2018.
-  local_state->ClearPref(prefs::kProblematicPrograms);
-#endif
 
 #if defined(OS_WIN)
   // Added 6/2018.
@@ -1013,14 +986,6 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
-
-#if defined(OS_ANDROID)
-  // Added 4/2018
-  profile_prefs->ClearPref(kDismissedPhysicalWebPageSuggestions);
-
-  // Added 5/2018
-  profile_prefs->ClearPref(kDismissedRecentOfflineTabSuggestions);
-#endif  // defined(OS_ANDROID)
 
   // Added 8/2018.
   autofill::prefs::MigrateDeprecatedAutofillPrefs(profile_prefs);

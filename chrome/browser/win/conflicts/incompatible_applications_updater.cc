@@ -267,7 +267,6 @@ IncompatibleApplicationsUpdater::~IncompatibleApplicationsUpdater() {
 void IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kIncompatibleApplications);
-  registry->RegisterDictionaryPref(prefs::kProblematicPrograms);
 }
 
 // static

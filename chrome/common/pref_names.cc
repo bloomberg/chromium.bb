@@ -2481,11 +2481,6 @@ const char kIncompatibleApplications[] = "incompatible_applications";
 const char kModuleBlacklistCacheMD5Digest[] =
     "module_blacklist_cache_md5_digest";
 
-// Acts as a cache to remember problematic programs through restarts. Used for
-// the Incompatible Applications Warning feature.
-// Note: Deprecated. Renamed to kIncompatibleApplications.
-const char kProblematicPrograms[] = "problematic_programs";
-
 // A boolean value, controlling whether third party software is allowed to
 // inject into Chrome's processes.
 const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";

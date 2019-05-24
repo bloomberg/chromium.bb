@@ -872,7 +872,6 @@ extern const char kWebShareVisitedTargets[];
 #if defined(GOOGLE_CHROME_BUILD)
 extern const char kIncompatibleApplications[];
 extern const char kModuleBlacklistCacheMD5Digest[];
-extern const char kProblematicPrograms[];
 extern const char kThirdPartyBlockingEnabled[];
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
