@@ -38,6 +38,7 @@ class CORE_EXPORT JankTracker {
   void NotifyInput(const WebInputEvent&);
   bool IsActive();
   double Score() const { return score_; }
+  double ScoreWithMoveDistance() const { return score_with_move_distance_; }
   double WeightedScore() const { return weighted_score_; }
   float OverallMaxDistance() const { return overall_max_distance_; }
   void Dispose() { timer_.Stop(); }

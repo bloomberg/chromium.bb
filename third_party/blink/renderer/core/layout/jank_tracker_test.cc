@@ -52,6 +52,10 @@ TEST_F(JankTrackerTest, SimpleBlockMovement) {
   UpdateAllLifecyclePhases();
   // 300 * (100 + 60) / (default viewport size 800 * 600)
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+  // ScoreWithMoveDistance should be scaled by the amount that the content moved
+  // (60px) relative to the max viewport dimension (width=800px).
+  EXPECT_FLOAT_EQ(0.1 * (60.0 / 800.0),
+                  GetJankTracker().ScoreWithMoveDistance());
   EXPECT_FLOAT_EQ(60.0, GetJankTracker().OverallMaxDistance());
 }
 

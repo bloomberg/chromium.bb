@@ -269,9 +269,10 @@ void JankTracker::NotifyPrePaintFinished() {
   score_ += jank_fraction;
 
   DCHECK_GT(frame_max_distance_, 0.0);
+  double viewport_max_dimension = std::max(viewport.Width(), viewport.Height());
   double move_distance_factor =
-      (frame_max_distance_ < viewport.Height())
-          ? double(frame_max_distance_) / double(viewport.Height())
+      (frame_max_distance_ < viewport_max_dimension)
+          ? double(frame_max_distance_) / viewport_max_dimension
           : 1.0;
   double jank_fraction_with_move_distance =
       jank_fraction * move_distance_factor;
