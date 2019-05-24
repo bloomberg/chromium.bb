@@ -44,8 +44,11 @@
 </div>
 
 <script>
-  // This test checks that focusless mode allows entering focus into an element
-  // with the enter key and exiting it with the escape key.
+  // This test ensures that spatial navigation from the root scroller correctly
+  // affects the visual viewport when zoomed in.
+  if (window.internals)
+    window.internals.runtimeFlags.implicitRootScrollerEnabled = true;
+
   const scroller = document.getElementById("scroller");
   const a = document.getElementById("A");
   const b = document.getElementById("B");
