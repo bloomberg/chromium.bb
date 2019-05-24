@@ -6,9 +6,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_device_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/send_tab_to_self/target_device_info.h"
@@ -28,6 +31,7 @@ SendTabToSelfBubbleViewImpl::SendTabToSelfBubbleViewImpl(
     content::WebContents* web_contents,
     SendTabToSelfBubbleController* controller)
     : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
+      web_contents_(web_contents),
       controller_(controller),
       weak_factory_(this) {
   DCHECK(controller);
@@ -86,6 +90,13 @@ void SendTabToSelfBubbleViewImpl::OnPaint(gfx::Canvas* canvas) {
 
 void SendTabToSelfBubbleViewImpl::Show(DisplayReason reason) {
   ShowForReason(reason);
+  // Keeps the send tab to self icon in omnibox while showing the bubble.
+  BrowserView::GetBrowserViewForBrowser(
+      chrome::FindBrowserWithWebContents(web_contents_))
+      ->toolbar_button_provider()
+      ->GetOmniboxPageActionIconContainerView()
+      ->GetPageActionIconView(PageActionIconType::kSendTabToSelf)
+      ->SetVisible(true);
 }
 
 void SendTabToSelfBubbleViewImpl::Init() {

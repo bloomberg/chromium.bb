@@ -36,6 +36,8 @@ class SendTabToSelfIconView : public PageActionIconView {
   SendTabToSelfBubbleController* GetController() const;
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
+  // Whether the animation has been shown.
+  bool was_animation_shown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfIconView);
 };

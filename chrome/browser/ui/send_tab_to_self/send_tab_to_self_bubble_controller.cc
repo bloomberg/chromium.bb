@@ -75,7 +75,6 @@ void SendTabToSelfBubbleController::OnDeviceSelected(
     const std::string& target_device_name,
     const std::string& target_device_guid) {
   CreateNewEntry(web_contents_, target_device_name, target_device_guid);
-  // TODO(crbug/956189): update the omnibox icon; hide it.
 }
 
 void SendTabToSelfBubbleController::OnBubbleClosed() {

@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
@@ -356,10 +357,6 @@ void LocationBarView::FocusLocation(bool select_all) {
     return;
 
   omnibox_view_->SelectAll(true);
-
-  // Update the visibility of send tab to self icon.
-  this->omnibox_page_action_icon_container_view()->UpdatePageActionIcon(
-      PageActionIconType::kSendTabToSelf);
 
   // Only exit Query in Omnibox mode on focus command if the location bar was
   // already focused to begin with, i.e. user presses Ctrl+L twice.
@@ -1016,6 +1013,11 @@ void LocationBarView::UpdateBookmarkStarVisibility() {
   }
 }
 
+inline void LocationBarView::UpdateSendTabToSelfIcon() {
+  this->omnibox_page_action_icon_container_view()->UpdatePageActionIcon(
+      PageActionIconType::kSendTabToSelf);
+}
+
 void LocationBarView::SaveStateToContents(WebContents* contents) {
   omnibox_view_->SaveStateToTab(contents);
 }
@@ -1152,6 +1154,7 @@ void LocationBarView::OnChanged() {
                                 IsVirtualKeyboardVisible(GetWidget()));
   Layout();
   SchedulePaint();
+  UpdateSendTabToSelfIcon();
 }
 
 void LocationBarView::OnPopupVisibilityChanged() {
@@ -1181,13 +1184,14 @@ void LocationBarView::OnOmniboxFocused() {
   // the omnibox is intentional, snapping is better than transitioning here.
   hover_animation_.Reset();
 
+  UpdateSendTabToSelfIcon();
   RefreshBackground();
 }
 
 void LocationBarView::OnOmniboxBlurred() {
   if (focus_ring_)
     focus_ring_->SchedulePaint();
-
+  UpdateSendTabToSelfIcon();
   RefreshBackground();
 }
 

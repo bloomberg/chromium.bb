@@ -1086,10 +1086,6 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       select_all_on_mouse_release_) {
     SelectAllForUserGesture();
-    // Update the visibility of send tab to self icon.
-    if (location_bar_view_)
-      location_bar_view_->omnibox_page_action_icon_container_view()
-          ->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
   }
   select_all_on_mouse_release_ = false;
 
@@ -1115,10 +1111,6 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
 
   if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP) {
     SelectAllForUserGesture();
-    // Update the visibility of send tab to self icon.
-    if (location_bar_view_)
-      location_bar_view_->omnibox_page_action_icon_container_view()
-          ->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
   }
 
   if (event->type() == ui::ET_GESTURE_TAP ||

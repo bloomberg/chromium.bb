@@ -90,13 +90,14 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
   // size.
   void MaybeSizeToContents();
 
+  content::WebContents* web_contents_;         // Weak reference.
+  SendTabToSelfBubbleController* controller_;  // Weak reference.
+
   // Title shown at the top of the bubble.
   base::string16 bubble_title_;
 
   // Contains references to device buttons in the order they appear.
   std::vector<std::unique_ptr<SendTabToSelfBubbleDeviceButton>> device_buttons_;
-
-  SendTabToSelfBubbleController* controller_;  // Weak reference.
 
   // ScrollView containing the list of device buttons.
   views::ScrollView* scroll_view_ = nullptr;

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -45,15 +46,25 @@ bool SendTabToSelfIconView::Update() {
 
   const bool was_visible = GetVisible();
   const OmniboxView* omnibox_view = delegate()->GetOmniboxView();
+  if (!omnibox_view) {
+    return false;
+  }
 
-  if (!send_tab_to_self::ShouldOfferFeature(web_contents) && was_visible) {
-    // Hide the icon.
-    ResetSlideAnimation(false);
-    SetVisible(false);
-  } else if (!was_visible && omnibox_view && omnibox_view->IsSelectAll()) {
-    // Show the animation the first time the valid url is highlighted.
-    AnimateIn(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF);
+  // Shows the send tab to self icon in omnibox when:
+  // send tab to self feature offered, and
+  // mouse focuses on the omnibox, and
+  // url has not been changed.
+  if (send_tab_to_self::ShouldOfferFeature(web_contents) &&
+      omnibox_view->model()->has_focus() &&
+      !omnibox_view->model()->user_input_in_progress()) {
+    // Shows the animation one time per browser session.
+    if (!was_animation_shown_) {
+      AnimateIn(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF);
+      was_animation_shown_ = true;
+    }
     SetVisible(true);
+  } else {
+    SetVisible(false);
   }
 
   return was_visible != GetVisible();
