@@ -79,6 +79,30 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)goForward;
 
+// Waits for the page to finish loading within a timeout, or a GREYAssert is
+// induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForPageToFinishLoading;
+
+#pragma mark - Settings Utilities
+
+// Sets value for content setting.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)setContentSettings:(ContentSetting)setting;
+
+#pragma mark - Sync Utilities
+
+// Sets up a fake sync server to be used by the ProfileSyncService.
+- (void)setUpFakeSyncServer;
+
+// Tears down the fake sync server used by the ProfileSyncService and restores
+// the real one.
+- (void)tearDownFakeSyncServer;
+
+#pragma mark - Tab Utilities
+
 // Opens a new tab and waits for the new tab animation to complete within a
 // timeout, or a GREYAssert is induced.
 // TODO(crbug.com/963613): Change return type to void when
@@ -104,11 +128,19 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)closeAllIncognitoTabs;
 
-// Waits for the page to finish loading within a timeout, or a GREYAssert is
-// induced.
+// Closes all tabs in the all modes (incognito and main (non-incognito)), and
+// does not wait for the UI to complete. If current mode is Incognito, mode will
+// be switched to main (non-incognito) after closing the incognito tabs.
+- (void)closeAllTabs;
+
+#pragma mark - SignIn Utilities
+
+// Signs the user out, clears the known accounts entirely and checks whether the
+// accounts were correctly removed from the keychain. Induces a GREYAssert if
+// the operation fails.
 // TODO(crbug.com/963613): Change return type to void when
 // CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForPageToFinishLoading;
+- (NSError*)signOutAndClearAccounts;
 
 #pragma mark - Bookmarks Utilities (EG2)
 
@@ -297,25 +329,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 - (NSError*)verifySyncServerURLs:(const std::multiset<std::string>&)URLs
     WARN_UNUSED_RESULT;
 
-// Sets up a fake sync server to be used by the ProfileSyncService.
-- (void)setUpFakeSyncServer;
-
-// Tears down the fake sync server used by the ProfileSyncService and restores
-// the real one.
-- (void)tearDownFakeSyncServer;
-
-#pragma mark - Settings Utilities
-
-// Sets value for content setting.
-- (NSError*)setContentSettings:(ContentSetting)setting WARN_UNUSED_RESULT;
-
-#pragma mark - Sign Utilities
-
-// Signs the user out, clears the known accounts entirely and checks whether
-// the accounts were correctly removed from the keychain. Returns nil on
-// success, or else an NSError indicating why the operation failed.
-- (NSError*)signOutAndClearAccounts WARN_UNUSED_RESULT;
-
 #pragma mark - Tab Utilities
 
 // Selects tab with given index in current mode (incognito or main
@@ -328,11 +341,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Returns YES if the browser is in incognito mode, and NO otherwise.
 - (BOOL)isIncognitoMode WARN_UNUSED_RESULT;
-
-// Closes all tabs in the all modes (incognito and main (non-incognito)), and
-// does not wait for the UI to complete. If current mode is Incognito, mode will
-// be switched to main (non-incognito) after closing the incognito tabs.
-- (void)closeAllTabs;
 
 // Returns the number of main (non-incognito) tabs.
 - (NSUInteger)mainTabCount WARN_UNUSED_RESULT;

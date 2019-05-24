@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "components/content_settings/core/common/content_settings.h"
+
 // ChromeEarlGreyAppInterface contains the app-side implementation for helpers
 // that primarily work via direct model access. These helpers are compiled into
 // the app binary and can be called from either app or test code.
@@ -49,11 +51,31 @@
 // Closes all incognito tabs. Return YES on success.
 + (BOOL)closeAllIncognitoTabs;
 
+// Closes all tabs in all modes (incognito and main (non-incognito)) and does
+// not wait for the UI to complete. If current mode is Incognito, mode will be
+// switched to main (non-incognito) after closing the incognito tabs.
++ (void)closeAllTabs;
+
 // Navigates back to the previous page without waiting for the page to load.
 + (void)startGoingBack;
 
 // Navigates forward to the next page without waiting for the page to load.
 + (void)startGoingForward;
+
+// Sets value for content setting.
++ (void)setContentSettings:(ContentSetting)setting;
+
+// Signs the user out, clears the known accounts entirely and checks whether
+// the accounts were correctly removed from the keychain. Returns nil on
+// success, or else an NSError indicating why the operation failed.
++ (NSError*)signOutAndClearAccounts;
+
+// Sets up a fake sync server to be used by the ProfileSyncService.
++ (void)setUpFakeSyncServer;
+
+// Tears down the fake sync server used by the ProfileSyncService and restores
+// the real one.
++ (void)tearDownFakeSyncServer;
 
 #pragma mark - Bookmarks Utilities (EG2)
 

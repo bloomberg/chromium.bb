@@ -10,6 +10,9 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
+#include "ios/chrome/test/app/settings_test_util.h"
+#import "ios/chrome/test/app/signin_test_util.h"
+#import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
@@ -75,12 +78,37 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return chrome_test_util::CloseAllIncognitoTabs();
 }
 
++ (void)closeAllTabs {
+  chrome_test_util::CloseAllTabs();
+}
+
 + (void)startGoingBack {
   [BrowserCommandDispatcherForMainBVC() goBack];
 }
 
 + (void)startGoingForward {
   [BrowserCommandDispatcherForMainBVC() goForward];
+}
+
++ (void)setContentSettings:(ContentSetting)setting {
+  chrome_test_util::SetContentSettingsBlockPopups(setting);
+}
+
++ (NSError*)signOutAndClearAccounts {
+  bool success = chrome_test_util::SignOutAndClearAccounts();
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Real accounts couldn't be cleared.");
+  }
+  return nil;
+}
+
++ (void)setUpFakeSyncServer {
+  chrome_test_util::SetUpFakeSyncServer();
+}
+
++ (void)tearDownFakeSyncServer {
+  chrome_test_util::TearDownFakeSyncServer();
 }
 
 #pragma mark - Bookmarks Utilities (EG2)

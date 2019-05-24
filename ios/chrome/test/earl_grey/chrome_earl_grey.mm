@@ -24,8 +24,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"                   // nogncheck
 #import "ios/chrome/test/app/history_test_util.h"                  // nogncheck
 #include "ios/chrome/test/app/navigation_test_util.h"              // nogncheck
-#import "ios/chrome/test/app/settings_test_util.h"                 // nogncheck
-#import "ios/chrome/test/app/signin_test_util.h"                   // nogncheck
 #import "ios/chrome/test/app/static_html_view_test_util.h"         // nogncheck
 #import "ios/chrome/test/app/sync_test_util.h"                     // nogncheck
 #import "ios/chrome/test/app/tab_test_util.h"                      // nogncheck
@@ -122,6 +120,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
+- (void)closeAllTabs {
+  [ChromeEarlGreyAppInterface closeAllTabs];
+}
+
 - (NSError*)waitForPageToFinishLoading {
   GREYCondition* finishedLoading = [GREYCondition
       conditionWithName:kWaitForPageToFinishLoadingError
@@ -151,6 +153,31 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 - (NSError*)loadURL:(const GURL&)URL {
   return [self loadURL:URL waitForCompletion:YES];
+}
+
+#pragma mark - Settings Utilities
+
+- (NSError*)setContentSettings:(ContentSetting)setting {
+  [ChromeEarlGreyAppInterface setContentSettings:setting];
+  return nil;
+}
+
+#pragma mark - Sync Utilities
+
+- (void)setUpFakeSyncServer {
+  [ChromeEarlGreyAppInterface setUpFakeSyncServer];
+}
+
+- (void)tearDownFakeSyncServer {
+  [ChromeEarlGreyAppInterface tearDownFakeSyncServer];
+}
+
+#pragma mark - SignIn Utilities
+
+- (NSError*)signOutAndClearAccounts {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface signOutAndClearAccounts]);
+  return nil;
 }
 
 #pragma mark - Bookmarks Utilities (EG2)
@@ -583,32 +610,6 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-- (void)setUpFakeSyncServer {
-  chrome_test_util::SetUpFakeSyncServer();
-}
-
-- (void)tearDownFakeSyncServer {
-  chrome_test_util::TearDownFakeSyncServer();
-}
-
-#pragma mark - Settings Utilities
-
-- (NSError*)setContentSettings:(ContentSetting)setting {
-  chrome_test_util::SetContentSettingsBlockPopups(setting);
-  return nil;
-}
-
-#pragma mark - Sign Utilities
-
-- (NSError*)signOutAndClearAccounts {
-  bool success = chrome_test_util::SignOutAndClearAccounts();
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Real accounts couldn't be cleared.");
-  }
-  return nil;
-}
-
 #pragma mark - Tab Utilities
 
 - (void)selectTabAtIndex:(NSUInteger)index {
@@ -621,10 +622,6 @@ id ExecuteJavaScript(NSString* javascript,
 
 - (void)closeTabAtIndex:(NSUInteger)index {
   chrome_test_util::CloseTabAtIndex(index);
-}
-
-- (void)closeAllTabs {
-  chrome_test_util::CloseAllTabs();
 }
 
 - (NSUInteger)mainTabCount {
