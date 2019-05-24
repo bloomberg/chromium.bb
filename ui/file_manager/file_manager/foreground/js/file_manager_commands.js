@@ -1687,7 +1687,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
     const actionsController = fileManager.actionsController;
 
     // Avoid flickering menu height: synchronously define command visibility.
-    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager_)) {
+    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager)) {
       command.setHidden(true);
       return;
     }
@@ -1825,7 +1825,7 @@ CommandHandler.COMMANDS_['share'] = /** @type {Command} */ ({
     const actionsController = fileManager.actionsController;
 
     // Avoid flickering menu height: synchronously define command visibility.
-    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager_)) {
+    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager)) {
       command.setHidden(true);
       return;
     }
@@ -1892,7 +1892,7 @@ CommandHandler.COMMANDS_['manage-in-drive'] = /** @type {Command} */ ({
     const actionsController = fileManager.actionsController;
 
     // Avoid flickering menu height: synchronously define command visibility.
-    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager_)) {
+    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager)) {
       command.setHidden(true);
       return;
     }
@@ -1972,7 +1972,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
     // Show a confirmation dialog if we are sharing the root of a volume.
     // Non-Drive volume roots are always '/'.
     if (dir.fullPath == '/') {
-      fileManager.ui_.confirmDialog.showHtml(
+      fileManager.ui.confirmDialog.showHtml(
           strf('SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE'),
           strf('SHARE_ROOT_FOLDER_WITH_CROSTINI', info.volumeInfo.label), share,
           () => {});
@@ -1985,7 +1985,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
       // Only show the dialog for My Drive, Shared Drives Grand Root and
       // Computers Grand Root.  Do not show for roots of a single Shared Drive
       // or Computer.
-      fileManager.ui_.confirmDialog.showHtml(
+      fileManager.ui.confirmDialog.showHtml(
           strf('SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE'),
           strf('SHARE_ROOT_FOLDER_WITH_CROSTINI_DRIVE'), share, () => {});
     } else {
@@ -2055,7 +2055,7 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] = /** @type {Command} */ ({
     // Show a confirmation dialog if we are sharing the root of a volume.
     // Non-Drive volume roots are always '/'.
     if (dir.fullPath == '/') {
-      fileManager.ui_.confirmDialog.showHtml(
+      fileManager.ui.confirmDialog.showHtml(
           strf('SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_TITLE'),
           strf('SHARE_ROOT_FOLDER_WITH_PLUGIN_VM', info.volumeInfo.label),
           share, () => {});
@@ -2068,7 +2068,7 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] = /** @type {Command} */ ({
       // Only show the dialog for My Drive, Shared Drives Grand Root and
       // Computers Grand Root.  Do not show for roots of a single Shared Drive
       // or Computer.
-      fileManager.ui_.confirmDialog.showHtml(
+      fileManager.ui.confirmDialog.showHtml(
           strf('SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_TITLE'),
           strf('SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_DRIVE'), share, () => {});
     } else {
@@ -2235,7 +2235,7 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = /** @type {Command} */ ({
     const actionsController = fileManager.actionsController;
 
     // Avoid flickering menu height: synchronously define command visibility.
-    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager_)) {
+    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager)) {
       command.setHidden(true);
       return;
     }
@@ -2304,7 +2304,7 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = /** @type {Command} */ ({
     const actionsController = fileManager.actionsController;
 
     // Avoid flickering menu height: synchronously define command visibility.
-    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager_)) {
+    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager)) {
       command.setHidden(true);
       return;
     }
