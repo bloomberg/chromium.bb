@@ -320,6 +320,7 @@ class PasswordManagerTest : public testing::Test {
   PasswordForm MakeSimpleGAIAForm() {
     PasswordForm form = MakeSimpleForm();
     form.origin = GURL("https://accounts.google.com");
+    form.form_data.url = form.origin;
     form.signon_realm = form.origin.spec();
     return form;
   }
@@ -1263,31 +1264,53 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 TEST_F(PasswordManagerTest, HashSavedOnGaiaFormWithSkipSavePassword) {
-  std::vector<PasswordForm> observed;
-  PasswordForm form(MakeSimpleGAIAForm());
-  // Simulate that this is Gaia form that should be ignored for saving/filling.
-  form.is_gaia_with_skip_save_password_form = true;
-  observed.push_back(form);
-  EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
-      .WillRepeatedly(Return(true));
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  for (bool did_stop_loading : {false, true}) {
+    for (bool only_new_parser : {false, true}) {
+      SCOPED_TRACE(testing::Message("did_stop_loading = ")
+                   << did_stop_loading
+                   << testing::Message(" only_new_parser = ")
+                   << only_new_parser);
+      base::test::ScopedFeatureList scoped_feature_list;
+      if (only_new_parser) {
+        TurnOnOnlyNewParser(&scoped_feature_list);
+        EXPECT_CALL(*store_, GetLogins(_, _))
+            .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+      } else {
+        TurnOnNewParsingForFilling(&scoped_feature_list, true);
+      }
 
-  ON_CALL(*client_.GetStoreResultFilter(), ShouldSaveGaiaPasswordHash(_))
-      .WillByDefault(Return(true));
-  ON_CALL(*client_.GetStoreResultFilter(), ShouldSave(_))
-      .WillByDefault(Return(false));
-  ON_CALL(*client_.GetStoreResultFilter(), IsSyncAccountEmail(_))
-      .WillByDefault(Return(true));
+      std::vector<PasswordForm> observed;
+      PasswordForm form(MakeSimpleGAIAForm());
+      // Simulate that this is Gaia form that should be ignored for
+      // saving/filling.
+      form.is_gaia_with_skip_save_password_form = true;
+      observed.push_back(form);
+      EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.origin))
+          .WillRepeatedly(Return(true));
+      manager()->OnPasswordFormsParsed(&driver_, observed);
+      manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
-  EXPECT_CALL(*store_,
-              SaveGaiaPasswordHash(
-                  "googleuser", form.password_value,
-                  metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA));
+      ON_CALL(*client_.GetStoreResultFilter(), ShouldSaveGaiaPasswordHash(_))
+          .WillByDefault(Return(true));
+      ON_CALL(*client_.GetStoreResultFilter(), ShouldSave(_))
+          .WillByDefault(Return(false));
+      ON_CALL(*client_.GetStoreResultFilter(), IsSyncAccountEmail(_))
+          .WillByDefault(Return(true));
 
-  OnPasswordFormSubmitted(form);
-  observed.clear();
-  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+      EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+      EXPECT_CALL(
+          *store_,
+          SaveGaiaPasswordHash(
+              "googleuser", form.password_value,
+              metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA));
+
+      OnPasswordFormSubmitted(form);
+      observed.clear();
+      manager()->OnPasswordFormsRendered(&driver_, observed, did_stop_loading);
+      testing::Mock::VerifyAndClearExpectations(&client_);
+      testing::Mock::VerifyAndClearExpectations(&store_);
+    }
+  }
 }
 #endif
 

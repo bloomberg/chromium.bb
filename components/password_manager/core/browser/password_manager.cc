@@ -645,7 +645,8 @@ void PasswordManager::OnPasswordFormSubmitted(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {
   if (IsNewFormParsingForSavingEnabled())
-    ProvisionallySaveForm(password_form.form_data, driver);
+    ProvisionallySaveForm(password_form.form_data, driver,
+                          password_form.is_gaia_with_skip_save_password_form);
 
   ProvisionallySavePassword(password_form, driver);
 }
@@ -681,7 +682,8 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
   }
 
   if (IsNewFormParsingForSavingEnabled())
-    ProvisionallySaveForm(password_form.form_data, driver);
+    ProvisionallySaveForm(password_form.form_data, driver,
+                          password_form.is_gaia_with_skip_save_password_form);
 
   ProvisionallySavePassword(password_form, driver);
 
@@ -702,7 +704,8 @@ void PasswordManager::ShowManualFallbackForSaving(
   std::unique_ptr<PasswordFormManagerInterface> manager = nullptr;
   if (IsNewFormParsingForSavingEnabled()) {
     NewPasswordFormManager* matched_manager =
-        ProvisionallySaveForm(password_form.form_data, driver);
+        ProvisionallySaveForm(password_form.form_data, driver,
+                password_form.is_gaia_with_skip_save_password_form);
     manager = matched_manager ? matched_manager->Clone() : nullptr;
   } else {
     manager = FindAndCloneMatchedPasswordFormManager(
@@ -913,7 +916,8 @@ NewPasswordFormManager* PasswordManager::CreateFormManager(
 
 NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     const FormData& submitted_form,
-    PasswordManagerDriver* driver) {
+    PasswordManagerDriver* driver,
+    bool is_gaia_with_skip_save_password_form) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -963,7 +967,8 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     matched_manager = CreateFormManager(driver, submitted_form);
   }
 
-  if (!matched_manager->ProvisionallySave(submitted_form, driver))
+  if (!matched_manager->ProvisionallySave(submitted_form, driver,
+                                      is_gaia_with_skip_save_password_form))
     return nullptr;
 
   // Set all other form managers to no submission state.
@@ -1153,8 +1158,14 @@ void PasswordManager::OnPasswordFormsRendered(
                             visible_forms.begin(),
                             visible_forms.end());
 
-  if (!did_stop_loading)
+  if (!did_stop_loading && !submitted_manager->GetSubmittedForm()
+                                ->is_gaia_with_skip_save_password_form) {
+    // |is_gaia_with_skip_save_password_form| = true means that this is a Chrome
+    // sign-in page. Chrome sign-in pages are redirected to an empty pages, and
+    // for some reasons |did_stop_loading| might be false. So |did_stop_loading|
+    // is ignored for them.
     return;
+  }
 
   // If we see the login form again, then the login failed.
   if (submitted_manager->GetPendingCredentials().scheme ==

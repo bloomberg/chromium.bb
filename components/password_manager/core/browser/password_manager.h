@@ -278,10 +278,16 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // the match. If the function is called multiple times, only the form from the
   // last call is provisionally saved. Multiple calls is possible because it is
   // called on any user keystroke. If there is no NewPasswordFormManager that
-  // manages |form|, the new one is created.
-  // Returns manager which manages |form|.
-  NewPasswordFormManager* ProvisionallySaveForm(const autofill::FormData& form,
-                                                PasswordManagerDriver* driver);
+  // manages |form|, the new one is created. Returns manager which manages
+  // |form|.
+  // |is_gaia_with_skip_save_password_form| is true iff this is Gaia form which
+  // should be skipped on saving.
+  // TODO(https://crbug.com/949519): move |is_gaia_with_skip_save_password_form|
+  // from PasswordForm to FormData, and remove it from arguments.
+  NewPasswordFormManager* ProvisionallySaveForm(
+      const autofill::FormData& form,
+      PasswordManagerDriver* driver,
+      bool is_gaia_with_skip_save_password_form);
 
   // Passes |form| to NewPasswordFormManager that manages it for using it after
   // detecting submission success for saving.

@@ -596,8 +596,9 @@ void NewPasswordFormManager::OnFetchCompleted() {
 }
 
 bool NewPasswordFormManager::ProvisionallySave(
-    const autofill::FormData& submitted_form,
-    const PasswordManagerDriver* driver) {
+    const FormData& submitted_form,
+    const PasswordManagerDriver* driver,
+    bool is_gaia_with_skip_save_password_form) {
   DCHECK(DoesManage(submitted_form, driver));
 
   std::unique_ptr<PasswordForm> parsed_submitted_form =
@@ -612,6 +613,8 @@ bool NewPasswordFormManager::ProvisionallySave(
     return is_submitted_;
 
   parsed_submitted_form_ = std::move(parsed_submitted_form);
+  parsed_submitted_form_->is_gaia_with_skip_save_password_form =
+      is_gaia_with_skip_save_password_form;
   submitted_form_ = submitted_form;
   is_submitted_ = true;
   CalculateFillingAssistanceMetric(submitted_form);
