@@ -203,9 +203,20 @@ public abstract class PathUtils {
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/508615
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             long time = SystemClock.elapsedRealtime();
-            String downloadsPath =
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                            .getPath();
+            String downloadsPath;
+            if (BuildInfo.isAtLeastQ()) {
+                // https://developer.android.com/preview/privacy/scoped-storage
+                // In Q+, Android has bugun sandboxing external storage. Chrome may not have
+                // permission to write to Environment.getExternalStoragePublicDirectory(). Instead
+                // using Context.getExternalFilesDir() will return a path to sandboxed external
+                // storage for which no additional permissions are required.
+                downloadsPath = getAllPrivateDownloadsDirectories()[0];
+            } else {
+                downloadsPath =
+                        Environment
+                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                                .getPath();
+            }
             RecordHistogram.recordTimesHistogram(
                     "Android.StrictMode.DownloadsDir", SystemClock.elapsedRealtime() - time);
             return downloadsPath;
