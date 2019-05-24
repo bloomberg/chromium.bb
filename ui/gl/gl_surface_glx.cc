@@ -431,10 +431,7 @@ bool GLSurfaceGLX::InitializeOneOff() {
     return false;
   }
 
-  const XVisualInfo& visual_info =
-      ui::IsCompositingManagerPresent()
-          ? gl::GLVisualPickerGLX::GetInstance()->rgba_visual()
-          : gl::GLVisualPickerGLX::GetInstance()->system_visual();
+  const auto& visual_info = gl::GLVisualPickerGLX::GetInstance()->rgba_visual();
   g_visual = visual_info.visual;
   g_depth = visual_info.depth;
   g_colormap =
