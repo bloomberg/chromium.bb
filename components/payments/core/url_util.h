@@ -12,6 +12,11 @@ class GURL;
 namespace payments {
 
 // Use case specific URL validity checker for web payment APIs.
+//
+// The command line must be initialized to use this class in tests, because it
+// checks for --unsafely-treat-insecure-origin-as-secure=<origin> flag. For
+// example:
+//  base::CommandLine::Init(0, nullptr);
 class UrlUtil {
  public:
   // Validation according to https://w3c.github.io/payment-method-id/#validation
