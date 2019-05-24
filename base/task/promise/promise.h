@@ -31,6 +31,16 @@ class Promise {
  public:
   Promise() : abstract_promise_(nullptr) {}
 
+  static_assert(
+      !std::is_reference<ResolveType>::value ||
+          std::is_const<std::remove_reference_t<ResolveType>>::value,
+      "Google C++ Style: References in function parameters must be const.");
+
+  static_assert(
+      !std::is_reference<RejectType>::value ||
+          std::is_const<std::remove_reference_t<RejectType>>::value,
+      "Google C++ Style: References in function parameters must be const.");
+
   explicit Promise(
       scoped_refptr<internal::AbstractPromise> abstract_promise) noexcept
       : abstract_promise_(std::move(abstract_promise)) {}
@@ -99,6 +109,11 @@ class Promise {
         internal::IsValidPromiseArg<RejectType, RejectCallbackArgT>::value ||
             std::is_void<RejectCallbackArgT>::value,
         "|on_reject| callback must accept Promise::RejectType or void.");
+
+    static_assert(
+        !std::is_reference<RejectCallbackArgT>::value ||
+            std::is_const<std::remove_reference_t<RejectCallbackArgT>>::value,
+        "Google C++ Style: References in function parameters must be const.");
 
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
         MakeRefCounted<internal::AbstractPromise>(
@@ -173,6 +188,11 @@ class Promise {
         internal::IsValidPromiseArg<ResolveType, ResolveCallbackArgT>::value ||
             std::is_void<ResolveCallbackArgT>::value,
         "|on_resolve| callback must accept Promise::ResolveType or void.");
+
+    static_assert(
+        !std::is_reference<ResolveCallbackArgT>::value ||
+            std::is_const<std::remove_reference_t<ResolveCallbackArgT>>::value,
+        "Google C++ Style: References in function parameters must be const.");
 
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
         MakeRefCounted<internal::AbstractPromise>(
@@ -260,6 +280,16 @@ class Promise {
         internal::IsValidPromiseArg<RejectType, RejectCallbackArgT>::value ||
             std::is_void<RejectCallbackArgT>::value,
         "|on_reject| callback must accept Promise::RejectType or void.");
+
+    static_assert(
+        !std::is_reference<ResolveCallbackArgT>::value ||
+            std::is_const<std::remove_reference_t<ResolveCallbackArgT>>::value,
+        "Google C++ Style: References in function parameters must be const.");
+
+    static_assert(
+        !std::is_reference<RejectCallbackArgT>::value ||
+            std::is_const<std::remove_reference_t<RejectCallbackArgT>>::value,
+        "Google C++ Style: References in function parameters must be const.");
 
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
         MakeRefCounted<internal::AbstractPromise>(

@@ -100,6 +100,19 @@ void WontCompile() {
   // If supported |p2| would have type Promise<variant<int, bool>, NoReject>.
   auto p2 = p1.CatchOnCurrent(FROM_HERE, BindOnce([](int) { return Resolved<bool>(true); }));
 }
+#elif defined(NCTEST_METHOD_NON_CONST_REFERENCE) // [r"fatal error: static_assert failed .*\"Google C.. Style: References in function parameters must be const\."]
+void WontCompile() {
+  Promise<std::unique_ptr<int>> p;
+  p.ThenOnCurrent(FROM_HERE, BindOnce([](std::unique_ptr<int>& result) {}));
+}
+#elif defined(NCTEST_METHOD_NON_CONST_REFERENCE2) // [r"fatal error: static_assert failed .*\"Google C.. Style: References in function parameters must be const\."]
+void WontCompile() {
+  Promise<int&> p;
+}
+#elif defined(NCTEST_METHOD_NON_CONST_REFERENCE3) // [r"fatal error: static_assert failed .*\"Google C.. Style: References in function parameters must be const\."]
+void WontCompile() {
+  Promise<void, int&> p;
+}
 #endif
 
 }  // namespace base

@@ -117,6 +117,20 @@ TEST_F(PromiseTest, GetResolveCallbackThen) {
   run_loop.Run();
 }
 
+TEST_F(PromiseTest, GetResolveCallbackThenWithConstInt) {
+  ManualPromiseResolver<int> p(FROM_HERE);
+  p.GetResolveCallback().Run(123);
+
+  RunLoop run_loop;
+  p.promise().ThenOnCurrent(FROM_HERE,
+                            BindLambdaForTesting([&](const int result) {
+                              EXPECT_EQ(123, result);
+                              run_loop.Quit();
+                            }));
+
+  run_loop.Run();
+}
+
 TEST_F(PromiseTest, GetRejectCallbackCatch) {
   ManualPromiseResolver<int, std::string> p(FROM_HERE);
 
@@ -493,15 +507,16 @@ TEST_F(PromiseTest, ThenWhichAlwayRejectsTypeThree) {
 TEST_F(PromiseTest, ReferenceType) {
   int a = 123;
   int b = 456;
-  ManualPromiseResolver<int&> p(FROM_HERE);
+  ManualPromiseResolver<const int&> p(FROM_HERE);
   RunLoop run_loop;
 
   p.promise()
-      .ThenOnCurrent(FROM_HERE, BindLambdaForTesting([&](int& value) -> int& {
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting([&](const int& value) -> const int& {
                        EXPECT_EQ(123, value);
                        return b;
                      }))
-      .ThenOnCurrent(FROM_HERE, BindLambdaForTesting([&](int& value) {
+      .ThenOnCurrent(FROM_HERE, BindLambdaForTesting([&](const int& value) {
                        EXPECT_EQ(456, value);
                        run_loop.Quit();
                      }));
