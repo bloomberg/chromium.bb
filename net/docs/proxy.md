@@ -178,6 +178,283 @@ used to relay UDP traffic.
 
 TODO
 
+## Manual proxy settings
+
+The simplest way to configure proxy resolution is by providing a static list of
+rules comprised of:
+
+1. A mapping of URL schemes to proxy servers
+2. A list of proxy bypass rules
+
+We refer to this mode of configuration as "manual proxy settings".
+
+Manual proxy settings can succinctly describe setups like:
+
+* Use HTTPS proxy `foo:8080` for all requests
+* Use HTTP proxy `foo:8080` for all requests except those to a `google.com`
+  subdomain.
+* Use HTTP proxy `foo:8080` for all `https://` requests, and the SOCKSv5 proxy
+  `mysocks:90` for everything else
+
+Although manual proxy settings are a ubiquituous way to configure proxies
+across platforms, there is no standard representation or feature set.
+
+Chrome's manual proxy settings most closely resembles that of WinInet. But it
+also supports idioms from other platforms -- for instance KDE's notion of
+reversing the bypass list, or Gnome's interpretation of bypass patterns as
+suffix matches.
+
+When defining manual proxy settings in Chrome, we specify three (possibly
+empty) lists of proxy servers:
+
+  * proxies for HTTP - A list of proxy servers to use for `http://` requests,
+    if non-empty.
+  * proxies for HTTPS - A list of proxy servers to use for `https://` requests,
+    if non-empty.
+  * other proxies - A list of proxy servers to use for everything else
+    (whatever isn't matched by the other two lists)
+
+There are a lot of ways to end up with manual proxy settings in Chrome
+(discussed in other sections).
+
+The following examples will use the command line method. Launching Chrome with
+`--proxy-server=XXX` (and optionally `--proxy-bypass-list=YYY`)
+
+Example: To use the HTTP proxy `foo:8080` for all requests we can launch
+Chrome with `--proxy-server="http://foo:8080"`. This translates into:
+
+  * proxies for HTTP - *empty*
+  * proxies for HTTPS - *empty*
+  * other proxies - `http://foo:8080`
+
+With the above configuration, if the proxy server was unreachable all requests
+would fail with `ERR_PROXY_CONNECTION_FAILED`. To address this we could add a
+fallback to `DIRECT` by launching using
+`--proxy-server="http://foo:8080,direct://"` (note the comma separated list).
+This command line means:
+
+  * proxies for HTTP - *empty*
+  * proxies for HTTPS - *empty*
+  * other proxies - `http://foo:8080`, `direct://`
+
+If instead we wanted to proxy only `http://` URLs through the
+HTTPS proxy `foo:443`, and have everything else use the SOCKSv5 proxy
+`mysocks:1080` we could launch Chrome with
+`--proxy-server="http=https://foo:443;socks=socks5://mysocks:1080"`. This now
+expands to:
+
+  * proxies for HTTP - `https://foo:443`
+  * proxies for HTTPS - *empty*
+  * other proxies - `socks5://mysocks:1080`
+
+The command line above uses WinInet's proxy map format, with two modifications:
+
+* Proxy servers can be optionally prefixed with a scheme (i.e. Chrome's "URI
+  format" for proxy server identifiers)
+* The `socks=` mapping is understood as "other proxies". The subsequent proxy
+  list can include proxies of any scheme, however if the scheme is unspecified
+  it is understood to be `socks4://`.
+
+## Mapping WebSockets URLs to a proxy
+
+Manual proxy settings don't have mappings for `ws://` or `wss://` URLs - you
+can't specify a separate proxy to use for those schemes.
+
+Selecting a proxy for these URL schemes is a bit different from other URL
+schemes. The algorithm that Chrome uses is:
+
+* If "other proxies" is non-empty use it
+* If "proxies for HTTPS" is non-empty use it
+* Otherwise use "proxies for HTTP"
+
+This is per the recommendation in section 4.1.3 of [RFC
+6455](https://tools.ietf.org/html/rfc6455).
+
+It is possible to route `ws://` and `wss://` separately using a PAC script.
+
+## Proxy credentials in manual proxy settings
+
+Most platforms' manual proxy settings allow specifying a cleartext
+username/password for proxy sign in. Chrome does not implement this, and will
+not use any credentials embedded in the proxy settings.
+
+Proxy authentication will instead go through the ordinary flow to find
+credentials.
+
+## Proxy bypass rules
+
+In addition to specifying three lists of proxy servers, Chrome's manual proxy
+settings also lets you specify a list of "proxy bypass rules".
+
+This ruleset determines whether a given URL should skip use of a proxy all
+together, even when a proxy is otherwise defined for it.
+
+This concept is also known by names like "exception list", "exclusion list" or
+"no proxy list".
+
+Proxy bypass rules can be written as an ordered list of strings. Ordering
+generally doesn't matter, but may when using subtractive rules.
+
+When manual proxy settings are specified from the command line, the
+`--proxy-bypass-list="RULES"` switch can be used, where `RULES` is a semicolon
+or comma separated list of bypass rules.
+
+Following are the string constructions for the bypass rules that Chrome
+supports. They can be used when defining a Chrome manual proxy settings from
+command line flags, extensions, or policy.
+
+When using system proxy settings, one should use the platform's rule format and
+not Chrome's.
+
+### Bypass rule: Hostname
+
+```
+[ URL_SCHEME "://" ] HOSTNAME_PATTERN [ ":" <port> ]
+```
+
+Matches a hostname using a wildcard pattern, and an optional scheme and port
+restriction.
+
+Examples:
+
+* `foobar.com` - Matches URL of any scheme and port, whose normalized host is
+  `foobar.com`
+* `*foobar.com` - Matches URL of any scheme and port, whose normalized host
+  ends with `foobar.com` (for instance `blahfoobar.com` and `foo.foobar.com`).
+* `*.org:443` - Matches URLs of any scheme, using port 443 and whose top level
+  domain is `.org`
+* `https://x.*.y.com:99` - Matches https:// URLs on port 99 whose normalized
+  hostname matches `x.*.y.com`
+
+### Bypass rule: Subdomain
+
+```
+[ URL_SCHEME "://" ] "." HOSTNAME_SUFFIX_PATTERN [ ":" PORT ]
+```
+
+Hostname patterns that start with a dot are special cased to mean a subdomain
+matches. `.foo.com` is effectively another way of writing `*.foo.com`.
+
+Examples:
+
+* `.google.com` - Matches `calendar.google.com` and `foo.bar.google.com`, but
+  not `google.com`.
+* `http://.google.com` - Matches only http:// URLs that are a subdomain of `google.com`.
+
+### Bypass rule: IP literal
+
+```
+[ SCHEME "://" ] IP_LITERAL [ ":" PORT ]
+```
+
+Matches URLs that are IP address literals, and optional scheme and port
+restrictions. This is a special case of hostname matching that takes into
+account IP literal canonicalization. For example the rules `[0:0:0::1]` and
+`[::1]` are equivalent (both represent the same IPv6 address).
+
+Examples:
+
+* `127.0.0.1`
+* `http://127.0.0.1`
+* `[::1]` - Matches any URL to the IPv6 loopback address.
+* `[0:0::1]` - Same as above
+* `http://[::1]:99` - Matches any http:// URL to the IPv6 loopback on port 99
+
+### Bypass rule: IPv4 address range
+
+```
+IPV4_LITERAL "/" PREFIX_LENGTH_IN_BITS
+```
+
+Matches any URL whose hostname is an IPv4 literal, and falls between the given
+address range.
+
+Only applies to URLs that are IP literals - see "Meaning of IP address range
+bypass rules".
+
+Examples:
+
+* `192.168.1.1/16`
+
+### Bypass rule: IPv6 address range
+
+```
+IPV6_LITERAL "/" PREFIX_LENGTH_IN_BITS
+```
+
+Matches any URL that is an IPv6 literal that falls between the given range.
+Note that IPv6 literals must *not* be bracketed.
+
+Only applies to URLs that are IP literals - see "Meaning of IP address range
+bypass rules".
+
+Examples:
+
+* `fefe:13::abc/33`
+* `[fefe::]/40` -- WRONG! IPv6 literals must not be bracketed.
+
+### Bypass rule: Simple hostnames
+
+```
+<local>
+```
+
+Matches hostnames without a period in them, and that are not IP literals. This
+is a naive string search -- meaning that periods appearing *anywhere* count
+(including trailing dots!).
+
+This rule corresponds to the "Exclude simple hostnames" checkbox on macOS and
+the "Don't use proxy server for local (intranet) addresses" on Windows.
+
+The rule name comes from WinInet, and can easily be confused with the concept
+of localhost. However the two concepts are completely orthogonal. In practice
+one wouldn't add rules to bypass localhost, as it is already done implicitly
+(see "Implicit bypass rules").
+
+### Bypass rule: Subtract implicit rules
+
+```
+<-loopback>
+```
+
+*Subtracts* the implicit proxy bypass rules (localhost and link local
+addresses). See the "Implicit bypass rules" section for details on when/why to
+use this, and the security caveats to doing so. Generally this is used for test
+setups.
+
+Whereas regular bypass rules instruct the browser about URLs that should *not*
+use the proxy, this rule has the opposite effect and tells the browser to
+instead *use* the proxy.
+
+Ordering may matter when using a subtractive rule, as rules will be evaluated
+in a left-to-right order. `<-loopback>;127.0.0.1` has a subtly different effect
+than `127.0.0.1;<-loopback>`.
+
+### Meaning of IP address range bypass rules
+
+The IP address range bypass rules in manual proxy settings applies ONLY TO URL
+LITERALS. This is not what one would intuitively expect!
+
+Example:
+
+Say we have have configured a proxy for all requests, but added a bypass rule
+for `192.168.0.0.1/16`. If we now navigate to `http://foo` (which resolves
+to `192.168.1.5` in our setup) will the browser connect directly (bypass proxy)
+because we have indicated a bypass rule that includes this IP?
+
+It will go through the proxy.
+
+The bypass rule in this case is not applicable, since the browser never
+actually does a name resolution for `foo`. Proxy resolution happens before
+name resolution, and depending on what proxy scheme is subsequently chosen,
+client side name resolution may never be performed.
+
+The usefulness of IP range proxy bypass rules is rather limited, as they only
+apply to requests whose URL was explicitly an IP literal.
+
+If proxy decisions need to be made based on the resolved IP address(es) of a
+URL's hostname, one must use a PAC script.
+
 ## Implicit bypass rules
 
 Requests to certain hosts will not be sent through a proxy, and will instead be
