@@ -963,24 +963,6 @@ UIColor* BackgroundColor() {
     _autoscrollDistance = -offset.x;
 }
 
-- (void)updateTabViewForWebState:(web::WebState*)webState {
-  int modelIndex = _tabModel.webStateList->GetIndexOfWebState(webState);
-  if (modelIndex == WebStateList::kInvalidIndex) {
-    DCHECK(false) << "Received notification for a Webstate that is not "
-                  << "contained in the WebStateList";
-    return;
-  }
-  NSUInteger index = [self indexForModelIndex:modelIndex];
-  TabView* view = [_tabArray objectAtIndex:index];
-  [view setTitle:tab_util::GetTabTitle(webState)];
-
-  if (webState->IsLoading() && !IsVisibleURLNewTabPage(webState))
-    [view startProgressSpinner];
-  else
-    [view stopProgressSpinner];
-  [view setNeedsDisplay];
-}
-
 #pragma mark -
 #pragma mark WebStateObserving methods
 
@@ -1119,6 +1101,24 @@ UIColor* BackgroundColor() {
 
 #pragma mark -
 #pragma mark Views and Layout
+
+- (void)updateTabViewForWebState:(web::WebState*)webState {
+  int modelIndex = _tabModel.webStateList->GetIndexOfWebState(webState);
+  if (modelIndex == WebStateList::kInvalidIndex) {
+    DCHECK(false) << "Received notification for a Webstate that is not "
+                  << "contained in the WebStateList";
+    return;
+  }
+  NSUInteger index = [self indexForModelIndex:modelIndex];
+  TabView* view = [_tabArray objectAtIndex:index];
+  [view setTitle:tab_util::GetTabTitle(webState)];
+
+  if (webState->IsLoading() && !IsVisibleURLNewTabPage(webState))
+    [view startProgressSpinner];
+  else
+    [view stopProgressSpinner];
+  [view setNeedsDisplay];
+}
 
 - (CGFloat)tabStripVisibleSpace {
   CGFloat availableSpace = CGRectGetWidth([_tabStripView bounds]) -
