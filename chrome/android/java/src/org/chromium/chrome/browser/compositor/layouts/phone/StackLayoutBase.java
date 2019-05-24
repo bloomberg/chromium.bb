@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.layouts.phone;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -810,7 +812,27 @@ public abstract class StackLayoutBase extends Layout {
      * @param canUndo   Whether or not this close can be undone.
      * @param incognito Whether or not this was for the incognito stack or not.
      */
-    public void uiDoneClosingTab(long time, int id, boolean canUndo, boolean incognito) {
+    public void uiDoneClosingTab(
+            final long time, final int id, boolean canUndo, final boolean incognito) {
+        // If there are any ongoing layout animations, postpone this until they are done since
+        // closeTabById does a lot of work.
+        for (int i = 0; i < mLayoutAnimations.size(); i++) {
+            if (mLayoutAnimations.get(i).first.isRunning()) {
+                final boolean cachedCanUndo = canUndo;
+                final AnimatorListenerAdapter adapter = new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        uiDoneClosingTab(time, id, cachedCanUndo, incognito);
+                        animation.removeListener(this);
+                    }
+                };
+                mLayoutAnimations.get(i).first.addListener(adapter);
+                return;
+            }
+        }
+
+        assert !isLayoutAnimating();
+
         // If homepage is enabled and there is a maximum of 1 tab in both models
         // (this is the last tab), the tab closure cannot be undone.
         canUndo &= !(HomepageManager.shouldCloseAppWithZeroTabs()
