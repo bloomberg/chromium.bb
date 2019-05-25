@@ -57,7 +57,6 @@
 #include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/p2p/port_allocator.h"
-#include "content/renderer/push_messaging/push_provider.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
 #include "content/renderer/web_database_observer_impl.h"
@@ -1014,12 +1013,6 @@ service_manager::Connector* RendererBlinkPlatformImpl::GetConnector() {
 
 blink::InterfaceProvider* RendererBlinkPlatformImpl::GetInterfaceProvider() {
   return blink_interface_provider_.get();
-}
-
-//------------------------------------------------------------------------------
-
-blink::WebPushProvider* RendererBlinkPlatformImpl::PushProvider() {
-  return PushProvider::ThreadSpecificInstance(default_task_runner_);
 }
 
 //------------------------------------------------------------------------------

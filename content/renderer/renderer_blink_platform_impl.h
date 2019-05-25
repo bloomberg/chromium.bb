@@ -189,7 +189,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void RecordRappor(const char* metric,
                     const blink::WebString& sample) override;
   void RecordRapporURL(const char* metric, const blink::WebURL& url) override;
-  blink::WebPushProvider* PushProvider() override;
   blink::WebTransmissionEncodingInfoHandler* TransmissionEncodingInfoHandler()
       override;
 

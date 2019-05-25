@@ -116,7 +116,6 @@ class WebMediaStream;
 class WebMediaStreamCenter;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
-class WebPushProvider;
 class WebRTCCertificateGenerator;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -676,10 +675,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // WebDatabase --------------------------------------------------------
 
   virtual WebDatabaseObserver* DatabaseObserver() { return nullptr; }
-
-  // Push API------------------------------------------------------------
-
-  virtual WebPushProvider* PushProvider() { return nullptr; }
 
   // Media Capabilities --------------------------------------------------
 
