@@ -106,7 +106,9 @@ using SetupProcessCallback = base::OnceCallback<void(
         blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_new_scripts */,
     std::unique_ptr<
         blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_renderer */,
-    blink::mojom::CacheStoragePtrInfo)>;
+    blink::mojom::CacheStoragePtrInfo,
+    base::TimeDelta thread_hop_time,
+    base::Time ui_post_time)>;
 
 // Allocates a renderer process for starting a worker and does setup like
 // registering with DevTools. Called on the UI thread. Calls |callback| on the
@@ -124,8 +126,10 @@ void SetupOnUIThread(int embedded_worker_id,
                      blink::mojom::EmbeddedWorkerInstanceClientRequest request,
                      ServiceWorkerContextCore* context,
                      base::WeakPtr<ServiceWorkerContextCore> weak_context,
+                     base::Time io_post_time,
                      SetupProcessCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::TimeDelta thread_hop_time = base::Time::Now() - io_post_time;
   auto process_info =
       std::make_unique<ServiceWorkerProcessManager::AllocatedProcessInfo>();
   std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy;
@@ -137,13 +141,13 @@ void SetupOnUIThread(int embedded_worker_id,
   if (!process_manager) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback),
-                       blink::ServiceWorkerStatusCode::kErrorAbort,
-                       std::move(params), std::move(process_info),
-                       std::move(devtools_proxy),
-                       std::move(factory_bundle_for_new_scripts),
-                       std::move(factory_bundle_for_renderer),
-                       nullptr /* cache_storage */));
+        base::BindOnce(
+            std::move(callback), blink::ServiceWorkerStatusCode::kErrorAbort,
+            std::move(params), std::move(process_info),
+            std::move(devtools_proxy),
+            std::move(factory_bundle_for_new_scripts),
+            std::move(factory_bundle_for_renderer), nullptr /* cache_storage */,
+            thread_hop_time, base::Time::Now()));
     return;
   }
 
@@ -159,7 +163,8 @@ void SetupOnUIThread(int embedded_worker_id,
                        std::move(process_info), std::move(devtools_proxy),
                        std::move(factory_bundle_for_new_scripts),
                        std::move(factory_bundle_for_renderer),
-                       nullptr /* cache_storage */));
+                       nullptr /* cache_storage */, thread_hop_time,
+                       base::Time::Now()));
     return;
   }
   const int process_id = process_info->process_id;
@@ -248,7 +253,8 @@ void SetupOnUIThread(int embedded_worker_id,
                      std::move(process_info), std::move(devtools_proxy),
                      std::move(factory_bundle_for_new_scripts),
                      std::move(factory_bundle_for_renderer),
-                     cache_storage.PassInterface()));
+                     cache_storage.PassInterface(), thread_hop_time,
+                     base::Time::Now()));
 }
 
 bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
@@ -483,6 +489,7 @@ class EmbeddedWorkerInstance::StartTask {
   base::TimeTicks start_worker_sent_time() const {
     return start_worker_sent_time_;
   }
+  base::TimeDelta thread_hop_time() const { return thread_hop_time_; }
 
   void set_skip_recording_startup_time() {
     skip_recording_startup_time_ = true;
@@ -518,7 +525,7 @@ class EmbeddedWorkerInstance::StartTask {
         base::BindOnce(
             &SetupOnUIThread, instance_->embedded_worker_id(), process_manager,
             can_use_existing_process, std::move(params), std::move(request_),
-            context.get(), context,
+            context.get(), context, base::Time::Now(),
             base::BindOnce(&StartTask::OnSetupCompleted,
                            weak_factory_.GetWeakPtr(), process_manager)));
   }
@@ -537,8 +544,12 @@ class EmbeddedWorkerInstance::StartTask {
           factory_bundle_for_new_scripts,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           factory_bundle_for_renderer,
-      blink::mojom::CacheStoragePtrInfo cache_storage) {
+      blink::mojom::CacheStoragePtrInfo cache_storage,
+      base::TimeDelta thread_hop_time,
+      base::Time ui_post_time) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+    thread_hop_time_ = thread_hop_time + (base::Time::Now() - ui_post_time);
 
     std::unique_ptr<WorkerProcessHandle> process_handle;
     if (status == blink::ServiceWorkerStatusCode::kOk) {
@@ -625,6 +636,7 @@ class EmbeddedWorkerInstance::StartTask {
   bool skip_recording_startup_time_;
   base::TimeTicks start_time_;
   base::TimeTicks start_worker_sent_time_;
+  base::TimeDelta thread_hop_time_;
 
   base::WeakPtrFactory<StartTask> weak_factory_;
 
@@ -894,6 +906,7 @@ void EmbeddedWorkerInstance::OnStarted(
     times.remote_script_evaluation_end =
         start_timing->script_evaluation_end_time;
     times.local_end = base::TimeTicks::Now();
+    times.thread_hop_time = inflight_start_task_->thread_hop_time();
 
     ServiceWorkerMetrics::RecordStartWorkerTiming(times, start_situation_);
   }
