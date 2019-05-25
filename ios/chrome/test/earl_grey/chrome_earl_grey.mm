@@ -155,6 +155,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [self loadURL:URL waitForCompletion:YES];
 }
 
+#pragma mark - WebState Utilities (EG2)
+
+- (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface waitForWebStateContainingElement:selector]);
+  return nil;
+}
+
 - (NSError*)waitForMainTabCount:(NSUInteger)count {
   NSString* errorString = [NSString
       stringWithFormat:@"Failed waiting for main tab count to become %" PRIuNS,
@@ -190,7 +198,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
                   }];
   bool tabCountEqual = [tabCountCheck waitWithTimeout:kWaitForUIElementTimeout];
   EG_TEST_HELPER_ASSERT_TRUE(tabCountEqual, errorString);
+  return nil;
+}
 
+- (NSError*)waitForWebStateNotContainingText:(std::string)UTF8Text {
+  NSString* text = base::SysUTF8ToNSString(UTF8Text);
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface waitForWebStateNotContainingText:text]);
   return nil;
 }
 
@@ -246,15 +260,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 #pragma mark - Bookmarks Utilities (EG2)
 
 - (NSError*)waitForBookmarksToFinishLoading {
-  EG_TEST_HELPER_ASSERT_TRUE(
-      [ChromeEarlGreyAppInterface waitForBookmarksToFinishinLoading],
-      @"Bookmark model did not load");
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface waitForBookmarksToFinishinLoading]);
   return nil;
 }
 
 - (NSError*)clearBookmarks {
-  EG_TEST_HELPER_ASSERT_TRUE([ChromeEarlGreyAppInterface clearBookmarks],
-                             @"Not all bookmarks were removed.");
+  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface clearBookmarks]);
   return nil;
 }
 
@@ -434,36 +446,6 @@ id ExecuteJavaScript(NSString* javascript,
   if (!success) {
     return testing::NSErrorWithLocalizedDescription([NSString
         stringWithFormat:@"Failed waiting for web state containing %s",
-                         text.c_str()]);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return web::test::IsWebViewContainingElement(
-        chrome_test_util::GetCurrentWebState(), selector);
-  });
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed waiting for web state containing element %@",
-                         selector.selectorDescription]);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebStateNotContainingText:(std::string)text {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return !web::test::IsWebViewContainingText(
-        chrome_test_util::GetCurrentWebState(), text);
-  });
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed waiting for web view not containing %s",
                          text.c_str()]);
   }
 

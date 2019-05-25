@@ -9,6 +9,8 @@
 
 #import "components/content_settings/core/common/content_settings.h"
 
+@class ElementSelector;
+
 // ChromeEarlGreyAppInterface contains the app-side implementation for helpers
 // that primarily work via direct model access. These helpers are compiled into
 // the app binary and can be called from either app or test code.
@@ -62,6 +64,18 @@
 // Navigates forward to the next page without waiting for the page to load.
 + (void)startGoingForward;
 
+#pragma mark - WebState Utilities (EG2)
+
+// Waits for the current web state to contain an element matching |selector|.
+// If not succeed returns an NSError indicating  why the operation failed,
+// otherwise nil.
++ (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
+
+// Waits for there to be no web state containing |text|.
+// If not succeed returns an NSError indicating  why the operation failed,
+// otherwise nil.
++ (NSError*)waitForWebStateNotContainingText:(NSString*)text;
+
 // Returns the number of open non-incognito tabs.
 + (NSUInteger)mainTabCount;
 
@@ -99,11 +113,13 @@
 #pragma mark - Bookmarks Utilities (EG2)
 
 // Waits for the bookmark internal state to be done loading.
-// Return YES on success.
-+ (BOOL)waitForBookmarksToFinishinLoading;
+// If not succeed returns an NSError indicating  why the operation failed,
+// otherwise nil.
++ (NSError*)waitForBookmarksToFinishinLoading;
 
-// Clears bookmarks. Returns YES on success.
-+ (BOOL)clearBookmarks;
+// Clears bookmarks. If not succeed returns an NSError indicating  why the
+// operation failed, otherwise nil.
++ (NSError*)clearBookmarks;
 
 @end
 

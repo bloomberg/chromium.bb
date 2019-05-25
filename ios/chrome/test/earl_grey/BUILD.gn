@@ -368,6 +368,7 @@ source_set("eg_app_support+eg2") {
     "//ios/third_party/earl_grey2:app_framework+link",
     "//ios/web:eg_app_support+eg2",
     "//ios/web/public/test:element_selector",
+    "//ios/web/public/test:util",
     "//ui/base",
     "//ui/base:test_support",
   ]

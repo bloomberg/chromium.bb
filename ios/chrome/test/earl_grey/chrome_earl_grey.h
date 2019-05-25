@@ -169,6 +169,20 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)signOutAndClearAccounts;
 
+#pragma mark - WebState Utilities (EG2)
+
+// Waits for the current web state to contain an element matching |selector|.
+// If the condition is not met within a timeout a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
+
+// Waits for there to be no web state containing |text|.
+// If the condition is not met within a timeout a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForWebStateNotContainingText:(std::string)text;
+
 #pragma mark - Bookmarks Utilities (EG2)
 
 // Waits for the bookmark internal state to be done loading.
@@ -242,18 +256,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // condition is met within a timeout, otherwise an NSError indicating why the
 // operation failed.
 - (NSError*)waitForWebStateContainingText:(std::string)text WARN_UNUSED_RESULT;
-
-// Waits for the current web state to contain an element matching |selector|.
-// If the condition is not met within a timeout returns an NSError indicating
-// why the operation failed, otherwise nil.
-- (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector
-    WARN_UNUSED_RESULT;
-
-// Waits for there to be no web state containing |text|.
-// If the condition is not met within a timeout returns an NSError indicating
-// why the operation failed, otherwise nil.
-- (NSError*)waitForWebStateNotContainingText:(std::string)text
-    WARN_UNUSED_RESULT;
 
 // Waits for there to be a web state containing a blocked |image_id|.  When
 // blocked, the image element will be smaller than the actual image size.

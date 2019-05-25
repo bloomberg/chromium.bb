@@ -16,11 +16,14 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
+#import "ios/web/public/test/element_selector.h"
+#import "ios/web/public/test/web_view_content_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::kWaitForActionTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using chrome_test_util::BrowserCommandDispatcherForMainBVC;
@@ -90,6 +93,36 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   [BrowserCommandDispatcherForMainBVC() goForward];
 }
 
+#pragma mark - WebState Utilities (EG2)
+
++ (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
+  bool success = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+    return web::test::IsWebViewContainingElement(
+        chrome_test_util::GetCurrentWebState(), selector);
+  });
+  if (!success) {
+    NSString* NSErrorDescription = [NSString
+        stringWithFormat:@"Failed waiting for web state containing element %@",
+                         selector.selectorDescription];
+    return testing::NSErrorWithLocalizedDescription(NSErrorDescription);
+  }
+  return nil;
+}
+
++ (NSError*)waitForWebStateNotContainingText:(NSString*)text {
+  bool success = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+    return !web::test::IsWebViewContainingText(
+        chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
+  });
+  if (!success) {
+    NSString* NSErrorDescription = [NSString
+        stringWithFormat:@"Failed waiting for web view not containing %@",
+                         text];
+    return testing::NSErrorWithLocalizedDescription(NSErrorDescription);
+  }
+  return nil;
+}
+
 + (NSUInteger)mainTabCount {
   return chrome_test_util::GetMainTabCount();
 }
@@ -140,14 +173,24 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 #pragma mark - Bookmarks Utilities (EG2)
 
-+ (BOOL)waitForBookmarksToFinishinLoading {
-  return WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^{
++ (NSError*)waitForBookmarksToFinishinLoading {
+  bool success = WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^{
     return chrome_test_util::BookmarksLoaded();
   });
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Bookmark model did not load");
+  }
+  return nil;
 }
 
-+ (BOOL)clearBookmarks {
-  return chrome_test_util::ClearBookmarks();
++ (NSError*)clearBookmarks {
+  bool success = chrome_test_util::ClearBookmarks();
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Not all bookmarks were removed.");
+  }
+  return nil;
 }
 
 @end
