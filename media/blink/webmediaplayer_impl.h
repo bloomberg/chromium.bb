@@ -970,6 +970,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
 
+  base::CancelableOnceClosure have_enough_after_lazy_load_cb_;
+
   base::WeakPtr<WebMediaPlayerImpl> weak_this_;
   base::WeakPtrFactory<WebMediaPlayerImpl> weak_factory_;
 

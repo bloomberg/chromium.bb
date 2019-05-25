@@ -577,6 +577,10 @@ class WebMediaPlayerImplTest : public testing::Test {
     return GetVideoStatsReporter()->codec_profile_;
   }
 
+  bool ShouldCancelUponDefer() const {
+    return wmpi_->mb_data_source_->cancel_on_defer_for_testing();
+  }
+
   enum class LoadType { kFullyBuffered, kStreaming };
   void Load(std::string data_file,
             LoadType load_type = LoadType::kFullyBuffered) {
@@ -844,6 +848,7 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   CycleThreads();
   EXPECT_TRUE(IsSuspended());
+  EXPECT_TRUE(ShouldCancelUponDefer());
 
   // The data source contains the entire file, so subtract it from the memory
   // usage to ensure there's no other memory usage.
@@ -909,6 +914,7 @@ TEST_F(WebMediaPlayerImplTest, LazyLoadPreloadMetadataSuspend) {
   CycleThreads();
   EXPECT_TRUE(IsSuspended());
   EXPECT_TRUE(wmpi_->DidLazyLoad());
+  EXPECT_FALSE(ShouldCancelUponDefer());
 
   // The data source contains the entire file, so subtract it from the memory
   // usage to ensure there's no other memory usage.

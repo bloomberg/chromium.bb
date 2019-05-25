@@ -1540,10 +1540,6 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   // occurred during startup.
   if (attempting_suspended_start_ &&
       pipeline_controller_->IsPipelineSuspended()) {
-    did_lazy_load_ = !has_poster_ && HasVideo();
-    if (did_lazy_load_)
-      DCHECK(base::FeatureList::IsEnabled(kPreloadMetadataLazyLoad));
-
     skip_metrics_due_to_startup_suspend_ = true;
 
     // If we successfully completed a suspended startup, signal that we have
@@ -1576,10 +1572,39 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
   // Add a log event so the player shows up as "SUSPENDED" in media-internals.
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::SUSPENDED));
 
+  if (attempting_suspended_start_) {
+    DCHECK(pipeline_controller_->IsSuspended());
+    did_lazy_load_ = !has_poster_ && HasVideo();
+  }
+
   // Tell the data source we have enough data so that it may release the
-  // connection.
-  if (mb_data_source_)
-    mb_data_source_->OnBufferingHaveEnough(true);
+  // connection (unless blink is waiting on us to signal play()).
+  if (mb_data_source_ && !client_->CouldPlayIfEnoughData()) {
+    // |attempting_suspended_start_| will be cleared by OnPipelineSeeked() which
+    // will occur after this method during a suspended startup.
+    if (attempting_suspended_start_ && did_lazy_load_) {
+      DCHECK(!has_first_frame_);
+      DCHECK(have_enough_after_lazy_load_cb_.IsCancelled());
+
+      // For lazy load, we won't know if the element is non-visible until a
+      // layout completes, so to avoid unnecessarily tearing down the network
+      // connection, briefly (250ms chosen arbitrarily) delay signaling "have
+      // enough" to the MultiBufferDataSource.
+      //
+      // base::Unretained() is safe here since the base::CancelableOnceClosure
+      // will cancel upon destruction of this class and |mb_data_source_| is
+      // gauranteeed to outlive us.
+      have_enough_after_lazy_load_cb_.Reset(
+          base::BindOnce(&MultibufferDataSource::OnBufferingHaveEnough,
+                         base::Unretained(mb_data_source_), true));
+      main_task_runner_->PostDelayedTask(
+          FROM_HERE, have_enough_after_lazy_load_cb_.callback(),
+          base::TimeDelta::FromMilliseconds(250));
+    } else {
+      have_enough_after_lazy_load_cb_.Cancel();
+      mb_data_source_->OnBufferingHaveEnough(true);
+    }
+  }
 
   ReportMemoryUsage();
 
@@ -1590,6 +1615,9 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
 }
 
 void WebMediaPlayerImpl::OnBeforePipelineResume() {
+  // Since we're resuming, cancel closing of the network connection.
+  have_enough_after_lazy_load_cb_.Cancel();
+
   // We went through suspended startup, so the player is only just now spooling
   // up for playback. As such adjust |load_start_time_| so it reports the same
   // metric as what would be reported if we had not suspended at startup.
@@ -2010,8 +2038,13 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
 
     // Let the DataSource know we have enough data. It may use this information
     // to release unused network connections.
-    if (mb_data_source_ && !client_->CouldPlayIfEnoughData())
-      mb_data_source_->OnBufferingHaveEnough(false);
+    if (mb_data_source_ && !client_->CouldPlayIfEnoughData()) {
+      // For LazyLoad this will be handled during OnPipelineSuspended().
+      if (for_suspended_start && did_lazy_load_)
+        DCHECK(!have_enough_after_lazy_load_cb_.IsCancelled());
+      else
+        mb_data_source_->OnBufferingHaveEnough(false);
+    }
 
     // Blink expects a timeChanged() in response to a seek().
     if (should_notify_time_changed_) {
@@ -3169,6 +3202,7 @@ bool WebMediaPlayerImpl::DidLazyLoad() const {
 }
 
 void WebMediaPlayerImpl::OnBecameVisible() {
+  have_enough_after_lazy_load_cb_.Cancel();
   needs_first_frame_ = !has_first_frame_;
   UpdatePlayState();
 }
