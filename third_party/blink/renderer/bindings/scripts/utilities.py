@@ -454,9 +454,9 @@ def shorten_union_name(union_type):
         'NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord': 'NestedUnionType',
         # modules/canvas/offscreencanvas/offscreen_canvas_module_support_webgl2_compute.idl.
         # Due to offscreen_canvas_module_support_webgl2_compute.idl and offscreen_canvas_module.idl are exclusive in modules_idl_files.gni, they have same shorten name.
-        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContext': 'OffscreenRenderingContext',
+        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContext': 'OffscreenRenderingContext',
         # modules/canvas/offscreencanvas/offscreen_canvas_module.idl
-        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext': 'OffscreenRenderingContext',
+        'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext': 'OffscreenRenderingContext',
     }
 
     idl_type = union_type
