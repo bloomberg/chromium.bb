@@ -190,23 +190,32 @@ cr.define('descriptor_panel', function() {
 
       for (const field of fields) {
         const className = `field-offset-${offset}`;
+        let item;
+        try {
+          item = customTreeItem(
+              `${field.label}${field.formatter(rawData, offset)}`, className);
 
-        const item = customTreeItem(
-            `${field.label}${field.formatter(rawData, offset)}`, className);
-
-        if (field.extraTreeItemFormatter) {
-          field.extraTreeItemFormatter(rawData, offset, item, field.label);
+          for (let i = 0; i < field.size; i++) {
+            rawDataByteElements[offset + i].classList.add(className);
+            for (const parentClassName of parentClassNames) {
+              rawDataByteElements[offset + i].classList.add(parentClassName);
+            }
+          }
+        } catch (e) {
+          this.showError_(`Field at offset ${offset} is invalid.`);
+          break;
         }
 
-        for (let i = 0; i < field.size; i++) {
-          rawDataByteElements[offset + i].classList.add(className);
-          for (const parentClassName of parentClassNames) {
-            rawDataByteElements[offset + i].classList.add(parentClassName);
+        try {
+          if (field.extraTreeItemFormatter) {
+            field.extraTreeItemFormatter(rawData, offset, item, field.label);
           }
+        } catch (e) {
+          this.showError_(
+              `Error at rendering field at index ${offset}: ${e.message}`);
         }
 
         root.add(item);
-
         offset += field.size;
       }
 
@@ -461,7 +470,7 @@ cr.define('descriptor_panel', function() {
      * @private
      */
     async getDeviceDescriptor_() {
-      /** @type {device.mojom.UsbControlTransferParams} */
+      /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.type =
           device.mojom.UsbControlTransferType.STANDARD;
@@ -582,14 +591,14 @@ cr.define('descriptor_panel', function() {
 
       renderRawDataBytes(rawDataByteElement, rawData);
 
-      const offset = this.renderRawDataTree_(
+      this.renderRawDataTree_(
           rawDataTreeRoot, rawDataByteElement, fields, rawData, 0);
 
-      assert(
-          offset === DEVICE_DESCRIPTOR_LENGTH,
-          'Device Descriptor Rendering Error');
-
       addMappingAction(rawDataTreeRoot, rawDataByteElement);
+
+      // window.deviceDescriptorCompleteFn() provides a hook for the test suite
+      // to perform test actions after the device descriptor is rendered.
+      window.deviceDescriptorCompleteFn();
     }
 
     /**
@@ -598,7 +607,7 @@ cr.define('descriptor_panel', function() {
      * @private
      */
     async getConfigurationDescriptor_() {
-      /** @type {device.mojom.UsbControlTransferParams} */
+      /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.type =
           device.mojom.UsbControlTransferType.STANDARD;
@@ -753,10 +762,6 @@ cr.define('descriptor_panel', function() {
             expectNumEndpoints} interface descriptors but only encountered ${
             indexEndpoint}.`);
       }
-
-      assert(
-          offset === rawData.length,
-          'Complete Configuration Descriptor Rendering Error');
 
       addMappingAction(rawDataTreeRoot, rawDataByteElement);
     }
@@ -985,7 +990,7 @@ cr.define('descriptor_panel', function() {
      * @return {!Array<string>}
      */
     async getAllLanguageCodes() {
-      /** @type {device.mojom.UsbControlTransferParams} */
+      /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.type =
           device.mojom.UsbControlTransferType.STANDARD;
@@ -1049,7 +1054,7 @@ cr.define('descriptor_panel', function() {
      * @private
      */
     async getStringDescriptorForLanguageCode_(index, languageCode) {
-      /** @type {device.mojom.UsbControlTransferParams} */
+      /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.type =
           device.mojom.UsbControlTransferType.STANDARD;
@@ -1154,7 +1159,7 @@ cr.define('descriptor_panel', function() {
 
       renderRawDataBytes(rawDataByteElement, rawData);
 
-      const offset = this.renderRawDataTree_(
+      this.renderRawDataTree_(
           stringDescriptorItem, rawDataByteElement, fields, rawData, 0,
           parentClassName);
 
@@ -1263,7 +1268,7 @@ cr.define('descriptor_panel', function() {
      * @private
      */
     async getBosDescriptor_() {
-      /** @type {device.mojom.UsbControlTransferParams} */
+      /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.type =
           device.mojom.UsbControlTransferType.STANDARD;
@@ -1395,9 +1400,6 @@ cr.define('descriptor_panel', function() {
             `interface descriptors but only encountered ` +
             `${encounteredNumBosDescriptors}.`);
       }
-
-      assert(
-          offset === rawData.length, 'Complete BOS Descriptor Rendering Error');
 
       addMappingAction(rawDataTreeRoot, rawDataByteElement);
     }
@@ -1711,7 +1713,7 @@ cr.define('descriptor_panel', function() {
      * @private
      */
     async getUrlDescriptor_(vendorCode, urlIndex) {
-      /** @type {device.mojom.UsbControlTransferParams} */
+      /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.recipient =
           device.mojom.UsbControlTransferRecipient.DEVICE;
@@ -1770,7 +1772,7 @@ cr.define('descriptor_panel', function() {
      * @private
      */
     async getMsOs20DescriptorSet_(vendorCode, msOs20DescriptorSetLength) {
-      /** @type {device.mojom.UsbControlTransferParams} */
+      /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.recipient =
           device.mojom.UsbControlTransferRecipient.DEVICE;
@@ -1812,7 +1814,7 @@ cr.define('descriptor_panel', function() {
      * @private
      */
     async sendMsOs20DescriptorSetAltEnumCommand_(vendorCode, altEnumCode) {
-      /** @type {device.mojom.UsbControlTransferParams} */
+      /** @type {!device.mojom.UsbControlTransferParams} */
       const usbControlTransferParams = {};
       usbControlTransferParams.recipient =
           device.mojom.UsbControlTransferRecipient.DEVICE;
@@ -2614,7 +2616,11 @@ cr.define('descriptor_panel', function() {
     const rawDataByteElements = rawDataByteElement.querySelectorAll('span');
     rawDataByteElements.forEach((el) => {
       const classList = el.classList;
-
+      if (!classList[0]) {
+        // For a field that has failed to render there might be some leftover
+        // bytes. Just skip them.
+        return;
+      }
       const fieldOffsetClass = classList[0];
       assert(fieldOffsetClass.startsWith('field-offset-'));
 
@@ -2646,8 +2652,7 @@ cr.define('descriptor_panel', function() {
   }
 
   /**
-   * Renders an element to display the raw data in hex, byte by byte, and
-   * keeps every row no more than 16 bytes.
+   * Renders an element to display the raw data in hex, byte by byte.
    * @param {!HTMLElement} rawDataByteElement
    * @param {!Uint8Array} rawData
    */
@@ -2680,10 +2685,7 @@ cr.define('descriptor_panel', function() {
    * @return {string}
    */
   function toHex(number, numOfDigits) {
-    return number.toString(16)
-        .padStart(numOfDigits, '0')
-        .slice(0 - numOfDigits)
-        .toUpperCase();
+    return number.toString(16).padStart(numOfDigits, '0').toUpperCase();
   }
 
   /**
@@ -2781,7 +2783,7 @@ cr.define('descriptor_panel', function() {
    * @return {string}
    */
   function formatBitmap(rawData, offset) {
-    return rawData[offset].toString(2).padStart(8, '0').slice(-8);
+    return rawData[offset].toString(2).padStart(8, '0');
   }
 
   /**
@@ -2935,3 +2937,6 @@ cr.define('descriptor_panel', function() {
     DescriptorPanel,
   };
 });
+
+window.deviceDescriptorCompleteFn =
+    window.deviceDescriptorCompleteFn || function() {};
