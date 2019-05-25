@@ -88,7 +88,15 @@ int FindInPageManagerImpl::FindRequest::GetTotalMatchCount() const {
   return matches;
 }
 
-int FindInPageManagerImpl::FindRequest::GetCurrentSelectedMatchIndex() {
+int FindInPageManagerImpl::FindRequest::GetRequestId() const {
+  return unique_id;
+}
+
+NSString* FindInPageManagerImpl::FindRequest::GetRequestQuery() const {
+  return query;
+}
+
+int FindInPageManagerImpl::FindRequest::GetCurrentSelectedMatchPageIndex() {
   if (selected_match_index_in_selected_frame == -1) {
     return -1;
   }
@@ -101,8 +109,37 @@ int FindInPageManagerImpl::FindRequest::GetCurrentSelectedMatchIndex() {
   return total_match_index;
 }
 
+void FindInPageManagerImpl::FindRequest::SetCurrentSelectedMatchFrameIndex(
+    int index) {
+  selected_match_index_in_selected_frame = index;
+}
+
+int FindInPageManagerImpl::FindRequest::GetCurrentSelectedMatchFrameIndex()
+    const {
+  return selected_match_index_in_selected_frame;
+}
+
+void FindInPageManagerImpl::FindRequest::DidReceiveFindResponseFromOneFrame() {
+  pending_frame_call_count--;
+}
+
+bool FindInPageManagerImpl::FindRequest::AreAllFindResponsesReturned() {
+  return pending_frame_call_count == 0;
+}
+
 int FindInPageManagerImpl::FindRequest::GetMatchCountForSelectedFrame() {
+  if (selected_frame_id == frame_order.end()) {
+    return -1;
+  }
   return frame_match_count[*selected_frame_id];
+}
+
+int FindInPageManagerImpl::FindRequest::GetMatchCountForFrame(
+    const std::string& frame_id) {
+  if (frame_match_count.find(frame_id) == frame_match_count.end()) {
+    return -1;
+  }
+  return frame_match_count[frame_id];
 }
 
 bool FindInPageManagerImpl::FindRequest::GoToFirstMatch() {
@@ -181,16 +218,28 @@ bool FindInPageManagerImpl::FindRequest::GoToPreviousMatch() {
   return true;
 }
 
-void FindInPageManagerImpl::FindRequest::RemoveFrame(WebFrame* web_frame) {
-  if (IsSelectedFrame(web_frame)) {
+void FindInPageManagerImpl::FindRequest::RemoveFrame(
+    const std::string& frame_id) {
+  if (IsSelectedFrame(frame_id)) {
     // If currently selecting match in frame that will become unavailable,
     // there will no longer be a selected match. Reset to unselected match
     // state.
     selected_frame_id = frame_order.end();
     selected_match_index_in_selected_frame = -1;
   }
-  frame_order.remove(web_frame->GetFrameId());
-  frame_match_count.erase(web_frame->GetFrameId());
+  frame_order.remove(frame_id);
+  frame_match_count.erase(frame_id);
+}
+
+void FindInPageManagerImpl::FindRequest::AddFrame(WebFrame* web_frame) {
+  frame_match_count[web_frame->GetFrameId()] = 0;
+  if (web_frame->IsMainFrame()) {
+    // Main frame matches should show up first.
+    frame_order.push_front(web_frame->GetFrameId());
+  } else {
+    // The order of iframes is not important.
+    frame_order.push_back(web_frame->GetFrameId());
+  }
 }
 
 void FindInPageManagerImpl::FindRequest::SetMatchCountForSelectedFrame(
@@ -198,37 +247,44 @@ void FindInPageManagerImpl::FindRequest::SetMatchCountForSelectedFrame(
   frame_match_count[*selected_frame_id] = match_count;
 }
 
-bool FindInPageManagerImpl::FindRequest::IsSelectedFrame(WebFrame* web_frame) {
+void FindInPageManagerImpl::FindRequest::SetMatchCountForFrame(
+    int match_count,
+    const std::string& frame_id) {
+  frame_match_count[frame_id] = match_count;
+}
+
+std::string FindInPageManagerImpl::FindRequest::GetSelectedFrameId() {
+  if (selected_frame_id == frame_order.end()) {
+    return std::string();
+  }
+  return *selected_frame_id;
+}
+
+bool FindInPageManagerImpl::FindRequest::IsSelectedFrame(
+    const std::string& frame_id) {
   if (selected_frame_id == frame_order.end()) {
     return false;
   }
-  return *selected_frame_id == web_frame->GetFrameId();
+  return *selected_frame_id == frame_id;
 }
 
 void FindInPageManagerImpl::WebFrameDidBecomeAvailable(WebState* web_state,
                                                        WebFrame* web_frame) {
   const std::string frame_id = web_frame->GetFrameId();
-  last_find_request_.frame_match_count[frame_id] = 0;
-  if (web_frame->IsMainFrame()) {
-    // Main frame matches should show up first.
-    last_find_request_.frame_order.push_front(frame_id);
-  } else {
-    // The order of iframes is not important.
-    last_find_request_.frame_order.push_back(frame_id);
-  }
+  last_find_request_.AddFrame(web_frame);
 }
 
 void FindInPageManagerImpl::WebFrameWillBecomeUnavailable(WebState* web_state,
                                                           WebFrame* web_frame) {
-  bool frame_has_matches =
-      last_find_request_.frame_match_count[web_frame->GetFrameId()] > 0;
-  last_find_request_.RemoveFrame(web_frame);
+  int match_count =
+      last_find_request_.GetMatchCountForFrame(web_frame->GetFrameId());
+  last_find_request_.RemoveFrame(web_frame->GetFrameId());
 
   // Only notify the delegate if the match count has changed.
-  if (delegate_ && last_find_request_.query && frame_has_matches) {
+  if (delegate_ && last_find_request_.GetRequestQuery() && match_count > 0) {
     delegate_->DidHighlightMatches(web_state_,
                                    last_find_request_.GetTotalMatchCount(),
-                                   last_find_request_.query);
+                                   last_find_request_.GetRequestQuery());
   }
 }
 
@@ -275,12 +331,13 @@ void FindInPageManagerImpl::StartSearch(NSString* query) {
         kFindInPageSearch, params,
         base::BindOnce(&FindInPageManagerImpl::ProcessFindInPageResult,
                        weak_factory_.GetWeakPtr(), frame->GetFrameId(),
-                       last_find_request_.unique_id),
+                       last_find_request_.GetRequestId()),
         base::TimeDelta::FromMilliseconds(kJavaScriptFunctionCallTimeout));
     if (!result) {
       // Calling JavaScript function failed or the frame does not support
       // messaging.
-      if (--last_find_request_.pending_frame_call_count == 0) {
+      last_find_request_.DidReceiveFindResponseFromOneFrame();
+      if (last_find_request_.AreAllFindResponsesReturned()) {
         // Call asyncronously to match behavior if find was done in frames.
         base::PostTaskWithTraits(
             FROM_HERE, {WebThread::UI},
@@ -302,7 +359,7 @@ void FindInPageManagerImpl::StopFinding() {
   if (delegate_) {
     delegate_->DidHighlightMatches(web_state_,
                                    last_find_request_.GetTotalMatchCount(),
-                                   last_find_request_.query);
+                                   last_find_request_.GetRequestQuery());
   }
 }
 
@@ -313,7 +370,7 @@ bool FindInPageManagerImpl::CanSearchContent() {
 void FindInPageManagerImpl::ProcessFindInPageResult(const std::string& frame_id,
                                                     const int unique_id,
                                                     const base::Value* result) {
-  if (unique_id != last_find_request_.unique_id) {
+  if (unique_id != last_find_request_.GetRequestId()) {
     // New find was started or current find was stopped.
     return;
   }
@@ -327,7 +384,7 @@ void FindInPageManagerImpl::ProcessFindInPageResult(const std::string& frame_id,
     // The frame no longer exists or the function call timed out. In both cases,
     // result will be null.
     // Zero out count to ensure every frame is updated for every find.
-    last_find_request_.frame_match_count[frame_id] = 0;
+    last_find_request_.SetMatchCountForFrame(0, frame_id);
   } else {
     int match_count = 0;
     if (result->is_double()) {
@@ -348,9 +405,10 @@ void FindInPageManagerImpl::ProcessFindInPageResult(const std::string& frame_id,
       return;
     }
 
-    last_find_request_.frame_match_count[frame_id] = match_count;
+    last_find_request_.SetMatchCountForFrame(match_count, frame_id);
   }
-  if (--last_find_request_.pending_frame_call_count == 0) {
+  last_find_request_.DidReceiveFindResponseFromOneFrame();
+  if (last_find_request_.AreAllFindResponsesReturned()) {
     LastFindRequestCompleted();
   }
 }
@@ -359,7 +417,7 @@ void FindInPageManagerImpl::LastFindRequestCompleted() {
   if (delegate_) {
     delegate_->DidHighlightMatches(web_state_,
                                    last_find_request_.GetTotalMatchCount(),
-                                   last_find_request_.query);
+                                   last_find_request_.GetRequestQuery());
   }
   int total_matches = last_find_request_.GetTotalMatchCount();
   if (total_matches == 0) {
@@ -382,7 +440,7 @@ void FindInPageManagerImpl::SelectDidFinish(const base::Value* result) {
         if (delegate_) {
           delegate_->DidHighlightMatches(
               web_state_, last_find_request_.GetTotalMatchCount(),
-              last_find_request_.query);
+              last_find_request_.GetRequestQuery());
         }
       }
     }
@@ -390,12 +448,12 @@ void FindInPageManagerImpl::SelectDidFinish(const base::Value* result) {
     const base::Value* index = result->FindKey(kSelectAndScrollResultIndex);
     if (index && index->is_double()) {
       int current_index = static_cast<int>(index->GetDouble());
-      last_find_request_.selected_match_index_in_selected_frame = current_index;
+      last_find_request_.SetCurrentSelectedMatchFrameIndex(current_index);
     }
   }
   if (delegate_) {
     delegate_->DidSelectMatch(
-        web_state_, last_find_request_.GetCurrentSelectedMatchIndex());
+        web_state_, last_find_request_.GetCurrentSelectedMatchPageIndex());
   }
 }
 
@@ -413,11 +471,11 @@ void FindInPageManagerImpl::SelectPreviousMatch() {
 
 void FindInPageManagerImpl::SelectCurrentMatch() {
   web::WebFrame* frame =
-      GetWebFrameWithId(web_state_, *last_find_request_.selected_frame_id);
+      GetWebFrameWithId(web_state_, last_find_request_.GetSelectedFrameId());
   if (frame) {
     std::vector<base::Value> params;
     params.push_back(
-        base::Value(last_find_request_.selected_match_index_in_selected_frame));
+        base::Value(last_find_request_.GetCurrentSelectedMatchFrameIndex()));
     frame->CallJavaScriptFunction(
         kFindInPageSelectAndScrollToMatch, params,
         base::BindOnce(&FindInPageManagerImpl::SelectDidFinish,

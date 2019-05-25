@@ -44,11 +44,30 @@ class FindInPageManagerImpl : public FindInPageManager,
     // Clears properties and sets new |query| and |pending_frame_call_count|.
     void Reset(NSString* query, int pending_frame_call_count);
     int GetTotalMatchCount() const;
+    int GetRequestId() const;
+    NSString* GetRequestQuery() const;
     // Returns the index of the currently selected match for all matches on the
     // page. If no match is selected, then returns -1.
-    int GetCurrentSelectedMatchIndex();
-    // Gets the number of matches in |selected_frame_id|.
+    int GetCurrentSelectedMatchPageIndex();
+    // Sets |index| as the currently selected index relative to the selected
+    // frame.
+    void SetCurrentSelectedMatchFrameIndex(int index);
+    // Returns the index of the currently selected match relative to the matches
+    // within its frame. If no match is selected, then returns -1.
+    int GetCurrentSelectedMatchFrameIndex() const;
+    // Returns the number of matches in |selected_frame_id|. If no match is
+    // currently selected, then returns -1;
     int GetMatchCountForSelectedFrame();
+    // Returns the number of matches in |frame_id|. If |frame_id| is invalid,
+    // then returns -1.
+    int GetMatchCountForFrame(const std::string& frame_id);
+    // Sets |match_count| for |selected_frame_id|.
+    void SetMatchCountForSelectedFrame(int match_count);
+    // Sets |match_count| for |frame_id|.
+    void SetMatchCountForFrame(int match_count, const std::string& frame_id);
+    // Returns the id of the WebFrame containing the currently selected match.
+    // Returns empty string if no currently selected match.
+    std::string GetSelectedFrameId();
     // Sets |selected_frame_id| and |selected_match_index_in_selected_frame| to
     // the first match on the page. No-op if no known matches exist. Returns
     // true if selected a match, false otherwise.
@@ -61,13 +80,20 @@ class FindInPageManagerImpl : public FindInPageManager,
     // the previous match on the page. No-op if no known matches exist. Returns
     // true if selected a match, false otherwise.
     bool GoToPreviousMatch();
-    // Removes |web_frame| from |frame_order| and |frame_match_count|. Resets
-    // |selected_frame_id| and |selected_match_index_in_selected_frame| if
-    // |web_frame| contains currently selected match. |web_frame| must not be
-    // null.
-    void RemoveFrame(WebFrame* web_frame);
-    // Sets |match_count| for |selected_frame_id|.
-    void SetMatchCountForSelectedFrame(int match_count);
+    // Removes frame with Id |frame_id| from |frame_order| and
+    // |frame_match_count|. Resets |selected_frame_id| and
+    // |selected_match_index_in_selected_frame| if the frame with |frame_id|
+    // contains the currently selected match.
+    void RemoveFrame(const std::string& frame_id);
+    // Adds new frame to |frame_order_| and |frame_match_count_|.
+    void AddFrame(WebFrame* web_frame);
+    // After each frame's Find request has finished, call this method to
+    // decrement |pending_frame_counts| to indicate to the receiver of the
+    // request completion.
+    void DidReceiveFindResponseFromOneFrame();
+    // Returns true if there are no more pending Find requests, false
+    // otherwise.
+    bool AreAllFindResponsesReturned();
     // Unique identifier for each find used to check that it is the most recent
     // find. This ensures that an old find doesn't decrement
     // |pending_frame_calls_count| after it has been reset by the new find.
@@ -93,9 +119,9 @@ class FindInPageManagerImpl : public FindInPageManager,
     int selected_match_index_in_selected_frame = -1;
 
    private:
-    // Returns true if |web_frame| contains the currently selected match, false
-    // otherwise. |web_frame| must not be null.
-    bool IsSelectedFrame(WebFrame* web_frame);
+    // Returns true if |frame_id| contains the currently selected match, false
+    // otherwise.
+    bool IsSelectedFrame(const std::string& frame_id);
   };
 
   // Executes find logic for |FindInPageSearch| option.
