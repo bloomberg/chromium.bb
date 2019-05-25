@@ -83,11 +83,7 @@ bool MimeHandlerViewContainerManager::CreateFrameContainer(
     // (which used to create a MimeHandlerViewContainer).
     return false;
   }
-  // If there is already a MHVFC for this |plugin_element|, destroy it.
-  auto* manager = Get(content::RenderFrame::FromWebFrame(
-                          plugin_element.GetDocument().GetFrame()),
-                      true /* create_if_does_not_exist */);
-  if (manager->IsManagedByContainerManager(plugin_element)) {
+  if (IsManagedByContainerManager(plugin_element)) {
     // This is the one injected by HTML string. Return true so that the
     // HTMLPlugInElement creates a child frame to be used as the outer
     // WebContents frame.
@@ -102,13 +98,14 @@ bool MimeHandlerViewContainerManager::CreateFrameContainer(
       // This should translate into a same document navigation.
       return true;
     }
-    manager->RemoveFrameContainerForReason(
-        old_frame_container, UMAType::kRemoveFrameContainerUpdatePlugin);
+    // If there is already a MHVFC for this |plugin_element|, destroy it.
+    RemoveFrameContainerForReason(old_frame_container,
+                                  UMAType::kRemoveFrameContainerUpdatePlugin);
   }
   RecordInteraction(UMAType::kCreateFrameContainer);
   auto frame_container = std::make_unique<MimeHandlerViewFrameContainer>(
       this, plugin_element, resource_url, mime_type);
-  manager->frame_containers_.push_back(std::move(frame_container));
+  frame_containers_.push_back(std::move(frame_container));
   return true;
 }
 
