@@ -197,7 +197,8 @@ jumbo_static_library("test_support") {
   ]
 }
 
-if (!is_android && !is_fuchsia) {
+# Disabled on mac due to build failure (crbug.com/967098).
+if (!is_android && !is_fuchsia && !is_mac) {
   proto_library("gl_lpm_fuzzer_proto") {
     sources = [
       "command_buffer/tests/lpm/gl_lpm_fuzzer.proto",
