@@ -196,6 +196,7 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public void destroy() {
+        removeUrlFocusChangeListener(mAutocompleteCoordinator);
         mAutocompleteCoordinator.destroy();
         mAutocompleteCoordinator = null;
     }
