@@ -760,6 +760,11 @@
       status: "experimental",
     },
     {
+      // Modifies LayoutInstabilityAPI to include the maximum move distance in the
+      // jank fraction computation.
+      name: "LayoutInstabilityMoveDistance",
+    },
+    {
       name: "LayoutNG",
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity"],
       status: "stable",

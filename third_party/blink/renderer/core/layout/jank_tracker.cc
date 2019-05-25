@@ -300,6 +300,8 @@ void JankTracker::NotifyPrePaintFinished() {
   double weighted_jank_fraction = jank_fraction * SubframeWeightingFactor();
   if (weighted_jank_fraction > 0) {
     weighted_score_ += weighted_jank_fraction;
+    if (RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled())
+      weighted_jank_fraction *= move_distance_factor;
     frame.Client()->DidObserveLayoutJank(weighted_jank_fraction);
   }
 
@@ -311,7 +313,10 @@ void JankTracker::NotifyPrePaintFinished() {
     if (performance &&
         (performance->HasObserverFor(PerformanceEntry::kLayoutJank) ||
          performance->ShouldBufferEntries())) {
-      performance->AddLayoutJankFraction(jank_fraction);
+      performance->AddLayoutJankFraction(
+          RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled()
+              ? jank_fraction_with_move_distance
+              : jank_fraction);
     }
   }
 
