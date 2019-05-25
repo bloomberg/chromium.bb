@@ -163,14 +163,6 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return chrome_test_util::IsAutofillProfilePresent(utfGUID, utfFullName);
 }
 
-+ (void)setUpFakeSyncServer {
-  chrome_test_util::SetUpFakeSyncServer();
-}
-
-+ (void)tearDownFakeSyncServer {
-  chrome_test_util::TearDownFakeSyncServer();
-}
-
 #pragma mark - Bookmarks Utilities (EG2)
 
 + (NSError*)waitForBookmarksToFinishinLoading {
@@ -191,6 +183,34 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
         @"Not all bookmarks were removed.");
   }
   return nil;
+}
+
+#pragma mark - Sync Utilities (EG2)
+
++ (NSError*)waitForSyncInitialized:(BOOL)isInitialized
+                       syncTimeout:(NSTimeInterval)timeout {
+  bool success = WaitUntilConditionOrTimeout(timeout, ^{
+    return chrome_test_util::IsSyncInitialized() == isInitialized;
+  });
+  if (!success) {
+    NSString* errorDescription =
+        [NSString stringWithFormat:@"Sync must be initialized: %@",
+                                   isInitialized ? @"YES" : @"NO"];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+  return nil;
+}
+
++ (NSString*)syncCacheGUID {
+  return base::SysUTF8ToNSString(chrome_test_util::GetSyncCacheGuid());
+}
+
++ (void)setUpFakeSyncServer {
+  chrome_test_util::SetUpFakeSyncServer();
+}
+
++ (void)tearDownFakeSyncServer {
+  chrome_test_util::TearDownFakeSyncServer();
 }
 
 @end

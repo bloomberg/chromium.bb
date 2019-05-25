@@ -169,6 +169,19 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)signOutAndClearAccounts;
 
+#pragma mark - Sync Utilities (EG2)
+
+// Waits for sync to be initialized or not. If not succeeded a GREYAssert is
+// induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForSyncInitialized:(BOOL)isInitialized
+                       syncTimeout:(NSTimeInterval)timeout;
+
+// Returns the current sync cache GUID. The sync server must be running when
+// calling this.
+- (std::string)syncCacheGUID;
+
 #pragma mark - WebState Utilities (EG2)
 
 // Waits for the current web state to contain an element matching |selector|.
@@ -277,15 +290,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Stops the sync server. The server should be running when calling this.
 - (void)stopSync;
-
-// Waits for sync to be initialized or not. Returns nil on success, or else an
-// NSError indicating why the operation failed.
-- (NSError*)waitForSyncInitialized:(BOOL)isInitialized
-                       syncTimeout:(NSTimeInterval)timeout WARN_UNUSED_RESULT;
-
-// Returns the current sync cache guid. The sync server must be running when
-// calling this.
-- (std::string)syncCacheGUID WARN_UNUSED_RESULT;
 
 // Verifies that |count| entities of the given |type| and |name| exist on the
 // sync FakeServer. Folders are not included in this count. Returns nil on

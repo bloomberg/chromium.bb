@@ -249,6 +249,19 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [ChromeEarlGreyAppInterface tearDownFakeSyncServer];
 }
 
+- (NSError*)waitForSyncInitialized:(BOOL)isInitialized
+                       syncTimeout:(NSTimeInterval)timeout {
+  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
+      waitForSyncInitialized:isInitialized
+                 syncTimeout:timeout]);
+  return nil;
+}
+
+- (const std::string)syncCacheGUID {
+  NSString* cacheGUID = [ChromeEarlGreyAppInterface syncCacheGUID];
+  return base::SysNSStringToUTF8(cacheGUID);
+}
+
 #pragma mark - SignIn Utilities
 
 - (NSError*)signOutAndClearAccounts {
@@ -494,24 +507,6 @@ id ExecuteJavaScript(NSString* javascript,
 
 - (void)stopSync {
   chrome_test_util::StopSync();
-}
-
-- (NSError*)waitForSyncInitialized:(BOOL)isInitialized
-                       syncTimeout:(NSTimeInterval)timeout {
-  bool success = WaitUntilConditionOrTimeout(timeout, ^{
-    return chrome_test_util::IsSyncInitialized() == isInitialized;
-  });
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Sync was not initialized.");
-  }
-
-  return nil;
-}
-
-- (const std::string)syncCacheGUID {
-  return chrome_test_util::GetSyncCacheGuid();
 }
 
 - (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type

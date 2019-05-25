@@ -103,13 +103,6 @@
 + (BOOL)isAutofillProfilePresentWithGUID:(NSString*)GUID
                      autofillProfileName:(NSString*)fullName;
 
-// Sets up a fake sync server to be used by the ProfileSyncService.
-+ (void)setUpFakeSyncServer;
-
-// Tears down the fake sync server used by the ProfileSyncService and restores
-// the real one.
-+ (void)tearDownFakeSyncServer;
-
 #pragma mark - Bookmarks Utilities (EG2)
 
 // Waits for the bookmark internal state to be done loading.
@@ -120,6 +113,25 @@
 // Clears bookmarks. If not succeed returns an NSError indicating  why the
 // operation failed, otherwise nil.
 + (NSError*)clearBookmarks;
+
+#pragma mark - Sync Utilities (EG2)
+
+// Waits for sync to be initialized or not.
+// Returns nil on success, or else an NSError indicating why the
+// operation failed.
++ (NSError*)waitForSyncInitialized:(BOOL)isInitialized
+                       syncTimeout:(NSTimeInterval)timeout;
+
+// Returns the current sync cache GUID. The sync server must be running when
+// calling this.
++ (NSString*)syncCacheGUID;
+
+// Sets up a fake sync server to be used by the ProfileSyncService.
++ (void)setUpFakeSyncServer;
+
+// Tears down the fake sync server used by the ProfileSyncService and restores
+// the real one.
++ (void)tearDownFakeSyncServer;
 
 @end
 
