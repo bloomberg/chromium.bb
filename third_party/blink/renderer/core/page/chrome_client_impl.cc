@@ -98,6 +98,7 @@
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -294,6 +295,19 @@ void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
   web_view_->WidgetClient()->DidOverscroll(
       overscroll_delta, accumulated_overscroll, position_in_viewport,
       velocity_in_viewport);
+}
+
+void ChromeClientImpl::InjectGestureScrollEvent(
+    LocalFrame& local_frame,
+    WebGestureDevice device,
+    const WebFloatSize& delta,
+    ScrollGranularity granularity,
+    CompositorElementId scrollable_area_element_id,
+    WebInputEvent::Type injected_type) {
+  WebFrameWidgetBase* widget =
+      WebLocalFrameImpl::FromFrame(&local_frame)->LocalRootFrameWidget();
+  widget->Client()->InjectGestureScrollEvent(
+      device, delta, granularity, scrollable_area_element_id, injected_type);
 }
 
 void ChromeClientImpl::SetOverscrollBehavior(

@@ -51,10 +51,23 @@ onload = function() {
     eventSender.mouseDown();
     eventSender.mouseUp();
 
+    // EventSender updated the lifecycle to prepaint on mouseUp.
+    // Because mouse down queued a gesture scroll update, and this main
+    // thread has not yet yielded, there's nothing to update at this
+    // point in time. The queued gesture event will run once this thread
+    // yields - this will register/schedule the animation and put it
+    // in a WaitingForCompositorState until the next compositing
+    // lifecycle phase runs (which happens after rAF on the next frame).
+    // Updating the animation will cause it to recognize that it needs
+    // to run on the main thread and update the state accordingly.
+    // Therefore we need to requestAnimationFrame twice before checking
+    // the scroll animation state.
     requestAnimationFrame(function() {
-        iframeDoc = document.querySelector("#scroller").contentDocument;
-        shouldBeTrue("isScrollAnimatingOnMainThread(iframeDoc)");
-        finishJSTest();
+        requestAnimationFrame(function() {
+            iframeDoc = document.querySelector("#scroller").contentDocument;
+            shouldBeTrue("isScrollAnimatingOnMainThread(iframeDoc)");
+            finishJSTest();
+        });
     });
 };
 
