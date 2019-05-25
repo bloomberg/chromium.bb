@@ -269,7 +269,7 @@ CrSettingsAutofillSectionCompanyEnabledTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/autofill_page/autofill_section.html',
 
-  featureList: ['autofill::features::kAutofillEnableCompanyName', ''],
+  featureList: {enabled: ['autofill::features::kAutofillEnableCompanyName']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -294,7 +294,7 @@ CrSettingsAutofillSectionCompanyDisabledTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/autofill_page/autofill_section.html',
 
-  featureList: ['', 'autofill::features::kAutofillEnableCompanyName'],
+  featureList: {disabled: ['autofill::features::kAutofillEnableCompanyName']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -642,7 +642,7 @@ CrSettingsPeoplePageTest.prototype = {
   // length-checked in this test. The feature is defaulted on here during
   // rollout, reflecting its value in fieldtrial_testing_config.json.
   // See crbug.com/908435.
-  featureList: ['omnibox::kDocumentProvider', ''],
+  featureList: {enabled: ['omnibox::kDocumentProvider']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -733,7 +733,7 @@ CrSettingsPeoplePageSyncPageTest.prototype = {
   // length-checked in this test. The feature is defaulted on here during
   // rollout, reflecting its value in fieldtrial_testing_config.json.
   // See crbug.com/908435.
-  featureList: ['omnibox::kDocumentProvider', ''],
+  featureList: {enabled: ['omnibox::kDocumentProvider']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1154,7 +1154,7 @@ CrSettingsSiteDataDetailsTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
-  featureList: ['features::kSiteSettings', ''],
+  featureList: {enabled: ['features::kSiteSettings']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1308,7 +1308,7 @@ CrSettingsAllSitesTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
-  featureList: ['features::kSiteSettings', ''],
+  featureList: {enabled: ['features::kSiteSettings']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1394,7 +1394,7 @@ CrSettingsSiteListTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
-  featureList: ['features::kSiteSettings', ''],
+  featureList: {enabled: ['features::kSiteSettings']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -2287,7 +2287,7 @@ CrSettingsKioskNextShellPageTest.prototype = {
       'chrome://settings/kiosk_next_shell_page/kiosk_next_shell_page.html',
 
   /** @override */
-  featureList: ['ash::features::kKioskNextShell', ''],
+  featureList: {enabled: ['ash::features::kKioskNextShell']},
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
@@ -2319,7 +2319,7 @@ CrSettingsCrostiniPageTest.prototype = {
   browsePreload: 'chrome://settings/crostini_page/crostini_page.html',
 
   /** @override */
-  featureList: ['features::kCrostini', ''],
+  featureList: {enabled: ['features::kCrostini']},
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '//ui/webui/resources/js/promise_resolver.js',
@@ -2565,7 +2565,7 @@ CrSettingsSplitSettingsFlagTest = class extends CrSettingsBrowserTest {
 
   /** @override */
   get featureList() {
-    return ['chromeos::features::kSplitSettings', ''];
+    return {enabled: ['chromeos::features::kSplitSettings']};
   }
 
   /** @override */

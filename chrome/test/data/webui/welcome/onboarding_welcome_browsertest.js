@@ -26,7 +26,7 @@ const OnboardingWelcomeBrowserTest = class extends PolymerTest {
 
   /** @override */
   get featureList() {
-    return ['nux::kNuxOnboardingForceEnabled', ''];
+    return {enabled: ['nux::kNuxOnboardingForceEnabled']};
   }
 };
 

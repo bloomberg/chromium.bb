@@ -194,8 +194,9 @@ ${argHint}
     if (this[testFixture].prototype.commandLineSwitches)
       output('#include "base/command_line.h"');
     if (this[testFixture].prototype.featureList ||
-        this[testFixture].prototype.featuresWithParameters)
+        this[testFixture].prototype.featuresWithParameters) {
       output('#include "base/test/scoped_feature_list.h"');
+    }
   }
   output();
 }
@@ -434,21 +435,45 @@ class ${testFixture} : public ${typedefCppFixture} {
         output(`
   ${testFixture}() {`);
         if (featureList) {
+          const disabledFeatures = (featureList.disabled || []).join(', ');
+          const enabledFeatures = (featureList.enabled || []).join(', ');
+          if (enabledFeatures.length + disabledFeatures.length == 0) {
+            print('Invalid featureList; must set "enabled" or "disabled" key');
+            quit(-1);
+          }
           output(`
-    scoped_feature_list_.InitWithFeatures({${featureList[0]}},
-                                          {${featureList[1]}});`);
+    scoped_feature_list_.InitWithFeatures({${enabledFeatures}},
+                                          {${disabledFeatures}});`);
         }
         if (featuresWithParameters) {
           for (var i = 0; i < featuresWithParameters.length; ++i) {
             var feature = featuresWithParameters[i];
-            var featureName = feature[0];
-            var parameters = feature[1];
+            var featureName = feature.featureName;
+            if (!featureName) {
+              print('"featureName" key required for featuresWithParameters');
+              quit(-1);
+            }
+            var parameters = feature.parameters;
+            if (!parameters) {
+              print('"parameters" key required for featuresWithParameters');
+              quit(-1);
+            }
           output(`
     scoped_feature_list${i}_.InitAndEnableFeatureWithParameters(
         ${featureName}, {`);
             for (var parameter of parameters) {
-              var parameterName = parameter[0];
-              var parameterValue = parameter[1];
+              var parameterName = parameter.name;
+              if (!parameterName) {
+                print('"name" key required for parameter in ' +
+                      'featuresWithParameters');
+                quit(-1);
+              }
+              var parameterValue = parameter.value;
+              if (!parameterValue) {
+                print('"value" key required for parameter in ' +
+                      'featuresWithParameters');
+                quit(-1);
+              }
               output(`
             {"${parameterName}", "${parameterValue}"},`);
             }

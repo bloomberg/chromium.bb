@@ -20,7 +20,7 @@ MediaEngagementWebUIBrowserTest.prototype = {
 
   browsePreload: 'chrome://media-engagement',
 
-  featureList: ['media::kRecordMediaEngagementScores', ''],
+  featureList: {enabled: ['media::kRecordMediaEngagementScores']},
 
   runAccessibilityChecks: false,
 

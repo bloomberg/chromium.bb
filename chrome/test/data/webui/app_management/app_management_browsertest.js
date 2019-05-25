@@ -22,7 +22,7 @@ AppManagementBrowserTest.prototype = {
     'test_store.js',
   ],
 
-  featureList: ['features::kAppManagement', ''],
+  featureList: {enabled: ['features::kAppManagement']},
 
   /** override */
   runAccessibilityChecks: true,
