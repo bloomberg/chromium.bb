@@ -841,7 +841,8 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
 #endif
 
 #if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
-  if (base::StartsWith(codec_id, "mhm1.", base::CompareCase::SENSITIVE)) {
+  if (base::StartsWith(codec_id, "mhm1.", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(codec_id, "mha1.", base::CompareCase::SENSITIVE)) {
     out_result->codec = MimeUtil::MPEG_H_AUDIO;
     return true;
   }

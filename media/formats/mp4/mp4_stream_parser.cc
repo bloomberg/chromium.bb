@@ -333,7 +333,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           audio_format != FOURCC_AC3 && audio_format != FOURCC_EAC3 &&
 #endif
 #if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
-          audio_format != FOURCC_MHM1 &&
+          audio_format != FOURCC_MHM1 && audio_format != FOURCC_MHA1 &&
 #endif
           audio_format != FOURCC_MP4A) {
         MEDIA_LOG(ERROR, media_log_)
@@ -371,7 +371,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         extra_data = entry.dfla.stream_info;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
-      } else if (audio_format == FOURCC_MHM1) {
+      } else if (audio_format == FOURCC_MHM1 || audio_format == FOURCC_MHA1) {
         codec = kCodecMpegHAudio;
         channel_layout = CHANNEL_LAYOUT_BITSTREAM;
         sample_per_second = entry.samplerate;
