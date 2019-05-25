@@ -2006,7 +2006,13 @@ void IndexedDBDatabase::AppendRequest(
 
 void IndexedDBDatabase::RequestComplete(ConnectionRequest* request) {
   DCHECK_EQ(request, active_request_.get());
+  // Destroying a request can cause this instance to be destroyed (through
+  // ConnectionClosed), so hold a WeakPtr.
+  base::WeakPtr<IndexedDBDatabase> weak_ptr = weak_factory_.GetWeakPtr();
   active_request_.reset();
+
+  if (!weak_ptr)
+    return;
 
   ProcessRequestQueueAndMaybeRelease();
 }
