@@ -20,6 +20,8 @@
 #include "ui/views/window/frame_buttons.h"
 
 typedef struct _GParamSpec GParamSpec;
+typedef struct _GtkParamSpec GtkParamSpec;
+typedef struct _GtkSettings GtkSettings;
 typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
@@ -28,6 +30,7 @@ using ColorMap = std::map<int, SkColor>;
 
 class GtkKeyBindingsHandler;
 class DeviceScaleFactorObserver;
+class NativeThemeGtk;
 class SettingsProvider;
 
 // Interface to GTK desktop features.
@@ -42,9 +45,6 @@ class GtkUi : public views::LinuxUI {
       const std::vector<views::FrameButton>& trailing_buttons);
   void SetWindowFrameAction(WindowFrameActionSource source,
                             WindowFrameAction action);
-
-  // Called when gtk style changes
-  void ResetStyle();
 
   // ui::LinuxInputMethodContextFactory:
   std::unique_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
@@ -119,6 +119,8 @@ class GtkUi : public views::LinuxUI {
  private:
   using TintMap = std::map<int, color_utils::HSL>;
 
+  CHROMEG_CALLBACK_1(GtkUi, void, OnThemeChanged, GtkSettings*, GtkParamSpec*);
+
   CHROMEG_CALLBACK_1(GtkUi,
                      void,
                      OnDeviceScaleFactorMaybeChanged,
@@ -140,7 +142,7 @@ class GtkUi : public views::LinuxUI {
 
   float GetRawDeviceScaleFactor();
 
-  ui::NativeTheme* native_theme_;
+  NativeThemeGtk* native_theme_;
 
   // A regular GtkWindow.
   GtkWidget* fake_window_;

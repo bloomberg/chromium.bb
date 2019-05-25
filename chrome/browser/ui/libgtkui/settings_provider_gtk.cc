@@ -12,11 +12,10 @@ namespace libgtkui {
 
 namespace {
 
-const char kDefaultGtkLayout[] = "menu:minimize,maximize,close";
-
 std::string GetDecorationLayoutFromGtkWindow() {
 #if GTK_CHECK_VERSION(3, 90, 0)
   NOTREACHED();
+  static const char kDefaultGtkLayout[] = "menu:minimize,maximize,close";
   return kDefaultGtkLayout;
 #else
   static ScopedStyleContext context;
@@ -109,15 +108,12 @@ SettingsProviderGtk::SettingsProviderGtk(GtkUi* delegate)
             this, "gtk-titlebar-right-click",
             views::LinuxUI::WindowFrameActionSource::kRightClick,
             views::LinuxUI::WindowFrameAction::kMenu));
-  } else if (GtkVersionCheck(3, 10, 3)) {
+  } else {
     signal_id_decoration_layout_ =
         g_signal_connect_after(settings, "notify::gtk-theme-name",
                                G_CALLBACK(OnThemeChangedThunk), this);
     DCHECK(signal_id_decoration_layout_);
     OnThemeChanged(settings, nullptr);
-  } else {
-    // On versions older than 3.10.3, the layout was hardcoded.
-    SetWindowButtonOrderingFromGtkLayout(kDefaultGtkLayout);
   }
 }
 

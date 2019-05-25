@@ -20,8 +20,6 @@
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/memory/protected_memory.h"
-#include "base/memory/protected_memory_cfi.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
@@ -237,12 +235,6 @@ int indicators_count;
 // The unknown content type.
 const char kUnknownContentType[] = "application/octet-stream";
 
-using GdkSetAllowedBackendsFn = void (*)(const gchar*);
-// Place this function pointer in read-only memory after being resolved to
-// prevent it being tampered with. See https://crbug.com/771365 for details.
-PROTECTED_MEMORY_SECTION base::ProtectedMemory<GdkSetAllowedBackendsFn>
-    g_gdk_set_allowed_backends;
-
 std::unique_ptr<SettingsProvider> CreateSettingsProvider(GtkUi* gtk_ui) {
   if (GtkVersionCheck(3, 14))
     return std::make_unique<SettingsProviderGtk>(gtk_ui);
@@ -333,14 +325,8 @@ GtkUi::GtkUi() {
   // the use of X11 (eg. X11InputMethodContextImplGtk) and will crash under
   // other backends.
   // TODO(thomasanderson): Change this logic once Wayland support is added.
-  static base::ProtectedMemory<GdkSetAllowedBackendsFn>::Initializer init(
-      &g_gdk_set_allowed_backends,
-      reinterpret_cast<void (*)(const gchar*)>(
-          dlsym(GetGdkSharedLibrary(), "gdk_set_allowed_backends")));
-  if (GtkVersionCheck(3, 10))
-    DCHECK(*g_gdk_set_allowed_backends);
-  if (*g_gdk_set_allowed_backends)
-    base::UnsanitizedCfiCall(g_gdk_set_allowed_backends)("x11");
+  gdk_set_allowed_backends("x11");
+
   // Avoid GTK initializing atk-bridge, and let AuraLinux implementation
   // do it once it is ready.
   std::unique_ptr<base::Environment> env(base::Environment::Create());
@@ -355,18 +341,14 @@ GtkUi::~GtkUi() {
   gtk_widget_destroy(fake_window_);
 }
 
-void OnThemeChanged(GObject* obj, GParamSpec* param, GtkUi* gtkui) {
-  gtkui->ResetStyle();
-}
-
 void GtkUi::Initialize() {
   GtkSettings* settings = gtk_settings_get_default();
   g_signal_connect_after(settings, "notify::gtk-theme-name",
-                         G_CALLBACK(OnThemeChanged), this);
+                         G_CALLBACK(OnThemeChangedThunk), this);
   g_signal_connect_after(settings, "notify::gtk-icon-theme-name",
-                         G_CALLBACK(OnThemeChanged), this);
+                         G_CALLBACK(OnThemeChangedThunk), this);
   g_signal_connect_after(settings, "notify::gtk-application-prefer-dark-theme",
-                         G_CALLBACK(OnThemeChanged), this);
+                         G_CALLBACK(OnThemeChangedThunk), this);
 
   GdkScreen* screen = gdk_screen_get_default();
   // Listen for DPI changes.
@@ -803,6 +785,15 @@ bool GtkUi::MatchEvent(const ui::Event& event,
   return key_bindings_handler_->MatchEvent(event, commands);
 }
 
+void GtkUi::OnThemeChanged(GtkSettings* settings, GtkParamSpec* param) {
+  colors_.clear();
+  custom_frame_colors_.clear();
+  native_frame_colors_.clear();
+  native_theme_->OnThemeChanged(settings, param);
+  LoadGtkValues();
+  native_theme_->NotifyObservers();
+}
+
 void GtkUi::OnDeviceScaleFactorMaybeChanged(void*, GParamSpec*) {
   UpdateDeviceScaleFactor();
 }
@@ -883,9 +874,8 @@ void GtkUi::UpdateColors() {
   for (bool custom_frame : {false, true}) {
     ColorMap& color_map =
         custom_frame ? custom_frame_colors_ : native_frame_colors_;
-    const std::string header_selector = custom_frame && GtkVersionCheck(3, 10)
-                                            ? "#headerbar.header-bar.titlebar"
-                                            : "GtkMenuBar#menubar";
+    const std::string header_selector =
+        custom_frame ? "#headerbar.header-bar.titlebar" : "GtkMenuBar#menubar";
     const std::string header_selector_inactive = header_selector + ":backdrop";
     const SkColor frame_color =
         SkColorSetA(GetBgColor(header_selector), SK_AlphaOPAQUE);
@@ -1034,14 +1024,6 @@ void GtkUi::UpdateDefaultFont() {
 
   gtk_widget_destroy(fake_label);
   g_object_unref(fake_label);
-}
-
-void GtkUi::ResetStyle() {
-  colors_.clear();
-  custom_frame_colors_.clear();
-  native_frame_colors_.clear();
-  LoadGtkValues();
-  native_theme_->NotifyObservers();
 }
 
 float GtkUi::GetRawDeviceScaleFactor() {

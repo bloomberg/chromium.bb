@@ -368,8 +368,6 @@ NativeThemeGtk::NativeThemeGtk() {
   g_type_class_unref(g_type_class_ref(gtk_tree_view_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_window_get_type()));
 
-  g_signal_connect_after(gtk_settings_get_default(), "notify::gtk-theme-name",
-                         G_CALLBACK(OnThemeChangedThunk), this);
   OnThemeChanged(gtk_settings_get_default(), nullptr);
 }
 
@@ -612,8 +610,7 @@ void NativeThemeGtk::PaintFrameTopArea(
     State state,
     const gfx::Rect& rect,
     const FrameTopAreaExtraParams& frame_top_area) const {
-  auto context = GetStyleContextFromCss(frame_top_area.use_custom_frame &&
-                                                GtkVersionCheck(3, 10)
+  auto context = GetStyleContextFromCss(frame_top_area.use_custom_frame
                                             ? "#headerbar.header-bar.titlebar"
                                             : "GtkMenuBar#menubar");
   ApplyCssToContext(context, "* { border-radius: 0px; border-style: none; }");

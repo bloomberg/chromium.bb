@@ -65,6 +65,8 @@ class NativeThemeGtk : public ui::NativeThemeBase {
       const gfx::Rect& rect,
       const FrameTopAreaExtraParams& frame_top_area) const override;
 
+  void OnThemeChanged(GtkSettings* settings, GtkParamSpec* param);
+
  private:
   friend class base::NoDestructor<NativeThemeGtk>;
 
@@ -72,12 +74,6 @@ class NativeThemeGtk : public ui::NativeThemeBase {
   ~NativeThemeGtk() override;
 
   void SetThemeCssOverride(ScopedCssProvider provider);
-
-  CHROMEG_CALLBACK_1(NativeThemeGtk,
-                     void,
-                     OnThemeChanged,
-                     GtkSettings*,
-                     GtkParamSpec*);
 
   mutable base::Optional<SkColor> color_cache_[kColorId_NumColors];
 
