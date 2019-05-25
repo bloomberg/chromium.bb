@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_provider.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
 
 namespace blink {

@@ -10,7 +10,6 @@
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-shared.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_type_converters.h"

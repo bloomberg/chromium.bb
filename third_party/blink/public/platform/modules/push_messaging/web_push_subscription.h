@@ -6,11 +6,18 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_SUBSCRIPTION_H_
 
 #include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
-
 namespace blink {
+
+struct WebPushSubscription;
+
+using WebPushSubscriptionCallbacks =
+    WebCallbacks<std::unique_ptr<WebPushSubscription>, const WebPushError&>;
+using WebPushUnsubscribeCallbacks = WebCallbacks<bool, const WebPushError&>;
 
 struct WebPushSubscription {
   // The |endpoint|, |p256dh| and |auth| must all be unique for each
