@@ -399,12 +399,12 @@ TEST(FilePolicyTest, AllowNtCreatePatternRule) {
   EXPECT_TRUE(runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_ANY, L"App*.dll"));
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(L"File_OpenSys32 appmgmts.dll"));
+            runner.RunTest(L"File_OpenSys32 apphelp.dll"));
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"File_OpenSys32 appwiz.cpl"));
 
   runner.SetTestState(BEFORE_REVERT);
   EXPECT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(L"File_OpenSys32 appmgmts.dll"));
+            runner.RunTest(L"File_OpenSys32 apphelp.dll"));
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"File_OpenSys32 appwiz.cpl"));
 }
 
@@ -424,7 +424,7 @@ TEST(FilePolicyTest, CheckNoLeak) {
 TEST(FilePolicyTest, TestQueryAttributesFile) {
   TestRunner runner;
   EXPECT_TRUE(
-      runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_ANY, L"appmgmts.dll"));
+      runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_ANY, L"apphelp.dll"));
   EXPECT_TRUE(
       runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_ANY, L"notfound.exe"));
   EXPECT_TRUE(runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_ANY, L"drivers"));
@@ -435,7 +435,7 @@ TEST(FilePolicyTest, TestQueryAttributesFile) {
             runner.RunTest(L"File_QueryAttributes drivers d"));
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(L"File_QueryAttributes appmgmts.dll f"));
+            runner.RunTest(L"File_QueryAttributes apphelp.dll f"));
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED,
             runner.RunTest(L"File_QueryAttributes ipconfig.exe f"));
