@@ -77,6 +77,7 @@ source_set("content_suggestions") {
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/public/provider/chrome/browser/voice",
+    "//services/identity/public/objc",
     "//ui/base",
     "//ui/strings",
   ]
@@ -216,6 +217,7 @@ source_set("unit_tests") {
     "//ios/public/provider/chrome/browser/ui",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//services/identity/public/objc",
     "//testing/gtest",
     "//testing/gtest",
     "//third_party/ocmock",

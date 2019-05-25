@@ -11,6 +11,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 
+namespace identity {
+class IdentityManager;
+}
+
 namespace ntp_snippets {
 class ContentSuggestionsService;
 }
@@ -43,6 +47,7 @@ class WebStateList;
       templateURLService:(nonnull TemplateURLService*)templateURLService
        urlLoadingService:(nonnull UrlLoadingService*)urlLoadingService
              authService:(nonnull AuthenticationService*)authService
+         identityManager:(nonnull identity::IdentityManager*)identityManager
               logoVendor:(nonnull id<LogoVendor>)logoVendor
     NS_DESIGNATED_INITIALIZER;
 

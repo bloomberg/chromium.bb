@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -114,6 +115,8 @@
                                self.browserState)
          urlLoadingService:urlLoadingService
                authService:AuthenticationServiceFactory::GetForBrowserState(
+                               self.browserState)
+           identityManager:IdentityManagerFactory::GetForBrowserState(
                                self.browserState)
                 logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
                                self.browserState)];

@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -32,6 +33,7 @@
 #import "ios/public/provider/chrome/browser/ui/logo_vendor.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -83,12 +85,15 @@ class NTPHomeMediatorTest : public PlatformTest {
     auth_service_ = static_cast<AuthenticationServiceFake*>(
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
             chrome_browser_state_.get()));
+    identity_manager_ =
+        IdentityManagerFactory::GetForBrowserState(chrome_browser_state_.get());
     mediator_ = [[NTPHomeMediator alloc]
         initWithWebStateList:web_state_list_.get()
           templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
                                  chrome_browser_state_.get())
            urlLoadingService:url_loader_
                  authService:auth_service_
+             identityManager:identity_manager_
                   logoVendor:logo_vendor_];
     mediator_.suggestionsService =
         IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
@@ -133,6 +138,7 @@ class NTPHomeMediatorTest : public PlatformTest {
   FakeWebStateListDelegate web_state_list_delegate_;
   TestUrlLoadingService* url_loader_;
   AuthenticationServiceFake* auth_service_;
+  identity::IdentityManager* identity_manager_;
 
  private:
   std::unique_ptr<web::TestWebState> test_web_state_;

@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
+#include "ios/chrome/browser/signin/feature_flags.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -56,6 +57,7 @@
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -69,15 +71,19 @@ const char kNTPHelpURL[] =
     "https://support.google.com/chrome/?p=ios_new_tab&ios=1";
 }  // namespace
 
-@interface NTPHomeMediator ()<CRWWebStateObserver,
-                              SearchEngineObserving,
-                              WebStateListObserving> {
+@interface NTPHomeMediator () <CRWWebStateObserver,
+                               IdentityManagerObserverBridgeDelegate,
+                               SearchEngineObserving,
+                               WebStateListObserving> {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   // Observes the WebStateList so that this mediator can update the UI when the
   // active WebState changes.
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   // Listen for default search engine changes.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
+  // Observes changes in identity and updates the Identity Disc.
+  std::unique_ptr<identity::IdentityManagerObserverBridge>
+      _identityObserverBridge;
   // Used to load URLs.
   UrlLoadingService* _urlLoadingService;
 }
@@ -93,6 +99,8 @@ const char kNTPHelpURL[] =
 @property(nonatomic, strong) id<LogoVendor> logoVendor;
 // The web state associated with this NTP.
 @property(nonatomic, assign) web::WebState* webState;
+// This is the object that knows how to update the Identity Disc UI.
+@property(nonatomic, weak) id<UserAccountImageUpdateDelegate> imageUpdater;
 
 @end
 
@@ -102,6 +110,7 @@ const char kNTPHelpURL[] =
                   templateURLService:(TemplateURLService*)templateURLService
                    urlLoadingService:(UrlLoadingService*)urlLoadingService
                          authService:(AuthenticationService*)authService
+                     identityManager:(identity::IdentityManager*)identityManager
                           logoVendor:(id<LogoVendor>)logoVendor {
   self = [super init];
   if (self) {
@@ -111,6 +120,8 @@ const char kNTPHelpURL[] =
     _templateURLService = templateURLService;
     _urlLoadingService = urlLoadingService;
     _authService = authService;
+    _identityObserverBridge.reset(
+        new identity::IdentityManagerObserverBridge(identityManager, self));
     // Listen for default search engine changes.
     _searchEngineObserver = std::make_unique<SearchEngineObserverBridge>(
         self, self.templateURLService);
@@ -466,36 +477,8 @@ const char kNTPHelpURL[] =
 }
 
 - (void)registerImageUpdater:(id<UserAccountImageUpdateDelegate>)imageUpdater {
-  UIImage* image;
-  // Fetches user's identity from Authentication Service.
-  ChromeIdentity* identity = self.authService->GetAuthenticatedIdentity();
-  if (identity) {
-    // Fetches user's avatar from Authentication Service. Use cached version if
-    // one is available. If not, use the default avatar and initiate a fetch
-    // in the background. When background fetch completes, all observers will
-    // be notified to refresh the user's avatar.
-    // TODO(crbug.com/965966): Implement observers. This avatar fetch code
-    // is from the IdentityRefreshLogic in settings_table_view_controller.mm.
-    // Code can probably be shared.
-    ios::ChromeIdentityService* identityService =
-        ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-    image = identityService->GetCachedAvatarForIdentity(identity);
-    if (!image) {
-      image = [self defaultAvatar];
-      identityService->GetAvatarForIdentity(identity, nil);
-    }
-  } else {
-    // User is not signed in, show default avatar.
-    image = [self defaultAvatar];
-  }
-  // TODO(crbug.com/965962): Use ResizedAvatarCache when it accepts the
-  // specification of different image sizes.
-  CGFloat dimension = ntp_home::kIdentityAvatarDimension;
-  if (image.size.width != dimension || image.size.height != dimension) {
-    image = ResizeImage(image, CGSizeMake(dimension, dimension),
-                        ProjectionMode::kAspectFit);
-  }
-  [imageUpdater updateAccountImage:image];
+  self.imageUpdater = imageUpdater;
+  [self updateAccountImage];
 }
 
 - (BOOL)ignoreLoadRequests {
@@ -552,6 +535,17 @@ const char kNTPHelpURL[] =
                SEARCH_ENGINE_GOOGLE;
   }
   [self.consumer setLogoIsShowing:showLogo];
+}
+
+#pragma mark - IdentityManagerObserverBridgeDelegate
+
+- (void)onPrimaryAccountSet:(const CoreAccountInfo&)primaryAccountInfo {
+  [self updateAccountImage];
+}
+
+- (void)onPrimaryAccountCleared:
+    (const CoreAccountInfo&)previousPrimaryAccountInfo {
+  [self updateAccountImage];
 }
 
 #pragma mark - Private
@@ -652,6 +646,42 @@ const char kNTPHelpURL[] =
       item ? item->GetPageDisplayState().scroll_state().content_offset().y : 0;
   if (offset > 0)
     [self.suggestionsViewController setContentOffset:offset];
+}
+
+// Fetches and update user's avatar on NTP, or use default avatar if user is
+// not signed in.
+- (void)updateAccountImage {
+  // Early return here to avoid doing all that work to fetch an image that
+  // won't be used.
+  if (!IsIdentityDiscFeatureEnabled())
+    return;
+  UIImage* image;
+  // Fetches user's identity from Authentication Service.
+  ChromeIdentity* identity = self.authService->GetAuthenticatedIdentity();
+  if (identity) {
+    // Fetches user's avatar from Authentication Service. Use cached version if
+    // one is available. If not, use the default avatar and initiate a fetch
+    // in the background. When background fetch completes, all observers will
+    // be notified to refresh the user's avatar.
+    ios::ChromeIdentityService* identityService =
+        ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+    image = identityService->GetCachedAvatarForIdentity(identity);
+    if (!image) {
+      image = [self defaultAvatar];
+      identityService->GetAvatarForIdentity(identity, nil);
+    }
+  } else {
+    // User is not signed in, show default avatar.
+    image = [self defaultAvatar];
+  }
+  // TODO(crbug.com/965962): Use ResizedAvatarCache when it accepts the
+  // specification of different image sizes.
+  CGFloat dimension = ntp_home::kIdentityAvatarDimension;
+  if (image.size.width != dimension || image.size.height != dimension) {
+    image = ResizeImage(image, CGSizeMake(dimension, dimension),
+                        ProjectionMode::kAspectFit);
+  }
+  [self.imageUpdater updateAccountImage:image];
 }
 
 // Returns the default avatar image for users who are not signed in or signed
