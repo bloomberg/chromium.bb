@@ -106,6 +106,70 @@ inline void WriteBigEndian(Integer val, void* dest) {
   memcpy(dest, &val, sizeof(val));
 }
 
+class BigEndianReader {
+ public:
+  BigEndianReader(const uint8_t* buffer, size_t length);
+  BigEndianReader(const BigEndianReader&) = delete;
+  BigEndianReader& operator=(const BigEndianReader&) = delete;
+
+  template <typename T>
+  bool Read(T* out) {
+    if (current_ + sizeof(T) > end_) {
+      return false;
+    }
+    *out = ReadBigEndian<T>(current_);
+    current_ += sizeof(T);
+    return true;
+  }
+
+  bool ReadBytes(size_t length, void* out);
+  bool Skip(size_t length);
+
+  const uint8_t* begin() const { return begin_; }
+  const uint8_t* current() const { return current_; }
+  const uint8_t* end() const { return end_; }
+  size_t length() const { return end_ - begin_; }
+  size_t remaining() const { return end_ - current_; }
+  size_t offset() const { return current_ - begin_; }
+
+ private:
+  const uint8_t* begin_;
+  const uint8_t* current_;
+  const uint8_t* end_;
+};
+
+class BigEndianWriter {
+ public:
+  BigEndianWriter(uint8_t* buffer, size_t length);
+  BigEndianWriter(const BigEndianWriter&) = delete;
+  BigEndianWriter& operator=(const BigEndianWriter&) = delete;
+
+  template <typename T>
+  bool Write(T value) {
+    if (current_ + sizeof(T) > end_) {
+      return false;
+    }
+    WriteBigEndian<T>(value, current_);
+    current_ += sizeof(T);
+    return true;
+  }
+
+  bool WriteBytes(const void* buffer, size_t length);
+  bool Skip(size_t length);
+
+  uint8_t* begin() const { return begin_; }
+  uint8_t* current() const { return current_; }
+  uint8_t* end() const { return end_; }
+  size_t length() const { return end_ - begin_; }
+  size_t remaining() const { return end_ - current_; }
+  size_t offset() const { return current_ - begin_; }
+
+ private:
+  uint8_t* begin_;
+  uint8_t* current_;
+  uint8_t* end_;
+};
+
 }  // namespace openscreen
 
 #endif  // OSP_BASE_BIG_ENDIAN_H_

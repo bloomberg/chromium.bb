@@ -6,6 +6,7 @@ import("//build_overrides/build.gni")
 
 source_set("osp_base") {
   sources = [
+    "big_endian.cc",
     "big_endian.h",
     "boringssl_util.cc",
     "boringssl_util.h",
