@@ -7,7 +7,6 @@
 
 #include <map>
 #include <string>
-
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -29,6 +28,7 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 
 class Browser;
 
@@ -43,7 +43,9 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                             public views::ComboboxListener,
                             public views::LinkListener,
                             public ui::SimpleMenuModel::Delegate,
-                            public views::StyledLabelListener {
+                            public views::StyledLabelListener,
+                            public views::TabbedPaneListener,
+                            public views::MenuButtonListener {
  public:
   // Item IDs for the option button's menu.
   enum OptionsMenuItem {
@@ -87,6 +89,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // views::WidgetDelegate methods.
   View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
+  bool ShouldShowWindowTitle() const override;
   void WindowClosing() override;
 
   // views::View methods.
@@ -179,6 +182,14 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                       translate::TranslateErrors::Type error_type,
                       content::WebContents* web_contents);
 
+  // views::TabbedPaneListener:
+  void TabSelectedAt(int index) override;
+
+  // views::MenuButtonListener:
+  void OnMenuButtonClicked(views::Button* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
+
   // Returns the current child view.
   views::View* GetCurrentView() const;
 
@@ -198,7 +209,14 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // view. Three options depending on UI selection in
   // kUseButtonTranslateBubbleUI.
   views::View* CreateViewBeforeTranslate();
-  views::View* TabCreateViewBeforeTranslate();
+
+  // Creates the view for TAB UI. This view is being used before/during/after
+  // translate.
+  views::View* CreateTabView();
+
+  // AddTab function requires a view element to be shown below each tab.
+  // This function creates an empty view so no extra white space below the tab.
+  views::View* CreateEmptyPane();
 
   // Creates the 'translating' view. Caller takes ownership of the returned
   // view. Three options depending on UI selection in
@@ -242,6 +260,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   views::View* after_translate_view_;
   views::View* error_view_;
   views::View* advanced_view_;
+  views::View* tab_translate_view_;
 
   std::unique_ptr<SourceLanguageComboboxModel> source_language_combobox_model_;
   std::unique_ptr<TargetLanguageComboboxModel> target_language_combobox_model_;
@@ -266,6 +285,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // Whether the window is an incognito window.
   const bool is_in_incognito_window_;
+
+  language::TranslateUIBubbleModel bubble_ui_model_;
 
   bool should_always_translate_;
 

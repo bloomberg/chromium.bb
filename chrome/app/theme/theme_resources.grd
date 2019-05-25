@@ -132,6 +132,10 @@
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_FRIENDS" file="common/user_manager_tutorial/family_and_friends.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_COMPLETE" file="common/user_manager_tutorial/complete.png" />
       </if>
+
+      <if expr="not is_android">
+        <structure type="chrome_scaled_image" name="IDR_TRANSLATE_BUBBLE_ICON" file="common/user_manager_tutorial/translate_bubble_icon.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT" file="common/input_alert.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT_MENU" file="common/input_alert_menu.png" />
       <if expr="enable_service_discovery">
