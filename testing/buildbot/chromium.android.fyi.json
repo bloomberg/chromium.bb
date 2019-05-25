@@ -35,10 +35,9 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
-              "device_os_flavor": "google",
+              "device_os": "OPD3.170816.023",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
