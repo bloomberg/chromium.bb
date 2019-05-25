@@ -5,15 +5,15 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 
 #include <memory>
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_provider.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_provider.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
@@ -98,11 +98,10 @@ ScriptPromise PushSubscription::unsubscribe(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  WebPushProvider* web_push_provider = Platform::Current()->PushProvider();
-  DCHECK(web_push_provider);
-
-  web_push_provider->Unsubscribe(
-      service_worker_registration_->RegistrationId(),
+  PushProvider* push_provider =
+      PushProvider::From(service_worker_registration_);
+  DCHECK(push_provider);
+  push_provider->Unsubscribe(
       std::make_unique<CallbackPromiseAdapter<bool, PushError>>(resolver));
   return promise;
 }

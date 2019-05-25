@@ -9,8 +9,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_client.h"
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_provider.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -21,6 +19,7 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_controller.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_bridge.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_provider.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_callbacks.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
@@ -28,15 +27,17 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 namespace {
 
-WebPushProvider* PushProvider() {
-  WebPushProvider* web_push_provider = Platform::Current()->PushProvider();
-  DCHECK(web_push_provider);
-  return web_push_provider;
+PushProvider* GetPushProvider(
+    ServiceWorkerRegistration* service_worker_registration) {
+  PushProvider* push_provider = PushProvider::From(service_worker_registration);
+  DCHECK(push_provider);
+  return push_provider;
 }
 
 }  // namespace
@@ -87,11 +88,12 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
                                                true /* check_if_main_thread */),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   } else {
-    PushProvider()->Subscribe(
-        registration_->RegistrationId(), web_options,
-        LocalFrame::HasTransientUserActivation(nullptr,
-                                               true /* check_if_main_thread */),
-        std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
+    GetPushProvider(registration_)
+        ->Subscribe(web_options,
+                    LocalFrame::HasTransientUserActivation(
+                        nullptr, true /* check_if_main_thread */),
+                    std::make_unique<PushSubscriptionCallbacks>(resolver,
+                                                                registration_));
   }
 
   return promise;
@@ -101,9 +103,9 @@ ScriptPromise PushManager::getSubscription(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  PushProvider()->GetSubscription(
-      registration_->RegistrationId(),
-      std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
+  GetPushProvider(registration_)
+      ->GetSubscription(
+          std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   return promise;
 }
 
