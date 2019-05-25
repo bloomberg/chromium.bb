@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  This file is generated.
+  This file is partially generated. See note below about the "partially" part.
+
   Please use 'src/tools/polymer/polymer_grdp_to_txt.py' and
   'src/tools/polymer/txt_to_polymer_grdp.py' to modify it, if possible.
 
@@ -14,9 +15,12 @@
   'txt_to_polymer_grdp.py' converts list back to GRDP file.
 
   Usage:
-    $ polymer_grdp_to_txt.py polymer_resources.grdp > /tmp/list.txt
+    $ polymer_grdp_to_txt.py polymer_resources.grdp \-\-polymer-version=1 > /tmp/list.txt
     $ vim /tmp/list.txt
-    $ txt_to_polymer_grdp.py /tmp/list.txt > polymer_resources.grdp
+    $ txt_to_polymer_grdp.py /tmp/list.txt \-\-polymer-version=1 > polymer_resources.grdp
+
+  NOTE: Regenerating this file will eliminate all previous <if expr> statements.
+  Please restore these manually.
 -->
 <grit-part>
   <!-- Polymer 1.0 -->
@@ -528,16 +532,16 @@
                type="chrome_html"
                compress="gzip" />
   </if>
-  <structure name="IDR_POLYMER_1_0_WEB_ANIMATIONS_JS_WEB_ANIMATIONS_NEXT_LITE_MIN_JS"
-             file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js"
+  <structure name="IDR_POLYMER_1_0_POLYMER2_POLYMER_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/polymer2/polymer-extracted.js"
              type="chrome_html"
              compress="gzip" />
   <structure name="IDR_POLYMER_1_0_POLYMER2_POLYMER_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/polymer2/polymer.html"
-             type="chrome_html"
-             compress="gzip" />
-  <structure name="IDR_POLYMER_1_0_POLYMER2_POLYMER_EXTRACTED_JS"
-             file="../../../third_party/polymer/v1_0/components-chromium/polymer2/polymer-extracted.js"
+               type="chrome_html"
+               compress="gzip" />
+  <structure name="IDR_POLYMER_1_0_WEB_ANIMATIONS_JS_WEB_ANIMATIONS_NEXT_LITE_MIN_JS"
+             file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js"
              type="chrome_html"
              compress="gzip" />
 </grit-part>

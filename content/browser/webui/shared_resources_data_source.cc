@@ -66,6 +66,8 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   std::map<std::string, std::string> aliases = {
       {"../../../third_party/polymer/v1_0/components-chromium/",
        "polymer/v1_0/"},
+      {"../../../third_party/polymer/v3_0/components-chromium/",
+       "polymer/v3_0/"},
       {"../../../third_party/web-animations-js/sources/",
        "polymer/v1_0/web-animations-js/"},
       {"../../views/resources/default_100_percent/common/", "images/apps/"},
