@@ -12,6 +12,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -33,6 +34,9 @@ using metrics::ChromeOSAppListLaunchEventProto;
 namespace app_list {
 
 namespace {
+
+constexpr char kLogDisplayTypeClickedResultZeroState[] =
+    "Apps.LogDisplayTypeClickedResultZeroState";
 
 // Normalizes training targets by removing any scheme prefix and trailing slash:
 // "arc://[id]/" to "[id]". This is necessary because apps launched from
@@ -86,6 +90,13 @@ void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
   // https://crbug.com/534772
   if (!result)
     return;
+
+  // Log the display type of the clicked result in zero-state
+  if (query_for_recommendation_) {
+    UMA_HISTOGRAM_ENUMERATION(kLogDisplayTypeClickedResultZeroState,
+                              result->display_type(),
+                              ash::SearchResultDisplayType::kLast);
+  }
 
   result->Open(event_flags);
 

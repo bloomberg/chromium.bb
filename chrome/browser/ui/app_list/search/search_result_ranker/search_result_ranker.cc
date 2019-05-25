@@ -10,6 +10,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
@@ -24,9 +25,12 @@ namespace {
 
 using base::Time;
 using base::TimeDelta;
+using file_manager::file_tasks::FileTasksObserver;
 
 // Limits how frequently models are queried for ranking results.
 constexpr TimeDelta kMinSecondsBetweenFetches = TimeDelta::FromSeconds(1);
+
+constexpr char kLogFileOpenType[] = "RecurrenceRanker.LogFileOpenType";
 
 // Represents each model used within the SearchResultRanker.
 enum class Model { NONE, RESULTS_LIST_GROUP_RANKER };
@@ -44,6 +48,33 @@ Model ModelForType(RankingItemType type) {
       return Model::RESULTS_LIST_GROUP_RANKER;
     default:
       return Model::NONE;
+  }
+}
+
+// Represents various open types of file open events. These values persist to
+// logs. Entries should not be renumbered and numeric values should never
+// be reused.
+enum class FileOpenType {
+  kUnknown = 0,
+  kLaunch = 1,
+  kOpen = 2,
+  kSaveAs = 3,
+  kDownload = 4,
+  kMaxValue = kDownload,
+};
+
+FileOpenType GetTypeFromFileTaskNotifier(FileTasksObserver::OpenType type) {
+  switch (type) {
+    case FileTasksObserver::OpenType::kLaunch:
+      return FileOpenType::kLaunch;
+    case FileTasksObserver::OpenType::kOpen:
+      return FileOpenType::kOpen;
+    case FileTasksObserver::OpenType::kSaveAs:
+      return FileOpenType::kSaveAs;
+    case FileTasksObserver::OpenType::kDownload:
+      return FileOpenType::kDownload;
+    default:
+      return FileOpenType::kUnknown;
   }
 }
 
@@ -75,15 +106,14 @@ SearchResultRanker::SearchResultRanker(Profile* profile)
         app_list_features::kEnableQueryBasedMixedTypesRanker,
         "boost_coefficient", 0.1);
   }
-
   profile_ = profile;
-  if (enable_zero_state_mixed_types_) {
-    if (auto* notifier =
-            file_manager::file_tasks::FileTasksNotifier::GetForProfile(
-                profile_)) {
-      notifier->AddObserver(this);
-    }
 
+  if (auto* notifier =
+          file_manager::file_tasks::FileTasksNotifier::GetForProfile(
+              profile_)) {
+    notifier->AddObserver(this);
+  }
+  if (enable_zero_state_mixed_types_) {
     RecurrenceRankerConfigProto config;
     config.set_min_seconds_between_saves(240u);
     config.set_condition_limit(0u);
@@ -107,12 +137,10 @@ SearchResultRanker::SearchResultRanker(Profile* profile)
 }
 
 SearchResultRanker::~SearchResultRanker() {
-  if (enable_zero_state_mixed_types_) {
-    if (auto* notifier =
-            file_manager::file_tasks::FileTasksNotifier::GetForProfile(
-                profile_)) {
-      notifier->RemoveObserver(this);
-    }
+  if (auto* notifier =
+          file_manager::file_tasks::FileTasksNotifier::GetForProfile(
+              profile_)) {
+    notifier->RemoveObserver(this);
   }
 }
 
@@ -175,6 +203,10 @@ void SearchResultRanker::OnFilesOpened(
     for (const auto& file_open : file_opens)
       zero_state_mixed_types_ranker_->Record(file_open.path.value());
   }
+  // Log the open type of file open events
+  for (const auto& file_open : file_opens)
+    UMA_HISTOGRAM_ENUMERATION(kLogFileOpenType,
+                              GetTypeFromFileTaskNotifier(file_open.open_type));
 }
 
 RecurrenceRanker* SearchResultRanker::get_zero_state_mixed_types_ranker() {

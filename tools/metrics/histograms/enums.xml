@@ -2192,6 +2192,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="LIST"/>
   <int value="2" label="TILE"/>
   <int value="3" label="RECOMMENDATION"/>
+  <int value="4" label="CARD"/>
 </enum>
 
 <enum name="ApplistSearchResultOpenedSource">
@@ -24482,6 +24483,14 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="Old DeleteFile Failed"/>
   <int value="13" label="Over DeleteFile Failed"/>
   <int value="14" label="Async DeleteFile Failed"/>
+</enum>
+
+<enum name="FileOpenType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Launch"/>
+  <int value="2" label="Open"/>
+  <int value="3" label="SaveAs"/>
+  <int value="4" label="Download"/>
 </enum>
 
 <enum name="FileReaderLoaderFailureType">
