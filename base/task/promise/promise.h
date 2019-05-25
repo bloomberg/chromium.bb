@@ -483,12 +483,32 @@ class ManualPromiseResolver {
   }
 
   typename ResolveHelper::Callback GetResolveCallback() {
+    static_assert(!std::is_same<ResolveType, NoResolve>::value,
+                  "Cant resolve a NoResolve promise");
     return ResolveHelper::GetResolveCallback(promise_.abstract_promise_);
   }
 
+  template <typename... Args>
+  auto GetResolveCallback() {
+    static_assert(!std::is_same<ResolveType, NoResolve>::value,
+                  "Cant resolve a NoResolve promise");
+    using Helper = internal::PromiseCallbackHelper<ResolveType, Args...>;
+    return Helper::GetResolveCallback(promise_.abstract_promise_);
+  }
+
   typename ResolveHelper::RepeatingCallback GetRepeatingResolveCallback() {
+    static_assert(!std::is_same<ResolveType, NoResolve>::value,
+                  "Cant resolve a NoResolve promise");
     return ResolveHelper::GetRepeatingResolveCallback(
         promise_.abstract_promise_);
+  }
+
+  template <typename... Args>
+  auto GetRepeatingResolveCallback() {
+    static_assert(!std::is_same<ResolveType, NoResolve>::value,
+                  "Cant resolve a NoResolve promise");
+    using Helper = internal::PromiseCallbackHelper<ResolveType, Args...>;
+    return Helper::GetRepeatingResolveCallback(promise_.abstract_promise_);
   }
 
   typename RejectHelper::Callback GetRejectCallback() {
@@ -497,10 +517,26 @@ class ManualPromiseResolver {
     return RejectHelper::GetRejectCallback(promise_.abstract_promise_);
   }
 
+  template <typename... Args>
+  auto GetRejectCallback() {
+    static_assert(!std::is_same<NoReject, RejectType>::value,
+                  "Can't reject a NoReject promise.");
+    using Helper = internal::PromiseCallbackHelper<RejectType, Args...>;
+    return Helper::GetRejectCallback(promise_.abstract_promise_);
+  }
+
   typename RejectHelper::RepeatingCallback GetRepeatingRejectCallback() {
     static_assert(!std::is_same<NoReject, RejectType>::value,
                   "Can't reject a NoReject promise.");
     return RejectHelper::GetRepeatingRejectCallback(promise_.abstract_promise_);
+  }
+
+  template <typename... Args>
+  auto GetRepeatingRejectCallback() {
+    static_assert(!std::is_same<NoReject, RejectType>::value,
+                  "Can't reject a NoReject promise.");
+    using Helper = internal::PromiseCallbackHelper<RejectType, Args...>;
+    return Helper::GetRepeatingRejectCallback(promise_.abstract_promise_);
   }
 
   Promise<ResolveType, RejectType>& promise() { return promise_; }

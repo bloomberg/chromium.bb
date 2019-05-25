@@ -131,6 +131,80 @@ TEST_F(PromiseTest, GetResolveCallbackThenWithConstInt) {
   run_loop.Run();
 }
 
+TEST_F(PromiseTest, GetResolveCallbackMultipleArgs) {
+  ManualPromiseResolver<std::tuple<int, bool, float>> p(FROM_HERE);
+  p.GetResolveCallback<int, bool, float>().Run(123, true, 1.5f);
+
+  RunLoop run_loop;
+  p.promise().ThenOnCurrent(FROM_HERE,
+                            BindLambdaForTesting([&](int a, bool b, float c) {
+                              EXPECT_EQ(123, a);
+                              EXPECT_TRUE(b);
+                              EXPECT_EQ(1.5f, c);
+                              run_loop.Quit();
+                            }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, ResolveWithTuple) {
+  ManualPromiseResolver<void> p(FROM_HERE);
+  p.Resolve();
+
+  RunLoop run_loop;
+  p.promise()
+      .ThenOnCurrent(FROM_HERE, BindOnce([]() {
+                       return std::tuple<int, bool>(123, false);
+                     }))
+      .ThenOnCurrent(FROM_HERE, BindLambdaForTesting(
+                                    [&](const std::tuple<int, bool>& tuple) {
+                                      EXPECT_EQ(123, std::get<0>(tuple));
+                                      EXPECT_FALSE(std::get<1>(tuple));
+                                      run_loop.Quit();
+                                    }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, ResolveWithUnpackedTuple) {
+  ManualPromiseResolver<void> p(FROM_HERE);
+  p.Resolve();
+
+  RunLoop run_loop;
+  p.promise()
+      .ThenOnCurrent(FROM_HERE, BindOnce([]() {
+                       return std::tuple<int, bool>(123, false);
+                     }))
+      .ThenOnCurrent(FROM_HERE, BindLambdaForTesting([&](int a, bool b) {
+                       EXPECT_EQ(123, a);
+                       EXPECT_FALSE(b);
+                       run_loop.Quit();
+                     }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, ResolveWithUnpackedTupleMoveOnlyTypes) {
+  ManualPromiseResolver<void> p(FROM_HERE);
+  p.Resolve();
+
+  RunLoop run_loop;
+  p.promise()
+      .ThenOnCurrent(FROM_HERE, BindOnce([]() {
+                       return std::make_tuple(std::make_unique<int>(42),
+                                              std::make_unique<float>(4.2f));
+                     }))
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting(
+                         [&](std::unique_ptr<int> a, std::unique_ptr<float> b) {
+                           EXPECT_EQ(42, *a);
+                           EXPECT_EQ(4.2f, *b);
+                           run_loop.Quit();
+                         }));
+
+  run_loop.Run();
+}
+
 TEST_F(PromiseTest, GetRejectCallbackCatch) {
   ManualPromiseResolver<int, std::string> p(FROM_HERE);
 
@@ -188,6 +262,46 @@ TEST_F(PromiseTest, CreateResolvedThen) {
                        run_loop.Quit();
                      }));
 
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, ThenRejectWithTuple) {
+  ManualPromiseResolver<void> p(FROM_HERE);
+  p.Resolve();
+
+  RunLoop run_loop;
+  p.promise()
+      .ThenOnCurrent(FROM_HERE, BindOnce([]() {
+                       return Rejected<std::tuple<int, bool>>{123, false};
+                     }))
+      .CatchOnCurrent(FROM_HERE, BindLambdaForTesting(
+                                     [&](const std::tuple<int, bool>& tuple) {
+                                       EXPECT_EQ(123, std::get<0>(tuple));
+                                       EXPECT_FALSE(std::get<1>(tuple));
+                                       run_loop.Quit();
+                                     }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, GetRejectCallbackMultipleArgs) {
+  ManualPromiseResolver<int, std::tuple<bool, std::string>> p(FROM_HERE);
+
+  RunLoop run_loop;
+  p.promise().ThenOnCurrent(
+      FROM_HERE, BindLambdaForTesting([&](int result) {
+        run_loop.Quit();
+        FAIL() << "We shouldn't get here, the promise was rejected!";
+      }),
+      BindLambdaForTesting([&](const std::tuple<bool, std::string>& err) {
+        // NB we don't currently support tuple expansion for reject.
+        // Its not hard to add, but it's unclear if it will ever be used.
+        run_loop.Quit();
+        EXPECT_FALSE(std::get<0>(err));
+        EXPECT_EQ("Noes!", std::get<1>(err));
+      }));
+
+  p.GetRejectCallback<bool, std::string>().Run(false, "Noes!");
   run_loop.Run();
 }
 
@@ -575,6 +689,18 @@ TEST_F(PromiseTest, ResolveThenVoidFunction) {
   p.promise().ThenOnCurrent(FROM_HERE,
                             BindLambdaForTesting([&]() { run_loop.Quit(); }));
 
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, ResolveThenStdTupleUnpack) {
+  RunLoop run_loop;
+  Promise<std::tuple<int, std::string>>::CreateResolved(FROM_HERE, 10,
+                                                        std::string("Hi"))
+      .ThenOnCurrent(FROM_HERE, BindLambdaForTesting([&](int a, std::string b) {
+                       EXPECT_EQ(10, a);
+                       EXPECT_EQ("Hi", b);
+                       run_loop.Quit();
+                     }));
   run_loop.Run();
 }
 

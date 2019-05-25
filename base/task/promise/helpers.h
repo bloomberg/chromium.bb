@@ -5,10 +5,12 @@
 #ifndef BASE_TASK_PROMISE_HELPERS_H_
 #define BASE_TASK_PROMISE_HELPERS_H_
 
+#include <tuple>
 #include <type_traits>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/parameter_pack.h"
 #include "base/task/promise/abstract_promise.h"
 #include "base/task/promise/promise_result.h"
 
@@ -152,19 +154,7 @@ template <typename T>
 struct CallbackTraits;
 
 template <typename T>
-struct CallbackTraits<base::OnceCallback<T()>> {
-  using ResolveType = typename internal::PromiseCallbackTraits<T>::ResolveType;
-  using RejectType = typename internal::PromiseCallbackTraits<T>::RejectType;
-  using ArgType = void;
-  using ReturnType = T;
-  using SignatureType = T();
-  static constexpr AbstractPromise::Executor::ArgumentPassingType
-      argument_passing_type =
-          AbstractPromise::Executor::ArgumentPassingType::kNormal;
-};
-
-template <typename T>
-struct CallbackTraits<base::RepeatingCallback<T()>> {
+struct CallbackTraits<T()> {
   using ResolveType = typename internal::PromiseCallbackTraits<T>::ResolveType;
   using RejectType = typename internal::PromiseCallbackTraits<T>::RejectType;
   using ArgType = void;
@@ -176,7 +166,7 @@ struct CallbackTraits<base::RepeatingCallback<T()>> {
 };
 
 template <typename T, typename Arg>
-struct CallbackTraits<base::OnceCallback<T(Arg)>> {
+struct CallbackTraits<T(Arg)> {
   using ResolveType = typename internal::PromiseCallbackTraits<T>::ResolveType;
   using RejectType = typename internal::PromiseCallbackTraits<T>::RejectType;
   using ArgType = Arg;
@@ -186,16 +176,31 @@ struct CallbackTraits<base::OnceCallback<T(Arg)>> {
       argument_passing_type = UseMoveSemantics<Arg>::argument_passing_type;
 };
 
-template <typename T, typename Arg>
-struct CallbackTraits<base::RepeatingCallback<T(Arg)>> {
+template <typename T, typename... Args>
+struct CallbackTraits<T(Args...)> {
   using ResolveType = typename internal::PromiseCallbackTraits<T>::ResolveType;
   using RejectType = typename internal::PromiseCallbackTraits<T>::RejectType;
-  using ArgType = Arg;
+  using ArgType =
+      std::conditional_t<(sizeof...(Args) > 0), std::tuple<Args...>, void>;
   using ReturnType = T;
-  using SignatureType = T(Arg);
+  using SignatureType = T(Args...);
+
+  // If any arguments need move semantics, treat as if they all do.
   static constexpr AbstractPromise::Executor::ArgumentPassingType
-      argument_passing_type = UseMoveSemantics<Arg>::argument_passing_type;
+      argument_passing_type =
+          any_of({UseMoveSemantics<Args>::value...})
+              ? AbstractPromise::Executor::ArgumentPassingType::kMove
+              : AbstractPromise::Executor::ArgumentPassingType::kNormal;
 };
+
+// Adaptors for OnceCallback and RepeatingCallback
+template <typename T, typename... Args>
+struct CallbackTraits<OnceCallback<T(Args...)>>
+    : public CallbackTraits<T(Args...)> {};
+
+template <typename T, typename... Args>
+struct CallbackTraits<RepeatingCallback<T(Args...)>>
+    : public CallbackTraits<T(Args...)> {};
 
 // Helper for combining the resolve types of two promises.
 template <typename A, typename B>
@@ -276,9 +281,6 @@ struct PromiseCombiner {
   static constexpr bool valid = ResolveHelper::valid && RejectHelper::valid;
 };
 
-// TODO(alexclarke): Specialize |CallbackTraits| for callbacks with more than
-// one argument to support Promises::All.
-
 template <typename RejectStorage>
 struct EmplaceInnerHelper {
   template <typename Resolve, typename Reject>
@@ -351,7 +353,8 @@ class ArgMoveSemanticsHelper {
 
  private:
   static CbArg GetImpl(AbstractPromise* arg, std::true_type should_move) {
-    return arg->TakeInnerValue<ArgStorageType>();
+    return std::move(
+        unique_any_cast<ArgStorageType>(&arg->TakeValue().value())->value);
   }
 
   static CbArg GetImpl(AbstractPromise* arg, std::false_type should_move) {
@@ -450,7 +453,85 @@ struct RunHelper<OnceCallback<void()>,
   }
 };
 
-// TODO(alexclarke): Specialize RunHelper for callbacks unpacked from a tuple.
+template <typename T>
+struct UnwrapCallback;
+
+template <typename R, typename... Args>
+struct UnwrapCallback<R(Args...)> {
+  using ArgsTuple = std::tuple<Args...>;
+};
+
+// Helper for getting callback arguments from a tuple, which works out if move
+// semantics are needed.
+template <typename Callback, typename Tuple, size_t Index>
+struct TupleArgMoveSemanticsHelper {
+  using CallbackArgsTuple =
+      typename UnwrapCallback<typename Callback::RunType>::ArgsTuple;
+  using CbArg = std::tuple_element_t<Index, CallbackArgsTuple>;
+
+  static CbArg Get(Tuple& tuple) {
+    return GetImpl(tuple, UseMoveSemantics<CbArg>());
+  }
+
+ private:
+  static CbArg GetImpl(Tuple& tuple, std::true_type should_move) {
+    return std::move(std::get<Index>(tuple));
+  }
+
+  static CbArg GetImpl(Tuple& tuple, std::false_type should_move) {
+    return std::get<Index>(tuple);
+  }
+};
+
+// Run helper for running a callbacks with the arguments unpacked from a tuple.
+template <typename CbResult,
+          typename... CbArgs,
+          typename ResolveStorage,
+          typename RejectStorage>
+struct RunHelper<OnceCallback<CbResult(CbArgs...)>,
+                 Resolved<std::tuple<CbArgs...>>,
+                 ResolveStorage,
+                 RejectStorage> {
+  using Callback = OnceCallback<CbResult(CbArgs...)>;
+  using StorageType = Resolved<std::tuple<CbArgs...>>;
+  using IndexSequence = std::index_sequence_for<CbArgs...>;
+
+  static void Run(Callback executor,
+                  AbstractPromise* arg,
+                  AbstractPromise* result) {
+    AbstractPromise::ValueHandle value = arg->TakeValue();
+    std::tuple<CbArgs...>& tuple =
+        unique_any_cast<StorageType>(&value.value())->value;
+    RunInternal(std::move(executor), tuple, result,
+                std::integral_constant<bool, std::is_void<CbResult>::value>(),
+                IndexSequence{});
+  }
+
+ private:
+  template <typename Callback, size_t... Indices>
+  static void RunInternal(Callback executor,
+                          std::tuple<CbArgs...>& tuple,
+                          AbstractPromise* result,
+                          std::false_type void_result,
+                          std::index_sequence<Indices...>) {
+    EmplaceHelper<ResolveStorage, RejectStorage>::Emplace(
+        std::move(executor).Run(
+            TupleArgMoveSemanticsHelper<Callback, std::tuple<CbArgs...>,
+                                        Indices>::Get(tuple)...));
+  }
+
+  template <typename Callback, size_t... Indices>
+  static void RunInternal(Callback executor,
+                          std::tuple<CbArgs...>& tuple,
+                          AbstractPromise* result,
+                          std::true_type void_result,
+                          std::index_sequence<Indices...>) {
+    std::move(executor).Run(
+        TupleArgMoveSemanticsHelper<Callback, std::tuple<CbArgs...>,
+                                    Indices>::Get(tuple)...);
+    result->emplace(Resolved<void>());
+  }
+};
 
 // Used by ManualPromiseResolver<> to generate callbacks.
 template <typename T, typename... Args>

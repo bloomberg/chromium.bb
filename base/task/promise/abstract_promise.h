@@ -176,12 +176,24 @@ class BASE_EXPORT AbstractPromise
 
   const unique_any& value() const { return FindNonCurriedAncestor()->value_; }
 
-  // Moves the value from within T::value.
-  template <typename T>
-  auto TakeInnerValue() {
-    T* ptr = unique_any_cast<T>(&FindNonCurriedAncestor()->value_);
-    DCHECK(ptr);
-    return std::move(ptr->value);
+  class ValueHandle {
+   public:
+    unique_any& value() { return value_; }
+
+    ~ValueHandle() { value_.reset(); }
+
+   private:
+    friend class AbstractPromise;
+
+    explicit ValueHandle(unique_any& value) : value_(value) {}
+
+    unique_any& value_;
+  };
+
+  ValueHandle TakeValue() {
+    AbstractPromise* non_curried_ancestor = FindNonCurriedAncestor();
+    DCHECK(non_curried_ancestor->value_.has_value());
+    return ValueHandle(non_curried_ancestor->value_);
   }
 
   // If this promise isn't curried, returns this. Otherwise follows the chain of

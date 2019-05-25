@@ -261,11 +261,6 @@ void AbstractPromise::Execute() {
 
   // This is likely to delete the executor.
   GetExecutor()->Execute(this);
-
-  // We need to release any AdjacencyListNodes we own to prevent memory leaks
-  // due to refcount cycles.
-  if (prerequisites_ && !IsResolvedWithPromise())
-    prerequisites_->prerequisite_list.clear();
 }
 
 bool AbstractPromise::DispatchIfNonCurriedRootSettled() {
@@ -392,19 +387,25 @@ void AbstractPromise::OnCanceled() {
 
   DependentList::Node* dependent_list = dependents_.ConsumeOnceForCancel();
 
-  // Release all pre-requisites to prevent memory leaks
-  if (prerequisites_) {
-    for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
-      node.prerequisite = nullptr;
-    }
-  }
-
   // Propagate cancellation to dependents.
   while (dependent_list) {
     scoped_refptr<AbstractPromise> dependent =
         std::move(dependent_list->dependent);
-    dependent->OnPrerequisiteCancelled();
     dependent_list = dependent_list->next.load(std::memory_order_relaxed);
+    dependent->OnPrerequisiteCancelled();
+  }
+
+  // We need to release any AdjacencyListNodes we own to prevent memory leaks
+  // due to refcount cycles. We can't just clear |prerequisite_list| (which
+  // contains DependentList::Node) because in the case of multiple prerequisites
+  // they may not have all be settled, which means some will want to traverse
+  // their |dependent_list| which includes this promise. This is a problem
+  // because there isn't a conveniant way of removing ourself from their
+  // |dependent_list|. It's sufficent however to simply null our references.
+  if (prerequisites_) {
+    for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
+      node.prerequisite = nullptr;
+    }
   }
 }
 
@@ -437,6 +438,11 @@ void AbstractPromise::OnResolved() {
     AddAsDependentForAllPrerequisites();
   } else {
     OnResolvePostReadyDependents();
+
+    // We need to release any AdjacencyListNodes we own to prevent memory leaks
+    // due to refcount cycles.
+    if (prerequisites_)
+      prerequisites_->prerequisite_list.clear();
   }
 }
 
@@ -445,6 +451,19 @@ void AbstractPromise::OnRejected() {
   DCHECK(executor_can_reject_) << from_here_.ToString();
 #endif
   OnRejectPostReadyDependents();
+
+  // We need to release any AdjacencyListNodes we own to prevent memory leaks
+  // due to refcount cycles. We can't just clear |prerequisite_list| (which
+  // contains DependentList::Node) because in the case of multiple prerequisites
+  // they may not have all be settled, which means some will want to traverse
+  // their |dependent_list| which includes this promise. This is a problem
+  // because there isn't a conveniant way of removing ourself from their
+  // |dependent_list|. It's sufficent however to simply null our references.
+  if (prerequisites_) {
+    for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
+      node.prerequisite = nullptr;
+    }
+  }
 }
 
 // static

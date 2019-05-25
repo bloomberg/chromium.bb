@@ -2115,7 +2115,6 @@ TEST_F(AbstractPromiseTest, MutipleThreadsAddingDependants) {
         FROM_HERE, BindLambdaForTesting([&]() {
           scoped_refptr<AbstractPromise> p =
               ThenPromise(FROM_HERE, root).With(decrement_cb);
-          p->OnResolved();
         }));
 
     // Mid way through post a task to resolve |root|.
