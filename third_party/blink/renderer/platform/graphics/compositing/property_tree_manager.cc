@@ -598,7 +598,7 @@ void PropertyTreeManager::EmitClipMaskLayer() {
 
   bool needs_layer =
       !pending_synthetic_mask_layers_.Contains(mask_isolation.id) &&
-      !RuntimeEnabledFeatures::FastBorderRadiusEnabled();
+      mask_isolation.rounded_corner_bounds.IsEmpty();
 
   int clip_id = EnsureCompositorClipNode(*current_.clip);
   CompositorElementId mask_isolation_id, mask_effect_id;
@@ -799,6 +799,32 @@ void PropertyTreeManager::ForceRenderSurfaceIfSyntheticRoundedCornerClip(
   }
 }
 
+static bool SupportsShaderBasedRoundedCorner(const FloatRoundedRect& rect) {
+  if (!RuntimeEnabledFeatures::FastBorderRadiusEnabled())
+    return false;
+
+  auto WidthAndHeightAreTheSame = [](const FloatSize& size) {
+    return size.Width() == size.Height();
+  };
+
+  const FloatRoundedRect::Radii& radii = rect.GetRadii();
+  if (!WidthAndHeightAreTheSame(radii.TopLeft()) ||
+      !WidthAndHeightAreTheSame(radii.TopRight()) ||
+      !WidthAndHeightAreTheSame(radii.BottomRight()) ||
+      !WidthAndHeightAreTheSame(radii.BottomLeft())) {
+    return false;
+  }
+  float min_dimension =
+      std::min(rect.Rect().Width(), rect.Rect().Height()) / 2.0f;
+  if (radii.TopLeft().Width() > min_dimension ||
+      radii.TopRight().Width() > min_dimension ||
+      radii.BottomRight().Width() > min_dimension ||
+      radii.BottomLeft().Width() > min_dimension)
+    return false;
+
+  return true;
+}
+
 SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const ClipPaintPropertyNode& target_clip_arg,
     SkBlendMode delegated_blend) {
@@ -884,9 +910,8 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const auto& transform = pending_clip.clip->LocalTransformSpace();
     synthetic_effect.transform_id = EnsureCompositorTransformNode(transform);
     synthetic_effect.double_sided = !transform.IsBackfaceHidden();
-
     if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
-      if (RuntimeEnabledFeatures::FastBorderRadiusEnabled()) {
+      if (SupportsShaderBasedRoundedCorner(pending_clip.clip->ClipRect())) {
         synthetic_effect.rounded_corner_bounds =
             gfx::RRectF(pending_clip.clip->ClipRect());
         synthetic_effect.is_fast_rounded_corner = true;
