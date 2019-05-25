@@ -74,6 +74,10 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
     return VideoDecodeStatsDBImpl::GetMaxDaysToKeepStats();
   }
 
+  bool GetEnableUnweightedEntries() {
+    return VideoDecodeStatsDBImpl::GetEnableUnweightedEntries();
+  }
+
   void SetDBClock(base::Clock* clock) {
     stats_db_->set_wall_clock_for_test(clock);
   }
@@ -549,6 +553,101 @@ TEST_F(VideoDecodeStatsDBImplTest, AppendAndExpire) {
   // Advance the clock 100 days. Verify stats still expired.
   clock.Advance(base::TimeDelta::FromDays(100));
   VerifyEmptyStats(kStatsKeyVp9);
+}
+
+TEST_F(VideoDecodeStatsDBImplTest, EnableUnweightedEntries) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::unique_ptr<base::FieldTrialList> field_trial_list;
+
+  // Default is false.
+  EXPECT_FALSE(GetEnableUnweightedEntries());
+
+  // Override field trial.
+  std::map<std::string, std::string> params;
+  params[VideoDecodeStatsDBImpl::kEnableUnweightedEntriesParamName] = "true";
+
+  const std::string kTrialName = "TrialName";
+  const std::string kGroupName = "GroupName";
+
+  field_trial_list.reset();
+  field_trial_list.reset(new base::FieldTrialList(nullptr));
+  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+
+  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
+  base::FieldTrial* field_trial =
+      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->RegisterFieldTrialOverride(
+      media::kMediaCapabilitiesWithParameters.name,
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
+  std::map<std::string, std::string> actual_params;
+  EXPECT_TRUE(base::GetFieldTrialParamsByFeature(
+      media::kMediaCapabilitiesWithParameters, &actual_params));
+  EXPECT_EQ(params, actual_params);
+
+  // Confirm field trial overridden.
+  EXPECT_TRUE(GetMaxDaysToKeepStats());
+
+  InitializeDB();
+
+  // Append 200 frames with 10% dropped, 1% efficient.
+  AppendStats(kStatsKeyVp9, DecodeStatsEntry(200, 0.10 * 200, 0.01 * 200));
+  // Use real doubles to keep track of these things to make sure the precision
+  // math for repeating decimals works out with whats done internally.
+  int num_appends = 1;
+  double unweighted_smoothness_avg = 0.10;
+  double unweighted_efficiency_avg = 0.01;
+
+  // NOTE, the members of DecodeStatsEntry have a different meaning when using
+  // unweighted DB entries. The denominator is 100,000 * the number of appends
+  // and the numerator is whatever value achieves the correct unweighted ratio
+  // for those appends. See detailed comment in
+  // VideoDecodeStatsDBImpl::OnGotDecodeStats();
+  const int kNumAppendScale = 100000;
+  int expected_denominator = kNumAppendScale * num_appends;
+  VerifyReadStats(
+      kStatsKeyVp9,
+      DecodeStatsEntry(expected_denominator,
+                       unweighted_smoothness_avg * expected_denominator,
+                       unweighted_efficiency_avg * expected_denominator));
+
+  // Append 20K frames with 5% dropped and 10% efficient.
+  AppendStats(kStatsKeyVp9,
+              DecodeStatsEntry(20000, 0.05 * 20000, 0.10 * 20000));
+  num_appends++;
+  unweighted_smoothness_avg = (0.10 + 0.05) / num_appends;
+  unweighted_efficiency_avg = (0.01 + 0.10) / num_appends;
+
+  // While new record had 100x more frames than the previous append, the ratios
+  // should be an unweighted average of the two records (7.5% dropped and
+  // 5.5% efficient).
+  expected_denominator = kNumAppendScale * num_appends;
+  VerifyReadStats(
+      kStatsKeyVp9,
+      DecodeStatsEntry(expected_denominator,
+                       unweighted_smoothness_avg * expected_denominator,
+                       unweighted_efficiency_avg * expected_denominator));
+
+  // Append 1M frames with 3.4567% dropped and 3.4567% efficient.
+  AppendStats(kStatsKeyVp9, DecodeStatsEntry(1000000, 0.012345 * 1000000,
+                                             0.034567 * 1000000));
+  num_appends++;
+  unweighted_smoothness_avg = (0.10 + 0.05 + 0.012345) / num_appends;
+  unweighted_efficiency_avg = (0.01 + 0.10 + 0.034567) / num_appends;
+
+  // Here, the ratios should still be averaged in the unweighted fashion, but
+  // truncated after the 3rd decimal place of the percentage (e.g. 1.234%
+  // or the 5th decimal place when represented as a fraction of 1 (0.01234)).
+  expected_denominator = kNumAppendScale * num_appends;
+  VerifyReadStats(
+      kStatsKeyVp9,
+      DecodeStatsEntry(expected_denominator,
+                       unweighted_smoothness_avg * expected_denominator,
+                       unweighted_efficiency_avg * expected_denominator));
 }
 
 }  // namespace media

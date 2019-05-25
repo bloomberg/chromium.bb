@@ -34,6 +34,8 @@ const int kMaxFramesPerBufferDefault = 2500;
 
 const int kMaxDaysToKeepStatsDefault = 30;
 
+const bool kEnableUnweightedEntriesDefault = false;
+
 }  // namespace
 
 const char VideoDecodeStatsDBImpl::kMaxFramesPerBufferParamName[] =
@@ -41,6 +43,9 @@ const char VideoDecodeStatsDBImpl::kMaxFramesPerBufferParamName[] =
 
 const char VideoDecodeStatsDBImpl::kMaxDaysToKeepStatsParamName[] =
     "db_days_to_keep_stats";
+
+const char VideoDecodeStatsDBImpl::kEnableUnweightedEntriesParamName[] =
+    "db_enable_unweighted_entries";
 
 // static
 int VideoDecodeStatsDBImpl::GetMaxFramesPerBuffer() {
@@ -54,6 +59,13 @@ int VideoDecodeStatsDBImpl::GetMaxDaysToKeepStats() {
   return base::GetFieldTrialParamByFeatureAsDouble(
       kMediaCapabilitiesWithParameters, kMaxDaysToKeepStatsParamName,
       kMaxDaysToKeepStatsDefault);
+}
+
+// static
+bool VideoDecodeStatsDBImpl::GetEnableUnweightedEntries() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kMediaCapabilitiesWithParameters, kEnableUnweightedEntriesParamName,
+      kEnableUnweightedEntriesDefault);
 }
 
 // static
@@ -203,6 +215,16 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
   const uint64_t kMaxFramesPerBuffer = GetMaxFramesPerBuffer();
   DCHECK_GT(kMaxFramesPerBuffer, 0UL);
 
+  double new_entry_dropped_ratio = 0;
+  double new_entry_efficient_ratio = 0;
+  if (new_entry.frames_decoded) {
+    new_entry_dropped_ratio = static_cast<double>(new_entry.frames_dropped) /
+                              new_entry.frames_decoded;
+    new_entry_efficient_ratio =
+        static_cast<double>(new_entry.frames_power_efficient) /
+        new_entry.frames_decoded;
+  }
+
   if (old_frames_decoded + new_entry.frames_decoded > kMaxFramesPerBuffer) {
     // The |new_entry| is pushing out some or all of the old data. Achieve this
     // by weighting the dropped and power efficiency stats by the ratio of the
@@ -215,12 +237,6 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
         static_cast<double>(old_frames_dropped) / old_frames_decoded;
     double old_efficient_ratio =
         static_cast<double>(old_frames_power_efficient) / old_frames_decoded;
-    double new_entry_dropped_ratio =
-        static_cast<double>(new_entry.frames_dropped) /
-        new_entry.frames_decoded;
-    double new_entry_efficient_ratio =
-        static_cast<double>(new_entry.frames_power_efficient) /
-        new_entry.frames_decoded;
 
     double agg_dropped_ratio = fill_ratio * new_entry_dropped_ratio +
                                (1 - fill_ratio) * old_dropped_ratio;
@@ -241,6 +257,35 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
                                     old_frames_dropped);
     stats_proto->set_frames_power_efficient(new_entry.frames_power_efficient +
                                             old_frames_power_efficient);
+  }
+
+  if (GetEnableUnweightedEntries()) {
+    uint64_t old_num_unweighted_playbacks =
+        stats_proto->num_unweighted_playbacks();
+    double old_unweighted_drop_avg =
+        stats_proto->unweighted_average_frames_dropped();
+    double old_unweighted_efficient_avg =
+        stats_proto->unweighted_average_frames_efficient();
+
+    uint64_t new_num_unweighted_playbacks = old_num_unweighted_playbacks + 1;
+    double new_unweighted_drop_avg =
+        ((old_unweighted_drop_avg * old_num_unweighted_playbacks) +
+         new_entry_dropped_ratio) /
+        new_num_unweighted_playbacks;
+    double new_unweighted_efficient_avg =
+        ((old_unweighted_efficient_avg * old_num_unweighted_playbacks) +
+         new_entry_efficient_ratio) /
+        new_num_unweighted_playbacks;
+
+    stats_proto->set_num_unweighted_playbacks(new_num_unweighted_playbacks);
+    stats_proto->set_unweighted_average_frames_dropped(new_unweighted_drop_avg);
+    stats_proto->set_unweighted_average_frames_efficient(
+        new_unweighted_efficient_avg);
+
+    DVLOG(2) << __func__ << " Updating unweighted averages. dropped:"
+             << new_unweighted_drop_avg
+             << " efficient:" << new_unweighted_efficient_avg
+             << " num_playbacks:" << new_num_unweighted_playbacks;
   }
 
   // Update the time stamp for the current write.
@@ -278,9 +323,47 @@ void VideoDecodeStatsDBImpl::OnGotDecodeStats(
   if (stats_proto && !AreStatsExpired(stats_proto.get())) {
     DCHECK(success);
 
-    entry = std::make_unique<DecodeStatsEntry>(
-        stats_proto->frames_decoded(), stats_proto->frames_dropped(),
-        stats_proto->frames_power_efficient());
+    if (GetEnableUnweightedEntries()) {
+      DCHECK_GE(stats_proto->unweighted_average_frames_dropped(), 0);
+      DCHECK_LE(stats_proto->unweighted_average_frames_dropped(), 1);
+      DCHECK_GE(stats_proto->unweighted_average_frames_efficient(), 0);
+      DCHECK_LE(stats_proto->unweighted_average_frames_efficient(), 1);
+
+      DVLOG(2) << __func__ << " Using unweighted averages. dropped:"
+               << stats_proto->unweighted_average_frames_dropped()
+               << " efficient:"
+               << stats_proto->unweighted_average_frames_efficient()
+               << " num_playbacks:" << stats_proto->num_unweighted_playbacks();
+
+      // The meaning of DecodStatsEntry is a little different for folks in the
+      // unweighted experiment group
+      // - The *ratios* of dropped / decoded and efficient / decoded are valid,
+      //   which means no change to any math in the upper layer. The ratio is
+      //   internally computed as an unweighted average of the dropped frames
+      //   ratio over all the playbacks in this bucket.
+      // - The denominator "decoded" is actually the number of entries
+      //   accumulated by this key scaled by 100,000. Scaling by 100,000
+      //   preserves the precision of the dropped / decoded ratio to the 5th
+      //   decimal place (i.e. 0.01234, or 1.234%)
+      // - The numerator "dropped" or "efficient" doesn't represent anything and
+      //   is simply chosen to create the correct ratio.
+      //
+      // This is obviously not the most efficient or readable way to do this,
+      // but  allows us to continue using the same proto and UKM reporting
+      // while we experiment with the unweighted approach. If this approach
+      // proves successful we will refactor the API and proto.
+      uint64_t frames_decoded_lie =
+          100000 * stats_proto->num_unweighted_playbacks();
+      entry = std::make_unique<DecodeStatsEntry>(
+          frames_decoded_lie,
+          frames_decoded_lie * stats_proto->unweighted_average_frames_dropped(),
+          frames_decoded_lie *
+              stats_proto->unweighted_average_frames_efficient());
+    } else {
+      entry = std::make_unique<DecodeStatsEntry>(
+          stats_proto->frames_decoded(), stats_proto->frames_dropped(),
+          stats_proto->frames_power_efficient());
+    }
   }
 
   DVLOG(3) << __func__ << " read " << (success ? "succeeded" : "FAILED!")
