@@ -231,8 +231,11 @@ class TreeNodeModel : public TreeModel {
       : root_(std::move(root)) {}
   virtual ~TreeNodeModel() override {}
 
-  NodeType* AsNode(TreeModelNode* model_node) {
+  static NodeType* AsNode(TreeModelNode* model_node) {
     return static_cast<NodeType*>(model_node);
+  }
+  static const NodeType* AsNode(const TreeModelNode* model_node) {
+    return static_cast<const NodeType*>(model_node);
   }
 
   NodeType* Add(NodeType* parent, std::unique_ptr<NodeType> node, int index) {
@@ -283,22 +286,23 @@ class TreeNodeModel : public TreeModel {
     return root_.get();
   }
 
-  int GetChildCount(TreeModelNode* parent) override {
+  Nodes GetChildren(const TreeModelNode* parent) const override {
     DCHECK(parent);
-    return int{AsNode(parent)->children().size()};
+    const auto& children = AsNode(parent)->children();
+    Nodes nodes;
+    nodes.reserve(children.size());
+    std::transform(children.cbegin(), children.cend(),
+                   std::back_inserter(nodes),
+                   [](const auto& child) { return child.get(); });
+    return nodes;
   }
 
-  NodeType* GetChild(TreeModelNode* parent, int index) override {
-    DCHECK(parent);
-    return AsNode(parent)->GetChild(index);
-  }
-
-  int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) override {
+  int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) const override {
     DCHECK(parent);
     return AsNode(parent)->GetIndexOf(AsNode(child));
   }
 
-  TreeModelNode* GetParent(TreeModelNode* node) override {
+  TreeModelNode* GetParent(TreeModelNode* node) const override {
     DCHECK(node);
     return AsNode(node)->parent();
   }
