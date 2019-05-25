@@ -778,7 +778,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     }
   }
 
-  if (request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect) {
+  if (request.ClientRedirectReason() != ClientNavigationReason::kNone) {
     probe::FrameRequestedNavigation(frame_, frame_, url,
                                     request.ClientRedirectReason());
   }

@@ -46,7 +46,6 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
 
     : origin_document_(origin_document),
       resource_request_(resource_request),
-      client_redirect_(ClientRedirectPolicy::kNotClientRedirect),
       should_send_referrer_(kMaybeSendReferrer) {
   // These flags are passed to a service worker which controls the page.
   resource_request_.SetFetchRequestMode(
@@ -79,6 +78,16 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
 
     SetReferrerForRequest(origin_document_, resource_request_);
   }
+}
+
+ClientRedirectPolicy FrameLoadRequest::ClientRedirect() const {
+  // Form submissions have not historically been reported to the extensions API
+  // as client redirects.
+  if (client_navigation_reason_ == ClientNavigationReason::kNone ||
+      client_navigation_reason_ == ClientNavigationReason::kFormSubmissionGet ||
+      client_navigation_reason_ == ClientNavigationReason::kFormSubmissionPost)
+    return ClientRedirectPolicy::kNotClientRedirect;
+  return ClientRedirectPolicy::kClientRedirect;
 }
 
 }  // namespace blink

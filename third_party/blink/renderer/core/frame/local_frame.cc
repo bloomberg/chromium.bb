@@ -313,7 +313,7 @@ void LocalFrame::Navigate(const FrameLoadRequest& request,
                           WebFrameLoadType frame_load_type) {
   if (!navigation_rate_limiter().CanProceed())
     return;
-  if (request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect) {
+  if (request.ClientRedirectReason() != ClientNavigationReason::kNone) {
     probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(),
                                     0.0, request.ClientRedirectReason());
     // Non-user navigation before the page has finished firing onload should not
@@ -326,7 +326,7 @@ void LocalFrame::Navigate(const FrameLoadRequest& request,
   }
   loader_.StartNavigation(request, frame_load_type);
 
-  if (request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect)
+  if (request.ClientRedirectReason() != ClientNavigationReason::kNone)
     probe::FrameClearedScheduledNavigation(this);
 }
 

@@ -243,6 +243,11 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, FormSubmission) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("webnavigation/formSubmission")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   content::DownloadManager* download_manager =
