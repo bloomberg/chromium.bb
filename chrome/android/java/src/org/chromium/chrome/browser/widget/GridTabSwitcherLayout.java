@@ -10,9 +10,13 @@ import android.animation.AnimatorSet;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.SystemClock;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
@@ -29,15 +33,19 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.ResourceManager;
+import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 
 /**
  * A {@link Layout} that shows all tabs in one grid view.
  */
 public class GridTabSwitcherLayout
         extends Layout implements GridTabSwitcher.GridVisibilityObserver {
+    private static final String TAG = "GTSLayout";
+
     // Duration of the transition animation
     private static final long ZOOMING_DURATION = 300;
 
@@ -49,6 +57,10 @@ public class GridTabSwitcherLayout
     private final GridTabSwitcher.GridController mGridController;
     // To force Toolbar finishes its animation when this Layout finished hiding.
     private final LayoutTab mDummyLayoutTab;
+
+    private int mFrameCount;
+    private long mStartTime;
+    private int mStartFrame;
 
     public GridTabSwitcherLayout(Context context, LayoutUpdateHost updateHost,
             LayoutRenderHost renderHost, GridTabSwitcher gridTabSwitcher) {
@@ -201,9 +213,26 @@ public class GridTabSwitcherLayout
                 mTabToSwitcherAnimation = null;
                 // Step 2: fade in the real GTS RecyclerView.
                 mGridController.showOverview(true);
+
+                // TODO(crbug.com/964406): stop reporting on Canary before enabling in Finch.
+                if (ChromeVersionInfo.isLocalBuild() || ChromeVersionInfo.isCanaryBuild()) {
+                    reportAnimationPerf();
+                }
             }
         });
+        mStartFrame = mFrameCount;
+        mStartTime = SystemClock.elapsedRealtime();
         mTabToSwitcherAnimation.start();
+    }
+
+    private void reportAnimationPerf() {
+        int frameRendered = mFrameCount - mStartFrame;
+        long elapsedMs = SystemClock.elapsedRealtime() - mStartTime;
+        String message = String.format(Locale.US, "fps = %.2f (%d / %dms)",
+                (1000.f * frameRendered / elapsedMs), frameRendered, elapsedMs);
+
+        Toast.makeText(ContextUtils.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        Log.i(TAG, message);
     }
 
     @Override
@@ -219,5 +248,6 @@ public class GridTabSwitcherLayout
                 ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
                         ? mGridTabSwitcher.getResourceId()
                         : 0);
+        mFrameCount++;
     }
 }
