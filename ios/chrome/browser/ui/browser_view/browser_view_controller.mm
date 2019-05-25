@@ -239,31 +239,31 @@ namespace {
 const size_t kMaxURLDisplayChars = 32 * 1024;
 
 typedef NS_ENUM(NSInteger, ContextMenuHistogram) {
-  // Note: these values must match the ContextMenuOption enum in histograms.xml.
+  // Note: these values must match the ContextMenuOptionIOS enum in enums.xml.
   ACTION_OPEN_IN_NEW_TAB = 0,
   ACTION_OPEN_IN_INCOGNITO_TAB = 1,
   ACTION_COPY_LINK_ADDRESS = 2,
-  ACTION_SAVE_IMAGE = 6,
-  ACTION_OPEN_IMAGE = 7,
-  ACTION_OPEN_IMAGE_IN_NEW_TAB = 8,
-  ACTION_COPY_IMAGE = 9,
-  ACTION_SEARCH_BY_IMAGE = 11,
-  ACTION_OPEN_JAVASCRIPT = 21,
-  ACTION_READ_LATER = 22,
-  NUM_ACTIONS = 23,
+  ACTION_SAVE_IMAGE = 3,
+  ACTION_OPEN_IMAGE = 4,
+  ACTION_OPEN_IMAGE_IN_NEW_TAB = 5,
+  ACTION_COPY_IMAGE = 6,
+  ACTION_SEARCH_BY_IMAGE = 7,
+  ACTION_OPEN_JAVASCRIPT = 8,
+  ACTION_READ_LATER = 9,
+  NUM_ACTIONS = 10,
 };
 
 void Record(ContextMenuHistogram action, bool is_image, bool is_link) {
   if (is_image) {
     if (is_link) {
-      UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.ImageLink", action,
-                                NUM_ACTIONS);
+      UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOptionIOS.ImageLink",
+                                action, NUM_ACTIONS);
     } else {
-      UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.Image", action,
+      UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOptionIOS.Image", action,
                                 NUM_ACTIONS);
     }
   } else {
-    UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.Link", action,
+    UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOptionIOS.Link", action,
                               NUM_ACTIONS);
   }
 }

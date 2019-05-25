@@ -234,136 +234,165 @@ enum UmaEnumOpenLinkAsUserProfilesState {
 const int kOpenLinkAsUserMaxProfilesReported = 10;
 #endif  // !defined(OS_CHROMEOS)
 
-// Whether to return the general enum_id or context_specific_enum_id
-// in the FindUMAEnumValueForCommand lookup function.
-enum UmaEnumIdLookupType {
-  GENERAL_ENUM_ID,
-  CONTEXT_SPECIFIC_ENUM_ID,
+enum class UmaEnumIdLookupType {
+  GeneralEnumId,
+  ContextSpecificEnumId,
 };
 
-// Maps UMA enumeration to IDC. IDC could be changed so we can't use
-// just them and |UMA_HISTOGRAM_CUSTOM_ENUMERATION|.
-// Never change mapping or reuse |enum_id|. Always push back new items.
-// Items that is not used any more by |RenderViewContextMenu.ExecuteCommand|
-// could be deleted, but don't change the rest of |kUmaEnumToControlId|.
-//
-// |context_specific_enum_id| matches the ContextMenuOption histogram enum.
-// Used to track command usage under specific contexts, specifically Menu
-// items under 'link + image' and 'selected text'. Should be set to -1 if
-// command is not context specific tracked.
-const struct UmaEnumCommandIdPair {
-  int enum_id;
-  int context_specific_enum_id;
-  int control_id;
-} kUmaEnumToControlId[] = {
-    /*
-      enum id for 0, 1 are detected using
-      RenderViewContextMenu::IsContentCustomCommandId and
-      ContextMenuMatcher::IsExtensionsCustomCommandId
-    */
-    {2, -1, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST},
-    {3, 0, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB},
-    {4, 15, IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW},
-    {5, 1, IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD},
-    {6, 5, IDC_CONTENT_CONTEXT_SAVELINKAS},
-    {7, 18, IDC_CONTENT_CONTEXT_SAVEAVAS},
-    {8, 6, IDC_CONTENT_CONTEXT_SAVEIMAGEAS},
-    {9, 2, IDC_CONTENT_CONTEXT_COPYLINKLOCATION},
-    {10, 10, IDC_CONTENT_CONTEXT_COPYIMAGELOCATION},
-    {11, -1, IDC_CONTENT_CONTEXT_COPYAVLOCATION},
-    {12, 9, IDC_CONTENT_CONTEXT_COPYIMAGE},
-    {13, 8, IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB},
-    {14, -1, IDC_CONTENT_CONTEXT_OPENAVNEWTAB},
-    {15, -1, IDC_CONTENT_CONTEXT_PLAYPAUSE},
-    {16, -1, IDC_CONTENT_CONTEXT_MUTE},
-    {17, -1, IDC_CONTENT_CONTEXT_LOOP},
-    {18, -1, IDC_CONTENT_CONTEXT_CONTROLS},
-    {19, -1, IDC_CONTENT_CONTEXT_ROTATECW},
-    {20, -1, IDC_CONTENT_CONTEXT_ROTATECCW},
-    {21, -1, IDC_BACK},
-    {22, -1, IDC_FORWARD},
-    {23, -1, IDC_SAVE_PAGE},
-    {24, -1, IDC_RELOAD},
-    {25, -1, IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP},
-    {26, -1, IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP},
-    {27, 16, IDC_PRINT},
-    {28, -1, IDC_VIEW_SOURCE},
-    {29, -1, IDC_CONTENT_CONTEXT_INSPECTELEMENT},
-    {30, -1, IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE},
-    {31, -1, IDC_CONTENT_CONTEXT_VIEWPAGEINFO},
-    {32, -1, IDC_CONTENT_CONTEXT_TRANSLATE},
-    {33, -1, IDC_CONTENT_CONTEXT_RELOADFRAME},
-    {34, -1, IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE},
-    {35, -1, IDC_CONTENT_CONTEXT_VIEWFRAMEINFO},
-    {36, -1, IDC_CONTENT_CONTEXT_UNDO},
-    {37, -1, IDC_CONTENT_CONTEXT_REDO},
-    {38, 28, IDC_CONTENT_CONTEXT_CUT},
-    {39, 4, IDC_CONTENT_CONTEXT_COPY},
-    {40, 29, IDC_CONTENT_CONTEXT_PASTE},
-    {41, -1, IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE},
-    {42, -1, IDC_CONTENT_CONTEXT_DELETE},
-    {43, -1, IDC_CONTENT_CONTEXT_SELECTALL},
-    {44, 17, IDC_CONTENT_CONTEXT_SEARCHWEBFOR},
-    {45, 40, IDC_CONTENT_CONTEXT_GOTOURL},
-    {46, -1, IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS},
-    {47, -1, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS},
-    {52, -1, IDC_CONTENT_CONTEXT_OPENLINKWITH},
-    {53, -1, IDC_CHECK_SPELLING_WHILE_TYPING},
-    {54, -1, IDC_SPELLCHECK_MENU},
-    {55, 27, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE},
-    {56, -1, IDC_SPELLCHECK_LANGUAGES_FIRST},
-    {57, 11, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE},
-    {58, 25, IDC_SPELLCHECK_SUGGESTION_0},
-    {59, 26, IDC_SPELLCHECK_ADD_TO_DICTIONARY},
-    {60, -1, IDC_SPELLPANEL_TOGGLE},
-    {61, -1, IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB},
-    {62, -1, IDC_WRITING_DIRECTION_MENU},
-    {63, -1, IDC_WRITING_DIRECTION_DEFAULT},
-    {64, -1, IDC_WRITING_DIRECTION_LTR},
-    {65, -1, IDC_WRITING_DIRECTION_RTL},
-    {66, -1, IDC_CONTENT_CONTEXT_LOAD_IMAGE},
-    {68, -1, IDC_ROUTE_MEDIA},
-    {69, -1, IDC_CONTENT_CONTEXT_COPYLINKTEXT},
-    {70, -1, IDC_CONTENT_CONTEXT_OPENLINKINPROFILE},
-    {71, -1, IDC_OPEN_LINK_IN_PROFILE_FIRST},
-    {72, -1, IDC_CONTENT_CONTEXT_GENERATEPASSWORD},
-    {73, -1, IDC_SPELLCHECK_MULTI_LINGUAL},
-    {74, -1, IDC_CONTENT_CONTEXT_OPEN_WITH1},
-    {75, -1, IDC_CONTENT_CONTEXT_OPEN_WITH2},
-    {76, -1, IDC_CONTENT_CONTEXT_OPEN_WITH3},
-    {77, -1, IDC_CONTENT_CONTEXT_OPEN_WITH4},
-    {78, -1, IDC_CONTENT_CONTEXT_OPEN_WITH5},
-    {79, -1, IDC_CONTENT_CONTEXT_OPEN_WITH6},
-    {80, -1, IDC_CONTENT_CONTEXT_OPEN_WITH7},
-    {81, -1, IDC_CONTENT_CONTEXT_OPEN_WITH8},
-    {82, -1, IDC_CONTENT_CONTEXT_OPEN_WITH9},
-    {83, -1, IDC_CONTENT_CONTEXT_OPEN_WITH10},
-    {84, -1, IDC_CONTENT_CONTEXT_OPEN_WITH11},
-    {85, -1, IDC_CONTENT_CONTEXT_OPEN_WITH12},
-    {86, -1, IDC_CONTENT_CONTEXT_OPEN_WITH13},
-    {87, -1, IDC_CONTENT_CONTEXT_OPEN_WITH14},
-    {88, -1, IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN},
-    {89, -1, IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP},
-    {90, -1, IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS},
-    {91, -1, IDC_CONTENT_CONTEXT_PICTUREINPICTURE},
-    {92, -1, IDC_CONTENT_CONTEXT_EMOJI},
-    {93, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1},
-    {94, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION2},
-    {95, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION3},
-    {96, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION4},
-    {97, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION5},
-    {98, -1, IDC_CONTENT_CONTEXT_LOOK_UP},
-    {99, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE},
-    {100, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE},
-    {101, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS},
-    {102, -1, IDC_SEND_TAB_TO_SELF},
-    {103, -1, IDC_CONTENT_LINK_SEND_TAB_TO_SELF},
-    // Add new items here and use |enum_id| from the next line.
-    // Also, add new items to RenderViewContextMenuItem enum in
-    // tools/metrics/histograms/enums.xml.
-    {104, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
-                   // was added.
-};
+const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
+  // These maps are from IDC_* -> UMA value. Never alter UMA ids. You may remove
+  // items, but add a line to keep the old value from being reused.
+
+  // These UMA values are for the the RenderViewContextMenuItem enum, used for
+  // the RenderViewContextMenu.Shown and RenderViewContextMenu.Used histograms.
+  static base::NoDestructor<std::map<int, int>> general_map(
+      {// NB: UMA values for 0 and 1 are detected using
+       // RenderViewContextMenu::IsContentCustomCommandId() and
+       // ContextMenuMatcher::IsExtensionsCustomCommandId()
+       {IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST, 2},
+       {IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 3},
+       {IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW, 4},
+       {IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD, 5},
+       {IDC_CONTENT_CONTEXT_SAVELINKAS, 6},
+       {IDC_CONTENT_CONTEXT_SAVEAVAS, 7},
+       {IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 8},
+       {IDC_CONTENT_CONTEXT_COPYLINKLOCATION, 9},
+       {IDC_CONTENT_CONTEXT_COPYIMAGELOCATION, 10},
+       {IDC_CONTENT_CONTEXT_COPYAVLOCATION, 11},
+       {IDC_CONTENT_CONTEXT_COPYIMAGE, 12},
+       {IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB, 13},
+       {IDC_CONTENT_CONTEXT_OPENAVNEWTAB, 14},
+       {IDC_CONTENT_CONTEXT_PLAYPAUSE, 15},
+       {IDC_CONTENT_CONTEXT_MUTE, 16},
+       {IDC_CONTENT_CONTEXT_LOOP, 17},
+       {IDC_CONTENT_CONTEXT_CONTROLS, 18},
+       {IDC_CONTENT_CONTEXT_ROTATECW, 19},
+       {IDC_CONTENT_CONTEXT_ROTATECCW, 20},
+       {IDC_BACK, 21},
+       {IDC_FORWARD, 22},
+       {IDC_SAVE_PAGE, 23},
+       {IDC_RELOAD, 24},
+       {IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP, 25},
+       {IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP, 26},
+       {IDC_PRINT, 27},
+       {IDC_VIEW_SOURCE, 28},
+       {IDC_CONTENT_CONTEXT_INSPECTELEMENT, 29},
+       {IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE, 30},
+       {IDC_CONTENT_CONTEXT_VIEWPAGEINFO, 31},
+       {IDC_CONTENT_CONTEXT_TRANSLATE, 32},
+       {IDC_CONTENT_CONTEXT_RELOADFRAME, 33},
+       {IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE, 34},
+       {IDC_CONTENT_CONTEXT_VIEWFRAMEINFO, 35},
+       {IDC_CONTENT_CONTEXT_UNDO, 36},
+       {IDC_CONTENT_CONTEXT_REDO, 37},
+       {IDC_CONTENT_CONTEXT_CUT, 38},
+       {IDC_CONTENT_CONTEXT_COPY, 39},
+       {IDC_CONTENT_CONTEXT_PASTE, 40},
+       {IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE, 41},
+       {IDC_CONTENT_CONTEXT_DELETE, 42},
+       {IDC_CONTENT_CONTEXT_SELECTALL, 43},
+       {IDC_CONTENT_CONTEXT_SEARCHWEBFOR, 44},
+       {IDC_CONTENT_CONTEXT_GOTOURL, 45},
+       {IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS, 46},
+       {IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS, 47},
+       {IDC_CONTENT_CONTEXT_OPENLINKWITH, 52},
+       {IDC_CHECK_SPELLING_WHILE_TYPING, 53},
+       {IDC_SPELLCHECK_MENU, 54},
+       {IDC_CONTENT_CONTEXT_SPELLING_TOGGLE, 55},
+       {IDC_SPELLCHECK_LANGUAGES_FIRST, 56},
+       {IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE, 57},
+       {IDC_SPELLCHECK_SUGGESTION_0, 58},
+       {IDC_SPELLCHECK_ADD_TO_DICTIONARY, 59},
+       {IDC_SPELLPANEL_TOGGLE, 60},
+       {IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB, 61},
+       {IDC_WRITING_DIRECTION_MENU, 62},
+       {IDC_WRITING_DIRECTION_DEFAULT, 63},
+       {IDC_WRITING_DIRECTION_LTR, 64},
+       {IDC_WRITING_DIRECTION_RTL, 65},
+       {IDC_CONTENT_CONTEXT_LOAD_IMAGE, 66},
+       {IDC_ROUTE_MEDIA, 68},
+       {IDC_CONTENT_CONTEXT_COPYLINKTEXT, 69},
+       {IDC_CONTENT_CONTEXT_OPENLINKINPROFILE, 70},
+       {IDC_OPEN_LINK_IN_PROFILE_FIRST, 71},
+       {IDC_CONTENT_CONTEXT_GENERATEPASSWORD, 72},
+       {IDC_SPELLCHECK_MULTI_LINGUAL, 73},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH1, 74},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH2, 75},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH3, 76},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH4, 77},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH5, 78},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH6, 79},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH7, 80},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH8, 81},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH9, 82},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH10, 83},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH11, 84},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH12, 85},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH13, 86},
+       {IDC_CONTENT_CONTEXT_OPEN_WITH14, 87},
+       {IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN, 88},
+       {IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP, 89},
+       {IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS, 90},
+       {IDC_CONTENT_CONTEXT_PICTUREINPICTURE, 91},
+       {IDC_CONTENT_CONTEXT_EMOJI, 92},
+       {IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1, 93},
+       {IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION2, 94},
+       {IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION3, 95},
+       {IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION4, 96},
+       {IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION5, 97},
+       {IDC_CONTENT_CONTEXT_LOOK_UP, 98},
+       {IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE, 99},
+       {IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE, 100},
+       {IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS, 101},
+       {IDC_SEND_TAB_TO_SELF, 102},
+       {IDC_CONTENT_LINK_SEND_TAB_TO_SELF, 103},
+       // To add new items:
+       //   - Add one more line above this comment block, using the UMA value
+       //     from the line below this comment block.
+       //   - Increment the UMA value in that latter line.
+       //   - Add the new item to the RenderViewContextMenuItem enum in
+       //     tools/metrics/histograms/enums.xml.
+       {0, 104}});
+
+  // These UMA values are for the the ContextMenuOptionDesktop enum, used for
+  // the ContextMenu.SelectedOptionDesktop histograms.
+  static base::NoDestructor<std::map<int, int>> specific_map(
+      {{IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0},
+       {IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD, 1},
+       {IDC_CONTENT_CONTEXT_COPYLINKLOCATION, 2},
+       {IDC_CONTENT_CONTEXT_COPY, 3},
+       {IDC_CONTENT_CONTEXT_SAVELINKAS, 4},
+       {IDC_CONTENT_CONTEXT_SAVEIMAGEAS, 5},
+       {IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB, 6},
+       {IDC_CONTENT_CONTEXT_COPYIMAGE, 7},
+       {IDC_CONTENT_CONTEXT_COPYIMAGELOCATION, 8},
+       {IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE, 9},
+       {IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW, 10},
+       {IDC_PRINT, 11},
+       {IDC_CONTENT_CONTEXT_SEARCHWEBFOR, 12},
+       {IDC_CONTENT_CONTEXT_SAVEAVAS, 13},
+       {IDC_SPELLCHECK_SUGGESTION_0, 14},
+       {IDC_SPELLCHECK_ADD_TO_DICTIONARY, 15},
+       {IDC_CONTENT_CONTEXT_SPELLING_TOGGLE, 16},
+       {IDC_CONTENT_CONTEXT_CUT, 17},
+       {IDC_CONTENT_CONTEXT_PASTE, 18},
+       {IDC_CONTENT_CONTEXT_GOTOURL, 19},
+       // To add new items:
+       //   - Add one more line above this comment block, using the UMA value
+       //     from the line below this comment block.
+       //   - Increment the UMA value in that latter line.
+       //   - Add the new item to the ContextMenuOptionDesktop enum in
+       //     tools/metrics/histograms/enums.xml.
+       {0, 20}});
+
+  return *(type == UmaEnumIdLookupType::GeneralEnumId ? general_map
+                                                      : specific_map);
+}
+
+int GetUmaValueMax(UmaEnumIdLookupType type) {
+  // The IDC_ "value" of 0 is really a sentinel for the UMA max value.
+  return GetIdcToUmaMap(type).find(0)->second;
+}
 
 // Collapses large ranges of ids before looking for UMA enum.
 int CollapseCommandsForUMA(int id) {
@@ -394,8 +423,7 @@ int CollapseCommandsForUMA(int id) {
 }
 
 // Returns UMA enum value for command specified by |id| or -1 if not found.
-// |use_specific_context_enum| set to true returns the context_specific_enum_id.
-int FindUMAEnumValueForCommand(int id, UmaEnumIdLookupType enum_lookup_type) {
+int FindUMAEnumValueForCommand(int id, UmaEnumIdLookupType type) {
   if (RenderViewContextMenu::IsContentCustomCommandId(id))
     return 0;
 
@@ -403,19 +431,12 @@ int FindUMAEnumValueForCommand(int id, UmaEnumIdLookupType enum_lookup_type) {
     return 1;
 
   id = CollapseCommandsForUMA(id);
-  const size_t kMappingSize = base::size(kUmaEnumToControlId);
-  for (size_t i = 0; i < kMappingSize; ++i) {
-    if (kUmaEnumToControlId[i].control_id == id) {
-      if (enum_lookup_type == GENERAL_ENUM_ID)
-        return kUmaEnumToControlId[i].enum_id;
-      if (enum_lookup_type == CONTEXT_SPECIFIC_ENUM_ID &&
-          kUmaEnumToControlId[i].context_specific_enum_id > -1) {
-        return kUmaEnumToControlId[i].context_specific_enum_id;
-      }
-    }
-  }
+  const auto& map = GetIdcToUmaMap(type);
+  auto it = map.find(id);
+  if (it == map.end())
+    return -1;
 
-  return -1;
+  return it->second;
 }
 
 // Usually a new tab is expected where this function is used,
@@ -921,25 +942,20 @@ Profile* RenderViewContextMenu::GetProfile() const {
 }
 
 void RenderViewContextMenu::RecordUsedItem(int id) {
-  int enum_id = FindUMAEnumValueForCommand(id, GENERAL_ENUM_ID);
+  // Log general ID.
+
+  int enum_id =
+      FindUMAEnumValueForCommand(id, UmaEnumIdLookupType::GeneralEnumId);
   if (enum_id == -1) {
     NOTREACHED() << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
     return;
   }
 
-  const size_t kMappingSize = base::size(kUmaEnumToControlId);
-  UMA_HISTOGRAM_EXACT_LINEAR("RenderViewContextMenu.Used", enum_id,
-                             kUmaEnumToControlId[kMappingSize - 1].enum_id);
-  // Record to additional context specific histograms.
-  enum_id = FindUMAEnumValueForCommand(id, CONTEXT_SPECIFIC_ENUM_ID);
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "RenderViewContextMenu.Used", enum_id,
+      GetUmaValueMax(UmaEnumIdLookupType::GeneralEnumId));
 
-  // Linked image context.
-  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK) &&
-      content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
-    UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.ImageLink", enum_id,
-                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
-  }
+  // Log other situations.
 
   // chrome://downloads link context.
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK) &&
@@ -948,28 +964,56 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
         "Downloads_OpenUrlOfDownloadedItemFromContextMenu"));
   }
 
-  // Selected text context.
+  // Log for specific contexts. Note that since the menu is displayed for
+  // contexts (all of the ContextMenuContentType::SupportsXXX() functions),
+  // these UMA metrics are necessarily best-effort in distilling into a context.
+
+  enum_id = FindUMAEnumValueForCommand(
+      id, UmaEnumIdLookupType::ContextSpecificEnumId);
+  if (enum_id == -1)
+    return;
+
   if (content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER) &&
-      content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT)) {
-    UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.SelectedText",
-                               enum_id,
-                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
-  }
-  // Misspelled word context.
-  if (!params_.misspelled_word.empty()) {
-    UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.MisspelledWord",
-                               enum_id,
-                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
+          ContextMenuContentType::ITEM_GROUP_MEDIA_VIDEO)) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContextMenu.SelectedOptionDesktop.Video", enum_id,
+        GetUmaValueMax(UmaEnumIdLookupType::ContextSpecificEnumId));
+  } else if (content_type_->SupportsGroup(
+                 ContextMenuContentType::ITEM_GROUP_LINK) &&
+             content_type_->SupportsGroup(
+                 ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContextMenu.SelectedOptionDesktop.ImageLink", enum_id,
+        GetUmaValueMax(UmaEnumIdLookupType::ContextSpecificEnumId));
+  } else if (content_type_->SupportsGroup(
+                 ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContextMenu.SelectedOptionDesktop.Image", enum_id,
+        GetUmaValueMax(UmaEnumIdLookupType::ContextSpecificEnumId));
+  } else if (!params_.misspelled_word.empty()) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContextMenu.SelectedOptionDesktop.MisspelledWord", enum_id,
+        GetUmaValueMax(UmaEnumIdLookupType::ContextSpecificEnumId));
+  } else if (!params_.selection_text.empty() &&
+             params_.media_type == blink::WebContextMenuData::kMediaTypeNone) {
+    // Probably just text.
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContextMenu.SelectedOptionDesktop.SelectedText", enum_id,
+        GetUmaValueMax(UmaEnumIdLookupType::ContextSpecificEnumId));
+  } else {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContextMenu.SelectedOptionDesktop.Other", enum_id,
+        GetUmaValueMax(UmaEnumIdLookupType::ContextSpecificEnumId));
   }
 }
 
 void RenderViewContextMenu::RecordShownItem(int id) {
-  int enum_id = FindUMAEnumValueForCommand(id, GENERAL_ENUM_ID);
+  int enum_id =
+      FindUMAEnumValueForCommand(id, UmaEnumIdLookupType::GeneralEnumId);
   if (enum_id != -1) {
-    const size_t kMappingSize = base::size(kUmaEnumToControlId);
-    UMA_HISTOGRAM_EXACT_LINEAR("RenderViewContextMenu.Shown", enum_id,
-                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "RenderViewContextMenu.Shown", enum_id,
+        GetUmaValueMax(UmaEnumIdLookupType::GeneralEnumId));
   } else {
     // Just warning here. It's harder to maintain list of all possibly
     // visible items than executable items.

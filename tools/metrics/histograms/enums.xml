@@ -9378,6 +9378,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ContextMenuOption">
+  <obsolete>
+    Removed from code as of 5/2019.
+  </obsolete>
   <summary>The item selected from a context menu</summary>
   <int value="0" label="Open in new tab"/>
   <int value="1" label="Open in incognito tab"/>
@@ -9420,6 +9423,74 @@ Called by update_net_error_codes.py.-->
   <int value="38" label="Sneak peek (Ephemeral tab)"/>
   <int value="39" label="Sneak peek for image (Ephemeral tab)"/>
   <int value="40" label="Go to URL"/>
+</enum>
+
+<enum name="ContextMenuOptionAndroid">
+  <summary>The item selected from a context menu on Android.</summary>
+  <int value="0" label="Open in new tab"/>
+  <int value="1" label="Open in incognito tab"/>
+  <int value="2" label="Copy link address"/>
+  <int value="3" label="Copy email address"/>
+  <int value="4" label="Copy link text"/>
+  <int value="5" label="Save link"/>
+  <int value="6" label="Save image"/>
+  <int value="7" label="Open image"/>
+  <int value="8" label="Open image in new tab"/>
+  <int value="9" label="Search by image"/>
+  <int value="10" label="Load original image"/>
+  <int value="11" label="Save video"/>
+  <int value="12" label="Share image"/>
+  <int value="13" label="Open in new/other window"/>
+  <int value="14" label="Send email"/>
+  <int value="15" label="Add to contacts"/>
+  <int value="16" label="Call"/>
+  <int value="17" label="Send text message"/>
+  <int value="18" label="Copy phone number"/>
+  <int value="19" label="Open in new Chrome tab (CCT)"/>
+  <int value="20" label="Open in Chrome incognito tab (CCT)"/>
+  <int value="21" label="Open in browser (CCT)"/>
+  <int value="22" label="Open in Chrome (Fullscreen)"/>
+  <int value="23" label="Share link"/>
+  <int value="24" label="Preview page (Ephemeral tab)"/>
+  <int value="25" label="Preview image (Ephemeral tab)"/>
+</enum>
+
+<enum name="ContextMenuOptionDesktop">
+  <summary>The item selected from a context menu on Desktop.</summary>
+  <int value="0" label="Open in new tab"/>
+  <int value="1" label="Open in incognito tab"/>
+  <int value="2" label="Copy link address"/>
+  <int value="3" label="Copy link text"/>
+  <int value="4" label="Save link"/>
+  <int value="5" label="Save image"/>
+  <int value="6" label="Open image in new tab"/>
+  <int value="7" label="Copy image"/>
+  <int value="8" label="Copy image URL"/>
+  <int value="9" label="Search by image"/>
+  <int value="10" label="Open link in a new window"/>
+  <int value="11" label="Print"/>
+  <int value="12" label="Search web for..."/>
+  <int value="13" label="Save media as"/>
+  <int value="14" label="Spellcheck suggestion"/>
+  <int value="15" label="Add to dictionary"/>
+  <int value="16" label="Context spelling toggle (Use enhanced spell check)"/>
+  <int value="17" label="Cut text"/>
+  <int value="18" label="Paste text"/>
+  <int value="19" label="Go to URL"/>
+</enum>
+
+<enum name="ContextMenuOptionIOS">
+  <summary>The item selected from a context menu on iOS.</summary>
+  <int value="0" label="Open in new tab"/>
+  <int value="1" label="Open in incognito tab"/>
+  <int value="2" label="Copy link address"/>
+  <int value="3" label="Save image"/>
+  <int value="4" label="Open image"/>
+  <int value="5" label="Open image in new tab"/>
+  <int value="6" label="Copy image"/>
+  <int value="7" label="Search by image"/>
+  <int value="8" label="Open (JavaScript evaluation)"/>
+  <int value="9" label="Read Later"/>
 </enum>
 
 <enum name="ContextMenuSaveImage">

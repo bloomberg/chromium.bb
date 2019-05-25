@@ -69,7 +69,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     }
 
     static class ContextMenuUma {
-        // Note: these values must match the ContextMenuOption enum in enums.xml.
+        // Note: these values must match the ContextMenuOptionAndroid enum in enums.xml.
         // Only add values to the end, right before NUM_ENTRIES!
         @IntDef({
                 Action.OPEN_IN_NEW_TAB, Action.OPEN_IN_INCOGNITO_TAB, Action.COPY_LINK_ADDRESS,
@@ -93,24 +93,24 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             int SAVE_IMAGE = 6;
             int OPEN_IMAGE = 7;
             int OPEN_IMAGE_IN_NEW_TAB = 8;
-            int SEARCH_BY_IMAGE = 11;
-            int LOAD_ORIGINAL_IMAGE = 13;
-            int SAVE_VIDEO = 14;
-            int SHARE_IMAGE = 19;
-            int OPEN_IN_OTHER_WINDOW = 20;
-            int SEND_EMAIL = 23;
-            int ADD_TO_CONTACTS = 24;
-            int CALL = 30;
-            int SEND_TEXT_MESSAGE = 31;
-            int COPY_PHONE_NUMBER = 32;
-            int OPEN_IN_NEW_CHROME_TAB = 33;
-            int OPEN_IN_CHROME_INCOGNITO_TAB = 34;
-            int OPEN_IN_BROWSER = 35;
-            int OPEN_IN_CHROME = 36;
-            int SHARE_LINK = 37;
-            int OPEN_IN_EPHEMERAL_TAB = 38;
-            int OPEN_IMAGE_IN_EPHEMERAL_TAB = 39;
-            int NUM_ENTRIES = 40;
+            int SEARCH_BY_IMAGE = 9;
+            int LOAD_ORIGINAL_IMAGE = 10;
+            int SAVE_VIDEO = 11;
+            int SHARE_IMAGE = 12;
+            int OPEN_IN_OTHER_WINDOW = 13;
+            int SEND_EMAIL = 14;
+            int ADD_TO_CONTACTS = 15;
+            int CALL = 16;
+            int SEND_TEXT_MESSAGE = 17;
+            int COPY_PHONE_NUMBER = 18;
+            int OPEN_IN_NEW_CHROME_TAB = 19;
+            int OPEN_IN_CHROME_INCOGNITO_TAB = 20;
+            int OPEN_IN_BROWSER = 21;
+            int OPEN_IN_CHROME = 22;
+            int SHARE_LINK = 23;
+            int OPEN_IN_EPHEMERAL_TAB = 24;
+            int OPEN_IMAGE_IN_EPHEMERAL_TAB = 25;
+            int NUM_ENTRIES = 26;
         }
 
         // Note: these values must match the ContextMenuSaveLinkType enum in enums.xml.
@@ -152,14 +152,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static void record(ContextMenuParams params, @Action int action) {
             String histogramName;
             if (params.isVideo()) {
-                histogramName = "ContextMenu.SelectedOption.Video";
+                histogramName = "ContextMenu.SelectedOptionAndroid.Video";
             } else if (params.isImage()) {
-                histogramName = params.isAnchor()
-                        ? "ContextMenu.SelectedOption.ImageLink"
-                        : "ContextMenu.SelectedOption.Image";
+                histogramName = params.isAnchor() ? "ContextMenu.SelectedOptionAndroid.ImageLink"
+                                                  : "ContextMenu.SelectedOptionAndroid.Image";
             } else {
                 assert params.isAnchor();
-                histogramName = "ContextMenu.SelectedOption.Link";
+                histogramName = "ContextMenu.SelectedOptionAndroid.Link";
             }
             RecordHistogram.recordEnumeratedHistogram(histogramName, action, Action.NUM_ENTRIES);
         }
