@@ -64,6 +64,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_switches.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -431,6 +432,17 @@ SpeechRecognitionManagerDelegate*
 
 net::NetLog* ShellContentBrowserClient::GetNetLog() {
   return shell_browser_main_parts_->net_log();
+}
+
+void ShellContentBrowserClient::OverrideWebkitPrefs(
+    RenderViewHost* render_view_host,
+    WebPreferences* prefs) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceDarkMode)) {
+    prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
+  } else {
+    prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+  }
 }
 
 DevToolsManagerDelegate*
