@@ -58,7 +58,10 @@ Polymer({
      * Whether settings is in the narrow state (side nav hidden). Controlled by
      * a binding in the cr-toolbar element.
      */
-    isNarrow: Boolean,
+    isNarrow: {
+      type: Boolean,
+      observer: 'onNarrowChanged_',
+    },
 
     /**
      * @private {!PageVisibility}
@@ -334,4 +337,10 @@ Polymer({
     }
   },
 
+  /** @private */
+  onNarrowChanged_: function() {
+    if (this.$.drawer.open && !this.isNarrow) {
+      this.$.drawer.close();
+    }
+  },
 });
