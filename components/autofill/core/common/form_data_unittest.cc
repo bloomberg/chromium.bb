@@ -132,7 +132,7 @@ void FillInDummyFormData(FormData* data) {
   field_data.autocomplete_attribute = "off";
   field_data.max_length = 200;
   field_data.is_autofilled = true;
-  field_data.check_status = FormFieldData::CheckStatus::CHECKED;
+  field_data.check_status = FormFieldData::CheckStatus::kChecked;
   field_data.is_focusable = true;
   field_data.should_autocomplete = false;
   field_data.text_direction = base::i18n::RIGHT_TO_LEFT;

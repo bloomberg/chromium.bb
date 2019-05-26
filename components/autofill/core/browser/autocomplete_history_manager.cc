@@ -199,7 +199,7 @@ void AutocompleteHistoryManager::OnWillSubmitForm(
     if (!field.value.empty() && !field.name.empty() && IsTextField(field) &&
         field.should_autocomplete && !IsValidCreditCardNumber(field.value) &&
         !IsSSN(field.value) && field.is_focusable &&
-        field.role != FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) {
+        field.role != FormFieldData::RoleAttribute::kPresentation) {
       values.push_back(field);
     }
   }

@@ -872,7 +872,7 @@ TEST_F(AutofillMetricsTest, LogHiddenRepresentationalFieldSkipDecision) {
 
   // skips
   test::CreateTestFormField("City", "city", "", "text", &field);
-  field.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  field.role = FormFieldData::RoleAttribute::kPresentation;
   form.fields.push_back(field);
   field_types.push_back(ADDRESS_HOME_CITY);
   field_signature[1] = Collapse(CalculateFieldSignatureForField(field));
@@ -886,7 +886,7 @@ TEST_F(AutofillMetricsTest, LogHiddenRepresentationalFieldSkipDecision) {
 
   // doesn't skip
   test::CreateTestFormField("Country", "country", "", "select-one", &field);
-  field.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  field.role = FormFieldData::RoleAttribute::kPresentation;
   form.fields.push_back(field);
   field_types.push_back(ADDRESS_HOME_COUNTRY);
   field_signature[3] = Collapse(CalculateFieldSignatureForField(field));
@@ -8002,7 +8002,8 @@ class AutofillMetricsParseQueryResponseTest : public testing::Test {
     FormFieldData checkable_field;
     checkable_field.label = ASCIIToUTF16("radio_button");
     checkable_field.form_control_type = "radio";
-    checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+    checkable_field.check_status =
+        FormFieldData::CheckStatus::kCheckableButUnchecked;
     form.fields.push_back(checkable_field);
 
     owned_forms_.push_back(std::make_unique<FormStructure>(form));

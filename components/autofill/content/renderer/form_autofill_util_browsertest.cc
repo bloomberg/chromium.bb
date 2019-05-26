@@ -32,7 +32,6 @@ using blink::WebString;
 using blink::WebVector;
 
 struct AutofillFieldLabelSourceCase {
-  const char* description;
   const char* html;
   const FormFieldData::LabelSource label_source;
 };
@@ -210,7 +209,7 @@ TEST_F(FormAutofillUtilsTest, InferLabelForElementTest) {
     ASSERT_FALSE(form_target.IsNull());
 
     FormFieldData::LabelSource label_source =
-        FormFieldData::LabelSource::UNKNOWN;
+        FormFieldData::LabelSource::kUnknown;
     base::string16 label;
     autofill::form_util::InferLabelForElementForTesting(form_target, stop_words,
                                                         &label, &label_source);
@@ -221,34 +220,32 @@ TEST_F(FormAutofillUtilsTest, InferLabelForElementTest) {
 TEST_F(FormAutofillUtilsTest, InferLabelSourceTest) {
   const char kLabelSourceExpectedLabel[] = "label";
   static const AutofillFieldLabelSourceCase test_cases[] = {
-      {"DIV_TABLE",
-       "<div><div>label</div><div><input id='target'/></div></div>",
-       FormFieldData::LabelSource::DIV_TABLE},
-      {"LABEL_TAG", "<label>label</label><input id='target'/>",
-       FormFieldData::LabelSource::LABEL_TAG},
-      {"COMBINED", "<b>l</b><strong>a</strong>bel<input id='target'/>",
-       FormFieldData::LabelSource::COMBINED},
-      {"P_TAG", "<p><b>l</b><strong>a</strong>bel</p><input id='target'/>",
-       FormFieldData::LabelSource::P_TAG},
-      {"PLACE_HOLDER", "<input id='target' placeholder='label'/>",
-       FormFieldData::LabelSource::PLACE_HOLDER},
-      {"ARIA_LABEL", "<input id='target' aria-label='label'/>",
-       FormFieldData::LabelSource::ARIA_LABEL},
-      {"VALUE", "<input id='target' value='label'/>",
-       FormFieldData::LabelSource::VALUE},
-      {"LI_TAG", "<li>label<div><input id='target'/></div></li>",
-       FormFieldData::LabelSource::LI_TAG},
-      {"TD_TAG",
-       "<table><tr><td>label</td><td><input id='target'/></td></tr></table>",
-       FormFieldData::LabelSource::TD_TAG},
-      {"DD_TAG", "<dl><dt>label</dt><dd><input id='target'></dd></dl>",
-       FormFieldData::LabelSource::DD_TAG},
+      {"<div><div>label</div><div><input id='target'/></div></div>",
+       FormFieldData::LabelSource::kDivTable},
+      {"<label>label</label><input id='target'/>",
+       FormFieldData::LabelSource::kLabelTag},
+      {"<b>l</b><strong>a</strong>bel<input id='target'/>",
+       FormFieldData::LabelSource::kCombined},
+      {"<p><b>l</b><strong>a</strong>bel</p><input id='target'/>",
+       FormFieldData::LabelSource::kPTag},
+      {"<input id='target' placeholder='label'/>",
+       FormFieldData::LabelSource::kPlaceHolder},
+      {"<input id='target' aria-label='label'/>",
+       FormFieldData::LabelSource::kAriaLabel},
+      {"<input id='target' value='label'/>",
+       FormFieldData::LabelSource::kValue},
+      {"<li>label<div><input id='target'/></div></li>",
+       FormFieldData::LabelSource::kLiTag},
+      {"<table><tr><td>label</td><td><input id='target'/></td></tr></table>",
+       FormFieldData::LabelSource::kTdTag},
+      {"<dl><dt>label</dt><dd><input id='target'></dd></dl>",
+       FormFieldData::LabelSource::kDdTag},
   };
   std::vector<base::char16> stop_words;
   stop_words.push_back(static_cast<base::char16>('-'));
 
   for (auto test_case : test_cases) {
-    SCOPED_TRACE(test_case.description);
+    SCOPED_TRACE(testing::Message() << test_case.label_source);
     LoadHTML(test_case.html);
     WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
@@ -259,7 +256,7 @@ TEST_F(FormAutofillUtilsTest, InferLabelSourceTest) {
     ASSERT_FALSE(form_target.IsNull());
 
     FormFieldData::LabelSource label_source =
-        FormFieldData::LabelSource::UNKNOWN;
+        FormFieldData::LabelSource::kUnknown;
     base::string16 label;
     EXPECT_TRUE(autofill::form_util::InferLabelForElementForTesting(
         form_target, stop_words, &label, &label_source));

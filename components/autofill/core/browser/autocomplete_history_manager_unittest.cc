@@ -340,7 +340,7 @@ TEST_F(AutocompleteHistoryManagerTest, PresentationField) {
   field.name = ASCIIToUTF16("esoterica");
   field.value = ASCIIToUTF16("a truly esoteric value, I assure you");
   field.form_control_type = "text";
-  field.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  field.role = FormFieldData::RoleAttribute::kPresentation;
   form.fields.push_back(field);
 
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);

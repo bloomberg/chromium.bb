@@ -31,24 +31,6 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<autofill::mojom::CheckStatus,
-                  autofill::FormFieldData::CheckStatus> {
-  static autofill::mojom::CheckStatus ToMojom(
-      autofill::FormFieldData::CheckStatus input);
-  static bool FromMojom(autofill::mojom::CheckStatus input,
-                        autofill::FormFieldData::CheckStatus* output);
-};
-
-template <>
-struct EnumTraits<autofill::mojom::RoleAttribute,
-                  autofill::FormFieldData::RoleAttribute> {
-  static autofill::mojom::RoleAttribute ToMojom(
-      autofill::FormFieldData::RoleAttribute input);
-  static bool FromMojom(autofill::mojom::RoleAttribute input,
-                        autofill::FormFieldData::RoleAttribute* output);
-};
-
-template <>
 struct EnumTraits<autofill::mojom::GenerationUploadStatus,
                   autofill::PasswordForm::GenerationUploadStatus> {
   static autofill::mojom::GenerationUploadStatus ToMojom(
@@ -100,15 +82,6 @@ struct EnumTraits<autofill::mojom::SubmissionSource,
       autofill::SubmissionSource input);
   static bool FromMojom(autofill::mojom::SubmissionSource input,
                         autofill::SubmissionSource* output);
-};
-
-template <>
-struct EnumTraits<autofill::mojom::LabelSource,
-                  autofill::FormFieldData::LabelSource> {
-  static autofill::mojom::LabelSource ToMojom(
-      autofill::FormFieldData::LabelSource input);
-  static bool FromMojom(autofill::mojom::LabelSource input,
-                        autofill::FormFieldData::LabelSource* output);
 };
 
 template <>

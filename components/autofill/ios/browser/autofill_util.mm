@@ -178,12 +178,12 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
   field.GetBoolean("is_focusable", &field_data->is_focusable);
   field.GetBoolean("should_autocomplete", &field_data->should_autocomplete);
 
-  // ROLE_ATTRIBUTE_OTHER is the default value. The only other value as of this
-  // writing is ROLE_ATTRIBUTE_PRESENTATION.
+  // RoleAttribute::kOther is the default value. The only other value as of this
+  // writing is RoleAttribute::kPresentation.
   int role = 0;
   if (field.GetInteger("role", &role) &&
-      role == autofill::AutofillField::ROLE_ATTRIBUTE_PRESENTATION) {
-    field_data->role = autofill::AutofillField::ROLE_ATTRIBUTE_PRESENTATION;
+      role == static_cast<int>(FormFieldData::RoleAttribute::kPresentation)) {
+    field_data->role = FormFieldData::RoleAttribute::kPresentation;
   }
 
   // TODO(crbug.com/427614): Extract |text_direction|.

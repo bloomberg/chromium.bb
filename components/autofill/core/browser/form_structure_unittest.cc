@@ -316,7 +316,8 @@ TEST_F(FormStructureTest, ShouldBeParsed) {
 
   // Start with a single checkable field.
   FormFieldData checkable_field;
-  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.check_status =
+      FormFieldData::CheckStatus::kCheckableButUnchecked;
   checkable_field.name = ASCIIToUTF16("radiobtn");
   checkable_field.form_control_type = "radio";
   form.fields.push_back(checkable_field);
@@ -2312,7 +2313,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
 
   // Add checkable field.
   FormFieldData checkable_field;
-  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.check_status =
+      FormFieldData::CheckStatus::kCheckableButUnchecked;
   checkable_field.label = ASCIIToUTF16("Checkable1");
   checkable_field.name = ASCIIToUTF16("Checkable1");
   form.fields.push_back(checkable_field);
@@ -2496,7 +2498,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
 
   // Add checkable field.
   FormFieldData checkable_field;
-  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.check_status =
+      FormFieldData::CheckStatus::kCheckableButUnchecked;
   checkable_field.label = ASCIIToUTF16("Checkable1");
   checkable_field.name = ASCIIToUTF16("Checkable1");
   test::InitializePossibleTypesAndValidities(
@@ -2690,7 +2693,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithNonMatchingValidities) {
 
   // Add checkable field.
   FormFieldData checkable_field;
-  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.check_status =
+      FormFieldData::CheckStatus::kCheckableButUnchecked;
   checkable_field.label = ASCIIToUTF16("Checkable1");
   checkable_field.name = ASCIIToUTF16("Checkable1");
   test::InitializePossibleTypesAndValidities(
@@ -2820,7 +2824,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMultipleValidities) {
 
   // Add checkable field.
   FormFieldData checkable_field;
-  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.check_status =
+      FormFieldData::CheckStatus::kCheckableButUnchecked;
   checkable_field.label = ASCIIToUTF16("Checkable1");
   checkable_field.name = ASCIIToUTF16("Checkable1");
   test::InitializePossibleTypesAndValidities(
@@ -2945,7 +2950,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
 
   // Add checkable field.
   FormFieldData checkable_field;
-  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.check_status =
+      FormFieldData::CheckStatus::kCheckableButUnchecked;
   checkable_field.label = ASCIIToUTF16("Checkable1");
   checkable_field.name = ASCIIToUTF16("Checkable1");
   test::InitializePossibleTypesAndValidities(possible_field_types,
@@ -4495,7 +4501,7 @@ TEST_F(FormStructureTest, CheckFormSignature) {
   field.label = ASCIIToUTF16("Select");
   field.name = ASCIIToUTF16("Select");
   field.form_control_type = "checkbox";
-  field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  field.check_status = FormFieldData::CheckStatus::kCheckableButUnchecked;
   form.fields.push_back(field);
 
   form_structure = std::make_unique<FormStructure>(form);
@@ -4522,7 +4528,7 @@ TEST_F(FormStructureTest, CheckFormSignature) {
             form_structure->FormSignatureAsStr());
 
   // Checks how digits are removed from field names.
-  field.check_status = FormFieldData::NOT_CHECKABLE;
+  field.check_status = FormFieldData::CheckStatus::kNotCheckable;
   field.label = ASCIIToUTF16("Random Field label");
   field.name = ASCIIToUTF16("random1234");
   field.form_control_type = "text";
@@ -4583,13 +4589,13 @@ TEST_F(FormStructureTest, SkipFieldTest) {
   field.label = ASCIIToUTF16("select");
   field.name = ASCIIToUTF16("select");
   field.form_control_type = "checkbox";
-  field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  field.check_status = FormFieldData::CheckStatus::kCheckableButUnchecked;
   form.fields.push_back(field);
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("email");
   field.form_control_type = "text";
-  field.check_status = FormFieldData::NOT_CHECKABLE;
+  field.check_status = FormFieldData::CheckStatus::kNotCheckable;
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
@@ -4744,7 +4750,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
   // No name set for this field.
   field.name = ASCIIToUTF16("");
   field.form_control_type = "text";
-  field.check_status = FormFieldData::NOT_CHECKABLE;
+  field.check_status = FormFieldData::CheckStatus::kNotCheckable;
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
@@ -4796,7 +4802,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
   field.label = base::string16();
   field.name = ASCIIToUTF16("country");
   field.form_control_type = "text";
-  field.check_status = FormFieldData::NOT_CHECKABLE;
+  field.check_status = FormFieldData::CheckStatus::kNotCheckable;
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
@@ -4946,7 +4952,8 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
   FormFieldData checkable_field;
   checkable_field.label = ASCIIToUTF16("radio_button");
   checkable_field.form_control_type = "radio";
-  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.check_status =
+      FormFieldData::CheckStatus::kCheckableButUnchecked;
   form.fields.push_back(checkable_field);
 
   FormStructure form_structure(form);
@@ -5018,7 +5025,8 @@ TEST_F(FormStructureTest, ParseApiQueryResponse) {
   FormFieldData checkable_field;
   checkable_field.label = ASCIIToUTF16("radio_button");
   checkable_field.form_control_type = "radio";
-  checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  checkable_field.check_status =
+      FormFieldData::CheckStatus::kCheckableButUnchecked;
   form.fields.push_back(checkable_field);
 
   FormStructure form_structure(form);
@@ -6357,10 +6365,10 @@ TEST_F(FormStructureTest,
   field.label = ASCIIToUTF16("State");
   field.name = ASCIIToUTF16("state2");
   field.form_control_type = "select-one";
-  field.role = AutofillField::ROLE_ATTRIBUTE_PRESENTATION;  // hidden
+  field.role = FormFieldData::RoleAttribute::kPresentation;  // hidden
   form.fields.push_back(field);
 
-  field.role = AutofillField::ROLE_ATTRIBUTE_OTHER;  // visible
+  field.role = FormFieldData::RoleAttribute::kOther;  // visible
 
   field.label = ASCIIToUTF16("State");
   field.name = ASCIIToUTF16("state");
@@ -6387,10 +6395,10 @@ TEST_F(FormStructureTest,
   field.label = ASCIIToUTF16("State");
   field.name = ASCIIToUTF16("state2");
   field.form_control_type = "select-one";
-  field.role = AutofillField::ROLE_ATTRIBUTE_PRESENTATION;  // hidden
+  field.role = FormFieldData::RoleAttribute::kPresentation;  // hidden
   form.fields.push_back(field);
 
-  field.role = AutofillField::ROLE_ATTRIBUTE_OTHER;  // visible
+  field.role = FormFieldData::RoleAttribute::kOther;  // visible
 
   field.label = ASCIIToUTF16("State");
   field.name = ASCIIToUTF16("state");

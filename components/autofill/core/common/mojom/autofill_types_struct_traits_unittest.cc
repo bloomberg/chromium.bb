@@ -366,9 +366,9 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   input.aria_description = base::ASCIIToUTF16("aria description");
   input.max_length = 12345;
   input.is_autofilled = true;
-  input.check_status = FormFieldData::CHECKED;
+  input.check_status = FormFieldData::CheckStatus::kChecked;
   input.should_autocomplete = true;
-  input.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  input.role = FormFieldData::RoleAttribute::kPresentation;
   input.text_direction = base::i18n::RIGHT_TO_LEFT;
   input.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
   input.typed_value = base::ASCIIToUTF16("TestTypedValue");

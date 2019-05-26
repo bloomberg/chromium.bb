@@ -57,7 +57,7 @@ FieldCandidatesMap FormField::ParseFormFields(
     // Ignore fields marked as presentational, unless for 'select' fields (for
     // synthetic fields.)
     if (IsCheckable(field->check_status) ||
-        (field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION &&
+        (field->role == FormFieldData::RoleAttribute::kPresentation &&
          field->form_control_type != "select-one")) {
       continue;
     }

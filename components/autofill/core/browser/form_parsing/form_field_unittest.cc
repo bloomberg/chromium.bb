@@ -133,7 +133,7 @@ TEST(FormFieldTest, ParseFormFields) {
   FormFieldData field_data;
   field_data.form_control_type = "text";
 
-  field_data.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
+  field_data.check_status = FormFieldData::CheckStatus::kCheckableButUnchecked;
   field_data.label = ASCIIToUTF16("Is PO Box");
   fields.push_back(
       std::make_unique<AutofillField>(field_data, field_data.label));
@@ -142,7 +142,7 @@ TEST(FormFieldTest, ParseFormFields) {
   EXPECT_TRUE(FormField::ParseFormFields(fields, true).empty());
 
   // reset |is_checkable| to false.
-  field_data.check_status = FormFieldData::NOT_CHECKABLE;
+  field_data.check_status = FormFieldData::CheckStatus::kNotCheckable;
 
   field_data.label = ASCIIToUTF16("Address line1");
   fields.push_back(

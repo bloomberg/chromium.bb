@@ -11,19 +11,6 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-// autofill::FormFieldData::CheckStatus
-enum CheckStatus {
-  NOT_CHECKABLE,
-  CHECKABLE_BUT_UNCHECKED,
-  CHECKED
-};
-
-// autofill::FormFieldData::RoleAttribute
-enum RoleAttribute {
-  ROLE_ATTRIBUTE_PRESENTATION,
-  ROLE_ATTRIBUTE_OTHER
-};
-
 // autofill::PasswordForm::GenerationUploadStatus
 enum GenerationUploadStatus {
   NO_SIGNAL_SENT,
@@ -80,21 +67,6 @@ enum SubmissionSource {
   FORM_SUBMISSION,
 };
 
-// autofill::FormFieldData::LabelSource
-enum LabelSource {
-  UNKNOWN,
-  LABEL_TAG,
-  P_TAG,
-  DIV_TABLE,
-  TD_TAG,
-  DD_TAG,
-  LI_TAG,
-  PLACE_HOLDER,
-  ARIA_LABEL,
-  COMBINED,
-  VALUE,
-};
-
 enum FocusedFieldType {
   kUnknown,
   kUnfillableElement,
@@ -124,6 +96,35 @@ enum ButtonTitleType {
 
 // autofill::FormFieldData
 struct FormFieldData {
+  enum CheckStatus {
+    kNotCheckable,
+    kCheckableButUnchecked,
+    kChecked,
+  };
+
+  // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
+  enum RoleAttribute {
+    // "presentation"
+    kPresentation,
+    // Anything else.
+    kOther,
+  };
+
+  // From which source the label is inferred.
+  enum LabelSource {
+    kUnknown,  // The source is unknown.
+    kLabelTag,
+    kPTag,
+    kDivTable,
+    kTdTag,
+    kDdTag,
+    kLiTag,
+    kPlaceHolder,
+    kAriaLabel,
+    kCombined,  // Combined with various elements.
+    kValue,     // label is the value of element.
+  };
+
   mojo_base.mojom.String16 label;
   mojo_base.mojom.String16 name;
   mojo_base.mojom.String16 id_attribute;

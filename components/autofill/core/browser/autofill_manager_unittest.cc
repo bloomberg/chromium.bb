@@ -3476,7 +3476,7 @@ TEST_F(AutofillManagerTest, FormWithHiddenOrPresentationalSelects) {
                                             "Tennessee"};
     test::CreateTestSelectField("State", "state", "", values, contents,
                                 values.size(), &field);
-    field.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+    field.role = FormFieldData::RoleAttribute::kPresentation;
     form.fields.push_back(field);
   }
 
@@ -3485,7 +3485,7 @@ TEST_F(AutofillManagerTest, FormWithHiddenOrPresentationalSelects) {
   form.fields.push_back(field);
 
   test::CreateTestFormField("Street Address", "address", "", "text", &field);
-  field.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  field.role = FormFieldData::RoleAttribute::kPresentation;
   form.fields.push_back(field);
 
   std::vector<FormData> forms(1, form);

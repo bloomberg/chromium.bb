@@ -160,24 +160,24 @@ bool ShouldSkipField(const FormFieldData& field) {
 }
 
 bool IsCheckable(const FormFieldData::CheckStatus& check_status) {
-  return check_status != FormFieldData::CheckStatus::NOT_CHECKABLE;
+  return check_status != FormFieldData::CheckStatus::kNotCheckable;
 }
 
 bool IsChecked(const FormFieldData::CheckStatus& check_status) {
-  return check_status == FormFieldData::CheckStatus::CHECKED;
+  return check_status == FormFieldData::CheckStatus::kChecked;
 }
 
 void SetCheckStatus(FormFieldData* form_field_data,
                     bool isCheckable,
                     bool isChecked) {
   if (isChecked) {
-    form_field_data->check_status = FormFieldData::CheckStatus::CHECKED;
+    form_field_data->check_status = FormFieldData::CheckStatus::kChecked;
   } else {
     if (isCheckable) {
       form_field_data->check_status =
-          FormFieldData::CheckStatus::CHECKABLE_BUT_UNCHECKED;
+          FormFieldData::CheckStatus::kCheckableButUnchecked;
     } else {
-      form_field_data->check_status = FormFieldData::CheckStatus::NOT_CHECKABLE;
+      form_field_data->check_status = FormFieldData::CheckStatus::kNotCheckable;
     }
   }
 }

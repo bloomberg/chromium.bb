@@ -29,7 +29,6 @@ deps = [
 ]
 
 type_mappings = [
-  "autofill.mojom.CheckStatus=autofill::FormFieldData::CheckStatus",
   "autofill.mojom.FillingStatus=autofill::FillingStatus",
   "autofill.mojom.FormData=autofill::FormData",
   "autofill.mojom.FormDataPredictions=autofill::FormDataPredictions",
@@ -49,7 +48,6 @@ type_mappings = [
   "autofill.mojom.SubmissionIndicatorEvent=autofill::SubmissionIndicatorEvent",
   "autofill.mojom.PasswordFormType=autofill::PasswordForm::Type",
   "autofill.mojom.PasswordGenerationUIData=autofill::password_generation::PasswordGenerationUIData",
-  "autofill.mojom.RoleAttribute=autofill::FormFieldData::RoleAttribute",
   "autofill.mojom.SubmissionSource=autofill::SubmissionSource",
   "autofill.mojom.ValueElementPair=autofill::ValueElementPair",
 ]
