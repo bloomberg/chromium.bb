@@ -4,18 +4,10 @@
 
 #include "ui/base/ime/input_method_delegate.h"
 
-#include "base/callback.h"
-#include "ui/base/ime/mojo/ime.mojom.h"
 #include "ui/events/event.h"
 
 namespace ui {
 namespace internal {
-
-bool InputMethodDelegate::ConnectToImeEngine(
-    ::ime::mojom::ImeEngineRequest engine_request,
-    ::ime::mojom::ImeEngineClientPtr client) {
-  return false;
-}
 
 // static
 void InputMethodDelegate::RunDispatchKeyEventPostIMECallback(
