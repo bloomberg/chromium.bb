@@ -243,6 +243,9 @@ class CONTENT_EXPORT BrowserMainLoop {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserMainLoopTest, CreateThreadsInSingleProcess);
+  FRIEND_TEST_ALL_PREFIXES(
+      BrowserMainLoopTest,
+      PostTaskToIOThreadBeforeThreadCreationDoesNotRunTask);
 
   void InitializeMainThread();
 

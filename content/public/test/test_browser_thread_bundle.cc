@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/after_startup_task_utils.h"
+#include "content/browser/scheduler/browser_io_task_environment.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -86,14 +87,19 @@ void TestBrowserThreadBundle::Init() {
   CHECK(com_initializer_->Succeeded());
 #endif
 
-  std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
-      BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
-                                                 GetTimeDomain());
-  auto default_task_runner =
+  auto browser_ui_thread_scheduler = BrowserUIThreadScheduler::CreateForTesting(
+      sequence_manager(), GetTimeDomain());
+  auto default_ui_task_runner =
       browser_ui_thread_scheduler->GetHandle().GetDefaultTaskRunner();
-  BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
-      std::move(browser_ui_thread_scheduler));
-  DeferredInitFromSubclass(std::move(default_task_runner));
+  auto browser_io_task_environment =
+      real_io_thread_
+          ? std::make_unique<BrowserIOTaskEnvironment>()
+          : BrowserIOTaskEnvironment::CreateForTesting(sequence_manager());
+  browser_io_task_environment->SetAllowBlockingForTesting();
+
+  BrowserTaskExecutor::CreateForTesting(std::move(browser_ui_thread_scheduler),
+                                        std::move(browser_io_task_environment));
+  DeferredInitFromSubclass(std::move(default_ui_task_runner));
 
   if (HasIOMainLoop()) {
     CHECK(base::MessageLoopCurrentForIO::IsSet());
@@ -107,8 +113,7 @@ void TestBrowserThreadBundle::Init() {
       BrowserThread::UI, base::ThreadTaskRunnerHandle::Get());
 
   if (real_io_thread_) {
-    io_thread_ = std::make_unique<TestBrowserThread>(BrowserThread::IO);
-    io_thread_->StartIOThread();
+    io_thread_ = TestBrowserThread::StartIOThread();
   } else {
     io_thread_ = std::make_unique<TestBrowserThread>(
         BrowserThread::IO, base::ThreadTaskRunnerHandle::Get());
@@ -122,6 +127,7 @@ void TestBrowserThreadBundle::Init() {
   // we hand control over to the test.
   // TODO(carlscab): Maybe find a better way to not expose control tasks
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
 }
 
 void TestBrowserThreadBundle::RunIOThreadUntilIdle() {

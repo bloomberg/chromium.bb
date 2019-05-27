@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/scheduler/browser_io_task_environment.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -45,8 +46,9 @@ class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
 
     sequence_manager_->SetDefaultTaskRunner(default_task_runner_);
 
-    BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
-        std::move(browser_ui_thread_scheduler));
+    BrowserTaskExecutor::CreateForTesting(
+        std::move(browser_ui_thread_scheduler),
+        std::make_unique<BrowserIOTaskEnvironment>());
     BrowserTaskExecutor::EnableAllQueues();
   }
 
@@ -94,10 +96,7 @@ class BrowserThreadTest : public testing::Test {
     ui_options.task_environment = new SequenceManagerTaskEnvironment();
     ui_thread_->StartWithOptions(ui_options);
 
-    io_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::IO);
-    base::Thread::Options io_options;
-    io_options.message_loop_type = base::MessageLoop::TYPE_IO;
-    io_thread_->StartWithOptions(io_options);
+    io_thread_ = BrowserTaskExecutor::CreateIOThread();
 
     ui_thread_->RegisterAsBrowserThread();
     io_thread_->RegisterAsBrowserThread();

@@ -944,9 +944,19 @@ int BrowserMainLoop::CreateThreads() {
   // CreateThreads() (as such maintaining the invariant that PreCreateThreads()
   // et al. "happen-before" BrowserThread::IO is "brought up").
   if (!io_thread_) {
-    io_thread_ = BrowserProcessSubThread::CreateIOThread();
+    io_thread_ = BrowserTaskExecutor::CreateIOThread();
   }
   io_thread_->RegisterAsBrowserThread();
+  BrowserTaskExecutor::InitializeIOThread();
+
+  // TODO(https://crbug.com/863341): Replace with a better API
+  GetContentClient()->browser()->PostAfterStartupTask(
+      FROM_HERE, base::SequencedTaskRunnerHandle::Get(), base::BindOnce([]() {
+        // Non best effort queues will already have been enabled
+        // This will enable all queues on all browser threads, so we need to do
+        // this after the threads have been created, i.e. here.
+        content::BrowserTaskExecutor::EnableAllQueues();
+      }));
 
   created_threads_ = true;
   return result_code_;
@@ -1187,12 +1197,6 @@ void BrowserMainLoop::InitializeMainThread() {
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   main_thread_.reset(new BrowserThreadImpl(
       BrowserThread::UI, base::ThreadTaskRunnerHandle::Get()));
-  // TODO(https://crbug.com/863341): Replace with a better API
-  GetContentClient()->browser()->PostAfterStartupTask(
-      FROM_HERE, base::SequencedTaskRunnerHandle::Get(), base::BindOnce([]() {
-        // Non best effort queues will already have been enabled
-        content::BrowserTaskExecutor::EnableAllQueues();
-      }));
 }
 
 int BrowserMainLoop::BrowserThreadsStarted() {

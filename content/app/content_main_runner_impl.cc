@@ -951,7 +951,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     // The thread used to start the ServiceManager is handed-off to
     // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
-    service_manager_thread_ = BrowserProcessSubThread::CreateIOThread();
+    service_manager_thread_ = BrowserTaskExecutor::CreateIOThread();
     service_manager_context_.reset(
         new ServiceManagerContext(service_manager_thread_->task_runner()));
     download::SetIOTaskRunner(service_manager_thread_->task_runner());

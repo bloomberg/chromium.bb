@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "content/browser/browser_process_sub_thread.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/startup_data.h"
 
 namespace content {
@@ -15,7 +16,7 @@ namespace content {
 class ServiceManagerContext;
 
 // The browser implementation of StartupData.
-struct StartupDataImpl : public StartupData {
+struct CONTENT_EXPORT StartupDataImpl : public StartupData {
   StartupDataImpl();
   ~StartupDataImpl() override;
 
