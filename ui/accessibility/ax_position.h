@@ -1627,57 +1627,43 @@ const int AXPosition<AXPositionType, AXNodeType>::INVALID_OFFSET;
 template <class AXPositionType, class AXNodeType>
 bool operator==(const AXPosition<AXPositionType, AXNodeType>& first,
                 const AXPosition<AXPositionType, AXNodeType>& second) {
-  return first.CompareTo(second) == 0;
   const base::Optional<int> compare_to_optional = first.CompareTo(second);
-  if (compare_to_optional.has_value())
-    return compare_to_optional.value() == 0;
-  return false;
+  return compare_to_optional.has_value() && compare_to_optional.value() == 0;
 }
 
 template <class AXPositionType, class AXNodeType>
 bool operator!=(const AXPosition<AXPositionType, AXNodeType>& first,
                 const AXPosition<AXPositionType, AXNodeType>& second) {
-  return first.CompareTo(second) != 0;
   const base::Optional<int> compare_to_optional = first.CompareTo(second);
-  if (compare_to_optional.has_value())
-    return compare_to_optional.value() != 0;
-  return false;
+  return compare_to_optional.has_value() && compare_to_optional.value() != 0;
 }
 
 template <class AXPositionType, class AXNodeType>
 bool operator<(const AXPosition<AXPositionType, AXNodeType>& first,
                const AXPosition<AXPositionType, AXNodeType>& second) {
   const base::Optional<int> compare_to_optional = first.CompareTo(second);
-  if (compare_to_optional.has_value())
-    return compare_to_optional.value() < 0;
-  return false;
+  return compare_to_optional.has_value() && compare_to_optional.value() < 0;
 }
 
 template <class AXPositionType, class AXNodeType>
 bool operator<=(const AXPosition<AXPositionType, AXNodeType>& first,
                 const AXPosition<AXPositionType, AXNodeType>& second) {
   const base::Optional<int> compare_to_optional = first.CompareTo(second);
-  if (compare_to_optional.has_value())
-    return compare_to_optional.value() <= 0;
-  return false;
+  return compare_to_optional.has_value() && compare_to_optional.value() <= 0;
 }
 
 template <class AXPositionType, class AXNodeType>
 bool operator>(const AXPosition<AXPositionType, AXNodeType>& first,
                const AXPosition<AXPositionType, AXNodeType>& second) {
   const base::Optional<int> compare_to_optional = first.CompareTo(second);
-  if (compare_to_optional.has_value())
-    return compare_to_optional.value() > 0;
-  return false;
+  return compare_to_optional.has_value() && compare_to_optional.value() > 0;
 }
 
 template <class AXPositionType, class AXNodeType>
 bool operator>=(const AXPosition<AXPositionType, AXNodeType>& first,
                 const AXPosition<AXPositionType, AXNodeType>& second) {
   const base::Optional<int> compare_to_optional = first.CompareTo(second);
-  if (compare_to_optional.has_value())
-    return compare_to_optional.value() >= 0;
-  return false;
+  return compare_to_optional.has_value() && compare_to_optional.value() >= 0;
 }
 
 template <class AXPositionType, class AXNodeType>
