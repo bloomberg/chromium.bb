@@ -443,7 +443,6 @@ void GpuArcVideoDecodeAccelerator::Decode(
           mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
       return;
     }
-    LOG(ERROR) << handle_size;
     shm_handle = base::SharedMemoryHandle(
         base::FileDescriptor(handle_fd.release(), true), handle_size,
         base::UnguessableToken::Create());
@@ -462,6 +461,12 @@ void GpuArcVideoDecodeAccelerator::Decode(
                                              bitstream_buffer->bytes_used,
                                              bitstream_buffer->offset)),
        PendingCallback()});
+
+  // Close |shm_handle| because it is actually duplicated on the ctor of
+  // media::BitstreamBuffer and it will not close itself on the dtor.
+  if (shm_handle.IsValid()) {
+    shm_handle.Close();
+  }
 }
 
 void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count) {

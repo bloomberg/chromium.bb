@@ -233,6 +233,12 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
       media::BitstreamBuffer(bitstream_buffer_serial_, shm_handle,
                              false /* read_only */, size, offset));
 
+  // Close |shm_handle| because it is actually duplicated on the ctor of
+  // media::BitstreamBuffer and it will not close itself on the dtor.
+  if (shm_handle.IsValid()) {
+    shm_handle.Close();
+  }
+
   // Mask against 30 bits to avoid (undefined) wraparound on signed integer.
   bitstream_buffer_serial_ = (bitstream_buffer_serial_ + 1) & 0x3FFFFFFF;
 }
