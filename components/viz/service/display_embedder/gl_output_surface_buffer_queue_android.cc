@@ -19,21 +19,21 @@ GLOutputSurfaceBufferQueueAndroid::GLOutputSurfaceBufferQueueAndroid(
     : GLOutputSurfaceBufferQueue(context_provider,
                                  surface_handle,
                                  gpu_memory_buffer_manager,
-                                 buffer_format) {}
+                                 buffer_format) {
+  overlay_candidate_validator_ =
+      std::make_unique<OverlayCandidateValidatorAndroid>();
+}
 
 GLOutputSurfaceBufferQueueAndroid::~GLOutputSurfaceBufferQueueAndroid() =
     default;
 
-OverlayCandidateValidator*
-GLOutputSurfaceBufferQueueAndroid::GetOverlayCandidateValidator() const {
-  // TODO(khushalsagar): The API shouldn't be const.
-  return &const_cast<GLOutputSurfaceBufferQueueAndroid*>(this)
-              ->overlay_candidate_validator_;
+std::unique_ptr<OverlayCandidateValidator>
+GLOutputSurfaceBufferQueueAndroid::TakeOverlayCandidateValidator() {
+  return std::move(overlay_candidate_validator_);
 }
 
 void GLOutputSurfaceBufferQueueAndroid::SetDisplayTransformHint(
     gfx::OverlayTransform transform) {
-  overlay_candidate_validator_.set_display_transform(transform);
   context_provider()->ContextSupport()->SetDisplayTransform(transform);
   GLOutputSurfaceBufferQueue::SetDisplayTransformHint(transform);
 }
@@ -44,7 +44,6 @@ void GLOutputSurfaceBufferQueueAndroid::Reshape(
     const gfx::ColorSpace& color_space,
     bool has_alpha,
     bool use_stencil) {
-  overlay_candidate_validator_.set_viewport_size(size);
   GLOutputSurfaceBufferQueue::Reshape(size, device_scale_factor, color_space,
                                       has_alpha, use_stencil);
 }

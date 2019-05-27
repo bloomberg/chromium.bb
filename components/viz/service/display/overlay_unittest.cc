@@ -73,9 +73,9 @@ class FullscreenOverlayValidator : public OverlayCandidateValidator {
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
     strategies->push_back(std::make_unique<OverlayStrategyFullscreen>(this));
   }
-  bool AllowCALayerOverlays() override { return false; }
-  bool AllowDCLayerOverlays() override { return false; }
-  bool NeedsSurfaceOccludingDamageRect() override { return true; }
+  bool AllowCALayerOverlays() const override { return false; }
+  bool AllowDCLayerOverlays() const override { return false; }
+  bool NeedsSurfaceOccludingDamageRect() const override { return true; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
     surfaces->back().overlay_handled = true;
   }
@@ -90,9 +90,9 @@ class SingleOverlayValidator : public OverlayCandidateValidator {
     strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(this));
   }
 
-  bool AllowCALayerOverlays() override { return false; }
-  bool AllowDCLayerOverlays() override { return false; }
-  bool NeedsSurfaceOccludingDamageRect() override { return true; }
+  bool AllowCALayerOverlays() const override { return false; }
+  bool AllowDCLayerOverlays() const override { return false; }
+  bool NeedsSurfaceOccludingDamageRect() const override { return true; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
     // We may have 1 or 2 surfaces depending on whether this ran through the
     // full renderer and picked up the output surface, or not.
@@ -134,18 +134,18 @@ class SingleOverlayValidator : public OverlayCandidateValidator {
 class CALayerValidator : public OverlayCandidateValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
-  bool AllowCALayerOverlays() override { return true; }
-  bool AllowDCLayerOverlays() override { return false; }
-  bool NeedsSurfaceOccludingDamageRect() override { return false; }
+  bool AllowCALayerOverlays() const override { return true; }
+  bool AllowDCLayerOverlays() const override { return false; }
+  bool NeedsSurfaceOccludingDamageRect() const override { return false; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
 };
 
 class DCLayerValidator : public OverlayCandidateValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
-  bool AllowCALayerOverlays() override { return false; }
-  bool AllowDCLayerOverlays() override { return true; }
-  bool NeedsSurfaceOccludingDamageRect() override { return true; }
+  bool AllowCALayerOverlays() const override { return false; }
+  bool AllowDCLayerOverlays() const override { return true; }
+  bool NeedsSurfaceOccludingDamageRect() const override { return true; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
 };
 
@@ -180,21 +180,21 @@ class UnderlayCastOverlayValidator : public SingleOverlayValidator {
 
 class DefaultOverlayProcessor : public OverlayProcessor {
  public:
-  DefaultOverlayProcessor(OverlayCandidateValidator* overlay_validator,
-                          ContextProvider* context_provider);
+  DefaultOverlayProcessor(
+      std::unique_ptr<OverlayCandidateValidator> overlay_validator,
+      ContextProvider* context_provider);
   size_t GetStrategyCount();
 };
 
 DefaultOverlayProcessor::DefaultOverlayProcessor(
-    OverlayCandidateValidator* overlay_validator,
+    std::unique_ptr<OverlayCandidateValidator> overlay_validator,
     ContextProvider* context_provider)
-    : OverlayProcessor(overlay_validator, context_provider) {}
+    : OverlayProcessor(std::move(overlay_validator), context_provider) {}
 
 size_t DefaultOverlayProcessor::GetStrategyCount() {
   return strategies_.size();
 }
 
-template <typename OverlayCandidateValidatorType>
 class OverlayOutputSurface : public OutputSurface {
  public:
   explicit OverlayOutputSurface(
@@ -221,8 +221,11 @@ class OverlayOutputSurface : public OutputSurface {
   }
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
-  OverlayCandidateValidatorType* GetOverlayCandidateValidator() const override {
-    return overlay_candidate_validator_.get();
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override {
+    // TODO(weiliangc): Use the validator passed in on Setter directly, don't go
+    // through output surface. Delete this soon.
+    return nullptr;
   }
   bool IsDisplayedAsOverlayPlane() const override {
     return is_displayed_as_overlay_plane_;
@@ -243,14 +246,9 @@ class OverlayOutputSurface : public OutputSurface {
     is_displayed_as_overlay_plane_ = value;
   }
 
-  void SetOverlayCandidateValidator(OverlayCandidateValidatorType* validator) {
-    overlay_candidate_validator_.reset(validator);
-  }
-
   unsigned bind_framebuffer_count() const { return bind_framebuffer_count_; }
 
  private:
-  std::unique_ptr<OverlayCandidateValidatorType> overlay_candidate_validator_;
   bool is_displayed_as_overlay_plane_;
   unsigned bind_framebuffer_count_ = 0;
 };
@@ -258,16 +256,21 @@ class OverlayOutputSurface : public OutputSurface {
 template <typename OverlayCandidateValidatorType>
 class TypedOverlayProcessor : public OverlayProcessor {
  public:
-  TypedOverlayProcessor(OverlayCandidateValidatorType* validator,
-                        const ContextProvider* context_provider)
-      : OverlayProcessor(validator, context_provider), validator_(validator) {}
+  TypedOverlayProcessor(
+      std::unique_ptr<OverlayCandidateValidatorType> validator,
+      const ContextProvider* context_provider)
+      : OverlayProcessor(std::move(validator), context_provider) {}
 
   OverlayCandidateValidatorType* GetTypedOverlayCandidateValidator() {
-    return validator_;
+    const OverlayCandidateValidator* const_base_validator =
+        GetOverlayCandidateValidator();
+    // This function is used to modify the expectation of the validator, so
+    // first need to cast away the const.
+    auto* base_validator =
+        const_cast<OverlayCandidateValidator*>(const_base_validator);
+    // Then cast to the test only types so the add expectation function exists.
+    return static_cast<OverlayCandidateValidatorType*>(base_validator);
   }
-
- private:
-  OverlayCandidateValidatorType* validator_;
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {
@@ -539,7 +542,6 @@ SkMatrix GetNonIdentityColorMatrix() {
 
 template <typename OverlayCandidateValidatorType>
 class OverlayTest : public testing::Test {
-  using OutputSurfaceType = OverlayOutputSurface<OverlayCandidateValidatorType>;
   using OverlayProcessorType =
       TypedOverlayProcessor<OverlayCandidateValidatorType>;
 
@@ -547,10 +549,8 @@ class OverlayTest : public testing::Test {
   void SetUp() override {
     provider_ = TestContextProvider::Create();
     provider_->BindToCurrentThread();
-    output_surface_ = std::make_unique<OutputSurfaceType>(provider_);
+    output_surface_ = std::make_unique<OverlayOutputSurface>(provider_);
     output_surface_->BindToClient(&client_);
-    output_surface_->SetOverlayCandidateValidator(
-        new OverlayCandidateValidatorType);
 
     shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
@@ -562,7 +562,7 @@ class OverlayTest : public testing::Test {
     child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
 
     overlay_processor_ = std::make_unique<OverlayProcessorType>(
-        output_surface_->GetOverlayCandidateValidator(),
+        std::make_unique<OverlayCandidateValidatorType>(),
         output_surface_->context_provider());
     overlay_processor_->Initialize();
     overlay_processor_->SetDCHasHwOverlaySupportForTesting();
@@ -585,7 +585,7 @@ class OverlayTest : public testing::Test {
   }
 
   scoped_refptr<TestContextProvider> provider_;
-  std::unique_ptr<OutputSurfaceType> output_surface_;
+  std::unique_ptr<OverlayOutputSurface> output_surface_;
   cc::FakeOutputSurfaceClient client_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
@@ -604,22 +604,12 @@ using TransparentUnderlayTest =
 using UnderlayCastTest = OverlayTest<UnderlayCastOverlayValidator>;
 using CALayerOverlayTest = OverlayTest<CALayerValidator>;
 
-TEST(OverlayTest, NoOverlaysByDefault) {
-  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
-  OverlayOutputSurface<OverlayCandidateValidator> output_surface(provider);
-  EXPECT_EQ(nullptr, output_surface.GetOverlayCandidateValidator());
-
-  output_surface.SetOverlayCandidateValidator(new SingleOverlayValidator);
-  EXPECT_TRUE(output_surface.GetOverlayCandidateValidator() != nullptr);
-}
-
 TEST(OverlayTest, OverlaysProcessorHasStrategy) {
   scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
   provider->BindToCurrentThread();
-  OverlayOutputSurface<OverlayCandidateValidator> output_surface(provider);
+  OverlayOutputSurface output_surface(provider);
   cc::FakeOutputSurfaceClient client;
   output_surface.BindToClient(&client);
-  output_surface.SetOverlayCandidateValidator(new SingleOverlayValidator);
 
   auto shared_bitmap_manager = std::make_unique<TestSharedBitmapManager>();
   std::unique_ptr<DisplayResourceProvider> resource_provider =
@@ -628,7 +618,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
                                                 shared_bitmap_manager.get());
 
   auto overlay_processor = std::make_unique<DefaultOverlayProcessor>(
-      output_surface.GetOverlayCandidateValidator(),
+      std::make_unique<SingleOverlayValidator>(),
       output_surface.context_provider());
   overlay_processor->Initialize();
   EXPECT_GE(2U, overlay_processor->GetStrategyCount());
@@ -3070,12 +3060,21 @@ TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
 }
 
 class OverlayInfoRendererGL : public GLRenderer {
+  using OverlayProcessorType = TypedOverlayProcessor<SingleOverlayValidator>;
+
  public:
   OverlayInfoRendererGL(const RendererSettings* settings,
                         OutputSurface* output_surface,
-                        DisplayResourceProvider* resource_provider)
+                        DisplayResourceProvider* resource_provider,
+                        bool use_validator)
       : GLRenderer(settings, output_surface, resource_provider, nullptr),
-        expect_overlays_(false) {}
+        expect_overlays_(false) {
+    if (use_validator) {
+      overlay_processor_ = std::make_unique<OverlayProcessorType>(
+          std::make_unique<SingleOverlayValidator>(),
+          output_surface_->context_provider());
+    }
+  }
 
   MOCK_METHOD2(DoDrawQuad,
                void(const DrawQuad* quad, const gfx::QuadF* draw_region));
@@ -3096,6 +3095,12 @@ class OverlayInfoRendererGL : public GLRenderer {
 
     ASSERT_EQ(2U, current_frame()->overlay_list.size());
     EXPECT_GE(current_frame()->overlay_list.back().resource_id, 0U);
+  }
+
+  void AddExpectedRectToOverlayValidator(const gfx::RectF& rect) {
+    static_cast<OverlayProcessorType*>(overlay_processor_.get())
+        ->GetTypedOverlayCandidateValidator()
+        ->AddExpectedRect(rect);
   }
 
   void set_expect_overlays(bool expect_overlays) {
@@ -3119,14 +3124,13 @@ class MockOverlayScheduler {
 };
 
 class GLRendererWithOverlaysTest : public testing::Test {
-  using OutputSurfaceType = OverlayOutputSurface<SingleOverlayValidator>;
   using OverlayProcessorType = TypedOverlayProcessor<SingleOverlayValidator>;
 
  protected:
   GLRendererWithOverlaysTest() {
     provider_ = TestContextProvider::Create();
     provider_->BindToCurrentThread();
-    output_surface_ = std::make_unique<OutputSurfaceType>(provider_);
+    output_surface_ = std::make_unique<OverlayOutputSurface>(provider_);
     output_surface_->BindToClient(&output_surface_client_);
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
         DisplayResourceProvider::kGpu, provider_.get(), nullptr);
@@ -3144,15 +3148,9 @@ class GLRendererWithOverlaysTest : public testing::Test {
   }
 
   void Init(bool use_validator) {
-    if (use_validator) {
-      output_surface_->SetOverlayCandidateValidator(new SingleOverlayValidator);
-      overlay_processor_ = std::make_unique<OverlayProcessorType>(
-          output_surface_->GetOverlayCandidateValidator(),
-          output_surface_->context_provider());
-    }
-
     renderer_ = std::make_unique<OverlayInfoRendererGL>(
-        &settings_, output_surface_.get(), resource_provider_.get());
+        &settings_, output_surface_.get(), resource_provider_.get(),
+        use_validator);
     renderer_->Initialize();
     renderer_->SetVisible(true);
   }
@@ -3180,16 +3178,14 @@ class GLRendererWithOverlaysTest : public testing::Test {
   }
 
   void AddExpectedRectToOverlayValidator(const gfx::RectF& rect) {
-    overlay_processor_->GetTypedOverlayCandidateValidator()->AddExpectedRect(
-        rect);
+    renderer_->AddExpectedRectToOverlayValidator(rect);
   }
 
   RendererSettings settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
-  std::unique_ptr<OutputSurfaceType> output_surface_;
+  std::unique_ptr<OverlayOutputSurface> output_surface_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<OverlayInfoRendererGL> renderer_;
-  std::unique_ptr<OverlayProcessorType> overlay_processor_;
   scoped_refptr<TestContextProvider> provider_;
   scoped_refptr<TestContextProvider> child_provider_;
   std::unique_ptr<ClientResourceProvider> child_resource_provider_;

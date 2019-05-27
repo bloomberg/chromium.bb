@@ -93,8 +93,8 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
                bool has_alpha,
                bool use_stencil) override {}
   uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
-  viz::OverlayCandidateValidator* GetOverlayCandidateValidator()
-      const override {
+  std::unique_ptr<viz::OverlayCandidateValidator>
+  TakeOverlayCandidateValidator() override {
     return nullptr;
   }
   bool IsDisplayedAsOverlayPlane() const override { return false; }

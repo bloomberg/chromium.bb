@@ -82,8 +82,8 @@ void PixelTestOutputSurface::SwapBuffersCallback() {
       gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(), 0));
 }
 
-viz::OverlayCandidateValidator*
-PixelTestOutputSurface::GetOverlayCandidateValidator() const {
+std::unique_ptr<viz::OverlayCandidateValidator>
+PixelTestOutputSurface::TakeOverlayCandidateValidator() {
   return nullptr;
 }
 

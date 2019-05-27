@@ -100,7 +100,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual void SetDrawRectangle(const gfx::Rect& rect) = 0;
 
   // Get the class capable of informing cc of hardware overlay capability.
-  virtual OverlayCandidateValidator* GetOverlayCandidateValidator() const = 0;
+  virtual std::unique_ptr<OverlayCandidateValidator>
+  TakeOverlayCandidateValidator() = 0;
 
   // Returns true if a main image overlay plane should be scheduled.
   virtual bool IsDisplayedAsOverlayPlane() const = 0;

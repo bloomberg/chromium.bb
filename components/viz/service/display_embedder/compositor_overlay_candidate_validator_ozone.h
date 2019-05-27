@@ -30,9 +30,9 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorOzone
 
   // OverlayCandidateValidator implementation.
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
-  bool AllowCALayerOverlays() override;
-  bool AllowDCLayerOverlays() override;
-  bool NeedsSurfaceOccludingDamageRect() override;
+  bool AllowCALayerOverlays() const override;
+  bool AllowDCLayerOverlays() const override;
+  bool NeedsSurfaceOccludingDamageRect() const override;
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
 
   // CompositorOverlayCandidateValidator implementation.

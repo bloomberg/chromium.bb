@@ -54,8 +54,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   };
   using StrategyList = std::vector<std::unique_ptr<Strategy>>;
 
-  // TODO(weiliangc): Take ownership of validator here.
-  OverlayProcessor(OverlayCandidateValidator* overlay_validator,
+  OverlayProcessor(std::unique_ptr<OverlayCandidateValidator> overlay_validator,
                    const ContextProvider* context_provider);
   virtual ~OverlayProcessor();
   // Virtual to allow testing different strategies.
@@ -64,10 +63,12 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   gfx::Rect GetAndResetOverlayDamage();
 
   const OverlayCandidateValidator* GetOverlayCandidateValidator() const {
-    return overlay_validator_;
+    return overlay_validator_.get();
   }
 
   bool NeedsSurfaceOccludingDamageRect() const;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform);
+  void SetValidatorViewportSize(const gfx::Size& size);
 
   // Attempt to replace quads from the specified root render pass with overlays
   // or CALayers. This must be called every frame.
@@ -89,7 +90,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
 
  protected:
   StrategyList strategies_;
-  OverlayCandidateValidator* overlay_validator_;
+  std::unique_ptr<OverlayCandidateValidator> overlay_validator_;
   gfx::Rect overlay_damage_rect_;
   gfx::Rect previous_frame_underlay_rect_;
   bool previous_frame_underlay_was_unoccluded_ = false;

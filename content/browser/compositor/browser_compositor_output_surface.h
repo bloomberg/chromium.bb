@@ -32,7 +32,8 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   ~BrowserCompositorOutputSurface() override;
 
   // viz::OutputSurface implementation.
-  viz::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<viz::OverlayCandidateValidator>
+  TakeOverlayCandidateValidator() override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   void SetUpdateVSyncParametersCallback(

@@ -97,9 +97,10 @@ OverlayStrategy OverlayProcessor::Strategy::GetUMAEnum() const {
   return OverlayStrategy::kUnknown;
 }
 
-OverlayProcessor::OverlayProcessor(OverlayCandidateValidator* overlay_validator,
-                                   const ContextProvider* context_provider)
-    : overlay_validator_(overlay_validator),
+OverlayProcessor::OverlayProcessor(
+    std::unique_ptr<OverlayCandidateValidator> overlay_validator,
+    const ContextProvider* context_provider)
+    : overlay_validator_(std::move(overlay_validator)),
       dc_processor_(
           std::make_unique<DCLayerOverlayProcessor>(context_provider)) {}
 
@@ -337,6 +338,17 @@ void OverlayProcessor::UpdateDamageRect(
 bool OverlayProcessor::NeedsSurfaceOccludingDamageRect() const {
   return overlay_validator_ &&
          overlay_validator_->NeedsSurfaceOccludingDamageRect();
+}
+
+void OverlayProcessor::SetDisplayTransformHint(
+    gfx::OverlayTransform transform) {
+  if (overlay_validator_)
+    overlay_validator_->SetDisplayTransform(transform);
+}
+
+void OverlayProcessor::SetValidatorViewportSize(const gfx::Size& size) {
+  if (overlay_validator_)
+    overlay_validator_->SetViewportSize(size);
 }
 
 }  // namespace viz

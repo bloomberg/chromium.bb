@@ -20,7 +20,8 @@ class GLOutputSurfaceMac : public GLOutputSurfaceBufferQueue {
 
  private:
   // GLOutputSurface implementation:
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override;
 
   std::unique_ptr<CompositorOverlayCandidateValidatorMac> overlay_validator_;
 

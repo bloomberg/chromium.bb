@@ -41,15 +41,15 @@ void OverlayCandidateValidatorAndroid::GetStrategies(
       this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
 }
 
-bool OverlayCandidateValidatorAndroid::AllowCALayerOverlays() {
+bool OverlayCandidateValidatorAndroid::AllowCALayerOverlays() const {
   return false;
 }
 
-bool OverlayCandidateValidatorAndroid::AllowDCLayerOverlays() {
+bool OverlayCandidateValidatorAndroid::AllowDCLayerOverlays() const {
   return false;
 }
 
-bool OverlayCandidateValidatorAndroid::NeedsSurfaceOccludingDamageRect() {
+bool OverlayCandidateValidatorAndroid::NeedsSurfaceOccludingDamageRect() const {
   return true;
 }
 
@@ -118,4 +118,12 @@ void OverlayCandidateValidatorAndroid::AdjustOutputSurfaceOverlay(
   candidate->overlay_handled = true;
 }
 
+void OverlayCandidateValidatorAndroid::SetDisplayTransform(
+    gfx::OverlayTransform transform) {
+  display_transform_ = transform;
+}
+void OverlayCandidateValidatorAndroid::SetViewportSize(
+    const gfx::Size& viewport_size) {
+  viewport_size_ = viewport_size;
+}
 }  // namespace viz

@@ -25,7 +25,8 @@ class GLOutputSurfaceOzone : public GLOutputSurfaceBufferQueue {
   ~GLOutputSurfaceOzone() override;
 
   // OutputSurface implementation.
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override;
 
  private:
   std::unique_ptr<OverlayCandidateValidator> overlay_candidate_validator_;

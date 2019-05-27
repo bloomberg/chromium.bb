@@ -92,8 +92,8 @@ uint32_t ParentOutputSurface::GetFramebufferCopyTextureFormat() {
   return gl->GetCopyTextureInternalFormat();
 }
 
-viz::OverlayCandidateValidator*
-ParentOutputSurface::GetOverlayCandidateValidator() const {
+std::unique_ptr<viz::OverlayCandidateValidator>
+ParentOutputSurface::TakeOverlayCandidateValidator() {
   return nullptr;
 }
 

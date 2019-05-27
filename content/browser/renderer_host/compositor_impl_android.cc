@@ -482,9 +482,9 @@ class AndroidOutputSurface : public viz::OutputSurface {
         gl::ColorSpaceUtils::GetGLColorSpace(color_space), has_alpha);
   }
 
-  viz::OverlayCandidateValidator* GetOverlayCandidateValidator()
-      const override {
-    return overlay_candidate_validator_.get();
+  std::unique_ptr<viz::OverlayCandidateValidator>
+  TakeOverlayCandidateValidator() override {
+    return std::move(overlay_candidate_validator_);
   }
 
   bool IsDisplayedAsOverlayPlane() const override { return false; }

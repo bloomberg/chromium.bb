@@ -149,6 +149,12 @@ namespace content {
 struct GpuProcessTransportFactory::PerCompositorData {
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   BrowserCompositorOutputSurface* display_output_surface = nullptr;
+  // The |overlay_validator| pointer is used to pass settings for software
+  // mirror mode. The lifetime of the validator is the same as the
+  // |display_output_surface|.
+  // TODO(weiliangc): Remove this once software mirroring code path does not
+  // have to go though validator.
+  viz::CompositorOverlayCandidateValidator* overlay_validator = nullptr;
   // Exactly one of |synthetic_begin_frame_source| and
   // |external_begin_frame_source| is valid at the same time.
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
@@ -276,6 +282,7 @@ void GpuProcessTransportFactory::CreateLayerTreeFrameSink(
     // |data->begin_frame_source| here when the compositor destroys its
     // LayerTreeFrameSink before calling back here.
     data->display_output_surface = nullptr;
+    data->overlay_validator = nullptr;
   }
 
   const bool use_gpu_compositing =
@@ -401,6 +408,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   }
 
   std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
+  viz::CompositorOverlayCandidateValidator* overlay_validator = nullptr;
   if (!use_gpu_compositing) {
     if (!is_gpu_compositing_disabled_ &&
         !compositor->force_software_compositor()) {
@@ -425,16 +433,18 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
               std::unique_ptr<viz::CompositorOverlayCandidateValidator>());
     } else if (capabilities.surfaceless) {
       DCHECK(capabilities.texture_format_bgra8888);
+      auto validator = CreateOverlayCandidateValidator(compositor->widget());
+      overlay_validator = validator.get();
       auto gpu_output_surface =
           std::make_unique<GpuSurfacelessBrowserCompositorOutputSurface>(
-              context_provider, data->surface_handle,
-              CreateOverlayCandidateValidator(compositor->widget()),
+              context_provider, data->surface_handle, std::move(validator),
               display::DisplaySnapshot::PrimaryFormat(),
               GetGpuMemoryBufferManager());
       display_output_surface = std::move(gpu_output_surface);
     } else {
       std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator =
           CreateOverlayCandidateValidator(compositor->widget());
+      overlay_validator = validator.get();
       auto gpu_output_surface =
           std::make_unique<GpuBrowserCompositorOutputSurface>(
               context_provider, std::move(validator));
@@ -442,13 +452,17 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
   }
 
+  data->overlay_validator = overlay_validator;
+
   auto vsync_callback = base::BindRepeating(
       &ui::Compositor::SetDisplayVSyncParameters, compositor);
   display_output_surface->SetUpdateVSyncParametersCallback(vsync_callback);
 
   data->display_output_surface = display_output_surface.get();
-  if (data->reflector)
-    data->reflector->OnSourceSurfaceReady(data->display_output_surface);
+  if (data->reflector) {
+    data->reflector->OnSourceSurfaceReady(data->display_output_surface,
+                                          data->overlay_validator);
+  }
 
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   std::unique_ptr<viz::ExternalBeginFrameSourceMojo>
@@ -592,8 +606,10 @@ std::unique_ptr<ui::Reflector> GpuProcessTransportFactory::CreateReflector(
   std::unique_ptr<ReflectorImpl> reflector(
       new ReflectorImpl(source_compositor, target_layer));
   source_data->reflector = reflector.get();
-  if (auto* source_surface = source_data->display_output_surface)
-    reflector->OnSourceSurfaceReady(source_surface);
+  if (auto* source_surface = source_data->display_output_surface) {
+    reflector->OnSourceSurfaceReady(source_surface,
+                                    source_data->overlay_validator);
+  }
   return std::move(reflector);
 }
 

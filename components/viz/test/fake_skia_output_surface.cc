@@ -87,8 +87,8 @@ uint32_t FakeSkiaOutputSurface::GetFramebufferCopyTextureFormat() {
   return GL_RGB;
 }
 
-OverlayCandidateValidator* FakeSkiaOutputSurface::GetOverlayCandidateValidator()
-    const {
+std::unique_ptr<OverlayCandidateValidator>
+FakeSkiaOutputSurface::TakeOverlayCandidateValidator() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return nullptr;
 }

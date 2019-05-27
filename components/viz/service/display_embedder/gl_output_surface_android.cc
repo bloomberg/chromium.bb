@@ -30,9 +30,9 @@ void GLOutputSurfaceAndroid::HandlePartialSwap(
       flags, std::move(swap_callback), std::move(presentation_callback));
 }
 
-OverlayCandidateValidator*
-GLOutputSurfaceAndroid::GetOverlayCandidateValidator() const {
-  return overlay_candidate_validator_.get();
+std::unique_ptr<OverlayCandidateValidator>
+GLOutputSurfaceAndroid::TakeOverlayCandidateValidator() {
+  return std::move(overlay_candidate_validator_);
 }
 
 }  // namespace viz

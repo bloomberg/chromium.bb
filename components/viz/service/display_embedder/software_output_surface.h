@@ -37,7 +37,8 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
                bool use_stencil) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
   bool IsDisplayedAsOverlayPlane() const override;
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   bool HasExternalStencilTest() const override;

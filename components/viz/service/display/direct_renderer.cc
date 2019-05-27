@@ -110,7 +110,7 @@ DirectRenderer::DirectRenderer(const RendererSettings* settings,
       output_surface_(output_surface),
       resource_provider_(resource_provider),
       overlay_processor_(std::make_unique<OverlayProcessor>(
-          output_surface->GetOverlayCandidateValidator(),
+          output_surface->TakeOverlayCandidateValidator(),
           output_surface->context_provider())) {}
 
 DirectRenderer::~DirectRenderer() = default;
@@ -341,6 +341,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     output_surface_->Reshape(
         reshape_surface_size_, reshape_device_scale_factor_,
         reshape_device_color_space_, reshape_has_alpha_, reshape_use_stencil_);
+    overlay_processor_->SetValidatorViewportSize(reshape_surface_size_);
     did_reshape = true;
   }
 
@@ -357,6 +358,11 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
           pass->backdrop_filter_bounds;
     }
   }
+
+  // Display transform is needed for overlay validator on Android
+  // SurfaceControl. This needs to called before ProcessForOverlays.
+  overlay_processor_->SetDisplayTransformHint(
+      output_surface_->GetDisplayTransform());
 
   // Create the overlay candidate for the output surface, and mark it as
   // always handled.

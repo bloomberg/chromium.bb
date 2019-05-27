@@ -21,16 +21,16 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   virtual void GetStrategies(OverlayProcessor::StrategyList* strategies) = 0;
 
   // Returns true if draw quads can be represented as CALayers (Mac only).
-  virtual bool AllowCALayerOverlays() = 0;
+  virtual bool AllowCALayerOverlays() const = 0;
 
   // Returns true if draw quads can be represented as Direct Composition
   // Visuals (Windows only).
-  virtual bool AllowDCLayerOverlays() = 0;
+  virtual bool AllowDCLayerOverlays() const = 0;
 
   // Returns true if the platform supports hw overlays and surface occluding
   // damage rect needs to be computed since it will be used by overlay
   // processor.
-  virtual bool NeedsSurfaceOccludingDamageRect() = 0;
+  virtual bool NeedsSurfaceOccludingDamageRect() const = 0;
 
   // A list of possible overlay candidates is presented to this function.
   // The expected result is that those candidates that can be in a separate
@@ -44,6 +44,10 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   // any properties of the |surface| required by the platform.
   virtual void AdjustOutputSurfaceOverlay(OverlayCandidate* candidate) {}
 
+  // Set the overlay display transform and viewport size. Value only used for
+  // Android Surface Control.
+  virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
+  virtual void SetViewportSize(const gfx::Size& size) {}
   virtual ~OverlayCandidateValidator() {}
 };
 

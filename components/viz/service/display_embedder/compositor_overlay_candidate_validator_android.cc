@@ -59,16 +59,16 @@ void CompositorOverlayCandidateValidatorAndroid::CheckOverlaySupport(
   }
 }
 
-bool CompositorOverlayCandidateValidatorAndroid::AllowCALayerOverlays() {
+bool CompositorOverlayCandidateValidatorAndroid::AllowCALayerOverlays() const {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorAndroid::AllowDCLayerOverlays() {
+bool CompositorOverlayCandidateValidatorAndroid::AllowDCLayerOverlays() const {
   return false;
 }
 
 bool CompositorOverlayCandidateValidatorAndroid::
-    NeedsSurfaceOccludingDamageRect() {
+    NeedsSurfaceOccludingDamageRect() const {
   return false;
 }
 

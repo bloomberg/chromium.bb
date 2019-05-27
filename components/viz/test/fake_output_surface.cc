@@ -84,9 +84,11 @@ bool FakeOutputSurface::HasExternalStencilTest() const {
   return has_external_stencil_test_;
 }
 
-OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
-    const {
-  return overlay_candidate_validator_;
+std::unique_ptr<OverlayCandidateValidator>
+FakeOutputSurface::TakeOverlayCandidateValidator() {
+  // TODO(weiliangc): Validators are set on tests explicitly. Use the validator
+  // where they are created. Don't pass it in. This should be removed soon.
+  return nullptr;
 }
 
 gfx::BufferFormat FakeOutputSurface::GetOverlayBufferFormat() const {

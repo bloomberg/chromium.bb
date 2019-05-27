@@ -94,8 +94,8 @@ TEST(OverlayCandidateValidatorAndroidTest, DisplayTransformOverlay) {
   candidates.push_back(candidate);
 
   OverlayCandidateValidatorAndroid validator;
-  validator.set_viewport_size(gfx::Size(100, 200));
-  validator.set_display_transform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
+  validator.SetViewportSize(gfx::Size(100, 200));
+  validator.SetDisplayTransform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
 
   // First use a different transform than the display transform, the overlay is
   // rejected.
@@ -119,8 +119,8 @@ TEST(OverlayCandidateValidatorAndroidTest,
   candidate.transform = gfx::OVERLAY_TRANSFORM_NONE;
 
   OverlayCandidateValidatorAndroid validator;
-  validator.set_viewport_size(gfx::Size(100, 200));
-  validator.set_display_transform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
+  validator.SetViewportSize(gfx::Size(100, 200));
+  validator.SetDisplayTransform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
   validator.AdjustOutputSurfaceOverlay(&candidate);
   EXPECT_TRUE(candidate.overlay_handled);
   EXPECT_RECTF_EQ(candidate.display_rect, gfx::RectF(200, 100));

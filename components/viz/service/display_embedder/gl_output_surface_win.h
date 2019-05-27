@@ -21,7 +21,8 @@ class GLOutputSurfaceWin : public GLOutputSurface {
   ~GLOutputSurfaceWin() override;
 
   // GLOutputSurface implementation:
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
+      override;
 
  private:
   std::unique_ptr<CompositorOverlayCandidateValidatorWin> overlay_validator_;

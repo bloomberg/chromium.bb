@@ -18,15 +18,16 @@ CompositorOverlayCandidateValidatorMac::
 void CompositorOverlayCandidateValidatorMac::GetStrategies(
     OverlayProcessor::StrategyList* strategies) {}
 
-bool CompositorOverlayCandidateValidatorMac::AllowCALayerOverlays() {
+bool CompositorOverlayCandidateValidatorMac::AllowCALayerOverlays() const {
   return !ca_layer_disabled_;
 }
 
-bool CompositorOverlayCandidateValidatorMac::AllowDCLayerOverlays() {
+bool CompositorOverlayCandidateValidatorMac::AllowDCLayerOverlays() const {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorMac::NeedsSurfaceOccludingDamageRect() {
+bool CompositorOverlayCandidateValidatorMac::NeedsSurfaceOccludingDamageRect()
+    const {
   return false;
 }
 

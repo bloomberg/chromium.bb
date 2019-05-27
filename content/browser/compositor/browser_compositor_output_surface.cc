@@ -37,11 +37,6 @@ BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
 }
 
 void BrowserCompositorOutputSurface::SetReflector(ReflectorImpl* reflector) {
-  // Software mirroring is done by doing a GL copy out of the framebuffer - if
-  // we have overlays then that data will be missing.
-  if (overlay_candidate_validator_) {
-    overlay_candidate_validator_->SetSoftwareMirrorMode(reflector != nullptr);
-  }
   reflector_ = reflector;
 
   OnReflectorChanged();
@@ -50,9 +45,9 @@ void BrowserCompositorOutputSurface::SetReflector(ReflectorImpl* reflector) {
 void BrowserCompositorOutputSurface::OnReflectorChanged() {
 }
 
-viz::OverlayCandidateValidator*
-BrowserCompositorOutputSurface::GetOverlayCandidateValidator() const {
-  return overlay_candidate_validator_.get();
+std::unique_ptr<viz::OverlayCandidateValidator>
+BrowserCompositorOutputSurface::TakeOverlayCandidateValidator() {
+  return std::move(overlay_candidate_validator_);
 }
 
 bool BrowserCompositorOutputSurface::HasExternalStencilTest() const {

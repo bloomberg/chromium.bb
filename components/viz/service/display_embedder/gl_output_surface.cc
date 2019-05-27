@@ -134,8 +134,8 @@ uint32_t GLOutputSurface::GetFramebufferCopyTextureFormat() {
   return gl->GetCopyTextureInternalFormat();
 }
 
-OverlayCandidateValidator* GLOutputSurface::GetOverlayCandidateValidator()
-    const {
+std::unique_ptr<OverlayCandidateValidator>
+GLOutputSurface::TakeOverlayCandidateValidator() {
   return nullptr;
 }
 

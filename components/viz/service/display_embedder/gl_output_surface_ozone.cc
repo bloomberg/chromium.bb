@@ -36,9 +36,9 @@ GLOutputSurfaceOzone::GLOutputSurfaceOzone(
 
 GLOutputSurfaceOzone::~GLOutputSurfaceOzone() = default;
 
-OverlayCandidateValidator* GLOutputSurfaceOzone::GetOverlayCandidateValidator()
-    const {
-  return overlay_candidate_validator_.get();
+std::unique_ptr<OverlayCandidateValidator>
+GLOutputSurfaceOzone::TakeOverlayCandidateValidator() {
+  return std::move(overlay_candidate_validator_);
 }
 
 }  // namespace viz

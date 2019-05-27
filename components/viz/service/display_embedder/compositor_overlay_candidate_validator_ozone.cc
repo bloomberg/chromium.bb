@@ -55,16 +55,16 @@ void CompositorOverlayCandidateValidatorOzone::GetStrategies(
   }
 }
 
-bool CompositorOverlayCandidateValidatorOzone::AllowCALayerOverlays() {
+bool CompositorOverlayCandidateValidatorOzone::AllowCALayerOverlays() const {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorOzone::AllowDCLayerOverlays() {
+bool CompositorOverlayCandidateValidatorOzone::AllowDCLayerOverlays() const {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorOzone::
-    NeedsSurfaceOccludingDamageRect() {
+bool CompositorOverlayCandidateValidatorOzone::NeedsSurfaceOccludingDamageRect()
+    const {
   return true;
 }
 

@@ -17,18 +17,14 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorAndroid
   ~OverlayCandidateValidatorAndroid() override;
 
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
-  bool AllowCALayerOverlays() override;
-  bool AllowDCLayerOverlays() override;
-  bool NeedsSurfaceOccludingDamageRect() override;
+  bool AllowCALayerOverlays() const override;
+  bool AllowDCLayerOverlays() const override;
+  bool NeedsSurfaceOccludingDamageRect() const override;
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
   void AdjustOutputSurfaceOverlay(OverlayCandidate* candidate) override;
 
-  void set_display_transform(gfx::OverlayTransform transform) {
-    display_transform_ = transform;
-  }
-  void set_viewport_size(const gfx::Size& viewport_size) {
-    viewport_size_ = viewport_size;
-  }
+  void SetDisplayTransform(gfx::OverlayTransform transform) override;
+  void SetViewportSize(const gfx::Size& viewport_size) override;
 
  private:
   gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;

@@ -22,15 +22,16 @@ void CompositorOverlayCandidateValidatorWin::CheckOverlaySupport(
   NOTIMPLEMENTED();
 }
 
-bool CompositorOverlayCandidateValidatorWin::AllowCALayerOverlays() {
+bool CompositorOverlayCandidateValidatorWin::AllowCALayerOverlays() const {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorWin::AllowDCLayerOverlays() {
+bool CompositorOverlayCandidateValidatorWin::AllowDCLayerOverlays() const {
   return true;
 }
 
-bool CompositorOverlayCandidateValidatorWin::NeedsSurfaceOccludingDamageRect() {
+bool CompositorOverlayCandidateValidatorWin::NeedsSurfaceOccludingDamageRect()
+    const {
   return true;
 }
 

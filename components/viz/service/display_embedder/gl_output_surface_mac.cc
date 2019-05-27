@@ -22,9 +22,9 @@ GLOutputSurfaceMac::GLOutputSurfaceMac(
 
 GLOutputSurfaceMac::~GLOutputSurfaceMac() {}
 
-OverlayCandidateValidator* GLOutputSurfaceMac::GetOverlayCandidateValidator()
-    const {
-  return overlay_validator_.get();
+std::unique_ptr<OverlayCandidateValidator>
+GLOutputSurfaceMac::TakeOverlayCandidateValidator() {
+  return std::move(overlay_validator_);
 }
 
 }  // namespace viz

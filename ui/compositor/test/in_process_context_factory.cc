@@ -117,8 +117,8 @@ class DirectOutputSurface : public viz::OutputSurface {
     auto* gl = static_cast<InProcessContextProvider*>(context_provider());
     return gl->GetCopyTextureInternalFormat();
   }
-  viz::OverlayCandidateValidator* GetOverlayCandidateValidator()
-      const override {
+  std::unique_ptr<viz::OverlayCandidateValidator>
+  TakeOverlayCandidateValidator() override {
     return nullptr;
   }
   bool IsDisplayedAsOverlayPlane() const override { return false; }

@@ -20,9 +20,9 @@ GLOutputSurfaceWin::GLOutputSurfaceWin(
 
 GLOutputSurfaceWin::~GLOutputSurfaceWin() = default;
 
-OverlayCandidateValidator* GLOutputSurfaceWin::GetOverlayCandidateValidator()
-    const {
-  return overlay_validator_.get();
+std::unique_ptr<OverlayCandidateValidator>
+GLOutputSurfaceWin::TakeOverlayCandidateValidator() {
+  return std::move(overlay_validator_);
 }
 
 }  // namespace viz
