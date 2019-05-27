@@ -42,15 +42,18 @@ favicon::FaviconRequestOrigin ParseFaviconRequestOrigin(const GURL& url) {
   return favicon::FaviconRequestOrigin::UNKNOWN;
 }
 
+sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate(Profile* profile) {
+  sync_sessions::SessionSyncService* session_sync_service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  DCHECK(session_sync_service);
+  return session_sync_service->GetOpenTabsUIDelegate();
+}
+
 bool GetSyncedFaviconForPageURL(
     Profile* profile,
     const GURL& page_url,
     scoped_refptr<base::RefCountedMemory>* sync_bitmap) {
-  sync_sessions::SessionSyncService* session_sync_service =
-      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  DCHECK(session_sync_service);
-  sync_sessions::OpenTabsUIDelegate* open_tabs =
-      session_sync_service->GetOpenTabsUIDelegate();
+  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile);
   return open_tabs &&
          open_tabs->GetSyncedFaviconForPageURL(page_url.spec(), sync_bitmap);
 }
@@ -160,7 +163,8 @@ void FaviconSource::StartDataRequest(
         }
       }
     }
-
+    sync_sessions::OpenTabsUIDelegate* open_tabs =
+        GetOpenTabsUIDelegate(profile_);
     favicon_request_handler_.GetRawFaviconForPageURL(
         url, desired_size_in_pixel,
         base::BindOnce(
@@ -169,6 +173,8 @@ void FaviconSource::StartDataRequest(
                         parsed.device_scale_factor, unsafe_request_origin)),
         unsafe_request_origin, favicon_service,
         LargeIconServiceFactory::GetForBrowserContext(profile_),
+        /*icon_url_for_uma=*/
+        open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
         base::BindOnce(&GetSyncedFaviconForPageURL, base::Unretained(profile_)),
         CanSendHistoryDataToServer(profile_), &cancelable_task_tracker_);
   }

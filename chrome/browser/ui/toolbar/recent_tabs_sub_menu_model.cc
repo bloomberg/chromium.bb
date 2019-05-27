@@ -592,6 +592,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
   // Set default icon first.
   SetIcon(index_in_menu, favicon::GetDefaultFavicon());
 
+  sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
   bool is_local_tab = command_id < kFirstOtherDevicesTabCommandId;
   favicon_request_handler_.GetFaviconImageForPageURL(
       url,
@@ -601,6 +602,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
       FaviconServiceFactory::GetForProfile(browser_->profile(),
                                            ServiceAccessType::EXPLICIT_ACCESS),
       LargeIconServiceFactory::GetForBrowserContext(browser_->profile()),
+      open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
       base::BindOnce(&RecentTabsGetSyncedFaviconForPageURL,
                      base::Unretained(session_sync_service_)),
       CanSendHistoryDataToServer(browser_),

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FAVICON_CORE_FAVICON_REQUEST_HANDLER_H_
 #define COMPONENTS_FAVICON_CORE_FAVICON_REQUEST_HANDLER_H_
 
+#include <map>
+
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -22,6 +24,9 @@ class LargeIconService;
 // storage, sync or Google server accordingly.
 // TODO(victorvianna): Refactor LargeIconService to avoid having to pass both
 // it and FaviconService to the API.
+// TODO(victorvianna): Use a more natural order for the parameters in the API.
+// TODO(victorvianna): Remove |icon_url_for_uma| when we have access to the
+// FaviconUrlMapper.
 class FaviconRequestHandler {
  public:
   // Callback that requests the synced bitmap for the page url given in the
@@ -42,12 +47,15 @@ class FaviconRequestHandler {
   // is enabled. |can_send_history_data| indicates whether user settings allow
   // to query the favicon server using history data (in particular it must check
   // that history sync is enabled and no custom passphrase is set).
+  // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
+  // record UMA about the grouping of requests to the favicon server.
   void GetRawFaviconForPageURL(const GURL& page_url,
                                int desired_size_in_pixel,
                                favicon_base::FaviconRawBitmapCallback callback,
                                FaviconRequestOrigin request_origin,
                                FaviconService* favicon_service,
                                LargeIconService* large_icon_service,
+                               const GURL& icon_url_for_uma,
                                SyncedFaviconGetter synced_favicon_getter,
                                bool can_send_history_data,
                                base::CancelableTaskTracker* tracker);
@@ -58,11 +66,14 @@ class FaviconRequestHandler {
   // is enabled. |can_send_history_data| indicates whether user settings allow
   // to query the favicon server using history data (in particular it must check
   // that history sync is enabled and no custom passphrase is set).
+  // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
+  // record UMA about the grouping of requests to the favicon server.
   void GetFaviconImageForPageURL(const GURL& page_url,
                                  favicon_base::FaviconImageCallback callback,
                                  FaviconRequestOrigin request_origin,
                                  FaviconService* favicon_service,
                                  LargeIconService* large_icon_service,
+                                 const GURL& icon_url_for_uma,
                                  SyncedFaviconGetter synced_favicon_getter,
                                  bool can_send_history_data,
                                  base::CancelableTaskTracker* tracker);
@@ -83,6 +94,7 @@ class FaviconRequestHandler {
       FaviconRequestOrigin origin,
       FaviconService* favicon_service,
       LargeIconService* large_icon_service,
+      const GURL& icon_url_for_uma,
       SyncedFaviconGetter synced_favicon_getter,
       bool can_query_google_server,
       base::CancelableTaskTracker* tracker,
@@ -98,6 +110,7 @@ class FaviconRequestHandler {
       FaviconRequestOrigin origin,
       FaviconService* favicon_service,
       LargeIconService* large_icon_service,
+      const GURL& icon_url_for_uma,
       SyncedFaviconGetter synced_favicon_getter,
       bool can_query_google_server,
       base::CancelableTaskTracker* tracker,
@@ -110,16 +123,25 @@ class FaviconRequestHandler {
                                base::OnceClosure empty_response_callback,
                                base::OnceClosure local_lookup_callback,
                                LargeIconService* large_icon_service,
+                               const GURL& icon_url_for_uma,
                                FaviconRequestOrigin origin);
 
   // Called once the request to the favicon server has finished. If the request
   // succeeded, |local_lookup_callback| is called to effectively retrieve the
-  // icon, otherwise |empty_response_callback| is called.
+  // icon, otherwise |empty_response_callback| is called. If |group_to_clear|
+  // is non-empty, records the size of the associated group as UMA and clears
+  // it, simulating the execution of its array of waiting callbacks.
   void OnGoogleServerDataAvailable(
       base::OnceClosure empty_response_callback,
       base::OnceClosure local_lookup_callback,
       FaviconRequestOrigin origin,
+      const GURL& group_to_clear,
       favicon_base::GoogleFaviconServerRequestStatus status);
+
+  // Map from a group identifier to the number of callbacks in that group which
+  // would be waiting for execution. Used for recording metrics for the possible
+  // benefit of grouping.
+  std::map<GURL, int> group_callbacks_count_;
 
   base::WeakPtrFactory<FaviconRequestHandler> weak_ptr_factory_{this};
 

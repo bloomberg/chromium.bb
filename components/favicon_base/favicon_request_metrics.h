@@ -27,8 +27,11 @@ enum class FaviconAvailability {
   kMaxValue = kNotAvailable,
 };
 
-void RecordFaviconRequestMetric(favicon::FaviconRequestOrigin origin,
-                                favicon::FaviconAvailability availability);
+void RecordFaviconAvailabilityMetric(FaviconRequestOrigin origin,
+                                     FaviconAvailability availability);
+
+void RecordFaviconServerGroupingMetric(FaviconRequestOrigin origin,
+                                       int group_size);
 
 }  // namespace favicon
 
