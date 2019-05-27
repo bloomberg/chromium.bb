@@ -661,14 +661,11 @@ class FileManager extends cr.EventTarget {
         new CommandHandler(this, assert(this.selectionHandler_));
 
     // TODO(hirono): Move the following block to the UI part.
-    const commandButtons = this.dialogDom_.querySelectorAll('button[command]');
-    for (let j = 0; j < commandButtons.length; j++) {
-      CommandButton.decorate(commandButtons[j]);
+    for (const button of this.dialogDom_.querySelectorAll('button[command]')) {
+      CommandButton.decorate(button);
     }
 
-    const inputs = this.getDomInputs_();
-
-    for (let input of inputs) {
+    for (const input of this.getDomInputs_()) {
       this.setContextMenuForInput_(input);
     }
 
@@ -781,12 +778,15 @@ class FileManager extends cr.EventTarget {
     console.warn('Files app starting up');
     if (window.appState) {
       const params = {};
-      for (let name in window.appState) {
+
+      for (const name in window.appState) {
         params[name] = window.appState[name];
       }
-      for (let name in window.appState.params) {
+
+      for (const name in window.appState.params) {
         params[name] = window.appState.params[name];
       }
+
       this.launchParams_ = new LaunchParam(params);
     } else {
       // Used by the select dialog only.
@@ -1157,8 +1157,8 @@ class FileManager extends cr.EventTarget {
             this.dialogType === DialogType.FULL_PAGE, vmName,
             (entries, firstForSession) => {
               showToast = showToast || firstForSession;
-              for (let i = 0; i < entries.length; i++) {
-                this.crostini_.registerSharedPath(vmName, entries[i]);
+              for (const entry of entries) {
+                this.crostini_.registerSharedPath(vmName, entry);
               }
               resolve(entries.length);
             });
@@ -1420,16 +1420,18 @@ class FileManager extends cr.EventTarget {
     if (this.importHistory_) {
       this.importHistory_.removeObserver(this.onHistoryChangedBound_);
     }
+
     if (this.directoryModel_) {
       this.directoryModel_.dispose();
     }
+
     if (this.volumeManager_) {
       this.volumeManager_.dispose();
     }
+
     if (this.fileTransferController_) {
-      for (let i = 0; i < this.fileTransferController_.pendingTaskIds.length;
-           i++) {
-        const taskId = this.fileTransferController_.pendingTaskIds[i];
+      for (const taskId of assert(
+               this.fileTransferController_.pendingTaskIds)) {
         const item =
             this.fileBrowserBackground_.progressCenter.getItemById(taskId);
         item.message = '';
@@ -1437,6 +1439,7 @@ class FileManager extends cr.EventTarget {
         this.fileBrowserBackground_.progressCenter.updateItem(item);
       }
     }
+
     if (this.ui_ && this.ui_.progressCenterPanel) {
       this.fileBrowserBackground_.progressCenter.removePanel(
           this.ui_.progressCenterPanel);
