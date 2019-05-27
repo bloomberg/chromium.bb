@@ -99,7 +99,6 @@ import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponent;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentFactory;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.media.PictureInPictureController;
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -954,10 +953,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         FeatureUtilities.setIsInMultiWindowMode(
                 MultiWindowUtils.getInstance().isInMultiWindowMode(this));
 
-        if (getActivityTab() != null) {
-            getActivityTab().setPictureInPictureEnabled(
-                    PictureInPicture.isEnabled(getApplicationContext()));
-        }
+        // For picture-in-picture mode
+        if (getActivityTab() != null) getActivityTab().notifyRendererPreferenceUpdate();
 
         if (mPictureInPictureController != null) {
             mPictureInPictureController.cleanup(this);

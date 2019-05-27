@@ -131,9 +131,7 @@ TabAndroid::TabAndroid(JNIEnv* env, const JavaRef<jobject>& obj)
       session_window_id_(SessionID::InvalidValue()),
       content_layer_(cc::Layer::Create()),
       tab_content_manager_(nullptr),
-      synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)),
-      picture_in_picture_enabled_(false),
-      embedded_media_experience_enabled_(false) {
+      synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
   Java_Tab_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));
 }
 
@@ -545,52 +543,11 @@ bool TabAndroid::HasPrerenderedUrl(JNIEnv* env,
   return HasPrerenderedUrl(gurl);
 }
 
-void TabAndroid::EnableEmbeddedMediaExperience(
+void TabAndroid::NotifyRendererPreferenceUpdate(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  embedded_media_experience_enabled_ = enabled;
-
-  if (!web_contents() || !web_contents()->GetRenderViewHost())
-    return;
-
-  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-}
-
-bool TabAndroid::ShouldEnableEmbeddedMediaExperience() const {
-  return embedded_media_experience_enabled_;
-}
-
-void TabAndroid::SetNightModeEnabled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  if (night_mode_enabled_ == enabled)
-    return;
-
-  night_mode_enabled_ = enabled;
+    const base::android::JavaParamRef<jobject>& obj) {
   if (web_contents() && web_contents()->GetRenderViewHost())
     web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-}
-
-bool TabAndroid::NightModeEnabled() const {
-  return night_mode_enabled_;
-}
-
-void TabAndroid::SetPictureInPictureEnabled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  picture_in_picture_enabled_ = enabled;
-
-  if (!web_contents() || !web_contents()->GetRenderViewHost())
-    return;
-
-  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-}
-
-bool TabAndroid::IsPictureInPictureEnabled() const {
-  return picture_in_picture_enabled_;
 }
 
 void TabAndroid::AttachDetachedTab(
@@ -604,17 +561,6 @@ void TabAndroid::AttachDetachedTab(
         profile, ServiceAccessType::IMPLICIT_ACCESS));
     background_tab_manager->UnregisterBackgroundTab();
   }
-}
-
-void TabAndroid::SetWebappManifestScope(JNIEnv* env,
-                                        const JavaParamRef<jobject>& obj,
-                                        const JavaParamRef<jstring>& scope) {
-  webapp_manifest_scope_ = GURL(base::android::ConvertJavaStringToUTF8(scope));
-
-  if (!web_contents() || !web_contents()->GetRenderViewHost())
-    return;
-
-  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
 }
 
 bool TabAndroid::AreRendererInputEventsIgnored(

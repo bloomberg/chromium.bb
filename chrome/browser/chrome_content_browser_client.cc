@@ -443,6 +443,7 @@
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/tab_web_contents_delegate_android.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
@@ -3251,28 +3252,30 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
                                               "holdback_web", false);
 
-  content::WebContents* contents =
-      content::WebContents::FromRenderViewHost(rvh);
+  auto* contents = content::WebContents::FromRenderViewHost(rvh);
   if (contents) {
 #if defined(OS_ANDROID)
-    TabAndroid* tab_android = TabAndroid::FromWebContents(contents);
-    if (tab_android) {
+    auto* delegate = TabAndroid::FromWebContents(contents)
+                         ? static_cast<android::TabWebContentsDelegateAndroid*>(
+                               contents->GetDelegate())
+                         : nullptr;
+    if (delegate) {
       web_prefs->embedded_media_experience_enabled =
-          tab_android->ShouldEnableEmbeddedMediaExperience();
+          delegate->ShouldEnableEmbeddedMediaExperience();
 
       web_prefs->picture_in_picture_enabled =
-          tab_android->IsPictureInPictureEnabled();
+          delegate->IsPictureInPictureEnabled();
 
       web_prefs->preferred_color_scheme =
-          tab_android->NightModeEnabled() ? blink::PreferredColorScheme::kDark
-                                          : blink::PreferredColorScheme::kLight;
+          delegate->IsNightModeEnabled() ? blink::PreferredColorScheme::kDark
+                                         : blink::PreferredColorScheme::kLight;
     }
 #endif  // defined(OS_ANDROID)
 
     // web_app_scope value is platform specific.
 #if defined(OS_ANDROID)
-    if (tab_android)
-      web_prefs->web_app_scope = tab_android->GetWebappManifestScope();
+    if (delegate)
+      web_prefs->web_app_scope = delegate->GetManifestScope();
 #elif BUILDFLAG(ENABLE_EXTENSIONS)
     {
       web_prefs->web_app_scope = GURL();

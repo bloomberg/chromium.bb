@@ -1041,9 +1041,15 @@ public class Tab
         mWindowAndroid = windowAndroid;
         WebContents webContents = getWebContents();
         if (webContents != null) webContents.setTopLevelNativeWindow(mWindowAndroid);
-        if (getActivity() != null) {
-            setNightModeEnabled(getActivity().getNightModeStateProvider().isInNightMode());
-        }
+        if (getActivity() != null) notifyRendererPreferenceUpdate();
+    }
+
+    /**
+     * Notify that web preferences needs update for various properties.
+     * TODO(jinsukkim): Expose RenderViewHost at java layer and remove this method.
+     */
+    public void notifyRendererPreferenceUpdate() {
+        if (mNativeTabAndroid != 0) nativeNotifyRendererPreferenceUpdate(mNativeTabAndroid);
     }
 
     /**
@@ -1192,9 +1198,7 @@ public class Tab
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
-            if (getActivity() != null) {
-                setNightModeEnabled(getActivity().getNightModeStateProvider().isInNightMode());
-            }
+            if (getActivity() != null) notifyRendererPreferenceUpdate();
             TabHelpers.initWebContentsHelpers(this);
             notifyContentChanged();
         } finally {
@@ -1929,46 +1933,10 @@ public class Tab
     }
 
     /**
-     * Set the Webapp manifest scope, which is used to allow frames within the scope to autoplay
-     * media unmuted.
-     */
-    public void setWebappManifestScope(String scope) {
-        nativeSetWebappManifestScope(mNativeTabAndroid, scope);
-    }
-
-    /**
-     * Configures web preferences for enabling Picture-in-Picture.
-     * @param enabled Whether Picture-in-Picture should be enabled.
-     */
-    public void setPictureInPictureEnabled(boolean enabled) {
-        if (mNativeTabAndroid == 0) return;
-        nativeSetPictureInPictureEnabled(mNativeTabAndroid, enabled);
-    }
-
-    /**
-     * Configures web preferences for viewing downloaded media.
-     * @param enabled Whether embedded media experience should be enabled.
-     */
-    public void enableEmbeddedMediaExperience(boolean enabled) {
-        if (mNativeTabAndroid == 0) return;
-        nativeEnableEmbeddedMediaExperience(mNativeTabAndroid, enabled);
-    }
-
-    /**
      * @return Whether input events from the renderer are ignored on the browser side.
      */
     public boolean areRendererInputEventsIgnored() {
         return nativeAreRendererInputEventsIgnored(mNativeTabAndroid);
-    }
-
-    /**
-     * Sets night mode enabled/disabled for this Tab. To be used to propagate
-     * the preferred color scheme to the renderer.
-     * @param enabled Whether night mode is enabled or not.
-     */
-    public void setNightModeEnabled(boolean enabled) {
-        if (mNativeTabAndroid == 0) return;
-        nativeSetNightModeEnabled(mNativeTabAndroid, enabled);
     }
 
     private native void nativeInit();
@@ -1993,10 +1961,7 @@ public class Tab
     private native void nativeLoadOriginalImage(long nativeTabAndroid);
     private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
     private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);
-    private native void nativeSetWebappManifestScope(long nativeTabAndroid, String scope);
-    private native void nativeSetPictureInPictureEnabled(long nativeTabAndroid, boolean enabled);
-    private native void nativeEnableEmbeddedMediaExperience(long nativeTabAndroid, boolean enabled);
     private native void nativeAttachDetachedTab(long nativeTabAndroid);
     private native boolean nativeAreRendererInputEventsIgnored(long nativeTabAndroid);
-    private native void nativeSetNightModeEnabled(long nativeTabAndroid, boolean enabled);
+    private native void nativeNotifyRendererPreferenceUpdate(long nativeTabAndroid);
 }

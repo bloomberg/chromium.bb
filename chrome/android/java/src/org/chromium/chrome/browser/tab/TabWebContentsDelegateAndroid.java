@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
+import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
@@ -584,6 +585,44 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
             super.onDestroyed(tab);
             mModalDialogManager.dismissDialog(mDialogModel, DialogDismissalCause.TAB_DESTROYED);
         }
+    }
+
+    /**
+     * Provides info on web preferences for viewing downloaded media.
+     * @return enabled Whether embedded media experience should be enabled.
+     */
+    @CalledByNative
+    protected boolean shouldEnableEmbeddedMediaExperience() {
+        return false;
+    }
+
+    /**
+     * @return web preferences for enabling Picture-in-Picture.
+     */
+    @CalledByNative
+    protected boolean isPictureInPictureEnabled() {
+        ChromeActivity activity = mTab.getActivity();
+        return activity != null ? PictureInPicture.isEnabled(activity.getApplicationContext())
+                                : false;
+    }
+
+    /**
+     * @return Night mode enabled/disabled for this Tab. To be used to propagate
+     *         the preferred color scheme to the renderer.
+     */
+    @CalledByNative
+    protected boolean isNightModeEnabled() {
+        ChromeActivity activity = mTab.getActivity();
+        return activity != null ? activity.getNightModeStateProvider().isInNightMode() : false;
+    }
+
+    /**
+     * @return the Webapp manifest scope, which is used to allow frames within the scope to
+     *         autoplay media unmuted.
+     */
+    @CalledByNative
+    protected String getManifestScope() {
+        return null;
     }
 
     private static native void nativeOnRendererUnresponsive(WebContents webContents);

@@ -45,6 +45,11 @@ public class WebappDelegateFactory extends TabDelegateFactory {
         }
 
         @Override
+        protected String getManifestScope() {
+            return mActivity.getWebappInfo().scopeUri().toString();
+        }
+
+        @Override
         public void activateContents() {
             // Create an Intent that will be fired toward the WebappLauncherActivity, which in turn
             // will fire an Intent to launch the correct WebappActivity or WebApkActivity. On L+

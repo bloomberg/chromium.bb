@@ -47,7 +47,7 @@ public class WebApkActivity extends WebappActivity {
     @Override
     protected void initializeUI(Bundle savedInstance) {
         super.initializeUI(savedInstance);
-        getActivityTab().setWebappManifestScope(getWebappInfo().scopeUri().toString());
+        getActivityTab().notifyRendererPreferenceUpdate();
     }
 
     @Override

@@ -154,12 +154,16 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
 
     private static class CustomTabWebContentsDelegate extends TabWebContentsDelegateAndroid {
         private final MultiWindowUtils mMultiWindowUtils;
+        private final boolean mShouldEnableEmbeddedMediaExperience;
+
         /**
          * See {@link TabWebContentsDelegateAndroid}.
          */
-        public CustomTabWebContentsDelegate(Tab tab, MultiWindowUtils multiWindowUtils) {
+        public CustomTabWebContentsDelegate(Tab tab, MultiWindowUtils multiWindowUtils,
+                boolean shouldEnableEmbeddedMediaExperience) {
             super(tab);
             mMultiWindowUtils = multiWindowUtils;
+            mShouldEnableEmbeddedMediaExperience = shouldEnableEmbeddedMediaExperience;
         }
 
         @Override
@@ -170,6 +174,11 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
         @Override
         protected void bringActivityToForeground() {
             // No-op here. If client's task is in background Chrome is unable to foreground it.
+        }
+
+        @Override
+        protected boolean shouldEnableEmbeddedMediaExperience() {
+            return mShouldEnableEmbeddedMediaExperience;
         }
 
         @Override
@@ -203,6 +212,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     private final boolean mShouldHideBrowserControls;
     private final boolean mIsOpenedByChrome;
     private final boolean mShouldAllowAppBanners;
+    private final boolean mShouldEnableEmbeddedMediaExperience;
     private final BrowserControlsVisibilityDelegate mBrowserStateVisibilityDelegate;
     private final ExternalAuthUtils mExternalAuthUtils;
     private final MultiWindowUtils mMultiWindowUtils;
@@ -213,15 +223,18 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
      * @param shouldHideBrowserControls Whether or not the browser controls may auto-hide.
      * @param isOpenedByChrome Whether the CustomTab was originally opened by Chrome.
      * @param shouldAllowAppBanners Whether app install banners can be shown.
+     * @param shouldEnableEmbeddedMediaExperience Whether embedded media experience is enabled.
      * @param visibilityDelegate The delegate that handles browser control visibility associated
      *                           with browser actions (as opposed to tab state).
      */
     private CustomTabDelegateFactory(boolean shouldHideBrowserControls, boolean isOpenedByChrome,
-            boolean shouldAllowAppBanners, BrowserControlsVisibilityDelegate visibilityDelegate,
-            ExternalAuthUtils authUtils, MultiWindowUtils multiWindowUtils) {
+            boolean shouldAllowAppBanners, boolean shouldEnableEmbeddedMediaExperience,
+            BrowserControlsVisibilityDelegate visibilityDelegate, ExternalAuthUtils authUtils,
+            MultiWindowUtils multiWindowUtils) {
         mShouldHideBrowserControls = shouldHideBrowserControls;
         mIsOpenedByChrome = isOpenedByChrome;
         mShouldAllowAppBanners = shouldAllowAppBanners;
+        mShouldEnableEmbeddedMediaExperience = shouldEnableEmbeddedMediaExperience;
         mBrowserStateVisibilityDelegate = visibilityDelegate;
         mExternalAuthUtils = authUtils;
         mMultiWindowUtils = multiWindowUtils;
@@ -233,12 +246,10 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
             ExternalAuthUtils authUtils, MultiWindowUtils multiWindowUtils) {
         // Don't show an app install banner for the user of a Trusted Web Activity - they've already
         // got an app installed!
-        this(intentDataProvider.shouldEnableUrlBarHiding(),
-                intentDataProvider.isOpenedByChrome(),
+        this(intentDataProvider.shouldEnableUrlBarHiding(), intentDataProvider.isOpenedByChrome(),
                 !intentDataProvider.isTrustedWebActivity(),
-                visibilityDelegate,
-                authUtils,
-                multiWindowUtils);
+                intentDataProvider.shouldEnableEmbeddedMediaExperience(), visibilityDelegate,
+                authUtils, multiWindowUtils);
     }
 
     /**
@@ -246,7 +257,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
      * be replaced when the hidden Tab becomes shown.
      */
     static CustomTabDelegateFactory createDummy() {
-        return new CustomTabDelegateFactory(false, false, false, null, null, null);
+        return new CustomTabDelegateFactory(false, false, false, false, null, null, null);
     }
 
     @Override
@@ -268,7 +279,8 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
 
     @Override
     public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
-        return new CustomTabWebContentsDelegate(tab, mMultiWindowUtils);
+        return new CustomTabWebContentsDelegate(
+                tab, mMultiWindowUtils, mShouldEnableEmbeddedMediaExperience);
     }
 
     @Override
