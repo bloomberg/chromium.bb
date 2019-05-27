@@ -354,15 +354,15 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   results->SetBoolean("hotrodmode", g_hotrod_keyboard_enabled);
   std::unique_ptr<base::ListValue> features(new base::ListValue());
 
+  // TODO(https://crbug.com/880659): Cleanup these flags after removing these
+  // flags from IME extension.
   features->AppendString(GenerateFeatureFlag("floatingkeyboard", true));
   features->AppendString(GenerateFeatureFlag("gesturetyping", true));
   // TODO(https://crbug.com/890134): Implement gesture editing.
   features->AppendString(GenerateFeatureFlag("gestureediting", false));
   features->AppendString(GenerateFeatureFlag("fullscreenhandwriting", false));
   features->AppendString(GenerateFeatureFlag("virtualkeyboardmdui", true));
-  features->AppendString(GenerateFeatureFlag(
-      "imeservice", base::FeatureList::IsEnabled(
-                        chromeos::features::kImeServiceConnectable)));
+  features->AppendString(GenerateFeatureFlag("imeservice", true));
 
   keyboard::mojom::KeyboardConfig config = keyboard_client->GetKeyboardConfig();
   // TODO(oka): Change this to use config.voice_input.

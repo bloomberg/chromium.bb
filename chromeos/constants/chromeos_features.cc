@@ -90,10 +90,6 @@ const base::Feature kFsNosymfollow{"FsNosymfollow",
 const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, allows the qualified IME extension to connect to IME service.
-const base::Feature kImeServiceConnectable{"ImeServiceConnectable",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

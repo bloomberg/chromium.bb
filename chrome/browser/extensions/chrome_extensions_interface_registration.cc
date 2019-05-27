@@ -22,7 +22,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_features.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
@@ -37,6 +36,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
 #endif
 
 #if defined(KIOSK_NEXT)
@@ -149,14 +149,15 @@ void RegisterChromeInterfacesForExtension(
   }
 
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kImeServiceConnectable) &&
-      extension->permissions_data()->HasAPIPermission(
-          APIPermission::kInputMethodPrivate)) {
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // Registry InputEngineManager for official Google XKB Input only.
+  if (extension->id() == chromeos::extension_ime_util::kXkbExtensionId) {
     registry->AddInterface(base::BindRepeating(
         &ForwardRequest<chromeos::ime::mojom::InputEngineManager>,
         chromeos::ime::mojom::kServiceName));
   }
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 #if defined(KIOSK_NEXT)
   if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell) &&

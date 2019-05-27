@@ -1842,9 +1842,6 @@ extern const char kHideArcMediaNotificationsDescription[];
 extern const char kImeInputLogicFstName[];
 extern const char kImeInputLogicFstDescription[];
 
-extern const char kImeServiceName[];
-extern const char kImeServiceDescription[];
-
 extern const char kListAllDisplayModesName[];
 extern const char kListAllDisplayModesDescription[];
 

@@ -3072,10 +3072,6 @@ const char kImeInputLogicFstName[] = "Enable FST Input Logic on IME";
 const char kImeInputLogicFstDescription[] =
     "Enable FST Input Logic to replace the IME legacy input logic on NaCl";
 
-const char kImeServiceName[] = "Enable IME service";
-const char kImeServiceDescription[] =
-    "Enable IME service to provide the IME functionality instead of NaCl";
-
 const char kListAllDisplayModesName[] = "List all display modes";
 const char kListAllDisplayModesDescription[] =
     "Enables listing all external displays' modes in the display settings.";
