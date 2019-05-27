@@ -134,6 +134,38 @@ bool SyncSetCounter(XDisplay* display, XID counter, int64_t value) {
   return XSyncSetCounter(display, counter, sync_value) == x11::True;
 }
 
+class SwapWithNewSizeObserverHelper : public ui::CompositorObserver {
+ public:
+  using HelperCallback = base::RepeatingCallback<void(const gfx::Size&)>;
+  SwapWithNewSizeObserverHelper(ui::Compositor* compositor,
+                                const HelperCallback& callback)
+      : compositor_(compositor), callback_(callback) {
+    compositor_->AddObserver(this);
+  }
+  ~SwapWithNewSizeObserverHelper() override {
+    if (compositor_)
+      compositor_->RemoveObserver(this);
+  }
+
+ private:
+  // ui::CompositorObserver:
+  void OnCompositingCompleteSwapWithNewSize(ui::Compositor* compositor,
+                                            const gfx::Size& size) override {
+    DCHECK_EQ(compositor, compositor_);
+    callback_.Run(size);
+  }
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override {
+    DCHECK_EQ(compositor, compositor_);
+    compositor_->RemoveObserver(this);
+    compositor_ = nullptr;
+  }
+
+  ui::Compositor* compositor_;
+  const HelperCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SwapWithNewSizeObserverHelper);
+};
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1350,31 +1382,6 @@ void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
   // the same tap-to-click disabling here that chromeos does.
 }
 
-void DesktopWindowTreeHostX11::OnCompositingCompleteSwapWithNewSize(
-    ui::Compositor* compositor,
-    const gfx::Size& size) {
-  if (update_counter_ == x11::None)
-    return;
-
-  if (configure_counter_value_is_extended_) {
-    if ((current_counter_value_ % 2) == 1) {
-      // An increase 3 means that the frame was not drawn as fast as possible.
-      // This can trigger different handling from the compositor.
-      // Setting an even number to |extended_update_counter_| will trigger a
-      // new resize.
-      current_counter_value_ += 3;
-      SyncSetCounter(xdisplay_, extended_update_counter_,
-                     current_counter_value_);
-    }
-    return;
-  }
-
-  if (configure_counter_value_ != 0) {
-    SyncSetCounter(xdisplay_, update_counter_, configure_counter_value_);
-    configure_counter_value_ = 0;
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, display::DisplayObserver implementation:
 
@@ -1675,6 +1682,13 @@ void DesktopWindowTreeHostX11::InitX11Window(
   // https://crbug.com/442111.
   CreateCompositor(viz::FrameSinkId(),
                    params.type == Widget::InitParams::TYPE_TOOLTIP);
+
+  if (ui::IsSyncExtensionAvailable()) {
+    compositor_observer_ = std::make_unique<SwapWithNewSizeObserverHelper>(
+        compositor(), base::BindRepeating(
+                          &DesktopWindowTreeHostX11::OnCompleteSwapWithNewSize,
+                          base::Unretained(this)));
+  }
   OnAcceleratedWidgetAvailable();
 }
 
@@ -2492,6 +2506,27 @@ void DesktopWindowTreeHostX11::RestartDelayedResizeTask() {
 
 aura::Window* DesktopWindowTreeHostX11::content_window() {
   return desktop_native_widget_aura_->content_window();
+}
+
+void DesktopWindowTreeHostX11::OnCompleteSwapWithNewSize(
+    const gfx::Size& size) {
+  if (configure_counter_value_is_extended_) {
+    if ((current_counter_value_ % 2) == 1) {
+      // An increase 3 means that the frame was not drawn as fast as possible.
+      // This can trigger different handling from the compositor.
+      // Setting an even number to |extended_update_counter_| will trigger a
+      // new resize.
+      current_counter_value_ += 3;
+      SyncSetCounter(xdisplay_, extended_update_counter_,
+                     current_counter_value_);
+    }
+    return;
+  }
+
+  if (configure_counter_value_ != 0) {
+    SyncSetCounter(xdisplay_, update_counter_, configure_counter_value_);
+    configure_counter_value_ = 0;
+  }
 }
 
 base::flat_map<std::string, std::string>

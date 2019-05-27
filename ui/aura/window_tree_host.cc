@@ -401,7 +401,7 @@ void WindowTreeHost::CreateCompositor(
       base::ThreadTaskRunnerHandle::Get(), ui::IsPixelCanvasRecordingEnabled(),
       external_begin_frame_client, force_software_compositor,
       trace_environment_name);
-#if defined(OS_CHROMEOS) || defined(USE_X11)
+#if defined(OS_CHROMEOS)
   compositor_->AddObserver(this);
 #endif
   if (!dispatcher()) {

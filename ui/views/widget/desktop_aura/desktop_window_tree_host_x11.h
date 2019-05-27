@@ -180,8 +180,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void MoveCursorToScreenLocationInPixels(
       const gfx::Point& location_in_pixels) override;
   void OnCursorVisibilityChangedNative(bool show) override;
-  void OnCompositingCompleteSwapWithNewSize(ui::Compositor* compositor,
-                                            const gfx::Size& size) override;
 
   // Overridden from display::DisplayObserver via aura::WindowTreeHost:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -306,6 +304,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // Accessor for DesktopNativeWidgetAura::content_window().
   aura::Window* content_window();
+
+  // Callback for a swapbuffer after resize.
+  void OnCompleteSwapWithNewSize(const gfx::Size& size);
 
   // X11 things
   // The display and the native X window hosting the root window.
@@ -472,6 +473,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   int64_t current_counter_value_ = 0;
   bool pending_counter_value_is_extended_ = false;
   bool configure_counter_value_is_extended_ = false;
+  std::unique_ptr<CompositorObserver> compositor_observer_;
 
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_{this};
   base::WeakPtrFactory<DesktopWindowTreeHostX11> weak_factory_{this};
