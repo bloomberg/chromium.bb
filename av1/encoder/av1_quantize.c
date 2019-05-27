@@ -424,7 +424,7 @@ void av1_highbd_quantize_b_facade(const tran_low_t *coeff_ptr,
       switch (qparam->log_scale) {
         case 0:
           if (LIKELY(n_coeffs >= 8)) {
-            aom_highbd_quantize_b_adaptive_c(
+            aom_highbd_quantize_b_adaptive(
                 coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX, p->quant_QTX,
                 p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX,
                 eob_ptr, sc->scan, sc->iscan);
