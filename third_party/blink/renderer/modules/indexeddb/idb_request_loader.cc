@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_request_loader.h"
 
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request_queue_item.h"
@@ -71,16 +73,21 @@ void IDBRequestLoader::StartNextValue() {
 
   DCHECK(current_value_ != values_.end());
 
+  ExecutionContext* exection_context =
+      queue_item_->Request()->GetExecutionContext();
+  // The execution context was town down. The loader will eventually get a
+  // Cancel() call.
+  if (!exection_context)
+    return;
+
   wrapped_data_.ReserveCapacity(unwrapper.WrapperBlobSize());
 #if DCHECK_IS_ON()
   DCHECK(!file_reader_loading_);
   file_reader_loading_ = true;
 #endif  // DCHECK_IS_ON()
-  // TODO(hajimehoshi): Use a per-ExecutionContext task runner of
-  // TaskType::kFileReading
   loader_ = std::make_unique<FileReaderLoader>(
       FileReaderLoader::kReadByClient, this,
-      ThreadScheduler::Current()->IPCTaskRunner());
+      exection_context->GetTaskRunner(TaskType::kDatabaseAccess));
   loader_->Start(unwrapper.WrapperBlobHandle());
 }
 
