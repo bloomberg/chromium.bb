@@ -404,19 +404,6 @@ by a child template that "extends" this file.
         </activity>
 
         <!-- Upgrade related -->
-        <activity android:name="org.chromium.chrome.browser.upgrade.UpgradeActivity"
-            android:excludeFromRecents="true"
-            android:theme="@style/Theme.Chromium.Activity"
-            android:windowSoftInputMode="adjustResize"
-            android:taskAffinity=""
-            android:launchMode="singleInstance"
-            android:persistableMode="persistNever"
-            android:autoRemoveFromRecents="false"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-            android:hardwareAccelerated="false">
-        </activity>
-        <service android:name="org.chromium.chrome.browser.upgrade.UpgradeIntentService"
-            android:exported="false"/>
         <receiver android:name="org.chromium.chrome.browser.upgrade.PackageReplacedBroadcastReceiver"
             android:exported="false">
             <intent-filter>
@@ -431,33 +418,6 @@ by a child template that "extends" this file.
                 <action android:name="android.intent.action.LOCALE_CHANGED" />
             </intent-filter>
         </receiver>
-
-        <!-- Document mode Activities. -->
-        <activity android:name="org.chromium.chrome.browser.document.DocumentActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Chromium.Activity"
-            android:taskAffinity=""
-            android:persistableMode="persistAcrossReboots"
-            android:autoRemoveFromRecents="false"
-            {{ self.chrome_activity_common() }}>
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        <activity-alias android:name="com.google.android.apps.chrome.document.DocumentActivity"
-            android:targetActivity="org.chromium.chrome.browser.document.DocumentActivity"
-            android:exported="false"/>
-        <activity android:name="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
-            android:icon="@mipmap/incognito_app_icon"
-            android:exported="false"
-            android:theme="@style/Theme.Chromium.Incognito"
-            android:taskAffinity=""
-            android:persistableMode="persistNever"
-            android:autoRemoveFromRecents="false"
-            {{ self.chrome_activity_common() }}>
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        <activity-alias android:name="com.google.android.apps.chrome.document.IncognitoDocumentActivity"
-            android:targetActivity="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
-            android:exported="false"/>
 
         <!-- Custom Tabs -->
         <activity android:name="org.chromium.chrome.browser.customtabs.CustomTabActivity"

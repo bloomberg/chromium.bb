@@ -3974,11 +3974,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Browse
       </message>
 
-      <!-- Migration strings -->
-      <message name="IDS_UPDATING_CHROME" desc="String that indicates that Chrome is updating">
-        Updating Chrome...
-      </message>
-
       <!-- Interventions -->
       <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="The message stating that a redirect (noun) was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
          Redirect blocked:

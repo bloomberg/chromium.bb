@@ -11,7 +11,9 @@ import android.net.Uri;
 import android.provider.Browser;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
@@ -40,6 +42,21 @@ public class TabDelegate extends TabCreator {
      */
     public TabDelegate(boolean incognito) {
         mIsIncognito = incognito;
+    }
+
+    /**
+     * @return Running Activity that owns the given Tab, null if the Activity couldn't be found.
+     */
+    private static Activity getActivityForTabId(int id) {
+        if (id == Tab.INVALID_TAB_ID) return null;
+
+        for (Activity runningActivity : ApplicationStatus.getRunningActivities()) {
+            if (!(runningActivity instanceof ChromeActivity)) continue;
+
+            ChromeActivity activity = (ChromeActivity) runningActivity;
+            if (activity.getTabModelSelector().getTabById(id) != null) return activity;
+        }
+        return null;
     }
 
     @Override
@@ -162,7 +179,7 @@ public class TabDelegate extends TabCreator {
 
         if (isChromeUI) intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
 
-        Activity parentActivity = ActivityDelegate.getActivityForTabId(parentId);
+        Activity parentActivity = getActivityForTabId(parentId);
         if (parentActivity != null && parentActivity.getIntent() != null) {
             intent.putExtra(IntentHandler.EXTRA_PARENT_INTENT, parentActivity.getIntent());
         }

@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.touchless.TouchlessDelegate;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -151,30 +150,6 @@ public class FeatureUtilities {
                 Context.USER_SERVICE);
         Bundle userRestrictions = manager.getUserRestrictions();
         return !userRestrictions.getBoolean(UserManager.DISALLOW_MODIFY_ACCOUNTS, false);
-    }
-
-    /**
-     * Check whether Chrome should be running on document mode.
-     * @param context The context to use for checking configuration.
-     * @return Whether Chrome should be running on document mode.
-     */
-    public static boolean isDocumentMode(Context context) {
-        return isDocumentModeEligible(context) && !DocumentModeAssassin.isOptedOutOfDocumentMode();
-    }
-
-    /**
-     * Whether the device could possibly run in Document mode (may return true even if the document
-     * mode is turned off).
-     *
-     * This function can't be changed to return false (even if document mode is deleted) because we
-     * need to know whether a user needs to be migrated away.
-     *
-     * @param context The context to use for checking configuration.
-     * @return Whether the device could possibly run in Document mode.
-     */
-    public static boolean isDocumentModeEligible(Context context) {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && !DeviceFormFactor.isTablet();
     }
 
     /**

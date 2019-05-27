@@ -88,28 +88,6 @@
       android:use32bitAbi="true">
     <activity
         android:autoRemoveFromRecents="false"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-        android:excludeFromRecents="true"
-        android:hardwareAccelerated="false"
-        android:launchMode="singleInstance"
-        android:name="org.chromium.chrome.browser.upgrade.UpgradeActivity"
-        android:persistableMode="persistNever"
-        android:taskAffinity=""
-        android:theme="@style/Theme.Chromium.Activity"
-        android:windowSoftInputMode="adjustResize"/>
-    <activity
-        android:autoRemoveFromRecents="false"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
-        android:exported="false"
-        android:hardwareAccelerated="false"
-        android:icon="@mipmap/incognito_app_icon"
-        android:name="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
-        android:persistableMode="persistNever"
-        android:taskAffinity=""
-        android:theme="@style/Theme.Chromium.Incognito"
-        android:windowSoftInputMode="adjustResize"/>
-    <activity
-        android:autoRemoveFromRecents="false"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
         android:exported="false"
         android:hardwareAccelerated="false"
@@ -126,16 +104,6 @@
         <category android:name="com.google.intent.category.DAYDREAM"/>
       </intent-filter>
     </activity>
-    <activity
-        android:autoRemoveFromRecents="false"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
-        android:exported="false"
-        android:hardwareAccelerated="false"
-        android:name="org.chromium.chrome.browser.document.DocumentActivity"
-        android:persistableMode="persistAcrossReboots"
-        android:taskAffinity=""
-        android:theme="@style/Theme.Chromium.Activity"
-        android:windowSoftInputMode="adjustResize"/>
     <activity
         android:autoRemoveFromRecents="true"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
@@ -998,14 +966,6 @@
       </intent-filter>
     </activity>
     <activity-alias
-        android:exported="false"
-        android:name="com.google.android.apps.chrome.document.DocumentActivity"
-        android:targetActivity="org.chromium.chrome.browser.document.DocumentActivity"/>
-    <activity-alias
-        android:exported="false"
-        android:name="com.google.android.apps.chrome.document.IncognitoDocumentActivity"
-        android:targetActivity="org.chromium.chrome.browser.document.IncognitoDocumentActivity"/>
-    <activity-alias
         android:exported="true"
         android:name="com.google.android.apps.chrome.IntentDispatcher"
         android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity">
@@ -1546,9 +1506,6 @@
     <service
         android:exported="false"
         android:name="org.chromium.chrome.browser.tracing.TracingNotificationService"/>
-    <service
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.upgrade.UpgradeIntentService"/>
     <service
         android:exported="false"
         android:name="org.chromium.components.background_task_scheduler.BackgroundTaskJobService"

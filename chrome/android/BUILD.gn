@@ -259,7 +259,6 @@ android_library("chrome_java") {
     ":chrome_public_apk_template_resources",
     ":chrome_public_java",
     ":chrome_version_constants",
-    ":document_tab_model_info_proto_java",
     ":partner_location_descriptor_proto_java",
     ":thumbnail_cache_entry_proto_java",
     ":update_proto_java",
@@ -568,13 +567,6 @@ java_cpp_template("browser_build_config") {
   if (!notouch_build) {
     defines += [ "_ENABLE_OFFLINE_PAGES" ]
   }
-}
-
-proto_java_library("document_tab_model_info_proto_java") {
-  proto_path = "java/src/org/chromium/chrome/browser/tabmodel/document"
-  sources = [
-    "$proto_path/document_tab_model_info.proto",
-  ]
 }
 
 proto_java_library("partner_location_descriptor_proto_java") {
