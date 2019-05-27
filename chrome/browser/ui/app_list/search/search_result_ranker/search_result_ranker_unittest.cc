@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <list>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -143,7 +145,7 @@ TEST_F(SearchResultRankerTest, GroupRankerIsDisabledWithFlag) {
                         {0.6f, 0.5f, 0.4f, 0.3f});
 
   // Despite training, we expect the scores not to have changed.
-  ranker->Rank(results);
+  ranker->Rank(&results);
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("A"), HasId("B"),
                                               HasId("C"), HasId("D"))));
 }
@@ -160,7 +162,7 @@ TEST_F(SearchResultRankerTest, GroupRankerImprovesScores) {
                          ResultType::kLauncher, ResultType::kLauncher},
                         {0.5f, 0.6f, 0.45f, 0.46f});
 
-  ranker->Rank(results);
+  ranker->Rank(&results);
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("D"), HasId("C"),
                                               HasId("B"), HasId("A"))));
 }

@@ -60,7 +60,7 @@ class Mixer::Group {
     }
 
     if (ranker)
-      ranker->Rank(results_);
+      ranker->Rank(&results_);
     std::sort(results_.begin(), results_.end());
   }
 

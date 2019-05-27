@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder.h"
 
+#include <string>
+
 #include "base/task/post_task.h"
 
 namespace app_list {

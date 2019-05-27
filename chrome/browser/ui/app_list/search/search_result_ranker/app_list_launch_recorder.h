@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_APP_LIST_LAUNCH_RECORDER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_list.h"
 #include "base/macros.h"

@@ -104,7 +104,7 @@ std::vector<std::pair<std::string, float>> SortAndTruncateRanks(
 
   // vector::resize simply truncates the array if there are more than n
   // elements. Note this is still O(N).
-  if (sorted_ranks.size() > static_cast<unsigned long>(n))
+  if (sorted_ranks.size() > static_cast<size_t>(n))
     sorted_ranks.resize(n);
   return sorted_ranks;
 }

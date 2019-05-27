@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_SEARCH_RESULT_RANKER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_SEARCH_RESULT_RANKER_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/containers/flat_map.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -40,7 +44,7 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
   // called after rankings have been queried with a call to FetchRankings().
   // Only the scores of elements in |results| are modified, not the
   // ChromeSearchResults themselves.
-  void Rank(Mixer::SortedResults& results);
+  void Rank(Mixer::SortedResults* results);
 
   // Forwards the given training signal to the relevant models contained within
   // the SearchResultRanker. |id| is the string ID of an item that is launched

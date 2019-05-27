@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 
 #include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -162,8 +165,11 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
   }
 }
 
-void SearchResultRanker::Rank(Mixer::SortedResults& results) {
-  for (auto& result : results) {
+void SearchResultRanker::Rank(Mixer::SortedResults* results) {
+  if (!results)
+    return;
+
+  for (auto& result : *results) {
     const RankingItemType& type =
         RankingItemTypeFromSearchResult(*result.result);
     const Model& model = ModelForType(type);
