@@ -32,8 +32,9 @@ cr.define('account_migration_welcome', function() {
 
     $('welcome-title').textContent =
         loadTimeData.getStringF('welcomeTitle', userEmail);
-    $('welcome-message').textContent =
-        loadTimeData.getStringF('welcomeMessage', userEmail);
+    $('welcome-message').innerHTML = loadTimeData.getStringF(
+        'welcomeMessage', userEmail,
+        loadTimeData.getString('accountManagerLearnMoreUrl'));
   }
 
   /**

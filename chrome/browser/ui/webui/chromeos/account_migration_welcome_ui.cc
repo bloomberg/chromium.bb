@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -84,6 +85,8 @@ AccountMigrationWelcomeUI::AccountMigrationWelcomeUI(content::WebUI* web_ui)
   html_source->AddLocalizedString("cancelButton", IDS_APP_CANCEL);
   html_source->AddLocalizedString("migrateButton",
                                   IDS_ACCOUNT_MIGRATION_UPDATE_BUTTON);
+  html_source->AddString("accountManagerLearnMoreUrl",
+                         chrome::kAccountManagerLearnMoreURL);
 
   // Add required resources.
   html_source->AddResourcePath("account_manager_shared.css",

@@ -3990,7 +3990,7 @@
     Sign in again to update <ph name="USER_EMAIL">$1<ex>john.doe@example.com</ex></ph>
   </message>
   <message name="IDS_ACCOUNT_MIGRATION_WELCOME_TEXT" desc="Text body for the Account Migration Welcome screen.">
-    Please sign in again to confirm that your account <ph name="USER_EMAIL">$1<ex>john.doe@example.com</ex></ph> can be used with websites, apps, and extensions in Chrome and Google Play. You may also remove this account.
+    Please sign in again to confirm that your account <ph name="USER_EMAIL">$1<ex>john.doe@example.com</ex></ph> can be used with websites, apps, and extensions in Chrome and Google Play. You may also remove this account. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_ACCOUNT_MIGRATION_UPDATE_BUTTON" desc="Label for the button in Account Migration dialog to migrate the account.">
     Update account
