@@ -86,6 +86,17 @@ static inline uint32_t shiftcolor10(const struct util_color_component *comp,
 	return value << comp->offset;
 }
 
+/* This function takes 16-bit color values */
+static inline uint64_t shiftcolor16(const struct util_color_component *comp,
+				    uint64_t value)
+{
+	value &= 0xffff;
+	/* Shift down to remove unwanted low bits */
+	value = value >> (16 - comp->length);
+	/* Shift back up to where the value should be */
+	return value << comp->offset;
+}
+
 #define MAKE_RGBA10(rgb, r, g, b, a) \
 	(shiftcolor10(&(rgb)->red, (r)) | \
 	 shiftcolor10(&(rgb)->green, (g)) | \
@@ -100,6 +111,49 @@ static inline uint32_t shiftcolor10(const struct util_color_component *comp,
 
 #define MAKE_RGB24(rgb, r, g, b) \
 	{ .value = MAKE_RGBA(rgb, r, g, b, 0) }
+
+
+/**
+  * Takes a uint16_t, divides by 65536, converts the infinite-precision
+  * result to fp16 with round-to-zero.
+  *
+  * Copied from mesa:src/util/half_float.c
+  */
+static uint16_t uint16_div_64k_to_half(uint16_t v)
+{
+	/* Zero or subnormal. Set the mantissa to (v << 8) and return. */
+	if (v < 4)
+		return v << 8;
+
+	/* Count the leading 0s in the uint16_t */
+	int n = __builtin_clz(v) - 16;
+
+	/* Shift the mantissa up so bit 16 is the hidden 1 bit,
+	 * mask it off, then shift back down to 10 bits
+	 */
+	int m = ( ((uint32_t)v << (n + 1)) & 0xffff ) >> 6;
+
+	/*  (0{n} 1 X{15-n}) * 2^-16
+	 * = 1.X * 2^(15-n-16)
+	 * = 1.X * 2^(14-n - 15)
+	 * which is the FP16 form with e = 14 - n
+	 */
+	int e = 14 - n;
+
+	return (e << 10) | m;
+}
+
+#define MAKE_RGBA8FP16(rgb, r, g, b, a) \
+	(shiftcolor16(&(rgb)->red, uint16_div_64k_to_half((r) << 8)) | \
+	 shiftcolor16(&(rgb)->green, uint16_div_64k_to_half((g) << 8)) | \
+	 shiftcolor16(&(rgb)->blue, uint16_div_64k_to_half((b) << 8)) | \
+	 shiftcolor16(&(rgb)->alpha, uint16_div_64k_to_half((a) << 8)))
+
+#define MAKE_RGBA10FP16(rgb, r, g, b, a) \
+	(shiftcolor16(&(rgb)->red, uint16_div_64k_to_half((r) << 6)) | \
+	 shiftcolor16(&(rgb)->green, uint16_div_64k_to_half((g) << 6)) | \
+	 shiftcolor16(&(rgb)->blue, uint16_div_64k_to_half((b) << 6)) | \
+	 shiftcolor16(&(rgb)->alpha, uint16_div_64k_to_half((a) << 6)))
 
 static void fill_smpte_yuv_planar(const struct util_yuv_info *yuv,
 				  unsigned char *y_mem, unsigned char *u_mem,
@@ -489,6 +543,67 @@ static void fill_smpte_rgb32(const struct util_rgb_info *rgb, void *mem,
 	}
 }
 
+static void fill_smpte_rgb16fp(const struct util_rgb_info *rgb, void *mem,
+			       unsigned int width, unsigned int height,
+			       unsigned int stride)
+{
+	const uint64_t colors_top[] = {
+		MAKE_RGBA8FP16(rgb, 192, 192, 192, 255),/* grey */
+		MAKE_RGBA8FP16(rgb, 192, 192, 0, 255),	/* yellow */
+		MAKE_RGBA8FP16(rgb, 0, 192, 192, 255),	/* cyan */
+		MAKE_RGBA8FP16(rgb, 0, 192, 0, 255),	/* green */
+		MAKE_RGBA8FP16(rgb, 192, 0, 192, 255),	/* magenta */
+		MAKE_RGBA8FP16(rgb, 192, 0, 0, 255),	/* red */
+		MAKE_RGBA8FP16(rgb, 0, 0, 192, 255),	/* blue */
+	};
+	const uint64_t colors_middle[] = {
+		MAKE_RGBA8FP16(rgb, 0, 0, 192, 127),	/* blue */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA8FP16(rgb, 192, 0, 192, 127),	/* magenta */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA8FP16(rgb, 0, 192, 192, 127),	/* cyan */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 127),	/* black */
+		MAKE_RGBA8FP16(rgb, 192, 192, 192, 127),/* grey */
+	};
+	const uint64_t colors_bottom[] = {
+		MAKE_RGBA8FP16(rgb, 0, 33, 76, 255),	/* in-phase */
+		MAKE_RGBA8FP16(rgb, 255, 255, 255, 255),/* super white */
+		MAKE_RGBA8FP16(rgb, 50, 0, 106, 255),	/* quadrature */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 255),	/* black */
+		MAKE_RGBA8FP16(rgb, 9, 9, 9, 255),	/* 3.5% */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 255),	/* 7.5% */
+		MAKE_RGBA8FP16(rgb, 29, 29, 29, 255),	/* 11.5% */
+		MAKE_RGBA8FP16(rgb, 19, 19, 19, 255),	/* black */
+	};
+	unsigned int x;
+	unsigned int y;
+
+	for (y = 0; y < height * 6 / 9; ++y) {
+		for (x = 0; x < width; ++x)
+			((uint64_t *)mem)[x] = colors_top[x * 7 / width];
+		mem += stride;
+	}
+
+	for (; y < height * 7 / 9; ++y) {
+		for (x = 0; x < width; ++x)
+			((uint64_t *)mem)[x] = colors_middle[x * 7 / width];
+		mem += stride;
+	}
+
+	for (; y < height; ++y) {
+		for (x = 0; x < width * 5 / 7; ++x)
+			((uint64_t *)mem)[x] =
+				colors_bottom[x * 4 / (width * 5 / 7)];
+		for (; x < width * 6 / 7; ++x)
+			((uint64_t *)mem)[x] =
+				colors_bottom[(x - width * 5 / 7) * 3
+					      / (width / 7) + 4];
+		for (; x < width; ++x)
+			((uint64_t *)mem)[x] = colors_bottom[7];
+		mem += stride;
+	}
+}
+
 static void fill_smpte_c8(void *mem, unsigned int width, unsigned int height,
 			  unsigned int stride)
 {
@@ -638,6 +753,13 @@ static void fill_smpte(const struct util_format_info *info, void *planes[3],
 	case DRM_FORMAT_BGRX1010102:
 		return fill_smpte_rgb32(&info->rgb, planes[0],
 					width, height, stride);
+
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
+		return fill_smpte_rgb16fp(&info->rgb, planes[0],
+					  width, height, stride);
 	}
 }
 
@@ -849,6 +971,32 @@ static void fill_tiles_rgb32(const struct util_format_info *info, void *mem,
 	make_pwetty(mem_base, width, height, stride, info->format);
 }
 
+static void fill_tiles_rgb16fp(const struct util_format_info *info, void *mem,
+			       unsigned int width, unsigned int height,
+			       unsigned int stride)
+{
+	const struct util_rgb_info *rgb = &info->rgb;
+	void *mem_base = mem;
+	unsigned int x, y;
+
+	/* TODO: Give this actual fp16 precision */
+	for (y = 0; y < height; ++y) {
+		for (x = 0; x < width; ++x) {
+			div_t d = div(x+y, width);
+			uint32_t rgb32 = 0x00130502 * (d.quot >> 6)
+				       + 0x000a1120 * (d.rem >> 6);
+			uint32_t alpha = ((y < height/2) && (x < width/2)) ? 127 : 255;
+			uint64_t color =
+				MAKE_RGBA8FP16(rgb, (rgb32 >> 16) & 0xff,
+					       (rgb32 >> 8) & 0xff, rgb32 & 0xff,
+					       alpha);
+
+			((uint64_t *)mem)[x] = color;
+		}
+		mem += stride;
+	}
+}
+
 static void fill_tiles(const struct util_format_info *info, void *planes[3],
 		       unsigned int width, unsigned int height,
 		       unsigned int stride)
@@ -923,14 +1071,32 @@ static void fill_tiles(const struct util_format_info *info, void *planes[3],
 	case DRM_FORMAT_BGRX1010102:
 		return fill_tiles_rgb32(info, planes[0],
 					width, height, stride);
+
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
+		return fill_tiles_rgb16fp(info, planes[0],
+					  width, height, stride);
 	}
 }
 
-static void fill_plain(void *planes[3],
+static void fill_plain(const struct util_format_info *info, void *planes[3],
 		       unsigned int height,
 		       unsigned int stride)
 {
-	memset(planes[0], 0x77, stride * height);
+	switch (info->format) {
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
+		/* 0x3838 = 0.5273 */
+		memset(planes[0], 0x38, stride * height);
+		break;
+	default:
+		memset(planes[0], 0x77, stride * height);
+		break;
+	}
 }
 
 static void fill_gradient_rgb32(const struct util_rgb_info *rgb,
@@ -955,6 +1121,34 @@ static void fill_gradient_rgb32(const struct util_rgb_info *rgb,
 
 		for (j = 0; j < width / 2; j++) {
 			uint32_t value = MAKE_RGBA10(rgb, j & 0x3fc, j & 0x3fc, j & 0x3fc, 0);
+			row[2*j] = row[2*j+1] = value;
+		}
+		mem += stride;
+	}
+}
+
+static void fill_gradient_rgb16fp(const struct util_rgb_info *rgb,
+				  void *mem,
+				  unsigned int width, unsigned int height,
+				  unsigned int stride)
+{
+	int i, j;
+
+	for (i = 0; i < height / 2; i++) {
+		uint64_t *row = mem;
+
+		for (j = 0; j < width / 2; j++) {
+			uint64_t value = MAKE_RGBA10FP16(rgb, j & 0x3ff, j & 0x3ff, j & 0x3ff, 0);
+			row[2*j] = row[2*j+1] = value;
+		}
+		mem += stride;
+	}
+
+	for (; i < height; i++) {
+		uint64_t *row = mem;
+
+		for (j = 0; j < width / 2; j++) {
+			uint64_t value = MAKE_RGBA10FP16(rgb, j & 0x3fc, j & 0x3fc, j & 0x3fc, 0);
 			row[2*j] = row[2*j+1] = value;
 		}
 		mem += stride;
@@ -1009,6 +1203,13 @@ static void fill_gradient(const struct util_format_info *info, void *planes[3],
 	case DRM_FORMAT_BGRX1010102:
 		return fill_gradient_rgb32(&info->rgb, planes[0],
 					   width, height, stride);
+
+	case DRM_FORMAT_XRGB16161616F:
+	case DRM_FORMAT_XBGR16161616F:
+	case DRM_FORMAT_ARGB16161616F:
+	case DRM_FORMAT_ABGR16161616F:
+		return fill_gradient_rgb16fp(&info->rgb, planes[0],
+					     width, height, stride);
 	}
 }
 
@@ -1042,7 +1243,7 @@ void util_fill_pattern(uint32_t format, enum util_fill_pattern pattern,
 		return fill_smpte(info, planes, width, height, stride);
 
 	case UTIL_PATTERN_PLAIN:
-		return fill_plain(planes, height, stride);
+		return fill_plain(info, planes, height, stride);
 
 	case UTIL_PATTERN_GRADIENT:
 		return fill_gradient(info, planes, width, height, stride);

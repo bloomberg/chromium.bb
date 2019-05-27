@@ -93,6 +93,11 @@ static const struct util_format_info format_info[] = {
 	{ DRM_FORMAT_RGBX1010102, "RX30", MAKE_RGB_INFO(10, 22, 10, 12, 10, 2, 0, 0) },
 	{ DRM_FORMAT_BGRA1010102, "BA30", MAKE_RGB_INFO(10, 2, 10, 12, 10, 22, 2, 0) },
 	{ DRM_FORMAT_BGRX1010102, "BX30", MAKE_RGB_INFO(10, 2, 10, 12, 10, 22, 0, 0) },
+	{ DRM_FORMAT_XRGB16161616F, "XR4H", MAKE_RGB_INFO(16, 32, 16, 16, 16, 0, 0, 0) },
+	{ DRM_FORMAT_XBGR16161616F, "XB4H", MAKE_RGB_INFO(16, 0, 16, 16, 16, 32, 0, 0) },
+	{ DRM_FORMAT_ARGB16161616F, "AR4H", MAKE_RGB_INFO(16, 32, 16, 16, 16, 0, 16, 48) },
+	{ DRM_FORMAT_ABGR16161616F, "AB4H", MAKE_RGB_INFO(16, 0, 16, 16, 16, 32, 16, 48) },
+
 };
 
 uint32_t util_format_fourcc(const char *name)
