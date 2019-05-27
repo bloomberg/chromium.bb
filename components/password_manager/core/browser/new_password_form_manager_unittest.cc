@@ -1979,6 +1979,64 @@ TEST_F(NewPasswordFormManagerTest, BlacklistHttpAuthCredentials) {
   form_manager_->OnNeverClicked();
 }
 
+#if defined(OS_IOS)
+TEST_F(NewPasswordFormManagerTest, iOSPresavedGeneratedPassword) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->NotifyFetchCompleted();
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+  FormData form_to_presave = observed_form_;
+  const base::string16 typed_username = ASCIIToUTF16("user1");
+  FormFieldData& username_field = form_to_presave.fields[kUsernameFieldIndex];
+  FormFieldData& password_field = form_to_presave.fields[kPasswordFieldIndex];
+  username_field.value = typed_username;
+  password_field.value = ASCIIToUTF16("not_password");
+  // Use |generated_password| different from value in field to test that the
+  // generated password is saved.
+  const base::string16 generated_password = ASCIIToUTF16("gen_pw");
+  // Use different |unique_id| and |name| to test that |unique_id| is taken.
+  password_field.unique_id = password_field.name + ASCIIToUTF16("1");
+  const base::string16 generation_element = password_field.unique_id;
+
+  PasswordForm saved_form;
+  EXPECT_CALL(form_saver, Save(_, IsEmpty(), base::string16()))
+      .WillOnce(SaveArg<0>(&saved_form));
+  form_manager_->PresaveGeneratedPassword(
+      &driver_, form_to_presave, generated_password, generation_element);
+  EXPECT_EQ(generated_password, saved_form.password_value);
+
+  Mock::VerifyAndClearExpectations(&form_saver);
+
+  const base::string16 changed_password =
+      generated_password + ASCIIToUTF16("1");
+  EXPECT_CALL(form_saver, UpdateReplace(_, _, base::string16(), _))
+      .WillOnce(SaveArg<0>(&saved_form));
+
+  form_manager_->UpdateGeneratedPasswordOnUserInput(
+      form_to_presave.name, generation_element, changed_password);
+  EXPECT_EQ(username_field.value, saved_form.username_value);
+  EXPECT_EQ(changed_password, saved_form.password_value);
+}
+
+TEST_F(NewPasswordFormManagerTest, UpdateGeneratedPasswordBeforePresaving) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->NotifyFetchCompleted();
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+  FormData form_to_presave = observed_form_;
+  const base::string16 generation_element =
+      form_to_presave.fields[kPasswordFieldIndex].unique_id;
+  const base::string16 generation_field_value = ASCIIToUTF16("some_password");
+
+  // Check that nothing is saved on changing password, in case when there was no
+  // pre-saving.
+  EXPECT_CALL(form_saver, Save(_, _, _)).Times(0);
+  form_manager_->UpdateGeneratedPasswordOnUserInput(
+      form_to_presave.name, generation_element, generation_field_value);
+}
+
+#endif  // defined(OS_IOS)
+
 }  // namespace
 
 }  // namespace password_manager

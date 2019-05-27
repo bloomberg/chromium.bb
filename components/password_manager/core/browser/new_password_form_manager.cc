@@ -489,11 +489,15 @@ bool NewPasswordFormManager::UpdateGeneratedPasswordOnUserInput(
     const base::string16& form_identifier,
     const base::string16& field_identifier,
     const base::string16& field_value) {
-  if (observed_form_.name != form_identifier)
+  if (observed_form_.name != form_identifier || !HasGeneratedPassword()) {
+    // *this might not have generated password, because
+    // 1.This function is called before PresaveGeneratedPassword, or
+    // 2.There are multiple forms with the same |form_identifier|
     return false;
+  }
   bool form_data_changed = false;
   for (FormFieldData& field : observed_form_.fields) {
-    if (field.name == field_identifier) {
+    if (field.unique_id == field_identifier) {
       field.value = field_value;
       form_data_changed = true;
       break;
