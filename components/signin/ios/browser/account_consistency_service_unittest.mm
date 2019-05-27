@@ -135,8 +135,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
         &test_url_loader_factory_, &prefs_,
         signin::AccountConsistencyMethod::kDisabled, signin_client_.get()));
     settings_map_ = new HostContentSettingsMap(
-        &prefs_, false /* incognito_profile */, false /* guest_profile */,
-        false /* store_last_modified */,
+        &prefs_, false /* is_off_the_record */, false /* store_last_modified */,
         false /* migrate_requesting_and_top_level_origin_settings */);
     cookie_settings_ =
         new content_settings::CookieSettings(settings_map_.get(), &prefs_, "");

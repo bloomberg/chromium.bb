@@ -240,8 +240,7 @@ const char* ContentSettingToString(ContentSetting setting) {
 
 HostContentSettingsMap::HostContentSettingsMap(
     PrefService* prefs,
-    bool is_incognito_profile,
-    bool is_guest_profile,
+    bool is_off_the_record,
     bool store_last_modified,
     bool migrate_requesting_and_top_level_origin_settings)
     : RefcountedKeyedService(base::ThreadTaskRunnerHandle::Get()),
@@ -249,11 +248,10 @@ HostContentSettingsMap::HostContentSettingsMap(
       used_from_thread_id_(base::PlatformThread::CurrentId()),
 #endif
       prefs_(prefs),
-      is_incognito_(is_incognito_profile || is_guest_profile),
+      is_incognito_(is_off_the_record),
       store_last_modified_(store_last_modified),
       weak_ptr_factory_(this) {
   TRACE_EVENT0("startup", "HostContentSettingsMap::HostContentSettingsMap");
-  DCHECK(!(is_incognito_profile && is_guest_profile));
 
   content_settings::PolicyProvider* policy_provider =
       new content_settings::PolicyProvider(prefs_);
@@ -266,12 +264,6 @@ HostContentSettingsMap::HostContentSettingsMap(
   content_settings_providers_[PREF_PROVIDER] = base::WrapUnique(pref_provider_);
   user_modifiable_providers_.push_back(pref_provider_);
   pref_provider_->AddObserver(this);
-
-  // This ensures that content settings are cleared for the guest profile. This
-  // wouldn't be needed except that we used to allow settings to be stored for
-  // the guest profile and so we need to ensure those get cleared.
-  if (is_guest_profile)
-    pref_provider_->ClearPrefs();
 
   content_settings::EphemeralProvider* ephemeral_provider =
       new content_settings::EphemeralProvider(store_last_modified_);

@@ -1443,27 +1443,6 @@ TEST_F(HostContentSettingsMapTest, GuestProfileDefaultSetting) {
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
 }
-
-// We used to incorrectly store content settings in prefs for the guest profile.
-// We need to ensure these get deleted appropriately.
-TEST_F(HostContentSettingsMapTest, GuestProfileMigration) {
-  TestingProfile::Builder profile_builder;
-  profile_builder.SetGuestSession();
-  std::unique_ptr<Profile> profile = profile_builder.Build();
-
-  // Set a pref manually in the guest profile.
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
-      "{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}");
-  profile->GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES), *value);
-
-  // Test that during construction all the prefs get cleared.
-  HostContentSettingsMapFactory::GetForProfile(profile.get());
-
-  const base::DictionaryValue* all_settings_dictionary =
-      profile->GetPrefs()->GetDictionary(
-          GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES));
-  EXPECT_TRUE(all_settings_dictionary->empty());
-}
 #endif  // !defined(OS_ANDROID)
 
 TEST_F(HostContentSettingsMapTest, InvalidPattern) {

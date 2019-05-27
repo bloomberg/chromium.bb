@@ -151,7 +151,7 @@ class ChromePasswordProtectionServiceTest
         PasswordProtectionTrigger::PHISHING_REUSE);
     HostContentSettingsMap::RegisterProfilePrefs(test_pref_service_.registry());
     content_setting_map_ = new HostContentSettingsMap(
-        &test_pref_service_, false /* incognito */, false /* guest_profile */,
+        &test_pref_service_, false /* is_off_the_record */,
         false /* store_last_modified */,
         false /* migrate_requesting_and_top_level_origin_settings */);
 
