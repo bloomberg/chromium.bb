@@ -40,6 +40,7 @@ Polymer({
     mountUrl_: {
       type: String,
       value: '',
+      observer: 'onURLChanged_',
     },
 
     /** @private {string} */
@@ -137,8 +138,12 @@ Polymer({
         });
   },
 
-  /** @private */
-  onURLChanged_: function() {
+  /**
+   * @param {string} newValue
+   * @param {string} oldValue
+   * @private
+   */
+  onURLChanged_: function(newValue, oldValue) {
     this.resetErrorState_();
     const parts = this.mountUrl_.split('\\');
     this.mountName_ = parts[parts.length - 1];
