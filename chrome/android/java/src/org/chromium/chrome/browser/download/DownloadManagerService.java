@@ -1167,6 +1167,8 @@ public class DownloadManagerService
      * @return Whether the file would be openable by the browser.
      */
     public static boolean isSupportedMimeType(String mimeType) {
+        // In NoTouch mode we don't support opening downloaded files in-browser.
+        if (FeatureUtilities.isNoTouchModeEnabled()) return false;
         return nativeIsSupportedMimeType(mimeType);
     }
 
