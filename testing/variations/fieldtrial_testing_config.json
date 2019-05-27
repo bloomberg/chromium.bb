@@ -6122,6 +6122,24 @@
             ]
         }
     ],
+    "WebRTC-Audio-SendSideBWE": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "WebRTC-Bwe-LossBasedControl": [
         {
             "platforms": [
