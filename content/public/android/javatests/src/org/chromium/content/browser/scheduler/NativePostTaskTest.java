@@ -256,7 +256,7 @@ public class NativePostTaskTest {
 
     private void startNativeScheduler() throws Exception {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
-        ContentMain.start(/* startServiceManagerOnly */ true);
+        ContentMain.start(/* startServiceManagerOnly */ false);
         ThreadPoolTestHelpers.enableThreadPoolExecutionForTesting();
     }
 }
