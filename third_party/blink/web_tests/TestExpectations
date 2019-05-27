@@ -710,6 +710,8 @@ crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/newmulticol/regula
 
 ### Missing refs, these are also skipped for existing layout.
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/balance-table-with-fractional-height-row.html [ Failure ]
+crbug.com/967329 virtual/layout_ng_experimental/external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
+crbug.com/967329 virtual/layout_ng_experimental/external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/filter-with-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/float-and-block.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/float-with-line-after-spanner.html [ Failure ]
@@ -2771,10 +2773,6 @@ crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/
 crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
-crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
-crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-layout-button-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-button-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-001-manual.html [ Skip ]
@@ -3940,6 +3938,8 @@ crbug.com/957459 virtual/threaded/external/wpt/css/css-paint-api/style-first-let
 crbug.com/951795 external/wpt/wasm/jsapi/memory/grow.any.html [ Pass Failure ]
 crbug.com/951795 external/wpt/wasm/jsapi/memory/grow.any.worker.html [ Pass Failure ]
 
+crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
+crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
 crbug.com/792435 external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Failure ]
