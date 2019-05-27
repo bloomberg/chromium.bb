@@ -268,7 +268,8 @@ void FaviconRequestHandler::RequestFromGoogleServer(
   large_icon_service
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           FaviconServerFetcherParams::CreateForDesktop(page_url),
-          /*may_page_url_be_private=*/true, traffic_annotation,
+          /*may_page_url_be_private=*/true,
+          /*should_trim_page_url_path=*/false, traffic_annotation,
           base::BindOnce(&FaviconRequestHandler::OnGoogleServerDataAvailable,
                          weak_ptr_factory_.GetWeakPtr(),
                          std::move(empty_response_callback),

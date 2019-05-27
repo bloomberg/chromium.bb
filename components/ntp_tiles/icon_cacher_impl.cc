@@ -270,7 +270,8 @@ void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
               page_url,
               GetMinimumFetchingSizeForChromeSuggestionsFaviconsFromServer(),
               GetDesiredFetchingSizeForChromeSuggestionsFaviconsFromServer()),
-          /*may_page_url_be_private=*/true, traffic_annotation,
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          traffic_annotation,
           base::Bind(&IconCacherImpl::OnMostLikelyFaviconDownloaded,
                      weak_ptr_factory_.GetWeakPtr(), page_url));
 }

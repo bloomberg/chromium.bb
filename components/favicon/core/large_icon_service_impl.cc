@@ -67,7 +67,8 @@ const char kGoogleServerV2MinimumMaxSizeInPixelParam[] = "minimum_max_size";
 
 const int kInvalidOrganizationId = -1;
 
-GURL TrimPageUrlForGoogleServer(const GURL& page_url) {
+GURL TrimPageUrlForGoogleServer(const GURL& page_url,
+                                bool should_trim_page_url_path) {
   if (!page_url.SchemeIsHTTPOrHTTPS() || page_url.HostIsIPAddress())
     return GURL();
 
@@ -76,6 +77,8 @@ GURL TrimPageUrlForGoogleServer(const GURL& page_url) {
   replacements.ClearPassword();
   replacements.ClearQuery();
   replacements.ClearRef();
+  if (should_trim_page_url_path)
+    replacements.ClearPath();
   return page_url.ReplaceComponents(replacements);
 }
 
@@ -522,6 +525,7 @@ void LargeIconServiceImpl::
     GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
         std::unique_ptr<FaviconServerFetcherParams> params,
         bool may_page_url_be_private,
+        bool should_trim_page_url_path,
         const net::NetworkTrafficAnnotationTag& traffic_annotation,
         favicon_base::GoogleFaviconServerCallback callback) {
   DCHECK_LE(0, params->min_source_size_in_pixel());
@@ -542,7 +546,8 @@ void LargeIconServiceImpl::
     return;
   }
 
-  const GURL trimmed_page_url = TrimPageUrlForGoogleServer(params->page_url());
+  const GURL trimmed_page_url =
+      TrimPageUrlForGoogleServer(params->page_url(), should_trim_page_url_path);
   if (!trimmed_page_url.is_valid()) {
     FinishServerRequestAsynchronously(
         std::move(callback),

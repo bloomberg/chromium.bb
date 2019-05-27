@@ -111,7 +111,8 @@ FaviconAttributes* FaviconLoader::FaviconForPageUrl(
               favicon::FaviconServerFetcherParams::CreateForMobile(
                   block_page_url, min_favicon_size_in_pixels,
                   favicon_size_in_pixels),
-              /*may_page_url_be_private=*/true, kTrafficAnnotation,
+              /*may_page_url_be_private=*/true,
+              /*should_trim_page_url_path=*/false, kTrafficAnnotation,
               base::BindRepeating(favicon_loaded_from_server_block));
       return;
     }

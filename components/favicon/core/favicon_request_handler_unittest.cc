@@ -82,9 +82,10 @@ class MockLargeIconService : public LargeIconService {
 
   // TODO(victorvianna): Add custom matcher to check page url when calling
   // GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache.
-  MOCK_METHOD4(GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache,
+  MOCK_METHOD5(GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache,
                void(std::unique_ptr<FaviconServerFetcherParams> params,
                     bool may_page_url_be_private,
+                    bool should_trim_page_url_path,
                     const net::NetworkTrafficAnnotationTag& traffic_annotation,
                     favicon_base::GoogleFaviconServerCallback callback));
 
@@ -216,10 +217,10 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerBitmap) {
         std::move(callback).Run(CreateTestBitmapResult());
         return kDummyTaskId;
       });
-  EXPECT_CALL(
-      mock_large_icon_service_,
-      GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(_, _, _, _))
-      .WillOnce([](auto, auto, auto,
+  EXPECT_CALL(mock_large_icon_service_,
+              GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
+                  _, _, _, _, _))
+      .WillOnce([](auto, auto, auto, auto,
                    favicon_base::GoogleFaviconServerCallback server_callback) {
         std::move(server_callback)
             .Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS);
@@ -311,10 +312,10 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerImage) {
         std::move(callback).Run(CreateTestImageResult());
         return kDummyTaskId;
       });
-  EXPECT_CALL(
-      mock_large_icon_service_,
-      GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(_, _, _, _))
-      .WillOnce([](auto, auto, auto,
+  EXPECT_CALL(mock_large_icon_service_,
+              GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
+                  _, _, _, _, _))
+      .WillOnce([](auto, auto, auto, auto,
                    favicon_base::GoogleFaviconServerCallback server_callback) {
         std::move(server_callback)
             .Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS);

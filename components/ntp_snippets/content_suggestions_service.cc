@@ -294,7 +294,8 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               publisher_url, minimum_size_in_pixel, desired_size_in_pixel),
-          /*may_page_url_be_private=*/false, traffic_annotation,
+          /*may_page_url_be_private=*/false,
+          /*should_trim_page_url_path=*/false, traffic_annotation,
           base::Bind(
               &ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished,
               base::Unretained(this), publisher_url, minimum_size_in_pixel,

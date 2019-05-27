@@ -150,7 +150,8 @@ void InternalAppResult::OnGetFaviconFromCacheFinished(
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForDesktop(
               url_for_continuous_reading_),
-          /*may_page_url_be_private=*/false, traffic_annotation,
+          /*may_page_url_be_private=*/false,
+          /*should_trim_page_url_path=*/false, traffic_annotation,
           base::BindRepeating(
               &InternalAppResult::OnGetFaviconFromGoogleServerFinished,
               weak_factory_.GetWeakPtr()));

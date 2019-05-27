@@ -172,8 +172,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
               GURL(kDummyUrl),
               /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
-          /*may_page_url_be_private=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
-          callback.Get());
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
 
   EXPECT_CALL(callback,
               Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS));
@@ -215,8 +215,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerForDesktop) {
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForDesktop(
               GURL(kDummyUrl)),
-          /*may_page_url_be_private=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
-          callback.Get());
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
 
   EXPECT_CALL(callback,
               Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS));
@@ -267,8 +267,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithCustomUrl) {
               GURL(kDummyUrl),
               /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
-          /*may_page_url_be_private=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
-          callback.Get());
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
 
   EXPECT_CALL(callback,
               Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS));
@@ -314,8 +314,8 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
               GURL(kDummyUrl),
               /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
-          /*may_page_url_be_private=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
-          callback.Get());
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
 
   EXPECT_CALL(callback,
               Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS));
@@ -351,7 +351,8 @@ TEST_F(LargeIconServiceTest, ShouldTrimQueryParametersForGoogleServer) {
               GURL(kDummyUrlWithQuery),
               /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
-          /*may_page_url_be_private=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          TRAFFIC_ANNOTATION_FOR_TESTS,
           favicon_base::GoogleFaviconServerCallback());
 
   scoped_task_environment_.RunUntilIdle();
@@ -381,7 +382,8 @@ TEST_F(LargeIconServiceTest, ShouldNotCheckOnPublicUrls) {
               GURL(kDummyUrl),
               /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
-          /*may_page_url_be_private=*/false, TRAFFIC_ANNOTATION_FOR_TESTS,
+          /*may_page_url_be_private=*/false,
+          /*should_trim_page_url_path=*/false, TRAFFIC_ANNOTATION_FOR_TESTS,
           callback.Get());
 
   EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
@@ -402,8 +404,8 @@ TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidScheme) {
               GURL(kDummyFtpUrl),
               /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
-          /*may_page_url_be_private=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
-          callback.Get());
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
 
   EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
                                 FAILURE_TARGET_URL_SKIPPED));
@@ -426,8 +428,8 @@ TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidURL) {
               GURL(kDummyInvalidUrl),
               /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
-          /*may_page_url_be_private=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
-          callback.Get());
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
 
   EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
                                 FAILURE_TARGET_URL_INVALID));
@@ -466,8 +468,8 @@ TEST_F(LargeIconServiceTest, ShouldReportUnavailableIfFetchFromServerFails) {
               GURL(kDummyUrl),
               /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
-          /*may_page_url_be_private=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
-          callback.Get());
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
 
   EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
                                 FAILURE_CONNECTION_ERROR));
@@ -497,8 +499,8 @@ TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfUnavailable) {
               GURL(kDummyUrl),
               /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
-          /*may_page_url_be_private=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
-          callback.Get());
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
 
   EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
                                 FAILURE_HTTP_ERROR_CACHED));
@@ -529,8 +531,8 @@ TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfCannotSet) {
               GURL(kDummyUrl),
               /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
-          /*may_page_url_be_private=*/true, TRAFFIC_ANNOTATION_FOR_TESTS,
-          callback.Get());
+          /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
+          TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
 
   EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
                                 FAILURE_ICON_EXISTS_IN_DB));

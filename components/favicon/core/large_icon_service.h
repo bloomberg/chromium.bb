@@ -83,6 +83,10 @@ class LargeIconService : public KeyedService {
   // a failure (e.g. if the URL _is_ private) but it makes sure Google servers
   // do not crawl a private URL as a result of this call.
   //
+  // If |should_trim_page_url_path| is set to true, the path will be removed
+  // from the URL used to query the server but the result will be stored under
+  // the full URL provided to the API.
+  //
   // The callback is triggered when the operation finishes, where |success|
   // tells whether the fetch actually managed to database a new icon in the
   // FaviconService.
@@ -93,9 +97,12 @@ class LargeIconService : public KeyedService {
   // TODO(crbug.com/903826): It is not clear from the name of this function,
   // that it actually adds the icon to the local cache. Maybe
   // "StoreLargeIcon..."?
+  // TODO(victorvianna): Consider moving |may_page_url_be_private| and/or
+  // |should_trim_page_url_path| inside the parameters struct.
   virtual void GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
       std::unique_ptr<FaviconServerFetcherParams> params,
       bool may_page_url_be_private,
+      bool should_trim_page_url_path,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       favicon_base::GoogleFaviconServerCallback callback) = 0;
 

@@ -60,6 +60,7 @@ class LargeIconServiceImpl : public LargeIconService {
   void GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
       std::unique_ptr<FaviconServerFetcherParams> params,
       bool may_page_url_be_private,
+      bool should_trim_page_url_path,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       favicon_base::GoogleFaviconServerCallback callback) override;
   void TouchIconFromGoogleServer(const GURL& icon_url) override;
