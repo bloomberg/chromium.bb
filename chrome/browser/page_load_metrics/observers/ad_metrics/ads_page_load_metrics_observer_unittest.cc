@@ -749,33 +749,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
                  0 /* non_ad_cached_kb */, 10 /* non_ad_uncached_kb */);
 }
 
-// This tests an issue that is believed to be the cause of
-// https://crbug.com/721369. The issue is that a frame from a previous
-// navigation might commit during a new navigation, and the ads metrics won't
-// know about the frame's parent (because it doesn't exist in the page).
-TEST_F(AdsPageLoadMetricsObserverTest, FrameWithNoParent) {
-  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-  RenderFrameHost* sub_frame = CreateAndNavigateSubFrame(kNonAdUrl, main_frame);
-
-  // Renavigate the child, but, while navigating, the main frame renavigates.
-  RenderFrameHost* child_of_subframe =
-      RenderFrameHostTester::For(sub_frame)->AppendChild("foo");
-  auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
-      GURL(kAdUrl), child_of_subframe);
-  navigation_simulator->Start();
-
-  // Main frame renavigates.
-  NavigateMainFrame(kNonAdUrl);
-
-  // Child frame commits.
-  navigation_simulator->Commit();
-  child_of_subframe = navigation_simulator->GetFinalRenderFrameHost();
-
-  // Test that a resource loaded into an unknown frame doesn't cause any
-  // issues.
-  ResourceDataUpdate(child_of_subframe, ResourceCached::NOT_CACHED, 10);
-}
-
 TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
   // Start main-frame navigation
   auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(

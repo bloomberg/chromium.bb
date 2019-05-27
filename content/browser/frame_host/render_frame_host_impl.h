@@ -1615,6 +1615,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Subframe: RenderWidgetHost is owned by this RenderFrameHost.
   RenderWidgetHostImpl* GetLocalRenderWidgetHost() const;
 
+  // Called after a new document commit. Every children of the previous document
+  // are expected to be deleted or at least to be pending deletion waiting for
+  // unload completion. A compromised renderer process or bugs can cause the
+  // renderer to "forget" to start deletion. In this case the browser deletes
+  // them immediately, without waiting for unload completion.
+  // https://crbug.com/950625.
+  void EnsureDescendantsAreUnloading();
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring

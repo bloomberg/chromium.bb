@@ -1090,4 +1090,201 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ("A2 message", EvalJs(A1, "received_message"));
 }
 
+// Related to issue https://crbug.com/950625.
+//
+// 1. Start from A1(B1)
+// 2. Navigate A1 to A3, same-process.
+// 3. A1 requests the browser to detach B1, but this message is dropped.
+// 4. The browser must be resilient and detach B1 when A3 commits.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SameProcessNavigationResilientToDetachDropped) {
+  GURL A1_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL A3_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), A1_url));
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B1 = A1->child_at(0)->current_frame_host();
+
+  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  A1->GetProcess()->AddFilter(detach_filter.get());
+  RenderFrameDeletedObserver delete_B1(B1);
+  shell()->LoadURL(A3_url);
+  delete_B1.WaitUntilDeleted();
+}
+
+// Unload handlers should be able to do things that might require for instance
+// the RenderFrameHostImpl to stay alive.
+// - use console.log (handled via RFHI::DidAddMessageToConsole).
+// - use history.replaceState (handled via RFHI::OnUpdateState).
+// - use document.cookie
+// - use localStorage
+//
+// Test case:
+//  1. Start on A1(B2). B2 has an unload handler.
+//  2. Go to A3.
+//  3. Go back to A4(B5).
+//
+// TODO(https://crbug.com/960976): history.replaceState is broken in OOPIFs.
+//
+// This test is similar to UnloadHandlersArePowerfulGrandChild, but with a
+// different frame hierarchy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadHandlersArePowerful) {
+  // Navigate to a page hosting a cross-origin frame.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+
+  // Add an unload handler to the subframe and try in that handler to preserve
+  // state that we will try to recover later.
+  ASSERT_TRUE(ExecJs(B2, R"(
+    window.addEventListener("unload", function() {
+      // Waiting for 100ms, to give more time for browser-side things to go bad
+      // and delete RenderFrameHostImpl prematurely.
+      var start = (new Date()).getTime();
+      do {
+        curr = (new Date()).getTime();
+      } while (start + 100 > curr);
+
+      // Test that various RFHI-dependent things work fine in an unload handler.
+      stateObj = { "history_test_key": "history_test_value" }
+      history.replaceState(stateObj, 'title', window.location.href);
+      console.log('console.log() sent');
+
+      // As a sanity check, test that RFHI-independent things also work fine.
+      localStorage.localstorage_test_key = 'localstorage_test_value';
+      document.cookie = 'cookie_test_key=' + 'cookie_test_value';
+    });
+  )"));
+
+  // Navigate A1(B2) to A3.
+  {
+    // Prepare observers.
+    ConsoleObserverDelegate console(web_contents(), "console.log() sent");
+    web_contents()->SetDelegate(&console);
+    RenderFrameDeletedObserver B2_deleted(B2);
+
+    // Navigate
+    GURL away_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    ASSERT_TRUE(ExecJs(A1, JsReplace("location = $1", away_url)));
+
+    // Observers must be reached.
+    B2_deleted.WaitUntilDeleted();
+    console.Wait();
+  }
+
+  // Navigate back from A3 to A4(B5).
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  RenderFrameHostImpl* A4 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B5 = A4->child_at(0)->current_frame_host();
+
+  // Verify that we can recover the data that should have been persisted by the
+  // unload handler.
+  EXPECT_EQ("localstorage_test_value",
+            EvalJs(B5, "localStorage.localstorage_test_key"));
+  EXPECT_EQ("cookie_test_key=cookie_test_value", EvalJs(B5, "document.cookie"));
+
+  // TODO(lukasza): https://crbug.com/960976: Make the verification below
+  // unconditional, once the bug is fixed.
+  if (!AreAllSitesIsolatedForTesting()) {
+    EXPECT_EQ("history_test_value",
+              EvalJs(B5, "history.state.history_test_key"));
+  }
+}
+
+// Unload handlers should be able to do things that might require for instance
+// the RenderFrameHostImpl to stay alive.
+// - use console.log (handled via RFHI::DidAddMessageToConsole).
+// - use history.replaceState (handled via RFHI::OnUpdateState).
+// - use document.cookie
+// - use localStorage
+//
+// Test case:
+//  1. Start on A1(B2(C3)). C3 has an unload handler.
+//  2. Go to A4.
+//  3. Go back to A5(B6(C7)).
+//
+// TODO(https://crbug.com/960976): history.replaceState is broken in OOPIFs.
+//
+// This test is similar to UnloadHandlersArePowerful, but with a different frame
+// hierarchy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       UnloadHandlersArePowerfulGrandChild) {
+  // Navigate to a page hosting a cross-origin frame.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* C3 = B2->child_at(0)->current_frame_host();
+
+  // Add an unload handler to the subframe and try in that handler to preserve
+  // state that we will try to recover later.
+  ASSERT_TRUE(ExecJs(C3, R"(
+    window.addEventListener("unload", function() {
+      // Waiting for 100ms, to give more time for browser-side things to go bad
+      // and delete RenderFrameHostImpl prematurely.
+      var start = (new Date()).getTime();
+      do {
+        curr = (new Date()).getTime();
+      } while (start + 100 > curr);
+
+      // Test that various RFHI-dependent things work fine in an unload handler.
+      stateObj = { "history_test_key": "history_test_value" }
+      history.replaceState(stateObj, 'title', window.location.href);
+      console.log('console.log() sent');
+
+      // As a sanity check, test that RFHI-independent things also work fine.
+      localStorage.localstorage_test_key = 'localstorage_test_value';
+      document.cookie = 'cookie_test_key=' + 'cookie_test_value';
+    });
+  )"));
+
+  // Navigate A1(B2(C3) to A4.
+  {
+    // Prepare observers.
+    ConsoleObserverDelegate console(web_contents(), "console.log() sent");
+    web_contents()->SetDelegate(&console);
+    RenderFrameDeletedObserver B2_deleted(B2);
+    RenderFrameDeletedObserver C3_deleted(C3);
+
+    // Navigate
+    GURL away_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    ASSERT_TRUE(ExecJs(A1, JsReplace("location = $1", away_url)));
+
+    // Observers must be reached.
+    B2_deleted.WaitUntilDeleted();
+    C3_deleted.WaitUntilDeleted();
+    console.Wait();
+  }
+
+  // Navigate back from A4 to A5(B6(C7))
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  RenderFrameHostImpl* A4 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B5 = A4->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* C6 = B5->child_at(0)->current_frame_host();
+
+  // Verify that we can recover the data that should have been persisted by the
+  // unload handler.
+  EXPECT_EQ("localstorage_test_value",
+            EvalJs(C6, "localStorage.localstorage_test_key"));
+  EXPECT_EQ("cookie_test_key=cookie_test_value", EvalJs(C6, "document.cookie"));
+
+  // TODO(lukasza): https://crbug.com/960976: Make the verification below
+  // unconditional, once the bug is fixed.
+  if (!AreAllSitesIsolatedForTesting()) {
+    EXPECT_EQ("history_test_value",
+              EvalJs(C6, "history.state.history_test_key"));
+  }
+}
+
 }  // namespace content

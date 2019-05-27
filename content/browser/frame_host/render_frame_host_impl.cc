@@ -6757,7 +6757,7 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
   }
 }
 
-// Called when the renderer navigates.  For every frame loaded, we'll get this
+// Called when the renderer navigates. For every frame loaded, we'll get this
 // notification containing parameters identifying the navigation.
 void RenderFrameHostImpl::DidCommitNavigation(
     std::unique_ptr<NavigationRequest> committing_navigation_request,
@@ -6886,6 +6886,10 @@ void RenderFrameHostImpl::DidCommitNavigation(
     RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())
         ->DidNavigate(validated_params->content_source_id);
   }
+
+  // TODO(arthursonzogni): This can be removed when RenderDocument will be
+  // implemented. See https://crbug.com/936696.
+  EnsureDescendantsAreUnloading();
 }
 
 mojom::FrameNavigationControl::CommitNavigationCallback
@@ -6985,6 +6989,27 @@ RenderWidgetHostImpl* RenderFrameHostImpl::GetLocalRenderWidgetHost() const {
     return render_view_host_->GetWidget();
   else
     return owned_render_widget_host_.get();
+}
+
+void RenderFrameHostImpl::EnsureDescendantsAreUnloading() {
+  std::vector<RenderFrameHostImpl*> parents_to_be_checked = {this};
+  std::vector<RenderFrameHostImpl*> rfhs_to_be_checked;
+  while (!parents_to_be_checked.empty()) {
+    RenderFrameHostImpl* document = parents_to_be_checked.back();
+    parents_to_be_checked.pop_back();
+
+    for (auto& subframe : document->children_) {
+      RenderFrameHostImpl* child = subframe->current_frame_host();
+      // Every child is expected to be pending deletion. If it isn't the
+      // case, their FrameTreeNode is immediately removed from the tree.
+      if (child->unload_state_ == UnloadState::NotRun)
+        rfhs_to_be_checked.push_back(child);
+      else
+        parents_to_be_checked.push_back(child);
+    }
+  }
+  for (RenderFrameHostImpl* document : rfhs_to_be_checked)
+    document->parent_->RemoveChild(document->frame_tree_node());
 }
 
 }  // namespace content
