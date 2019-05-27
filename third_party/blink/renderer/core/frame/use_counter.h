@@ -42,9 +42,26 @@ class CSSStyleSheet;
 class Document;
 class DocumentLoader;
 class EnumerationHistogram;
+class Element;
 class ExecutionContext;
 class LocalFrame;
 class StyleSheetContents;
+
+// Utility class for muting UseCounter, for instance ignoring attributes
+// constructed in user-agent shadow DOM. Once constructed, all UseCounting
+// is muted, until the object is destroyed again. It is the callees
+// responsibility to make sure this happens.
+class UseCounterMuteScope {
+  STACK_ALLOCATED();
+
+ public:
+  UseCounterMuteScope(const Element& element);
+  ~UseCounterMuteScope();
+
+ private:
+  Member<DocumentLoader> loader_;
+};
+
 // Definition for UseCounter features can be found in:
 // third_party/blink/public/mojom/web_feature/web_feature.mojom
 

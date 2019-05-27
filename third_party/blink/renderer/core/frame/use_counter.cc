@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -44,6 +45,17 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 
 namespace blink {
+
+UseCounterMuteScope::UseCounterMuteScope(const Element& element)
+    : loader_(element.GetDocument().Loader()) {
+  if (loader_)
+    loader_->GetUseCounter().MuteForInspector();
+}
+
+UseCounterMuteScope::~UseCounterMuteScope() {
+  if (loader_)
+    loader_->GetUseCounter().UnmuteForInspector();
+}
 
 // TODO(loonybear): Move CSSPropertyID to
 // public/mojom/use_counter/css_property_id.mojom to plumb CSS metrics end to

@@ -3779,6 +3779,7 @@ void HTMLMediaElement::EnsureMediaControls() {
     return;
 
   ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
+  UseCounterMuteScope scope(*this);
   media_controls_ =
       CoreInitializer::GetInstance().CreateMediaControls(*this, shadow_root);
 
