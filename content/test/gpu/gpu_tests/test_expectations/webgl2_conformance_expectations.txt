@@ -249,7 +249,6 @@ crbug.com/602688 [ opengl passthrough intel ] conformance/renderbuffers/framebuf
 # This case causes no-over-optimization-on-uniform-array fail.
 crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html [ Skip ]
 crbug.com/854100 [ opengl win passthrough intel ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
-crbug.com/angleproject/2760 [ opengl win passthrough intel ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
 crbug.com/602688 [ opengl win passthrough intel ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
 crbug.com/602688 [ opengl win passthrough intel ] conformance2/textures/misc/texture-npot.html [ Failure ]
@@ -270,8 +269,6 @@ crbug.com/793055 [ opengl linux passthrough nvidia ] deqp/functional/gles3/shade
 crbug.com/927407 [ opengl linux passthrough nvidia ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]
 
 # Passthrough command decoder / Linux / OpenGL / Intel
-crbug.com/angleproject/2760 [ opengl linux passthrough intel ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
-crbug.com/angleproject/2760 [ opengl linux passthrough intel ] conformance2/renderbuffers/multisampled-stencil-renderbuffer-initialization.html [ Failure ]
 crbug.com/angleproject/2761 [ opengl linux passthrough intel ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
 crbug.com/950787 [ opengl linux passthrough intel ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]
 
