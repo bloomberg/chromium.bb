@@ -260,10 +260,16 @@ class CORE_EXPORT DisplayLockContext final
                       ResolverState,
                       const char* reject_reason);
 
-  // Returns true if the element supports display locking. Note that this can
-  // only be called if the style is clean. It checks the layout object if it
-  // exists. Otherwise, falls back to checking computed style.
-  bool ElementSupportsDisplayLocking() const;
+  // Checks whether we should force unlock the lock (due to not meeting
+  // containment/display requirements), returns a string from rejection_names
+  // if we should, nullptr if not. Note that this can only be called if the
+  // style is clean. It checks the layout object if it exists. Otherwise,
+  // falls back to checking computed style.
+  const char* ShouldForceUnlock() const;
+
+  // Unlocks the lock if the element doesn't meet requirements
+  // (containment/display type). Returns true if we did unlock.
+  bool ForceUnlockIfNeeded();
 
   // Returns true if the element is connected to a document that has a view.
   // If we're not connected,  or if we're connected but the document doesn't

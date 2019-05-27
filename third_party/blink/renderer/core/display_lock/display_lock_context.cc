@@ -38,6 +38,8 @@ const char* kElementIsUnlocked = "Element is unlocked.";
 const char* kExecutionContextDestroyed = "Execution context destroyed.";
 const char* kContainmentNotSatisfied =
     "Containment requirement is not satisfied.";
+const char* kUnsupportedDisplay =
+    "Element has unsupported display type (display: contents).";
 const char* kElementIsDisconnected = "Element is disconnected.";
 const char* kLockCommitted = "Lock commit was requested.";
 const char* kInvalidOptions = "Invalid options.";
@@ -195,15 +197,15 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
   // If we're already connected then we need to ensure that we update our layout
   // size based on the options and we have cleared the painted output.
   if (ConnectedToView()) {
-    if (!ElementSupportsDisplayLocking()) {
+    if (auto* reason = ShouldForceUnlock()) {
       // The element has up-to-date style and doesn't satisfy the containment
-      // requirement, so we unlock and reject now.
-      // If the style needs recalc we would instead check containment after
+      // or display type requirement, so we unlock and reject now.
+      // If the style needs recalc we would instead check the requirements after
       // style recalc for this element.
       DCHECK(!element_->NeedsStyleRecalc());
+      CancelTimeoutTask();
       state_ = kUnlocked;
-      return GetRejectedPromise(script_state,
-                                rejection_names::kContainmentNotSatisfied);
+      return GetRejectedPromise(script_state, reason);
     }
 
     acquire_resolver_ =
@@ -361,20 +363,8 @@ void DisplayLockContext::DidStyle(LifecycleTarget target) {
     return;
 
   if (target == kSelf) {
-    // We must have "contain: style layout" for display locking.
-    // Note that we should always have this containment after every style
-    // update. Otherwise, proceeding with layout may cause unexpected behavior.
-    // By rejecting the promise, the behavior can be detected by script.
-    // TODO(rakina): If this is after acquire's promise is resolved and update()
-    // commit() isn't in progress, the web author won't know that the element
-    // got unlocked. Figure out how to notify the author.
-    if (!ElementSupportsDisplayLocking()) {
-      FinishUpdateResolver(kReject, rejection_names::kContainmentNotSatisfied);
-      FinishCommitResolver(kReject, rejection_names::kContainmentNotSatisfied);
-      FinishAcquireResolver(kReject, rejection_names::kContainmentNotSatisfied);
-      state_ = kUnlocked;
+    if (ForceUnlockIfNeeded())
       return;
-    }
 
     if (blocked_style_traversal_type_ == kStyleUpdateSelf)
       blocked_style_traversal_type_ = kStyleUpdateNotRequired;
@@ -460,16 +450,8 @@ bool DisplayLockContext::ShouldCommitForActivation() const {
 void DisplayLockContext::DidAttachLayoutTree() {
   if (state_ >= kUnlocked)
     return;
-
-  // Note that although we checked at style recalc time that the element has
-  // "contain: style layout", it might not actually apply the containment at the
-  // layout object level. This confirms that containment should apply.
-  if (!ElementSupportsDisplayLocking()) {
-    bool should_stay_locked = state_ == kUpdating && !commit_resolver_;
-    FinishUpdateResolver(kReject, rejection_names::kContainmentNotSatisfied);
-    FinishCommitResolver(kReject, rejection_names::kContainmentNotSatisfied);
-    state_ = should_stay_locked ? kLocked : kUnlocked;
-  }
+  if (ForceUnlockIfNeeded())
+    return;
 
   if (auto* layout_object = element_->GetLayoutObject())
     is_horizontal_writing_mode_ = layout_object->IsHorizontalWritingMode();
@@ -712,12 +694,8 @@ void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
 void DisplayLockContext::DidFinishLifecycleUpdate(const LocalFrameView& view) {
   in_lifecycle_update_ = false;
   if (acquire_resolver_) {
-    if (!ElementSupportsDisplayLocking()) {
-      FinishAcquireResolver(kReject, rejection_names::kContainmentNotSatisfied);
-      CancelTimeoutTask();
-      state_ = kUnlocked;
+    if (ForceUnlockIfNeeded())
       return;
-    }
     FinishAcquireResolver(kResolve);
     // TODO(vmpstr): When size: auto is supported, we need to get the size from
     // the layout object here.
@@ -826,7 +804,7 @@ void DisplayLockContext::TriggerTimeout() {
   StartCommit();
 }
 
-bool DisplayLockContext::ElementSupportsDisplayLocking() const {
+const char* DisplayLockContext::ShouldForceUnlock() const {
   DCHECK(element_);
   // The style can be dirty if we're in a nested lock.
   // TODO(vmpstr): We need to figure out what to do here, since we don't know
@@ -835,13 +813,18 @@ bool DisplayLockContext::ElementSupportsDisplayLocking() const {
   // just optimistically assume that we have all of the right containment in
   // place. See crbug.com/926276 for more information.
   if (element_->NeedsStyleRecalc())
-    return true;
+    return nullptr;
+
+  if (element_->HasDisplayContentsStyle())
+    return rejection_names::kUnsupportedDisplay;
 
   // If we have a layout object, check that since it's a more authoritative
   // source of containment information.
   if (auto* layout_object = element_->GetLayoutObject()) {
-    return layout_object->ShouldApplyStyleContainment() &&
-           layout_object->ShouldApplyLayoutContainment();
+    if (layout_object->ShouldApplyStyleContainment() &&
+        layout_object->ShouldApplyLayoutContainment())
+      return nullptr;
+    return rejection_names::kContainmentNotSatisfied;
   }
 
   // Otherwise, fallback on just checking style.
@@ -850,7 +833,29 @@ bool DisplayLockContext::ElementSupportsDisplayLocking() const {
   // optimistically assume that we have containment.
   // TODO(vmpstr): Perhaps we need to add render=lockable which will ensure
   // containment.
-  return !style || (style->ContainsStyle() && style->ContainsLayout());
+  if (!style || (style->ContainsStyle() && style->ContainsLayout()))
+    return nullptr;
+  return rejection_names::kContainmentNotSatisfied;
+}
+
+bool DisplayLockContext::ForceUnlockIfNeeded() {
+  // We must have "contain: style layout", and disallow display:contents
+  // for display locking. Note that we should always guarantee this after
+  // every style or layout tree update. Otherwise, proceeding with layout may
+  // cause unexpected behavior. By rejecting the promise, the behavior can be
+  // detected by script.
+  // TODO(rakina): If this is after acquire's promise is resolved and update()
+  // commit() isn't in progress, the web author won't know that the element
+  // got unlocked. Figure out how to notify the author.
+  if (auto* reason = ShouldForceUnlock()) {
+    FinishAcquireResolver(kReject, reason);
+    FinishUpdateResolver(kReject, reason);
+    FinishCommitResolver(kReject, reason);
+    CancelTimeoutTask();
+    state_ = kUnlocked;
+    return true;
+  }
+  return false;
 }
 
 bool DisplayLockContext::ConnectedToView() const {
