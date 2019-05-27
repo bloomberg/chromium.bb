@@ -487,7 +487,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterNonZeroOrigin) {
                base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestNonSkia, ImageFilterScaled) {
+TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -555,7 +555,7 @@ TEST_P(LayerTreeHostFiltersPixelTestNonSkia, ImageFilterScaled) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestNonSkia, BackdropFilterRotated) {
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterRotated) {
   // Add a white background with a rotated red rect in the center.
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
@@ -772,7 +772,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestNonSkia, RotatedDropShadowFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 
@@ -819,7 +819,7 @@ TEST_P(LayerTreeHostFiltersPixelTestNonSkia, RotatedDropShadowFilter) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestNonSkia, TranslatedFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, TranslatedFilter) {
   scoped_refptr<Layer> clip = Layer::Create();
   clip->SetBounds(gfx::Size(300, 300));
   clip->SetMasksToBounds(true);
@@ -853,10 +853,12 @@ TEST_P(LayerTreeHostFiltersPixelTestNonSkia, TranslatedFilter) {
   parent->AddChild(child);
   clip->AddChild(parent);
 
+  if (renderer_type() == RENDERER_SOFTWARE)
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
+
   RunPixelTest(
       renderer_type(), clip,
-      base::FilePath(FILE_PATH_LITERAL("translated_blue_green_alpha_.png"))
-          .InsertBeforeExtensionASCII(GetRendererSuffix()));
+      base::FilePath(FILE_PATH_LITERAL("translated_blue_green_alpha.png")));
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithAlphaThresholdFilter) {

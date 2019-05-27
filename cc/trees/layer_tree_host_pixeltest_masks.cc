@@ -832,7 +832,7 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
                           Layer::LayerMaskType::MULTI_TEXTURE_MASK)));
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
        MaskOfLayerWithBackdropFilter) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(100, 100), SK_ColorWHITE);
@@ -876,7 +876,7 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
       small_error_allowed);
 
   base::FilePath image_name =
-      (test_case_ == GPU)
+      (test_case_ == GPU || test_case_ == SKIA_GL)
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
           : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
   RunPixelResourceTest(background, image_name);

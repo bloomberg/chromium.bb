@@ -227,11 +227,12 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidationMultiThread, FullRaster) {
 using LayerTreeHostTilesTestPartialInvalidationLowBitDepth =
     LayerTreeHostTilesTestPartialInvalidation;
 
-// TODO(crbug.com/948128): Enable these tests for Skia.
-INSTANTIATE_TEST_SUITE_P(,
-                         LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
-                         ::testing::Values(TilesTestConfig{
-                             LayerTreeTest::RENDERER_GL, GPU_LOW_BIT_DEPTH}));
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
+    ::testing::Values(
+        TilesTestConfig{LayerTreeTest::RENDERER_GL, GPU_LOW_BIT_DEPTH},
+        TilesTestConfig{LayerTreeTest::RENDERER_SKIA_GL, GPU_LOW_BIT_DEPTH}));
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth, PartialRaster) {
   use_partial_raster_ = true;
