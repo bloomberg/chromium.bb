@@ -965,8 +965,11 @@ message ImportLxdContainerProgressSignal {
     // The image is being unpacked to create a container.
     IMPORTING_UNPACK = 4;
 
-    // The container could be imported due to mismatched architecture.
+    // The container could not be imported due to mismatched architecture.
     FAILED_ARCHITECTURE = 5;
+
+    // The container could not be imported due to insufficient space.
+    FAILED_SPACE = 6;
   }
 
   // Container status.
@@ -987,6 +990,12 @@ message ImportLxdContainerProgressSignal {
   // Architecture of container which failed to import.
   // Set when status is FAILED_ARCHITECTURE.
   string architecture_container = 9;
+
+  // Available space for import.  Set when status is FAILED_SPACE.
+  uint64 available_space = 10;
+
+  // Minimum required space for import.  Set when status is FAILED_SPACE.
+  uint64 min_required_space = 11;
 }
 
 message PendingAppListUpdatesSignal {
