@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
+import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -93,6 +94,7 @@ public class AutofillAssistantFacade {
             }
             // Starting autofill assistant without onboarding.
             if (canStart(activity.getInitialIntent())) {
+                AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
                 startNow(activity, moduleEntry);
                 return;
             }

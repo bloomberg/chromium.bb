@@ -3353,6 +3353,13 @@ Unknown properties are collapsed to zero. -->
   <int value="19" label="No initial scripts"/>
 </enum>
 
+<enum name="AutofillAssistantOnBoarding">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Not shown (returning user)"/>
+  <int value="2" label="Accepted"/>
+  <int value="3" label="Cancelled"/>
+</enum>
+
 <enum name="AutofillCardholderNameFixFlowPromptEvent">
   <int value="0" label="Shown"/>
   <int value="1" label="Accepted"/>

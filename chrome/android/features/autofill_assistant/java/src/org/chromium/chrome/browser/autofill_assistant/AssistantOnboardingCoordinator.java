@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -32,6 +33,8 @@ class AssistantOnboardingCoordinator {
      */
     static View show(
             String experimentIds, Context context, ViewGroup root, Callback<Boolean> callback) {
+        AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_SHOWN);
+
         View initView = LayoutInflater.from(context)
                                 .inflate(R.layout.autofill_assistant_onboarding, root)
                                 .findViewById(R.id.assistant_onboarding);
@@ -78,6 +81,11 @@ class AssistantOnboardingCoordinator {
             boolean accept, ViewGroup root, View initView, Callback<Boolean> callback) {
         AutofillAssistantPreferencesUtil.setInitialPreferences(accept);
         root.removeView(initView);
+        if (accept) {
+            AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_ACCEPTED);
+        } else {
+            AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_CANCELLED);
+        }
         callback.onResult(accept);
     }
 }
