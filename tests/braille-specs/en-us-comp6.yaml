@@ -54,3 +54,13 @@ tests:
     - typeform:
         italic: "  ++++       ++++"
 
+# Spaces
+flags: {testmode: bothDirections}
+tests:
+  - ['\x0020', '⠀']
+flags: {testmode: forward}
+tests:
+  - ['\x0009', '⠀']
+  - ['\x000a', '⠀']
+  - ['\x000d', '⠀']
+  - ['\x00a0', '⠀']

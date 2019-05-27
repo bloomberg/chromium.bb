@@ -60,10 +60,6 @@
 #   15.0 Half-Line Shifts
 
 # Character Definitions:
-# Whitespace characters from chardefs.cti:
-space \t 9 tab
-space \x001b 1b escape character for html back-translation
-space \x00a0 a
 include spaces.uti
 
 # Alphanumeric characters:
