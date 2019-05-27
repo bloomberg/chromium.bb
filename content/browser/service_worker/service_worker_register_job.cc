@@ -352,14 +352,9 @@ ServiceWorkerRegisterJob::GetUpdateCheckType() const {
 void ServiceWorkerRegisterJob::OnUpdateCheckFinished(bool script_changed) {
   DCHECK_EQ(GetUpdateCheckType(),
             UpdateCheckType::kAllScriptsBeforeStartWorker);
+  BumpLastUpdateCheckTimeIfNeeded();
   if (!script_changed) {
     // TODO(momohatt): Set phase correctly.
-    // TODO(momohatt): Update the last update check time correctly.
-    ServiceWorkerVersion* newest_version = registration()->GetNewestVersion();
-    if (newest_version->force_bypass_cache_for_scripts()) {
-      registration()->set_last_update_check(base::Time::Now());
-    }
-    context_->storage()->UpdateLastUpdateCheckTime(registration());
     ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),
                    registration());
     // This terminates the current job (|this|).
@@ -781,13 +776,33 @@ void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
 }
 
 void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {
+  bool network_accessed = false;
+  bool force_bypass_cache = false;
+
+  // Get |network_accessed| from |update_checker_| and |force_bypass_cache|
+  // from the current job when the update checker tried to fetch the worker
+  // script.
+  // |update_checker_| is not available when installing a new
+  // service worker without update checking (e.g. a new registration), or
+  // non-ServiceWorkerImportedScriptUpdateCheck. In this case, get
+  // |network_accessed| and |force_bypass_cache| from the new version.
+  if (update_checker_) {
+    DCHECK_EQ(GetUpdateCheckType(),
+              UpdateCheckType::kAllScriptsBeforeStartWorker);
+    network_accessed = update_checker_->network_accessed();
+    force_bypass_cache = force_bypass_cache_;
+  } else {
+    network_accessed =
+        new_version()->embedded_worker()->network_accessed_for_script();
+    force_bypass_cache = new_version()->force_bypass_cache_for_scripts();
+  }
+
   // Bump the last update check time only when the register/update job fetched
   // the version having bypassed the network cache. We assume that the
   // BYPASS_CACHE flag evicts an existing cache entry, so even if the install
   // ultimately failed for whatever reason, we know the version in the HTTP
   // cache is not stale, so it's OK to bump the update check time.
-  if (new_version()->embedded_worker()->network_accessed_for_script() ||
-      new_version()->force_bypass_cache_for_scripts() ||
+  if (network_accessed || force_bypass_cache ||
       registration()->last_update_check().is_null()) {
     registration()->set_last_update_check(base::Time::Now());
 

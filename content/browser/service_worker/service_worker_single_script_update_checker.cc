@@ -147,7 +147,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
 
   network_loader_state_ =
       ServiceWorkerNewScriptLoader::NetworkLoaderState::kWaitingForBody;
-
+  network_accessed_ = response_head.network_accessed;
   WriteHeaders(
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info)));
 }

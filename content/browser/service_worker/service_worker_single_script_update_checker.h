@@ -102,6 +102,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
       mojo::ScopedDataPipeConsumerHandle consumer) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
+  bool network_accessed() const { return network_accessed_; }
+
  private:
   void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);
   void OnWriteHeadersComplete(net::Error error);
@@ -122,6 +124,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   const bool force_bypass_cache_;
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   const base::TimeDelta time_since_last_check_;
+  bool network_accessed_ = false;
 
   network::mojom::URLLoaderPtr network_loader_;
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;

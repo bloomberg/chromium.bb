@@ -46,6 +46,9 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
         paused_state) {
   script_check_results_[script_url] =
       ComparedScriptInfo(old_resource_id, result, std::move(paused_state));
+  if (running_checker_->network_accessed())
+    network_accessed_ = true;
+
   running_checker_.reset();
 
   if (ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent == result) {
