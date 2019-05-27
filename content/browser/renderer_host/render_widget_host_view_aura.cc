@@ -2154,8 +2154,6 @@ void RenderWidgetHostViewAura::OnDidUpdateVisualPropertiesComplete(
     // viz::LocalSurfaceId. However we do not want to embed surfaces while
     // hidden. Nor do we want to embed invalid ids when we are evicted. Becoming
     // visible will generate a new id, if necessary, and begin embedding.
-    // TODO(ejoe): Change the LocalSurfaceIdAllocation so that it can pause the
-    // elpased time for surface embedding. crbug/949967.
     window_->UpdateLocalSurfaceIdFromEmbeddedClient(
         metadata.local_surface_id_allocation);
   } else {
