@@ -47,7 +47,7 @@ class LayoutProviderTest : public testing::Test {
   LayoutProviderTest() {}
 
  protected:
-  static void SetUpTestCase() {
+  static void SetUpTestSuite() {
 #if defined(OS_WIN)
     gfx::win::InitializeDirectWrite();
 
@@ -63,31 +63,31 @@ class LayoutProviderTest : public testing::Test {
 
     // Ensures that the screen resolution is at the default value.
     float system_dpi_scale = display::win::GetDPIScale();
-    EXPECT_NE(system_dpi_scale, 1.0)
+    EXPECT_EQ(system_dpi_scale, 1.0)
         << "The test requires default display settings. The DPI of the display "
-           " is not 100%. dpi_scale="
+           "is not 100%. dpi_scale="
         << system_dpi_scale;
 
     double accessibility_font_scale = display::win::GetAccessibilityFontScale();
-    EXPECT_NE(accessibility_font_scale, 1.0)
+    EXPECT_EQ(accessibility_font_scale, 1.0)
         << "The test requires default display settings. The fonts are scaled "
            "due to accessibility settings. font_scale="
         << accessibility_font_scale;
 
     // Ensures that the default fonts are used.
-    EXPECT_NE(
+    EXPECT_EQ(
         gfx::win::GetSystemFont(gfx::win::SystemFont::kCaption).GetFontName(),
         kDefaultFontName);
-    EXPECT_NE(gfx::win::GetSystemFont(gfx::win::SystemFont::kSmallCaption)
+    EXPECT_EQ(gfx::win::GetSystemFont(gfx::win::SystemFont::kSmallCaption)
                   .GetFontName(),
               kDefaultFontName);
-    EXPECT_NE(
+    EXPECT_EQ(
         gfx::win::GetSystemFont(gfx::win::SystemFont::kMenu).GetFontName(),
         kDefaultFontName);
-    EXPECT_NE(
+    EXPECT_EQ(
         gfx::win::GetSystemFont(gfx::win::SystemFont::kStatus).GetFontName(),
         kDefaultFontName);
-    EXPECT_NE(
+    EXPECT_EQ(
         gfx::win::GetSystemFont(gfx::win::SystemFont::kMessage).GetFontName(),
         kDefaultFontName);
 #endif
