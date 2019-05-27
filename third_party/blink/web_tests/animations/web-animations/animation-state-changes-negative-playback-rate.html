@@ -67,7 +67,7 @@ test(function() {
   var animation = runningAnimation();
   assert_times_equal(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
   assert_times_equal(animation.currentTime, duration / 2);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Play state is running after playing and setting start time of a canceled reversed animation");
 
@@ -209,7 +209,7 @@ test(function() {
   animation.startTime = document.timeline.currentTime + 1000;
   assert_times_equal(animation.startTime, document.timeline.currentTime + 1000);
   assert_times_equal(animation.currentTime, 1000);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Setting startTime on a pending animation");
 
@@ -265,7 +265,7 @@ test(function() {
   animation.currentTime = 1000;
   assert_times_equal(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
   assert_equals(animation.currentTime, 1000);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Setting currentTime on a running animation");
 
@@ -274,7 +274,7 @@ test(function() {
   animation.startTime = document.timeline.currentTime + 1000;
   assert_times_equal(animation.startTime, document.timeline.currentTime + 1000);
   assert_times_equal(animation.currentTime, 1000);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Setting startTime on a running animation");
 
@@ -337,7 +337,7 @@ test(function() {
   animation.startTime = document.timeline.currentTime + 1000;
   assert_times_equal(animation.startTime, document.timeline.currentTime + 1000);
   assert_times_equal(animation.currentTime, 1000);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Setting startTime on a paused animation");
 

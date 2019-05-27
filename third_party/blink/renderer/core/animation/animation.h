@@ -94,7 +94,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                            AnimationTimeline*,
                            ExceptionState&);
 
-  Animation(ExecutionContext*, DocumentTimeline&, AnimationEffect*);
+  Animation(ExecutionContext*, DocumentTimeline*, AnimationEffect*);
+
   ~Animation() override;
   void Dispose();
 
@@ -163,6 +164,9 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   }
   const DocumentTimeline* TimelineInternal() const { return timeline_; }
   DocumentTimeline* TimelineInternal() { return timeline_; }
+  double TimelineTime() const {
+    return timeline_ ? timeline_->currentTime() : NullValue();
+  }
 
   double startTime(bool& is_null) const;
   base::Optional<double> startTime() const;
@@ -321,6 +325,9 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   Member<AnimationPromise> ready_promise_;
 
   Member<AnimationEffect> content_;
+  // Document refers to the timeline's document if there is a timeline.
+  // Otherwise it refers to the document for the execution context.
+  Member<Document> document_;
   Member<DocumentTimeline> timeline_;
 
   // Reflects all pausing, including via pauseForTesting().

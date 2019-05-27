@@ -201,7 +201,7 @@ test(function(t) {
   animation.startTime = document.timeline.currentTime - 1000;
   assert_equals(animation.startTime, document.timeline.currentTime - 1000);
   assert_equals(animation.currentTime, 1000);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Setting startTime on a pending starttime animation");
 
@@ -258,7 +258,7 @@ test(function(t) {
   animation.currentTime = 1000;
   assert_equals(animation.startTime, document.timeline.currentTime - animation.currentTime);
   assert_equals(animation.currentTime, 1000);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Setting currentTime on a running animation");
 
@@ -267,7 +267,7 @@ test(function(t) {
   animation.startTime = document.timeline.currentTime - 1000;
   assert_equals(animation.startTime, document.timeline.currentTime - 1000);
   assert_equals(animation.currentTime, 1000);
-  assert_true(animation.pending);
+  assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Setting startTime on a running animation");
 

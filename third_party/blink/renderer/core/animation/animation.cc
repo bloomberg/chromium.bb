@@ -70,6 +70,20 @@ double ToMilliseconds(double seconds) {
   return seconds * 1000;
 }
 
+bool AreEqualOrNull(double a, double b) {
+  // Null values are represented as NaNs, which have the property NaN != NaN.
+  if (IsNull(a) && IsNull(b))
+    return true;
+  return a == b;
+}
+
+base::Optional<double> ValueOrUnresolved(double a) {
+  base::Optional<double> value;
+  if (!IsNull(a))
+    value = a;
+  return value;
+}
+
 void RecordCompositorAnimationFailureReasons(
     CompositorAnimations::FailureReasons failure_reasons) {
   // UMA_HISTOGRAM_ENUMERATION requires that the enum_max must be strictly
@@ -100,11 +114,10 @@ void RecordCompositorAnimationFailureReasons(
 Animation* Animation::Create(AnimationEffect* effect,
                              AnimationTimeline* timeline,
                              ExceptionState& exception_state) {
-  if (!timeline || !timeline->IsDocumentTimeline()) {
-    // FIXME: Support creating animations without a timeline.
+  DCHECK(timeline);
+  if (!timeline->IsDocumentTimeline()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Animations can currently only be "
-                                      "created with a non-null "
+                                      "Invalid timeline. Animation requires a "
                                       "DocumentTimeline");
     return nullptr;
   }
@@ -112,7 +125,7 @@ Animation* Animation::Create(AnimationEffect* effect,
   DocumentTimeline* subtimeline = ToDocumentTimeline(timeline);
 
   Animation* animation = MakeGarbageCollected<Animation>(
-      subtimeline->GetDocument()->ContextDocument(), *subtimeline, effect);
+      subtimeline->GetDocument()->ContextDocument(), subtimeline, effect);
 
   if (subtimeline) {
     subtimeline->AnimationAttached(*animation);
@@ -134,14 +147,16 @@ Animation* Animation::Create(ExecutionContext* execution_context,
                              AnimationTimeline* timeline,
                              ExceptionState& exception_state) {
   if (!timeline) {
-    return Create(execution_context, effect, exception_state);
+    Animation* animation =
+        MakeGarbageCollected<Animation>(execution_context, nullptr, effect);
+    return animation;
   }
 
   return Create(effect, timeline, exception_state);
 }
 
 Animation::Animation(ExecutionContext* execution_context,
-                     DocumentTimeline& timeline,
+                     DocumentTimeline* timeline,
                      AnimationEffect* content)
     : ContextLifecycleObserver(execution_context),
       internal_play_state_(kIdle),
@@ -151,7 +166,7 @@ Animation::Animation(ExecutionContext* execution_context,
       hold_time_(),
       sequence_number_(NextSequenceNumber()),
       content_(content),
-      timeline_(&timeline),
+      timeline_(timeline),
       paused_(false),
       is_paused_for_testing_(false),
       is_composited_animation_disabled_for_testing_(false),
@@ -172,7 +187,10 @@ Animation::Animation(ExecutionContext* execution_context,
     }
     content_->Attach(this);
   }
-  probe::DidCreateAnimation(timeline_->GetDocument(), sequence_number_);
+  document_ =
+      timeline_ ? timeline_->GetDocument() : To<Document>(execution_context);
+  DCHECK(document_);
+  probe::DidCreateAnimation(document_, sequence_number_);
 }
 
 Animation::~Animation() {
@@ -256,7 +274,7 @@ void Animation::SetCurrentTimeInternal(double new_current_time,
 
 // Update timing to reflect updated animation clock due to tick
 void Animation::UpdateCurrentTimingState(TimingUpdateReason reason) {
-  if (internal_play_state_ == kIdle)
+  if (internal_play_state_ == kIdle || !timeline_)
     return;
   if (hold_time_) {
     double new_current_time = hold_time_.value();
@@ -328,8 +346,7 @@ double Animation::CurrentTimeInternal() const {
     const_cast<Animation*>(this)->UpdateCurrentTimingState(
         kTimingUpdateOnDemand);
     double hold_or_current_time = hold_time_.value_or(CalculateCurrentTime());
-    DCHECK((IsNull(result) && IsNull(hold_or_current_time)) ||
-           result == hold_or_current_time);
+    DCHECK(AreEqualOrNull(result, hold_or_current_time));
   }
 #endif
   return result;
@@ -459,7 +476,8 @@ void Animation::NotifyCompositorStartTime(double timeline_time) {
       return;
     }
 
-    if (start_time_ || CurrentTimeInternal() != initial_compositor_hold_time) {
+    if (start_time_ ||
+        !AreEqualOrNull(CurrentTimeInternal(), initial_compositor_hold_time)) {
       // A new start time or current time was set while starting.
       SetCompositorPending(true);
       return;
@@ -513,32 +531,47 @@ double Animation::CalculateCurrentTime() const {
   return (timeline_->EffectiveTime() - start_time_.value()) * playback_rate_;
 }
 
-// TODO(crbug.com/771722): This doesn't handle anim.startTime = null; we just
-// silently convert that to anim.startTime = 0.
+// https://drafts.csswg.org/web-animations/#setting-the-start-time-of-an-animation
 void Animation::setStartTime(double start_time, bool is_null) {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
-  if (start_time == start_time_)
-    return;
+  base::Optional<double> new_start_time;
+  if (!is_null)
+    new_start_time = start_time / 1000;
 
+  // Setting the start time resolves the pending playback rate and cancels any
+  // pending tasks regardless of whether setting to the current value.
+  ResetPendingTasks();
+
+  // Reevaluate the play state, as setting the start time can affect the
+  // finished state.
   current_time_pending_ = false;
   internal_play_state_ = kUnset;
-  paused_ = false;
-  SetStartTimeInternal(start_time / 1000);
+
+  SetStartTimeInternal(new_start_time);
 }
 
 void Animation::SetStartTimeInternal(base::Optional<double> new_start_time) {
-  DCHECK(!paused_);
-  DCHECK(new_start_time.has_value());
-  DCHECK(new_start_time != start_time_);
-
   bool had_start_time = start_time_.has_value();
   double previous_current_time = CurrentTimeInternal();
   start_time_ = new_start_time;
-  if (hold_time_ && playback_rate_) {
+  // When we don't have an active timeline it is only possible to set either the
+  // start time or the current time. Resetting the hold time clears current
+  // time.
+  if (!timeline_ && new_start_time.has_value())
+    hold_time_ = base::nullopt;
+
+  if (!new_start_time.has_value()) {
+    hold_time_ = ValueOrUnresolved(previous_current_time);
+    // Explicitly setting the start time to null pauses the animation. This
+    // prevents the start time from simply being overridden when reevaluating
+    // the play state.
+    paused_ = true;
+  } else if (hold_time_ && playback_rate_) {
     // If held, the start time would still be derived from the hold time.
     // Force a new, limited, current time.
     hold_time_ = base::nullopt;
+    paused_ = false;
     double current_time = CalculateCurrentTime();
     if (playback_rate_ > 0 && current_time > EffectEnd()) {
       current_time = EffectEnd();
@@ -550,7 +583,7 @@ void Animation::SetStartTimeInternal(base::Optional<double> new_start_time) {
   UpdateCurrentTimingState(kTimingUpdateOnDemand);
   double new_current_time = CurrentTimeInternal();
 
-  if (previous_current_time != new_current_time) {
+  if (!AreEqualOrNull(previous_current_time, new_current_time)) {
     SetOutdated();
   } else if (!had_start_time && timeline_) {
     // Even though this animation is not outdated, time to effect change is
@@ -677,7 +710,7 @@ void Animation::pause(ExceptionState& exception_state) {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
   double new_current_time = CurrentTimeInternal();
-  if (CalculatePlayState() == kIdle) {
+  if (CalculatePlayState() == kIdle || IsNull(new_current_time)) {
     if (playback_rate_ < 0 &&
         EffectEnd() == std::numeric_limits<double>::infinity()) {
       exception_state.ThrowDOMException(
@@ -1034,6 +1067,12 @@ void Animation::StartAnimationOnCompositor(
 }
 
 void Animation::SetCompositorPending(bool effect_changed) {
+  // Cannot play an animation with a null timeline.
+  // TODO(crbug.com/827626) Revisit once timelines are mutable as there will be
+  // work to do if the timeline is reset.
+  if (!timeline_)
+    return;
+
   // FIXME: KeyframeEffect could notify this directly?
   if (!HasActiveAnimationsOnCompositor()) {
     DestroyCompositorAnimation();
@@ -1056,7 +1095,7 @@ void Animation::SetCompositorPending(bool effect_changed) {
       compositor_state_->start_time != start_time_ ||
       !compositor_state_->start_time || !start_time_) {
     compositor_pending_ = true;
-    TimelineInternal()->GetDocument()->GetPendingAnimations().Add(this);
+    document_->GetPendingAnimations().Add(this);
   }
 }
 
@@ -1137,12 +1176,10 @@ bool Animation::Update(TimingUpdateReason reason) {
           double event_current_time = NullValue();
           pending_cancelled_event_ =
               MakeGarbageCollected<AnimationPlaybackEvent>(
-                  event_type, event_current_time,
-                  TimelineInternal()->currentTime());
+                  event_type, event_current_time, TimelineTime());
           pending_cancelled_event_->SetTarget(this);
           pending_cancelled_event_->SetCurrentTarget(this);
-          timeline_->GetDocument()->EnqueueAnimationFrameEvent(
-              pending_cancelled_event_);
+          document_->EnqueueAnimationFrameEvent(pending_cancelled_event_);
         }
       } else {
         QueueFinishedEvent();
@@ -1159,15 +1196,19 @@ void Animation::QueueFinishedEvent() {
   if (GetExecutionContext() && HasEventListeners(event_type)) {
     double event_current_time = CurrentTimeInternal() * 1000;
     pending_finished_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(
-        event_type, event_current_time, TimelineInternal()->currentTime());
+        event_type, event_current_time, TimelineTime());
     pending_finished_event_->SetTarget(this);
     pending_finished_event_->SetCurrentTarget(this);
-    timeline_->GetDocument()->EnqueueAnimationFrameEvent(
-        pending_finished_event_);
+    document_->EnqueueAnimationFrameEvent(pending_finished_event_);
   }
 }
 
 void Animation::UpdateIfNecessary() {
+  // Update is a no-op if there is no timeline_, and will not reset the outdated
+  // state in this case.
+  if (!timeline_)
+    return;
+
   if (Outdated())
     Update(kTimingUpdateOnDemand);
   DCHECK(!Outdated());
@@ -1282,10 +1323,8 @@ void Animation::DetachCompositedLayers() {
 }
 
 void Animation::NotifyAnimationStarted(double monotonic_time, int group) {
-  TimelineInternal()
-      ->GetDocument()
-      ->GetPendingAnimations()
-      .NotifyCompositorAnimationStarted(monotonic_time, group);
+  document_->GetPendingAnimations().NotifyCompositorAnimationStarted(
+      monotonic_time, group);
 }
 
 Animation::PlayStateUpdateScope::PlayStateUpdateScope(
@@ -1395,9 +1434,8 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
   animation_->EndUpdatingState();
 
   if (old_play_state != new_play_state) {
-    probe::AnimationPlayStateChanged(
-        animation_->TimelineInternal()->GetDocument(), animation_,
-        old_play_state, new_play_state);
+    probe::AnimationPlayStateChanged(animation_->document_, animation_,
+                                     old_play_state, new_play_state);
   }
 }
 
@@ -1480,6 +1518,7 @@ void Animation::RejectAndResetPromiseMaybeAsync(AnimationPromise* promise) {
 
 void Animation::Trace(blink::Visitor* visitor) {
   visitor->Trace(content_);
+  visitor->Trace(document_);
   visitor->Trace(timeline_);
   visitor->Trace(pending_finished_event_);
   visitor->Trace(pending_cancelled_event_);
