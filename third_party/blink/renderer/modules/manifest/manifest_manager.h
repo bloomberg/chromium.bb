@@ -58,6 +58,11 @@ class MODULES_EXPORT ManifestManager
   // WebManifestManager
   void RequestManifest(WebCallback callback) override;
 
+  // mojom::blink::ManifestManager implementation.
+  void RequestManifest(RequestManifestCallback callback) override;
+  void RequestManifestDebugInfo(
+      RequestManifestDebugInfoCallback callback) override;
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -65,16 +70,11 @@ class MODULES_EXPORT ManifestManager
 
   using InternalRequestManifestCallback =
       base::OnceCallback<void(const KURL&,
-                              const Manifest&,
+                              const mojom::blink::ManifestPtr&,
                               const mojom::blink::ManifestDebugInfo*)>;
 
   // From ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
-
-  // mojom::blink::ManifestManager implementation.
-  void RequestManifest(RequestManifestCallback callback) override;
-  void RequestManifestDebugInfo(
-      RequestManifestDebugInfoCallback callback) override;
 
   void RequestManifestImpl(InternalRequestManifestCallback callback);
 
@@ -103,7 +103,7 @@ class MODULES_EXPORT ManifestManager
   bool manifest_dirty_;
 
   // Current Manifest. Might be outdated if manifest_dirty_ is true.
-  Manifest manifest_;
+  mojom::blink::ManifestPtr manifest_;
 
   // The URL of the current manifest.
   KURL manifest_url_;

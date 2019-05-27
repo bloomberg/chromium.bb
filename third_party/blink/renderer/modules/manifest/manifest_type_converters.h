@@ -16,48 +16,47 @@ struct Manifest;
 namespace mojo {
 
 // TODO(crbug.com/704441): These converters are temporary to help the manifest
-// migration until ManifestParser is changed to produce generated structs
-// directly.
+// migration until content::PushMessagingClient is moved to blink.
 
 template <>
 struct MODULES_EXPORT
-    TypeConverter<blink::mojom::blink::ManifestPtr, const blink::Manifest*> {
-  static blink::mojom::blink::ManifestPtr Convert(const blink::Manifest* input);
+    TypeConverter<blink::Manifest, blink::mojom::blink::ManifestPtr> {
+  static blink::Manifest Convert(const blink::mojom::blink::ManifestPtr& input);
 };
 
 template <>
-struct TypeConverter<blink::mojom::blink::ManifestImageResourcePtr,
-                     const blink::Manifest::ImageResource*> {
-  static blink::mojom::blink::ManifestImageResourcePtr Convert(
-      const blink::Manifest::ImageResource* input);
+struct TypeConverter<blink::Manifest::ImageResource,
+                     blink::mojom::blink::ManifestImageResourcePtr> {
+  static blink::Manifest::ImageResource Convert(
+      const blink::mojom::blink::ManifestImageResourcePtr& input);
 };
 
 template <>
-struct TypeConverter<blink::mojom::blink::ManifestShareTargetPtr,
-                     const blink::Manifest::ShareTarget*> {
-  static blink::mojom::blink::ManifestShareTargetPtr Convert(
-      const blink::Manifest::ShareTarget* input);
+struct TypeConverter<blink::Manifest::ShareTarget,
+                     blink::mojom::blink::ManifestShareTargetPtr> {
+  static blink::Manifest::ShareTarget Convert(
+      const blink::mojom::blink::ManifestShareTargetPtr& input);
 };
 
 template <>
-struct TypeConverter<blink::mojom::blink::ManifestShareTargetParamsPtr,
-                     const blink::Manifest::ShareTargetParams*> {
-  static blink::mojom::blink::ManifestShareTargetParamsPtr Convert(
-      const blink::Manifest::ShareTargetParams* input);
+struct TypeConverter<blink::Manifest::ShareTargetParams,
+                     blink::mojom::blink::ManifestShareTargetParamsPtr> {
+  static blink::Manifest::ShareTargetParams Convert(
+      const blink::mojom::blink::ManifestShareTargetParamsPtr& input);
 };
 
 template <>
-struct TypeConverter<blink::mojom::blink::ManifestFileFilterPtr,
-                     const blink::Manifest::FileFilter*> {
-  static blink::mojom::blink::ManifestFileFilterPtr Convert(
-      const blink::Manifest::FileFilter* input);
+struct TypeConverter<blink::Manifest::FileFilter,
+                     blink::mojom::blink::ManifestFileFilterPtr> {
+  static blink::Manifest::FileFilter Convert(
+      const blink::mojom::blink::ManifestFileFilterPtr& input);
 };
 
 template <>
-struct TypeConverter<blink::mojom::blink::ManifestRelatedApplicationPtr,
-                     const blink::Manifest::RelatedApplication*> {
-  static blink::mojom::blink::ManifestRelatedApplicationPtr Convert(
-      const blink::Manifest::RelatedApplication* input);
+struct TypeConverter<blink::Manifest::RelatedApplication,
+                     blink::mojom::blink::ManifestRelatedApplicationPtr> {
+  static blink::Manifest::RelatedApplication Convert(
+      const blink::mojom::blink::ManifestRelatedApplicationPtr& input);
 };
 
 }  // namespace mojo

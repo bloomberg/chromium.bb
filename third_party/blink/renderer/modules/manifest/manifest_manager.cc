@@ -21,9 +21,20 @@
 #include "third_party/blink/renderer/modules/manifest/manifest_type_converters.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_uma_util.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
+
+namespace {
+
+mojom::blink::ManifestPtr CreateEmptyManifest() {
+  auto manifest = mojom::blink::Manifest::New();
+  manifest->start_url = KURL();
+  manifest->splash_screen_url = KURL();
+  manifest->scope = KURL();
+  return manifest;
+}
+
+}  // namespace
 
 // static
 const char ManifestManager::kSupplementName[] = "ManifestManager";
@@ -65,10 +76,11 @@ ManifestManager::~ManifestManager() = default;
 void ManifestManager::RequestManifest(RequestManifestCallback callback) {
   RequestManifestImpl(WTF::Bind(
       [](RequestManifestCallback callback, const KURL& manifest_url,
-         const Manifest& manifest,
+         const mojom::blink::ManifestPtr& manifest,
          const mojom::blink::ManifestDebugInfo* debug_info) {
-        std::move(callback).Run(manifest_url,
-                                mojom::blink::Manifest::From(&manifest));
+        std::move(callback).Run(manifest_url, manifest.is_null()
+                                                  ? CreateEmptyManifest()
+                                                  : manifest->Clone());
       },
       std::move(callback)));
 }
@@ -77,7 +89,7 @@ void ManifestManager::RequestManifestDebugInfo(
     RequestManifestDebugInfoCallback callback) {
   RequestManifestImpl(WTF::Bind(
       [](RequestManifestDebugInfoCallback callback, const KURL& manifest_url,
-         const Manifest& manifest,
+         const mojom::blink::ManifestPtr& manifest,
          const mojom::blink::ManifestDebugInfo* debug_info) {
         std::move(callback).Run(manifest_url,
                                 debug_info ? debug_info->Clone() : nullptr);
@@ -88,9 +100,9 @@ void ManifestManager::RequestManifestDebugInfo(
 void ManifestManager::RequestManifest(WebCallback callback) {
   RequestManifestImpl(WTF::Bind(
       [](WebCallback callback, const KURL& manifest_url,
-         const Manifest& manifest,
+         const mojom::blink::ManifestPtr& manifest,
          const mojom::blink::ManifestDebugInfo* debug_info) {
-        std::move(callback).Run(manifest_url, manifest);
+        std::move(callback).Run(manifest_url, manifest.To<Manifest>());
       },
       std::move(callback)));
 }
@@ -106,12 +118,12 @@ void ManifestManager::RequestManifestImpl(
     InternalRequestManifestCallback callback) {
   if (!GetSupplementable() || !GetSupplementable()->GetDocument() ||
       !GetSupplementable()->IsAttached()) {
-    std::move(callback).Run(KURL(), Manifest(), nullptr);
+    std::move(callback).Run(KURL(), mojom::blink::ManifestPtr(), nullptr);
     return;
   }
 
   if (!may_have_manifest_) {
-    std::move(callback).Run(KURL(), Manifest(), nullptr);
+    std::move(callback).Run(KURL(), mojom::blink::ManifestPtr(), nullptr);
     return;
   }
 
@@ -178,9 +190,7 @@ void ManifestManager::OnManifestFetchComplete(const KURL& document_url,
   }
 
   ManifestUmaUtil::FetchSucceeded();
-  StringUTF8Adaptor adapter(data);
-  ManifestParser parser(adapter.AsStringPiece(), response.CurrentRequestUrl(),
-                        document_url);
+  ManifestParser parser(data, response.CurrentRequestUrl(), document_url);
   parser.Parse();
 
   manifest_debug_info_ = mojom::blink::ManifestDebugInfo::New();
@@ -206,7 +216,7 @@ void ManifestManager::OnManifestFetchComplete(const KURL& document_url,
   }
 
   manifest_url_ = response.CurrentRequestUrl();
-  manifest_ = parser.manifest();
+  manifest_ = parser.manifest().Clone();
   ResolveCallbacks(ResolveStateSuccess);
 }
 
@@ -218,7 +228,7 @@ void ManifestManager::ResolveCallbacks(ResolveState state) {
   // |manifest_url| will be reset on navigation or if we receive a didchange
   // event.
   if (state == ResolveStateFailure)
-    manifest_ = Manifest();
+    manifest_ = mojom::blink::ManifestPtr();
 
   manifest_dirty_ = state != ResolveStateSuccess;
 

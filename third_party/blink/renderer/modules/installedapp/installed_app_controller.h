@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/installedapp/related_application.mojom-blink.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -22,9 +23,6 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-
-class WebURL;
-struct Manifest;
 
 using AppInstalledCallbacks =
     CallbackPromiseAdapter<HeapVector<Member<RelatedApplication>>, void>;
@@ -58,8 +56,8 @@ class MODULES_EXPORT InstalledAppController final
   // to the current page's origin. Passes the filtered list to the callback.
   void OnGetManifestForRelatedApps(
       std::unique_ptr<AppInstalledCallbacks> callbacks,
-      const WebURL& url,
-      const Manifest& manifest);
+      const KURL& url,
+      mojom::blink::ManifestPtr manifest);
 
   // Inherited from ContextLifecycleObserver.
   void ContextDestroyed(ExecutionContext*) override;

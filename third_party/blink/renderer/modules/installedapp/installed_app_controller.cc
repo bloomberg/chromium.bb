@@ -60,21 +60,19 @@ void InstalledAppController::ContextDestroyed(ExecutionContext*) {
 
 void InstalledAppController::OnGetManifestForRelatedApps(
     std::unique_ptr<AppInstalledCallbacks> callbacks,
-    const WebURL& /*url*/,
-    const Manifest& manifest) {
+    const KURL& /*url*/,
+    mojom::blink::ManifestPtr manifest) {
   Vector<mojom::blink::RelatedApplicationPtr> mojo_related_apps;
-  for (const Manifest::RelatedApplication& related_application :
-       manifest.related_applications) {
-    mojom::blink::RelatedApplicationPtr converted_application(
-        mojom::blink::RelatedApplication::New());
-    converted_application->platform =
-        WebString::FromUTF16(related_application.platform);
-    converted_application->id = WebString::FromUTF16(related_application.id);
-    if (!related_application.url.is_empty()) {
-      converted_application->url =
-          WebString::FromUTF8(related_application.url.spec());
+  if (manifest->related_applications.has_value()) {
+    for (const auto& related_application : *manifest->related_applications) {
+      mojom::blink::RelatedApplicationPtr converted_application(
+          mojom::blink::RelatedApplication::New());
+      converted_application->platform = related_application->platform;
+      converted_application->id = related_application->id;
+      if (related_application->url.has_value())
+        converted_application->url = related_application->url->GetString();
+      mojo_related_apps.push_back(std::move(converted_application));
     }
-    mojo_related_apps.push_back(std::move(converted_application));
   }
 
   if (!provider_) {
