@@ -22,8 +22,8 @@ class LargeIconService;
 // storage, sync or Google server accordingly.
 // TODO(victorvianna): Refactor LargeIconService to avoid having to pass both
 // it and FaviconService to the API.
-// TODO(victorvianna): Consider alternative ways to check if history sync is
-// enabled without passing base::OnceCallback<bool()> to the API.
+// TODO(victorvianna): Pass |can_send_history_data| as a bool directly in the
+// callers instead of a callback, since it's being evaluated eagerly anyway.
 class FaviconRequestHandler {
  public:
   // Callback that requests the synced bitmap for the page url given in the
@@ -71,10 +71,9 @@ class FaviconRequestHandler {
       base::CancelableTaskTracker* tracker);
 
  private:
-  static bool CanQueryGoogleServer(
-      LargeIconService* large_icon_service,
-      FaviconRequestOrigin origin,
-      base::OnceCallback<bool()> can_send_history_data);
+  static bool CanQueryGoogleServer(LargeIconService* large_icon_service,
+                                   FaviconRequestOrigin origin,
+                                   bool can_send_history_data);
 
   // Called after the first attempt to retrieve the icon bitmap from local
   // storage. If request succeeded, sends the result. Otherwise attempts to
@@ -88,7 +87,7 @@ class FaviconRequestHandler {
       FaviconService* favicon_service,
       LargeIconService* large_icon_service,
       SyncedFaviconGetter synced_favicon_getter,
-      base::OnceCallback<bool()> can_send_history_data,
+      bool can_query_google_server,
       base::CancelableTaskTracker* tracker,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
@@ -103,7 +102,7 @@ class FaviconRequestHandler {
       FaviconService* favicon_service,
       LargeIconService* large_icon_service,
       SyncedFaviconGetter synced_favicon_getter,
-      base::OnceCallback<bool()> can_send_history_data,
+      bool can_query_google_server,
       base::CancelableTaskTracker* tracker,
       const favicon_base::FaviconImageResult& image_result);
 

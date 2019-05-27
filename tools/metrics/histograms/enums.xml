@@ -33095,7 +33095,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1925117279" label="disable-quic-https"/>
   <int value="-1919199528"
       label="AlwaysShowServerCardsInSyncTransport:disabled"/>
-  <int value="-1916631969" label="kEnableFaviconGoogleServerQuery:disabled"/>
   <int value="-1916060206" label="enable-display-zoom-setting"/>
   <int value="-1915854488" label="enable-offline-pages"/>
   <int value="-1913801713"
@@ -33175,7 +33174,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1832221649" label="disable-out-of-process-pac"/>
   <int value="-1826649921" label="ContextualSuggestionsButton:disabled"/>
   <int value="-1826309726" label="ArcCustomTabsExperiment:disabled"/>
-  <int value="-1821684575" label="kEnableFaviconGoogleServerQuery:enabled"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1818947212" label="OutOfBlinkCors:disabled"/>
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>
@@ -33541,6 +33539,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1292615467"
       label="OmniboxSuggestionTransparencyOptions:disabled"/>
+  <int value="-1290471006"
+      label="EnableHistoryFaviconsGoogleServerQuery:enabled"/>
   <int value="-1290053302"
       label="OfflinePagesInDownloadHomeOpenInCct:disabled"/>
   <int value="-1289678848" label="SystemDownloadManager:enabled"/>
@@ -35574,6 +35574,8 @@ from previous Chrome versions.
   <int value="1821723343" label="disable-saml-signin"/>
   <int value="1823102966" label="disable-ipc-flooding-protection"/>
   <int value="1823337908" label="SmartDim20190221:enabled"/>
+  <int value="1824931483"
+      label="EnableHistoryFaviconsGoogleServerQuery:disabled"/>
   <int value="1825940786" label="ChromeHomePromo:disabled"/>
   <int value="1827369558" label="AndroidPayIntegrationV1:disabled"/>
   <int value="1828660283" label="enable-webfonts-intervention-trigger"/>
