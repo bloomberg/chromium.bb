@@ -364,16 +364,6 @@ class BasePage {
   BasePage(PageMemory*, BaseArena*);
   virtual ~BasePage() = default;
 
-  void Link(BasePage** previous_next) {
-    next_ = *previous_next;
-    *previous_next = this;
-  }
-  void Unlink(BasePage** previous_next) {
-    *previous_next = next_;
-    next_ = nullptr;
-  }
-  BasePage* Next() const { return next_; }
-
   // Virtual methods are slow. So performance-sensitive methods should be
   // defined as non-virtual methods on |NormalPage| and |LargeObjectPage|. The
   // following methods are not performance-sensitive.
@@ -434,13 +424,41 @@ class BasePage {
   uint32_t const magic_;
   PageMemory* const storage_;
   BaseArena* const arena_;
-  BasePage* next_;
 
   // Track the sweeping state of a page. Set to false at the start of a sweep,
   // true  upon completion of lazy sweeping.
   bool swept_;
 
   friend class BaseArena;
+};
+
+class PageStack : Vector<BasePage*> {
+  using Base = Vector<BasePage*>;
+
+ public:
+  PageStack() = default;
+
+  void Push(BasePage* page) { push_back(page); }
+
+  BasePage* Pop() {
+    if (IsEmpty())
+      return nullptr;
+    BasePage* top = back();
+    pop_back();
+    return top;
+  }
+
+  BasePage* Top() const {
+    if (IsEmpty())
+      return nullptr;
+    return back();
+  }
+
+  using Base::begin;
+  using Base::clear;
+  using Base::end;
+  using Base::IsEmpty;
+  using Base::size;
 };
 
 // A bitmap for recording object starts. Objects have to be allocated at
@@ -554,12 +572,12 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
     NormalPage* current_page_ = nullptr;
     // Offset into |current_page_| to the next free address.
     size_t allocation_point_ = 0;
-    // Chain of available pages to use for compaction. Page compaction picks the
-    // next one when the current one is exhausted.
-    BasePage* available_pages_ = nullptr;
-    // Chain of pages that have been compacted. Page compaction will add
+    // Vector of available pages to use for compaction. Page compaction picks
+    // the next one when the current one is exhausted.
+    PageStack available_pages_;
+    // Vector of pages that have been compacted. Page compaction will add
     // compacted pages once the current one becomes exhausted.
-    BasePage** compacted_pages_ = nullptr;
+    PageStack* compacted_pages_;
   };
 
   void SweepAndCompact(CompactionContext&);
@@ -760,15 +778,25 @@ class PLATFORM_EXPORT BaseArena {
   virtual void ResetAllocationPointForTesting() {}
 
  protected:
-  bool SweepingCompleted() const { return !first_unswept_page_; }
+  bool SweepingCompleted() const { return unswept_pages_.IsEmpty(); }
 
-  BasePage* first_page_;
-  BasePage* first_unswept_page_;
+  PageStack swept_pages_;
+  PageStack unswept_pages_;
+
+  void SetCurrentlyProccesedPage(BasePage* page) {
+#if DCHECK_IS_ON()
+    currently_processed_page_ = page;
+#endif
+  }
 
  private:
   virtual Address LazySweepPages(size_t, size_t gc_info_index) = 0;
 
   ThreadState* thread_state_;
+
+#if DCHECK_IS_ON()
+  BasePage* currently_processed_page_ = nullptr;
+#endif
 
   // Index into the page pools. This is used to ensure that the pages of the
   // same type go into the correct page pool and thus avoid type confusion.
