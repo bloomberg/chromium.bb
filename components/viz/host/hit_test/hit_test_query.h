@@ -36,15 +36,13 @@ enum class EventSource {
 
 // Finds the target for a given location based on the AggregatedHitTestRegion
 // list aggregated by HitTestAggregator.
-// TODO(riajiang): Handle 3d space cases correctly.
+// TODO(crbug.com/966939): Handle 3d space cases correctly.
 class VIZ_HOST_EXPORT HitTestQuery {
  public:
   explicit HitTestQuery(
       base::RepeatingClosure shut_down_gpu_callback = base::RepeatingClosure());
   virtual ~HitTestQuery();
 
-  // TODO(riajiang): Need to validate the data received.
-  // http://crbug.com/746470
   // HitTestAggregator has sent the most recent |hit_test_data| for targeting/
   // transforming requests.
   void OnAggregatedHitTestRegionListUpdated(

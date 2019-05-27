@@ -134,8 +134,8 @@ bool HitTestQuery::TransformLocationForTarget(
     return false;
   }
 
-  // TODO(riajiang): Cache the matrix product such that the transform can be
-  // done immediately. crbug/758062.
+  // TODO(crbug.com/966944): Cache the matrix product such that the transform
+  // can be done immediately.
   *transformed_location = location_in_root;
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Event.VizHitTest.TransformTimeUs",
                                           transform_timer.Elapsed(),
@@ -318,8 +318,8 @@ bool HitTestQuery::GetTransformToTargetRecursively(
     const FrameSinkId& target,
     size_t region_index,
     gfx::Transform* transform) const {
-  // TODO(riajiang): Cache the matrix product such that the transform can be
-  // found immediately.
+  // TODO(crbug.com/966944): Cache the matrix product such that the transform
+  // can be found immediately.
   if (hit_test_data_[region_index].frame_sink_id == target) {
     *transform = hit_test_data_[region_index].transform();
     return true;

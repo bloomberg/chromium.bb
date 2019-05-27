@@ -888,8 +888,8 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
   DCHECK_GT(device_scale_factor, 0.0f);
   gfx::Point3F point_in_pixels(
       gfx::ConvertPointToPixel(device_scale_factor, point));
-  // TODO(riajiang): Optimize so that |point_in_pixels| doesn't need to be in
-  // the coordinate space of the root surface in HitTestQuery.
+  // TODO(crbug.com/966995): Optimize so that |point_in_pixels| doesn't need to
+  // be in the coordinate space of the root surface in HitTestQuery.
   gfx::Transform transform_root_to_original;
   query->GetTransformToTarget(original_view->GetFrameSinkId(),
                               &transform_root_to_original);

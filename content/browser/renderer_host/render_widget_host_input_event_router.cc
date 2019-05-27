@@ -541,7 +541,7 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
   return {nullptr, false, base::nullopt, true, false};
 }
 
-// TODO(riajiang): Get rid of |point_in_screen| since it's not used.
+// TODO(crbug.com/966952): Get rid of |point_in_screen| since it's not used.
 RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     RenderWidgetHostViewBase* root_view,
     const gfx::PointF& point,
@@ -1736,7 +1736,7 @@ RenderWidgetHostInputEventRouter::FindViewFromFrameSinkId(
 
 bool RenderWidgetHostInputEventRouter::ShouldContinueHitTesting(
     RenderWidgetHostViewBase* target_view) const {
-  // TODO(kenrb, riajiang): It would be better if we could determine if the
+  // TODO(kenrb): It would be better if we could determine if the
   // event's point has a chance of hitting an embedded child and returning
   // false if not, but Viz hit testing does not easily support that. This
   // currently assumes any embedded view could potentially be the event
