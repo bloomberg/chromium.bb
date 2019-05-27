@@ -3,6 +3,7 @@
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e
 #         nvidia nvidia-0xfe9 qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
 #         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
+#         qualcomm-adreno-(tm)-540
 # ]
 
 # Seems to be flaky on the new AMD R7 240 drivers.
@@ -173,3 +174,6 @@ crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * 
 
 # Failing on Nexus 5
 crbug.com/957714 [ android qualcomm-adreno-(tm)-330 ] Pixel_Canvas2DRedBox [ Failure ]
+
+# Failing on Pixel 2 FYI.
+crbug.com/966069 [ android qualcomm-adreno-(tm)-540 ] Pixel_CanvasLowLatency2D [ Failure ]
