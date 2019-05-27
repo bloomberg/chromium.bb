@@ -43,6 +43,7 @@
 #  <http://www.gnu.org/licenses/>.
 
 include en-chardefs.cti All character definition opcodes
+include en-us-compbrl.uti Comp6 translation  opcodes
 
 # Braille indicators
 numsign 3456  number sign, just a dots operand
