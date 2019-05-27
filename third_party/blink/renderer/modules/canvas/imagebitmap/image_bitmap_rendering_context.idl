@@ -4,11 +4,9 @@
 
 // https://html.spec.whatwg.org/C/#the-imagebitmap-rendering-context
 
-[
-     Exposed=(Window,Worker)
-] interface ImageBitmapRenderingContext {
+interface ImageBitmapRenderingContext {
     // back-reference to the canvas
-    [ImplementedAs=getHTMLOrOffscreenCanvas] readonly attribute (HTMLCanvasElement or OffscreenCanvas) canvas;
+    readonly attribute HTMLCanvasElement canvas;
 
     [RaisesException] void transferFromImageBitmap(ImageBitmap? bitmap);
 };

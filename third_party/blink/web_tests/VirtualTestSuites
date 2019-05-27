@@ -15,12 +15,6 @@
     "args": ["--enable-blink-features=IsolatedWorldCSP"]
   },
   {
-    "prefix": "gpu-threaded-compositing",
-    "base": "fast/canvas/gpu-threaded-compositing",
-    "args": ["--enable-accelerated-2d-canvas",
-    "--enable-threaded-compositing"]
-  },
-  {
     "prefix": "threaded",
     "base": "fast/idleToBlob",
     "args": ["--enable-threaded-compositing"]
