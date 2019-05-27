@@ -369,6 +369,16 @@ TEST(AnimationTimingCalculationsTest, TransformedProgress) {
                                          false, timing_function));
   EXPECT_EQ(0, CalculateTransformedProgress(AnimationEffect::kPhaseAfter, 0.25,
                                             1, false, timing_function));
+
+  // Edges cases
+  EXPECT_EQ(
+      1, CalculateTransformedProgress(AnimationEffect::kPhaseAfter, 1 - 1e-16,
+                                      1, true, timing_function));
+  scoped_refptr<TimingFunction> step_start_timing_function =
+      StepsTimingFunction::Create(4, StepsTimingFunction::StepPosition::START);
+  EXPECT_EQ(0,
+            CalculateTransformedProgress(AnimationEffect::kPhaseAfter, 1e-16, 1,
+                                         false, step_start_timing_function));
 }
 
 }  // namespace blink

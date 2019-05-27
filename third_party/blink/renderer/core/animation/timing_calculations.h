@@ -341,6 +341,17 @@ static inline double CalculateTransformedProgress(
       before ? TimingFunction::LimitDirection::LEFT
              : TimingFunction::LimitDirection::RIGHT;
 
+  // Snap boundaries to correctly render step timing functions at 0 and 1.
+  // (crbug.com/949373)
+  if (phase == AnimationEffect::kPhaseAfter) {
+    if (is_current_direction_forward && IsWithinEpsilon(directed_progress, 1)) {
+      directed_progress = 1;
+    } else if (!is_current_direction_forward &&
+               IsWithinEpsilon(directed_progress, 0)) {
+      directed_progress = 0;
+    }
+  }
+
   // Return the result of evaluating the animation effect’s timing function
   // passing directed progress as the input progress value.
   return timing_function->Evaluate(directed_progress, limit_direction,
