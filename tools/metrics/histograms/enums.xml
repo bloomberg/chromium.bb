@@ -33027,6 +33027,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1992319691" label="AvoidFlashBetweenNavigation:enabled"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
+  <int value="-1985452239" label="SmartDim20190221:disabled"/>
   <int value="-1985239289" label="AutofillRichMetadataQueries:enabled"/>
   <int value="-1985025593" label="file-manager-enable-new-gallery"/>
   <int value="-1983569861" label="WebXROrientationSensorDevice:disabled"/>
@@ -35565,6 +35566,7 @@ from previous Chrome versions.
   <int value="1820451991" label="enable-offline-auto-reload"/>
   <int value="1821723343" label="disable-saml-signin"/>
   <int value="1823102966" label="disable-ipc-flooding-protection"/>
+  <int value="1823337908" label="SmartDim20190221:enabled"/>
   <int value="1825940786" label="ChromeHomePromo:disabled"/>
   <int value="1827369558" label="AndroidPayIntegrationV1:disabled"/>
   <int value="1828660283" label="enable-webfonts-intervention-trigger"/>

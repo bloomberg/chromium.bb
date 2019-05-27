@@ -94,6 +94,10 @@ const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Uses the new 20190221 Smart Dim model instead of the default 20181115 model.
+const base::Feature kSmartDim20190221{"SmartDim20190221",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Splits OS settings (display, mouse, keyboard, etc.) out from browser settings
 // into a separate window.
 const base::Feature kSplitSettings{"SplitSettings",

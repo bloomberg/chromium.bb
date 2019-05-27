@@ -3820,6 +3820,12 @@ const FeatureEntry kFeatureEntries[] = {
          "AutofillSaveCreditCardUsesImprovedMessaging")},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
+#if defined(OS_CHROMEOS)
+    {"smart-dim-20190221", flag_descriptions::kSmartDim20190221Name,
+     flag_descriptions::kSmartDim20190221Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kSmartDim20190221)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

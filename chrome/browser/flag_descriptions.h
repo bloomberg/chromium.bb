@@ -1871,6 +1871,9 @@ extern const char kShowTapsDescription[];
 extern const char kShowTouchHudName[];
 extern const char kShowTouchHudDescription[];
 
+extern const char kSmartDim20190221Name[];
+extern const char kSmartDim20190221Description[];
+
 extern const char kSmartTextSelectionName[];
 extern const char kSmartTextSelectionDescription[];
 
