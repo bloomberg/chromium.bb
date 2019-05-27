@@ -384,10 +384,12 @@ message NeedsDircryptoMigrationReply {
   bool needs_dircrypto_migration = 2;
 }
 
+// Input parameters to GetSupportedKeyPolicies().
 message GetSupportedKeyPoliciesRequest {
 }
 
-// Response that informs the caller which KeyPolicy features are supported.
+// Output parameters for GetSupportedKeyPolicies().
+// This informs the caller which KeyPolicy features are supported.
 message GetSupportedKeyPoliciesReply {
   // Whether low entropy credentials is supported by the policies
   bool low_entropy_credentials_supported = 1;
