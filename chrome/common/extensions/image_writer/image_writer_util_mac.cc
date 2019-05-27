@@ -89,10 +89,9 @@ bool IsSuitableRemovableStorageDevice(io_object_t disk_obj,
     CFNumberRef cf_media_size = base::mac::GetValueFromDictionary<CFNumberRef>(
         dict, CFSTR(kIOMediaSizeKey));
     if (cf_media_size)
-      CFNumberGetValue(cf_media_size, kCFNumberLongLongType,
-                       &out_size_in_bytes);
+      CFNumberGetValue(cf_media_size, kCFNumberLongLongType, out_size_in_bytes);
     else
-      out_size_in_bytes = 0;
+      *out_size_in_bytes = 0;
   }
 
   if (out_bsd_name) {
