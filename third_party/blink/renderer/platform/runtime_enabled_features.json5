@@ -1533,7 +1533,7 @@
       name: "VisibilityCollapseColumn",
     },
     {
-      name: "WakeLockNavigator",
+      name: "WakeLock",
       status: "experimental",
     },
     {

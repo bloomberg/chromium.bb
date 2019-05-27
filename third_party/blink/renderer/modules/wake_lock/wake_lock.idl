@@ -11,7 +11,7 @@ enum WakeLockType {
 [
   SecureContext,
   Exposed=Window,
-  RuntimeEnabled=WakeLockNavigator
+  RuntimeEnabled=WakeLock
 ] interface WakeLock {
   [CallWith=ScriptState] static Promise<void> request(WakeLockType type, optional WakeLockRequestOptions options);
 };
