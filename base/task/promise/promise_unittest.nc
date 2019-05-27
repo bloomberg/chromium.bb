@@ -13,32 +13,32 @@ namespace base {
 #if defined(NCTEST_METHOD_CANT_CATCH_NOREJECT_PROMISE) // [r"fatal error: static_assert failed .*\"Can't catch a NoReject promise\."]
 void WontCompile() {
   Promise<int> p;
-  p.CatchOnCurrent(FROM_HERE, BindOnce([]() {}));
+  p.CatchHere(FROM_HERE, BindOnce([]() {}));
 }
 #elif defined(NCTEST_METHOD_CANT_CATCH_NOREJECT_PROMISE_TYPE_TWO) // [r"fatal error: static_assert failed .*\"Can't catch a NoReject promise\."]
 void WontCompile() {
   Promise<int> p;
-  p.ThenOnCurrent(FROM_HERE, BindOnce([](int) {}), BindOnce([]() {}));
+  p.ThenHere(FROM_HERE, BindOnce([](int) {}), BindOnce([]() {}));
 }
 #elif defined(NCTEST_METHOD_RESOLVE_CALLBACK_TYPE_MISSMATCH) // [r"fatal error: static_assert failed .*\"|on_resolve| callback must accept Promise::ResolveType or void\."]
 void WontCompile() {
   Promise<int, void> p;
-  p.ThenOnCurrent(FROM_HERE, BindOnce([](bool) { }));
+  p.ThenHere(FROM_HERE, BindOnce([](bool) { }));
 }
 #elif defined(NCTEST_METHOD_REJECT_CALLBACK_TYPE_MISSMATCH) // [r"fatal error: static_assert failed .*\"|on_reject| callback must accept Promise::ResolveType or void\."]
 void WontCompile() {
   Promise<int, void> p;
-  p.CatchOnCurrent(FROM_HERE, BindOnce([](bool) { }));
+  p.CatchHere(FROM_HERE, BindOnce([](bool) { }));
 }
 #elif defined(NCTEST_METHOD_REJECT_CALLBACK_TYPE_MISSMATCH_TYPE_TWO) // [r"fatal error: static_assert failed .*\"|on_reject| callback must accept Promise::ResolveType or void\."]
 void WontCompile() {
   Promise<int, void> p;
-  p.ThenOnCurrent(FROM_HERE, BindOnce([](int) { }), BindOnce([](bool) { }));
+  p.ThenHere(FROM_HERE, BindOnce([](int) { }), BindOnce([](bool) { }));
 }
 #elif defined(NCTEST_METHOD_INCOMPATIBLE_RETURN_TYPES) // [r"fatal error: static_assert failed .*\"|on_resolve| callback and |on_resolve| callback must return compatible types\."]
 void WontCompile() {
   Promise<void> p;
-  p.ThenOnCurrent(
+  p.ThenHere(
       FROM_HERE,
       BindOnce([]() -> PromiseResult<int, std::string> { return 123; }),
       BindOnce([](int err) -> Rejected<bool> { return "123"; }));
@@ -46,7 +46,7 @@ void WontCompile() {
 #elif defined(NCTEST_METHOD_INCOMPATIBLE_RETURN_TYPES2) // [r"fatal error: static_assert failed .*\"|on_resolve| callback and |on_resolve| callback must return compatible types\."]
 void WontCompile() {
   Promise<void> p;
-  p.ThenOnCurrent(
+  p.ThenHere(
       FROM_HERE,
       BindOnce([]() -> PromiseResult<int, std::string> { return 123; }),
       BindOnce([](int err) -> Resolved<std::string> { return "123"; }));
@@ -54,7 +54,7 @@ void WontCompile() {
 #elif defined(NCTEST_METHOD_INCOMPATIBLE_RETURN_TYPES3) // [r"fatal error: static_assert failed .*\"|on_resolve| callback and |on_resolve| callback must return compatible types\."]
 void WontCompile() {
   Promise<int, void> p;
-  p.ThenOnCurrent(FROM_HERE, BindOnce([](int) { return true; }),
+  p.ThenHere(FROM_HERE, BindOnce([](int) { return true; }),
                              BindOnce([](int) { return 123.0; }));
 }
 #elif defined(NCTEST_METHOD_AMBIGUOUS_CONSTRUCTOR) // [r"fatal error: static_assert failed .*\"Ambiguous because ResolveType and RejectType are the same"]
@@ -92,18 +92,18 @@ void WontCompile() {
 void WontCompile() {
   Promise<int, void> p1;
   // If supported |p2| would have type Promise<NoReject, variant<void, bool>>.
-  auto p2 = p1.ThenOnCurrent(FROM_HERE, BindOnce([]() { return Rejected<bool>(true); }));
+  auto p2 = p1.ThenHere(FROM_HERE, BindOnce([]() { return Rejected<bool>(true); }));
 }
 #elif defined(NCTEST_METHOD_AMBIGUOUS_RESOLVE_TYPE) // [r"fatal error: static_assert failed .*\"Ambiguous promise resolve type"]
 void WontCompile() {
   Promise<int, void> p1;
   // If supported |p2| would have type Promise<variant<int, bool>, NoReject>.
-  auto p2 = p1.CatchOnCurrent(FROM_HERE, BindOnce([](int) { return Resolved<bool>(true); }));
+  auto p2 = p1.CatchHere(FROM_HERE, BindOnce([](int) { return Resolved<bool>(true); }));
 }
 #elif defined(NCTEST_METHOD_NON_CONST_REFERENCE) // [r"fatal error: static_assert failed .*\"Google C.. Style: References in function parameters must be const\."]
 void WontCompile() {
   Promise<std::unique_ptr<int>> p;
-  p.ThenOnCurrent(FROM_HERE, BindOnce([](std::unique_ptr<int>& result) {}));
+  p.ThenHere(FROM_HERE, BindOnce([](std::unique_ptr<int>& result) {}));
 }
 #elif defined(NCTEST_METHOD_NON_CONST_REFERENCE2) // [r"fatal error: static_assert failed .*\"Google C.. Style: References in function parameters must be const\."]
 void WontCompile() {

@@ -146,8 +146,7 @@ class Promise {
   }
 
   template <typename RejectCb>
-  auto CatchOnCurrent(const Location& from_here,
-                      RejectCb&& on_reject) noexcept {
+  auto CatchHere(const Location& from_here, RejectCb&& on_reject) noexcept {
     return CatchOn(SequencedTaskRunnerHandle::Get(), from_here,
                    std::forward<RejectCb>(on_reject));
   }
@@ -221,8 +220,7 @@ class Promise {
   }
 
   template <typename ResolveCb>
-  auto ThenOnCurrent(const Location& from_here,
-                     ResolveCb&& on_resolve) noexcept {
+  auto ThenHere(const Location& from_here, ResolveCb&& on_resolve) noexcept {
     return ThenOn(SequencedTaskRunnerHandle::Get(), from_here,
                   std::forward<ResolveCb>(on_resolve));
   }
@@ -243,7 +241,7 @@ class Promise {
   //
   // Note if either |on_resolve| or |on_reject| are canceled (due to weak
   // pointer invalidation), then the other must be canceled at the same time as
-  // well. This restriction only applies to this form of ThenOn/ThenOnCurrent.
+  // well. This restriction only applies to this form of ThenOn/ThenHere.
   template <typename ResolveCb, typename RejectCb>
   NOINLINE auto ThenOn(scoped_refptr<TaskRunner> task_runner,
                        const Location& from_here,
@@ -325,9 +323,9 @@ class Promise {
   }
 
   template <typename ResolveCb, typename RejectCb>
-  auto ThenOnCurrent(const Location& from_here,
-                     ResolveCb&& on_resolve,
-                     RejectCb&& on_reject) noexcept {
+  auto ThenHere(const Location& from_here,
+                ResolveCb&& on_resolve,
+                RejectCb&& on_reject) noexcept {
     return ThenOn(SequencedTaskRunnerHandle::Get(), from_here,
                   std::forward<ResolveCb>(on_resolve),
                   std::forward<RejectCb>(on_reject));
@@ -378,8 +376,8 @@ class Promise {
   }
 
   template <typename FinallyCb>
-  auto FinallyOnCurrent(const Location& from_here,
-                        FinallyCb&& finally_callback) noexcept {
+  auto FinallyHere(const Location& from_here,
+                   FinallyCb&& finally_callback) noexcept {
     return FinallyOn(SequencedTaskRunnerHandle::Get(), from_here,
                      std::move(finally_callback));
   }
