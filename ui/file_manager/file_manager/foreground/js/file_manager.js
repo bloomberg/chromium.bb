@@ -134,7 +134,7 @@ class FileManager extends cr.EventTarget {
 
     /**
      * Dialog type of this window.
-     * @type {DialogType}
+     * @public {DialogType}
      */
     this.dialogType = DialogType.FULL_PAGE;
 
@@ -294,14 +294,14 @@ class FileManager extends cr.EventTarget {
     /**
      * Promise object which is fulfilled when initialization for app state
      * controller is done.
-     * @private {?Promise}
+     * @private {?Promise<void>}
      */
     this.initSettingsPromise_ = null;
 
     /**
      * Promise object which is fulfilled when initialization related to the
      * background page is done.
-     * @private {?Promise}
+     * @private {?Promise<void>}
      */
     this.initBackgroundPagePromise_ = null;
 
@@ -489,19 +489,14 @@ class FileManager extends cr.EventTarget {
   /**
    * One time initialization for app state controller to load view option from
    * local storage.
-   * @return {!Promise} A promise to be fillfilled when initialization is done.
+   * @return {!Promise<void>}
    * @private
    */
-  startInitSettings_() {
+  async startInitSettings_() {
     metrics.startInterval('Load.InitSettings');
     this.appStateController_ = new AppStateController(this.dialogType);
-    return Promise
-        .all([
-          this.appStateController_.loadInitialViewOptions(),
-        ])
-        .then(values => {
-          metrics.recordInterval('Load.InitSettings');
-        });
+    await this.appStateController_.loadInitialViewOptions();
+    metrics.recordInterval('Load.InitSettings');
   }
 
   /**
@@ -632,7 +627,7 @@ class FileManager extends cr.EventTarget {
 
     this.ui_.selectionMenuButton.hidden = false;
 
-    console.warn('Files app sync startup finished.');
+    console.warn('Files app sync startup finished');
   }
 
   /**
@@ -749,47 +744,41 @@ class FileManager extends cr.EventTarget {
     this.initGeneral_();
     this.initSettingsPromise_ = this.startInitSettings_();
     this.initBackgroundPagePromise_ = this.startInitBackgroundPage_();
-    this.initBackgroundPagePromise_.then(() => {
-      this.initVolumeManager_();
-    });
+    this.initBackgroundPagePromise_.then(() => this.initVolumeManager_());
 
     window.addEventListener('pagehide', this.onUnload_.bind(this));
   }
 
   /**
-   * @return {!Promise} A promise to be fillfilled when initialization is done.
+   * @return {!Promise<void>}
    */
-  initializeUI(dialogDom) {
+  async initializeUI(dialogDom) {
     this.dialogDom_ = dialogDom;
     this.document_ = this.dialogDom_.ownerDocument;
 
     metrics.startInterval('Load.InitDocuments');
-    return Promise
-        .all([this.initBackgroundPagePromise_, window.importElementsPromise])
-        .then(() => {
-          metrics.recordInterval('Load.InitDocuments');
-          metrics.startInterval('Load.InitUI');
-          this.initEssentialUI_();
-          this.initAdditionalUI_();
-          return this.initSettingsPromise_;
-        })
-        .then(() => {
-          this.initFileSystemUI_();
-          this.initUIFocus_();
-          metrics.recordInterval('Load.InitUI');
-        });
+    await Promise.all(
+        [this.initBackgroundPagePromise_, window.importElementsPromise]);
+    metrics.recordInterval('Load.InitDocuments');
+
+    metrics.startInterval('Load.InitUI');
+    this.initEssentialUI_();
+    this.initAdditionalUI_();
+    await this.initSettingsPromise_;
+    this.initFileSystemUI_();
+    this.initUIFocus_();
+    metrics.recordInterval('Load.InitUI');
   }
 
   /**
    * Initializes general purpose basic things, which are used by other
    * initializing methods.
-   *
    * @private
    */
   initGeneral_() {
     // Initialize the application state.
     // TODO(mtomasz): Unify window.appState with location.search format.
-    console.warn('Files app starting up.');
+    console.warn('Files app starting up');
     if (window.appState) {
       const params = {};
       for (let name in window.appState) {
@@ -813,37 +802,34 @@ class FileManager extends cr.EventTarget {
 
   /**
    * Initializes the background page.
-   * @return {!Promise} A promise to be fillfilled when initialization is done.
+   * @return {!Promise<void>}
    * @private
    */
-  startInitBackgroundPage_() {
-    return new Promise(resolve => {
-      metrics.startInterval('Load.InitBackgroundPage');
-      chrome.runtime.getBackgroundPage(
-          /** @type {function(Window=)} */ (opt_backgroundPage => {
-            assert(opt_backgroundPage);
-            this.backgroundPage_ =
-                /** @type {!BackgroundWindow} */ (opt_backgroundPage);
-            this.fileBrowserBackground_ =
-                /** @type {!FileBrowserBackgroundFull} */ (
-                    this.backgroundPage_.background);
-            this.fileBrowserBackground_.ready(() => {
-              loadTimeData.data = this.fileBrowserBackground_.stringData;
-              if (util.runningInBrowser()) {
-                this.backgroundPage_.registerDialog(window);
-              }
-              this.fileOperationManager_ =
-                  this.fileBrowserBackground_.fileOperationManager;
-              this.mediaImportHandler_ =
-                  this.fileBrowserBackground_.mediaImportHandler;
-              this.mediaScanner_ = this.fileBrowserBackground_.mediaScanner;
-              this.historyLoader_ = this.fileBrowserBackground_.historyLoader;
-              this.crostini_ = this.fileBrowserBackground_.crostini;
-              metrics.recordInterval('Load.InitBackgroundPage');
-              resolve();
-            });
-          }));
-    });
+  async startInitBackgroundPage_() {
+    metrics.startInterval('Load.InitBackgroundPage');
+
+    /** @type {!Window} */
+    const backgroundPage =
+        await new Promise(resolve => chrome.runtime.getBackgroundPage(resolve));
+    assert(backgroundPage);
+    this.backgroundPage_ =
+        /** @type {!BackgroundWindow} */ (backgroundPage);
+    this.fileBrowserBackground_ =
+        /** @type {!FileBrowserBackgroundFull} */ (
+            this.backgroundPage_.background);
+
+    await new Promise(resolve => this.fileBrowserBackground_.ready(resolve));
+    loadTimeData.data = this.fileBrowserBackground_.stringData;
+    if (util.runningInBrowser()) {
+      this.backgroundPage_.registerDialog(window);
+    }
+    this.fileOperationManager_ =
+        this.fileBrowserBackground_.fileOperationManager;
+    this.mediaImportHandler_ = this.fileBrowserBackground_.mediaImportHandler;
+    this.mediaScanner_ = this.fileBrowserBackground_.mediaScanner;
+    this.historyLoader_ = this.fileBrowserBackground_.historyLoader;
+    this.crostini_ = this.fileBrowserBackground_.crostini;
+    metrics.recordInterval('Load.InitBackgroundPage');
   }
 
   /**
@@ -1145,7 +1131,7 @@ class FileManager extends cr.EventTarget {
    * Setup crostini 'Linux files'.
    * @private
    */
-  setupCrostini_() {
+  async setupCrostini_() {
     // Setup Linux files fake root.
     this.directoryTree.dataModel.linuxFilesItem =
         this.crostini_.isEnabled(constants.DEFAULT_CROSTINI_VM) ?
@@ -1193,27 +1179,24 @@ class FileManager extends cr.EventTarget {
           });
     };
 
-    Promise
-        .all([
-          getSharedPaths(constants.DEFAULT_CROSTINI_VM),
-          getSharedPaths(constants.PLUGIN_VM)
-        ])
-        .then(([crostiniShareCount, pluginVmShareCount]) => {
-          toast(
-              crostiniShareCount, 'FOLDER_SHARED_WITH_CROSTINI',
-              'FOLDER_SHARED_WITH_CROSTINI_PLURAL',
-              'MANAGE_LINUX_SHARING_BUTTON_LABEL', 'crostini/sharedPaths',
-              CommandHandler.MenuCommandsForUMA
-                  .MANAGE_LINUX_SHARING_TOAST_STARTUP);
-          // TODO(crbug.com/949356): UX to provide guidance for what to do
-          // when we have shared paths with both Linux and Plugin VM.
-          toast(
-              pluginVmShareCount, 'FOLDER_SHARED_WITH_PLUGIN_VM',
-              'FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL',
-              'MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL', 'pluginVm/sharedPaths',
-              CommandHandler.MenuCommandsForUMA
-                  .MANAGE_PLUGIN_VM_SHARING_TOAST_STARTUP);
-        });
+    const [crostiniShareCount, pluginVmShareCount] = await Promise.all([
+      getSharedPaths(constants.DEFAULT_CROSTINI_VM),
+      getSharedPaths(constants.PLUGIN_VM)
+    ]);
+
+    toast(
+        crostiniShareCount, 'FOLDER_SHARED_WITH_CROSTINI',
+        'FOLDER_SHARED_WITH_CROSTINI_PLURAL',
+        'MANAGE_LINUX_SHARING_BUTTON_LABEL', 'crostini/sharedPaths',
+        CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING_TOAST_STARTUP);
+    // TODO(crbug.com/949356): UX to provide guidance for what to do
+    // when we have shared paths with both Linux and Plugin VM.
+    toast(
+        pluginVmShareCount, 'FOLDER_SHARED_WITH_PLUGIN_VM',
+        'FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL',
+        'MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL', 'pluginVm/sharedPaths',
+        CommandHandler.MenuCommandsForUMA
+            .MANAGE_PLUGIN_VM_SHARING_TOAST_STARTUP);
   }
 
   /**
@@ -1234,205 +1217,161 @@ class FileManager extends cr.EventTarget {
    * Sets up the current directory during initialization.
    * @private
    */
-  setupCurrentDirectory_() {
+  async setupCurrentDirectory_() {
     const tracker = this.directoryModel_.createDirectoryChangeTracker();
-    const queue = new AsyncUtil.Queue();
+    tracker.start();
 
     // Wait until the volume manager is initialized.
-    queue.run((callback) => {
-      tracker.start();
-      this.volumeManager_.ensureInitialized(callback);
-    });
+    await new Promise(
+        resolve => this.volumeManager_.ensureInitialized(resolve));
 
     let nextCurrentDirEntry;
     let selectionEntry;
 
-    // Resolve the selectionURL to selectionEntry or to currentDirectoryEntry
-    // in case of being a display root or a default directory to open files.
-    queue.run((callback) => {
-      if (!this.launchParams_.selectionURL) {
-        callback();
-        return;
-      }
-
-      window.webkitResolveLocalFileSystemURL(
-          this.launchParams_.selectionURL, (inEntry) => {
-            const locationInfo = this.volumeManager_.getLocationInfo(inEntry);
-            // If location information is not available, then the volume is
-            // no longer (or never) available.
-            if (!locationInfo) {
-              callback();
-              return;
-            }
-            // If the selection is root, then use it as a current directory
-            // instead. This is because, selecting a root entry is done as
-            // opening it.
-            if (locationInfo.isRootEntry) {
-              nextCurrentDirEntry = inEntry;
-            }
-
-            // If this dialog attempts to open file(s) and the selection is a
-            // directory, the selection should be the current directory.
-            if (DialogType.isOpenFileDialog(this.dialogType) &&
-                inEntry.isDirectory) {
-              nextCurrentDirEntry = inEntry;
-            }
-
-            // By default, the selection should be selected entry and the
-            // parent directory of it should be the current directory.
-            if (!nextCurrentDirEntry) {
-              selectionEntry = inEntry;
-            }
-
-            callback();
-          }, callback);
-    });
-    // Resolve the currentDirectoryURL to currentDirectoryEntry (if not done
-    // by the previous step).
-    queue.run((callback) => {
-      if (nextCurrentDirEntry || !this.launchParams_.currentDirectoryURL) {
-        callback();
-        return;
-      }
-
-      window.webkitResolveLocalFileSystemURL(
-          this.launchParams_.currentDirectoryURL, (inEntry) => {
-            const locationInfo = this.volumeManager_.getLocationInfo(inEntry);
-            if (!locationInfo) {
-              callback();
-              return;
-            }
+    // Resolve the selectionURL to selectionEntry or to currentDirectoryEntry in
+    // case of being a display root or a default directory to open files.
+    if (this.launchParams_.selectionURL) {
+      try {
+        const inEntry = await new Promise((resolve, reject) => {
+          window.webkitResolveLocalFileSystemURL(
+              this.launchParams_.selectionURL, resolve, reject);
+        });
+        const locationInfo = this.volumeManager_.getLocationInfo(inEntry);
+        // If location information is not available, then the volume is no
+        // longer (or never) available.
+        if (locationInfo) {
+          // If the selection is root, then use it as a current directory
+          // instead. This is because, selecting a root entry is done as opening
+          // it.
+          if (locationInfo.isRootEntry) {
             nextCurrentDirEntry = inEntry;
-            callback();
-          }, callback);
-    });
+          }
+
+          // If this dialog attempts to open file(s) and the selection is a
+          // directory, the selection should be the current directory.
+          if (DialogType.isOpenFileDialog(this.dialogType) &&
+              inEntry.isDirectory) {
+            nextCurrentDirEntry = inEntry;
+          }
+
+          // By default, the selection should be selected entry and the parent
+          // directory of it should be the current directory.
+          if (!nextCurrentDirEntry) {
+            selectionEntry = inEntry;
+          }
+        }
+      } catch (error) {
+        console.warn(error.stack || error);
+      }
+    }
+
+    // Resolve the currentDirectoryURL to currentDirectoryEntry (if not done by
+    // the previous step).
+    if (!nextCurrentDirEntry && this.launchParams_.currentDirectoryURL) {
+      try {
+        const inEntry = await new Promise((resolve, reject) => {
+          window.webkitResolveLocalFileSystemURL(
+              this.launchParams_.currentDirectoryURL, resolve, reject);
+        });
+        const locationInfo = this.volumeManager_.getLocationInfo(inEntry);
+        if (locationInfo) {
+          nextCurrentDirEntry = inEntry;
+        }
+      } catch (error) {
+        console.warn(error.stack || error);
+      }
+    }
 
     // If the directory to be changed to is not available, then first fallback
     // to the parent of the selection entry.
-    queue.run((callback) => {
-      if (nextCurrentDirEntry || !selectionEntry) {
-        callback();
-        return;
-      }
-      selectionEntry.getParent((inEntry) => {
-        nextCurrentDirEntry = inEntry;
-        callback();
+    if (!nextCurrentDirEntry && selectionEntry) {
+      nextCurrentDirEntry = await new Promise(resolve => {
+        selectionEntry.getParent(resolve);
       });
-    });
+    }
 
     // Check if the next current directory is not a virtual directory which is
     // not available in UI. This may happen to shared on Drive.
-    queue.run((callback) => {
-      if (!nextCurrentDirEntry) {
-        callback();
-        return;
-      }
+    if (nextCurrentDirEntry) {
       const locationInfo =
           this.volumeManager_.getLocationInfo(nextCurrentDirEntry);
       // If we can't check, assume that the directory is illegal.
       if (!locationInfo) {
         nextCurrentDirEntry = null;
-        callback();
-        return;
-      }
-      // Having root directory of DRIVE_OTHER here should be only for shared
-      // with me files. Fallback to Drive root in such case.
-      if (locationInfo.isRootEntry &&
-          locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE_OTHER) {
-        const volumeInfo =
-            this.volumeManager_.getVolumeInfo(nextCurrentDirEntry);
-        if (!volumeInfo) {
-          nextCurrentDirEntry = null;
-          callback();
-          return;
-        }
-        volumeInfo.resolveDisplayRoot()
-            .then((entry) => {
-              nextCurrentDirEntry = entry;
-              callback();
-            })
-            .catch((error) => {
+      } else {
+        // Having root directory of DRIVE_OTHER here should be only for shared
+        // with me files. Fallback to Drive root in such case.
+        if (locationInfo.isRootEntry &&
+            locationInfo.rootType ===
+                VolumeManagerCommon.RootType.DRIVE_OTHER) {
+          const volumeInfo =
+              this.volumeManager_.getVolumeInfo(nextCurrentDirEntry);
+          if (!volumeInfo) {
+            nextCurrentDirEntry = null;
+          } else {
+            try {
+              nextCurrentDirEntry = await volumeInfo.resolveDisplayRoot();
+            } catch (error) {
               console.error(error.stack || error);
               nextCurrentDirEntry = null;
-              callback();
-            });
-      } else {
-        callback();
+            }
+          }
+        }
       }
-    });
+    }
 
-    // If the directory to be changed to is still not resolved, then fallback
-    // to the default display root.
-    queue.run((callback) => {
-      if (nextCurrentDirEntry) {
-        callback();
-        return;
-      }
-      this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
-        nextCurrentDirEntry = displayRoot;
-        callback();
+    // If the directory to be changed to is still not resolved, then fallback to
+    // the default display root.
+    if (!nextCurrentDirEntry) {
+      nextCurrentDirEntry = await new Promise(resolve => {
+        this.volumeManager_.getDefaultDisplayRoot(resolve);
       });
-    });
+    }
 
-    // If selection failed to be resolved (eg. didn't exist, in case of saving
-    // a file, or in case of a fallback of the current directory, then try to
+    // If selection failed to be resolved (eg. didn't exist, in case of saving a
+    // file, or in case of a fallback of the current directory, then try to
     // resolve again using the target name.
-    queue.run((callback) => {
-      if (selectionEntry || !nextCurrentDirEntry ||
-          !this.launchParams_.targetName) {
-        callback();
-        return;
-      }
+    if (!selectionEntry && nextCurrentDirEntry &&
+        this.launchParams_.targetName) {
       // Try to resolve as a file first. If it fails, then as a directory.
-      nextCurrentDirEntry.getFile(
-          this.launchParams_.targetName, {},
-          (targetEntry) => {
-            selectionEntry = targetEntry;
-            callback();
-          },
-          () => {
-            // Failed to resolve as a file
+      try {
+        selectionEntry = await new Promise((resolve, reject) => {
+          nextCurrentDirEntry.getFile(
+              this.launchParams_.targetName, {}, resolve, reject);
+        });
+      } catch (error1) {
+        // Failed to resolve as a file. Try to resolve as a directory.
+        try {
+          selectionEntry = await new Promise((resolve, reject) => {
             nextCurrentDirEntry.getDirectory(
-                this.launchParams_.targetName, {},
-                (targetEntry) => {
-                  selectionEntry = targetEntry;
-                  callback();
-                },
-                () => {
-                  // Failed to resolve as either file or directory.
-                  callback();
-                });
+                this.launchParams_.targetName, {}, resolve, reject);
           });
-    });
+        } catch (error2) {
+          // Failed to resolve as either file or directory.
+          console.error(error1.stack || error1);
+          console.error(error2.stack || error2);
+        }
+      }
+    }
 
     // If there is no target select MyFiles by default.
-    queue.run((callback) => {
-      if (!nextCurrentDirEntry && this.directoryTree.dataModel.myFilesModel_) {
-        nextCurrentDirEntry = this.directoryTree.dataModel.myFilesModel_.entry;
-      }
+    if (!nextCurrentDirEntry && this.directoryTree.dataModel.myFilesModel_) {
+      nextCurrentDirEntry = this.directoryTree.dataModel.myFilesModel_.entry;
+    }
 
-      callback();
-    });
-
-    // Finalize.
-    queue.run((callback) => {
-      // Check directory change.
-      tracker.stop();
-      if (tracker.hasChanged) {
-        callback();
-        return;
-      }
+    // Check directory change.
+    tracker.stop();
+    if (!tracker.hasChanged) {
       // Finish setup current directory.
       this.finishSetupCurrentDirectory_(
           nextCurrentDirEntry, selectionEntry, this.launchParams_.targetName);
-      callback();
-    });
+    }
   }
 
   /**
-   * @param {DirectoryEntry} directoryEntry Directory to be opened.
+   * @param {?DirectoryEntry} directoryEntry Directory to be opened.
    * @param {Entry=} opt_selectionEntry Entry to be selected.
-   * @param {string=} opt_suggestedName Suggested name for a non-existing\
+   * @param {string=} opt_suggestedName Suggested name for a non-existing
    *     selection.
    * @private
    */
@@ -1442,14 +1381,13 @@ class FileManager extends cr.EventTarget {
     if (directoryEntry) {
       const entryDescription = util.entryDebugString(directoryEntry);
       console.warn(
-          'Files app start up: changing to directory: ' + entryDescription);
+          `Files app start up: Changing to directory: ${entryDescription}`);
       this.directoryModel_.changeDirectoryEntry(directoryEntry, () => {
         if (opt_selectionEntry) {
           this.directoryModel_.selectEntry(opt_selectionEntry);
         }
         console.warn(
-            'Files app start up: finished changing to directory: ' +
-            entryDescription);
+            `Files app start up: Changed to directory: ${entryDescription}`);
         this.ui_.addLoadedAttribute();
       });
     } else {
