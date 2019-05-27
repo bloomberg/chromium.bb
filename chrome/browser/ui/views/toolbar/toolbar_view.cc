@@ -320,13 +320,13 @@ void ToolbarView::Init() {
 }
 
 void ToolbarView::AnimationEnded(const gfx::Animation* animation) {
-  AnimationProgressed(animation);
   if (animation->GetCurrentValue() == 0)
     SetToolbarVisibility(false);
+  browser()->window()->ToolbarSizeChanged(/*is_animating=*/false);
 }
 
 void ToolbarView::AnimationProgressed(const gfx::Animation* animation) {
-  GetWidget()->non_client_view()->Layout();
+  browser()->window()->ToolbarSizeChanged(/*is_animating=*/true);
 }
 
 void ToolbarView::Update(WebContents* tab) {
@@ -359,6 +359,7 @@ void ToolbarView::UpdateToolbarVisibility(bool visible, bool animate) {
   if (!animate) {
     size_animation_.Reset(visible ? 1.0 : 0.0);
     SetToolbarVisibility(visible);
+    browser()->window()->ToolbarSizeChanged(/*is_animating=*/false);
     return;
   }
 

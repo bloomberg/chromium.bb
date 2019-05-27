@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -81,6 +82,7 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/gfx/geometry/rect.h"
 
 using content::RenderFrameHost;
 using content::WebContents;
@@ -110,6 +112,30 @@ enum class AppType {
 
 const auto kAppTypeValues =
     ::testing::Values(AppType::HOSTED_APP, AppType::BOOKMARK_APP);
+
+// Opens |url| in a new popup window with the dimensions |popup_size|.
+Browser* OpenPopupAndWait(Browser* browser,
+                          const GURL& url,
+                          const gfx::Size& popup_size) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+
+  content::WebContentsAddedObserver new_contents_observer;
+  std::string open_window_script = base::StringPrintf(
+      "window.open('%s', '_blank', 'toolbar=none,width=%i,height=%i')",
+      url.spec().c_str(), popup_size.width(), popup_size.height());
+
+  EXPECT_TRUE(content::ExecJs(web_contents, open_window_script));
+
+  WebContents* popup_contents = new_contents_observer.GetWebContents();
+  content::WaitForLoadStop(popup_contents);
+  Browser* popup_browser = chrome::FindBrowserWithWebContents(popup_contents);
+
+  // The navigation should happen in a new window.
+  EXPECT_NE(browser, popup_browser);
+
+  return popup_browser;
+}
 
 // If |proceed_through_interstitial| is true, asserts that a security
 // interstitial is shown, and clicks through it, before returning.
@@ -1074,6 +1100,54 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   ASSERT_TRUE(app_browser_->app_controller());
 
   NavigateAndCheckForToolbar(app_browser_, GURL(kExampleURL), true);
+}
+
+// Tests that desktop PWAs are opened at the correct size.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, PWASizeIsCorrectlyRestored) {
+  ASSERT_TRUE(https_server()->Start());
+
+  InstallSecurePWA();
+
+  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(app_browser_));
+  NavigateToURLAndWait(app_browser_, GetSecureAppURL());
+
+  gfx::Rect bounds = gfx::Rect(10, 10, 500, 500);
+  app_browser_->window()->SetBounds(bounds);
+  app_browser_->window()->Close();
+
+  Browser* new_browser = LaunchAppBrowser(app_);
+  EXPECT_EQ(new_browser->window()->GetBounds(), bounds);
+}
+
+// Tests that using window.open to create a popup window out of scope results in
+// a correctly sized window.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OffScopePWAPopupsHaveCorrectSize) {
+  ASSERT_TRUE(https_server()->Start());
+
+  InstallSecurePWA();
+
+  LaunchApp();
+  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(app_browser_));
+
+  GURL offscope_url("https://example.com");
+  gfx::Size size(500, 500);
+
+  Browser* popup_browser = OpenPopupAndWait(app_browser_, offscope_url, size);
+
+  // The navigation should have happened in a new window.
+  EXPECT_NE(popup_browser, app_browser_);
+
+  // The popup browser should be a PWA.
+  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(popup_browser));
+
+  // Toolbar should be shown, as the popup is out of scope.
+  EXPECT_TRUE(popup_browser->app_controller()->ShouldShowToolbar());
+
+  // Skip animating the toolbar visibility.
+  popup_browser->app_controller()->UpdateToolbarVisibility(false);
+
+  // The popup window should be the size we specified.
+  EXPECT_EQ(size, popup_browser->window()->GetContentsSize());
 }
 
 // Tests that desktop PWAs open links in the browser.
