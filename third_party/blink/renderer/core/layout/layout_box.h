@@ -532,6 +532,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                ? overflow_->visual_overflow->ContentsVisualOverflowRect()
                : LayoutRect();
   }
+  PhysicalRect PhysicalContentsVisualOverflowRect() const {
+    return FlipForWritingMode(ContentsVisualOverflowRect());
+  }
 
   // Returns the visual overflow rect, expanded to the area affected by any
   // filters that paint outside of the box, in physical coordinates.

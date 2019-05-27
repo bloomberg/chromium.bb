@@ -548,7 +548,7 @@ const LayoutBox* NGPaintFragment::InkOverflowOwnerBox() const {
 PhysicalRect NGPaintFragment::SelfInkOverflow() const {
   // Get the cached value in |LayoutBox| if there is one.
   if (const LayoutBox* box = InkOverflowOwnerBox())
-    return PhysicalRect(box->SelfVisualOverflowRect());
+    return box->PhysicalSelfVisualOverflowRect();
 
   // NGPhysicalTextFragment caches ink overflow in layout.
   const NGPhysicalFragment& fragment = PhysicalFragment();
@@ -563,7 +563,7 @@ PhysicalRect NGPaintFragment::SelfInkOverflow() const {
 PhysicalRect NGPaintFragment::ContentsInkOverflow() const {
   // Get the cached value in |LayoutBox| if there is one.
   if (const LayoutBox* box = InkOverflowOwnerBox())
-    return PhysicalRect(box->ContentsVisualOverflowRect());
+    return box->PhysicalContentsVisualOverflowRect();
 
   if (!ink_overflow_)
     return PhysicalFragment().LocalRect();
@@ -573,7 +573,7 @@ PhysicalRect NGPaintFragment::ContentsInkOverflow() const {
 PhysicalRect NGPaintFragment::InkOverflow() const {
   // Get the cached value in |LayoutBox| if there is one.
   if (const LayoutBox* box = InkOverflowOwnerBox())
-    return PhysicalRect(box->VisualOverflowRect());
+    return box->PhysicalVisualOverflowRect();
 
   // NGPhysicalTextFragment caches ink overflow in layout.
   const NGPhysicalFragment& fragment = PhysicalFragment();

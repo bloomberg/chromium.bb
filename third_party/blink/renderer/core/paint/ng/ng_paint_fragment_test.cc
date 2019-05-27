@@ -94,6 +94,13 @@ TEST_F(NGPaintFragmentTest, InlineFragmentsFor) {
                        .Text());
 }
 
+#define EXPECT_INK_OVERFLOWS(expected, fragment)         \
+  do {                                                   \
+    EXPECT_EQ(expected, fragment.InkOverflow());         \
+    EXPECT_EQ(expected, fragment.SelfInkOverflow());     \
+    EXPECT_EQ(expected, fragment.ContentsInkOverflow()); \
+  } while (false)
+
 TEST_F(NGPaintFragmentTest, InlineBox) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
@@ -119,11 +126,13 @@ TEST_F(NGPaintFragmentTest, InlineBox) {
   const NGPaintFragment& outer_text = *line1_children[0];
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             outer_text.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 60, 10), outer_text);
   EXPECT_EQ(IntRect(0, 0, 60, 10), outer_text.VisualRect());
 
   const NGPaintFragment& inner_text1 = *line1_children[1];
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inner_text1);
   EXPECT_EQ(IntRect(0, 0, 90, 20), inner_text1.VisualRect());
 
   const NGPaintFragment& line2 = *lines[1];
@@ -131,7 +140,52 @@ TEST_F(NGPaintFragmentTest, InlineBox) {
   const NGPaintFragment& inner_text2 = *line2.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text2.PhysicalFragment().Type());
-  EXPECT_EQ(IntRect(0, 00, 90, 20), inner_text2.VisualRect());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inner_text2);
+  EXPECT_EQ(IntRect(0, 0, 90, 20), inner_text2.VisualRect());
+}
+
+TEST_F(NGPaintFragmentTest, InlineBoxVerticalRL) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html, body { margin: 0; }
+    div { font: 10px Ahem; width: 10ch; height: 10ch;
+          writing-mode: vertical-rl; }
+    </style>
+    <body>
+      <div id="container">12345 <span id="box">XXX YYY<span></div>
+    </body>
+  )HTML");
+  const NGPaintFragment* container = GetPaintFragmentByElementId("container");
+  EXPECT_EQ(2u, container->Children().size());
+  auto lines = ToList(container->Children());
+  const NGPaintFragment& line1 = *lines[0];
+  EXPECT_EQ(2u, line1.Children().size());
+
+  // Inline boxes without box decorations (border, background, etc.) do not
+  // generate box fragments and that their child fragments are placed directly
+  // under the line box.
+  auto line1_children = ToList(line1.Children());
+  const NGPaintFragment& outer_text = *line1_children[0];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText,
+            outer_text.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 60), outer_text);
+  EXPECT_EQ(IntRect(90, 0, 10, 60), outer_text.VisualRect());
+
+  const NGPaintFragment& inner_text1 = *line1_children[1];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText,
+            inner_text1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 30), inner_text1);
+  EXPECT_EQ(IntRect(80, 0, 20, 90), inner_text1.VisualRect());
+
+  const NGPaintFragment& line2 = *lines[1];
+  EXPECT_EQ(1u, line2.Children().size());
+  const NGPaintFragment& inner_text2 = *line2.FirstChild();
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText,
+            inner_text2.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 30), inner_text2);
+  EXPECT_EQ(IntRect(80, 0, 20, 90), inner_text2.VisualRect());
 }
 
 TEST_F(NGPaintFragmentTest, InlineBoxWithDecorations) {
@@ -157,18 +211,21 @@ TEST_F(NGPaintFragmentTest, InlineBoxWithDecorations) {
   const NGPaintFragment& outer_text = *line1_children[0];
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             outer_text.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 60, 10), outer_text);
   EXPECT_EQ(IntRect(0, 0, 60, 10), outer_text.VisualRect());
 
   // Inline boxes with box decorations generate box fragments.
   const NGPaintFragment& inline_box1 = *line1_children[1];
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox,
             inline_box1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inline_box1);
   EXPECT_EQ(IntRect(0, 0, 90, 20), inline_box1.VisualRect());
 
   EXPECT_EQ(1u, inline_box1.Children().size());
   const NGPaintFragment& inner_text1 = *inline_box1.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inner_text1);
   EXPECT_EQ(IntRect(0, 0, 90, 20), inner_text1.VisualRect());
 
   const NGPaintFragment& line2 = *lines[1];
@@ -176,12 +233,70 @@ TEST_F(NGPaintFragmentTest, InlineBoxWithDecorations) {
   const NGPaintFragment& inline_box2 = *line2.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox,
             inline_box2.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inline_box2);
   EXPECT_EQ(IntRect(0, 0, 90, 20), inline_box2.VisualRect());
 
   const NGPaintFragment& inner_text2 = *inline_box2.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text2.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inner_text2);
   EXPECT_EQ(IntRect(0, 0, 90, 20), inner_text2.VisualRect());
+}
+
+TEST_F(NGPaintFragmentTest, InlineBoxWithDecorationsVerticalRL) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html, body { margin: 0; }
+    div { font: 10px Ahem; width: 10ch; height: 10ch;
+          writing-mode: vertical-rl; }
+    #box { background: blue; }
+    </style>
+    <body>
+      <div id="container">12345 <span id="box">XXX YYY<span></div>
+    </body>
+  )HTML");
+  const NGPaintFragment* container = GetPaintFragmentByElementId("container");
+  EXPECT_EQ(2u, container->Children().size());
+  auto lines = ToList(container->Children());
+  const NGPaintFragment& line1 = *lines[0];
+  EXPECT_EQ(2u, line1.Children().size());
+
+  auto line1_children = ToList(line1.Children());
+  const NGPaintFragment& outer_text = *line1_children[0];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText,
+            outer_text.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 60), outer_text);
+  EXPECT_EQ(IntRect(90, 0, 10, 60), outer_text.VisualRect());
+
+  // Inline boxes with box decorations generate box fragments.
+  const NGPaintFragment& inline_box1 = *line1_children[1];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentBox,
+            inline_box1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 30), inline_box1);
+  EXPECT_EQ(IntRect(80, 0, 20, 90), inline_box1.VisualRect());
+
+  EXPECT_EQ(1u, inline_box1.Children().size());
+  const NGPaintFragment& inner_text1 = *inline_box1.FirstChild();
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText,
+            inner_text1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 30), inner_text1);
+  EXPECT_EQ(IntRect(80, 0, 20, 90), inner_text1.VisualRect());
+
+  const NGPaintFragment& line2 = *lines[1];
+  EXPECT_EQ(1u, line2.Children().size());
+  const NGPaintFragment& inline_box2 = *line2.FirstChild();
+  EXPECT_EQ(NGPhysicalFragment::kFragmentBox,
+            inline_box2.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 30), inline_box2);
+  EXPECT_EQ(IntRect(80, 0, 20, 90), inline_box2.VisualRect());
+
+  const NGPaintFragment& inner_text2 = *inline_box2.FirstChild();
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText,
+            inner_text2.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 30), inner_text2);
+  EXPECT_EQ(IntRect(80, 0, 20, 90), inner_text2.VisualRect());
 }
 
 TEST_F(NGPaintFragmentTest, InlineBlock) {
@@ -191,12 +306,15 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
     <style>
     html, body { margin: 0; }
     div { font: 10px Ahem; width: 10ch; }
-    span { display: inline-block; }
-    #box2 { position: relative; top: 10px; }
+    /* box-shadow creates asymmetrical visual overflow. */
+    span { display: inline-block; box-shadow: 10px 20px black; }
+    #box2 { position: relative; top: 10px; width: 6px; height: 6px; }
+    /* This div creates asymmetrical contents visual overflow. */
+    #box2 div { margin-left: -10px; width: 50px; height: 70px; }
     </style>
     <body>
       <div id="container">12345
-        <span id="box1">X</span><span id="box2">Y</span></div>
+        <span id="box1">X</span><span id="box2"><div></div></span></div>
     </body>
   )HTML");
 
@@ -213,6 +331,7 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   EXPECT_EQ("12345 ", To<NGPhysicalTextFragment>(outer_text.PhysicalFragment())
                           .Text()
                           .ToString());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 60, 10), outer_text);
   // TODO(kojii): This is still incorrect.
   EXPECT_EQ(IntRect(0, 0, 60, 10), outer_text.VisualRect());
 
@@ -230,7 +349,10 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox, box1.PhysicalFragment().Type());
   EXPECT_EQ(NGPhysicalFragment::kAtomicInline,
             box1.PhysicalFragment().BoxType());
-  EXPECT_EQ(IntRect(60, 0, 10, 10), box1.VisualRect());
+  EXPECT_EQ(PhysicalRect(0, 0, 20, 30), box1.InkOverflow());
+  EXPECT_EQ(PhysicalRect(0, 0, 20, 30), box1.SelfInkOverflow());
+  EXPECT_EQ(PhysicalRect(), box1.ContentsInkOverflow());
+  EXPECT_EQ(IntRect(60, 0, 20, 30), box1.VisualRect());
 
   // Test |InlineFragmentsFor| can find "box1".
   LayoutObject* layout_box1 = GetLayoutObjectByElementId("box1");
@@ -250,6 +372,7 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   const NGPaintFragment& inner_text = *inner_line_box.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 10), inner_text);
   EXPECT_EQ(IntRect(60, 0, 10, 10), inner_text.VisualRect());
 
   // Test |InlineFragmentsFor| can find the inner text of "box1".
@@ -265,14 +388,126 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox, box2.PhysicalFragment().Type());
   EXPECT_EQ(NGPhysicalFragment::kAtomicInline,
             box2.PhysicalFragment().BoxType());
-  EXPECT_EQ(IntRect(70, 10, 10, 10), box2.VisualRect());
+  EXPECT_EQ(PhysicalRect(-10, 0, 50, 70), box2.InkOverflow());
+  EXPECT_EQ(PhysicalRect(0, 0, 16, 26), box2.SelfInkOverflow());
+  EXPECT_EQ(PhysicalRect(-10, 0, 50, 70), box2.ContentsInkOverflow());
+  // The extra 2 px vertical offset is because the 6px height box is placed
+  // vertically center in 10px height line box.
+  EXPECT_EQ(IntRect(70, 12, 16, 26), box2.VisualRect());
 
   GetDocument().GetFrame()->Selection().SelectAll();
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(IntRect(0, 0, 60, 10), outer_text.VisualRect());
-  EXPECT_EQ(IntRect(60, 0, 10, 10), box1.VisualRect());
+  EXPECT_EQ(IntRect(60, 0, 20, 30), box1.VisualRect());
   EXPECT_EQ(IntRect(60, 0, 10, 10), inner_text.VisualRect());
-  EXPECT_EQ(IntRect(70, 10, 10, 10), box2.VisualRect());
+  EXPECT_EQ(IntRect(70, 12, 16, 26), box2.VisualRect());
+}
+
+TEST_F(NGPaintFragmentTest, InlineBlockVerticalRL) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html, body { margin: 0; }
+    div { font: 10px Ahem; width: 10ch; height: 10ch;
+          writing-mode: vertical-rl; }
+    /* box-shadow creates asymmetrical visual overflow. */
+    span { display: inline-block; box-shadow: 10px 20px black; }
+    #box2 { position: relative; top: 10px; width: 6px; height: 6px; }
+    /* This div creates asymmetrical contents visual overflow. */
+    #box2 div { margin-top: -10px; width: 50px; height: 70px; }
+    </style>
+    <body>
+      <div id="container">12345
+        <span id="box1">X</span><span id="box2"><div></div></span></div>
+    </body>
+  )HTML");
+
+  const NGPaintFragment* container = GetPaintFragmentByElementId("container");
+  EXPECT_TRUE(container);
+  EXPECT_EQ(1u, container->Children().size());
+  const NGPaintFragment& line1 = *container->FirstChild();
+  EXPECT_EQ(3u, line1.Children().size());
+
+  // Test the outer text "12345".
+  const NGPaintFragment& outer_text = *line1.FirstChild();
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText,
+            outer_text.PhysicalFragment().Type());
+  EXPECT_EQ("12345 ", To<NGPhysicalTextFragment>(outer_text.PhysicalFragment())
+                          .Text()
+                          .ToString());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 60), outer_text);
+  // TODO(kojii): This is still incorrect.
+  EXPECT_EQ(IntRect(90, 0, 10, 60), outer_text.VisualRect());
+
+  // Test |InlineFragmentsFor| can find the outer text.
+  LayoutObject* layout_outer_text =
+      GetLayoutObjectByElementId("container")->SlowFirstChild();
+  EXPECT_TRUE(layout_outer_text && layout_outer_text->IsText());
+  auto fragments = NGPaintFragment::InlineFragmentsFor(layout_outer_text);
+  EXPECT_TRUE(fragments.IsInLayoutNGInlineFormattingContext());
+  EXPECT_NE(fragments.begin(), fragments.end());
+  EXPECT_EQ(&outer_text, *fragments.begin());
+
+  // Test the inline block "box1".
+  const NGPaintFragment& box1 = *ToList(line1.Children())[1];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentBox, box1.PhysicalFragment().Type());
+  EXPECT_EQ(NGPhysicalFragment::kAtomicInline,
+            box1.PhysicalFragment().BoxType());
+  EXPECT_EQ(PhysicalRect(0, 0, 20, 30), box1.InkOverflow());
+  EXPECT_EQ(PhysicalRect(0, 0, 20, 30), box1.SelfInkOverflow());
+  EXPECT_TRUE(box1.ContentsInkOverflow().IsEmpty());
+  EXPECT_EQ(IntRect(90, 60, 20, 30), box1.VisualRect());
+
+  // Test |InlineFragmentsFor| can find "box1".
+  LayoutObject* layout_box1 = GetLayoutObjectByElementId("box1");
+  EXPECT_TRUE(layout_box1 && layout_box1->IsLayoutBlockFlow());
+  fragments = NGPaintFragment::InlineFragmentsFor(layout_box1);
+  EXPECT_TRUE(fragments.IsInLayoutNGInlineFormattingContext());
+  EXPECT_NE(fragments.begin(), fragments.end());
+  EXPECT_EQ(&box1, *fragments.begin());
+
+  // Test an inline block has its own NGPaintFragment.
+  const NGPaintFragment* box1_inner = GetPaintFragmentByElementId("box1");
+  EXPECT_TRUE(box1_inner);
+  EXPECT_EQ(box1_inner->GetLayoutObject(), box1.GetLayoutObject());
+
+  // Test the text fragment inside of the inline block.
+  const NGPaintFragment& inner_line_box = *box1_inner->FirstChild();
+  const NGPaintFragment& inner_text = *inner_line_box.FirstChild();
+  EXPECT_EQ(NGPhysicalFragment::kFragmentText,
+            inner_text.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 10, 10), inner_text);
+  EXPECT_EQ(IntRect(90, 60, 10, 10), inner_text.VisualRect());
+
+  // Test |InlineFragmentsFor| can find the inner text of "box1".
+  LayoutObject* layout_inner_text = layout_box1->SlowFirstChild();
+  EXPECT_TRUE(layout_inner_text && layout_inner_text->IsText());
+  fragments = NGPaintFragment::InlineFragmentsFor(layout_inner_text);
+  EXPECT_TRUE(fragments.IsInLayoutNGInlineFormattingContext());
+  EXPECT_NE(fragments.begin(), fragments.end());
+  EXPECT_EQ(&inner_text, *fragments.begin());
+
+  // Test the inline block "box2".
+  const NGPaintFragment& box2 = *ToList(line1.Children())[2];
+  EXPECT_EQ(NGPhysicalFragment::kFragmentBox, box2.PhysicalFragment().Type());
+  EXPECT_EQ(NGPhysicalFragment::kAtomicInline,
+            box2.PhysicalFragment().BoxType());
+  // -44 is because 50px child overflows out of the left edge of the 6px box.
+  // 60 width covers both the overflowing contents and the box shadow.
+  EXPECT_EQ(PhysicalRect(-44, -10, 60, 70), box2.InkOverflow());
+  EXPECT_EQ(PhysicalRect(0, 0, 16, 26), box2.SelfInkOverflow());
+  EXPECT_EQ(PhysicalRect(-44, -10, 50, 70), box2.ContentsInkOverflow());
+  // The extra 2 px horizontal offset is because the 6px width box is placed
+  // horizontally center in 10px width vertical line box.
+  EXPECT_EQ(IntRect(92, 80, 16, 26), box2.VisualRect());
+
+  GetDocument().GetFrame()->Selection().SelectAll();
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(IntRect(90, 0, 10, 60), outer_text.VisualRect());
+  EXPECT_EQ(IntRect(90, 60, 20, 30), box1.VisualRect());
+  EXPECT_EQ(IntRect(90, 60, 10, 10), inner_text.VisualRect());
+  EXPECT_EQ(IntRect(92, 80, 16, 26), box2.VisualRect());
 }
 
 TEST_F(NGPaintFragmentTest, RelativeBlock) {
@@ -296,11 +531,13 @@ TEST_F(NGPaintFragmentTest, RelativeBlock) {
   const NGPaintFragment& outer_text = *line1.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             outer_text.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 60, 10), outer_text);
   EXPECT_EQ(IntRect(0, 10, 60, 10), outer_text.VisualRect());
 
   const NGPaintFragment& inner_text1 = *ToList(line1.Children())[1];
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inner_text1);
   EXPECT_EQ(IntRect(0, 10, 90, 20), inner_text1.VisualRect());
 
   const NGPaintFragment& line2 = *ToList(container->Children())[1];
@@ -308,6 +545,7 @@ TEST_F(NGPaintFragmentTest, RelativeBlock) {
   const NGPaintFragment& inner_text2 = *line2.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text2.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inner_text2);
   EXPECT_EQ(IntRect(0, 10, 90, 20), inner_text2.VisualRect());
 }
 
@@ -334,17 +572,20 @@ TEST_F(NGPaintFragmentTest, RelativeInline) {
   const NGPaintFragment& outer_text = *line1_children[0];
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             outer_text.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 60, 10), outer_text);
   EXPECT_EQ(IntRect(0, 0, 60, 10), outer_text.VisualRect());
 
   const NGPaintFragment& inline_box1 = *line1_children[1];
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox,
             inline_box1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inline_box1);
   EXPECT_EQ(IntRect(0, 10, 90, 20), inline_box1.VisualRect());
 
   EXPECT_EQ(1u, inline_box1.Children().size());
   const NGPaintFragment& inner_text1 = *inline_box1.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inner_text1);
   EXPECT_EQ(IntRect(0, 10, 90, 20), inner_text1.VisualRect());
 
   const NGPaintFragment& line2 = *lines[1];
@@ -352,11 +593,13 @@ TEST_F(NGPaintFragmentTest, RelativeInline) {
   const NGPaintFragment& inline_box2 = *line2.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox,
             inline_box2.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inline_box2);
   EXPECT_EQ(IntRect(0, 10, 90, 20), inline_box2.VisualRect());
 
   const NGPaintFragment& inner_text2 = *inline_box2.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text2.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inner_text2);
   EXPECT_EQ(IntRect(0, 10, 90, 20), inner_text2.VisualRect());
 }
 
@@ -383,17 +626,20 @@ TEST_F(NGPaintFragmentTest, RelativeBlockAndInline) {
   const NGPaintFragment& outer_text = *line1_children[0];
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             outer_text.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 60, 10), outer_text);
   EXPECT_EQ(IntRect(0, 10, 60, 10), outer_text.VisualRect());
 
   const NGPaintFragment& inline_box1 = *line1_children[1];
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox,
             inline_box1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inline_box1);
   EXPECT_EQ(IntRect(0, 20, 90, 20), inline_box1.VisualRect());
 
   EXPECT_EQ(1u, inline_box1.Children().size());
   const NGPaintFragment& inner_text1 = *inline_box1.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text1.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inner_text1);
   EXPECT_EQ(IntRect(0, 20, 90, 20), inner_text1.VisualRect());
 
   const NGPaintFragment& line2 = *lines[1];
@@ -401,65 +647,14 @@ TEST_F(NGPaintFragmentTest, RelativeBlockAndInline) {
   const NGPaintFragment& inline_box2 = *line2.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentBox,
             inline_box2.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inline_box2);
   EXPECT_EQ(IntRect(0, 20, 90, 20), inline_box2.VisualRect());
 
   const NGPaintFragment& inner_text2 = *inline_box2.FirstChild();
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text2.PhysicalFragment().Type());
+  EXPECT_INK_OVERFLOWS(PhysicalRect(0, 0, 30, 10), inner_text2);
   EXPECT_EQ(IntRect(0, 20, 90, 20), inner_text2.VisualRect());
-}
-
-TEST_F(NGPaintFragmentTest, FlippedBlock) {
-  LoadAhem();
-  SetBodyInnerHTML(R"HTML(
-    <!DOCTYPE html>
-    <style>
-    html, body { margin: 0; }
-    div {
-      writing-mode: vertical-rl;
-      font: 10px Ahem;
-      width: 20em;
-      height: 10em;
-    }
-    span { background: yellow; }
-    </style>
-    <body>
-      <div id="container">1234567890
-        pppp<span>XXX</span></div>
-    </body>
-  )HTML");
-  const NGPaintFragment* container = GetPaintFragmentByElementId("container");
-  EXPECT_EQ(2u, container->Children().size());
-  auto lines = ToList(container->Children());
-  const NGPaintFragment& line1 = *lines[0];
-  EXPECT_EQ(NGPhysicalFragment::kFragmentLineBox,
-            line1.PhysicalFragment().Type());
-  EXPECT_EQ(IntRect(0, 0, 200, 100), line1.VisualRect());
-  EXPECT_EQ(1u, line1.Children().size());
-
-  const NGPaintFragment& text1 = *line1.FirstChild();
-  EXPECT_EQ(NGPhysicalFragment::kFragmentText, text1.PhysicalFragment().Type());
-  EXPECT_EQ(IntRect(180, 0, 20, 100), text1.VisualRect());
-
-  const NGPaintFragment& line2 = *lines[1];
-  EXPECT_EQ(NGPhysicalFragment::kFragmentLineBox,
-            line2.PhysicalFragment().Type());
-  EXPECT_EQ(IntRect(0, 0, 200, 100), line2.VisualRect());
-  EXPECT_EQ(2u, line2.Children().size());
-
-  auto line2_children = ToList(line2.Children());
-  const NGPaintFragment& text2 = *line2_children[0];
-  EXPECT_EQ(NGPhysicalFragment::kFragmentText, text2.PhysicalFragment().Type());
-  EXPECT_EQ(IntRect(180, 0, 20, 100), text2.VisualRect());
-
-  const NGPaintFragment& box = *line2_children[1];
-  EXPECT_EQ(NGPhysicalFragment::kFragmentBox, box.PhysicalFragment().Type());
-  EXPECT_EQ(IntRect(180, 40, 10, 30), box.VisualRect());
-  EXPECT_EQ(1u, box.Children().size());
-
-  const NGPaintFragment& text3 = *box.FirstChild();
-  EXPECT_EQ(NGPhysicalFragment::kFragmentText, text3.PhysicalFragment().Type());
-  EXPECT_EQ(IntRect(180, 40, 10, 30), text3.VisualRect());
 }
 
 // Test that OOF should not create a NGPaintFragment.
