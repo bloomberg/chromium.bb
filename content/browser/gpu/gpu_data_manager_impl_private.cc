@@ -882,14 +882,7 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
 #else
   // TODO(kylechar): Use GpuMode to store the current mode instead of
   // multiple bools.
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSoftwareCompositingFallback)) {
-    // Some tests only want to run with a functional GPU Process. Fail out here
-    // rather than falling back to software compositing and silently passing.
-    LOG(FATAL) << "The GPU Process Crash Limit was reached, and falling back "
-               << "to software compositing is disabled.";
-  } else if (!card_disabled_) {
+  if (!card_disabled_) {
     DisableHardwareAcceleration();
   } else if (SwiftShaderAllowed()) {
     swiftshader_blocked_ = true;

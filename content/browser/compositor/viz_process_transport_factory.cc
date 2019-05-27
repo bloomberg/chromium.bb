@@ -320,6 +320,13 @@ void VizProcessTransportFactory::DisableGpuCompositing(
   // not happen. Crash the browser process to reset everything.
   LOG(FATAL) << "Software compositing fallback is unavailable. Goodbye.";
 #else
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSoftwareCompositingFallback)) {
+    // Some tests only want to run with a functional GPU Process. Fail out here
+    // rather than falling back to software compositing and silently passing.
+    LOG(FATAL) << "Software compositing fallback is unavailable. Goodbye.";
+  }
+
   DLOG(ERROR) << "Switching to software compositing.";
 
   // Change the result of IsGpuCompositingDisabled() before notifying anything.
