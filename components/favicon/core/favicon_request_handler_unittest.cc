@@ -70,11 +70,6 @@ void StoreImage(favicon_base::FaviconImageResult* destination,
   *destination = result;
 }
 
-base::OnceCallback<bool()> ShouldAllowSendingHistoryData(bool allow_sending) {
-  return base::BindOnce([](bool allow_sending) { return allow_sending; },
-                        allow_sending);
-}
-
 class MockLargeIconService : public LargeIconService {
  public:
   MockLargeIconService() = default;
@@ -148,8 +143,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyBitmap) {
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
       &mock_favicon_service_, &mock_large_icon_service_,
-      synced_favicon_getter_.Get(), ShouldAllowSendingHistoryData(true),
-      &tracker_);
+      synced_favicon_getter_.Get(), /*can_send_history_data=*/true, &tracker_);
   EXPECT_FALSE(result.is_valid());
 }
 
@@ -172,8 +166,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetSyncBitmap) {
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
       &mock_favicon_service_, &mock_large_icon_service_,
-      synced_favicon_getter_.Get(), ShouldAllowSendingHistoryData(true),
-      &tracker_);
+      synced_favicon_getter_.Get(), /*can_send_history_data=*/true, &tracker_);
   EXPECT_TRUE(result.is_valid());
 }
 
@@ -195,8 +188,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetLocalBitmap) {
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::UNKNOWN,
       &mock_favicon_service_, &mock_large_icon_service_,
-      synced_favicon_getter_.Get(), ShouldAllowSendingHistoryData(true),
-      &tracker_);
+      synced_favicon_getter_.Get(), /*can_send_history_data=*/true, &tracker_);
   EXPECT_TRUE(result.is_valid());
 }
 
@@ -231,8 +223,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerBitmapForFullUrl) {
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::HISTORY,
       &mock_favicon_service_, &mock_large_icon_service_,
-      synced_favicon_getter_.Get(), ShouldAllowSendingHistoryData(true),
-      &tracker_);
+      synced_favicon_getter_.Get(), /*can_send_history_data=*/true, &tracker_);
   EXPECT_TRUE(result.is_valid());
 }
 
@@ -267,8 +258,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerBitmapForTrimmedUrl) {
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
       base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::HISTORY,
       &mock_favicon_service_, &mock_large_icon_service_,
-      synced_favicon_getter_.Get(), ShouldAllowSendingHistoryData(true),
-      &tracker_);
+      synced_favicon_getter_.Get(), /*can_send_history_data=*/true, &tracker_);
   EXPECT_TRUE(result.is_valid());
 }
 
@@ -289,7 +279,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyImage) {
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
       FaviconRequestOrigin::UNKNOWN, &mock_favicon_service_,
       &mock_large_icon_service_, synced_favicon_getter_.Get(),
-      ShouldAllowSendingHistoryData(true), &tracker_);
+      /*can_send_history_data=*/true, &tracker_);
   EXPECT_TRUE(result.image.IsEmpty());
 }
 
@@ -310,7 +300,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetSyncImage) {
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
       FaviconRequestOrigin::UNKNOWN, &mock_favicon_service_,
       &mock_large_icon_service_, synced_favicon_getter_.Get(),
-      ShouldAllowSendingHistoryData(true), &tracker_);
+      /*can_send_history_data=*/true, &tracker_);
   EXPECT_FALSE(result.image.IsEmpty());
 }
 
@@ -330,7 +320,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetLocalImage) {
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
       FaviconRequestOrigin::UNKNOWN, &mock_favicon_service_,
       &mock_large_icon_service_, synced_favicon_getter_.Get(),
-      ShouldAllowSendingHistoryData(true), &tracker_);
+      /*can_send_history_data=*/true, &tracker_);
   EXPECT_FALSE(result.image.IsEmpty());
 }
 
@@ -362,7 +352,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerImageForFullUrl) {
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
       FaviconRequestOrigin::RECENTLY_CLOSED_TABS, &mock_favicon_service_,
       &mock_large_icon_service_, synced_favicon_getter_.Get(),
-      ShouldAllowSendingHistoryData(true), &tracker_);
+      /*can_send_history_data=*/true, &tracker_);
   EXPECT_FALSE(result.image.IsEmpty());
 }
 
@@ -394,8 +384,32 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerImageForTrimmedUrl) {
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
       FaviconRequestOrigin::RECENTLY_CLOSED_TABS, &mock_favicon_service_,
       &mock_large_icon_service_, synced_favicon_getter_.Get(),
-      ShouldAllowSendingHistoryData(true), &tracker_);
+      /*can_send_history_data=*/true, &tracker_);
   EXPECT_FALSE(result.image.IsEmpty());
+}
+
+TEST_F(FaviconRequestHandlerTest, ShouldNotQueryGoogleServerIfCannotSendData) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kEnableHistoryFaviconsGoogleServerQuery);
+  EXPECT_CALL(mock_favicon_service_,
+              GetRawFaviconForPageURL(GURL(kDummyPageUrl), _,
+                                      kDesiredSizeInPixel, _, _, &tracker_))
+      .WillOnce([](auto, auto, auto, auto,
+                   favicon_base::FaviconRawBitmapCallback callback, auto) {
+        std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
+        return kDummyTaskId;
+      });
+  EXPECT_CALL(mock_large_icon_service_,
+              GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
+                  _, _, _, _, _))
+      .Times(0);
+  favicon_base::FaviconRawBitmapResult result;
+  favicon_request_handler_.GetRawFaviconForPageURL(
+      GURL(kDummyPageUrl), kDesiredSizeInPixel,
+      base::BindOnce(&StoreBitmap, &result), FaviconRequestOrigin::HISTORY,
+      &mock_favicon_service_, &mock_large_icon_service_,
+      synced_favicon_getter_.Get(), /*can_send_history_data=*/false, &tracker_);
 }
 
 }  // namespace

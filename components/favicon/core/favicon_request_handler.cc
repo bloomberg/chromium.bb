@@ -71,7 +71,7 @@ void FaviconRequestHandler::GetRawFaviconForPageURL(
     FaviconService* favicon_service,
     LargeIconService* large_icon_service,
     FaviconRequestHandler::SyncedFaviconGetter synced_favicon_getter,
-    base::OnceCallback<bool()> can_send_history_data,
+    bool can_send_history_data,
     base::CancelableTaskTracker* tracker) {
   if (!favicon_service) {
     RecordFaviconRequestMetric(request_origin,
@@ -90,7 +90,7 @@ void FaviconRequestHandler::GetRawFaviconForPageURL(
           /*response_callback=*/std::move(callback), request_origin,
           favicon_service, large_icon_service, std::move(synced_favicon_getter),
           CanQueryGoogleServer(large_icon_service, request_origin,
-                               std::move(can_send_history_data).Run()),
+                               can_send_history_data),
           tracker),
       tracker);
 }
@@ -102,7 +102,7 @@ void FaviconRequestHandler::GetFaviconImageForPageURL(
     FaviconService* favicon_service,
     LargeIconService* large_icon_service,
     FaviconRequestHandler::SyncedFaviconGetter synced_favicon_getter,
-    base::OnceCallback<bool()> can_send_history_data,
+    bool can_send_history_data,
     base::CancelableTaskTracker* tracker) {
   if (!favicon_service) {
     RecordFaviconRequestMetric(request_origin,
@@ -114,14 +114,14 @@ void FaviconRequestHandler::GetFaviconImageForPageURL(
   // First attempt to find the icon locally.
   favicon_service->GetFaviconImageForPageURL(
       page_url,
-      base::BindOnce(
-          &FaviconRequestHandler::OnImageLocalDataAvailable,
-          weak_ptr_factory_.GetWeakPtr(), page_url,
-          /*response_callback=*/std::move(callback), request_origin,
-          favicon_service, large_icon_service, std::move(synced_favicon_getter),
-          CanQueryGoogleServer(large_icon_service, request_origin,
-                               std::move(can_send_history_data).Run()),
-          tracker),
+      base::BindOnce(&FaviconRequestHandler::OnImageLocalDataAvailable,
+                     weak_ptr_factory_.GetWeakPtr(), page_url,
+                     /*response_callback=*/std::move(callback), request_origin,
+                     favicon_service, large_icon_service,
+                     std::move(synced_favicon_getter),
+                     CanQueryGoogleServer(large_icon_service, request_origin,
+                                          can_send_history_data),
+                     tracker),
       tracker);
 }
 

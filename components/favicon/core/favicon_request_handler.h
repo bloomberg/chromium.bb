@@ -22,8 +22,6 @@ class LargeIconService;
 // storage, sync or Google server accordingly.
 // TODO(victorvianna): Refactor LargeIconService to avoid having to pass both
 // it and FaviconService to the API.
-// TODO(victorvianna): Pass |can_send_history_data| as a bool directly in the
-// callers instead of a callback, since it's being evaluated eagerly anyway.
 class FaviconRequestHandler {
  public:
   // Callback that requests the synced bitmap for the page url given in the
@@ -41,7 +39,7 @@ class FaviconRequestHandler {
   // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.
   // Tries to fetch the icon from local storage and falls back to sync, or to
   // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
-  // is enabled. |can_send_history_data| must return whether user settings allow
+  // is enabled. |can_send_history_data| indicates whether user settings allow
   // to query the favicon server using history data (in particular it must check
   // that history sync is enabled and no custom passphrase is set).
   void GetRawFaviconForPageURL(const GURL& page_url,
@@ -51,24 +49,23 @@ class FaviconRequestHandler {
                                FaviconService* favicon_service,
                                LargeIconService* large_icon_service,
                                SyncedFaviconGetter synced_favicon_getter,
-                               base::OnceCallback<bool()> can_send_history_data,
+                               bool can_send_history_data,
                                base::CancelableTaskTracker* tracker);
 
   // Requests favicon image at |page_url|.
   // Tries to fetch the icon from local storage and falls back to sync, or to
   // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
-  // is enabled. |can_send_history_data| must return whether user settings allow
+  // is enabled. |can_send_history_data| indicates whether user settings allow
   // to query the favicon server using history data (in particular it must check
   // that history sync is enabled and no custom passphrase is set).
-  void GetFaviconImageForPageURL(
-      const GURL& page_url,
-      favicon_base::FaviconImageCallback callback,
-      FaviconRequestOrigin request_origin,
-      FaviconService* favicon_service,
-      LargeIconService* large_icon_service,
-      SyncedFaviconGetter synced_favicon_getter,
-      base::OnceCallback<bool()> can_send_history_data,
-      base::CancelableTaskTracker* tracker);
+  void GetFaviconImageForPageURL(const GURL& page_url,
+                                 favicon_base::FaviconImageCallback callback,
+                                 FaviconRequestOrigin request_origin,
+                                 FaviconService* favicon_service,
+                                 LargeIconService* large_icon_service,
+                                 SyncedFaviconGetter synced_favicon_getter,
+                                 bool can_send_history_data,
+                                 base::CancelableTaskTracker* tracker);
 
  private:
   static bool CanQueryGoogleServer(LargeIconService* large_icon_service,

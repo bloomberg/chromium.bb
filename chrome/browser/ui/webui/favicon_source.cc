@@ -170,8 +170,7 @@ void FaviconSource::StartDataRequest(
         unsafe_request_origin, favicon_service,
         LargeIconServiceFactory::GetForBrowserContext(profile_),
         base::BindOnce(&GetSyncedFaviconForPageURL, base::Unretained(profile_)),
-        base::BindOnce(&CanSendHistoryDataToServer, base::Unretained(profile_)),
-        &cancelable_task_tracker_);
+        CanSendHistoryDataToServer(profile_), &cancelable_task_tracker_);
   }
 }
 

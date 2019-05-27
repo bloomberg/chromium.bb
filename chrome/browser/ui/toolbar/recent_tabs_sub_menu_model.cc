@@ -603,7 +603,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
       LargeIconServiceFactory::GetForBrowserContext(browser_->profile()),
       base::BindOnce(&RecentTabsGetSyncedFaviconForPageURL,
                      base::Unretained(session_sync_service_)),
-      base::BindOnce(&CanSendHistoryDataToServer, browser_),
+      CanSendHistoryDataToServer(browser_),
       is_local_tab ? &local_tab_cancelable_task_tracker_
                    : &other_devices_tab_cancelable_task_tracker_);
 }
