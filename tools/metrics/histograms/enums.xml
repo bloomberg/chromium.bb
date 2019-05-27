@@ -23388,6 +23388,7 @@ Called by update_net_error_codes.py.-->
   <int value="2902" label="TextFragmentAnchorMatchFound"/>
   <int value="2903" label="NonPassiveTouchEventListener"/>
   <int value="2904" label="PassiveTouchEventListener"/>
+  <int value="2905" label="CSSValueAppearanceSearchCancelForOthers2Rendered"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

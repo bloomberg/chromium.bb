@@ -227,10 +227,21 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kSearchFieldCancelButtonPart: {
       COUNT_APPEARANCE(doc, SearchCancel);
       auto* element = ToElementOrNull(node);
-      if (!element || !element->OwnerShadowHost() ||
-          element->FastGetAttribute(html_names::kIdAttr) !=
-              shadow_element_names::SearchClearButton())
+      if (!element || !element->OwnerShadowHost()) {
         COUNT_APPEARANCE(doc, SearchCancelForOthers);
+        COUNT_APPEARANCE(doc, SearchCancelForOthers2);
+      } else {
+        const AtomicString& shadow_id =
+            element->FastGetAttribute(html_names::kIdAttr);
+        if (shadow_id == shadow_element_names::SearchClearButton()) {
+          // Count nothing.
+        } else if (shadow_id == shadow_element_names::ClearButton()) {
+          COUNT_APPEARANCE(doc, SearchCancelForOthers);
+        } else {
+          COUNT_APPEARANCE(doc, SearchCancelForOthers);
+          COUNT_APPEARANCE(doc, SearchCancelForOthers2);
+        }
+      }
       return PaintSearchFieldCancelButton(o, paint_info, r);
     }
     default:

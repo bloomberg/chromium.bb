@@ -2296,6 +2296,7 @@ enum WebFeature {
   kTextFragmentAnchorMatchFound = 2902,
   kNonPassiveTouchEventListener = 2903,
   kPassiveTouchEventListener = 2904,
+  kCSSValueAppearanceSearchCancelForOthers2Rendered = 2905,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
