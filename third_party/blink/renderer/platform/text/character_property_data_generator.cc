@@ -76,7 +76,6 @@ static void GenerateCharacterPropertyData(FILE* fp) {
             CharacterProperty::name);
 
   SET(kIsCJKIdeographOrSymbol);
-  SET(kIsUprightInMixedVertical);
   SET(kIsPotentialCustomElementNameChar);
   SET(kIsBidiControl);
   SET(kIsHangul);

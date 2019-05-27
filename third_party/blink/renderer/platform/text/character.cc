@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/text/character.h"
 
+#include <unicode/uchar.h>
 #include <unicode/ucptrie.h>
 #include <unicode/uobject.h>
 #include <unicode/uscript.h>
@@ -63,7 +64,9 @@ static bool HasProperty(UChar32 c, CharacterProperty property) {
 }
 
 bool Character::IsUprightInMixedVertical(UChar32 character) {
-  return HasProperty(character, CharacterProperty::kIsUprightInMixedVertical);
+  return u_getIntPropertyValue(character,
+                               UProperty::UCHAR_VERTICAL_ORIENTATION) !=
+         UVerticalOrientation::U_VO_ROTATED;
 }
 
 bool Character::IsCJKIdeographOrSymbolSlow(UChar32 c) {
