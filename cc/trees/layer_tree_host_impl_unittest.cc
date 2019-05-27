@@ -5496,14 +5496,19 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
   void SetupBrowserControlsAndScrollLayerWithVirtualViewport(
       const gfx::Size& inner_viewport_size,
       const gfx::Size& outer_viewport_size,
-      const gfx::Size& scroll_layer_size) {
+      const gfx::Size& scroll_layer_size,
+      base::OnceCallback<void(LayerTreeSettings*)> modify_settings =
+          base::DoNothing()) {
     settings_ = DefaultSettings();
+    settings_.use_layer_lists = true;
+    std::move(modify_settings).Run(&settings_);
     CreateHostImpl(settings_, CreateLayerTreeFrameSink());
     SetupBrowserControlsAndScrollLayerWithVirtualViewport(
         host_impl_->active_tree(), inner_viewport_size, outer_viewport_size,
         scroll_layer_size);
   }
 
+ protected:
   void SetupBrowserControlsAndScrollLayerWithVirtualViewport(
       LayerTreeImpl* tree_impl,
       const gfx::Size& inner_viewport_size,
@@ -5514,7 +5519,6 @@ class LayerTreeHostImplBrowserControlsTest : public LayerTreeHostImplTest {
         outer_viewport_size, scroll_layer_size);
   }
 
- protected:
   gfx::Size layer_size_;
   gfx::Size clip_size_;
   gfx::Size viewport_size_;
@@ -5596,15 +5600,82 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   host_impl_->ScrollEnd(EndState().get());
 }
 
+// Ensure that moving the browser controls (i.e. omnibox/url-bar on mobile) on
+// pages with a non-1 minimum page scale factor (e.g. legacy desktop page)
+// correctly scales the clipping adjustment performed to show the newly exposed
+// region of the page.
+TEST_F(LayerTreeHostImplBrowserControlsTest,
+       MovingBrowserControlsOuterClipDeltaScaled) {
+  gfx::Size inner_size = gfx::Size(100, 100);
+  gfx::Size outer_size = gfx::Size(100, 100);
+  gfx::Size content_size = gfx::Size(200, 1000);
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(inner_size, outer_size,
+                                                        content_size);
+
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+
+  // Create a content layer beneath the outer viewport scroll layer.
+  int id = host_impl_->OuterViewportScrollLayer()->id();
+  host_impl_->OuterViewportScrollLayer()->test_properties()->AddChild(
+      LayerImpl::Create(host_impl_->active_tree(), id + 2));
+  LayerImpl* content =
+      active_tree->OuterViewportScrollLayer()->test_properties()->children[0];
+  content->SetBounds(gfx::Size(100, 100));
+  host_impl_->active_tree()->PushPageScaleFromMainThread(0.5f, 0.5f, 4.f);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  DrawFrame();
+
+  LayerImpl* inner_container = active_tree->InnerViewportContainerLayer();
+  LayerImpl* outer_container = active_tree->OuterViewportContainerLayer();
+  LayerImpl* outer_scroll = active_tree->OuterViewportScrollLayer();
+  auto* property_trees = host_impl_->active_tree()->property_trees();
+  ClipNode* outer_clip_node =
+      property_trees->clip_tree.Node(outer_scroll->clip_tree_index());
+
+  // The browser controls should start off showing so the viewport should be
+  // shrunk.
+  ASSERT_EQ(50, host_impl_->browser_controls_manager()->ContentTopOffset());
+  ASSERT_EQ(gfx::Size(100, 100), inner_container->bounds());
+  ASSERT_EQ(gfx::Size(100, 100), outer_container->bounds());
+  ASSERT_EQ(gfx::SizeF(200, 1000), active_tree->ScrollableSize());
+  ASSERT_EQ(gfx::SizeF(100, 100), outer_clip_node->clip.size());
+
+  ASSERT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_
+                ->ScrollBegin(BeginState(gfx::Point()).get(),
+                              InputHandler::TOUCHSCREEN)
+                .thread);
+
+  // Hide the browser controls by 10px. The outer clip should expand by 20px as
+  // because the outer viewport is sized based on the minimum scale, in this
+  // case 0.5. Therefore, changes to the outer viewport need to be divided by
+  // the minimum scale as well.
+  {
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(0.f, 10.f)).get());
+    ASSERT_EQ(40, host_impl_->browser_controls_manager()->ContentTopOffset());
+    EXPECT_EQ(gfx::SizeF(100, 120), outer_clip_node->clip.size());
+  }
+
+  host_impl_->ScrollEnd(EndState().get());
+}
+
+// This test is the same as above but ensures the behavior prior to
+// BlinkGenPropertyTrees because the outer viewport's clip node size is
+// inconsistent with the scroll node's content bounds. Pre-BGPT, the outer
+// viewport clip node is always the same size as the inner viewport clip node,
+// even if the outer viewport changes size as a result of a non-1 minimum page
+// scale factor.
+// TODO(bokan): This test can be safely removed post-BGPT. See crbug.com/901083.
 TEST_F(LayerTreeHostImplBrowserControlsTest,
        MovingBrowserControlsChangesViewportClip) {
-  // TODO(bokan): This test is checking pre-blink-gen-property-tree behavior
-  // and can be removed once that flag ships. See crbug.com/901083.
-  if (DefaultSettings().use_layer_lists)
-    return;
+  auto turn_off_layer_lists = base::BindOnce(
+      [](LayerTreeSettings* settings) { settings->use_layer_lists = false; });
 
   SetupBrowserControlsAndScrollLayerWithVirtualViewport(
-      gfx::Size(50, 50), gfx::Size(25, 25), gfx::Size(100, 100));
+      gfx::Size(50, 50), gfx::Size(25, 25), gfx::Size(100, 100),
+      std::move(turn_off_layer_lists));
 
   LayerTreeImpl* active_tree = host_impl_->active_tree();
 

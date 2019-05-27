@@ -2522,16 +2522,25 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
     ClipNode* outer_clip_node = property_trees->clip_tree.Node(
         OuterViewportScrollLayer()->clip_tree_index());
 
-    float container_height =
-        OuterViewportScrollNode()->container_bounds.height();
+    float adjusted_container_height =
+        OuterViewportScrollNode()->container_bounds.height() +
+        scaled_bounds_delta.y();
 
-    // TODO(bokan): The container bounds for the outer viewport are incorrectly
-    // computed pre-Blink-Gen-Property-Trees so we must apply the minimum page
-    // scale factor.  https://crbug.com/901083
+    // TODO(bokan): The clip node bounds for the outer viewport are incorrectly
+    // computed pre-Blink-Gen-Property-Trees: they assume the outer viewport is
+    // the same size as the inner viewport. In reality, the outer viewport is
+    // sized such that it equals the inner viewport when at minimum page scale.
+    // This happens on mobile when a page doesn't have a |width=device-width|
+    // viewport meta tag (e.g. legacy desktop page). Thus, we must scale
+    // the container height and its adjustment to match the incorrect space of
+    // the clip node.  https://crbug.com/901083, https://crbug.com/961649.
+    // Note: we don't fix this in the property tree builder since that code
+    // path is going away and it's not clear whether it depends on ClipNode
+    // being in this coordinate space pre-BGPT.
     if (!settings().use_layer_lists)
-      container_height *= active_tree_->min_page_scale_factor();
+      adjusted_container_height *= active_tree_->min_page_scale_factor();
 
-    outer_clip_node->clip.set_height(container_height + bounds_delta.y());
+    outer_clip_node->clip.set_height(adjusted_container_height);
 
     // Expand all clips between the outer viewport and the inner viewport.
     auto* outer_ancestor = property_trees->clip_tree.parent(outer_clip_node);
