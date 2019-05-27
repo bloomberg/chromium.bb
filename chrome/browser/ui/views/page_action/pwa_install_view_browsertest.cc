@@ -101,15 +101,15 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
     app_banner_manager_->WaitForInstallableCheckTearDown();
   }
 
-  const web_app::AppId& ExecutePwaInstallIcon() {
+  web_app::AppId ExecutePwaInstallIcon() {
     chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
 
-    const web_app::AppId* app_id = nullptr;
+    web_app::AppId app_id;
     base::RunLoop run_loop;
     web_app::SetInstalledCallbackForTesting(base::BindLambdaForTesting(
         [&app_id, &run_loop](const web_app::AppId& installed_app_id,
                              web_app::InstallResultCode code) {
-          app_id = &installed_app_id;
+          app_id = installed_app_id;
           run_loop.Quit();
         }));
 
@@ -119,7 +119,7 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
 
     chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 
-    return *app_id;
+    return app_id;
   }
 
   // Tests that we measure when a user uninstalls a PWA within a "bounce" period
@@ -133,7 +133,7 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
 
     web_app::SetInstallBounceMetricTimeForTesting(test_time);
 
-    const web_app::AppId& app_id = ExecutePwaInstallIcon();
+    const web_app::AppId app_id = ExecutePwaInstallIcon();
 
     web_app::SetInstallBounceMetricTimeForTesting(test_time + install_duration);
 
