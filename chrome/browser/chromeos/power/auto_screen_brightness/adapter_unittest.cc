@@ -195,6 +195,9 @@ class AdapterTest : public testing::Test {
     if (!params.empty()) {
       scoped_feature_list_.InitAndEnableFeatureWithParameters(
           features::kAutoScreenBrightness, params);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kAutoScreenBrightness);
     }
 
     adapter_ = Adapter::CreateForTesting(
@@ -228,9 +231,10 @@ class AdapterTest : public testing::Test {
   }
 
   // Returns a valid ModelConfig.
-  ModelConfig GetTestModelConfig(const std::string& metrics_key = "abc") {
+  ModelConfig GetTestModelConfig(bool enabled = true) {
     ModelConfig model_config;
     model_config.auto_brightness_als_horizon_seconds = 5.0;
+    model_config.enabled = enabled;
     model_config.log_lux = {
         3.69, 4.83, 6.54, 7.68, 8.25, 8.82,
     };
@@ -238,7 +242,7 @@ class AdapterTest : public testing::Test {
         36.14, 47.62, 85.83, 93.27, 93.27, 100,
     };
 
-    model_config.metrics_key = metrics_key;
+    model_config.metrics_key = "abc";
     model_config.model_als_horizon_seconds = 3.0;
     return model_config;
   }
@@ -1056,6 +1060,65 @@ TEST_F(AdapterTest, FeatureDisabled) {
   EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
 }
 
+TEST_F(AdapterTest, FeatureEnabledConfigDisabled) {
+  // Feature flag is enabled, but model config is disabled. Final effect is
+  // disabled.
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       Model(global_curve_, personal_curve_, 0),
+       GetTestModelConfig(false /* enabled */), default_params_);
+
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
+
+  // Global and personal curves are received, but they won't be used to change
+  // brightness.
+  EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
+  EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
+
+  // No brightness is changed.
+  ForwardTimeAndReportAls({1, 2, 3, 4, 5, 6, 7, 8});
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
+}
+
+TEST_F(AdapterTest, FeatureEnabledConfigEnabled) {
+  // Both feature flag and model config are enabled.
+  std::map<std::string, std::string> params = default_params_;
+  params["model_curve"] = "1";
+
+  // Init modeller with only a global curve.
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       Model(global_curve_, base::nullopt, 0), GetTestModelConfig(), params);
+
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+
+  // Sufficient ALS data has come in but no brightness change is triggered
+  // because there is no personal curve.
+  ForwardTimeAndReportAls({1, 2, 3, 4, 5, 6, 7, 8});
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
+
+  // Personal curve is received, it does not lead to any immediate brightness
+  // change.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_modeller_.ReportModelTrained(*personal_curve_);
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
+
+  // Another ALS comes in, which triggers a brightness change.
+  ReportAls(20);
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  EXPECT_EQ(test_observer_.GetCause(),
+            power_manager::BacklightBrightnessChange_Cause_MODEL);
+
+  CheckAvgLog({5, 6, 7, 8, 20},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  // Brightness is changed according to the personal curve.
+  EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
+                   personal_curve_->Interpolate(
+                       adapter_->GetCurrentAvgLogAlsForTesting().value()));
+}
+
 TEST_F(AdapterTest, ValidParameters) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        Model(global_curve_, personal_curve_, 0), GetTestModelConfig(),
@@ -1194,48 +1257,6 @@ TEST_F(AdapterTest, UserAdjustmentEffectContinue) {
 
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        Model(global_curve_, personal_curve_, 0), GetTestModelConfig(), params);
-
-  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
-  EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
-  EXPECT_EQ(*adapter_->GetGlobalCurveForTesting(), *global_curve_);
-  EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
-  EXPECT_EQ(*adapter_->GetPersonalCurveForTesting(), *personal_curve_);
-
-  // Brightness is changed for the 1st time.
-  ForwardTimeAndReportAls({1, 2, 3, 4, 5});
-  EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckAvgLog({1, 2, 3, 4, 5},
-              adapter_->GetCurrentAvgLogAlsForTesting().value());
-
-  ForwardTimeAndReportAls({10});
-  // User manual adjustment doesn't disable adapter.
-  ReportUserBrightnessChangeRequest(40.0, 50.0);
-  CheckAvgLog({2, 3, 4, 5, 10},
-              adapter_->GetCurrentAvgLogAlsForTesting().value());
-
-  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
-  EXPECT_TRUE(adapter_->IsAppliedForTesting());
-
-  ForwardTimeAndReportAls({100, 101, 102, 103});
-  CheckAvgLog({2, 3, 4, 5, 10},
-              adapter_->GetCurrentAvgLogAlsForTesting().value());
-
-  ForwardTimeAndReportAls({104});
-  EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckAvgLog({100, 101, 102, 103, 104},
-              adapter_->GetCurrentAvgLogAlsForTesting().value());
-}
-
-// Default user adjustment effect for atlas is Continue.
-TEST_F(AdapterTest, UserAdjustmentEffectContinueDefaultForAtlas) {
-  std::map<std::string, std::string> params = default_params_;
-  // User adjustment effect for Atlas is only Continue when it's not explicitly
-  // set by the finch params.
-  params.erase("user_adjustment_effect");
-
-  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       Model(global_curve_, personal_curve_, 0), GetTestModelConfig("atlas"),
-       params);
 
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());

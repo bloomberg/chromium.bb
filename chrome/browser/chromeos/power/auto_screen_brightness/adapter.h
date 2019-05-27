@@ -95,7 +95,7 @@ class Adapter : public AlsReader::Observer,
         base::TimeDelta::FromSeconds(4);
 
     UserAdjustmentEffect user_adjustment_effect =
-        UserAdjustmentEffect::kDisableAuto;
+        UserAdjustmentEffect::kPauseAuto;
 
     std::string metrics_key;
 

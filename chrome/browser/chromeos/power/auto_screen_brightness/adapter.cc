@@ -337,7 +337,8 @@ Adapter::Adapter(Profile* profile,
 }
 
 void Adapter::InitParams(const ModelConfig& model_config) {
-  if (!base::FeatureList::IsEnabled(features::kAutoScreenBrightness)) {
+  if (!base::FeatureList::IsEnabled(features::kAutoScreenBrightness) ||
+      !model_config.enabled) {
     enabled_by_model_configs_ = false;
     return;
   }
@@ -367,11 +368,6 @@ void Adapter::InitParams(const ModelConfig& model_config) {
       model_config.auto_brightness_als_horizon_seconds);
   log_als_values_ = std::make_unique<AmbientLightSampleBuffer>(
       params_.auto_brightness_als_horizon);
-
-  // TODO(jiameng): move this to device config once we complete experiments.
-  if (model_config.metrics_key == "atlas") {
-    params_.user_adjustment_effect = UserAdjustmentEffect::kContinueAuto;
-  }
 
   const int user_adjustment_effect_as_int = GetFieldTrialParamByFeatureAsInt(
       features::kAutoScreenBrightness, "user_adjustment_effect",
