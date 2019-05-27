@@ -6,12 +6,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/mock_manual_filling_controller.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,14 +34,17 @@ AccessorySheetData::Builder CreditCardAccessorySheetDataBuilder() {
 
 }  // namespace
 
-class CreditCardAccessoryControllerTest : public testing::Test {
+class CreditCardAccessoryControllerTest
+    : public ChromeRenderViewHostTestHarness {
  public:
-  CreditCardAccessoryControllerTest()
-      : controller_(&data_manager_, /*web_contents=*/nullptr) {}
+  CreditCardAccessoryControllerTest() {}
 
   void SetUp() override {
-    controller_.SetManualFillingControllerForTesting(
-        mock_mf_controller_.AsWeakPtr());
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    CreditCardAccessoryControllerImpl::CreateForWebContentsForTesting(
+        web_contents(), mock_mf_controller_.AsWeakPtr(), &data_manager_);
+
     data_manager_.SetPrefService(profile_.GetPrefs());
   }
 
@@ -50,10 +53,11 @@ class CreditCardAccessoryControllerTest : public testing::Test {
     data_manager_.ClearCreditCards();
   }
 
+  CreditCardAccessoryController* controller() {
+    return CreditCardAccessoryControllerImpl::FromWebContents(web_contents());
+  }
+
  protected:
-  content::TestBrowserThreadBundle
-      test_browser_thread_bundle_;  // for |profile_|
-  CreditCardAccessoryControllerImpl controller_;
   testing::StrictMock<MockManualFillingController> mock_mf_controller_;
   autofill::TestPersonalDataManager data_manager_;
   TestingProfile profile_;
@@ -71,7 +75,9 @@ TEST_F(CreditCardAccessoryControllerTest, RefreshSuggestionsForField) {
                   mojom::FocusedFieldType::kFillableTextField, _))
       .WillOnce(SaveArg<1>(&result));
 
-  controller_.RefreshSuggestionsForField();
+  auto* cc_controller = controller();
+  ASSERT_TRUE(cc_controller);
+  cc_controller->RefreshSuggestions();
 
   ASSERT_EQ(result, CreditCardAccessorySheetDataBuilder()
                         .AddUserInfo()

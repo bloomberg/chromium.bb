@@ -104,7 +104,7 @@ bool PasswordAccessoryController::AllowedForWebContents(
     content::WebContents* web_contents) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   if (vr::VrTabHelper::IsInVr(web_contents)) {
-    return false;  // TODO(crbug.com/865749): Reenable if works for VR keyboard.
+    return false;  // TODO(crbug.com/902305): Re-enable if possible.
   }
   return base::FeatureList::IsEnabled(
       password_manager::features::kPasswordsKeyboardAccessory);

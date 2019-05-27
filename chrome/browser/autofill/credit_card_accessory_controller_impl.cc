@@ -13,7 +13,11 @@
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_utils.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -53,12 +57,6 @@ UserInfo TranslateCard(const CreditCard* data) {
 
 }  // namespace
 
-CreditCardAccessoryControllerImpl::CreditCardAccessoryControllerImpl(
-    autofill::PersonalDataManager* personal_data_manager,
-    content::WebContents* web_contents)
-    : personal_data_manager_(personal_data_manager),
-      web_contents_(web_contents) {}
-
 CreditCardAccessoryControllerImpl::~CreditCardAccessoryControllerImpl() =
     default;
 
@@ -73,7 +71,35 @@ void CreditCardAccessoryControllerImpl::OnOptionSelected(
                << static_cast<int>(selected_action);
 }
 
-void CreditCardAccessoryControllerImpl::RefreshSuggestionsForField() {
+// static
+bool CreditCardAccessoryController::AllowedForWebContents(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
+  if (vr::VrTabHelper::IsInVr(web_contents)) {
+    return false;  // TODO(crbug.com/902305): Re-enable if possible.
+  }
+  return base::FeatureList::IsEnabled(
+             autofill::features::kAutofillKeyboardAccessory) &&
+         base::FeatureList::IsEnabled(
+             autofill::features::kAutofillManualFallbackAndroid);
+}
+
+// static
+CreditCardAccessoryController* CreditCardAccessoryController::GetOrCreate(
+    content::WebContents* web_contents) {
+  DCHECK(CreditCardAccessoryController::AllowedForWebContents(web_contents));
+
+  CreditCardAccessoryControllerImpl::CreateForWebContents(web_contents);
+  return CreditCardAccessoryControllerImpl::FromWebContents(web_contents);
+}
+
+// static
+CreditCardAccessoryController* CreditCardAccessoryController::GetIfExisting(
+    content::WebContents* web_contents) {
+  return CreditCardAccessoryControllerImpl::FromWebContents(web_contents);
+}
+
+void CreditCardAccessoryControllerImpl::RefreshSuggestions() {
   const std::vector<CreditCard*> suggestions = GetSuggestions();
   std::vector<UserInfo> info_to_add;
   std::transform(suggestions.begin(), suggestions.end(),
@@ -91,15 +117,46 @@ void CreditCardAccessoryControllerImpl::RefreshSuggestionsForField() {
           std::move(info_to_add), std::move(footer_commands)));
 }
 
-void CreditCardAccessoryControllerImpl::SetManualFillingControllerForTesting(
-    base::WeakPtr<ManualFillingController> controller) {
-  mf_controller_ = controller;
+// static
+void CreditCardAccessoryControllerImpl::CreateForWebContentsForTesting(
+    content::WebContents* web_contents,
+    base::WeakPtr<ManualFillingController> mf_controller,
+    autofill::PersonalDataManager* personal_data_manager) {
+  DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
+  DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
+  DCHECK(mf_controller);
+
+  web_contents->SetUserData(
+      UserDataKey(),
+      base::WrapUnique(new CreditCardAccessoryControllerImpl(
+          web_contents, std::move(mf_controller), personal_data_manager)));
 }
+
+CreditCardAccessoryControllerImpl::CreditCardAccessoryControllerImpl(
+    content::WebContents* web_contents)
+    : web_contents_(web_contents),
+      personal_data_manager_for_testing_(nullptr) {}
+
+CreditCardAccessoryControllerImpl::CreditCardAccessoryControllerImpl(
+    content::WebContents* web_contents,
+    base::WeakPtr<ManualFillingController> mf_controller,
+    PersonalDataManager* personal_data_manager)
+    : web_contents_(web_contents),
+      mf_controller_(mf_controller),
+      personal_data_manager_for_testing_(personal_data_manager) {}
 
 const std::vector<CreditCard*>
 CreditCardAccessoryControllerImpl::GetSuggestions() {
-  DCHECK(personal_data_manager_);
-  return personal_data_manager_->GetCreditCardsToSuggest(
+  const PersonalDataManager* personal_data_manager =
+      personal_data_manager_for_testing_;
+  if (!personal_data_manager) {
+    personal_data_manager = autofill::PersonalDataManagerFactory::GetForProfile(
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+  }
+  if (!personal_data_manager) {
+    return {};  // No data available.
+  }
+  return personal_data_manager->GetCreditCardsToSuggest(
       /*include_server_cards=*/true);
 }
 
@@ -110,5 +167,7 @@ CreditCardAccessoryControllerImpl::GetManualFillingController() {
   DCHECK(mf_controller_);
   return mf_controller_;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CreditCardAccessoryControllerImpl)
 
 }  // namespace autofill

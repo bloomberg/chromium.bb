@@ -7,21 +7,22 @@
 
 #include "chrome/browser/autofill/credit_card_accessory_controller.h"
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-
-namespace content {
-class WebContents;
-}
+#include "content/public/browser/web_contents_user_data.h"
 
 class ManualFillingController;
 
 namespace autofill {
 
-class CreditCardAccessoryControllerImpl : public CreditCardAccessoryController {
+// Use either CreditCardAccessoryController::GetOrCreate or
+// CreditCardAccessoryController::GetIfExisting to obtain instances of this
+// class.
+class CreditCardAccessoryControllerImpl
+    : public CreditCardAccessoryController,
+      public content::WebContentsUserData<CreditCardAccessoryControllerImpl> {
  public:
-  CreditCardAccessoryControllerImpl(PersonalDataManager* personal_data_manager,
-                                    content::WebContents* web_contents);
   ~CreditCardAccessoryControllerImpl() override;
 
   // AccessoryController:
@@ -30,18 +31,34 @@ class CreditCardAccessoryControllerImpl : public CreditCardAccessoryController {
   void OnOptionSelected(AccessoryAction selected_action) override;
 
   // CreditCardAccessoryController:
-  void RefreshSuggestionsForField() override;
+  void RefreshSuggestions() override;
 
-  void SetManualFillingControllerForTesting(
-      base::WeakPtr<ManualFillingController> controller);
+  static void CreateForWebContentsForTesting(
+      content::WebContents* web_contents,
+      base::WeakPtr<ManualFillingController> mf_controller,
+      autofill::PersonalDataManager* personal_data_manager);
 
  private:
+  friend class content::WebContentsUserData<CreditCardAccessoryControllerImpl>;
+
+  // Required for construction via |CreateForWebContents|:
+  explicit CreditCardAccessoryControllerImpl(content::WebContents* contents);
+
+  // Used by CreateForWebContentsForTesting:
+  CreditCardAccessoryControllerImpl(
+      content::WebContents* web_contents,
+      base::WeakPtr<ManualFillingController> mf_controller,
+      PersonalDataManager* personal_data_manager);
+
   const std::vector<CreditCard*> GetSuggestions();
   base::WeakPtr<ManualFillingController> GetManualFillingController();
 
-  const PersonalDataManager* personal_data_manager_;
   content::WebContents* web_contents_;
   base::WeakPtr<ManualFillingController> mf_controller_;
+  const PersonalDataManager* personal_data_manager_for_testing_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+  DISALLOW_COPY_AND_ASSIGN(CreditCardAccessoryControllerImpl);
 };
 
 }  // namespace autofill

@@ -84,7 +84,7 @@ bool AddressAccessoryController::AllowedForWebContents(
     content::WebContents* web_contents) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   if (vr::VrTabHelper::IsInVr(web_contents)) {
-    return false;  // TODO(crbug.com/865749): Re-Enable if possible.
+    return false;  // TODO(crbug.com/902305): Re-Enable if possible.
   }
   return base::FeatureList::IsEnabled(
       autofill::features::kAutofillKeyboardAccessory);
