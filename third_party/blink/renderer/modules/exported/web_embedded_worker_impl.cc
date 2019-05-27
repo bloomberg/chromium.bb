@@ -549,7 +549,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 FetchClientSettingsObjectSnapshot*
 WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject() {
   DCHECK(shadow_page_->WasInitialized());
-  // TODO(crbug.com/924043): Currently, we use the shadow page's Document as an
+  // TODO(crbug.com/967265): Currently, we use the shadow page's Document as an
   // outside_settings_object as a workaround. For new worker case, this should
   // be the Document that called navigator.serviceWorker.register(). For
   // ServiceWorkerRegistration#update() case, it should be the Document that
