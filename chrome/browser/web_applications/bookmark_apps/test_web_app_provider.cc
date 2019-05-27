@@ -8,6 +8,9 @@
 
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
@@ -32,6 +35,20 @@ TestWebAppProvider::TestWebAppProvider(Profile* profile)
     : WebAppProvider(profile) {}
 
 TestWebAppProvider::~TestWebAppProvider() = default;
+
+void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
+  registrar_ = std::move(registrar);
+}
+
+void TestWebAppProvider::SetInstallManager(
+    std::unique_ptr<InstallManager> install_manager) {
+  install_manager_ = std::move(install_manager);
+}
+
+void TestWebAppProvider::SetInstallFinalizer(
+    std::unique_ptr<InstallFinalizer> install_finalizer) {
+  install_finalizer_ = std::move(install_finalizer);
+}
 
 void TestWebAppProvider::SetPendingAppManager(
     std::unique_ptr<PendingAppManager> pending_app_manager) {
