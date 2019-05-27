@@ -41,10 +41,6 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
   void Transform(v8::Local<v8::Value> chunk,
                  TransformStreamDefaultControllerInterface* controller,
                  ExceptionState& exception_state) override {
-    // This is needed to ensure that exception objects are created in the
-    // correct realm (ie. v8::Context).
-    // TODO(ricea): Move this to the caller. See https://crbug.com/954476.
-    ScriptState::Scope scope(script_state_);
     ArrayBufferOrArrayBufferView bufferSource;
     V8ArrayBufferOrArrayBufferView::ToImpl(
         script_state_->GetIsolate(), chunk, bufferSource,
@@ -73,10 +69,11 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
   // Implements the "encode and flush" algorithm.
   void Flush(TransformStreamDefaultControllerInterface* controller,
              ExceptionState& exception_state) override {
-    ScriptState::Scope scope(script_state_);
     DecodeAndEnqueue(nullptr, 0u, WTF::FlushBehavior::kDataEOF, controller,
                      exception_state);
   }
+
+  ScriptState* GetScriptState() override { return script_state_; }
 
   void Trace(Visitor* visitor) override {
     visitor->Trace(script_state_);

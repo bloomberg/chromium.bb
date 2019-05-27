@@ -38,6 +38,9 @@ class CORE_EXPORT TransformStreamTransformer
   virtual void Flush(TransformStreamDefaultControllerInterface*,
                      ExceptionState&) = 0;
 
+  // Returns the ScriptState associated with this Transformer.
+  virtual ScriptState* GetScriptState() = 0;
+
   virtual void Trace(Visitor*) {}
 
  private:

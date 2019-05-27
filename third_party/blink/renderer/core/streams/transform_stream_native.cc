@@ -65,7 +65,12 @@ class TransformStreamNative::FlushAlgorithm final : public StreamAlgorithm {
     ExceptionState exception_state(script_state->GetIsolate(),
                                    ExceptionState::kUnknownContext, "", "");
     ControllerInterface controller_interface(script_state, controller_);
-    transformer_->Flush(&controller_interface, exception_state);
+    {
+      // This is needed because the realm of the transformer can be different
+      // from the realm of the transform stream.
+      ScriptState::Scope scope(transformer_->GetScriptState());
+      transformer_->Flush(&controller_interface, exception_state);
+    }
     if (exception_state.HadException()) {
       auto exception = exception_state.GetException();
       exception_state.ClearException();
@@ -106,7 +111,12 @@ class TransformStreamNative::TransformAlgorithm final : public StreamAlgorithm {
     ExceptionState exception_state(script_state->GetIsolate(),
                                    ExceptionState::kUnknownContext, "", "");
     ControllerInterface controller_interface(script_state, controller_);
-    transformer_->Transform(argv[0], &controller_interface, exception_state);
+    {
+      // This is needed because the realm of the transformer can be different
+      // from the realm of the transform stream.
+      ScriptState::Scope scope(transformer_->GetScriptState());
+      transformer_->Transform(argv[0], &controller_interface, exception_state);
+    }
     if (exception_state.HadException()) {
       auto exception = exception_state.GetException();
       exception_state.ClearException();
