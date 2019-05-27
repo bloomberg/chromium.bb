@@ -23,6 +23,12 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
+
+using data_util::ContainsAddress;
+using data_util::ContainsEmail;
+using data_util::ContainsName;
+using data_util::ContainsPhone;
+
 namespace {
 
 // Returns true if all |profiles| have the same value for the data retrieved by
@@ -50,32 +56,13 @@ bool HaveSameData(
   return true;
 }
 
+// Used to avoid having the same lambda in HaveSameEmailAddresses,
+// HaveSameFirstNames, HaveSameStreetAddresses.
 bool Equals(const base::string16& str1, const base::string16& str2) {
   return str1 == str2;
 }
 
 }  // namespace
-
-const int kStreetAddressFieldTypes[] = {
-    ADDRESS_HOME_LINE1,          ADDRESS_HOME_LINE2,
-    ADDRESS_HOME_APT_NUM,        ADDRESS_BILLING_LINE1,
-    ADDRESS_BILLING_LINE2,       ADDRESS_BILLING_APT_NUM,
-    ADDRESS_HOME_STREET_ADDRESS, ADDRESS_BILLING_STREET_ADDRESS,
-    ADDRESS_HOME_LINE3,          ADDRESS_BILLING_LINE3};
-
-void AddLabelPartToFrontIfNotEmpty(const base::string16& part,
-                                   std::list<base::string16>* parts) {
-  if (!part.empty()) {
-    parts->emplace_front(part);
-  }
-}
-
-void AddLabelPartIfNotEmpty(const base::string16& part,
-                            std::list<base::string16>* parts) {
-  if (!part.empty()) {
-    parts->emplace_back(part);
-  }
-}
 
 void AddLabelPartIfNotEmpty(const base::string16& part,
                             std::vector<base::string16>* parts) {
@@ -89,19 +76,52 @@ base::string16 ConstructLabelLine(const std::vector<base::string16>& parts) {
                                      IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR));
 }
 
-base::string16 ConstructLabelLineFromList(
-    const std::list<base::string16>& parts) {
-  const std::vector<base::string16> parts_as_vector{std::begin(parts),
-                                                    std::end(parts)};
+base::string16 ConstructMobileLabelLine(
+    const std::vector<base::string16>& parts) {
   return base::JoinString(
-      parts_as_vector,
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR));
+      parts, l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR));
+}
+
+bool IsNonStreetAddressPart(ServerFieldType type) {
+  switch (type) {
+    case ADDRESS_HOME_CITY:
+    case ADDRESS_BILLING_CITY:
+    case ADDRESS_HOME_ZIP:
+    case ADDRESS_BILLING_ZIP:
+    case ADDRESS_HOME_STATE:
+    case ADDRESS_BILLING_STATE:
+    case ADDRESS_HOME_COUNTRY:
+    case ADDRESS_BILLING_COUNTRY:
+    case ADDRESS_HOME_SORTING_CODE:
+    case ADDRESS_BILLING_SORTING_CODE:
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+    case ADDRESS_BILLING_DEPENDENT_LOCALITY:
+      return true;
+    default:
+      return false;
+  }
 }
 
 bool IsStreetAddressPart(ServerFieldType type) {
-  return std::find(std::begin(kStreetAddressFieldTypes),
-                   std::end(kStreetAddressFieldTypes),
-                   type) != std::end(kStreetAddressFieldTypes);
+  switch (type) {
+    case ADDRESS_HOME_LINE1:
+    case ADDRESS_HOME_LINE2:
+    case ADDRESS_HOME_APT_NUM:
+    case ADDRESS_BILLING_LINE1:
+    case ADDRESS_BILLING_LINE2:
+    case ADDRESS_BILLING_APT_NUM:
+    case ADDRESS_HOME_STREET_ADDRESS:
+    case ADDRESS_BILLING_STREET_ADDRESS:
+    case ADDRESS_HOME_LINE3:
+    case ADDRESS_BILLING_LINE3:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool HasNonStreetAddress(const std::vector<ServerFieldType>& types) {
+  return std::any_of(types.begin(), types.end(), IsNonStreetAddressPart);
 }
 
 bool HasStreetAddress(const std::vector<ServerFieldType>& types) {
@@ -225,6 +245,27 @@ base::string16 GetLabelForProfileOnFocusedNonStreetAddress(
   return ConstructLabelLine(label_parts);
 }
 
+base::string16 GetLabelName(const std::vector<ServerFieldType>& types,
+                            const AutofillProfile& profile,
+                            const std::string& app_locale) {
+  if (std::find(std::begin(types), std::end(types), NAME_FULL) !=
+      std::end(types)) {
+    return GetLabelFullName(profile, app_locale);
+  }
+  if (std::find(std::begin(types), std::end(types), NAME_FIRST) !=
+      std::end(types)) {
+    return GetLabelFirstName(profile, app_locale);
+  }
+  // The form contains neither a full name field nor a first name field,
+  // so choose some name field in the form and make it the label text.
+  for (const ServerFieldType type : types) {
+    if (AutofillType(AutofillType(type).GetStorableType()).group() == NAME) {
+      return profile.GetInfo(AutofillType(type), app_locale);
+    }
+  }
+  return base::string16();
+}
+
 base::string16 GetLabelFullName(const AutofillProfile& profile,
                                 const std::string& app_locale) {
   return profile.GetInfo(AutofillType(NAME_FULL), app_locale);
@@ -256,13 +297,25 @@ base::string16 GetLabelPhone(const AutofillProfile& profile,
 bool HaveSameEmailAddresses(const std::vector<AutofillProfile*>& profiles,
                             const std::string& app_locale) {
   return HaveSameData(profiles, app_locale, base::BindRepeating(&GetLabelEmail),
-                      base::BindRepeating(&Equals));
+                      base::BindRepeating(base::BindRepeating(&Equals)));
 }
 
 bool HaveSameFirstNames(const std::vector<AutofillProfile*>& profiles,
                         const std::string& app_locale) {
   return HaveSameData(profiles, app_locale,
                       base::BindRepeating(&GetLabelFirstName),
+                      base::BindRepeating(base::BindRepeating(&Equals)));
+}
+
+bool HaveSameNonStreetAddresses(const std::vector<AutofillProfile*>& profiles,
+                                const std::string& app_locale,
+                                const std::vector<ServerFieldType>& types) {
+  // In general, comparing non street addresses with Equals, which uses ==, is
+  // not ideal since Düsseldorf and Dusseldorf will be considered distinct. It's
+  // okay to use it here because near-duplicate non street addresses like this
+  // are filtered out before a LabelFormatter is created.
+  return HaveSameData(profiles, app_locale,
+                      base::BindRepeating(&GetLabelNationalAddress, types),
                       base::BindRepeating(&Equals));
 }
 
@@ -284,6 +337,47 @@ bool HaveSamePhoneNumbers(const std::vector<AutofillProfile*>& profiles,
                                        base::UTF16ToASCII(profiles[0]->GetInfo(
                                            ADDRESS_HOME_COUNTRY, app_locale)),
                                        app_locale));
+}
+
+bool HaveSameStreetAddresses(const std::vector<AutofillProfile*>& profiles,
+                             const std::string& app_locale,
+                             const std::vector<ServerFieldType>& types) {
+  // In general, comparing street addresses with Equals, which uses ==, is not
+  // ideal since 3 Elm St and 3 Elm St. will be considered distinct. It's okay
+  // to use it here because near-duplicate addresses like this are filtered
+  // out before a LabelFormatter is created.
+  return HaveSameData(profiles, app_locale,
+                      base::BindRepeating(&GetLabelStreetAddress, types),
+                      base::BindRepeating(&Equals));
+}
+
+bool HasUnfocusedEmailField(FieldTypeGroup focused_group,
+                            uint32_t form_groups) {
+  return ContainsEmail(form_groups) && focused_group != EMAIL;
+}
+
+bool HasUnfocusedNameField(FieldTypeGroup focused_group, uint32_t form_groups) {
+  return ContainsName(form_groups) && focused_group != NAME;
+}
+
+bool HasUnfocusedNonStreetAddressField(
+    ServerFieldType focused_field,
+    FieldTypeGroup focused_group,
+    const std::vector<ServerFieldType>& types) {
+  return HasNonStreetAddress(types) && (focused_group != ADDRESS_HOME ||
+                                        !IsNonStreetAddressPart(focused_field));
+}
+
+bool HasUnfocusedPhoneField(FieldTypeGroup focused_group,
+                            uint32_t form_groups) {
+  return ContainsPhone(form_groups) && focused_group != PHONE_HOME;
+}
+
+bool HasUnfocusedStreetAddressField(ServerFieldType focused_field,
+                                    FieldTypeGroup focused_group,
+                                    const std::vector<ServerFieldType>& types) {
+  return HasStreetAddress(types) &&
+         (focused_group != ADDRESS_HOME || !IsStreetAddressPart(focused_field));
 }
 
 }  // namespace autofill

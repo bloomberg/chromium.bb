@@ -15,14 +15,6 @@
 
 namespace autofill {
 
-// Adds |part| to the front of |parts| if |part| is not an empty string.
-void AddLabelPartToFrontIfNotEmpty(const base::string16& part,
-                                   std::list<base::string16>* parts);
-
-// Adds |part| to the end of |parts| if |part| is not an empty string.
-void AddLabelPartIfNotEmpty(const base::string16& part,
-                            std::list<base::string16>* parts);
-
 // Adds |part| to the end of |parts| if |part| is not an empty string.
 void AddLabelPartIfNotEmpty(const base::string16& part,
                             std::vector<base::string16>* parts);
@@ -32,16 +24,23 @@ void AddLabelPartIfNotEmpty(const base::string16& part,
 // inserted between them.
 base::string16 ConstructLabelLine(const std::vector<base::string16>& parts);
 
-// Returns the text to show to the user. If there is more than one element in
-// |parts|, then a separator, |IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR|, is
-// inserted between them.
-base::string16 ConstructLabelLineFromList(
-    const std::list<base::string16>& parts);
+// Like ConstructLabelLine, but uses |IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR|
+// instead.
+base::string16 ConstructMobileLabelLine(
+    const std::vector<base::string16>& parts);
 
-// Returns true if |type| is a component of a street address.
+// Returns true if |type| is associated with an address, but not with a street
+// address. For example, if the given type is ADDRESS_HOME_ZIP, then true is
+// returned. If ADDRESS_BILLING_LINE1 is given then false is returned.
+bool IsNonStreetAddressPart(ServerFieldType type);
+
+// Returns true if |type| is associated with a street address.
 bool IsStreetAddressPart(ServerFieldType type);
 
-// Returns true if |types| has a street-address-related field.
+// Returns true if |types| has a non-street-address-related type.
+bool HasNonStreetAddress(const std::vector<ServerFieldType>& types);
+
+// Returns true if |types| has a street-address-related type.
 bool HasStreetAddress(const std::vector<ServerFieldType>& types);
 
 // Returns a vector of only street-address-related field types in |types| if
@@ -118,6 +117,12 @@ base::string16 GetLabelForProfileOnFocusedNonStreetAddress(
     const std::vector<ServerFieldType>& types,
     const base::string16& contact_info);
 
+// Returns a name that is (A) associated with |profile| and (B) found in
+// |types|; otherwise, returns an empty string.
+base::string16 GetLabelName(const std::vector<ServerFieldType>& types,
+                            const AutofillProfile& profile,
+                            const std::string& app_locale);
+
 // Returns the full name associated with |profile|, if any; otherwise, returns
 // an empty string.
 base::string16 GetLabelFullName(const AutofillProfile& profile,
@@ -139,23 +144,40 @@ base::string16 GetLabelEmail(const AutofillProfile& profile,
 base::string16 GetLabelPhone(const AutofillProfile& profile,
                              const std::string& app_locale);
 
-// Returns true if all |profiles| have the same email address. Note that the
-// absence of an email address and an actual email address, e.g.
-// joe.bray@aol.com, are considered different email addresses.
+// Each HaveSame* function below returns true if all |profiles| have the same
+// specified data. Note that the absence of data and actual data, e.g.
+// joe.bray@aol.com, are considered different pieces of data.
+//
+// Near-duplicate data, such as Düsseldorf and Dusseldorf or 3 Elm St and 3 Elm
+// St., should be filtered out before calling this function.
 bool HaveSameEmailAddresses(const std::vector<AutofillProfile*>& profiles,
                             const std::string& app_locale);
-
-// Returns true if all |profiles| have the same first name. Note that names are
-// compared without normalization, so José and Jose are considered different
-// names.
 bool HaveSameFirstNames(const std::vector<AutofillProfile*>& profiles,
                         const std::string& app_locale);
-
-// Returns true if all |profiles| have the same phone number after
-// normalization. Note that the absence of a phone number and an actual phone
-// number, e.g. (401) 847-8720, are considered different phone numbers.
+bool HaveSameNonStreetAddresses(const std::vector<AutofillProfile*>& profiles,
+                                const std::string& app_locale,
+                                const std::vector<ServerFieldType>& types);
 bool HaveSamePhoneNumbers(const std::vector<AutofillProfile*>& profiles,
                           const std::string& app_locale);
+bool HaveSameStreetAddresses(const std::vector<AutofillProfile*>& profiles,
+                             const std::string& app_locale,
+                             const std::vector<ServerFieldType>& types);
+
+// Each HasUnfocused* function below returns true if the form described by
+// |form_groups| includes a field corresponding to the specified data and if
+// this field is not being interacted with by the user, i.e. the specified field
+// is not associated with the |focused_group|.
+bool HasUnfocusedEmailField(FieldTypeGroup focused_group, uint32_t form_groups);
+bool HasUnfocusedNameField(FieldTypeGroup focused_group, uint32_t form_groups);
+bool HasUnfocusedNonStreetAddressField(
+    ServerFieldType focused_field,
+    FieldTypeGroup focused_group,
+    const std::vector<ServerFieldType>& types);
+bool HasUnfocusedPhoneField(FieldTypeGroup focused_group, uint32_t form_groups);
+bool HasUnfocusedStreetAddressField(ServerFieldType focused_field,
+                                    FieldTypeGroup focused_group,
+                                    const std::vector<ServerFieldType>& types);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_LABEL_FORMATTER_UTILS_H_

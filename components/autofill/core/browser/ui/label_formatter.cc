@@ -8,6 +8,7 @@
 #include <iterator>
 #include <set>
 
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/ui/address_contact_form_label_formatter.h"
@@ -16,13 +17,28 @@
 #include "components/autofill/core/browser/ui/address_phone_form_label_formatter.h"
 #include "components/autofill/core/browser/ui/contact_form_label_formatter.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
+#include "components/autofill/core/browser/ui/mobile_label_formatter.h"
 
 namespace autofill {
 
+using data_util::ContainsAddress;
+using data_util::ContainsEmail;
+using data_util::ContainsName;
+using data_util::ContainsPhone;
 using data_util::bit_field_type_groups::kAddress;
 using data_util::bit_field_type_groups::kEmail;
 using data_util::bit_field_type_groups::kName;
 using data_util::bit_field_type_groups::kPhone;
+
+namespace {
+
+bool IsSupportedFormType(uint32_t groups) {
+  return ContainsName(groups) &&
+         (ContainsEmail(groups) || ContainsPhone(groups) ||
+          ContainsAddress(groups));
+}
+
+}  // namespace
 
 LabelFormatter::LabelFormatter(const std::vector<AutofillProfile*>& profiles,
                                const std::string& app_locale,
@@ -33,6 +49,8 @@ LabelFormatter::LabelFormatter(const std::vector<AutofillProfile*>& profiles,
       app_locale_(app_locale),
       focused_field_type_(focused_field_type),
       groups_(groups) {
+  DCHECK(IsSupportedFormType(groups));
+
   const FieldTypeGroup focused_group = GetFocusedNonBillingGroup();
   std::set<FieldTypeGroup> groups_for_labels{NAME, ADDRESS_HOME, EMAIL,
                                              PHONE_HOME};
@@ -83,6 +101,15 @@ std::unique_ptr<LabelFormatter> LabelFormatter::Create(
     const std::vector<ServerFieldType>& field_types) {
   const uint32_t groups = data_util::DetermineGroups(field_types);
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  return ContainsName(groups) &&
+                 (ContainsEmail(groups) || ContainsPhone(groups) ||
+                  ContainsAddress(groups))
+             ? std::make_unique<MobileLabelFormatter>(profiles, app_locale,
+                                                      focused_field_type,
+                                                      groups, field_types)
+             : nullptr;
+#else
   switch (groups) {
     case kName | kAddress | kEmail | kPhone:
       return std::make_unique<AddressContactFormLabelFormatter>(
@@ -104,6 +131,7 @@ std::unique_ptr<LabelFormatter> LabelFormatter::Create(
     default:
       return nullptr;
   }
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
 
 }  // namespace autofill

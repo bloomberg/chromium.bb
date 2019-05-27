@@ -13,11 +13,26 @@
 namespace autofill {
 namespace {
 
+TEST(LabelFormatterTest, CreateWithoutNameFieldType) {
+  const std::vector<AutofillProfile*> profiles{};
+  EXPECT_EQ(LabelFormatter::Create(
+                profiles, "en-US", EMAIL_ADDRESS,
+                {EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER, ADDRESS_HOME_LINE1}),
+            nullptr);
+}
+
 TEST(LabelFormatterTest, CreateWithMissingFieldTypes) {
   const std::vector<AutofillProfile*> profiles{};
   EXPECT_EQ(LabelFormatter::Create(profiles, "en-US", NAME_FIRST,
                                    std::vector<ServerFieldType>()),
             nullptr);
+}
+
+TEST(LabelFormatterTest, CreateWithUnsupportedFieldTypes) {
+  const std::vector<AutofillProfile*> profiles{};
+  EXPECT_EQ(
+      LabelFormatter::Create(profiles, "en-US", USERNAME, {USERNAME, PASSWORD}),
+      nullptr);
 }
 
 }  // namespace
