@@ -193,8 +193,13 @@ MainWindowComponent.prototype.onFileListFocus_ = function() {
   // is selected.
   if (this.pressingTab_) {
     const selection = this.selectionHandler_.selection;
-    if (selection && selection.totalCount == 0) {
-      this.directoryModel_.selectIndex(0);
+    if (selection && selection.totalCount === 0) {
+      const selectionModel = this.directoryModel_.getFileListSelection();
+      const targetIndex =
+          selectionModel.anchorIndex && selectionModel.anchorIndex !== -1 ?
+          selectionModel.anchorIndex :
+          0;
+      this.directoryModel_.selectIndex(targetIndex);
     }
   }
 };

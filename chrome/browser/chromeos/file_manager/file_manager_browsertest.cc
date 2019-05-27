@@ -945,7 +945,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FileList, /* file_list.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("fileListAriaAttributes")));
+    ::testing::Values(TestCase("fileListAriaAttributes"),
+                      TestCase("fileListFocusFirstItem"),
+                      TestCase("fileListSelectLastFocusedItem")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */
