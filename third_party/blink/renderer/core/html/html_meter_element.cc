@@ -22,7 +22,6 @@
 
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -217,7 +216,7 @@ void HTMLMeterElement::UpdateValueAppearance(double percentage) {
 }
 
 bool HTMLMeterElement::CanContainRangeEndPoint() const {
-  DCHECK(!NeedsLayoutTreeUpdate(*this));
+  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
   return GetComputedStyle() && !GetComputedStyle()->HasAppearance();
 }
 
