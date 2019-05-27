@@ -47,8 +47,9 @@ SVGPropertyBase* SVGPathInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) const {
   return MakeGarbageCollected<SVGPath>(
-      cssvalue::CSSPathValue::Create(PathInterpolationFunctions::AppliedValue(
-          interpolable_value, non_interpolable_value)));
+      MakeGarbageCollected<cssvalue::CSSPathValue>(
+          PathInterpolationFunctions::AppliedValue(interpolable_value,
+                                                   non_interpolable_value)));
 }
 
 }  // namespace blink

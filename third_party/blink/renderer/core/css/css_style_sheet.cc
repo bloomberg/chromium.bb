@@ -93,18 +93,12 @@ const Document* CSSStyleSheet::SingleOwnerDocument(
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(Document& document,
-                                     ExceptionState& exception_state) {
-  return CSSStyleSheet::Create(document, CSSStyleSheetInit::Create(),
-                               exception_state);
-}
-
-CSSStyleSheet* CSSStyleSheet::Create(Document& document,
                                      const CSSStyleSheetInit* options,
                                      ExceptionState& exception_state) {
   // Folowing steps at spec draft
   // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
   auto* parser_context = MakeGarbageCollected<CSSParserContext>(document);
-  StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
+  auto* contents = MakeGarbageCollected<StyleSheetContents>(parser_context);
   CSSStyleSheet* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, nullptr);
   sheet->SetAssociatedDocument(&document);
   sheet->SetIsConstructed(true);
@@ -127,17 +121,6 @@ CSSStyleSheet* CSSStyleSheet::Create(Document& document,
   return sheet;
 }
 
-CSSStyleSheet* CSSStyleSheet::Create(StyleSheetContents* sheet,
-                                     CSSImportRule* owner_rule) {
-  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_rule);
-}
-
-CSSStyleSheet* CSSStyleSheet::Create(StyleSheetContents* sheet,
-                                     Node& owner_node) {
-  return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, false,
-                                             TextPosition::MinimumPosition());
-}
-
 CSSStyleSheet* CSSStyleSheet::CreateInline(StyleSheetContents* sheet,
                                            Node& owner_node,
                                            const TextPosition& start_position) {
@@ -154,8 +137,8 @@ CSSStyleSheet* CSSStyleSheet::CreateInline(Node& owner_node,
       owner_node.GetDocument(), owner_node.GetDocument().BaseURL(),
       true /* origin_clean */, owner_node.GetDocument().GetReferrerPolicy(),
       encoding);
-  StyleSheetContents* sheet =
-      StyleSheetContents::Create(base_url.GetString(), parser_context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(parser_context,
+                                                         base_url.GetString());
   return MakeGarbageCollected<CSSStyleSheet>(sheet, owner_node, true,
                                              start_position);
 }

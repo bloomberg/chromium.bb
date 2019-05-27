@@ -452,8 +452,8 @@ void HTMLTableElement::ParseAttribute(
 }
 
 static CSSPropertyValueSet* CreateBorderStyle(CSSValueID value) {
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyID::kBorderTopStyle, value);
   style->SetProperty(CSSPropertyID::kBorderBottomStyle, value);
   style->SetProperty(CSSPropertyID::kBorderLeftStyle, value);
@@ -510,8 +510,8 @@ HTMLTableElement::CellBorders HTMLTableElement::GetCellBorders() const {
 }
 
 CSSPropertyValueSet* HTMLTableElement::CreateSharedCellStyle() {
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
 
   switch (GetCellBorders()) {
     case kSolidBordersColsOnly:
@@ -569,8 +569,8 @@ const CSSPropertyValueSet* HTMLTableElement::AdditionalCellStyle() {
 }
 
 static CSSPropertyValueSet* CreateGroupBorderStyle(int rows) {
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   if (rows) {
     style->SetProperty(CSSPropertyID::kBorderTopWidth, CSSValueID::kThin);
     style->SetProperty(CSSPropertyID::kBorderBottomWidth, CSSValueID::kThin);

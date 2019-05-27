@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -469,7 +470,8 @@ MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
     if (value)
       list.push_back(CSSPropertyValue(property, *value, false));
   }
-  return MutableCSSPropertyValueSet::Create(list.data(), list.size());
+  return MakeGarbageCollected<MutableCSSPropertyValueSet>(list.data(),
+                                                          list.size());
 }
 
 CSSRule* CSSComputedStyleDeclaration::parentRule() const {

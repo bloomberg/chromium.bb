@@ -96,7 +96,7 @@ void LinkStyle::NotifyFinished(Resource* resource) {
           cached_style_sheet->CreateParsedStyleSheetFromCache(parser_context)) {
     if (sheet_)
       ClearSheet();
-    sheet_ = CSSStyleSheet::Create(parsed_sheet, *owner_);
+    sheet_ = MakeGarbageCollected<CSSStyleSheet>(parsed_sheet, *owner_);
     sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
     if (owner_->IsInDocumentTree())
       SetSheetTitle(owner_->title());
@@ -107,13 +107,13 @@ void LinkStyle::NotifyFinished(Resource* resource) {
     return;
   }
 
-  StyleSheetContents* style_sheet =
-      StyleSheetContents::Create(cached_style_sheet->Url(), parser_context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(
+      parser_context, cached_style_sheet->Url());
 
   if (sheet_)
     ClearSheet();
 
-  sheet_ = CSSStyleSheet::Create(style_sheet, *owner_);
+  sheet_ = MakeGarbageCollected<CSSStyleSheet>(style_sheet, *owner_);
   sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
   if (owner_->IsInDocumentTree())
     SetSheetTitle(owner_->title());

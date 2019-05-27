@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -357,8 +358,8 @@ const CSSValue* HTMLAttributeEquivalent::AttributeValueAsCSSValue(
   if (value.IsNull())
     return nullptr;
 
-  MutableCSSPropertyValueSet* dummy_style = nullptr;
-  dummy_style = MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* dummy_style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   dummy_style->SetProperty(property_id_, value, /* important */ false,
                            element->GetDocument().GetSecureContextMode());
   return dummy_style->GetPropertyCSSValue(property_id_);
@@ -571,8 +572,10 @@ void EditingStyle::SetProperty(CSSPropertyID property_id,
                                const String& value,
                                bool important,
                                SecureContextMode secure_context_mode) {
-  if (!mutable_style_)
-    mutable_style_ = MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  if (!mutable_style_) {
+    mutable_style_ =
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
+  }
 
   mutable_style_->SetProperty(property_id, value, important,
                               secure_context_mode);
@@ -660,8 +663,10 @@ bool EditingStyle::GetTextDirection(WritingDirection& writing_direction) const {
 void EditingStyle::OverrideWithStyle(const CSSPropertyValueSet* style) {
   if (!style || style->IsEmpty())
     return;
-  if (!mutable_style_)
-    mutable_style_ = MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  if (!mutable_style_) {
+    mutable_style_ =
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
+  }
   mutable_style_->MergeAndOverrideOnConflict(style);
   ExtractFontSizeDelta();
 }
@@ -723,7 +728,7 @@ EditingStyle* EditingStyle::ExtractAndRemoveTextDirection(
     SecureContextMode secure_context_mode) {
   EditingStyle* text_direction = MakeGarbageCollected<EditingStyle>();
   text_direction->mutable_style_ =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   text_direction->mutable_style_->SetProperty(
       CSSPropertyID::kUnicodeBidi, CSSValueID::kIsolate,
       mutable_style_->PropertyIsImportant(CSSPropertyID::kUnicodeBidi));
@@ -1397,8 +1402,8 @@ void EditingStyle::MergeStyle(const CSSPropertyValueSet* style,
 static MutableCSSPropertyValueSet* StyleFromMatchedRulesForElement(
     Element* element,
     unsigned rules_to_include) {
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   StyleRuleList* matched_rules =
       element->GetDocument().EnsureStyleResolver().StyleRulesForElement(
           element, rules_to_include);
@@ -1433,8 +1438,8 @@ void EditingStyle::MergeStyleFromRulesForSerialization(Element* element) {
   // copy/paste fidelity problem
   auto* computed_style_for_element =
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
-  MutableCSSPropertyValueSet* from_computed_style =
-      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  auto* from_computed_style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   {
     unsigned property_count = mutable_style_->PropertyCount();
     for (unsigned i = 0; i < property_count; ++i) {
@@ -1540,8 +1545,10 @@ void EditingStyle::RemovePropertiesInElementDefaultStyle(Element* element) {
 }
 
 void EditingStyle::ForceInline() {
-  if (!mutable_style_)
-    mutable_style_ = MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+  if (!mutable_style_) {
+    mutable_style_ =
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
+  }
   const bool kPropertyIsImportant = true;
   mutable_style_->SetProperty(CSSPropertyID::kDisplay, CSSValueID::kInline,
                               kPropertyIsImportant);

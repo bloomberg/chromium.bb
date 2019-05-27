@@ -235,10 +235,6 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
                              unsigned count);
   ~MutableCSSPropertyValueSet() = default;
 
-  static MutableCSSPropertyValueSet* Create(CSSParserMode);
-  static MutableCSSPropertyValueSet* Create(const CSSPropertyValue* properties,
-                                            unsigned count);
-
   unsigned PropertyCount() const { return property_vector_.size(); }
 
   // Returns whether this style set was changed.

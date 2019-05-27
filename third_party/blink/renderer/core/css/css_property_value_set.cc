@@ -601,7 +601,8 @@ MutableCSSPropertyValueSet* CSSPropertyValueSet::CopyPropertiesInSet(
       list.push_back(CSSPropertyValue(*properties[i], *value, false));
     }
   }
-  return MutableCSSPropertyValueSet::Create(list.data(), list.size());
+  return MakeGarbageCollected<MutableCSSPropertyValueSet>(list.data(),
+                                                          list.size());
 }
 
 CSSStyleDeclaration* MutableCSSPropertyValueSet::EnsureCSSStyleDeclaration() {
@@ -665,17 +666,6 @@ void CSSPropertyValueSet::ShowStyle() {
   fprintf(stderr, "%s\n", AsText().Ascii().data());
 }
 #endif
-
-MutableCSSPropertyValueSet* MutableCSSPropertyValueSet::Create(
-    CSSParserMode css_parser_mode) {
-  return MakeGarbageCollected<MutableCSSPropertyValueSet>(css_parser_mode);
-}
-
-MutableCSSPropertyValueSet* MutableCSSPropertyValueSet::Create(
-    const CSSPropertyValue* properties,
-    unsigned count) {
-  return MakeGarbageCollected<MutableCSSPropertyValueSet>(properties, count);
-}
 
 void CSSLazyPropertyParser::Trace(blink::Visitor* visitor) {}
 

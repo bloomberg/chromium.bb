@@ -45,9 +45,9 @@ class RuleFeatureSetTest : public testing::Test {
       indices.push_back(selector_list.SelectorIndex(*s));
     }
 
-    StyleRule* style_rule = StyleRule::Create(
+    auto* style_rule = MakeGarbageCollected<StyleRule>(
         std::move(selector_list),
-        MutableCSSPropertyValueSet::Create(kHTMLStandardMode));
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode));
 
     RuleFeatureSet::SelectorPreMatch result =
         RuleFeatureSet::SelectorPreMatch::kSelectorNeverMatches;

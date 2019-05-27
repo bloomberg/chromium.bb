@@ -119,13 +119,13 @@ String CreateShorthandValue(Document* document,
                             const String& old_text,
                             const String& longhand,
                             const String& new_value) {
-  StyleSheetContents* style_sheet_contents = StyleSheetContents::Create(
+  auto* style_sheet_contents = MakeGarbageCollected<StyleSheetContents>(
       StrictCSSParserContext(document->GetSecureContextMode()));
   String text = " div { " + shorthand + ": " + old_text + "; }";
   CSSParser::ParseSheet(MakeGarbageCollected<CSSParserContext>(*document),
                         style_sheet_contents, text);
 
-  CSSStyleSheet* style_sheet = CSSStyleSheet::Create(style_sheet_contents);
+  auto* style_sheet = MakeGarbageCollected<CSSStyleSheet>(style_sheet_contents);
   auto* rule = To<CSSStyleRule>(style_sheet->item(0));
   CSSStyleDeclaration* style = rule->style();
   DummyExceptionStateForTesting exception_state;
@@ -1897,7 +1897,7 @@ InspectorStyleSheet* InspectorCSSAgent::InspectorStyleSheetForRule(
   // this issue, we use CSSOM wrapper created by inspector.
   if (!rule->parentStyleSheet()) {
     if (!inspector_user_agent_style_sheet_)
-      inspector_user_agent_style_sheet_ = CSSStyleSheet::Create(
+      inspector_user_agent_style_sheet_ = MakeGarbageCollected<CSSStyleSheet>(
           CSSDefaultStyleSheets::Instance().DefaultStyleSheet());
     rule->SetParentStyleSheet(inspector_user_agent_style_sheet_.Get());
   }

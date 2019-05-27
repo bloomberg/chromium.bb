@@ -25,13 +25,13 @@ namespace blink {
 class ActiveStyleSheetsTest : public PageTestBase {
  protected:
   static CSSStyleSheet* CreateSheet(const String& css_text = String()) {
-    StyleSheetContents* contents =
-        StyleSheetContents::Create(MakeGarbageCollected<CSSParserContext>(
+    auto* contents = MakeGarbageCollected<StyleSheetContents>(
+        MakeGarbageCollected<CSSParserContext>(
             kHTMLStandardMode, SecureContextMode::kInsecureContext));
     contents->ParseString(css_text);
     contents->EnsureRuleSet(MediaQueryEvaluator(),
                             kRuleHasDocumentSecurityOrigin);
-    return CSSStyleSheet::Create(contents);
+    return MakeGarbageCollected<CSSStyleSheet>(contents);
   }
 };
 

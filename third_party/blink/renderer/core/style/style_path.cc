@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/svg/svg_path_byte_stream.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -53,8 +54,8 @@ bool StylePath::IsClosed() const {
 }
 
 CSSValue* StylePath::ComputedCSSValue() const {
-  return cssvalue::CSSPathValue::Create(const_cast<StylePath*>(this),
-                                        kTransformToAbsolute);
+  return MakeGarbageCollected<cssvalue::CSSPathValue>(
+      const_cast<StylePath*>(this), kTransformToAbsolute);
 }
 
 bool StylePath::operator==(const BasicShape& o) const {

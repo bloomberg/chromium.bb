@@ -164,8 +164,8 @@ void CSSSelectorWatch::WatchCSSSelectors(const Vector<String>& selectors) {
     if (!AllCompound(selector_list))
       continue;
 
-    watched_callback_selectors_.push_back(
-        StyleRule::Create(std::move(selector_list), callback_property_set));
+    watched_callback_selectors_.push_back(MakeGarbageCollected<StyleRule>(
+        std::move(selector_list), callback_property_set));
   }
   GetSupplementable()->GetStyleEngine().WatchedSelectorsChanged();
 }

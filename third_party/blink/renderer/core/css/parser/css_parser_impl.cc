@@ -914,14 +914,14 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream) {
   // TODO(csharrison): How should we lazily parse css that needs the observer?
   if (!observer_ && lazy_state_) {
     DCHECK(style_sheet_);
-    return StyleRule::CreateLazy(
+    return MakeGarbageCollected<StyleRule>(
         std::move(selector_list),
         MakeGarbageCollected<CSSLazyPropertyParserImpl>(stream.Offset() - 1,
                                                         lazy_state_));
   }
   ConsumeDeclarationList(stream, StyleRule::kStyle);
 
-  return StyleRule::Create(
+  return MakeGarbageCollected<StyleRule>(
       std::move(selector_list),
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }

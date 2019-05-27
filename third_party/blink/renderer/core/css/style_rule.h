@@ -105,17 +105,6 @@ class CORE_EXPORT StyleRuleBase
 class CORE_EXPORT StyleRule : public StyleRuleBase {
  public:
   // Adopts the selector list
-  static StyleRule* Create(CSSSelectorList selector_list,
-                           CSSPropertyValueSet* properties) {
-    return MakeGarbageCollected<StyleRule>(std::move(selector_list),
-                                           properties);
-  }
-  static StyleRule* CreateLazy(CSSSelectorList selector_list,
-                               CSSLazyPropertyParser* lazy_property_parser) {
-    return MakeGarbageCollected<StyleRule>(std::move(selector_list),
-                                           lazy_property_parser);
-  }
-
   StyleRule(CSSSelectorList, CSSPropertyValueSet*);
   StyleRule(CSSSelectorList, CSSLazyPropertyParser*);
   StyleRule(const StyleRule&);
@@ -161,10 +150,6 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
 
 class CORE_EXPORT StyleRuleFontFace : public StyleRuleBase {
  public:
-  static StyleRuleFontFace* Create(CSSPropertyValueSet* properties) {
-    return MakeGarbageCollected<StyleRuleFontFace>(properties);
-  }
-
   StyleRuleFontFace(CSSPropertyValueSet*);
   StyleRuleFontFace(const StyleRuleFontFace&);
   ~StyleRuleFontFace();

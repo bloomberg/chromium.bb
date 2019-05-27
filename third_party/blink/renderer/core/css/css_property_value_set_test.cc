@@ -22,7 +22,7 @@ class CSSPropertyValueSetTest : public PageTestBase {
 
 TEST_F(CSSPropertyValueSetTest, MergeAndOverrideOnConflictCustomProperty) {
   auto* context = MakeGarbageCollected<CSSParserContext>(GetDocument());
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   String sheet_text = R"CSS(
     #first {

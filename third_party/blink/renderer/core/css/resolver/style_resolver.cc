@@ -93,6 +93,7 @@
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -123,9 +124,9 @@ bool HasAnimationsOrTransitions(const StyleResolverState& state,
 using namespace html_names;
 
 static CSSPropertyValueSet* LeftToRightDeclaration() {
-  DEFINE_STATIC_LOCAL(Persistent<MutableCSSPropertyValueSet>,
-                      left_to_right_decl,
-                      (MutableCSSPropertyValueSet::Create(kHTMLQuirksMode)));
+  DEFINE_STATIC_LOCAL(
+      Persistent<MutableCSSPropertyValueSet>, left_to_right_decl,
+      (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode)));
   if (left_to_right_decl->IsEmpty()) {
     left_to_right_decl->SetProperty(CSSPropertyID::kDirection,
                                     CSSValueID::kLtr);
@@ -134,9 +135,9 @@ static CSSPropertyValueSet* LeftToRightDeclaration() {
 }
 
 static CSSPropertyValueSet* RightToLeftDeclaration() {
-  DEFINE_STATIC_LOCAL(Persistent<MutableCSSPropertyValueSet>,
-                      right_to_left_decl,
-                      (MutableCSSPropertyValueSet::Create(kHTMLQuirksMode)));
+  DEFINE_STATIC_LOCAL(
+      Persistent<MutableCSSPropertyValueSet>, right_to_left_decl,
+      (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode)));
   if (right_to_left_decl->IsEmpty()) {
     right_to_left_decl->SetProperty(CSSPropertyID::kDirection,
                                     CSSValueID::kRtl);

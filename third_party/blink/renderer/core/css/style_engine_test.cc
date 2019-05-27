@@ -81,8 +81,8 @@ void StyleEngineTest::TearDown() {
 StyleEngineTest::RuleSetInvalidation
 StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
                                                const String& css_text) {
-  StyleSheetContents* sheet =
-      StyleSheetContents::Create(MakeGarbageCollected<CSSParserContext>(
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(
+      MakeGarbageCollected<CSSParserContext>(
           kHTMLStandardMode, SecureContextMode::kInsecureContext));
   sheet->ParseString(css_text);
   HeapHashSet<Member<RuleSet>> rule_sets;
@@ -97,7 +97,7 @@ StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
 }
 
 TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
-  StyleSheetContents* parsed_sheet = StyleSheetContents::Create(
+  auto* parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   parsed_sheet->ParseString("div {}");
   GetStyleEngine().InjectSheet("", parsed_sheet);
@@ -160,7 +160,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   const unsigned initial_count = GetStyleEngine().StyleForElementCount();
 
-  StyleSheetContents* green_parsed_sheet = StyleSheetContents::Create(
+  auto* green_parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   green_parsed_sheet->ParseString(
       "#t1 { color: green !important }"
@@ -186,7 +186,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(MakeRGB(0, 0, 0), t3->GetComputedStyle()->VisitedDependentColor(
                                   GetCSSPropertyColor()));
 
-  StyleSheetContents* blue_parsed_sheet = StyleSheetContents::Create(
+  auto* blue_parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   blue_parsed_sheet->ParseString(
       "#t1 { color: blue !important }"
@@ -264,7 +264,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_EQ(capabilities.slope,
             FontSelectionRange({NormalSlopeValue(), NormalSlopeValue()}));
 
-  StyleSheetContents* font_face_parsed_sheet = StyleSheetContents::Create(
+  auto* font_face_parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   font_face_parsed_sheet->ParseString(
       "@font-face {"
@@ -345,7 +345,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_FALSE(GetStyleEngine().Resolver()->FindKeyframesRule(
       t5, AtomicString("dummy-animation")));
 
-  StyleSheetContents* keyframes_parsed_sheet = StyleSheetContents::Create(
+  auto* keyframes_parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   keyframes_parsed_sheet->ParseString("@keyframes dummy-animation { from {} }");
   StyleSheetKey keyframes_key("keyframes");
@@ -404,8 +404,8 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       MakeRGB(255, 255, 255),
       t7->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
-  StyleSheetContents* custom_properties_parsed_sheet =
-      StyleSheetContents::Create(
+  auto* custom_properties_parsed_sheet =
+      MakeGarbageCollected<StyleSheetContents>(
           MakeGarbageCollected<CSSParserContext>(GetDocument()));
   custom_properties_parsed_sheet->ParseString(
       ":root {"
@@ -445,7 +445,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       MakeRGB(255, 255, 255),
       t8->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
-  StyleSheetContents* media_queries_parsed_sheet = StyleSheetContents::Create(
+  auto* media_queries_parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   media_queries_parsed_sheet->ParseString(
       "@media screen {"
@@ -499,7 +499,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(MakeRGB(0, 0, 0), t10->GetComputedStyle()->VisitedDependentColor(
                                    GetCSSPropertyColor()));
 
-  StyleSheetContents* parsed_author_sheet = StyleSheetContents::Create(
+  auto* parsed_author_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   parsed_author_sheet->ParseString(
       "#t9 {"
@@ -541,7 +541,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       MakeRGB(255, 255, 255),
       t11->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
-  StyleSheetContents* parsed_removable_red_sheet = StyleSheetContents::Create(
+  auto* parsed_removable_red_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   parsed_removable_red_sheet->ParseString("#t11 { color: red !important; }");
   StyleSheetKey removable_red_sheet_key("removable_red_sheet");
@@ -554,7 +554,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(MakeRGB(255, 0, 0), t11->GetComputedStyle()->VisitedDependentColor(
                                      GetCSSPropertyColor()));
 
-  StyleSheetContents* parsed_removable_green_sheet = StyleSheetContents::Create(
+  auto* parsed_removable_green_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   parsed_removable_green_sheet->ParseString(
       "#t11 { color: green !important; }");
@@ -568,7 +568,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(MakeRGB(0, 128, 0), t11->GetComputedStyle()->VisitedDependentColor(
                                      GetCSSPropertyColor()));
 
-  StyleSheetContents* parsed_removable_red_sheet2 = StyleSheetContents::Create(
+  auto* parsed_removable_red_sheet2 = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   parsed_removable_red_sheet2->ParseString("#t11 { color: red !important; }");
   GetStyleEngine().InjectSheet(removable_red_sheet_key,
@@ -633,7 +633,7 @@ TEST_F(StyleEngineTest, InjectedFontFace) {
   EXPECT_TRUE(cache->Get(font_description, "Author"));
   EXPECT_FALSE(cache->Get(font_description, "User"));
 
-  StyleSheetContents* user_sheet = StyleSheetContents::Create(
+  auto* user_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
   user_sheet->ParseString(
       "@font-face {"

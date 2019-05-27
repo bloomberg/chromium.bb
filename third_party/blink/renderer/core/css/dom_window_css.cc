@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -47,8 +48,8 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
   if (unresolved_property == CSSPropertyID::kInvalid)
     return false;
   if (unresolved_property == CSSPropertyID::kVariable) {
-    MutableCSSPropertyValueSet* dummy_style =
-        MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
+    auto* dummy_style =
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
     bool is_animation_tainted = false;
     const Document& document = To<Document>(*execution_context);
     const PropertyRegistry* registry = document.GetPropertyRegistry();
@@ -65,8 +66,8 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
 #endif
 
   // This will return false when !important is present
-  MutableCSSPropertyValueSet* dummy_style =
-      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
+  auto* dummy_style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
   return CSSParser::ParseValue(dummy_style, unresolved_property, value, false,
                                execution_context->GetSecureContextMode())
       .did_parse;

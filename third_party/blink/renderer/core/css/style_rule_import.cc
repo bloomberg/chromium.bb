@@ -80,8 +80,8 @@ void StyleRuleImport::NotifyFinished(Resource* resource) {
       cached_style_sheet->GetReferrerPolicy(), cached_style_sheet->Encoding(),
       document);
 
-  style_sheet_ =
-      StyleSheetContents::Create(this, cached_style_sheet->Url(), context);
+  style_sheet_ = MakeGarbageCollected<StyleSheetContents>(
+      context, cached_style_sheet->Url(), this);
 
   style_sheet_->ParseAuthorStyleSheet(
       cached_style_sheet, document ? document->GetSecurityOrigin() : nullptr);

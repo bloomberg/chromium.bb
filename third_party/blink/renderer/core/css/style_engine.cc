@@ -165,8 +165,8 @@ void StyleEngine::InjectSheet(const StyleSheetKey& key,
       injected_style_sheets =
           origin == WebDocument::kUserOrigin ? injected_user_style_sheets_
                                              : injected_author_style_sheets_;
-  injected_style_sheets.push_back(
-      std::make_pair(key, CSSStyleSheet::Create(sheet, *document_)));
+  injected_style_sheets.push_back(std::make_pair(
+      key, MakeGarbageCollected<CSSStyleSheet>(sheet, *document_)));
   if (origin == WebDocument::kUserOrigin)
     MarkUserStyleDirty();
   else
@@ -198,9 +198,10 @@ CSSStyleSheet& StyleEngine::EnsureInspectorStyleSheet() {
   if (inspector_style_sheet_)
     return *inspector_style_sheet_;
 
-  StyleSheetContents* contents = StyleSheetContents::Create(
+  auto* contents = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(*document_));
-  inspector_style_sheet_ = CSSStyleSheet::Create(contents, *document_);
+  inspector_style_sheet_ =
+      MakeGarbageCollected<CSSStyleSheet>(contents, *document_);
   MarkDocumentDirty();
   // TODO(futhark@chromium.org): Making the active stylesheets up-to-date here
   // is required by some inspector tests, at least. I theory this should not be

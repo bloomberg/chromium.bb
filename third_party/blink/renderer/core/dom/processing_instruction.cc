@@ -213,10 +213,10 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
         style_resource->GetResponse().IsCorsSameOrigin(),
         style_resource->GetReferrerPolicy(), style_resource->Encoding());
 
-    StyleSheetContents* new_sheet =
-        StyleSheetContents::Create(style_resource->Url(), parser_context);
+    auto* new_sheet = MakeGarbageCollected<StyleSheetContents>(
+        parser_context, style_resource->Url());
 
-    CSSStyleSheet* css_sheet = CSSStyleSheet::Create(new_sheet, *this);
+    auto* css_sheet = MakeGarbageCollected<CSSStyleSheet>(new_sheet, *this);
     css_sheet->setDisabled(alternate_);
     css_sheet->SetTitle(title_);
     if (!alternate_ && !title_.IsEmpty()) {

@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 
+#include <memory>
+#include <utility>
+
 #include "third_party/blink/renderer/core/css/css_basic_shape_values.h"
 #include "third_party/blink/renderer/core/css/css_border_image.h"
 #include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
@@ -45,6 +48,7 @@
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -2177,7 +2181,7 @@ CSSValue* ConsumePath(CSSParserTokenRange& range) {
   range = function_range;
   if (byte_stream->IsEmpty())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return CSSPathValue::Create(std::move(byte_stream));
+  return MakeGarbageCollected<CSSPathValue>(std::move(byte_stream));
 }
 
 CSSValue* ConsumeRay(CSSParserTokenRange& range,

@@ -209,7 +209,7 @@ WebStyleSheetKey WebDocument::InsertStyleSheet(const WebString& source_code,
                                                CSSOrigin origin) {
   Document* document = Unwrap<Document>();
   DCHECK(document);
-  StyleSheetContents* parsed_sheet = StyleSheetContents::Create(
+  auto* parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(*document));
   parsed_sheet->ParseString(source_code);
   const WebStyleSheetKey& injection_key =

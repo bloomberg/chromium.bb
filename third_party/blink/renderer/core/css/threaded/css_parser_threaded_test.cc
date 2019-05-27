@@ -25,8 +25,8 @@ class CSSParserThreadedTest : public MultiThreadedTest {
 
   static MutableCSSPropertyValueSet* TestValue(CSSPropertyID prop,
                                                const String& text) {
-    MutableCSSPropertyValueSet* style =
-        MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
+    auto* style =
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
     CSSParser::ParseValue(style, prop, text, true,
                           SecureContextMode::kInsecureContext);
     return style;

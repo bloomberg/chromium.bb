@@ -22,8 +22,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       is_strict_mode ? blink::kHTMLStandardMode : blink::kHTMLQuirksMode,
       is_secure_context_mode ? blink::SecureContextMode::kSecureContext
                              : blink::SecureContextMode::kInsecureContext);
-  blink::StyleSheetContents* styleSheet =
-      blink::StyleSheetContents::Create(context);
+  auto* styleSheet =
+      blink::MakeGarbageCollected<blink::StyleSheetContents>(context);
 
   styleSheet->ParseString(String::FromUTF8WithLatin1Fallback(
       reinterpret_cast<const char*>(data), size));

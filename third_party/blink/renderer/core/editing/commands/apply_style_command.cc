@@ -375,7 +375,7 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
 static MutableCSSPropertyValueSet* CopyStyleOrCreateEmpty(
     const CSSPropertyValueSet* style) {
   if (!style)
-    return MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
+    return MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   return style->MutableCopy();
 }
 

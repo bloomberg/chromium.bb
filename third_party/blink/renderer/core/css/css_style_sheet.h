@@ -54,14 +54,10 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
  public:
   static const Document* SingleOwnerDocument(const CSSStyleSheet*);
 
-  static CSSStyleSheet* Create(Document&, ExceptionState&);
   static CSSStyleSheet* Create(Document&,
                                const CSSStyleSheetInit*,
                                ExceptionState&);
 
-  static CSSStyleSheet* Create(StyleSheetContents*,
-                               CSSImportRule* owner_rule = nullptr);
-  static CSSStyleSheet* Create(StyleSheetContents*, Node& owner_node);
   static CSSStyleSheet* CreateInline(
       Node&,
       const KURL&,
@@ -72,11 +68,13 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
       Node& owner_node,
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
-  CSSStyleSheet(StyleSheetContents*, CSSImportRule* owner_rule);
-  CSSStyleSheet(StyleSheetContents*,
-                Node& owner_node,
-                bool is_inline_stylesheet,
-                const TextPosition& start_position);
+  explicit CSSStyleSheet(StyleSheetContents*,
+                         CSSImportRule* owner_rule = nullptr);
+  CSSStyleSheet(
+      StyleSheetContents*,
+      Node& owner_node,
+      bool is_inline_stylesheet = false,
+      const TextPosition& start_position = TextPosition::MinimumPosition());
   ~CSSStyleSheet() override;
 
   CSSStyleSheet* parentStyleSheet() const override;

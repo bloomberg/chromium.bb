@@ -6,12 +6,13 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 TEST(FontStyleResolverTest, Simple) {
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyID::kFont, "15px Ahem", true,
                         SecureContextMode::kInsecureContext);
 
@@ -23,8 +24,8 @@ TEST(FontStyleResolverTest, Simple) {
 }
 
 TEST(FontStyleResolverTest, InvalidSize) {
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyID::kFont, "-1px Ahem", true,
                         SecureContextMode::kInsecureContext);
 
@@ -36,8 +37,8 @@ TEST(FontStyleResolverTest, InvalidSize) {
 }
 
 TEST(FontStyleResolverTest, InvalidWeight) {
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyID::kFont, "wrong 1px Ahem", true,
                         SecureContextMode::kInsecureContext);
 
@@ -49,8 +50,8 @@ TEST(FontStyleResolverTest, InvalidWeight) {
 }
 
 TEST(FontStyleResolverTest, InvalidEverything) {
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyID::kFont,
                         "wrong wrong wrong 1px Ahem", true,
                         SecureContextMode::kInsecureContext);
@@ -63,8 +64,8 @@ TEST(FontStyleResolverTest, InvalidEverything) {
 }
 
 TEST(FontStyleResolverTest, RelativeSize) {
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyID::kFont, "italic 2ex Ahem", true,
                         SecureContextMode::kInsecureContext);
 

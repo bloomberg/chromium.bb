@@ -66,9 +66,9 @@ unsigned StyleSheetContents::EstimatedSizeInBytes() const {
   return size;
 }
 
-StyleSheetContents::StyleSheetContents(StyleRuleImport* owner_rule,
+StyleSheetContents::StyleSheetContents(const CSSParserContext* context,
                                        const String& original_url,
-                                       const CSSParserContext* context)
+                                       StyleRuleImport* owner_rule)
     : owner_rule_(owner_rule),
       original_url_(original_url),
       default_namespace_(g_star_atom),

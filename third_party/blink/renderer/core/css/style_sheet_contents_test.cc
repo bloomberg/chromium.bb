@@ -14,7 +14,7 @@ TEST(StyleSheetContentsTest, InsertMediaRule) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
   style_sheet->ParseString("@namespace ns url(test);");
   EXPECT_EQ(1U, style_sheet->RuleCount());
 
@@ -38,7 +38,7 @@ TEST(StyleSheetContentsTest, InsertFontFaceRule) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
   style_sheet->ParseString("@namespace ns url(test);");
   EXPECT_EQ(1U, style_sheet->RuleCount());
 
@@ -62,7 +62,7 @@ TEST(StyleSheetContentsTest, HasViewportRule) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
   style_sheet->ParseString("@viewport { width: 200px}");
   EXPECT_EQ(1U, style_sheet->RuleCount());
   EXPECT_TRUE(style_sheet->HasViewportRule());
@@ -72,7 +72,7 @@ TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertion) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
   style_sheet->ParseString("body { color: pink }");
   EXPECT_EQ(1U, style_sheet->RuleCount());
   EXPECT_FALSE(style_sheet->HasViewportRule());
@@ -89,7 +89,7 @@ TEST(StyleSheetContentsTest, HasViewportRuleAfterInsertionIntoMediaRule) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
 
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
   style_sheet->ParseString("@media {}");
   ASSERT_EQ(1U, style_sheet->RuleCount());
   EXPECT_FALSE(style_sheet->HasViewportRule());

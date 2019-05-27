@@ -274,7 +274,7 @@ TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix) {
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   for (auto* test_case : test_cases) {
     CSSTokenizer tokenizer(test_case);
@@ -301,7 +301,7 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
   sheet->ParserAddNamespace("ns", "http://ns.org");
 
   for (auto** test_case : test_cases) {
@@ -321,7 +321,7 @@ TEST(CSSSelectorParserTest, AttributeSelectorUniversalInvalid) {
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
@@ -387,7 +387,7 @@ TEST(CSSSelectorParserTest, InvalidNestingPseudoIs) {
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
@@ -427,7 +427,7 @@ TEST(CSSSelectorParserTest, InvalidPseudoIsArguments) {
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   for (auto* test_case : test_cases) {
     SCOPED_TRACE(test_case);
@@ -461,7 +461,7 @@ TEST(CSSSelectorParserTest, InvalidNestingPseudoWhere) {
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   for (const char* test_case : test_cases) {
     SCOPED_TRACE(test_case);
@@ -505,7 +505,7 @@ TEST(CSSSelectorParserTest, ASCIILowerHTMLStrict) {
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case.input);
@@ -530,7 +530,7 @@ TEST(CSSSelectorParserTest, ASCIILowerHTMLQuirks) {
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLQuirksMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case.input);
@@ -592,7 +592,7 @@ TEST(CSSSelectorParserTest, UseCountShadowPseudo) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kSecureContext,
       CSSParserContext::kLiveProfile, doc);
-  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   auto ExpectCount = [doc, context, sheet](const char* selector,
                                            WebFeature feature) {
@@ -768,7 +768,7 @@ TEST(CSSSelectorParserTest, ImplicitShadowCrossingCombinators) {
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   for (auto test_case : test_cases) {
     SCOPED_TRACE(test_case.input);

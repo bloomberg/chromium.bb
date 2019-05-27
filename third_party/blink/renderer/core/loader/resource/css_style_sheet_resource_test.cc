@@ -97,8 +97,8 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {
 
   auto* parser_context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
-  CSSStyleSheet* sheet = CSSStyleSheet::Create(contents, GetDocument());
+  auto* contents = MakeGarbageCollected<StyleSheetContents>(parser_context);
+  auto* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, GetDocument());
   EXPECT_TRUE(sheet);
 
   contents->CheckLoaded();
@@ -118,8 +118,8 @@ TEST_F(CSSStyleSheetResourceTest, CreateFromCacheRestoresOriginalSheet) {
 
   auto* parser_context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
-  CSSStyleSheet* sheet = CSSStyleSheet::Create(contents, GetDocument());
+  auto* contents = MakeGarbageCollected<StyleSheetContents>(parser_context);
+  auto* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, GetDocument());
   ASSERT_TRUE(sheet);
 
   contents->ParseString("div { color: red; }");
@@ -142,8 +142,8 @@ TEST_F(CSSStyleSheetResourceTest,
 
   auto* parser_context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
-  CSSStyleSheet* sheet = CSSStyleSheet::Create(contents, GetDocument());
+  auto* contents = MakeGarbageCollected<StyleSheetContents>(parser_context);
+  auto* sheet = MakeGarbageCollected<CSSStyleSheet>(contents, GetDocument());
   ASSERT_TRUE(sheet);
 
   contents->ParseString("@media { div { color: red; } }");
@@ -163,7 +163,7 @@ TEST_F(CSSStyleSheetResourceTest,
   ASSERT_TRUE(parsed_stylesheet);
 
   sheet->ClearOwnerNode();
-  sheet = CSSStyleSheet::Create(parsed_stylesheet, GetDocument());
+  sheet = MakeGarbageCollected<CSSStyleSheet>(parsed_stylesheet, GetDocument());
   ASSERT_TRUE(sheet);
 
   EXPECT_TRUE(contents->HasSingleOwnerDocument());

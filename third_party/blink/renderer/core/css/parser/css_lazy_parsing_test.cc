@@ -34,7 +34,7 @@ class CSSLazyParsingTest : public testing::Test {
 TEST_F(CSSLazyParsingTest, Simple) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   String sheet_text = "body { background-color: red; }";
   CSSParser::ParseSheet(context, style_sheet, sheet_text,
@@ -48,7 +48,7 @@ TEST_F(CSSLazyParsingTest, Simple) {
 TEST_F(CSSLazyParsingTest, LazyParseBeforeAfter) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   String sheet_text =
       "p::before { content: 'foo' } p .class::after { content: 'bar' } ";
@@ -66,7 +66,7 @@ TEST_F(CSSLazyParsingTest, LazyParseBeforeAfter) {
 TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesDoesntChange1) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   String sheet_text = "p::first-letter { ,badness, } ";
   CSSParser::ParseSheet(context, style_sheet, sheet_text,
@@ -91,7 +91,7 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesDoesntChange1) {
 TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext);
-  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
 
   String sheet_text = "p::before { ,badness, } ";
   CSSParser::ParseSheet(context, style_sheet, sheet_text,
@@ -113,10 +113,10 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
   auto* context = MakeGarbageCollected<CSSParserContext>(
       kHTMLStandardMode, SecureContextMode::kInsecureContext,
       CSSParserContext::kLiveProfile, &dummy_holder->GetDocument());
-  cached_contents_ = StyleSheetContents::Create(context);
+  cached_contents_ = MakeGarbageCollected<StyleSheetContents>(context);
   {
-    CSSStyleSheet* sheet =
-        CSSStyleSheet::Create(cached_contents_, dummy_holder->GetDocument());
+    auto* sheet = MakeGarbageCollected<CSSStyleSheet>(
+        cached_contents_, dummy_holder->GetDocument());
     DCHECK(sheet);
 
     String sheet_text = "body { background-color: red; } p { color: orange;  }";
@@ -145,8 +145,8 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
 
   auto dummy_holder2 = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   Page::InsertOrdinaryPageForTesting(&dummy_holder2->GetPage());
-  CSSStyleSheet* sheet2 =
-      CSSStyleSheet::Create(cached_contents_, dummy_holder2->GetDocument());
+  auto* sheet2 = MakeGarbageCollected<CSSStyleSheet>(
+      cached_contents_, dummy_holder2->GetDocument());
 
   EXPECT_EQ(&dummy_holder2->GetDocument(),
             cached_contents_->SingleOwnerDocument());

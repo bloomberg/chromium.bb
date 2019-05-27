@@ -267,8 +267,8 @@ const CSSValue* CSSParser::ParseFontFaceDescriptor(
     CSSPropertyID property_id,
     const String& property_value,
     const CSSParserContext* context) {
-  MutableCSSPropertyValueSet* style =
-      MutableCSSPropertyValueSet::Create(kCSSFontFaceRuleMode);
+  auto* style =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kCSSFontFaceRuleMode);
   CSSParser::ParseValue(style, property_id, property_value, true, context);
   const CSSValue* value = style->GetPropertyCSSValue(property_id);
 
