@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/win/registry.h"
 #include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -20,28 +21,39 @@ namespace {
 template <typename ResultType>
 void SaveBoolAndCopyableDataCallback(bool* out_success,
                                      ResultType* out_result,
-                                     base::OnceClosure quit_closure,
+                                     base::WaitableEvent* async_call_done_event,
                                      bool success,
                                      const ResultType& result) {
   *out_success = success;
   *out_result = result;
-  std::move(quit_closure).Run();
+  async_call_done_event->Signal();
 }
 
-void SaveOpenReadOnlyRegistryCallback(uint32_t* out_return_code,
-                                      HANDLE* result_holder,
-                                      base::OnceClosure quit_closure,
-                                      uint32_t return_code,
-                                      HANDLE handle) {
+void SaveGetFileAttributesCallback(uint32_t* out_result,
+                                   uint32_t* out_attributes,
+                                   base::WaitableEvent* async_call_done_event,
+                                   uint32_t result,
+                                   uint32_t attributes) {
+  *out_result = result;
+  *out_attributes = attributes;
+  async_call_done_event->Signal();
+}
+
+void SaveOpenReadOnlyRegistryCallback(
+    uint32_t* out_return_code,
+    HANDLE* result_holder,
+    base::WaitableEvent* async_call_done_event,
+    uint32_t return_code,
+    HANDLE handle) {
   *out_return_code = return_code;
   *result_holder = std::move(handle);
-  std::move(quit_closure).Run();
+  async_call_done_event->Signal();
 }
 
 void SaveBoolAndScheduledTasksCallback(
     bool* out_success,
     std::vector<TaskScheduler::TaskInfo>* out_tasks,
-    base::OnceClosure quit_closure,
+    base::WaitableEvent* async_call_done_event,
     bool in_success,
     std::vector<mojom::ScheduledTaskPtr> in_tasks) {
   out_tasks->clear();
@@ -63,19 +75,19 @@ void SaveBoolAndScheduledTasksCallback(
   }
 
   *out_success = in_success;
-  std::move(quit_closure).Run();
+  async_call_done_event->Signal();
 }
 
 void SaveUserInformationCallback(bool* out_success,
                                  mojom::UserInformation* out_result,
-                                 base::OnceClosure quit_closure,
+                                 base::WaitableEvent* async_call_done_event,
                                  bool in_success,
                                  mojom::UserInformationPtr in_result) {
   *out_success = in_success;
   out_result->name = std::move(in_result->name);
   out_result->domain = std::move(in_result->domain);
   out_result->account_type = in_result->account_type;
-  std::move(quit_closure).Run();
+  async_call_done_event->Signal();
 }
 
 }  // namespace
@@ -88,6 +100,25 @@ EngineRequestsProxy::EngineRequestsProxy(
 
 void EngineRequestsProxy::UnbindRequestsPtr() {
   engine_requests_ptr_.reset();
+}
+
+uint32_t EngineRequestsProxy::GetFileAttributes(const base::FilePath& file_path,
+                                                uint32_t* attributes) {
+  if (!attributes) {
+    LOG(ERROR) << "GetFileAttributes given a null pointer |attributes|";
+    return NULL_DATA_HANDLE;
+  }
+  uint32_t result;
+  MojoCallStatus call_status = SyncSandboxRequest(
+      this,
+      base::BindOnce(&EngineRequestsProxy::SandboxGetFileAttributes,
+                     base::Unretained(this), file_path),
+      base::BindOnce(SaveGetFileAttributesCallback, &result, attributes));
+  if (call_status.state == MojoCallStatus::MOJO_CALL_ERROR) {
+    *attributes = INVALID_FILE_ATTRIBUTES;
+    return SandboxErrorCode::INTERNAL_ERROR;
+  }
+  return result;
 }
 
 bool EngineRequestsProxy::GetKnownFolderPath(mojom::KnownFolder folder_id,
@@ -265,6 +296,19 @@ uint32_t EngineRequestsProxy::NtOpenReadOnlyRegistry(
 }
 
 EngineRequestsProxy::~EngineRequestsProxy() = default;
+
+MojoCallStatus EngineRequestsProxy::SandboxGetFileAttributes(
+    const base::FilePath& file_path,
+    mojom::EngineRequests::SandboxGetFileAttributesCallback result_callback) {
+  if (!engine_requests_ptr_.is_bound()) {
+    LOG(ERROR) << "SandboxGetFileAttributes called without bound pointer";
+    return MojoCallStatus::Failure(SandboxErrorCode::INTERNAL_ERROR);
+  }
+
+  engine_requests_ptr_->SandboxGetFileAttributes(file_path,
+                                                 std::move(result_callback));
+  return MojoCallStatus::Success();
+}
 
 MojoCallStatus EngineRequestsProxy::SandboxGetKnownFolderPath(
     mojom::KnownFolder folder_id,

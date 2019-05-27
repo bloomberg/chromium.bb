@@ -13,25 +13,4 @@
 
 namespace chrome_cleaner {
 
-TEST(SystemUtilTests, GetMediumIntegrityToken) {
-  base::win::ScopedHandle medium_integrity_token;
-  ASSERT_TRUE(GetMediumIntegrityToken(&medium_integrity_token));
-
-  // Get the list of privileges in the token.
-  DWORD size = 0;
-  ::GetTokenInformation(medium_integrity_token.Get(), TokenIntegrityLevel,
-                        nullptr, 0, &size);
-  std::unique_ptr<BYTE[]> mandatory_label_bytes(new BYTE[size]);
-  TOKEN_MANDATORY_LABEL* mandatory_label =
-      reinterpret_cast<TOKEN_MANDATORY_LABEL*>(mandatory_label_bytes.get());
-  ASSERT_TRUE(::GetTokenInformation(medium_integrity_token.Get(),
-                                    TokenIntegrityLevel, mandatory_label, size,
-                                    &size));
-  int32_t integrity_level = *GetSidSubAuthority(
-      mandatory_label->Label.Sid,
-      (DWORD)(UCHAR)(*GetSidSubAuthorityCount(mandatory_label->Label.Sid) - 1));
-  EXPECT_GE(integrity_level, SECURITY_MANDATORY_MEDIUM_RID);
-  EXPECT_LT(integrity_level, SECURITY_MANDATORY_HIGH_RID);
-}
-
 }  // namespace chrome_cleaner

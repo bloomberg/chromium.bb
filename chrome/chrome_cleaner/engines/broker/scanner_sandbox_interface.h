@@ -35,6 +35,9 @@ uint32_t SandboxFindNextFile(HANDLE hFindFile,
 // overloading the Windows version and gets unhappy.
 uint32_t SandboxFindClose(HANDLE hFindFile);
 
+uint32_t SandboxGetFileAttributes(const base::FilePath& file_name,
+                                  uint32_t* attributes);
+
 bool SandboxGetKnownFolderPath(chrome_cleaner::mojom::KnownFolder folder_id,
                                base::FilePath* folder_path);
 

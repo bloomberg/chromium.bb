@@ -99,6 +99,46 @@ scoped_refptr<TestChildProcess> SetupSandboxedChildProcess() {
   return child_process;
 }
 
+MULTIPROCESS_TEST_MAIN(GetFileAttributesTest) {
+  auto child_process = SetupSandboxedChildProcess();
+  if (!child_process)
+    return 1;
+
+  scoped_refptr<EngineRequestsProxy> proxy(
+      child_process->GetEngineRequestsProxy());
+
+  uint32_t attributes;
+  EXPECT_EQ(INVALID_FILE_PATH,
+            proxy->GetFileAttributes(base::FilePath(), &attributes));
+
+  EXPECT_EQ(NULL_DATA_HANDLE, proxy->GetFileAttributes(
+                                  child_process->windows_directory(), nullptr));
+
+  EXPECT_EQ(uint32_t{ERROR_SUCCESS},
+            proxy->GetFileAttributes(child_process->windows_directory(),
+                                     &attributes));
+
+  return ::testing::Test::HasNonfatalFailure();
+}
+
+MULTIPROCESS_TEST_MAIN(GetFileAttributesNoHangs) {
+  auto child_process = SetupSandboxedChildProcess();
+  if (!child_process)
+    return 1;
+
+  child_process->UnbindRequestsPtrs();
+
+  scoped_refptr<EngineRequestsProxy> proxy(
+      child_process->GetEngineRequestsProxy());
+
+  uint32_t attributes;
+  EXPECT_EQ(INTERNAL_ERROR,
+            proxy->GetFileAttributes(child_process->windows_directory(),
+                                     &attributes));
+
+  return ::testing::Test::HasNonfatalFailure();
+}
+
 MULTIPROCESS_TEST_MAIN(GetKnownFolderPath) {
   auto child_process = SetupSandboxedChildProcess();
   if (!child_process)
@@ -724,7 +764,9 @@ INSTANTIATE_TEST_SUITE_P(
     Success,
     EngineRequestsProxyTest,
     testing::Combine(testing::Values(0),
-                     testing::Values("GetKnownFolderPath",
+                     testing::Values("GetFileAttributesTest",
+                                     "GetFileAttributesNoHangs",
+                                     "GetKnownFolderPath",
                                      "GetKnownFolderPathNoHangs",
                                      "GetProcesses",
                                      "GetProcessesNoHangs",

@@ -46,8 +46,12 @@ class FileRemover : public FileRemoverAPI {
   DeletionValidationStatus CanRemove(const base::FilePath& file) const override;
 
  private:
+  using RemovalCallback = base::OnceCallback<
+      void(const base::FilePath&, DoneCallback, QuarantineStatus)>;
+
   void TryToQuarantine(const base::FilePath& path,
                        QuarantineResultCallback callback) const;
+
   void RemoveFile(const base::FilePath& path,
                   DoneCallback removal_done_callback,
                   QuarantineStatus result) const;
@@ -55,6 +59,10 @@ class FileRemover : public FileRemoverAPI {
   void ScheduleRemoval(const base::FilePath& file_path,
                        DoneCallback removal_done_callback,
                        QuarantineStatus quarantine_status) const;
+
+  void ValidateAndQuarantineFile(const base::FilePath& file_path,
+                                 RemovalCallback removal_callback,
+                                 DoneCallback removal_done_callback) const;
 
   scoped_refptr<DigestVerifier> digest_verifier_;
   std::unique_ptr<ZipArchiver> archiver_;

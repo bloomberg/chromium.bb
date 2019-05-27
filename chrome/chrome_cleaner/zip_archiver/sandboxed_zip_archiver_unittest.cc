@@ -70,7 +70,8 @@ class ZipArchiverSandboxedArchiverTest : public base::MultiProcessTest {
     ComputeSHA256DigestOfPath(src_file_path, &src_file_hash);
 
     const base::string16 zip_filename = internal::ConstructZipArchiveFileName(
-        src_file_path.BaseName().value(), src_file_hash);
+        src_file_path.BaseName().value(), src_file_hash,
+        /*max_filename_length=*/255);
 
     const base::FilePath& dst_archive_folder = test_file_.GetTempDirPath();
     expect_zip_file_path_ = dst_archive_folder.Append(zip_filename);

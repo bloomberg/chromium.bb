@@ -21,7 +21,6 @@
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/win/scoped_com_initializer.h"
 #include "chrome/chrome_cleaner/components/component_manager.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/engines/common/engine_digest_verifier.h"

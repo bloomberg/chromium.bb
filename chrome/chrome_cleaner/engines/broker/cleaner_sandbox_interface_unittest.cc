@@ -21,6 +21,8 @@
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string16.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/chrome_cleaner/engines/common/registry_util.h"
@@ -150,6 +152,18 @@ String16EmbeddedNulls VeryLongStringWithPrefix(
                                base::string16(kMaxRegistryParamLength, L'a'));
 }
 
+base::FilePath GetNativePath(const base::string16& path) {
+  // Add the native \??\ prefix described at
+  // https://googleprojectzero.blogspot.com/2016/02/the-definitive-guide-on-win32-to-nt.html
+  return base::FilePath(base::StrCat({L"\\??\\", path}));
+}
+
+base::FilePath GetUniversalPath(const base::string16& path) {
+  // Add the universal \\?\ prefix described at
+  // https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#namespaces
+  return base::FilePath(base::StrCat({L"\\\\?\\", path}));
+}
+
 }  // namespace
 
 class CleanerSandboxInterfaceDeleteFileTest : public ::testing::Test {
@@ -244,8 +258,16 @@ TEST_F(CleanerSandboxInterfaceDeleteFileTest, DeleteFile_NativePath) {
   ASSERT_TRUE(temp.CreateUniqueTempDir());
   base::FilePath file_path = temp.GetPath().Append(L"temp_file.exe");
 
-  base::string16 native_path = L"\\??\\" + file_path.value();
-  chrome_cleaner::VerifyRemoveNowFailure(base::FilePath(native_path),
+  chrome_cleaner::VerifyRemoveNowFailure(GetNativePath(file_path.value()),
+                                         file_remover_.get());
+}
+
+TEST_F(CleanerSandboxInterfaceDeleteFileTest, DeleteFile_UniversalPath) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path = temp.GetPath().Append(L"temp_file.exe");
+
+  chrome_cleaner::VerifyRemoveNowFailure(GetUniversalPath(file_path.value()),
                                          file_remover_.get());
 }
 

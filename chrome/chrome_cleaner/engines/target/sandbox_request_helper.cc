@@ -20,27 +20,16 @@ MojoCallStatus MojoCallStatus::Failure(SandboxErrorCode error_code) {
 
 namespace internal {
 
-void SaveMojoCallStatus(base::OnceClosure quit_closure,
-                        MojoCallStatus* status_out,
-                        MojoCallStatus status) {
-  *status_out = status;
+void SendAsyncMojoRequest(base::OnceCallback<MojoCallStatus()> request,
+                          base::WaitableEvent* async_call_done_event,
+                          MojoCallStatus* status_out) {
+  *status_out = std::move(request).Run();
 
-  // Only call the quit closure if there was an error, since then there won't be
-  // other callbacks.
-  if (status.state != MojoCallStatus::MOJO_CALL_MADE)
-    std::move(quit_closure).Run();
-}
-
-// Returns a wrapper that executes |closure| on the given |task_runner|.
-base::OnceClosure ClosureForTaskRunner(
-    scoped_refptr<base::TaskRunner> task_runner,
-    base::OnceClosure closure) {
-  return base::BindOnce(
-      [](scoped_refptr<base::TaskRunner> task_runner,
-         base::OnceClosure closure) {
-        task_runner->PostTask(FROM_HERE, std::move(closure));
-      },
-      task_runner, std::move(closure));
+  // If the async Mojo call was made successfully, the Mojo response callback
+  // will signal the event when the response is received. Otherwise signal it
+  // now because the Mojo response callback will never be invoked.
+  if (status_out->state != MojoCallStatus::MOJO_CALL_MADE)
+    async_call_done_event->Signal();
 }
 
 }  // namespace internal

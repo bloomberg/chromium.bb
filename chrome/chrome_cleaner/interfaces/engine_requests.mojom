@@ -47,6 +47,12 @@ struct UserInformation {
 //
 // This interface is used in scanning and cleaning mode.
 interface EngineRequests {
+  // Calls ::GetFileAttributes on the given path and returns the result in
+  // |attributes|. |result| is set to the value of ::GetLastError or to a
+  // validation error code from sandbox_error_code.h
+  SandboxGetFileAttributes(FilePath file_name) =>
+    (uint32 result, uint32 attributes);
+
   // Converts the given KnownFolder Id to its folder path.
   SandboxGetKnownFolderPath(KnownFolder folder_id) =>
     (bool result, FilePath folder_path);

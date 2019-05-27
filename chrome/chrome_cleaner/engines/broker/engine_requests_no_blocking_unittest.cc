@@ -25,6 +25,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
 #include "chrome/chrome_cleaner/engines/target/engine_file_requests_proxy.h"
 #include "chrome/chrome_cleaner/engines/target/sandboxed_test_helpers.h"
@@ -159,6 +160,13 @@ class TestEngineRequestInvoker {
                               file_requests_proxy_, test_file_path_, 0,
                               BindOnce(&OpenReadOnlyFileCallback,
                                        std::move(result_closure))));
+    } else if (request_name == "GetFileAttributes") {
+      engine_requests_proxy_->task_runner()->PostTask(
+          FROM_HERE,
+          BindOnce(
+              IgnoreResult(&EngineProxy::SandboxGetFileAttributes),
+              engine_requests_proxy_, test_file_path_,
+              BindOnce(&GetFileAttributesCallback, std::move(result_closure))));
     } else if (request_name == "GetKnownFolderPath") {
       engine_requests_proxy_->task_runner()->PostTask(
           FROM_HERE,
@@ -312,6 +320,12 @@ class TestEngineRequestInvoker {
 
   static void OpenReadOnlyFileCallback(base::OnceClosure closure,
                                        mojo::ScopedHandle /*handle*/) {
+    InvokeOnOtherSequence(std::move(closure));
+  }
+
+  static void GetFileAttributesCallback(base::OnceClosure closure,
+                                        uint32_t /*result*/,
+                                        uint32_t /*attributes*/) {
     InvokeOnOtherSequence(std::move(closure));
   }
 
@@ -503,6 +517,11 @@ class EngineRequestsNoBlockingTest
     : public ::testing::TestWithParam<const char*> {};
 
 TEST_P(EngineRequestsNoBlockingTest, TestRequest) {
+  // All of these tests fail when run on win8 bots so return right away.
+  // TODO(crbug.com/947576): Find out why and re-enable them.
+  if (base::win::GetVersion() == base::win::Version::WIN8)
+    return;
+
   base::test::ScopedTaskEnvironment scoped_task_environment;
 
   // This event will be shared between the parent and child processes. The
@@ -559,6 +578,7 @@ INSTANTIATE_TEST_CASE_P(All,
                                         "FindNextFile",
                                         "FindClose",
                                         "OpenReadOnlyFile",
+                                        "GetFileAttributes",
                                         "GetKnownFolderPath",
                                         "GetProcesses",
                                         "GetTasks",

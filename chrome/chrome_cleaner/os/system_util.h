@@ -48,11 +48,6 @@ struct ServiceStatus {
   SERVICE_STATUS_PROCESS service_status_process;
 };
 
-// Set |medium_integrity_token| with a medium integrity level token duplicated
-// from the current process token. Return false on failures or if called when
-// running on a Windows version before Vista.
-bool GetMediumIntegrityToken(base::win::ScopedHandle* medium_integrity_token);
-
 // Set the current process to background mode.
 void SetBackgroundMode();
 

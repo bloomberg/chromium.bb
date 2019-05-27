@@ -34,6 +34,8 @@ class EngineRequestsProxy
   void UnbindRequestsPtr();
 
   // Implements synchronous callbacks to be called on arbitrary threads.
+  virtual uint32_t GetFileAttributes(const base::FilePath& file_path,
+                                     uint32_t* attributes);
   virtual bool GetKnownFolderPath(mojom::KnownFolder folder_id,
                                   base::FilePath* folder_path);
   virtual bool GetProcesses(std::vector<base::ProcessId>* processes);
@@ -63,6 +65,9 @@ class EngineRequestsProxy
   friend class TestEngineRequestInvoker;
 
   // Invokes the desired function call from the IPC thread.
+  MojoCallStatus SandboxGetFileAttributes(
+      const base::FilePath& file_path,
+      mojom::EngineRequests::SandboxGetFileAttributesCallback result_callback);
   MojoCallStatus SandboxGetKnownFolderPath(
       mojom::KnownFolder folder_id,
       mojom::EngineRequests::SandboxGetKnownFolderPathCallback result_callback);

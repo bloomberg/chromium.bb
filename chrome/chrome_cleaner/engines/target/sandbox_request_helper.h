@@ -5,18 +5,13 @@
 #ifndef CHROME_CHROME_CLEANER_ENGINES_TARGET_SANDBOX_REQUEST_HELPER_H_
 #define CHROME_CHROME_CLEANER_ENGINES_TARGET_SANDBOX_REQUEST_HELPER_H_
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_current.h"
-#include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
-#include "base/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/chrome_cleaner/engines/common/sandbox_error_code.h"
 
 namespace chrome_cleaner {
@@ -40,20 +35,21 @@ struct MojoCallStatus {
 // them, they shouldn't be used by anyone else.
 namespace internal {
 
-void SaveMojoCallStatus(base::OnceClosure quit_closure,
-                        MojoCallStatus* status_out,
-                        MojoCallStatus status);
+using MojoCallStatusCallback = base::OnceCallback<MojoCallStatus()>;
 
-// Returns a wrapper that executes |closure| on the given |task_runner|.
-base::OnceClosure ClosureForTaskRunner(
-    scoped_refptr<base::TaskRunner> task_runner,
-    base::OnceClosure closure);
+// calls |request|, which should send an async mojo call, and copies its return
+// value to |status_out|. this function is executed on the mojo io thread.
+//
+// the comment in syncsandboxrequest explains when |event| is signaled.
+void SendAsyncMojoRequest(MojoCallStatusCallback request,
+                          base::WaitableEvent* async_call_done_event,
+                          MojoCallStatus* status_out);
 
 }  // namespace internal
 
 // This template function is inlined in the header because otherwise we would
 // have to introduce a templated class, and then the callsites would no longer
-// be able to implicit call the right function, but would have to explicitly
+// be able to implicitly call the right function, but would have to explicitly
 // create the class.
 template <typename ProxyType,
           typename RequestCallback,
@@ -65,45 +61,43 @@ MojoCallStatus SyncSandboxRequest(ProxyType* proxy,
     return MojoCallStatus::Failure(SandboxErrorCode::INTERNAL_ERROR);
   }
 
-  // If there is not already a MessageLoop on this thread (eg. when called on a
-  // thread created by a 3rd-party engine), create one.
-  std::unique_ptr<base::MessageLoop> local_loop;
-  if (!base::MessageLoopCurrent::IsSet())
-    local_loop = std::make_unique<base::MessageLoop>();
-
-  // Start a local RunLoop to receive the results from the request. It will
-  // execute until either the response callback or the early response callback
-  // causes it to quit, as follows:
+  // This function is executed on an arbitrary thread which may be controlled
+  // by a third-party engine. It blocks the current thread until a
+  // WaitableEvent is signaled, as follows:
   //
   // 1. If an error occurs that prevents the asynchronous Mojo call from being
-  // made, the early response callback will quit the loop. The response
-  // callback will not be called.
+  // made, SendAsyncMojoRequest will signal the event. The response callback
+  // will not be called.
   //
-  // 2. Otherwise as soon as the asynchronous Mojo call is made, the early
-  // response callback will be invoked with MOJO_CALL_MADE, and the loop will
-  // continue.
+  // 2. Otherwise as soon as the asynchronous Mojo call is made,
+  // SendAsyncMojoRequest will return MOJO_CALL_MADE but not signal the event.
   //
   // 3. When the asynchronous Mojo call returns a response, the response
-  // callback will be called and will quit the loop.
-  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  // callback will be called and will signal the event.
+  //
+  // The event can be bound using base::Unretained since it will not go out of
+  // scope until it is signaled.
+  base::WaitableEvent async_call_done_event;
 
-  MojoCallStatus call_status;
-  auto early_response_callback = base::BindOnce(
-      &internal::SaveMojoCallStatus, run_loop.QuitClosure(), &call_status);
-
-  // The response callback will be executed on the Mojo IO thread, so it will
-  // need to hop back to |message_loop|'s task runner to quit the run loop.
+  // |response| should be a Mojo response callback plus an extra event
+  // parameter. Binding |event| to the callback gives a callback with the
+  // correct signature to pass to |request|.
   auto response_callback = base::BindOnce(
-      std::move(response),
-      internal::ClosureForTaskRunner(base::ThreadTaskRunnerHandle::Get(),
-                                     run_loop.QuitClosure()));
+      std::move(response), base::Unretained(&async_call_done_event));
+
+  // |request| should wrap an async Mojo request that calls |response_callback|
+  // with the response.
+  internal::MojoCallStatusCallback request_callback =
+      base::BindOnce(std::move(request), std::move(response_callback));
 
   // Invoke the asynchronous Mojo call on the Mojo IO thread.
-  base::PostTaskAndReplyWithResult(
-      proxy->task_runner().get(), FROM_HERE,
-      base::BindOnce(std::move(request), std::move(response_callback)),
-      std::move(early_response_callback));
-  run_loop.Run();
+  MojoCallStatus call_status;
+  proxy->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&internal::SendAsyncMojoRequest,
+                                std::move(request_callback),
+                                base::Unretained(&async_call_done_event),
+                                base::Unretained(&call_status)));
+  async_call_done_event.Wait();
   return call_status;
 }
 

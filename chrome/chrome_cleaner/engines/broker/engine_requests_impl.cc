@@ -80,6 +80,29 @@ void EngineRequestsImpl::Bind(
   // interface.
 }
 
+void EngineRequestsImpl::SandboxGetFileAttributes(
+    const base::FilePath& file_name,
+    SandboxGetFileAttributesCallback result_callback) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&EngineRequestsImpl::GetFileAttributes,
+                     base::Unretained(this), file_name,
+                     std::move(result_callback)));
+}
+
+void EngineRequestsImpl::GetFileAttributes(
+    const base::FilePath& file_name,
+    SandboxGetFileAttributesCallback result_callback) {
+  if (metadata_observer_)
+    metadata_observer_->ObserveCall(CURRENT_FILE_AND_METHOD);
+  uint32_t attributes = INVALID_FILE_ATTRIBUTES;
+  uint32_t result =
+      chrome_cleaner_sandbox::SandboxGetFileAttributes(file_name, &attributes);
+  mojo_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(result_callback), result, attributes));
+}
+
 void EngineRequestsImpl::SandboxGetKnownFolderPath(
     mojom::KnownFolder folder_id,
     SandboxGetKnownFolderPathCallback result_callback) {

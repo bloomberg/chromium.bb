@@ -164,7 +164,7 @@ class EngineClient : public base::RefCountedThreadSafe<EngineClient> {
                              base::OnceClosure error_handler);
 
   void InitializeReadOnlyCallbacks();
-  bool InitializeCleaningCallbacks(const std::vector<UwSId>& enabled_uws);
+  bool InitializeCleaningCallbacks();
   bool InitializeQuarantine(std::unique_ptr<ZipArchiver>* archiver);
 
   // TODO(joenotcharles): When the synchronous Initialize method is removed,
