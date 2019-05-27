@@ -7,7 +7,7 @@ import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
 group("engine_definitions") {
   if (is_internal_chrome_cleaner_build) {
     deps = [
-      "//chrome/chrome_cleaner_internal:engine_definitions",
+      "//chrome_cleaner_internal:engine_definitions",
     ]
   } else {
     deps = [
@@ -20,7 +20,7 @@ group("engine_definitions") {
 group("engine_target_factory") {
   if (is_internal_chrome_cleaner_build) {
     deps = [
-      "//chrome/chrome_cleaner_internal:engine_target_factory",
+      "//chrome_cleaner_internal:engine_target_factory",
     ]
   } else {
     deps = [
