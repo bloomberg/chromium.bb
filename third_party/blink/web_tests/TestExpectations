@@ -5731,3 +5731,6 @@ crbug.com/965134 [ Linux ] virtual/mouseevent_fractional/fast/events/pointereven
 
 # Sheriff 2019-05-24
 crbug.com/966932 [ Linux ] http/tests/devtools/a11y-axe-core/elements/main-tool-test.js [ Timeout Pass ]
+
+# Sheriff 2019-05-27
+crbug.com/942411 [ Win ] http/tests/devtools/network/network-search.js [ Pass Timeout ]
