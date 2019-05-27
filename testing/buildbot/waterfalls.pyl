@@ -712,7 +712,7 @@
       },
       'linux-chromeos-rel': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'gn_all',
