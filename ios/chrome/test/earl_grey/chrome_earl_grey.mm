@@ -154,6 +154,29 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 - (NSError*)loadURL:(const GURL&)URL {
   return [self loadURL:URL waitForCompletion:YES];
 }
+- (NSError*)waitForSufficientlyVisibleElementWithMatcher:
+    (id<GREYMatcher>)matcher {
+  NSString* errorDescription = [NSString
+      stringWithFormat:
+          @"Failed waiting for element with matcher %@ to become visible",
+          matcher];
+
+  GREYCondition* waitForElement = [GREYCondition
+      conditionWithName:errorDescription
+                  block:^{
+                    NSError* error = nil;
+                    [[EarlGrey selectElementWithMatcher:matcher]
+                        assertWithMatcher:grey_sufficientlyVisible()
+                                    error:&error];
+                    return error == nil;
+                  }];
+
+  bool matchedElement =
+      [waitForElement waitWithTimeout:kWaitForUIElementTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(matchedElement, errorDescription);
+
+  return nil;
+}
 
 #pragma mark - WebState Utilities (EG2)
 
@@ -384,25 +407,6 @@ id ExecuteJavaScript(NSString* javascript,
                        text];
   EG_TEST_HELPER_ASSERT_TRUE(noStaticView, errorDescription);
 
-  return nil;
-}
-
-- (NSError*)waitForSufficientlyVisibleElementWithMatcher:
-    (id<GREYMatcher>)matcher {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:matcher]
-        assertWithMatcher:grey_sufficientlyVisible()
-                    error:&error];
-    return error == nil;
-  });
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:
-            @"Failed waiting for element with matcher %@ to become visible",
-            matcher]);
-  }
   return nil;
 }
 

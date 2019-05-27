@@ -85,6 +85,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)waitForPageToFinishLoading;
 
+// Waits for the matcher to return an element that is sufficiently visible.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForSufficientlyVisibleElementWithMatcher:
+    (id<GREYMatcher>)matcher;
+
 // Waits for there to be |count| number of non-incognito tabs within a timeout,
 // or a GREYAssert is induced.
 // TODO(crbug.com/963613): Change return type to void when
@@ -243,10 +249,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // If the condition is not met within a timeout returns an NSError indicating
 // why the operation failed, otherwise nil.
 - (NSError*)waitForErrorPage WARN_UNUSED_RESULT;
-
-// Waits for the matcher to return an element that is sufficiently visible.
-- (NSError*)waitForSufficientlyVisibleElementWithMatcher:
-    (id<GREYMatcher>)matcher WARN_UNUSED_RESULT;
 
 #pragma mark - WebState Utilities
 
