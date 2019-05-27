@@ -113,7 +113,6 @@ class VP9EncoderImpl : public VP9Encoder {
   GofInfoVP9 gof_;  // Contains each frame's temporal information for
                     // non-flexible mode.
   bool force_key_frame_;
-  bool different_framerates_used_;
   size_t pics_since_key_;
   uint8_t num_temporal_layers_;
   uint8_t num_spatial_layers_;         // Number of configured SLs
@@ -125,6 +124,8 @@ class VP9EncoderImpl : public VP9Encoder {
   const bool trusted_rate_controller_;
   const bool dynamic_rate_settings_;
   const bool full_superframe_drop_;
+  bool dropping_only_base_layer_;
+  vpx_svc_frame_drop_t svc_drop_frame_;
   bool first_frame_in_picture_;
   VideoBitrateAllocation current_bitrate_allocation_;
   absl::optional<RateControlParameters> requested_rate_settings_;
