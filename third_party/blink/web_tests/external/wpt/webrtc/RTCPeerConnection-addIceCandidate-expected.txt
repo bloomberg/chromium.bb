@@ -11,6 +11,7 @@ FAIL addIceCandidate({usernameFragment: "no such ufrag"}) should not work assert
 PASS Add ICE candidate after setting remote description should succeed
 PASS Add ICE candidate with RTCIceCandidate should succeed
 PASS Add candidate with only valid sdpMid should succeed
+PASS Add candidate with only valid sdpMid and RTCIceCandidate should succeed
 PASS Add candidate with only valid sdpMLineIndex should succeed
 PASS addIceCandidate with first sdpMid and sdpMLineIndex add candidate to first media stream
 PASS addIceCandidate with second sdpMid and sdpMLineIndex should add candidate to second media stream
