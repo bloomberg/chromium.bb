@@ -149,6 +149,7 @@ bool ShouldUseNewFormatting() {
   OmniboxIconFormatter* icon =
       [[OmniboxIconFormatter alloc] initWithMatch:_match];
   icon.defaultSearchEngineIsGoogle = self.defaultSearchEngineIsGoogle;
+  icon.incognito = self.incognito;
   return icon;
 }
 

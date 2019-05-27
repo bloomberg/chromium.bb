@@ -99,9 +99,11 @@
       if ([self hasCustomAnswerIcon]) {
         return UIColor.whiteColor;
       }
-      return [UIColor.blackColor colorWithAlphaComponent:0.5];
+      return self.incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.52]
+                            : [UIColor.blackColor colorWithAlphaComponent:0.45];
     case OmniboxIconTypeFavicon:
-      return [UIColor.blackColor colorWithAlphaComponent:0.5];
+      return self.incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.52]
+                            : [UIColor.blackColor colorWithAlphaComponent:0.31];
   }
 }
 
@@ -126,9 +128,11 @@
       if ([self hasCustomAnswerIcon]) {
         return [MDCPalette.cr_bluePalette tint500];
       }
-      return [UIColor.blackColor colorWithAlphaComponent:0.1];
+      return self.incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.15]
+                            : [UIColor.blackColor colorWithAlphaComponent:0.08];
     case OmniboxIconTypeFavicon:
-      return [UIColor.blackColor colorWithAlphaComponent:0.2];
+      return self.incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.16]
+                            : [UIColor.blackColor colorWithAlphaComponent:0.13];
   }
 }
 

@@ -302,7 +302,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   self.incognito = incognito;
 
   self.separator.backgroundColor =
-      self.incognito ? [MDCPalette.cr_greyPalette tint700]
+      self.incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.12]
                      : [UIColor.blackColor colorWithAlphaComponent:0.12];
 
   self.textTruncatingLabel.attributedText = self.suggestion.text;

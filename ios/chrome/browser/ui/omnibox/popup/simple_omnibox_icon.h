@@ -21,6 +21,8 @@ class GURL;
 // some cases
 @property(nonatomic, assign) BOOL defaultSearchEngineIsGoogle;
 
+@property(nonatomic, assign) BOOL incognito;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_SIMPLE_OMNIBOX_ICON_H_
