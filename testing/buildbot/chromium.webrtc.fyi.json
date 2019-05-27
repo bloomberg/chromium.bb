@@ -3,7 +3,6 @@
   "AAAAA2 See generate_buildbot_json.py to make changes": {},
   "WebRTC Chromium FYI Android Builder": {
     "additional_compile_targets": [
-      "browser_tests",
       "capture_unittests",
       "content_browsertests",
       "content_unittests",
