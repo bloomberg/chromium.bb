@@ -149,6 +149,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // SetupStartupTracing() is called.
   std::unique_ptr<perfetto::StartupTraceWriterRegistry>
       startup_writer_registry_;
+  // Unbound writers created by the current |startup_writer_registry_|. We track
+  // these writers to ensure that we only return the correct ones back to the
+  // registry.
+  std::set<perfetto::StartupTraceWriter*> trace_writers_from_registry_;
   std::vector<std::string> histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventDataSource);

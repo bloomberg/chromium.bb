@@ -251,6 +251,7 @@ void TraceEventDataSource::StartTracing(
     target_buffer_ = data_source_config.target_buffer();
     // Reduce lock contention by binding the registry without holding the lock.
     unbound_writer_registry = std::move(startup_writer_registry_);
+    trace_writers_from_registry_.clear();
   }
 
   session_id_.fetch_add(1u, std::memory_order_relaxed);
@@ -398,6 +399,7 @@ ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(
   uint32_t session_id = session_id_.load(std::memory_order_relaxed);
   if (startup_writer_registry_) {
     trace_writer = startup_writer_registry_->CreateUnboundTraceWriter();
+    trace_writers_from_registry_.insert(trace_writer.get());
   } else if (producer_client_) {
     trace_writer = std::make_unique<perfetto::StartupTraceWriter>(
         producer_client_->CreateTraceWriter(target_buffer_));
@@ -517,10 +519,17 @@ void TraceEventDataSource::FlushCurrentThread() {
 void TraceEventDataSource::ReturnTraceWriter(
     std::unique_ptr<perfetto::StartupTraceWriter> trace_writer) {
   base::AutoLock lock(lock_);
-  if (startup_writer_registry_) {
+  // It's possible that the returned trace writer was created by a former
+  // StartupTraceWriterRegistry. In this case, we should not attempt to return
+  // it to the current registry, so we need to verify first that it was indeed
+  // created by the current registry.
+  if (startup_writer_registry_ &&
+      trace_writers_from_registry_.find(trace_writer.get()) !=
+          trace_writers_from_registry_.end()) {
     // If the writer is still unbound, the registry will keep it alive until it
     // was bound and its buffered data was copied. This ensures that we don't
     // lose data from threads that are shut down during startup.
+    trace_writers_from_registry_.erase(trace_writer.get());
     startup_writer_registry_->ReturnUnboundTraceWriter(std::move(trace_writer));
   } else {
     // Delete the TraceWriter on the sequence that Perfetto runs on, needed
