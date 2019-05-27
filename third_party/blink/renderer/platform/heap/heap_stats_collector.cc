@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 
 #include "base/logging.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
@@ -27,7 +28,19 @@ void ThreadHeapStatsCollector::IncreaseAllocatedObjectSize(size_t bytes) {
 
 void ThreadHeapStatsCollector::DecreaseAllocatedObjectSize(size_t bytes) {
   // See IncreaseAllocatedObjectSize.
+
+  // TODO(mlippautz): Fix underflow.
+  if (bytes > allocated_bytes_since_prev_gc_)
+    return;
+
   allocated_bytes_since_prev_gc_ -= bytes;
+}
+
+void ThreadHeapStatsCollector::AllocatedObjectSizeSafepoint() {
+  if (unified_heap_controller_) {
+    unified_heap_controller_->UpdateAllocatedObjectSize(
+        allocated_bytes_since_prev_gc_);
+  }
 }
 
 void ThreadHeapStatsCollector::IncreaseAllocatedSpace(size_t bytes) {
@@ -127,6 +140,10 @@ TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
 
 size_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {
   return allocated_bytes_since_prev_gc_;
+}
+
+size_t ThreadHeapStatsCollector::marked_bytes() const {
+  return current_.marked_bytes;
 }
 
 size_t ThreadHeapStatsCollector::allocated_space_bytes() const {

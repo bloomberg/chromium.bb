@@ -828,6 +828,13 @@ void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
 
 Address NormalPageArena::OutOfLineAllocate(size_t allocation_size,
                                            size_t gc_info_index) {
+  Address result = OutOfLineAllocateImpl(allocation_size, gc_info_index);
+  GetThreadState()->Heap().stats_collector()->AllocatedObjectSizeSafepoint();
+  return result;
+}
+
+Address NormalPageArena::OutOfLineAllocateImpl(size_t allocation_size,
+                                               size_t gc_info_index) {
   DCHECK_GT(allocation_size, RemainingAllocationSize());
   DCHECK_GE(allocation_size, kAllocationGranularity);
 

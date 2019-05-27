@@ -869,7 +869,12 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
  private:
   void AllocatePage();
 
+  // OutOfLineAllocate represent the slow-path allocation. The suffixed version
+  // contains just allocation code while the other version also invokes a
+  // safepoint where allocated bytes are reported to observers.
   Address OutOfLineAllocate(size_t allocation_size, size_t gc_info_index);
+  Address OutOfLineAllocateImpl(size_t allocation_size, size_t gc_info_index);
+
   Address AllocateFromFreeList(size_t, size_t gc_info_index);
 
   Address LazySweepPages(size_t, size_t gc_info_index) override;

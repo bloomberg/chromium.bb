@@ -411,11 +411,17 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
 }
 
 bool ThreadState::ShouldScheduleV8FollowupGC() {
+  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+    return false;
+
   return JudgeGCThreshold(kDefaultAllocatedObjectSizeThreshold,
                           32 * 1024 * 1024, 1.5);
 }
 
 bool ThreadState::ShouldForceConservativeGC() {
+  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+    return false;
+
   // TODO(haraken): 400% is too large. Lower the heap growing factor.
   return JudgeGCThreshold(kDefaultAllocatedObjectSizeThreshold,
                           32 * 1024 * 1024, 5.0);
@@ -424,6 +430,9 @@ bool ThreadState::ShouldForceConservativeGC() {
 // If we're consuming too much memory, trigger a conservative GC
 // aggressively. This is a safe guard to avoid OOM.
 bool ThreadState::ShouldForceMemoryPressureGC() {
+  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+    return false;
+
   if (TotalMemorySize() < 300 * 1024 * 1024)
     return false;
   return JudgeGCThreshold(0, 0, 1.5);
@@ -1152,7 +1161,7 @@ void ThreadState::RemoveObserver(BlinkGCObserver* observer) {
 }
 
 void ThreadState::ReportMemoryToV8() {
-  if (!isolate_)
+  if (!isolate_ || RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
     return;
 
   const size_t current_heap_size =
@@ -1258,6 +1267,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
           << "IncrementalMarking: Start";
   DCHECK(!IsMarkingInProgress());
   CompleteSweep();
+  DCHECK(!IsSweepingInProgress());
   Heap().stats_collector()->NotifyMarkingStarted(reason);
   {
     ThreadHeapStatsCollector::EnabledScope stats_scope(

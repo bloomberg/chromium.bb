@@ -15,6 +15,8 @@
 
 namespace blink {
 
+class UnifiedHeapController;
+
 // Manages counters and statistics across garbage collection cycles.
 //
 // Usage:
@@ -239,6 +241,12 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   void DecreaseWrapperCount(size_t);
   void IncreaseCollectedWrapperCount(size_t);
 
+  // Called by the GC when it hits a point where allocated memory may be
+  // reported and garbage collection is possible. This is necessary, as
+  // increments and decrements are reported as close to their actual
+  // allocation/reclamation as possible.
+  void AllocatedObjectSizeSafepoint();
+
   // Size of objects on the heap. Based on marked bytes in the previous cycle
   // and newly allocated bytes since the previous cycle.
   size_t object_size_in_bytes() const;
@@ -249,6 +257,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   double estimated_marking_time_in_seconds() const;
   TimeDelta estimated_marking_time() const;
 
+  size_t marked_bytes() const;
   size_t allocated_bytes_since_prev_gc() const;
 
   size_t allocated_space_bytes() const;
@@ -263,6 +272,10 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
   TimeDelta marking_time_so_far() const {
     return TimeDelta::FromMilliseconds(current_.marking_time_in_ms());
+  }
+
+  void SetUnifiedHeapController(UnifiedHeapController* controller) {
+    unified_heap_controller_ = controller;
   }
 
  private:
@@ -289,6 +302,10 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // TimeDelta for RawScope. These don't need to be nested within a garbage
   // collection cycle to make them easier to use.
   TimeDelta gc_nested_in_v8_;
+
+  // Unified heap observes interesting statistics and forwards them to V8 after
+  // some aggregation.
+  UnifiedHeapController* unified_heap_controller_ = nullptr;
 
   FRIEND_TEST_ALL_PREFIXES(ThreadHeapStatsCollectorTest, InitialEmpty);
   FRIEND_TEST_ALL_PREFIXES(ThreadHeapStatsCollectorTest, IncreaseScopeTime);
