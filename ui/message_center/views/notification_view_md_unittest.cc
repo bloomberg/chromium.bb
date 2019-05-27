@@ -139,6 +139,11 @@ class NotificationViewMDTest
   void InkDropAnimationStarted() override;
   void InkDropRippleAnimationEnded(views::InkDropState ink_drop_state) override;
 
+  void set_delete_on_preferred_size_changed(
+      bool delete_on_preferred_size_changed) {
+    delete_on_preferred_size_changed_ = delete_on_preferred_size_changed;
+  }
+
   void set_delete_on_notification_removed(bool delete_on_notification_removed) {
     delete_on_notification_removed_ = delete_on_notification_removed;
   }
@@ -165,6 +170,7 @@ class NotificationViewMDTest
   views::View* GetCloseButton();
 
   bool ink_drop_stopped_ = false;
+  bool delete_on_preferred_size_changed_ = false;
   bool delete_on_notification_removed_ = false;
   std::set<std::string> removed_ids_;
   scoped_refptr<NotificationTestDelegate> delegate_;
@@ -211,7 +217,8 @@ void NotificationViewMDTest::SetUp() {
 void NotificationViewMDTest::TearDown() {
   MessageCenter::Get()->RemoveObserver(this);
 
-  DCHECK(notification_view_ || delete_on_notification_removed_);
+  DCHECK(notification_view_ || delete_on_preferred_size_changed_ ||
+         delete_on_notification_removed_);
   if (notification_view_) {
     notification_view_->SetInkDropMode(MessageView::InkDropMode::OFF);
     notification_view_->RemoveObserver(this);
@@ -225,6 +232,11 @@ void NotificationViewMDTest::TearDown() {
 void NotificationViewMDTest::OnViewPreferredSizeChanged(
     views::View* observed_view) {
   EXPECT_EQ(observed_view, notification_view());
+  if (delete_on_preferred_size_changed_) {
+    widget()->CloseNow();
+    notification_view_.reset();
+    return;
+  }
   widget()->SetSize(notification_view()->GetPreferredSize());
 }
 
@@ -1196,6 +1208,23 @@ TEST_F(NotificationViewMDTest, TestClickExpanded) {
   generator.ClickLeftButton();
 
   EXPECT_TRUE(delegate_->clicked());
+}
+
+TEST_F(NotificationViewMDTest, TestDeleteOnToggleExpanded) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_type(NotificationType::NOTIFICATION_TYPE_SIMPLE);
+  notification->set_title(base::string16());
+  notification->set_message(base::ASCIIToUTF16(
+      "consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore "
+      "et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
+      "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."));
+  UpdateNotificationViews(*notification);
+  EXPECT_FALSE(notification_view()->expanded_);
+
+  // The view can be deleted by PreferredSizeChanged(). https://crbug.com/918933
+  set_delete_on_preferred_size_changed(true);
+  notification_view()->ButtonPressed(notification_view()->header_row_,
+                                     DummyEvent());
 }
 
 TEST_F(NotificationViewMDTest, TestDeleteOnDisableNotification) {
