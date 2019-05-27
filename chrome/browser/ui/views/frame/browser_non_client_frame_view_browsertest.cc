@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager_browsertest.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -148,7 +149,8 @@ using SystemWebAppNonClientFrameViewBrowserTest =
 // System Web Apps don't get the hosted app buttons.
 IN_PROC_BROWSER_TEST_F(SystemWebAppNonClientFrameViewBrowserTest,
                        HideHostedAppButtonContainer) {
-  Browser* app_browser = WaitForSystemAppInstallAndLaunch();
+  Browser* app_browser =
+      WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::SETTINGS);
   EXPECT_EQ(nullptr, BrowserView::GetBrowserViewForBrowser(app_browser)
                          ->frame()
                          ->GetFrameView()

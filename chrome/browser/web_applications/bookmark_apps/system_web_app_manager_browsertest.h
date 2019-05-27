@@ -19,6 +19,7 @@ namespace web_app {
 
 class TestSystemWebAppManager;
 class TestWebUIControllerFactory;
+enum class SystemAppType;
 
 class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
  public:
@@ -26,7 +27,7 @@ class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
   ~SystemWebAppManagerBrowserTest() override;
 
  protected:
-  Browser* WaitForSystemAppInstallAndLaunch();
+  Browser* WaitForSystemAppInstallAndLaunch(SystemAppType system_app_type);
 
  private:
   std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile);
