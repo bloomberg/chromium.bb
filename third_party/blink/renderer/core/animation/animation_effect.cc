@@ -186,11 +186,14 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
     const double current_iteration = CalculateCurrentIteration(
         current_phase, active_time, timing_.iteration_count, overall_progress,
         simple_iteration_progress);
-
+    const bool current_direction_is_forwards =
+        IsCurrentDirectionForwards(current_iteration, timing_.direction);
     const double directed_progress = CalculateDirectedProgress(
         simple_iteration_progress, current_iteration, timing_.direction);
+
     progress = CalculateTransformedProgress(
-        directed_progress, iteration_duration, timing_.timing_function);
+        current_phase, directed_progress, iteration_duration,
+        current_direction_is_forwards, timing_.timing_function);
     if (IsNull(progress.value())) {
       progress.reset();
     }

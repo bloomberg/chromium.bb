@@ -323,17 +323,27 @@ static inline double CalculateDirectedProgress(
 
 // https://drafts.csswg.org/web-animations/#calculating-the-transformed-progress
 static inline double CalculateTransformedProgress(
+    AnimationEffect::Phase phase,
     double directed_progress,
     double iteration_duration,
+    bool is_current_direction_forward,
     scoped_refptr<TimingFunction> timing_function) {
   if (IsNull(directed_progress))
     return NullValue();
 
+  // Set the before flag to indicate if at the leading edge of an iteration.
+  // This is used to determine if the left or right limit should be used if at a
+  // discontinuity in the timing function.
+  bool before = is_current_direction_forward
+                    ? phase == AnimationEffect::kPhaseBefore
+                    : phase == AnimationEffect::kPhaseAfter;
+  TimingFunction::LimitDirection limit_direction =
+      before ? TimingFunction::LimitDirection::LEFT
+             : TimingFunction::LimitDirection::RIGHT;
+
   // Return the result of evaluating the animation effect’s timing function
   // passing directed progress as the input progress value.
-  // Note that the spec calls for passing in a before flag as well, which should
-  // be used by the step easing functions (Possibly related to crbug/827560).
-  return timing_function->Evaluate(directed_progress,
+  return timing_function->Evaluate(directed_progress, limit_direction,
                                    AccuracyForDuration(iteration_duration));
 }
 

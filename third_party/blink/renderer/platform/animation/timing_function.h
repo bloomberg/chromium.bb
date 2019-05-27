@@ -40,12 +40,24 @@ class PLATFORM_EXPORT TimingFunction
     : public ThreadSafeRefCounted<TimingFunction> {
  public:
   using Type = cc::TimingFunction::Type;
+  using LimitDirection = cc::TimingFunction::LimitDirection;
 
   virtual ~TimingFunction() = default;
 
   Type GetType() const { return type_; }
 
   virtual String ToString() const = 0;
+
+  // Evaluates the timing function at the given fraction. The limit direction
+  // applies when evaluating a function at a discontinuous boundary and
+  // indicates if the left or right limit should be applied. The accuracy
+  // parameter provides a hint as to the required accuracy and is not
+  // guaranteed.
+  virtual double Evaluate(double fraction,
+                          LimitDirection limit_direction,
+                          double accuracy) const {
+    return Evaluate(fraction, accuracy);
+  }
 
   // Evaluates the timing function at the given fraction. The accuracy parameter
   // provides a hint as to the required accuracy and is not guaranteed.
@@ -178,7 +190,11 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
 
   // TimingFunction implementation.
   String ToString() const override;
+  double Evaluate(double fraction,
+                  LimitDirection limit_direction,
+                  double) const override;
   double Evaluate(double fraction, double) const override;
+
   void Range(double* min_value, double* max_value) const override;
   std::unique_ptr<cc::TimingFunction> CloneToCC() const override;
 

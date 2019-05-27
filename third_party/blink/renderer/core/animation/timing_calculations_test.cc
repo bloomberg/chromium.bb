@@ -320,18 +320,55 @@ TEST(AnimationTimingCalculationsTest, CalculateDirectedProgress) {
 
 TEST(AnimationTimingCalculationsTest, TransformedProgress) {
   // CalculateTransformedProgress(
-  //     directed_progress, iteration_duraction, timing_function)
+  //     phase, directed_progress, iteration_duraction,
+  //     is_current_direction_forward, timing_function)
 
   scoped_refptr<TimingFunction> timing_function =
       StepsTimingFunction::Create(4, StepsTimingFunction::StepPosition::END);
 
   // directed_progress is null.
-  EXPECT_TRUE(
-      IsNull(CalculateTransformedProgress(NullValue(), 1, timing_function)));
+  EXPECT_TRUE(IsNull(CalculateTransformedProgress(
+      AnimationEffect::kPhaseActive, NullValue(), 1, true, timing_function)));
 
-  // Otherwise.
-  EXPECT_EQ(0, CalculateTransformedProgress(0, 1, timing_function));
-  EXPECT_EQ(1, CalculateTransformedProgress(1, 1, timing_function));
+  // At step boundaries.
+  // Forward direction.
+  EXPECT_EQ(0, CalculateTransformedProgress(AnimationEffect::kPhaseBefore, 0, 1,
+                                            true, timing_function));
+  EXPECT_EQ(0, CalculateTransformedProgress(AnimationEffect::kPhaseBefore, 0.25,
+                                            1, true, timing_function));
+  EXPECT_EQ(0.25, CalculateTransformedProgress(AnimationEffect::kPhaseAfter,
+                                               0.25, 1, true, timing_function));
+  EXPECT_EQ(0.25, CalculateTransformedProgress(AnimationEffect::kPhaseBefore,
+                                               0.5, 1, true, timing_function));
+  EXPECT_EQ(0.5, CalculateTransformedProgress(AnimationEffect::kPhaseAfter, 0.5,
+                                              1, true, timing_function));
+  EXPECT_EQ(0.5, CalculateTransformedProgress(AnimationEffect::kPhaseBefore,
+                                              0.75, 1, true, timing_function));
+  EXPECT_EQ(0.75, CalculateTransformedProgress(AnimationEffect::kPhaseAfter,
+                                               0.75, 1, true, timing_function));
+  EXPECT_EQ(0.75, CalculateTransformedProgress(AnimationEffect::kPhaseBefore, 1,
+                                               1, true, timing_function));
+  EXPECT_EQ(1, CalculateTransformedProgress(AnimationEffect::kPhaseAfter, 1, 1,
+                                            true, timing_function));
+  // Reverse direction.
+  EXPECT_EQ(1, CalculateTransformedProgress(AnimationEffect::kPhaseBefore, 1, 1,
+                                            false, timing_function));
+  EXPECT_EQ(0.75, CalculateTransformedProgress(AnimationEffect::kPhaseAfter, 1,
+                                               1, false, timing_function));
+  EXPECT_EQ(0.75,
+            CalculateTransformedProgress(AnimationEffect::kPhaseBefore, 0.75, 1,
+                                         false, timing_function));
+  EXPECT_EQ(0.5, CalculateTransformedProgress(AnimationEffect::kPhaseAfter,
+                                              0.75, 1, false, timing_function));
+  EXPECT_EQ(0.5, CalculateTransformedProgress(AnimationEffect::kPhaseBefore,
+                                              0.5, 1, false, timing_function));
+  EXPECT_EQ(0.25, CalculateTransformedProgress(AnimationEffect::kPhaseAfter,
+                                               0.5, 1, false, timing_function));
+  EXPECT_EQ(0.25,
+            CalculateTransformedProgress(AnimationEffect::kPhaseBefore, 0.25, 1,
+                                         false, timing_function));
+  EXPECT_EQ(0, CalculateTransformedProgress(AnimationEffect::kPhaseAfter, 0.25,
+                                            1, false, timing_function));
 }
 
 }  // namespace blink

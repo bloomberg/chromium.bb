@@ -127,8 +127,15 @@ void StepsTimingFunction::Range(double* min_value, double* max_value) const {
   *max_value = 1;
 }
 
+double StepsTimingFunction::Evaluate(double fraction,
+                                     LimitDirection limit_direction,
+                                     double) const {
+  return steps_->GetPreciseValue(fraction, limit_direction);
+}
+
 double StepsTimingFunction::Evaluate(double fraction, double) const {
-  return steps_->GetPreciseValue(fraction);
+  NOTREACHED() << "Use Evaluate(fraction, limit_direction, ...) instead.";
+  return steps_->GetPreciseValue(fraction, LimitDirection::RIGHT);
 }
 
 std::unique_ptr<cc::TimingFunction> StepsTimingFunction::CloneToCC() const {

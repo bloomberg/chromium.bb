@@ -21,9 +21,11 @@ void InterpolationEffect::GetActiveInterpolations(
       double record_length = record->end_ - record->start_;
       double local_fraction =
           record_length ? (fraction - record->start_) / record_length : 0.0;
-      if (record->easing_)
+      if (record->easing_) {
         local_fraction = record->easing_->Evaluate(
-            local_fraction, AccuracyForDuration(iteration_duration));
+            local_fraction, TimingFunction::LimitDirection::RIGHT,
+            AccuracyForDuration(iteration_duration));
+      }
       interpolation->Interpolate(0, local_fraction);
       if (result_index < existing_size)
         result[result_index++] = interpolation;

@@ -22,6 +22,9 @@ class CC_ANIMATION_EXPORT TimingFunction {
   // Note that LINEAR is a nullptr TimingFunction (for now).
   enum class Type { LINEAR, CUBIC_BEZIER, STEPS };
 
+  // Which limit to apply at a discontinuous boundary.
+  enum class LimitDirection { LEFT, RIGHT };
+
   virtual Type GetType() const = 0;
   virtual double GetValue(double t) const = 0;
   virtual double Velocity(double time) const = 0;
@@ -87,7 +90,7 @@ class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
 
   int steps() const { return steps_; }
   StepPosition step_position() const { return step_position_; }
-  double GetPreciseValue(double t) const;
+  double GetPreciseValue(double t, LimitDirection limit_direction) const;
 
  private:
   StepsTimingFunction(int steps, StepPosition step_position);
