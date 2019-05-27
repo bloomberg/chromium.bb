@@ -144,17 +144,15 @@ BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
     SavePrefsToFile();
   else
     DeletePrefsFile();
-
-  prefs_subscription_ =
-      prefs().RegisterPrefsChangedCallback(base::BindRepeating(
-          &BrowserSwitcherServiceWin::OnBrowserSwitcherPrefsChanged,
-          base::Unretained(this)));
 }
 
 BrowserSwitcherServiceWin::~BrowserSwitcherServiceWin() = default;
 
 void BrowserSwitcherServiceWin::OnBrowserSwitcherPrefsChanged(
-    BrowserSwitcherPrefs* prefs) {
+    BrowserSwitcherPrefs* prefs,
+    const std::vector<std::string>& changed_prefs) {
+  BrowserSwitcherService::OnBrowserSwitcherPrefsChanged(prefs, changed_prefs);
+
   if (prefs->IsEnabled())
     SavePrefsToFile();
   else
@@ -169,19 +167,25 @@ void BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(
 
 std::vector<RulesetSource> BrowserSwitcherServiceWin::GetRulesetSources() {
   auto sources = BrowserSwitcherService::GetRulesetSources();
-  if (!prefs().UseIeSitelist())
-    return sources;
   GURL sitelist_url = GetIeemSitelistUrl();
-  if (!sitelist_url.is_valid())
-    return sources;
   sources.emplace_back(
-      sitelist_url, /* invert_rules */ false,
+      prefs::kUseIeSitelist, sitelist_url, /* invert_rules */ false,
       base::BindOnce(&BrowserSwitcherServiceWin::OnIeemSitelistParsed,
                      weak_ptr_factory_.GetWeakPtr()));
   return sources;
 }
 
+void BrowserSwitcherServiceWin::LoadRulesFromPrefs() {
+  BrowserSwitcherService::LoadRulesFromPrefs();
+  if (prefs().UseIeSitelist())
+    sitelist()->SetIeemSitelist(
+        ParsedXml(prefs().GetCachedIeemSitelist(), base::nullopt));
+}
+
 void BrowserSwitcherServiceWin::OnAllRulesetsParsed() {
+  if (!prefs().IsEnabled())
+    return;
+
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
@@ -190,8 +194,10 @@ void BrowserSwitcherServiceWin::OnAllRulesetsParsed() {
                      "sitelistcache.dat"));
 }
 
-// static
 GURL BrowserSwitcherServiceWin::GetIeemSitelistUrl() {
+  if (!prefs().UseIeSitelist())
+    return GURL();
+
   if (*IeemSitelistUrlForTesting() != base::nullopt)
     return GURL((*IeemSitelistUrlForTesting()).value());
 
@@ -212,9 +218,12 @@ void BrowserSwitcherServiceWin::OnIeemSitelistParsed(ParsedXml xml) {
   } else {
     VLOG(2) << "Done parsing IEEM SiteList. "
             << "Applying rules to future navigations.";
+
+    if (prefs().UseIeSitelist())
+      prefs().SetCachedIeemSitelist(xml.rules);
+
     sitelist()->SetIeemSitelist(std::move(xml));
   }
-  ieem_downloader_.reset();
 }
 
 void BrowserSwitcherServiceWin::SavePrefsToFile() {

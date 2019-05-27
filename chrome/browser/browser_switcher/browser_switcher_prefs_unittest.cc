@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -137,8 +138,13 @@ TEST_F(BrowserSwitcherPrefsTest, TriggersObserversOnPolicyChange) {
 
   base::RunLoop run_loop;
   auto subscription = prefs()->RegisterPrefsChangedCallback(base::BindRepeating(
-      [](base::OnceClosure quit, BrowserSwitcherPrefs* prefs) {
+      [](base::OnceClosure quit, BrowserSwitcherPrefs* prefs,
+         const std::vector<std::string>& changed_prefs) {
         EXPECT_EQ("notepad.exe", prefs->GetAlternativeBrowserPath());
+        std::vector<std::string> expected_changed_prefs{
+            prefs::kAlternativeBrowserPath,
+        };
+        EXPECT_EQ(expected_changed_prefs, changed_prefs);
         std::move(quit).Run();
       },
       run_loop.QuitClosure()));

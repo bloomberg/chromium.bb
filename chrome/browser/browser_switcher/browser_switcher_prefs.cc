@@ -18,6 +18,27 @@
 
 namespace browser_switcher {
 
+namespace {
+
+std::vector<std::string> GetCachedRules(PrefService* prefs,
+                                        const std::string& pref_name) {
+  std::vector<std::string> rules;
+  for (const auto& url : *prefs->GetList(pref_name))
+    rules.push_back(url.GetString());
+  return rules;
+}
+
+void SetCachedRules(PrefService* prefs,
+                    const std::string& pref_name,
+                    const std::vector<std::string>& rules) {
+  base::ListValue rules_val;
+  for (const auto& url : rules)
+    rules_val.GetList().push_back(base::Value(url));
+  prefs->Set(pref_name, rules_val);
+}
+
+}  // namespace
+
 RuleSet::RuleSet() = default;
 RuleSet::RuleSet(const RuleSet&) = default;
 RuleSet::~RuleSet() = default;
@@ -144,57 +165,52 @@ const RuleSet& BrowserSwitcherPrefs::GetRules() const {
   return rules_;
 }
 
-RuleSet BrowserSwitcherPrefs::GetCachedExternalRules() const {
-  RuleSet rules;
-  for (const auto& url : *prefs_->GetList(prefs::kCachedExternalSitelist))
-    rules.sitelist.push_back(url.GetString());
-  for (const auto& url : *prefs_->GetList(prefs::kCachedExternalGreylist))
-    rules.greylist.push_back(url.GetString());
-  return rules;
+std::vector<std::string> BrowserSwitcherPrefs::GetCachedExternalSitelist()
+    const {
+  return GetCachedRules(prefs_, prefs::kCachedExternalSitelist);
 }
 
-void BrowserSwitcherPrefs::SetCachedExternalRules(const RuleSet& rules) const {
-  base::ListValue sitelist;
-  for (const auto& url : rules.sitelist)
-    sitelist.GetList().push_back(base::Value(url));
-  prefs_->Set(prefs::kCachedExternalSitelist, sitelist);
-  base::ListValue greylist;
-  for (const auto& url : rules.greylist)
-    greylist.GetList().push_back(base::Value(url));
-  prefs_->Set(prefs::kCachedExternalGreylist, greylist);
+void BrowserSwitcherPrefs::SetCachedExternalSitelist(
+    const std::vector<std::string>& sitelist) {
+  SetCachedRules(prefs_, prefs::kCachedExternalSitelist, sitelist);
+}
+
+std::vector<std::string> BrowserSwitcherPrefs::GetCachedExternalGreylist()
+    const {
+  return GetCachedRules(prefs_, prefs::kCachedExternalGreylist);
+}
+
+void BrowserSwitcherPrefs::SetCachedExternalGreylist(
+    const std::vector<std::string>& greylist) {
+  SetCachedRules(prefs_, prefs::kCachedExternalGreylist, greylist);
 }
 
 #if defined(OS_WIN)
-RuleSet BrowserSwitcherPrefs::GetCachedIeemRules() const {
-  RuleSet rules;
-  for (const auto& url : *prefs_->GetList(prefs::kCachedIeSitelist))
-    rules.sitelist.push_back(url.GetString());
-  return rules;
+std::vector<std::string> BrowserSwitcherPrefs::GetCachedIeemSitelist() const {
+  return GetCachedRules(prefs_, prefs::kCachedIeSitelist);
 }
 
-void BrowserSwitcherPrefs::SetCachedIeemRules(const RuleSet& rules) const {
-  base::ListValue sitelist;
-  for (const auto& url : rules.sitelist)
-    sitelist.GetList().push_back(base::Value(url));
-  prefs_->Set(prefs::kCachedIeSitelist, sitelist);
+void BrowserSwitcherPrefs::SetCachedIeemSitelist(
+    const std::vector<std::string>& sitelist) {
+  SetCachedRules(prefs_, prefs::kCachedIeSitelist, sitelist);
 }
 #endif
 
 GURL BrowserSwitcherPrefs::GetExternalSitelistUrl() const {
-  if (!prefs_->IsManagedPreference(prefs::kExternalSitelistUrl))
+  if (!IsEnabled() || !prefs_->IsManagedPreference(prefs::kExternalSitelistUrl))
     return GURL();
   return GURL(prefs_->GetString(prefs::kExternalSitelistUrl));
 }
 
 GURL BrowserSwitcherPrefs::GetExternalGreylistUrl() const {
-  if (!prefs_->IsManagedPreference(prefs::kExternalGreylistUrl))
+  if (!IsEnabled() || !prefs_->IsManagedPreference(prefs::kExternalGreylistUrl))
     return GURL();
   return GURL(prefs_->GetString(prefs::kExternalGreylistUrl));
 }
 
 #if defined(OS_WIN)
 bool BrowserSwitcherPrefs::UseIeSitelist() const {
-  if (!prefs_->IsManagedPreference(prefs::kUseIeSitelist))
+  if (!IsEnabled() || !prefs_->IsManagedPreference(prefs::kUseIeSitelist))
     return false;
   return prefs_->GetBoolean(prefs::kUseIeSitelist);
 }
@@ -227,13 +243,13 @@ BrowserSwitcherPrefs::RegisterPrefsChangedCallback(
 
 void BrowserSwitcherPrefs::RunCallbacksIfDirty() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (dirty_)
-    callback_list_.Notify(this);
-  dirty_ = false;
+  if (!dirty_prefs_.empty())
+    callback_list_.Notify(this, dirty_prefs_);
+  dirty_prefs_.clear();
 }
 
-void BrowserSwitcherPrefs::MarkDirty() {
-  dirty_ = true;
+void BrowserSwitcherPrefs::MarkDirty(const std::string& pref_name) {
+  dirty_prefs_.push_back(pref_name);
 }
 
 void BrowserSwitcherPrefs::AlternativeBrowserPathChanged() {

@@ -15,7 +15,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/ieem_sitelist_parser.h"
 #include "components/prefs/pref_service.h"
@@ -183,19 +182,7 @@ bool BrowserSwitcherSitelist::ShouldSwitch(const GURL& url) const {
 
 BrowserSwitcherSitelistImpl::BrowserSwitcherSitelistImpl(
     const BrowserSwitcherPrefs* prefs)
-    : prefs_(prefs) {
-  // TODO(nicolaso): Rules are initialized by |GetCached...Rules()| pretty early
-  // in browser startup. If they're configured via cloud policy, they'll only be
-  // initialized on download (1 minute after browser startup).
-#if defined(OS_WIN)
-  if (prefs->UseIeSitelist())
-    ieem_sitelist_ = prefs->GetCachedIeemRules();
-#endif
-  if (prefs->GetExternalSitelistUrl().is_valid() ||
-      prefs->GetExternalGreylistUrl().is_valid()) {
-    external_sitelist_ = prefs->GetCachedExternalRules();
-  }
-}
+    : prefs_(prefs) {}
 
 BrowserSwitcherSitelistImpl::~BrowserSwitcherSitelistImpl() = default;
 
@@ -257,9 +244,6 @@ void BrowserSwitcherSitelistImpl::SetIeemSitelist(ParsedXml&& parsed_xml) {
                               parsed_xml.rules.size());
 
   ieem_sitelist_.sitelist = std::move(parsed_xml.rules);
-#if defined(OS_WIN)
-  prefs_->SetCachedIeemRules(ieem_sitelist_);
-#endif
 }
 
 void BrowserSwitcherSitelistImpl::SetExternalSitelist(ParsedXml&& parsed_xml) {
@@ -269,7 +253,6 @@ void BrowserSwitcherSitelistImpl::SetExternalSitelist(ParsedXml&& parsed_xml) {
                               parsed_xml.rules.size());
 
   external_sitelist_.sitelist = std::move(parsed_xml.rules);
-  prefs_->SetCachedExternalRules(external_sitelist_);
 }
 
 void BrowserSwitcherSitelistImpl::SetExternalGreylist(ParsedXml&& parsed_xml) {
@@ -279,7 +262,6 @@ void BrowserSwitcherSitelistImpl::SetExternalGreylist(ParsedXml&& parsed_xml) {
                               parsed_xml.rules.size());
 
   external_sitelist_.greylist = std::move(parsed_xml.rules);
-  prefs_->SetCachedExternalRules(external_sitelist_);
 }
 
 const RuleSet* BrowserSwitcherSitelistImpl::GetIeemSitelist() const {

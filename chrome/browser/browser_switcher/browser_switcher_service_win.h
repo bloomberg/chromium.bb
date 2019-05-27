@@ -19,20 +19,26 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
   explicit BrowserSwitcherServiceWin(Profile* profile);
   ~BrowserSwitcherServiceWin() override;
 
-  void OnBrowserSwitcherPrefsChanged(BrowserSwitcherPrefs* prefs);
-
   static void SetIeemSitelistUrlForTesting(const std::string& url);
+
+  // BrowserSwitcherService:
+  std::vector<RulesetSource> GetRulesetSources() override;
+
+  void LoadRulesFromPrefs() override;
 
  protected:
   // BrowserSwitcherService:
-  std::vector<RulesetSource> GetRulesetSources() override;
   void OnAllRulesetsParsed() override;
+
+  void OnBrowserSwitcherPrefsChanged(
+      BrowserSwitcherPrefs* prefs,
+      const std::vector<std::string>& changed_prefs) override;
 
  private:
   // Returns the URL to fetch to get Internet Explorer's Enterprise Mode
   // sitelist, based on policy. Returns an empty (invalid) URL if IE's SiteList
-  // policy is unset.
-  static GURL GetIeemSitelistUrl();
+  // policy is unset, or if |use_ie_sitelist| is false.
+  GURL GetIeemSitelistUrl();
 
   void OnIeemSitelistParsed(ParsedXml xml);
 
@@ -45,9 +51,6 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
   void DeletePrefsFile() const;
 
   std::unique_ptr<XmlDownloader> ieem_downloader_;
-
-  std::unique_ptr<BrowserSwitcherPrefs::CallbackSubscription>
-      prefs_subscription_;
 
   base::WeakPtrFactory<BrowserSwitcherServiceWin> weak_ptr_factory_;
 

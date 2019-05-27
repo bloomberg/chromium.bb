@@ -14850,7 +14850,7 @@
       'schema': { 'type': 'boolean' },
       'example_value': True,
       'features': {
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'per_profile': True,
       },
       'supported_on': ['chrome.win:71-'],
@@ -14871,7 +14871,7 @@
       'schema': { 'type': 'string' },
       'example_value': 'http://example.com/sitelist.xml',
       'features': {
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'per_profile': True,
       },
       'supported_on': ['chrome.*:72-'],
@@ -14892,7 +14892,7 @@
       'schema': { 'type': 'string' },
       'example_value': 'http://example.com/greylist.xml',
       'features': {
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'per_profile': True,
       },
       'supported_on': ['chrome.*:76-'],

@@ -43,11 +43,14 @@ struct RuleSet {
 // AlternativeBrowserPath).
 class BrowserSwitcherPrefs : public KeyedService,
                              public policy::PolicyService::Observer {
+ private:
+  using PrefsChangedSignature = void(BrowserSwitcherPrefs*,
+                                     const std::vector<std::string>&);
+
  public:
-  using PrefsChangedCallback =
-      base::RepeatingCallback<void(BrowserSwitcherPrefs*)>;
+  using PrefsChangedCallback = base::RepeatingCallback<PrefsChangedSignature>;
   using CallbackSubscription =
-      base::CallbackList<void(BrowserSwitcherPrefs*)>::Subscription;
+      base::CallbackList<PrefsChangedSignature>::Subscription;
 
   explicit BrowserSwitcherPrefs(Profile* profile);
   ~BrowserSwitcherPrefs() override;
@@ -78,14 +81,20 @@ class BrowserSwitcherPrefs : public KeyedService,
   // policies. If the pref is not managed, returns an empty vector.
   const RuleSet& GetRules() const;
 
-  // Returns (or sets) the sitelist + greylist that were used by a previous
-  // browser session.
-  RuleSet GetCachedExternalRules() const;
-  void SetCachedExternalRules(const RuleSet& rules) const;
+  // Retrieves or stores the locally cached external sitelist from the
+  // PrefStore.
+  std::vector<std::string> GetCachedExternalSitelist() const;
+  void SetCachedExternalSitelist(const std::vector<std::string>& sitelist);
+
+  // Retrieves or stores the locally cached external greylist from the
+  // PrefStore.
+  std::vector<std::string> GetCachedExternalGreylist() const;
+  void SetCachedExternalGreylist(const std::vector<std::string>& greylist);
 
 #if defined(OS_WIN)
-  RuleSet GetCachedIeemRules() const;
-  void SetCachedIeemRules(const RuleSet& rules) const;
+  // Retrieves or stores the locally cached IEEM sitelist from the PrefStore.
+  std::vector<std::string> GetCachedIeemSitelist() const;
+  void SetCachedIeemSitelist(const std::vector<std::string>& sitelist);
 #endif
 
   // Returns the URL to download for an external XML sitelist. If the pref is
@@ -125,7 +134,7 @@ class BrowserSwitcherPrefs : public KeyedService,
 
  private:
   void RunCallbacksIfDirty();
-  void MarkDirty();
+  void MarkDirty(const std::string& pref_name);
 
   // Hooks for PrefChangeRegistrar.
   void AlternativeBrowserPathChanged();
@@ -162,10 +171,10 @@ class BrowserSwitcherPrefs : public KeyedService,
 
   RuleSet rules_;
 
-  // True if a policy refresh recently caused prefs to change.
-  bool dirty_ = false;
+  // List of prefs (pref names) that changed since the last policy refresh.
+  std::vector<std::string> dirty_prefs_;
 
-  base::CallbackList<void(BrowserSwitcherPrefs*)> callback_list_;
+  base::CallbackList<PrefsChangedSignature> callback_list_;
 
   base::WeakPtrFactory<BrowserSwitcherPrefs> weak_ptr_factory_;
 
