@@ -76,6 +76,9 @@ js_library("closure_compile_externs") {
   ]
 }
 
+js_library("a11y_announce") {
+}
+
 js_library("action_model_ui") {
   deps = [
     ":files_alert_dialog",
@@ -226,6 +229,7 @@ js_library("file_manager_dialog_base") {
 
 js_library("file_manager_ui") {
   deps = [
+    ":a11y_announce",
     ":action_model_ui",
     ":actions_submenu",
     ":banners",
@@ -269,6 +273,7 @@ js_library("file_metadata_formatter") {
 
 js_library("file_table") {
   deps = [
+    ":a11y_announce",
     ":drag_selector",
     ":file_metadata_formatter",
     ":file_table_list",

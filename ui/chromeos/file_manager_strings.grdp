@@ -107,7 +107,12 @@
   <message name="IDS_FILE_BROWSER_COLUMN_DESC_SORT_MESSAGE" desc="Message read by Chromevox/screenreader when focusing file list table column, when clicking will sort in descending order.">
     Click to sort the column in descending order.
   </message>
-
+  <message name="IDS_FILE_BROWSER_COLUMN_SORTED_ASC_MESSAGE" desc="Message read by Chromevox/screenreader after sorting a column in the File list in ascending order.">
+    File list sorted by <ph name="COLUMN_NAME">$1<ex>date modified</ex></ph> in ascending order.
+  </message>
+  <message name="IDS_FILE_BROWSER_COLUMN_SORTED_DESC_MESSAGE" desc="Message read by Chromevox/screenreader after sorting a column in the File list in descending order.">
+    File list sorted by <ph name="COLUMN_NAME">$1<ex>date modified</ex></ph> in descending order.
+  </message>
   <message name="IDS_FILE_BROWSER_SIZE_BYTES" desc="Size in bytes.">
     <ph name="NUMBER_OF_BYTES">$1<ex>42</ex></ph> bytes
   </message>

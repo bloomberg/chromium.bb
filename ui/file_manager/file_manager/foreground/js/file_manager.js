@@ -899,6 +899,7 @@ class FileManager extends cr.EventTarget {
     assert(this.volumeManager_);
     assert(this.historyLoader_);
     assert(this.dialogDom_);
+    assert(this.ui_);
 
     // Cache nodes we'll be manipulating.
     const dom = this.dialogDom_;
@@ -907,6 +908,7 @@ class FileManager extends cr.EventTarget {
     const table = queryRequiredElement('.detail-table', dom);
     FileTable.decorate(
         table, this.metadataModel_, this.volumeManager_, this.historyLoader_,
+        /** @type {!A11yAnnounce} */ (this.ui_),
         this.dialogType == DialogType.FULL_PAGE);
     const grid = queryRequiredElement('.thumbnail-grid', dom);
     FileGrid.decorate(

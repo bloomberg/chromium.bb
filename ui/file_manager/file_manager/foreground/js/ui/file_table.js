@@ -405,20 +405,25 @@ class FileTable extends cr.ui.Table {
     /** @private {?function(!Event)} */
     this.onThumbnailLoadedBound_ = null;
 
+    /** @private {?A11yAnnounce} */
+    this.a11y_ = null;
+
     throw new Error('Designed to decorate elements');
   }
 
   /**
    * Decorates the element.
    * @param {!Element} self Table to decorate.
-   * @param {!MetadataModel} metadataModel To retrieve
-   *     metadata.
+   * @param {!MetadataModel} metadataModel To retrieve metadata.
    * @param {!VolumeManager} volumeManager To retrieve volume info.
    * @param {!importer.HistoryLoader} historyLoader
-   * @param {boolean} fullPage True if it's full page File Manager,
-   *                           False if a file open/save dialog.
+   * @param {!A11yAnnounce} a11y FileManagerUI to be able to announce a11y
+   *     messages.
+   * @param {boolean} fullPage True if it's full page File Manager, False if a
+   *    file open/save dialog.
    */
-  static decorate(self, metadataModel, volumeManager, historyLoader, fullPage) {
+  static decorate(
+      self, metadataModel, volumeManager, historyLoader, a11y, fullPage) {
     cr.ui.Table.decorate(self);
     self.__proto__ = FileTable.prototype;
     FileTableList.decorate(self.list);
@@ -426,6 +431,7 @@ class FileTable extends cr.ui.Table {
     self.metadataModel_ = metadataModel;
     self.volumeManager_ = volumeManager;
     self.historyLoader_ = historyLoader;
+    self.a11y_ = a11y;
 
     /** @private {ListThumbnailLoader} */
     self.listThumbnailLoader_ = null;
@@ -553,6 +559,36 @@ class FileTable extends cr.ui.Table {
       }
       return currentSelection;
     };
+  }
+
+  /**
+   * Sort data by the given column. Overridden to add the a11y message after
+   * sorting.
+   * @param {number} index The index of the column to sort by.
+   * @override
+   */
+  sort(index) {
+    const cm = this.columnModel;
+    if (!this.dataModel) {
+      return;
+    }
+    const fieldName = cm.getId(index);
+    const sortStatus = this.dataModel.sortStatus;
+
+    let sortDirection = cm.getDefaultOrder(index);
+    if (sortStatus.field === fieldName) {
+      // If it's sorting the column that's already sorted, we need to flip the
+      // sorting order.
+      sortDirection = sortStatus.direction === 'desc' ? 'asc' : 'desc';
+    }
+
+    const msgId =
+        sortDirection === 'asc' ? 'COLUMN_SORTED_ASC' : 'COLUMN_SORTED_DESC';
+    const msg = strf(msgId, fieldName);
+
+    // Delegate to parent to sort.
+    super.sort(index);
+    this.a11y_.speakA11yMessage(msg);
   }
 
   /**

@@ -2094,6 +2094,8 @@ CommandHandler.COMMANDS_['sort-by-name'] = new class extends Command {
   execute(event, fileManager) {
     if (fileManager.directoryModel.getFileList()) {
       fileManager.directoryModel.getFileList().sort('name', 'asc');
+      const msg = strf('COLUMN_SORTED_ASC', str('NAME_COLUMN_LABEL'));
+      fileManager.ui.speakA11yMessage(msg);
     }
   }
 };
@@ -2105,6 +2107,8 @@ CommandHandler.COMMANDS_['sort-by-size'] = new class extends Command {
   execute(event, fileManager) {
     if (fileManager.directoryModel.getFileList()) {
       fileManager.directoryModel.getFileList().sort('size', 'desc');
+      const msg = strf('COLUMN_SORTED_DESC', str('SIZE_COLUMN_LABEL'));
+      fileManager.ui.speakA11yMessage(msg);
     }
   }
 };
@@ -2116,6 +2120,8 @@ CommandHandler.COMMANDS_['sort-by-type'] = new class extends Command {
   execute(event, fileManager) {
     if (fileManager.directoryModel.getFileList()) {
       fileManager.directoryModel.getFileList().sort('type', 'asc');
+      const msg = strf('COLUMN_SORTED_ASC', str('TYPE_COLUMN_LABEL'));
+      fileManager.ui.speakA11yMessage(msg);
     }
   }
 };
@@ -2127,6 +2133,8 @@ CommandHandler.COMMANDS_['sort-by-date'] = new class extends Command {
   execute(event, fileManager) {
     if (fileManager.directoryModel.getFileList()) {
       fileManager.directoryModel.getFileList().sort('modificationTime', 'desc');
+      const msg = strf('COLUMN_SORTED_DESC', str('DATE_COLUMN_LABEL'));
+      fileManager.ui.speakA11yMessage(msg);
     }
   }
 };
