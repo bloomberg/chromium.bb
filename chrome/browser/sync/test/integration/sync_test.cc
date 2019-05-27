@@ -162,13 +162,19 @@ class EncryptionChecker : public SingleClientStatusChangeChecker {
   std::string GetDebugMessage() const override { return "Encryption"; }
 };
 
+std::unique_ptr<invalidation::InvalidationService> CreateInvalidationService(
+    const std::string& sender_id) {
+  return std::make_unique<fake_server::FakeServerInvalidationService>();
+}
+
 std::unique_ptr<KeyedService> BuildFakeServerProfileInvalidationProvider(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   return std::make_unique<invalidation::ProfileInvalidationProvider>(
       std::make_unique<fake_server::FakeServerInvalidationService>(),
       std::make_unique<invalidation::ProfileIdentityProvider>(
-          IdentityManagerFactory::GetForProfile(profile)));
+          IdentityManagerFactory::GetForProfile(profile)),
+      base::BindRepeating(&CreateInvalidationService));
 }
 
 }  // namespace
