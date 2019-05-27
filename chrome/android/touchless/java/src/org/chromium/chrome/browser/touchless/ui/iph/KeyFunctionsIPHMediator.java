@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.touchless.ui.iph;
 
+import android.support.annotation.IntDef;
+
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.dom_distiller.TabDistillabilityProvider;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -17,6 +20,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.touchless.CursorObserver;
 import org.chromium.ui.touchless.TouchlessEventHandler;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -28,6 +33,8 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
     private FutureTask mHideTask;
     private int mPageLoadCount;
     private DisplayLockHandle mDisplayLockHandle;
+    private boolean mIsFallbackCursorModeOn;
+    private boolean mShowedWhenPageLoadStarted;
 
     private static final long DISPLAY_DURATION_MS = 3000;
 
@@ -35,6 +42,15 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
     // page loads.
     private static final int INTRODUCTORY_SESSIONS = 6;
     private static final int INTRODUCTORY_PAGE_LOAD_CYCLE = 3;
+
+    @IntDef({DisplayCause.PAGE_LOAD_STARTED, DisplayCause.PAGE_LOAD_FINISHED,
+            DisplayCause.FALLBACK_CURSOR_TOGGLED})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface DisplayCause {
+        int PAGE_LOAD_STARTED = 0;
+        int PAGE_LOAD_FINISHED = 1;
+        int FALLBACK_CURSOR_TOGGLED = 2;
+    }
 
     KeyFunctionsIPHMediator(PropertyModel model, ActivityTabProvider activityTabProvider) {
         mModel = model;
@@ -47,13 +63,13 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
 
     @Override
     public void onFallbackCursorModeToggled(boolean isOn) {
-        show(isOn, false);
+        mIsFallbackCursorModeOn = isOn;
+        show(DisplayCause.FALLBACK_CURSOR_TOGGLED);
     }
 
-    private void show(boolean isFallbackCursorModeOn, boolean fromPageLoadStarted) {
-        // TODO(crbug.com/942665): Populate this.
-        boolean pageOptimizedForMobile = true;
-        if (fromPageLoadStarted && pageOptimizedForMobile) {
+    private void show(@DisplayCause int displayCause) {
+        if (displayCause == DisplayCause.PAGE_LOAD_STARTED) {
+            mShowedWhenPageLoadStarted = false;
             int totalSessionCount = ChromePreferenceManager.getInstance().readInt(
                     ChromePreferenceManager.TOUCHLESS_BROWSING_SESSION_COUNT);
             if (totalSessionCount <= INTRODUCTORY_SESSIONS
@@ -61,6 +77,11 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
                 return;
             }
             if (totalSessionCount > INTRODUCTORY_SESSIONS && mPageLoadCount > 1) return;
+            mShowedWhenPageLoadStarted = true;
+        } else if (mShowedWhenPageLoadStarted && displayCause == DisplayCause.PAGE_LOAD_FINISHED) {
+            // If we have already shown the IPH when page load started, we should avoid showing it
+            // again when page load is finished.
+            return;
         }
 
         // If we are already showing this IPH, we should release the lock.
@@ -78,7 +99,7 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
             return null;
         });
         PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, mHideTask, DISPLAY_DURATION_MS);
-        mModel.set(KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE, isFallbackCursorModeOn);
+        mModel.set(KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE, mIsFallbackCursorModeOn);
         mModel.set(KeyFunctionsIPHProperties.IS_VISIBLE, true);
     }
 
@@ -98,7 +119,19 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
             if (NativePageFactory.isNativePageUrl(url, tab.isIncognito())) return;
 
             mPageLoadCount++;
-            show(false, true);
+            show(DisplayCause.PAGE_LOAD_STARTED);
+        }
+
+        @Override
+        public void onPageLoadFinished(Tab tab, String url) {
+            if (NativePageFactory.isNativePageUrl(url, tab.isIncognito())) return;
+
+            TabDistillabilityProvider distillabilityProvider = TabDistillabilityProvider.get(tab);
+            if (distillabilityProvider != null
+                    && distillabilityProvider.isDistillabilityDetermined()
+                    && !distillabilityProvider.isMobileOptimized()) {
+                show(DisplayCause.PAGE_LOAD_FINISHED);
+            }
         }
     }
 }
