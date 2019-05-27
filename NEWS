@@ -16,6 +16,19 @@ issues]].
 
 ** Braille table improvements
 - Added modified letters to UEB thanks to Mike Gray.
+- Complete overhaul of the U.S. six-dot computer braille tables to
+  align with the CBC standard thanks to Timothy Wynn. There is now a
+  sub-table for EBAE (en-us-compbrl.uti) and a stand-alone table
+  (en-us-comp6.ctb).
+  - Conforms to the CBC standard from BANA for character definitions
+    that differ from the 8-dot ASCII braille (11 punctuation marks).
+  - Added rules for braille indicators, emphasis indicators, and
+    isolated lower-cell signs to the stand-alone table.
+  - Uncontracted and contracted EBAE tables no longer use dot 7 when
+    in computer braille mode.
+  - en-us-compbrl.ctb was deleted because it was identical to
+    en-us-comp6.ctb.
+
 ** Other changes
 - Remove some code duplication in pattern.c thanks to Bert Frees
 
@@ -25,13 +38,14 @@ issues]].
 
 ** New, renamed or removed tables
 *** New
-- None
+- en-us-compbrl.uti
 
 *** Renamed
 - chardefs.cti -> en-chardefs.cti
 
 *** Removed
-- None
+- en-us-compbrl.ctb
+
 
 * Noteworthy changes in release 3.9.0 (2019-03-04)
 This release has seen a tremendous amount of work by Bert Frees. He

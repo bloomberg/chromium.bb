@@ -589,16 +589,6 @@ tests:
   - ['\x200b', '\x0020']
   - ['\x200b', '\x0020']
   - ['\x202f', '\x0020']
-table: en-us-comp6.ctb,spaces.uti
-flags: {testmode: bothDirections}
-tests:
-  - ['\x0009', '⡀']
-  - ['\x000a', '⣀']
-  - ['\x0020', '\x0020']
-  - ['\x00a0', 'a']
-flags: {testmode: forward}
-tests:
-  - ['\x000d', '\x0020']
 table: en-us-comp8.ctb,spaces.uti
 flags: {testmode: bothDirections}
 tests:
