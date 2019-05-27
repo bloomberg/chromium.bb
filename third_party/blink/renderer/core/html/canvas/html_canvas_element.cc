@@ -161,6 +161,11 @@ void HTMLCanvasElement::Dispose() {
   frame_dispatcher_ = nullptr;
 
   if (context_) {
+    UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.HasRendered", bool(ResourceProvider()));
+    if (ResourceProvider()) {
+      UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.IsComposited",
+                            context_->IsComposited());
+    }
     context_->DetachHost();
     context_ = nullptr;
   }
@@ -303,8 +308,6 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
   context_ = factory->Create(this, attributes);
   if (!context_)
     return nullptr;
-
-  UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.IsComposited", context_->IsComposited());
 
   context_creation_was_blocked_ = false;
 
