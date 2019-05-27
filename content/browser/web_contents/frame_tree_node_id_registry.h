@@ -7,11 +7,14 @@
 
 #include <map>
 
+#include "base/callback.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/unguessable_token.h"
 
 namespace content {
+
+class WebContents;
 
 // A global map of UnguessableToken to FrameTreeNode id. This registry lives
 // and is used only on the IO thread, as it's convenient for the current user
@@ -29,14 +32,19 @@ namespace content {
 // was added.  It's useful for looking up a WebContents or determining if it's a
 // main frame or not, but callers should not make assumptions that it's in the
 // same renderer process or origin as when it was added to the registry.
+// To prevent a potential risk, the registry doesn't provide
+// |static int /* FrameTreeNode id */ Get(const base::UnguessableToken& id)|.
 class FrameTreeNodeIdRegistry {
  public:
+  using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
+
   static FrameTreeNodeIdRegistry* GetInstance();
 
   void Add(const base::UnguessableToken& id, const int frame_tree_node_id);
   void Remove(const base::UnguessableToken&);
-  // Returns FrameTreeNodeId::kFrameTreeNodeIdInvalid if not found.
-  int Get(const base::UnguessableToken& id) const;
+  // Returns null callback if not found.
+  WebContentsGetter GetWebContentsGetter(
+      const base::UnguessableToken& id) const;
 
  private:
   friend class base::NoDestructor<FrameTreeNodeIdRegistry>;

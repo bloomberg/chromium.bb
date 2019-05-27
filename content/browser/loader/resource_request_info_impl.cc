@@ -194,11 +194,10 @@ ResourceRequestInfo::WebContentsGetter
 ResourceRequestInfoImpl::GetWebContentsGetterForRequest() {
   // If we have a window id, try to use that.
   if (fetch_window_id_) {
-    int frame_tree_node_id =
-        FrameTreeNodeIdRegistry::GetInstance()->Get(fetch_window_id_);
-    if (frame_tree_node_id != FrameTreeNode::kFrameTreeNodeInvalidId) {
-      return base::BindRepeating(&WebContents::FromFrameTreeNodeId,
-                                 frame_tree_node_id);
+    if (auto getter =
+            FrameTreeNodeIdRegistry::GetInstance()->GetWebContentsGetter(
+                fetch_window_id_)) {
+      return getter;
     }
   }
 

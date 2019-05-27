@@ -325,13 +325,8 @@ void HandleFileUploadRequest(
 
 base::RepeatingCallback<WebContents*(void)> GetWebContentsFromRegistry(
     const base::UnguessableToken& window_id) {
-  int frame_tree_node_id =
-      FrameTreeNodeIdRegistry::GetInstance()->Get(window_id);
-  if (frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId) {
-    return base::NullCallback();
-  }
-  return base::BindRepeating(&WebContents::FromFrameTreeNodeId,
-                             frame_tree_node_id);
+  return FrameTreeNodeIdRegistry::GetInstance()->GetWebContentsGetter(
+      window_id);
 }
 
 WebContents* GetWebContents(int process_id, int routing_id) {

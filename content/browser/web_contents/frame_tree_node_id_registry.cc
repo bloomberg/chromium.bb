@@ -4,9 +4,12 @@
 
 #include "content/browser/web_contents/frame_tree_node_id_registry.h"
 
-#include "content/browser/frame_host/frame_tree_node.h"
+#include "base/bind_helpers.h"
+#include "content/public/browser/web_contents.h"
 
 namespace content {
+
+using WebContentsGetter = FrameTreeNodeIdRegistry::WebContentsGetter;
 
 // static
 FrameTreeNodeIdRegistry* FrameTreeNodeIdRegistry::GetInstance() {
@@ -26,12 +29,13 @@ void FrameTreeNodeIdRegistry::Remove(const base::UnguessableToken& id) {
   map_.erase(id);
 }
 
-int FrameTreeNodeIdRegistry::Get(const base::UnguessableToken& id) const {
+WebContentsGetter FrameTreeNodeIdRegistry::GetWebContentsGetter(
+    const base::UnguessableToken& id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto iter = map_.find(id);
   if (iter == map_.end())
-    return FrameTreeNode::kFrameTreeNodeInvalidId;
-  return iter->second;
+    return base::NullCallback();
+  return base::BindRepeating(&WebContents::FromFrameTreeNodeId, iter->second);
 }
 
 FrameTreeNodeIdRegistry::FrameTreeNodeIdRegistry() = default;
