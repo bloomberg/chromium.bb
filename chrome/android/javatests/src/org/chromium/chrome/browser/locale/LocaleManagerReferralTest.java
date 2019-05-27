@@ -21,7 +21,6 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Locale;
@@ -41,8 +40,6 @@ public class LocaleManagerReferralTest {
     public void setUp() throws ExecutionException, ProcessInitException {
         mDefaultLocale = Locale.getDefault();
         Locale.setDefault(new Locale("ru", "RU"));
-
-        ApplicationData.clearAppData(InstrumentationRegistry.getTargetContext());
 
         LocaleManager.setInstanceForTest(new LocaleManager() {
             @Override

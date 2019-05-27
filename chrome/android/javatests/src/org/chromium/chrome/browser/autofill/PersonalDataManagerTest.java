@@ -10,7 +10,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -19,7 +18,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
-import org.chromium.chrome.browser.test.ClearAppDataTestRule;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -31,8 +29,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PersonalDataManagerTest {
     @Rule
-    public final RuleChain mChain =
-            RuleChain.outerRule(new ClearAppDataTestRule()).around(new ChromeBrowserTestRule());
+    public final ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
 
     private AutofillTestHelper mHelper;
 

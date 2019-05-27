@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SignoutReason;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -245,13 +244,6 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     private void ruleSetUp() throws Throwable {
-        // This must be called before doing anything with the SharedPreferences because
-        // ChromeActivityTestRule's setUp normally wipes them clean between runs.
-        // Setting a SharedPreference here via the SigninTestUtil.setUpAuthForTest() call below
-        // causes Android to cache them before the files get cleared, meaning that a data clear
-        // is useless and test runs influence each other.
-        ApplicationTestUtils.clearAppData(InstrumentationRegistry.getTargetContext());
-
         // This must be called before super.setUp() in order for test authentication to work.
         SigninTestUtil.setUpAuthForTest();
     }

@@ -4,6 +4,7 @@
 
 package org.chromium.base.test;
 
+import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -13,6 +14,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 
 import java.io.File;
@@ -36,6 +38,8 @@ class BaseJUnit4TestRule implements TestRule {
                 ContextUtils.initApplicationContextForTests(context);
                 // Ensure all tests start with empty (InMemory)SharedPreferences.
                 context.clearSharedPreferences();
+                // Delete any files that leak state between tests.
+                clearDataDirectory(context);
 
                 base.evaluate();
 
@@ -76,5 +80,35 @@ class BaseJUnit4TestRule implements TestRule {
                     + "Preferences screens work).\n"
                     + "Files:\n * " + TextUtils.join("\n * ", badFiles));
         }
+    }
+
+    private static void clearDataDirectory(Context targetContext) {
+        File dataDir = ContextCompat.getDataDir(targetContext);
+        File[] files = dataDir.listFiles();
+        if (files == null) return;
+        for (File file : files) {
+            // Symlink to app's native libraries.
+            if (file.getName().equals("lib")) {
+                continue;
+            }
+            if (file.getName().equals("incremental-install-files")) {
+                continue;
+            }
+            // E.g. Legacy multidex files.
+            if (file.getName().equals("code_cache")) {
+                continue;
+            }
+            // SharedPreferences handled by checkOrDeleteOnDiskSharedPreferences().
+            if (file.getName().equals("shared_prefs")) {
+                continue;
+            }
+            if (!FileUtils.recursivelyDeleteFile(file)) {
+                throw new RuntimeException("Could not delete file: " + file.getAbsolutePath());
+            }
+        }
+        // We have to make sure the cache directory still exists, as the framework
+        // will try to create it otherwise and will fail for sandbox processes with
+        // a NullPointerException.
+        new File(dataDir, "cache").mkdir();
     }
 }

@@ -17,7 +17,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -26,7 +25,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
-import org.chromium.chrome.browser.test.ClearAppDataTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -37,8 +35,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PassphraseActivityTest {
     @Rule
-    public final RuleChain mChain =
-            RuleChain.outerRule(new ClearAppDataTestRule()).around(new ChromeBrowserTestRule());
+    public final ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
 
     private Context mContext;
 

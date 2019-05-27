@@ -67,7 +67,7 @@ public class MultiActivityTestRule implements TestRule {
     private void ruleSetUp() throws Exception {
         RecordHistogram.setDisabledForTests(true);
         mContext = InstrumentationRegistry.getTargetContext();
-        ApplicationTestUtils.setUp(mContext, true);
+        ApplicationTestUtils.setUp(mContext);
     }
 
     private void ruleTearDown() throws Exception {

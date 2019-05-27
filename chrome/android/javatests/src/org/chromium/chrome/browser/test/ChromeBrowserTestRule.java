@@ -4,12 +4,9 @@
 
 package org.chromium.chrome.browser.test;
 
-import android.support.test.InstrumentationRegistry;
-
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
@@ -19,7 +16,6 @@ import org.chromium.content_public.browser.test.NativeLibraryTestRule;
  */
 public class ChromeBrowserTestRule extends NativeLibraryTestRule {
     private void setUp() {
-        ApplicationData.clearAppData(InstrumentationRegistry.getTargetContext());
         SigninTestUtil.setUpAuthForTest();
         loadNativeLibraryAndInitBrowserProcess();
     }

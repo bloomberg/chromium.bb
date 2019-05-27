@@ -89,7 +89,6 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
     private static final long OMNIBOX_FIND_SUGGESTION_TIMEOUT_MS = 10 * 1000;
 
-    protected boolean mSkipClearAppData;
     private Thread.UncaughtExceptionHandler mDefaultUncaughtExceptionHandler;
     private Class<T> mChromeActivityClass;
     private T mSetActivity;
@@ -115,8 +114,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
             public void evaluate() throws Throwable {
                 mDefaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
                 Thread.setDefaultUncaughtExceptionHandler(new ChromeUncaughtExceptionHandler());
-                ApplicationTestUtils.setUp(
-                        InstrumentationRegistry.getTargetContext(), !mSkipClearAppData);
+                ApplicationTestUtils.setUp(InstrumentationRegistry.getTargetContext());
 
                 // Preload Calendar so that it does not trigger ReadFromDisk Strict mode violations
                 // if called on the UI Thread. See https://crbug.com/705477 and
@@ -249,11 +247,6 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
         } finally {
             ApplicationStatus.unregisterActivityStateListener(stateListener);
         }
-    }
-
-    /** Convenience function for {@link ApplicationTestUtils#clearAppData(Context)}. */
-    public void clearAppData() {
-        ApplicationTestUtils.clearAppData(InstrumentationRegistry.getTargetContext());
     }
 
     /**

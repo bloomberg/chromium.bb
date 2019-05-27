@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
@@ -17,7 +16,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -58,7 +56,6 @@ public class OAuth2TokenServiceIntegrationTest {
     @Before
     public void setUp() {
         mapAccountNamesToIds();
-        ApplicationData.clearAppData(InstrumentationRegistry.getTargetContext());
 
         // loadNativeLibraryAndInitBrowserProcess will access AccountManagerFacade, so it should
         // be initialized beforehand.
