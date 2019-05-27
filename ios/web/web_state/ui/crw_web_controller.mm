@@ -4273,11 +4273,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)handleCancelledError:(NSError*)error
                forNavigation:(WKNavigation*)navigation
              provisionalLoad:(BOOL)provisionalLoad {
+  web::NavigationContextImpl* navigationContext =
+      [self.navigationHandler.navigationStates contextForNavigation:navigation];
   if ([self shouldCancelLoadForCancelledError:error
                               provisionalLoad:provisionalLoad]) {
-    web::NavigationContextImpl* navigationContext =
-        [self.navigationHandler.navigationStates
-            contextForNavigation:navigation];
     [self.navigationHandler loadCancelled];
     self.navigationManagerImpl->DiscardNonCommittedItems();
 
@@ -4286,6 +4285,18 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
     if (provisionalLoad) {
       self.webStateImpl->OnNavigationFinished(navigationContext);
+    }
+  } else if (!provisionalLoad) {
+    web::NavigationItemImpl* item =
+        web::GetItemWithUniqueID(self.navigationManagerImpl, navigationContext);
+    if (item) {
+      // Since the navigation has already been committed, it will retain its
+      // back / forward item even though the load has been cancelled. Update the
+      // error state machine so that if future loads of this item fail, the same
+      // item will be reused for the error view rather than loading a
+      // placeholder URL into a new navigation item, since the latter would
+      // destroy the forward list.
+      item->error_retry_state_machine().SetNoNavigationError();
     }
   }
 }

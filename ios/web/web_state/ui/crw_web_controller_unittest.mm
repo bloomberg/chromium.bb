@@ -285,6 +285,32 @@ TEST_P(CRWWebControllerTest, SslCertError) {
   EXPECT_FALSE(GetWebClient()->last_cert_error_overridable());
 }
 
+// Tests that when a committed but not-yet-finished navigation is cancelled,
+// the navigation item's ErrorRetryStateMachine is updated correctly.
+TEST_P(CRWWebControllerTest, CancelCommittedNavigation) {
+  [[[mock_web_view_ stub] andReturnBool:NO] hasOnlySecureContent];
+  [static_cast<WKWebView*>([[mock_web_view_ stub] andReturn:@""]) title];
+
+  WKNavigation* navigation =
+      static_cast<WKNavigation*>([[NSObject alloc] init]);
+  SetWebViewURL(@"http://chromium.test");
+  [navigation_delegate_ webView:mock_web_view_
+      didStartProvisionalNavigation:navigation];
+  [fake_wk_list_ setCurrentURL:@"http://chromium.test"];
+  [navigation_delegate_ webView:mock_web_view_ didCommitNavigation:navigation];
+  NSError* error = [NSError errorWithDomain:NSURLErrorDomain
+                                       code:NSURLErrorCancelled
+                                   userInfo:nil];
+  [navigation_delegate_ webView:mock_web_view_
+              didFailNavigation:navigation
+                      withError:error];
+  NavigationManagerImpl& navigation_manager =
+      web_controller().webStateImpl->GetNavigationManagerImpl();
+  NavigationItemImpl* item = navigation_manager.GetLastCommittedItemImpl();
+  EXPECT_EQ(ErrorRetryState::kNoNavigationError,
+            item->error_retry_state_machine().state());
+}
+
 // Tests that when a placeholder navigation is preempted by another navigation,
 // WebStateObservers get neither a DidStartNavigation nor a DidFinishNavigation
 // call for the corresponding native URL navigation.
