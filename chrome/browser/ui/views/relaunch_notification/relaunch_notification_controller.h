@@ -38,7 +38,7 @@ class TickClock;
 //
 // - Required (2): The controller displays the relaunch required dialog on each
 //   change to the UpgradeDetector's upgrade_notification_stage (described
-//   above). The browser is relaunched three minutes after the third and final
+//   above). The browser is relaunched fifteen minutes after the third and final
 //   showing of the dialog (which takes place when the UpgradeDetector reaches
 //   the high annoyance level).
 //
@@ -57,7 +57,7 @@ class RelaunchNotificationController : public UpgradeObserver {
   // summarily relaunched on Chrome desktop, or the device is rebooted on
   // Chrome OS.
   static constexpr base::TimeDelta kRelaunchGracePeriod =
-      base::TimeDelta::FromMinutes(3);
+      base::TimeDelta::FromMinutes(15);
 
   RelaunchNotificationController(UpgradeDetector* upgrade_detector,
                                  const base::Clock* clock,

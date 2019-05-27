@@ -232,7 +232,7 @@ void RelaunchNotificationController::HandleRelaunchRequiredState(
 
   // Make no changes if the new deadline is not in the future and the browser is
   // within the grace period of the previous deadline. The user has already been
-  // given the three-minute countdown so just let it go.
+  // given the fifteen-minutes countdown so just let it go.
   const base::Time now = clock_->Now();
   if (timer_.IsRunning()) {
     const base::Time& desired_run_time = timer_.desired_run_time();
@@ -241,7 +241,7 @@ void RelaunchNotificationController::HandleRelaunchRequiredState(
       return;
   }
 
-  // Compute the new deadline (minimally three minutes into the future).
+  // Compute the new deadline (minimally fifteen minutes into the future).
   const base::Time deadline =
       std::max(high_deadline, now) + kRelaunchGracePeriod;
 
