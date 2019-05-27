@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
-#include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/http_auth_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/login_delegate.h"
@@ -57,10 +57,10 @@ class LoginHandler : public content::LoginDelegate,
   // structs, because the guide's rationale still applies. Therefore at least
   // the constructor DCHECKs that |login_model| is not null.
   struct LoginModelData {
-    LoginModelData(password_manager::LoginModel* login_model,
+    LoginModelData(password_manager::HttpAuthManager* login_model,
                    const autofill::PasswordForm& observed_form);
 
-    password_manager::LoginModel* const model;
+    password_manager::HttpAuthManager* const model;
     const autofill::PasswordForm& form;
   };
 
@@ -131,8 +131,12 @@ class LoginHandler : public content::LoginDelegate,
   // Notify observers that authentication is cancelled.
   void NotifyAuthCancelled();
 
-  // Returns the PasswordManager for the web contents that needs login.
-  password_manager::PasswordManager* GetPasswordManagerForLogin();
+  // Returns the PasswordManagerClient from the web content.
+  password_manager::PasswordManagerClient*
+  GetPasswordManagerClientFromWebContent();
+
+  // Returns the HttpAuthManager.
+  password_manager::HttpAuthManager* GetHttpAuthManagerForLogin();
 
   // Returns whether authentication had been handled (SetAuth or CancelAuth).
   bool WasAuthHandled() const;

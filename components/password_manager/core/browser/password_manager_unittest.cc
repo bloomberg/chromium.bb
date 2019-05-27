@@ -26,6 +26,7 @@
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
@@ -50,6 +51,7 @@ using base::Feature;
 using base::TestMockTimeTaskRunner;
 using testing::_;
 using testing::AnyNumber;
+using testing::Invoke;
 using testing::IsNull;
 using testing::Mock;
 using testing::NotNull;
@@ -57,7 +59,6 @@ using testing::Return;
 using testing::ReturnRef;
 using testing::SaveArg;
 using testing::WithArg;
-
 namespace password_manager {
 
 namespace {
@@ -102,6 +103,9 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
   MOCK_CONST_METHOD1(IsSavingAndFillingEnabled, bool(const GURL&));
   MOCK_CONST_METHOD0(GetMainFrameCertStatus, net::CertStatus());
+  MOCK_CONST_METHOD2(AutofillHttpAuth,
+                     void(const autofill::PasswordForm&,
+                          const PasswordFormManagerForUI*));
   MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
   // The code inside EXPECT_CALL for PromptUserToSaveOrUpdatePasswordPtr and
   // ShowManualFallbackForSavingPtr owns the PasswordFormManager* argument.
@@ -154,18 +158,6 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
                                    autofill::PasswordFormFieldPredictionMap>&));
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
-};
-
-class MockLoginModelObserver : public LoginModelObserver {
- public:
-  MockLoginModelObserver() = default;
-  ~MockLoginModelObserver() override = default;
-
-  MOCK_METHOD0(OnLoginModelDestroying, void());
-  MOCK_METHOD2(OnAutofillDataAvailableInternal,
-               void(const base::string16&, const base::string16&));
-
-  DISALLOW_COPY_AND_ASSIGN(MockLoginModelObserver);
 };
 
 // Invokes the password store consumer with a single copy of |form|.
@@ -1146,71 +1138,6 @@ TEST_F(PasswordManagerTest, FormSubmitInvisibleLogin) {
   EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
   ASSERT_TRUE(form_manager_to_save);
   form_manager_to_save->Save();
-}
-
-TEST_F(PasswordManagerTest, HttpAuthFilling) {
-  for (bool new_parser_enabled : {false, true}) {
-    SCOPED_TRACE(testing::Message("new_parser_enabled=") << new_parser_enabled);
-    base::test::ScopedFeatureList scoped_feature_list;
-    TurnOnNewParsingForFilling(&scoped_feature_list, new_parser_enabled);
-    EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
-        .WillRepeatedly(Return(true));
-    PasswordForm observed_form;
-    observed_form.scheme = PasswordForm::SCHEME_BASIC;
-    observed_form.origin = GURL("http://proxy.com/");
-    observed_form.signon_realm = "proxy.com/realm";
-
-    PasswordForm stored_form = observed_form;
-    stored_form.username_value = ASCIIToUTF16("user");
-    stored_form.password_value = ASCIIToUTF16("1234");
-
-    MockLoginModelObserver observer;
-    EXPECT_CALL(*store_, GetLogins(_, _))
-        .WillRepeatedly(WithArg<1>(InvokeConsumer(stored_form)));
-    EXPECT_CALL(observer, OnAutofillDataAvailableInternal(
-                              ASCIIToUTF16("user"), ASCIIToUTF16("1234")));
-    manager()->AddObserverAndDeliverCredentials(&observer, observed_form);
-    manager()->RemoveObserver(&observer);
-    testing::Mock::VerifyAndClearExpectations(&client_);
-    testing::Mock::VerifyAndClearExpectations(&store_);
-  }
-}
-
-TEST_F(PasswordManagerTest, HttpAuthSaving) {
-  for (bool new_parsing_for_saving : {false, true}) {
-    SCOPED_TRACE(testing::Message("new_parser_enabled=")
-                 << new_parsing_for_saving);
-    base::test::ScopedFeatureList scoped_feature_list;
-    TurnOnNewParsingForSaving(&scoped_feature_list, new_parsing_for_saving);
-    EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
-        .WillRepeatedly(Return(true));
-    PasswordForm observed_form;
-    observed_form.scheme = PasswordForm::SCHEME_BASIC;
-    observed_form.origin = GURL("http://proxy.com/");
-    observed_form.signon_realm = "proxy.com/realm";
-
-    MockLoginModelObserver observer;
-    EXPECT_CALL(*store_, GetLogins(_, _))
-        .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
-
-    // Initiate creating a form manager.
-    manager()->AddObserverAndDeliverCredentials(&observer, observed_form);
-
-    // Emulate that http auth credentials submitted.
-    PasswordForm submitted_form = observed_form;
-    submitted_form.username_value = ASCIIToUTF16("user");
-    submitted_form.password_value = ASCIIToUTF16("1234");
-    manager()->OnPasswordHttpAuthFormSubmitted(submitted_form);
-
-    // Expect save prompt on successful submission.
-    std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
-    EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
-        .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
-    manager()->OnPasswordFormsRendered(&driver_, {}, true);
-
-    testing::Mock::VerifyAndClearExpectations(&client_);
-    manager()->RemoveObserver(&observer);
-  }
 }
 
 TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {

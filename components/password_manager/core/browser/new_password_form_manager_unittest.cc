@@ -4,6 +4,9 @@
 
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 
+#include <string>
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -18,6 +21,7 @@
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -113,8 +117,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD0(UpdateFormManagers, void());
 
   MOCK_CONST_METHOD2(AutofillHttpAuth,
-                     void(const std::map<base::string16, const PasswordForm*>&,
-                          const PasswordForm&));
+                     void(const PasswordForm&,
+                          const PasswordFormManagerForUI*));
 };
 
 void CheckPendingCredentials(const PasswordForm& expected,
@@ -1218,7 +1222,7 @@ TEST_F(NewPasswordFormManagerTest, PermanentlyBlacklist) {
   EXPECT_CALL(form_saver,
               PermanentlyBlacklist(PasswordStore::FormDigest(observed_form_)))
       .WillOnce(Return(actual_blacklisted_form));
-  ;
+
   form_manager_->PermanentlyBlacklist();
   EXPECT_THAT(form_manager_->GetBlacklistedMatches(),
               ElementsAre(Pointee(actual_blacklisted_form)));
@@ -1882,8 +1886,7 @@ TEST_F(NewPasswordFormManagerTest, SaveHttpAuthNoHttpAuthStored) {
     http_auth_form.password_value = password;
 
     // Check that submitted credentials are saved.
-    ASSERT_TRUE(form_manager_->ProvisionallySaveHttpAuthFormIfIsManaged(
-        http_auth_form));
+    ASSERT_TRUE(form_manager_->ProvisionallySaveHttpAuthForm(http_auth_form));
     EXPECT_TRUE(form_manager_->IsNewLogin());
 
     PasswordForm saved_form;
@@ -1907,13 +1910,12 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthAlreadySaved) {
   const base::string16 password = ASCIIToUTF16("pass1");
   http_auth_form.username_value = username;
   http_auth_form.password_value = password;
-  EXPECT_CALL(client_, AutofillHttpAuth(_, http_auth_form)).Times(1);
+  EXPECT_CALL(client_, AutofillHttpAuth(http_auth_form, _)).Times(1);
   SetNonFederatedAndNotifyFetchCompleted({&http_auth_form});
 
   // Check that if known credentials are submitted, then |form_manager_| is not
   // in state new login nor password overridden.
-  ASSERT_TRUE(
-      form_manager_->ProvisionallySaveHttpAuthFormIfIsManaged(http_auth_form));
+  ASSERT_TRUE(form_manager_->ProvisionallySaveHttpAuthForm(http_auth_form));
   EXPECT_FALSE(form_manager_->IsNewLogin());
   EXPECT_FALSE(form_manager_->IsPasswordOverridden());
 }
@@ -1931,7 +1933,7 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthPasswordOverridden) {
   const base::string16 password = ASCIIToUTF16("pass1");
   saved_http_auth_form.username_value = username;
   saved_http_auth_form.password_value = password;
-  EXPECT_CALL(client_, AutofillHttpAuth(_, saved_http_auth_form)).Times(1);
+  EXPECT_CALL(client_, AutofillHttpAuth(saved_http_auth_form, _)).Times(1);
   SetNonFederatedAndNotifyFetchCompleted({&saved_http_auth_form});
 
   // Check that if new password is submitted, then |form_manager_| is in state
@@ -1939,8 +1941,8 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthPasswordOverridden) {
   PasswordForm submitted_http_auth_form = saved_http_auth_form;
   base::string16 new_password = password + ASCIIToUTF16("1");
   submitted_http_auth_form.password_value = new_password;
-  ASSERT_TRUE(form_manager_->ProvisionallySaveHttpAuthFormIfIsManaged(
-      submitted_http_auth_form));
+  ASSERT_TRUE(
+      form_manager_->ProvisionallySaveHttpAuthForm(submitted_http_auth_form));
   EXPECT_FALSE(form_manager_->IsNewLogin());
   EXPECT_TRUE(form_manager_->IsPasswordOverridden());
 
@@ -1968,8 +1970,7 @@ TEST_F(NewPasswordFormManagerTest, BlacklistHttpAuthCredentials) {
   // Simulate that the user submits http auth credentials.
   http_auth_form.username_value = ASCIIToUTF16("user1");
   http_auth_form.password_value = ASCIIToUTF16("pass1");
-  ASSERT_TRUE(
-      form_manager_->ProvisionallySaveHttpAuthFormIfIsManaged(http_auth_form));
+  ASSERT_TRUE(form_manager_->ProvisionallySaveHttpAuthForm(http_auth_form));
 
   // Simulate that the user clicks never.
   PasswordForm blacklisted_form;

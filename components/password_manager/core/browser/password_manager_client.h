@@ -6,6 +6,8 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 
 #include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -14,6 +16,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/hsts_query.h"
+#include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -45,6 +48,7 @@ class PasswordFormManagerForUI;
 class PasswordManager;
 class PasswordManagerDriver;
 class PasswordManagerMetricsRecorder;
+class HttpAuthManager;
 class PasswordRequirementsService;
 class PasswordStore;
 
@@ -189,9 +193,8 @@ class PasswordManagerClient {
   // Sends username/password from |preferred_match| for filling in the http auth
   // prompt.
   virtual void AutofillHttpAuth(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
-      const autofill::PasswordForm& preferred_match) const;
+      const autofill::PasswordForm& preferred_match,
+      const PasswordFormManagerForUI* form_manager) const;
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
@@ -216,6 +219,9 @@ class PasswordManagerClient {
   // version calls the const one.
   PasswordManager* GetPasswordManager();
   virtual const PasswordManager* GetPasswordManager() const;
+
+  // Returns the HttpAuthManager associated with this client.
+  virtual HttpAuthManager* GetHttpAuthManager();
 
   // Returns the AutofillDownloadManager for votes uploading.
   virtual autofill::AutofillDownloadManager* GetAutofillDownloadManager();

@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_NEW_PASSWORD_FORM_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -95,7 +96,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // If |submitted_form| is managed by *this then saves |submitted_form| to
   // |submitted_form_| field, sets |is_submitted| = true and returns true.
   // Otherwise returns false.
-  bool ProvisionallySaveHttpAuthFormIfIsManaged(
+  bool ProvisionallySaveHttpAuthForm(
       const autofill::PasswordForm& submitted_form);
 
   bool is_submitted() { return is_submitted_; }

@@ -333,8 +333,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordManager::ShowInitialPasswordAccountSuggestions";
     case SavePasswordProgressLogger::STRING_WAIT_FOR_USERNAME:
       return "wait_for_username";
-    case SavePasswordProgressLogger::STRING_LOGINMODELOBSERVER_PRESENT:
-      return "Instances of LoginModelObserver may be present";
     case SavePasswordProgressLogger::
         STRING_WAS_LAST_NAVIGATION_HTTP_ERROR_METHOD:
       return "ChromePasswordManagerClient::WasLastNavigationHTTPError";
@@ -472,6 +470,17 @@ std::string SavePasswordProgressLogger::GetStringFromID(
              "exists whose username matches the prefilled value";
     case STRING_FAILED_TO_FILL_FOUND_NO_PASSWORD_FOR_USERNAME:
       return "Failed to fill: No credential matching found";
+    case SavePasswordProgressLogger::STRING_HTTPAUTH_OBSERVER_PRESENT:
+      return "Instances of HttpAuthObserver are present";
+    case SavePasswordProgressLogger::
+        STRING_HTTPAUTH_ON_ASK_USER_OR_SAVE_PASSWORD:
+      return "HttpAuthManager::AskUserOrSavePassword";
+    case SavePasswordProgressLogger::STRING_HTTPAUTH_ON_PROMPT_USER:
+      return "HttpAuthManager::PromptUser";
+    case SavePasswordProgressLogger::STRING_HTTPAUTH_ON_SET_OBSERVER:
+      return "HttpAuthManager::SetObserver";
+    case SavePasswordProgressLogger::STRING_HTTPAUTH_ON_DETACH_OBSERVER:
+      return "HttpAuthManager::DetachObserver";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

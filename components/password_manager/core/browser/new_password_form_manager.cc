@@ -4,6 +4,10 @@
 
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 
+#include <algorithm>
+#include <memory>
+#include <set>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -415,7 +419,7 @@ bool NewPasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
 
 void NewPasswordFormManager::PresaveGeneratedPassword(
     const PasswordForm& form) {
-  // TODO(https://crbug.com/831123). Propagate generated password independently
+  // TODO(https://crbug.com/831123): Propagate generated password independently
   // of PasswordForm when PasswordForm goes away from the renderer process.
   PresaveGeneratedPasswordInternal(form.form_data,
                                    form.password_value /*generated_password*/);
@@ -617,7 +621,7 @@ bool NewPasswordFormManager::ProvisionallySave(
   return true;
 }
 
-bool NewPasswordFormManager::ProvisionallySaveHttpAuthFormIfIsManaged(
+bool NewPasswordFormManager::ProvisionallySaveHttpAuthForm(
     const PasswordForm& submitted_form) {
   if (!IsHttpAuth())
     return false;
@@ -627,7 +631,6 @@ bool NewPasswordFormManager::ProvisionallySaveHttpAuthFormIfIsManaged(
 
   parsed_submitted_form_.reset(new PasswordForm(submitted_form));
   is_submitted_ = true;
-
   CreatePendingCredentials();
   return true;
 }
@@ -695,7 +698,7 @@ void NewPasswordFormManager::Fill() {
 #endif
   }
 
-  // TODO(https://crbug.com/831123). Implement correct treating of federated
+  // TODO(https://crbug.com/831123): Implement correct treating of federated
   // matches.
   std::vector<const PasswordForm*> federated_matches;
   SendFillInformationToRenderer(*client_, driver_.get(), IsBlacklisted(),
@@ -827,7 +830,6 @@ void NewPasswordFormManager::CreatePendingCredentials() {
   SetPasswordOverridden(false);
 
   ValueElementPair password_to_save(PasswordToSave(*parsed_submitted_form_));
-
   // Look for the actually submitted credentials in the list of previously saved
   // credentials that were available to autofilling.
   const PasswordForm* saved_form = password_manager_util::GetMatchForUpdating(
@@ -976,8 +978,7 @@ void NewPasswordFormManager::FillHttpAuth() {
   DCHECK(IsHttpAuth());
   if (!preferred_match_)
     return;
-
-  client_->AutofillHttpAuth(best_matches_, *preferred_match_);
+  client_->AutofillHttpAuth(*preferred_match_, this);
 }
 
 std::unique_ptr<PasswordForm> NewPasswordFormManager::ParseFormAndMakeLogging(

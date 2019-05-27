@@ -44,6 +44,8 @@
 #include "components/password_manager/content/browser/password_requirements_service_factory.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/hsts_query.h"
+#include "components/password_manager/core/browser/http_auth_manager.h"
+#include "components/password_manager/core/browser/http_auth_manager_impl.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
@@ -173,6 +175,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       password_manager_(this),
+      httpauth_manager_(this),
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID)
       password_reuse_detection_manager_(this),
@@ -447,9 +450,12 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
 }
 
 void ChromePasswordManagerClient::AutofillHttpAuth(
-    const std::map<base::string16, const PasswordForm*>& best_matches,
-    const PasswordForm& preferred_match) const {
-  password_manager_.AutofillHttpAuth(best_matches, preferred_match);
+    const PasswordForm& preferred_match,
+    const password_manager::PasswordFormManagerForUI* form_manager) const {
+  httpauth_manager_.Autofill(preferred_match, form_manager);
+  DCHECK(!form_manager->GetBestMatches().empty());
+  PasswordWasAutofilled(form_manager->GetBestMatches(),
+                        form_manager->GetOrigin(), nullptr);
 }
 
 bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
@@ -523,6 +529,8 @@ void ChromePasswordManagerClient::DidFinishNavigation(
     // Send any collected metrics by destroying the metrics recorder.
     metrics_recorder_.reset();
   }
+
+  httpauth_manager_.OnDidFinishMainFrameNavigation();
 
   // From this point on, the ContentCredentialManager will service API calls in
   // the context of the new WebContents::GetLastCommittedURL, which may very
@@ -634,6 +642,11 @@ bool ChromePasswordManagerClient::IsIncognito() const {
 const password_manager::PasswordManager*
 ChromePasswordManagerClient::GetPasswordManager() const {
   return &password_manager_;
+}
+
+password_manager::HttpAuthManager*
+ChromePasswordManagerClient::GetHttpAuthManager() {
+  return &httpauth_manager_;
 }
 
 autofill::AutofillDownloadManager*

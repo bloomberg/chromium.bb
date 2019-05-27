@@ -210,14 +210,14 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
         base::StartsWith(new_path, old_path, base::CompareCase::SENSITIVE);
   }
 
-  if (driver)
+  if (driver) {
     origins_match =
         origins_match ||
         std::any_of(drivers_.begin(), drivers_.end(),
                     [driver](const base::WeakPtr<PasswordManagerDriver>& d) {
                       return d.get() == driver;
                     });
-
+  }
   if (!origins_match)
     return result;
 
@@ -572,7 +572,6 @@ void PasswordFormManager::ProcessLoginPrompt() {
       PasswordFormMetricsRecorder::kManagerActionAutofilled);
   metrics_recorder_->RecordFillEvent(
       PasswordFormMetricsRecorder::kManagerFillEventAutofilled);
-  password_manager_->AutofillHttpAuth(best_matches_, *preferred_match_);
 }
 
 void PasswordFormManager::ProcessUpdate() {

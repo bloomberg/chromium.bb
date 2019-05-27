@@ -24,8 +24,8 @@
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/log_manager.h"
-#include "components/password_manager/core/browser/password_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -85,7 +85,7 @@ void RecordHttpAuthPromptType(AuthPromptType prompt_type) {
 // LoginHandler
 
 LoginHandler::LoginModelData::LoginModelData(
-    password_manager::LoginModel* login_model,
+    password_manager::HttpAuthManager* login_model,
     const autofill::PasswordForm& observed_form)
     : model(login_model), form(observed_form) {
   DCHECK(model);
@@ -162,14 +162,13 @@ void LoginHandler::SetAuth(const base::string16& username,
                            const base::string16& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  password_manager::PasswordManager* password_manager =
-      GetPasswordManagerForLogin();
   std::unique_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
-  if (password_manager &&
-      password_manager->client()->GetLogManager()->IsLoggingActive()) {
+  password_manager::PasswordManagerClient* client =
+      GetPasswordManagerClientFromWebContent();
+  if (client && client->GetLogManager()->IsLoggingActive()) {
     logger =
         std::make_unique<password_manager::BrowserSavePasswordProgressLogger>(
-            password_manager->client()->GetLogManager());
+            client->GetLogManager());
     logger->LogMessage(
         autofill::SavePasswordProgressLogger::STRING_SET_AUTH_METHOD);
   }
@@ -183,11 +182,14 @@ void LoginHandler::SetAuth(const base::string16& username,
   if (already_handled)
     return;
 
-  // Tell the password manager the credentials were submitted / accepted.
-  if (password_manager) {
+  password_manager::HttpAuthManager* httpauth_manager =
+      GetHttpAuthManagerForLogin();
+
+  // Tell the http-auth manager the credentials were submitted / accepted.
+  if (httpauth_manager) {
     password_form_.username_value = username;
     password_form_.password_value = password;
-    password_manager->OnPasswordHttpAuthFormSubmitted(password_form_);
+    httpauth_manager->OnPasswordFormSubmitted(password_form_);
     if (logger) {
       logger->LogPasswordForm(
           autofill::SavePasswordProgressLogger::STRING_LOGINHANDLER_FORM,
@@ -313,12 +315,19 @@ void LoginHandler::NotifyAuthCancelled() {
                   content::Details<LoginNotificationDetails>(&details));
 }
 
-password_manager::PasswordManager* LoginHandler::GetPasswordManagerForLogin() {
+password_manager::PasswordManagerClient*
+LoginHandler::GetPasswordManagerClientFromWebContent() {
   if (!web_contents())
     return nullptr;
   password_manager::PasswordManagerClient* client =
       ChromePasswordManagerClient::FromWebContents(web_contents());
-  return client ? client->GetPasswordManager() : nullptr;
+  return client;
+}
+
+password_manager::HttpAuthManager* LoginHandler::GetHttpAuthManagerForLogin() {
+  password_manager::PasswordManagerClient* client =
+      GetPasswordManagerClientFromWebContent();
+  return client ? client->GetHttpAuthManager() : nullptr;
 }
 
 // Returns whether authentication had been handled (SetAuth or CancelAuth).
@@ -542,10 +551,10 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
   base::string16 explanation;
   GetDialogStrings(request_url, auth_info(), &authority, &explanation);
 
-  password_manager::PasswordManager* password_manager =
-      GetPasswordManagerForLogin();
+  password_manager::HttpAuthManager* httpauth_manager =
+      GetHttpAuthManagerForLogin();
 
-  if (!password_manager) {
+  if (!httpauth_manager) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // A WebContents in a <webview> (a GuestView type) does not have a password
     // manager, but still needs to be able to show login prompts.
@@ -561,17 +570,18 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url) {
     return;
   }
 
-  if (password_manager &&
-      password_manager->client()->GetLogManager()->IsLoggingActive()) {
+  password_manager::PasswordManagerClient* client =
+      GetPasswordManagerClientFromWebContent();
+  if (client && client->GetLogManager()->IsLoggingActive()) {
     password_manager::BrowserSavePasswordProgressLogger logger(
-        password_manager->client()->GetLogManager());
+        client->GetLogManager());
     logger.LogMessage(
         autofill::SavePasswordProgressLogger::STRING_SHOW_LOGIN_PROMPT_METHOD);
   }
 
   PasswordForm observed_form(
       MakeInputForPasswordManager(request_url, auth_info()));
-  LoginModelData model_data(password_manager, observed_form);
+  LoginModelData model_data(httpauth_manager, observed_form);
   BuildViewAndNotify(authority, explanation, &model_data);
 }
 
