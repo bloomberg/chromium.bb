@@ -6,15 +6,24 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_value.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_generated_image.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -483,6 +492,36 @@ TEST(ComputedStyleTest, CustomPropertiesEqual_Data) {
   style1->SetVariableData("--x", value1, false);
   style2->SetVariableData("--x", value2, false);
   EXPECT_FALSE(style1->CustomPropertiesEqual(properties, *style2));
+}
+
+TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
+  ScopedCSSColorSchemeForTest scoped_property_enabled(true);
+
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+
+  dummy_page_holder_->GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  StyleResolverState state(dummy_page_holder_->GetDocument(), nullptr, initial,
+                           initial);
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  state.SetStyle(style);
+
+  CSSPropertyRef ref("color-scheme", state.GetDocument());
+
+  CSSValueList* dark_value = CSSValueList::CreateSpaceSeparated();
+  dark_value->Append(*CSSIdentifierValue::Create(CSSValueID::kDark));
+
+  CSSValueList* light_value = CSSValueList::CreateSpaceSeparated();
+  light_value->Append(*CSSIdentifierValue::Create(CSSValueID::kLight));
+
+  To<Longhand>(ref.GetProperty()).ApplyValue(state, *dark_value);
+  EXPECT_EQ(ColorScheme::kDark, style->UsedColorScheme());
+
+  To<Longhand>(ref.GetProperty()).ApplyValue(state, *light_value);
+  EXPECT_EQ(ColorScheme::kLight, style->UsedColorScheme());
 }
 
 }  // namespace blink

@@ -2007,6 +2007,7 @@ void ColorScheme::ApplyValue(StyleResolverState& state,
     bool prefers_dark =
         state.GetDocument().GetStyleEngine().GetPreferredColorScheme() ==
         PreferredColorScheme::kDark;
+    bool use_dark = false;
     Vector<AtomicString> color_schemes;
     for (auto& item : *scheme_list) {
       if (const auto* custom_ident = DynamicTo<CSSCustomIdentValue>(*item)) {
@@ -2014,12 +2015,13 @@ void ColorScheme::ApplyValue(StyleResolverState& state,
       } else if (const auto* ident = DynamicTo<CSSIdentifierValue>(*item)) {
         color_schemes.push_back(ident->CssText());
         if (prefers_dark && ident->GetValueID() == CSSValueID::kDark)
-          state.Style()->SetDarkColorScheme(true);
+          use_dark = true;
       } else {
         NOTREACHED();
       }
     }
     state.Style()->SetColorScheme(color_schemes);
+    state.Style()->SetDarkColorScheme(use_dark);
   } else {
     NOTREACHED();
   }
