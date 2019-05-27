@@ -48738,6 +48738,31 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="DownloadError"/>
 </enum>
 
+<enum name="RecurrenceRankerConfigurationError">
+  <int value="0" label="HashMismatch"/>
+  <int value="1" label="InvalidParameter"/>
+  <int value="2" label="InvalidPredictor"/>
+  <int value="3" label="FakePredictorUsed"/>
+</enum>
+
+<enum name="RecurrenceRankerSerializationError">
+  <int value="0" label="ModelReadError"/>
+  <int value="1" label="ModelWriteError"/>
+  <int value="2" label="FromProtoError"/>
+  <int value="3" label="ToProtoError"/>
+  <int value="4" label="PredictorMissingError"/>
+  <int value="5" label="TargetsMissingError"/>
+  <int value="6" label="ConditionsMissingError"/>
+  <int value="7" label="FakePredictorLoadingError"/>
+  <int value="8" label="ZeroStateFrecencyPredictorLoadingError"/>
+  <int value="9" label="ZeroStateHourBinnedPredictorLoadingError"/>
+</enum>
+
+<enum name="RecurrenceRankerUsageError">
+  <int value="0" label="InvalidTrainCall"/>
+  <int value="1" label="InvalidRankCall"/>
+</enum>
+
 <enum name="RecurrentErrorAction">
   <int value="0" label="Recurrent error interstitial shown"/>
   <int value="1" label="User proceeded through recurrent error interstitial"/>

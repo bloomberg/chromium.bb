@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.pb.h"
 
 namespace app_list {
@@ -15,25 +16,34 @@ constexpr int kHoursADay = 24;
 }  // namespace
 
 void RecurrencePredictor::Train(unsigned int target) {
+  LogUsageError(UsageError::kInvalidTrainCall);
   NOTREACHED();
 }
 
 void RecurrencePredictor::Train(unsigned int target, unsigned int condition) {
+  LogUsageError(UsageError::kInvalidTrainCall);
   NOTREACHED();
 }
 
 base::flat_map<unsigned int, float> RecurrencePredictor::Rank() {
+  LogUsageError(UsageError::kInvalidRankCall);
   NOTREACHED();
   return {};
 }
 
 base::flat_map<unsigned int, float> RecurrencePredictor::Rank(
     unsigned int condition) {
+  LogUsageError(UsageError::kInvalidRankCall);
   NOTREACHED();
   return {};
 }
 
-FakePredictor::FakePredictor(const FakePredictorConfig& config) {}
+FakePredictor::FakePredictor(const FakePredictorConfig& config) {
+  // The fake predictor should only be used for testing, not in production.
+  // Record an error so we know if it is being used.
+  LogConfigurationError(ConfigurationError::kFakePredictorUsed);
+}
+
 FakePredictor::~FakePredictor() = default;
 
 const char FakePredictor::kPredictorName[] = "FakePredictor";
@@ -56,8 +66,10 @@ void FakePredictor::ToProto(RecurrencePredictorProto* proto) const {
 }
 
 void FakePredictor::FromProto(const RecurrencePredictorProto& proto) {
-  if (!proto.has_fake_predictor())
+  if (!proto.has_fake_predictor()) {
+    LogSerializationError(SerializationError::kFakePredictorLoadingError);
     return;
+  }
   auto predictor = proto.fake_predictor();
 
   for (const auto& pair : predictor.counts())
@@ -119,8 +131,11 @@ void ZeroStateFrecencyPredictor::ToProto(
 
 void ZeroStateFrecencyPredictor::FromProto(
     const RecurrencePredictorProto& proto) {
-  if (!proto.has_zero_state_frecency_predictor())
+  if (!proto.has_zero_state_frecency_predictor()) {
+    LogSerializationError(
+        SerializationError::kZeroStateFrecencyPredictorLoadingError);
     return;
+  }
   const auto& predictor = proto.zero_state_frecency_predictor();
 
   num_updates_ = predictor.num_updates();

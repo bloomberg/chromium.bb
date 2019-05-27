@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.pb.h"
@@ -36,7 +37,7 @@ void SaveProtoToDisk(const base::FilePath& filepath,
                      const RecurrenceRankerProto& proto) {
   std::string proto_str;
   if (!proto.SerializeToString(&proto_str)) {
-    LOG(ERROR) << "Unable to serialize RecurrenceRankerProto.";
+    LogSerializationError(SerializationError::kToProtoError);
     return;
   }
 
@@ -47,13 +48,13 @@ void SaveProtoToDisk(const base::FilePath& filepath,
     write_result = base::ImportantFileWriter::WriteFileAtomically(
         filepath, proto_str, "RecurrenceRanker");
   }
-  if (!write_result)
-    LOG(ERROR) << "Error writing ranker file " << filepath;
+  if (!write_result) {
+    LogSerializationError(SerializationError::kModelWriteError);
+  }
 }
 
 // Try to load a |RecurrenceRankerProto| from the given filepath. If it fails,
-// it returns an empty default instance of |RecurrenceRankerProto|. Guaranteed
-// to be non-null.
+// it returns nullptr.
 std::unique_ptr<RecurrenceRankerProto> LoadProtoFromDisk(
     const base::FilePath& filepath) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -61,14 +62,14 @@ std::unique_ptr<RecurrenceRankerProto> LoadProtoFromDisk(
 
   std::string proto_str;
   if (!base::ReadFileToString(filepath, &proto_str)) {
-    LOG(ERROR) << "Error reading ranker file " << filepath;
-    return std::make_unique<RecurrenceRankerProto>();
+    LogSerializationError(SerializationError::kModelReadError);
+    return nullptr;
   }
 
   auto proto = std::make_unique<RecurrenceRankerProto>();
   if (!proto->ParseFromString(proto_str)) {
-    LOG(ERROR) << "Error parsing ranker file " << filepath;
-    return std::make_unique<RecurrenceRankerProto>();
+    LogSerializationError(SerializationError::kFromProtoError);
+    return nullptr;
   }
   return proto;
 }
@@ -87,6 +88,7 @@ std::unique_ptr<RecurrencePredictor> MakePredictor(
     return std::make_unique<ZeroStateHourBinPredictor>(
         config.zero_state_hour_bin_predictor());
 
+  LogConfigurationError(ConfigurationError::kInvalidPredictor);
   NOTREACHED();
   return nullptr;
 }
@@ -179,22 +181,38 @@ RecurrenceRanker::~RecurrenceRanker() = default;
 
 void RecurrenceRanker::OnLoadProtoFromDiskComplete(
     std::unique_ptr<RecurrenceRankerProto> proto) {
-  // The configuration of the saved ranker doesn't match the configuration for
-  // this object. We should not use any data from it, and instead start with a
-  // clean slate.
+  load_from_disk_completed_ = true;
+
+  // If OnLoadFromDisk returned nullptr, no saved ranker proto was available on
+  // disk, and there is nothing to load.
+  if (!proto) {
+    return;
+  }
+
   if (!proto->has_config_hash() || proto->config_hash() != config_hash_) {
-    load_from_disk_completed_ = true;
+    // The configuration of the saved ranker doesn't match the configuration for
+    // this object. We should not use any data from it, and instead start with a
+    // clean slate. This is not always an error: it is expected if, for example,
+    // a RecurrenceRanker instance is rolled out in one release, and then
+    // reconfigured in the next.
+    LogConfigurationError(ConfigurationError::kHashMismatch);
     return;
   }
 
   if (proto->has_predictor())
     predictor_->FromProto(proto->predictor());
+  else
+    LogSerializationError(SerializationError::kPredictorMissingError);
+
   if (proto->has_targets())
     targets_->FromProto(proto->targets());
+  else
+    LogSerializationError(SerializationError::kTargetsMissingError);
+
   if (proto->has_conditions())
     conditions_->FromProto(proto->conditions());
-
-  load_from_disk_completed_ = true;
+  else
+    LogSerializationError(SerializationError::kConditionsMissingError);
 }
 
 void RecurrenceRanker::Record(const std::string& target) {
@@ -219,6 +237,7 @@ void RecurrenceRanker::Record(const std::string& target,
     // TODO(921444): The default predictor does not support queries, so we fail
     // here. Once we have a suitable query-based default predictor implemented,
     // change this.
+    LogUsageError(UsageError::kInvalidTrainCall);
     NOTREACHED();
   } else {
     predictor_->Train(targets_->Update(target), conditions_->Update(condition));
@@ -285,6 +304,7 @@ base::flat_map<std::string, float> RecurrenceRanker::Rank(
     // TODO(921444): The default predictor does not support queries, so we fail
     // here. Once we have a suitable query-based default predictor implemented,
     // change this.
+    LogUsageError(UsageError::kInvalidRankCall);
     NOTREACHED();
     return {};
   }
