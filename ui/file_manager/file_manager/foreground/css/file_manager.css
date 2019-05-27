@@ -91,7 +91,7 @@ a:focus {
   flex-direction: column;
   max-width: 40%;
   min-width: 105px;
-  overflow: hidden;
+  overflow: auto;
   position: relative;
   width: 240px;
 }
@@ -100,9 +100,6 @@ a:focus {
   display: flex;
   flex: 1 1 auto;
   margin-top: 8px;
-  overflow-x: auto;
-  overflow-y: auto;
-  position: relative;
 }
 
 .dialog-navigation-list-footer {
@@ -127,9 +124,7 @@ div.splitter {
   bottom: 0;
   flex: none;
   left: 0;
-  min-height: max-content;
   min-width: 100%;
-  overflow: hidden;
 }
 
 #directory-tree .tree-row {
