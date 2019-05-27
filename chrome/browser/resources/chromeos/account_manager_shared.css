@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 body {
-  height: 585px;
+  height: calc(100% - 60px);
   margin-bottom: 32px;
   margin-inline-end: 32px;
   margin-inline-start: 32px;
@@ -11,14 +11,13 @@ body {
 }
 
 h1 {
-  font-family: 'Google Sans', Helvetica, Roboto, sans-serif;
+  font-size: 2em;
   font-weight: normal;
   margin-bottom: 16px;
   margin-top: 28px;
 }
 
 p {
-  font-family: Roboto, sans-serif;
   line-height: 1.5;
   white-space: pre-line;
 }
@@ -36,8 +35,8 @@ a {
 }
 
 #google-logo {
-  height: 30px;
-  width: 30px;
+  height: 32px;
+  width: 32px;
 }
 
 #welcome-image {
@@ -45,28 +44,18 @@ a {
   margin-inline-end: auto;
   margin-inline-start: auto;
   margin-top: 60px;
+  width: 338px;
 }
 
-.primary-button {
-  background-color: var(--google-blue-600);
+.button-container {
   bottom: 0;
-  color: white;
+  display: flex;
+  justify-content: flex-end;
   position: absolute;
   right: 0;
 }
 
-.cancel-button {
-  bottom: 0;
-  left: 0;
-  position: absolute;
-}
-
-html[dir='rtl'] .cancel-button {
-  left: auto;
-  right: 0;
-}
-
-html[dir='rtl'] .primary-button {
+html[dir='rtl'] .button-container {
   left: 0;
   right: auto;
 }
