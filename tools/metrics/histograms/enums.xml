@@ -22659,7 +22659,7 @@ Called by update_net_error_codes.py.-->
   <int value="2213" label="DocumentSetSelectedStylesheetSet"/>
   <int value="2214" label="GeolocationGetCurrentPosition"/>
   <int value="2215" label="GeolocationWatchPosition"/>
-  <int value="2216" label="DataUriHasOctothorpe"/>
+  <int value="2216" label="OBSOLETE_DataUriHasOctothorpe"/>
   <int value="2217" label="NetInfoSaveData"/>
   <int value="2218" label="V8Element_GetClientRects_Method"/>
   <int value="2219" label="V8Element_GetBoundingClientRect_Method"/>

@@ -908,18 +908,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
                params.Url().GetString().Utf8());
 
-  // TODO(crbug.com/123004): Remove once we have enough stats on data URIs that
-  // contain fragments ('#' characters).
-  //
-  // TODO(crbug.com/796173): This call happens before commit for iframes that
-  // have data URI sources, which causes UKM to miss the metric recording.
-  if (context_) {
-    const KURL& url = params.Url();
-    if (url.HasFragmentIdentifier() && url.ProtocolIsData()) {
-      context_->CountUsage(mojom::WebFeature::kDataUriHasOctothorpe);
-    }
-  }
-
   // We need to attach an origin header when the request's method is neither
   // GET nor HEAD. For requests made by an extension content scripts, we want to
   // attach page's origin, whereas the request's origin is the content script's

@@ -31,9 +31,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kNavigatorVibrateSubFrame,
           WebFeature::kTouchEventPreventedNoTouchAction,
           WebFeature::kTouchEventPreventedForcedDocumentPassiveNoTouchAction,
-          // kDataUriHasOctothorpe may not be recorded correctly for iframes.
-          // See https://crbug.com/796173 for details.
-          WebFeature::kDataUriHasOctothorpe,
           WebFeature::kApplicationCacheInstalledButNoManifest,
           WebFeature::kApplicationCacheManifestSelectInsecureOrigin,
           WebFeature::kApplicationCacheManifestSelectSecureOrigin,

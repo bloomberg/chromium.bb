@@ -1642,7 +1642,6 @@ enum WebFeature {
   kMidiDisabledByFeaturePolicy = 2210,
   kGeolocationGetCurrentPosition = 2214,
   kGeolocationWatchPosition = 2215,
-  kDataUriHasOctothorpe = 2216,
   kNetInfoSaveData = 2217,
   kV8Element_GetClientRects_Method = 2218,
   kV8Element_GetBoundingClientRect_Method = 2219,
