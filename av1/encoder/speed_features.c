@@ -266,6 +266,10 @@ static void set_good_speed_features_framesize_independent(
     sf->use_transform_domain_distortion = boosted ? 1 : 2;
     sf->perform_coeff_opt = boosted ? 1 : 2;
     sf->use_inter_txb_hash = 0;
+    sf->prune_ref_frame_for_rect_partitions =
+        (frame_is_intra_only(&cpi->common) || (cm->allow_screen_content_tools))
+            ? 0
+            : (boosted ? 1 : 2);
   }
 
   if (speed >= 2) {
@@ -328,10 +332,6 @@ static void set_good_speed_features_framesize_independent(
     // TODO(any): Experiment with the early exit mechanism for speeds 0, 1 and 2
     // and clean-up the speed feature
     sf->perform_best_rd_based_gating_for_chroma = 1;
-    sf->prune_ref_frame_for_rect_partitions =
-        (frame_is_intra_only(&cpi->common) || (cm->allow_screen_content_tools))
-            ? 0
-            : (boosted ? 1 : 2);
     sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
     sf->disable_smooth_intra =
         !frame_is_intra_only(&cpi->common) || (cpi->rc.frames_to_key != 1);
