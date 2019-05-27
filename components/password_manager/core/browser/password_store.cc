@@ -548,7 +548,7 @@ PasswordStoreChangeList PasswordStore::AddLoginSync(const PasswordForm& form,
   if (AffiliatedMatchHelper::IsValidAndroidCredential(
           PasswordStore::FormDigest(form)))
     ScheduleFindAndUpdateAffiliatedWebLogins(form);
-  return AddLoginImpl(form);
+  return AddLoginImpl(form, error);
 }
 
 PasswordStoreChangeList PasswordStore::UpdateLoginSync(
