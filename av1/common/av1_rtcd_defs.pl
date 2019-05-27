@@ -337,7 +337,7 @@ add_proto qw/void av1_highbd_warp_affine/, "const int32_t *mat, const uint16_t *
 specialize qw/av1_highbd_warp_affine sse4_1/;
 
 add_proto qw/int64_t av1_calc_frame_error/, "const uint8_t *const ref, int stride, const uint8_t *const dst, int p_width, int p_height, int p_stride";
-specialize qw/av1_calc_frame_error avx2/;
+specialize qw/av1_calc_frame_error sse2 avx2/;
 
 if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/double av1_compute_cross_correlation/, "unsigned char *im1, int stride1, int x1, int y1, unsigned char *im2, int stride2, int x2, int y2";

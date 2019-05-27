@@ -27,7 +27,7 @@ namespace {
 typedef int64_t (*frame_error_func)(const uint8_t *const ref, int stride,
                                     const uint8_t *const dst, int p_width,
                                     int p_height, int p_stride);
-#if HAVE_AVX2
+#if HAVE_AVX2 || HAVE_SSE2
 const int kBlockWidth[] = {
   832, 834, 640, 1280, 1920,
 };
@@ -144,6 +144,14 @@ TEST_P(AV1FrameErrorTest, CheckOutput) {
 TEST_P(AV1FrameErrorTest, DISABLED_Speed) {
   RunSpeedTest(GET_PARAM(0), GET_PARAM(1), GET_PARAM(2));
 }
+
+#if HAVE_SSE2
+INSTANTIATE_TEST_CASE_P(
+    SSE2, AV1FrameErrorTest,
+    ::testing::Combine(::testing::Values(&av1_calc_frame_error_sse2),
+                       ::testing::ValuesIn(kBlockWidth),
+                       ::testing::ValuesIn(kBlockHeight)));
+#endif
 
 #if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(
