@@ -82,6 +82,11 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
+    void showTouchToFillSheet() {
+        // TODO(crbug.com/957532): Implement this method.
+    }
+
+    @CalledByNative
     void hide() {
         mManualFillingComponent.hide();
     }

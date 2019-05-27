@@ -17,6 +17,7 @@
 #include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,6 +77,7 @@ class MockPasswordAccessoryView : public ManualFillingViewInterface {
   MOCK_METHOD0(CloseAccessorySheet, void());
   MOCK_METHOD0(SwapSheetWithKeyboard, void());
   MOCK_METHOD0(ShowWhenKeyboardIsVisible, void());
+  MOCK_METHOD0(ShowTouchToFillSheet, void());
   MOCK_METHOD0(Hide, void());
 
  private:
@@ -171,6 +173,20 @@ TEST_F(ManualFillingControllerTest, RelaysShowAndHideKeyboardAccessory) {
   controller()->ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS);
   EXPECT_CALL(*view(), Hide());
   controller()->Hide(FillingSource::PASSWORD_FALLBACKS);
+}
+
+TEST_F(ManualFillingControllerTest, RelaysTouchToFillSheetDependingOnFlag) {
+  for (bool is_touch_to_fill_enabled : {false, true}) {
+    SCOPED_TRACE(is_touch_to_fill_enabled);
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatureState(
+        password_manager::features::kTouchToFillAndroid,
+        is_touch_to_fill_enabled);
+
+    EXPECT_CALL(*view(), ShowTouchToFillSheet())
+        .Times(is_touch_to_fill_enabled ? 1 : 0);
+    controller()->ShowTouchToFillSheet();
+  }
 }
 
 TEST_F(ManualFillingControllerTest, HidesAccessoryWhenAllSourcesRequestedIt) {

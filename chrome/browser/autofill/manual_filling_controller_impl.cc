@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/web_contents.h"
 
 using autofill::AccessoryAction;
@@ -88,9 +89,12 @@ void ManualFillingControllerImpl::ShowWhenKeyboardIsVisible(
 }
 
 void ManualFillingControllerImpl::ShowTouchToFillSheet() {
-  // TODO(crbug.com/957532): Implement this method and the required Java
-  // changes.
-  NOTIMPLEMENTED();
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kTouchToFillAndroid)) {
+    return;
+  }
+
+  view_->ShowTouchToFillSheet();
 }
 
 void ManualFillingControllerImpl::Hide(FillingSource source) {

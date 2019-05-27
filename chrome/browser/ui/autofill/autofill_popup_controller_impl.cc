@@ -27,9 +27,7 @@
 #include "ui/gfx/text_utils.h"
 
 #if defined(OS_ANDROID)
-#include "base/feature_list.h"
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 
 using FillingSource = ManualFillingController::FillingSource;
 #endif
@@ -120,9 +118,7 @@ void AutofillPopupControllerImpl::Show(
 
   if (just_created) {
 #if defined(OS_ANDROID)
-    if (popup_type == PopupType::kPasswords &&
-        base::FeatureList::IsEnabled(
-            password_manager::features::kTouchToFillAndroid)) {
+    if (popup_type == PopupType::kPasswords) {
       ManualFillingController::GetOrCreate(web_contents_)
           ->ShowTouchToFillSheet();
     }
