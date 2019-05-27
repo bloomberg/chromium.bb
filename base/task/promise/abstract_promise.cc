@@ -83,7 +83,7 @@ bool AbstractPromise::InsertDependentOnAnyThread(DependentList::Node* node) {
       break;
 
     case DependentList::InsertResult::FAIL_PROMISE_REJECTED:
-      dependent->OnPrerequisiteRejected();
+      dependent->OnPrerequisiteRejected(this);
       break;
 
     case DependentList::InsertResult::FAIL_PROMISE_CANCELED:
@@ -91,6 +91,13 @@ bool AbstractPromise::InsertDependentOnAnyThread(DependentList::Node* node) {
   }
 
   return true;
+}
+
+void AbstractPromise::IgnoreUncaughtCatchForTesting() {
+#if DCHECK_IS_ON()
+  CheckedAutoLock lock(GetCheckedLock());
+  passed_catch_responsibility_ = true;
+#endif
 }
 
 #if DCHECK_IS_ON()
@@ -120,7 +127,8 @@ void AbstractPromise::DoubleMoveDetector::CheckForDoubleMoveErrors(
       return;
 
     case Executor::ArgumentPassingType::kMove:
-      DCHECK(!dependent_move_only_promise_)
+      DCHECK(!dependent_move_only_promise_ ||
+             *dependent_move_only_promise_ == new_dependent_location)
           << "Can't have multiple move only " << callback_type_
           << " callbacks for same " << callback_type_ << " prerequisite. See "
           << new_dependent_location.ToString() << " and "
@@ -233,6 +241,13 @@ AbstractPromise::GetPrerequisitePolicy() {
   return executor->GetPrerequisitePolicy();
 }
 
+AbstractPromise* AbstractPromise::GetFirstRejectedPrerequisite() const {
+  if (!prerequisites_)
+    return nullptr;
+  return reinterpret_cast<AbstractPromise*>(
+      prerequisites_->first_rejecting_promise.load(std::memory_order_acquire));
+}
+
 void AbstractPromise::Execute() {
   if (IsCanceled()) {
     OnCanceled();
@@ -264,14 +279,21 @@ void AbstractPromise::Execute() {
 }
 
 bool AbstractPromise::DispatchIfNonCurriedRootSettled() {
-  const AbstractPromise* curried_root = FindNonCurriedAncestor();
+  AbstractPromise* curried_root = FindNonCurriedAncestor();
   if (!curried_root->IsSettled())
     return false;
 
+#if DCHECK_IS_ON()
+  {
+    CheckedAutoLock lock(GetCheckedLock());
+    MaybeInheritChecks(curried_root);
+  }
+#endif
+
   if (curried_root->IsResolved()) {
-    OnResolvePostReadyDependents();
+    OnResolveDispatchReadyDependents();
   } else if (curried_root->IsRejected()) {
-    OnRejectPostReadyDependents();
+    OnRejectDispatchReadyDependents();
   } else {
     DCHECK(curried_root->IsCanceled());
     OnPrerequisiteCancelled();
@@ -289,12 +311,12 @@ void AbstractPromise::OnPrerequisiteResolved() {
   switch (GetPrerequisitePolicy()) {
     case Executor::PrerequisitePolicy::kAll:
       if (prerequisites_->DecrementPrerequisiteCountAndCheckIfZero())
-        task_runner_->PostPromiseInternal(this, TimeDelta());
+        DispatchPromise();
       break;
 
     case Executor::PrerequisitePolicy::kAny:
       // PrerequisitePolicy::kAny should resolve immediately.
-      task_runner_->PostPromiseInternal(this, TimeDelta());
+      DispatchPromise();
       break;
 
     case Executor::PrerequisitePolicy::kNever:
@@ -302,8 +324,21 @@ void AbstractPromise::OnPrerequisiteResolved() {
   }
 }
 
-void AbstractPromise::OnPrerequisiteRejected() {
-  task_runner_->PostPromiseInternal(this, TimeDelta());
+void AbstractPromise::OnPrerequisiteRejected(
+    AbstractPromise* rejected_promise) {
+  DCHECK(rejected_promise->IsRejected());
+  uintptr_t expected = 0;
+  // Promises::All (or Race if we add that) can have multiple prerequsites and
+  // it will reject as soon as any prerequsite rejects. Multiple prerequsites
+  // can reject, but we wish to record only the first one.
+  bool is_first_rejection =
+      prerequisites_->first_rejecting_promise.compare_exchange_strong(
+          expected, reinterpret_cast<uintptr_t>(rejected_promise),
+          std::memory_order_acq_rel);
+  // We only want to dispatch a promise the first time a prerequisite is
+  // rejected because the executors can only be invoked once.
+  if (is_first_rejection)
+    DispatchPromise();
 }
 
 bool AbstractPromise::OnPrerequisiteCancelled() {
@@ -333,7 +368,7 @@ bool AbstractPromise::OnPrerequisiteCancelled() {
   }
 }
 
-void AbstractPromise::OnResolvePostReadyDependents() {
+void AbstractPromise::OnResolveDispatchReadyDependents() {
   DependentList::Node* dependent_list = dependents_.ConsumeOnceForResolve();
   dependent_list = NonThreadSafeReverseList(dependent_list);
 
@@ -350,7 +385,7 @@ void AbstractPromise::OnResolvePostReadyDependents() {
   }
 }
 
-void AbstractPromise::OnRejectPostReadyDependents() {
+void AbstractPromise::OnRejectDispatchReadyDependents() {
   DependentList::Node* dependent_list = dependents_.ConsumeOnceForReject();
   dependent_list = NonThreadSafeReverseList(dependent_list);
 
@@ -364,7 +399,15 @@ void AbstractPromise::OnRejectPostReadyDependents() {
     // OnPrerequisiteRejected might post a task which destructs |node| on
     // another thread so load |node->next| now.
     next = node->next.load(std::memory_order_relaxed);
-    dependent->OnPrerequisiteRejected();
+    dependent->OnPrerequisiteRejected(this);
+  }
+}
+
+void AbstractPromise::DispatchPromise() {
+  if (task_runner_) {
+    task_runner_->PostPromiseInternal(this, TimeDelta());
+  } else {
+    Execute();
   }
 }
 
@@ -401,7 +444,7 @@ void AbstractPromise::OnCanceled() {
   // they may not have all be settled, which means some will want to traverse
   // their |dependent_list| which includes this promise. This is a problem
   // because there isn't a conveniant way of removing ourself from their
-  // |dependent_list|. It's sufficent however to simply null our references.
+  // |dependent_list|. It's sufficient however to simply null our references.
   if (prerequisites_) {
     for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
       node.prerequisite = nullptr;
@@ -418,26 +461,28 @@ void AbstractPromise::OnResolved() {
     scoped_refptr<AbstractPromise> curried_promise =
         unique_any_cast<scoped_refptr<AbstractPromise>>(value_);
 
-    // This only happens for PostTasks that returned a promise.
-    if (!task_runner_)
-      task_runner_ = SequencedTaskRunnerHandle::Get();
+    if (DispatchIfNonCurriedRootSettled()) {
+      prerequisites_->prerequisite_list.clear();
+    } else {
+      // The curried promise isn't already settled we need to throw away any
+      // existing dependencies and make |curried_promise| the only dependency of
+      // this promise.
 
-    if (!curried_promise->prerequisites_)
-      curried_promise->prerequisites_ = std::make_unique<AdjacencyList>();
+      if (!curried_promise->prerequisites_)
+        curried_promise->prerequisites_ = std::make_unique<AdjacencyList>();
 
-      // Throw away any existing dependencies and make |curried_promise| the
-      // only dependency of this promise.
 #if DCHECK_IS_ON()
-    {
-      CheckedAutoLock lock(GetCheckedLock());
-      ancestor_that_could_resolve_ = nullptr;
-      ancestor_that_could_reject_ = nullptr;
-    }
+      {
+        CheckedAutoLock lock(GetCheckedLock());
+        ancestor_that_could_resolve_ = nullptr;
+        ancestor_that_could_reject_ = nullptr;
+      }
 #endif
-    prerequisites_->ResetWithSingleDependency(curried_promise);
-    AddAsDependentForAllPrerequisites();
+      prerequisites_->ResetWithSingleDependency(curried_promise);
+      AddAsDependentForAllPrerequisites();
+    }
   } else {
-    OnResolvePostReadyDependents();
+    OnResolveDispatchReadyDependents();
 
     // We need to release any AdjacencyListNodes we own to prevent memory leaks
     // due to refcount cycles.
@@ -447,10 +492,13 @@ void AbstractPromise::OnResolved() {
 }
 
 void AbstractPromise::OnRejected() {
+  // Rejection with a rejected promise doesn't need special handling.
+  DCHECK(!IsResolvedWithPromise() ||
+         unique_any_cast<scoped_refptr<AbstractPromise>>(value_)->IsRejected());
 #if DCHECK_IS_ON()
   DCHECK(executor_can_reject_) << from_here_.ToString();
 #endif
-  OnRejectPostReadyDependents();
+  OnRejectDispatchReadyDependents();
 
   // We need to release any AdjacencyListNodes we own to prevent memory leaks
   // due to refcount cycles. We can't just clear |prerequisite_list| (which
@@ -458,7 +506,7 @@ void AbstractPromise::OnRejected() {
   // they may not have all be settled, which means some will want to traverse
   // their |dependent_list| which includes this promise. This is a problem
   // because there isn't a conveniant way of removing ourself from their
-  // |dependent_list|. It's sufficent however to simply null our references.
+  // |dependent_list|. It's sufficient however to simply null our references.
   if (prerequisites_) {
     for (AdjacencyListNode& node : prerequisites_->prerequisite_list) {
       node.prerequisite = nullptr;

@@ -213,6 +213,12 @@ class BASE_EXPORT AbstractPromise
     value_ = std::forward<T>(t);
   }
 
+  template <typename T, typename... Args>
+  void emplace(in_place_type_t<T>, Args&&... args) {
+    DCHECK(GetExecutor() != nullptr) << "Only valid to emplace once";
+    value_.emplace<T>(std::forward<Args>(args)...);
+  }
+
   // Unresolved promises have an executor which invokes one of the callbacks
   // associated with the promise. Once the callback has been invoked the
   // Executor is destroyed.
@@ -415,6 +421,12 @@ class BASE_EXPORT AbstractPromise
     // PrerequisitePolicy::kAll waits for N resolves or at most 1 cancellation.
     // PrerequisitePolicy::kNever doesn't use this.
     std::atomic_int action_prerequisite_count;
+
+    // Stores the address of the first rejecting promise. The purpose of this is
+    // two-fold, first to ensure that Promises::All/Race return the first
+    // prerequisite that rejected and secondly to prevent the executor from
+    // being run multiple times if there's multiple rejection.
+    std::atomic<uintptr_t> first_rejecting_promise{0};
   };
 
   const std::vector<AdjacencyListNode>* prerequisite_list() const {
@@ -431,9 +443,13 @@ class BASE_EXPORT AbstractPromise
     return prerequisites_->prerequisite_list[0].prerequisite.get();
   }
 
+  AbstractPromise* GetFirstRejectedPrerequisite() const;
+
   // Calls |RunExecutor()| or posts a task to do so if |from_here_| is not
   // nullopt.
   void Execute();
+
+  void IgnoreUncaughtCatchForTesting();
 
  private:
   friend base::RefCountedThreadSafe<AbstractPromise>;
@@ -466,7 +482,7 @@ class BASE_EXPORT AbstractPromise
   void OnPrerequisiteResolved();
 
   // Schedules the promise for execution.
-  void OnPrerequisiteRejected();
+  void OnPrerequisiteRejected(AbstractPromise* rejected_promise);
 
   // Returns true if we are still potentially eligible to run despite the
   // cancellation.
@@ -474,11 +490,13 @@ class BASE_EXPORT AbstractPromise
 
   // This promise was resolved, post any dependent promises that are now ready
   // as a result.
-  void OnResolvePostReadyDependents();
+  void OnResolveDispatchReadyDependents();
 
   // This promise was rejected, post any dependent promises that are now ready
   // as a result.
-  void OnRejectPostReadyDependents();
+  void OnRejectDispatchReadyDependents();
+
+  void DispatchPromise();
 
   // Reverses |list| so dependents can be dispatched in the order they where
   // added. Assumes no other thread is accessing |list|.

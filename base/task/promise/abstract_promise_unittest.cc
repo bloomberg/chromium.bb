@@ -623,7 +623,13 @@ TEST_F(AbstractPromiseTest, PrerequisiteAlreadyRejected) {
           false);
   p1->OnRejected();
 
-  scoped_refptr<AbstractPromise> p2 = CatchPromise(FROM_HERE, p1);
+  scoped_refptr<AbstractPromise> p2 =
+      CatchPromise(FROM_HERE, p1)
+          .With(BindLambdaForTesting([&](AbstractPromise* p) {
+            EXPECT_EQ(p->GetFirstRejectedPrerequisite(), p1);
+            p->emplace(Resolved<void>());
+            p->OnResolved();
+          }));
 
   EXPECT_FALSE(p2->IsResolved());
   RunLoop().RunUntilIdle();
@@ -737,10 +743,66 @@ TEST_F(AbstractPromiseTest, SingleRejectPrerequisitePolicyALL) {
 
   scoped_refptr<AbstractPromise> all_promise =
       AllPromise(FROM_HERE, std::move(prerequisite_list))
-          .With(CallbackResultType::kCanResolveOrReject);
+          .With(CallbackResultType::kCanResolveOrReject)
+          .With(BindLambdaForTesting([&](AbstractPromise* p) {
+            EXPECT_EQ(p->GetFirstRejectedPrerequisite(), p3);
+            p->emplace(Rejected<void>());
+            p->OnRejected();
+          }));
 
   scoped_refptr<AbstractPromise> p5 = CatchPromise(FROM_HERE, all_promise);
 
+  p3->OnRejected();
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(all_promise->IsRejected());
+  EXPECT_TRUE(p5->IsResolved());
+}
+
+TEST_F(AbstractPromiseTest, MultipleRejectPrerequisitePolicyALL) {
+  scoped_refptr<AbstractPromise> p1 =
+      DoNothingPromiseBuilder(FROM_HERE).SetCanReject(true).SetCanResolve(
+          false);
+  scoped_refptr<AbstractPromise> p2 =
+      DoNothingPromiseBuilder(FROM_HERE).SetCanReject(true).SetCanResolve(
+          false);
+  scoped_refptr<AbstractPromise> p3 =
+      DoNothingPromiseBuilder(FROM_HERE).SetCanReject(true).SetCanResolve(
+          false);
+  scoped_refptr<AbstractPromise> p4 =
+      DoNothingPromiseBuilder(FROM_HERE).SetCanReject(true).SetCanResolve(
+          false);
+
+  std::vector<internal::AbstractPromise::AdjacencyListNode> prerequisite_list(
+      4);
+  prerequisite_list[0].prerequisite = p1;
+  prerequisite_list[1].prerequisite = p2;
+  prerequisite_list[2].prerequisite = p3;
+  prerequisite_list[3].prerequisite = p4;
+
+  scoped_refptr<AbstractPromise> all_promise =
+      AllPromise(FROM_HERE, std::move(prerequisite_list))
+          .With(CallbackResultType::kCanResolveOrReject)
+          .With(BindLambdaForTesting([&](AbstractPromise* p) {
+            if (AbstractPromise* rejected = p->GetFirstRejectedPrerequisite()) {
+              EXPECT_EQ(rejected, p2);
+              p->emplace(Rejected<void>());
+              p->OnRejected();
+            } else {
+              FAIL() << "A prerequisite was rejected";
+            }
+          }));
+
+  scoped_refptr<AbstractPromise> p5 =
+      CatchPromise(FROM_HERE, all_promise)
+          .With(BindLambdaForTesting([&](AbstractPromise* p) {
+            EXPECT_FALSE(p->IsSettled());  // Should only happen once.
+            EXPECT_EQ(p->GetFirstRejectedPrerequisite(), all_promise);
+            p->emplace(Resolved<void>());
+            p->OnResolved();
+          }));
+
+  p2->OnRejected();
+  p1->OnRejected();
   p3->OnRejected();
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(all_promise->IsRejected());
@@ -1257,9 +1319,9 @@ TEST_F(AbstractPromiseTest, SimpleMissingCatch) {
   // This should DCHECK when |p1| is deleted.
   EXPECT_DCHECK_DEATH({ p1 = nullptr; });
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p2| isn't actually
+  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p1| isn't actually
   // cleared so we need to tidy up.
-  scoped_refptr<AbstractPromise> p2 = CatchPromise(FROM_HERE, p1);
+  p1->IgnoreUncaughtCatchForTesting();
 }
 
 TEST_F(AbstractPromiseTest, ABSTRACT_PROMISE_DEATH_TEST(MissingCatch)) {
@@ -1278,7 +1340,6 @@ TEST_F(AbstractPromiseTest, ABSTRACT_PROMISE_DEATH_TEST(MissingCatch)) {
   scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p1);
 
   p0->OnResolved();
-
   RunLoop().RunUntilIdle();
 
   // This should DCHECK when |p2| is deleted.
@@ -1286,7 +1347,7 @@ TEST_F(AbstractPromiseTest, ABSTRACT_PROMISE_DEATH_TEST(MissingCatch)) {
 
   // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p2| isn't actually
   // cleared so we need to tidy up.
-  scoped_refptr<AbstractPromise> p3 = CatchPromise(FROM_HERE, p2);
+  p2->IgnoreUncaughtCatchForTesting();
 }
 
 TEST_F(AbstractPromiseTest, MissingCatchNotRequired) {
@@ -1343,8 +1404,7 @@ TEST_F(AbstractPromiseTest,
 
   // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p2| isn't actually
   // cleared so we need to tidy up.
-  scoped_refptr<AbstractPromise> p3 = CatchPromise(FROM_HERE, p2);
-  RunLoop().RunUntilIdle();
+  p2->IgnoreUncaughtCatchForTesting();
 }
 
 TEST_F(
@@ -1383,8 +1443,7 @@ TEST_F(
 
   // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p3| isn't actually
   // cleared so we need to tidy up.
-  scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p3);
-  RunLoop().RunUntilIdle();
+  p3->IgnoreUncaughtCatchForTesting();
 }
 
 TEST_F(AbstractPromiseTest,
@@ -1424,8 +1483,7 @@ TEST_F(AbstractPromiseTest,
 
   // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p3| isn't actually
   // cleared so we need to tidy up.
-  scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p3);
-  RunLoop().RunUntilIdle();
+  p3->IgnoreUncaughtCatchForTesting();
 }
 
 TEST_F(AbstractPromiseTest,
@@ -1453,8 +1511,7 @@ TEST_F(AbstractPromiseTest,
 
   // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p4| isn't actually
   // cleared so we need to tidy up.
-  scoped_refptr<AbstractPromise> p5 = CatchPromise(FROM_HERE, p4);
-  RunLoop().RunUntilIdle();
+  p4->IgnoreUncaughtCatchForTesting();
 }
 
 TEST_F(AbstractPromiseTest,
@@ -1482,14 +1539,13 @@ TEST_F(AbstractPromiseTest,
 
   RunLoop().RunUntilIdle();
 
-  // This should DCHECK when |p4| is deleted.
+  // This should DCHECK when |p5| is deleted.
   EXPECT_DCHECK_DEATH({ p5 = nullptr; });
 
   // Tidy up.
-  scoped_refptr<AbstractPromise> p6 = CatchPromise(FROM_HERE, p3);
-  scoped_refptr<AbstractPromise> p7 = CatchPromise(FROM_HERE, p4);
-  scoped_refptr<AbstractPromise> p8 = CatchPromise(FROM_HERE, p5);
-  RunLoop().RunUntilIdle();
+  p3->IgnoreUncaughtCatchForTesting();
+  p4->IgnoreUncaughtCatchForTesting();
+  p5->IgnoreUncaughtCatchForTesting();
 }
 
 TEST_F(
@@ -1514,7 +1570,6 @@ TEST_F(
 
   // The missing catch here will get noticed.
   scoped_refptr<AbstractPromise> p4 = ThenPromise(FROM_HERE, p3);
-
   RunLoop().RunUntilIdle();
 
   // This should DCHECK when |p4| is deleted.
@@ -1522,8 +1577,7 @@ TEST_F(
 
   // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p4| isn't actually
   // cleared so we need to tidy up.
-  scoped_refptr<AbstractPromise> p5 = CatchPromise(FROM_HERE, p4);
-  RunLoop().RunUntilIdle();
+  p4->IgnoreUncaughtCatchForTesting();
 }
 
 TEST_F(AbstractPromiseTest, CatchAddedAfterChainExecution) {
@@ -1577,7 +1631,6 @@ TEST_F(AbstractPromiseTest,
   scoped_refptr<AbstractPromise> p5 = ThenPromise(FROM_HERE, p3);
   scoped_refptr<AbstractPromise> p6 = ThenPromise(FROM_HERE, p3);
   scoped_refptr<AbstractPromise> p7 = ThenPromise(FROM_HERE, p3);
-
   RunLoop().RunUntilIdle();
 
   // This should DCHECK when |p5|, |p6| or |p7| are deleted.
@@ -1585,12 +1638,11 @@ TEST_F(AbstractPromiseTest,
   EXPECT_DCHECK_DEATH({ p6 = nullptr; });
   EXPECT_DCHECK_DEATH({ p7 = nullptr; });
 
-  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p4| isn't actually
-  // cleared so we need to tidy up.
-  scoped_refptr<AbstractPromise> p8 = CatchPromise(FROM_HERE, p5);
-  scoped_refptr<AbstractPromise> p9 = CatchPromise(FROM_HERE, p6);
-  scoped_refptr<AbstractPromise> p10 = CatchPromise(FROM_HERE, p7);
-  RunLoop().RunUntilIdle();
+  // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p5|, |p6| & |p7| aren't
+  // actually cleared so we need to tidy up.
+  p5->IgnoreUncaughtCatchForTesting();
+  p6->IgnoreUncaughtCatchForTesting();
+  p7->IgnoreUncaughtCatchForTesting();
 }
 
 TEST_F(AbstractPromiseTest, MultipleDependentsAddedAfterChainExecution) {
@@ -1673,14 +1725,12 @@ TEST_F(
   p0->OnRejected();
 
   RunLoop().RunUntilIdle();
-
   // This should DCHECK when |p4| is deleted.
   EXPECT_DCHECK_DEATH({ p4 = nullptr; });
 
   // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p4| isn't actually
   // cleared so we need to tidy up.
-  scoped_refptr<AbstractPromise> p5 = CatchPromise(FROM_HERE, p4);
-  RunLoop().RunUntilIdle();
+  p4->IgnoreUncaughtCatchForTesting();
 }
 
 TEST_F(

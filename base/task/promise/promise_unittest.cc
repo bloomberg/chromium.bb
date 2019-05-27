@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/promise/promise.h"
@@ -1433,6 +1432,59 @@ TEST_F(PromiseTest, CancelViaWeakPtr) {
   EXPECT_TRUE(log.empty());
 }
 
+TEST_F(PromiseTest, CancelPropagation) {
+  ManualPromiseResolver<void> p1(FROM_HERE);
+  ManualPromiseResolver<void> p2(FROM_HERE);
+  Promise<void> p3;
+  Promise<std::tuple<Void, Void>> pAll;
+
+  RunLoop run_loop;
+  {
+    Cancelable cancelable;
+
+    p3 = p2.promise().ThenOnCurrent(
+        FROM_HERE, BindOnce(&Cancelable::NopTask,
+                            cancelable.weak_ptr_factory.GetWeakPtr()));
+
+    pAll = Promises::All(FROM_HERE, p1.promise(), p3);
+
+    p1.Resolve();
+    p2.Resolve();
+    EXPECT_FALSE(pAll.IsCancelledForTesting());
+  }
+
+  run_loop.RunUntilIdle();
+  EXPECT_TRUE(pAll.IsCancelledForTesting());
+}
+
+TEST_F(PromiseTest, CancelPropagationLongerChain) {
+  ManualPromiseResolver<void> p1(FROM_HERE);
+  ManualPromiseResolver<void> p2(FROM_HERE);
+  Promise<void> p3;
+  Promise<std::tuple<Void, Void>> pAll;
+
+  RunLoop run_loop;
+  {
+    Cancelable cancelable;
+
+    p3 = p2.promise()
+             .ThenOnCurrent(FROM_HERE,
+                            BindOnce(&Cancelable::NopTask,
+                                     cancelable.weak_ptr_factory.GetWeakPtr()))
+             .ThenOnCurrent(FROM_HERE, BindOnce([]() {}))
+             .ThenOnCurrent(FROM_HERE, BindOnce([]() {}));
+
+    pAll = Promises::All(FROM_HERE, p1.promise(), p3);
+
+    p1.Resolve();
+    p2.Resolve();
+    EXPECT_FALSE(pAll.IsCancelledForTesting());
+  }
+
+  run_loop.RunUntilIdle();
+  EXPECT_TRUE(pAll.IsCancelledForTesting());
+}
+
 TEST_F(PromiseTest, CatchNotRequired) {
   ManualPromiseResolver<bool, int> p(FROM_HERE,
                                      RejectPolicy::kCatchNotRequired);
@@ -1478,7 +1530,7 @@ TEST_F(PromiseTest, MoveOnlyTypeMultipleCatchesNotAllowed) {
 #endif
 }
 
-TEST_F(PromiseTest, PostTaskUnhandledRejection) {
+TEST_F(PromiseTest, UnhandledRejection) {
 #if DCHECK_IS_ON()
   Promise<void, int> p =
       Promise<void, int>::CreateRejected(FROM_HERE).ThenOnCurrent(
@@ -1490,7 +1542,7 @@ TEST_F(PromiseTest, PostTaskUnhandledRejection) {
   EXPECT_DCHECK_DEATH({ p = null_promise; });
 
   // EXPECT_DCHECK_DEATH uses fork under the hood so we still have to tidy up.
-  p.CatchOnCurrent(FROM_HERE, BindOnce([]() {}));
+  p.IgnoreUncaughtCatchForTesting();
 #endif
 }
 
@@ -1509,7 +1561,7 @@ TEST_F(PromiseTest, ManualPromiseResolverPotentialUnhandledRejection) {
   EXPECT_DCHECK_DEATH({ p = null_promise; });
 
   // EXPECT_DCHECK_DEATH uses fork under the hood so we still have to tidy up.
-  p.CatchOnCurrent(FROM_HERE, BindOnce([]() {}));
+  p.IgnoreUncaughtCatchForTesting();
 #endif
 }
 
@@ -1697,6 +1749,346 @@ TEST_F(PromiseTest, ThreadPoolThenChain) {
 
   p.Resolve(std::vector<size_t>{0});
   run_loop.Run();
+}
+
+TEST_F(PromiseTest, All) {
+  ManualPromiseResolver<float> p1(FROM_HERE);
+  ManualPromiseResolver<int> p2(FROM_HERE);
+  ManualPromiseResolver<bool> p3(FROM_HERE);
+  Promise<std::tuple<float, int, bool>> p =
+      Promises::All(FROM_HERE, p1.promise(), p2.promise(), p3.promise());
+
+  RunLoop run_loop;
+  p.ThenOnCurrent(
+      FROM_HERE,
+      BindLambdaForTesting([&](const std::tuple<float, int, bool>& result) {
+        EXPECT_EQ(1.234f, std::get<0>(result));
+        EXPECT_EQ(1234, std::get<1>(result));
+        EXPECT_TRUE(std::get<2>(result));
+        run_loop.Quit();
+      }));
+
+  p1.Resolve(1.234f);
+  p2.Resolve(1234);
+  p3.Resolve(true);
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllUnpackTuple) {
+  ManualPromiseResolver<float> p1(FROM_HERE);
+  ManualPromiseResolver<int> p2(FROM_HERE);
+  ManualPromiseResolver<bool> p3(FROM_HERE);
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, p1.promise(), p2.promise(), p3.promise())
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting([&](float a, int b, bool c) {
+                       EXPECT_EQ(1.234f, a);
+                       EXPECT_EQ(1234, b);
+                       EXPECT_TRUE(c);
+                       run_loop.Quit();
+                     }));
+
+  p1.Resolve(1.234f);
+  p2.Resolve(1234);
+  p3.Resolve(true);
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllRejectString) {
+  ManualPromiseResolver<float, std::string> p1(FROM_HERE);
+  ManualPromiseResolver<int, std::string> p2(FROM_HERE);
+  ManualPromiseResolver<bool, std::string> p3(FROM_HERE);
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, p1.promise(), p2.promise(), p3.promise())
+      .ThenOnCurrent(
+          FROM_HERE,
+          BindLambdaForTesting([&](const std::tuple<float, int, bool>& result) {
+            FAIL() << "We shouldn't get here, the promise was rejected!";
+            run_loop.Quit();
+          }),
+          BindLambdaForTesting([&](const std::string& err) {
+            EXPECT_EQ("Whoops!", err);
+            run_loop.Quit();
+          }));
+
+  p1.Reject("Whoops!");
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllWithSingleValue) {
+  ManualPromiseResolver<int> p1(FROM_HERE);
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, p1.promise())
+      .ThenOnCurrent(FROM_HERE, BindLambdaForTesting([&](int value1) {
+                       EXPECT_EQ(value1, 1);
+                       run_loop.Quit();
+                     }));
+
+  p1.Resolve(1);
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllIntVoid) {
+  ManualPromiseResolver<int> p1(FROM_HERE);
+  ManualPromiseResolver<void> p2(FROM_HERE);
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, p1.promise(), p2.promise())
+      .ThenOnCurrent(FROM_HERE, BindLambdaForTesting(
+                                    [&](const std::tuple<int, Void>& result) {
+                                      EXPECT_EQ(1234, std::get<0>(result));
+                                      run_loop.Quit();
+                                    }));
+
+  p1.Resolve(1234);
+  p2.Resolve();
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllMoveOnlyType) {
+  ManualPromiseResolver<std::unique_ptr<float>> p1(FROM_HERE);
+  ManualPromiseResolver<std::unique_ptr<int>> p2(FROM_HERE);
+  ManualPromiseResolver<std::unique_ptr<bool>> p3(FROM_HERE);
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, p1.promise(), p2.promise(), p3.promise())
+      .ThenOnCurrent(
+          FROM_HERE,
+          BindLambdaForTesting(
+              [&](std::tuple<std::unique_ptr<float>, std::unique_ptr<int>,
+                             std::unique_ptr<bool>> result) {
+                EXPECT_EQ(1.234f, *std::get<0>(result));
+                EXPECT_EQ(1234, *std::get<1>(result));
+                EXPECT_TRUE(*std::get<2>(result));
+                run_loop.Quit();
+              }));
+
+  p1.Resolve(std::make_unique<float>(1.234f));
+  p2.Resolve(std::make_unique<int>(1234));
+  p3.Resolve(std::make_unique<bool>(true));
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllIntWithVoidThen) {
+  ManualPromiseResolver<int> p1(FROM_HERE);
+  ManualPromiseResolver<int> p2(FROM_HERE);
+  ManualPromiseResolver<int> p3(FROM_HERE);
+
+  // You can choose to ignore the result.
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, p1.promise(), p2.promise(), p3.promise())
+      .ThenOnCurrent(FROM_HERE, run_loop.QuitClosure());
+
+  p1.Resolve(1);
+  p2.Resolve(2);
+  p3.Resolve(3);
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllIntContainer) {
+  ManualPromiseResolver<int> mpr1(FROM_HERE);
+  ManualPromiseResolver<int> mpr2(FROM_HERE);
+  ManualPromiseResolver<int> mpr3(FROM_HERE);
+  ManualPromiseResolver<int> mpr4(FROM_HERE);
+
+  std::vector<Promise<int>> promises;
+  promises.push_back(mpr1.promise());
+  promises.push_back(mpr2.promise());
+  promises.push_back(mpr3.promise());
+  promises.push_back(mpr4.promise());
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, promises)
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting([&](std::vector<int> result) {
+                       EXPECT_THAT(result, ElementsAre(10, 20, 30, 40));
+                       run_loop.Quit();
+                     }));
+
+  mpr1.Resolve(10);
+  mpr2.Resolve(20);
+  mpr3.Resolve(30);
+  mpr4.Resolve(40);
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllEmptyIntContainer) {
+  std::vector<Promise<int>> promises;
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, promises)
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting([&](std::vector<int> result) {
+                       EXPECT_TRUE(result.empty());
+                       run_loop.Quit();
+                     }));
+
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllIntStringContainerReject) {
+  ManualPromiseResolver<int, std::string> mpr1(FROM_HERE);
+  ManualPromiseResolver<int, std::string> mpr2(FROM_HERE);
+  ManualPromiseResolver<int, std::string> mpr3(FROM_HERE);
+  ManualPromiseResolver<int, std::string> mpr4(FROM_HERE);
+
+  std::vector<Promise<int, std::string>> promises;
+  promises.push_back(mpr1.promise());
+  promises.push_back(mpr2.promise());
+  promises.push_back(mpr3.promise());
+  promises.push_back(mpr4.promise());
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, promises)
+      .ThenOnCurrent(
+          FROM_HERE, BindLambdaForTesting([&](std::vector<int> result) {
+            FAIL() << "We shouldn't get here, the promise was rejected!";
+            run_loop.Quit();
+          }),
+          BindLambdaForTesting([&](const std::string& err) {
+            EXPECT_EQ("Oh dear", err);
+            run_loop.Quit();
+          }));
+
+  mpr2.Reject("Oh dear");
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllVoidContainer) {
+  ManualPromiseResolver<void> mpr1(FROM_HERE);
+  ManualPromiseResolver<void> mpr2(FROM_HERE);
+  ManualPromiseResolver<void> mpr3(FROM_HERE);
+  ManualPromiseResolver<void> mpr4(FROM_HERE);
+
+  std::vector<Promise<void>> promises;
+  promises.push_back(mpr1.promise());
+  promises.push_back(mpr2.promise());
+  promises.push_back(mpr3.promise());
+  promises.push_back(mpr4.promise());
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, promises)
+      .ThenOnCurrent(FROM_HERE,
+                     BindLambdaForTesting([&](std::vector<Void> result) {
+                       EXPECT_EQ(4u, result.size());
+                       run_loop.Quit();
+                     }));
+
+  mpr1.Resolve();
+  mpr2.Resolve();
+  mpr3.Resolve();
+  mpr4.Resolve();
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllVoidIntContainerReject) {
+  ManualPromiseResolver<void, int> mpr1(FROM_HERE);
+  ManualPromiseResolver<void, int> mpr2(FROM_HERE);
+  ManualPromiseResolver<void, int> mpr3(FROM_HERE);
+  ManualPromiseResolver<void, int> mpr4(FROM_HERE);
+
+  std::vector<Promise<void, int>> promises;
+  promises.push_back(mpr1.promise());
+  promises.push_back(mpr2.promise());
+  promises.push_back(mpr3.promise());
+  promises.push_back(mpr4.promise());
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, promises)
+      .ThenOnCurrent(
+          FROM_HERE, BindLambdaForTesting([&](std::vector<Void> result) {
+            FAIL() << "We shouldn't get here, the promise was rejected!";
+            run_loop.Quit();
+          }),
+          BindLambdaForTesting([&](int err) {
+            EXPECT_EQ(-1, err);
+            run_loop.Quit();
+          }));
+
+  mpr1.Reject(-1);
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllVoidContainerReject) {
+  ManualPromiseResolver<void, void> mpr1(FROM_HERE);
+  ManualPromiseResolver<void, void> mpr2(FROM_HERE);
+  ManualPromiseResolver<void, void> mpr3(FROM_HERE);
+  ManualPromiseResolver<void, void> mpr4(FROM_HERE);
+
+  std::vector<Promise<void, void>> promises;
+  promises.push_back(mpr1.promise());
+  promises.push_back(mpr2.promise());
+  promises.push_back(mpr3.promise());
+  promises.push_back(mpr4.promise());
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, promises)
+      .ThenOnCurrent(
+          FROM_HERE, BindLambdaForTesting([&]() {
+            FAIL() << "We shouldn't get here, the promise was rejected!";
+            run_loop.Quit();
+          }),
+          run_loop.QuitClosure());
+
+  mpr4.Reject();
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllVoidContainerMultipleRejectsBeforeExecute) {
+  ManualPromiseResolver<void, void> mpr1(FROM_HERE);
+  ManualPromiseResolver<void, void> mpr2(FROM_HERE);
+  ManualPromiseResolver<void, void> mpr3(FROM_HERE);
+  ManualPromiseResolver<void, void> mpr4(FROM_HERE);
+
+  std::vector<Promise<void, void>> promises;
+  promises.push_back(mpr1.promise());
+  promises.push_back(mpr2.promise());
+  promises.push_back(mpr3.promise());
+  promises.push_back(mpr4.promise());
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, promises)
+      .ThenOnCurrent(
+          FROM_HERE, BindLambdaForTesting([&]() {
+            FAIL() << "We shouldn't get here, the promise was rejected!";
+            run_loop.Quit();
+          }),
+          run_loop.QuitClosure());
+
+  mpr1.Reject();
+  mpr2.Reject();
+  mpr4.Reject();
+  run_loop.Run();
+}
+
+TEST_F(PromiseTest, AllVoidContainerMultipleRejectsAfterExecute) {
+  ManualPromiseResolver<void, void> mpr1(FROM_HERE);
+  ManualPromiseResolver<void, void> mpr2(FROM_HERE);
+  ManualPromiseResolver<void, void> mpr3(FROM_HERE);
+  ManualPromiseResolver<void, void> mpr4(FROM_HERE);
+
+  std::vector<Promise<void, void>> promises;
+  promises.push_back(mpr1.promise());
+  promises.push_back(mpr2.promise());
+  promises.push_back(mpr3.promise());
+  promises.push_back(mpr4.promise());
+
+  RunLoop run_loop;
+  Promises::All(FROM_HERE, promises)
+      .ThenOnCurrent(
+          FROM_HERE, BindLambdaForTesting([&]() {
+            FAIL() << "We shouldn't get here, the promise was rejected!";
+            run_loop.Quit();
+          }),
+          run_loop.QuitClosure());
+
+  mpr1.Reject();
+  run_loop.Run();
+  mpr2.Reject();
+  mpr4.Reject();
 }
 
 }  // namespace base

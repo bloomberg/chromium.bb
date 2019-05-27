@@ -6,6 +6,8 @@
 #define BASE_TASK_PROMISE_PROMISE_H_
 
 #include "base/task/post_task.h"
+#include "base/task/promise/all_container_executor.h"
+#include "base/task/promise/all_tuple_executor.h"
 #include "base/task/promise/finally_executor.h"
 #include "base/task/promise/helpers.h"
 #include "base/task/promise/no_op_promise_executor.h"
@@ -394,7 +396,8 @@ class Promise {
                 internal::NoOpPromiseExecutor>(),
             /* can_resolve */ true,
             /* can_reject */ false));
-    promise->emplace(Resolved<ResolveType>{std::forward<Args>(args)...});
+    promise->emplace(in_place_type_t<Resolved<ResolveType>>(),
+                     std::forward<Args>(args)...);
     return Promise<ResolveType, RejectType>(std::move(promise));
   }
 
@@ -410,19 +413,29 @@ class Promise {
                 internal::NoOpPromiseExecutor>(),
             /* can_resolve */ false,
             /* can_reject */ true));
-    promise->emplace(Rejected<RejectType>{std::forward<Args>(args)...});
+    promise->emplace(in_place_type_t<Rejected<RejectType>>(),
+                     std::forward<Args>(args)...);
     return Promise<ResolveType, RejectType>(std::move(promise));
   }
 
   using ResolveT = ResolveType;
   using RejectT = RejectType;
 
+  void IgnoreUncaughtCatchForTesting() {
+    abstract_promise_->IgnoreUncaughtCatchForTesting();
+  }
+
  private:
   template <typename A, typename B>
   friend class Promise;
 
+  friend class Promises;
+
   template <typename A, typename B>
   friend class PromiseResult;
+
+  template <typename Container, typename ContainerT>
+  friend struct internal::AllContainerHelper;
 
   template <typename RejectStorage, typename ResultStorage>
   friend struct internal::EmplaceHelper;
@@ -543,6 +556,62 @@ class ManualPromiseResolver {
 
  private:
   Promise<ResolveType, RejectType> promise_;
+};
+
+class Promises {
+ public:
+  // Accepts a container of Promise<Resolve, Reject> and returns a
+  // Promise<std::vector<Resolve>, Reject>. This is resolved when all
+  // prerequisite promises are resolved returning a vector of all the Resolve
+  // values, or rejects with the Reject value of the first promise to do so.
+  //
+  // TODO(alexclarke): Maybe support a container of Variants of promises.
+  template <typename Container>
+  static auto All(const Location& from_here, const Container& promises) {
+    using PromissType = typename internal::AllContainerHelper<
+        Container, typename Container::value_type>::PromiseType;
+    if (promises.empty())
+      return PromissType::CreateResolved(from_here);
+    return internal::AllContainerHelper<
+        Container, typename Container::value_type>::All(from_here, promises);
+  }
+
+  // Accepts one or more promises and returns a
+  // Promise<std::tuple<Resolve> ...>, Reject> which is resolved when all
+  // promises resolve or rejects with the Reject value of the first promise to
+  // do so.
+  //
+  // TODO(alexclarke): Support multiple Reject types via variants.
+  template <typename... Resolve, typename Reject>
+  static auto All(const Location& from_here,
+                  Promise<Resolve, Reject>... promises) {
+    using ReturnedPromiseResolveT =
+        std::tuple<internal::ToNonVoidT<Resolve>...>;
+    using ReturnedPromiseRejectT = Reject;
+
+    std::vector<internal::AbstractPromise::AdjacencyListNode> prerequisite_list(
+        sizeof...(promises));
+    int i = 0;
+    for (auto&& p : {promises.abstract_promise_...}) {
+      prerequisite_list[i++].prerequisite = std::move(p);
+    }
+    return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
+        MakeRefCounted<internal::AbstractPromise>(
+            nullptr, from_here,
+            std::make_unique<internal::AbstractPromise::AdjacencyList>(
+                std::move(prerequisite_list)),
+            RejectPolicy::kMustCatchRejection,
+            internal::AbstractPromise::ConstructWith<
+                internal::DependentList::ConstructUnresolved,
+                internal::AllTuplePromiseExecutor<ReturnedPromiseResolveT,
+                                                  ReturnedPromiseRejectT>>()));
+  }
+
+  template <typename Resolve, typename Reject>
+  static Promise<Resolve, Reject> All(const Location& from_here,
+                                      Promise<Resolve, Reject> promise) {
+    return promise;
+  }
 };
 
 }  // namespace base

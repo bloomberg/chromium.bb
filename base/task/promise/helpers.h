@@ -17,6 +17,9 @@
 namespace base {
 namespace internal {
 
+template <typename T>
+using ToNonVoidT = std::conditional_t<std::is_void<T>::value, Void, T>;
+
 // PromiseCallbackTraits computes the resolve and reject types of a Promise
 // from the return type of a resolve or reject callback.
 //
@@ -121,19 +124,35 @@ struct IsScopedRefPtr<scoped_refptr<T>> {
 //
 // Will give false positives for some copyable types, but that should be
 // harmless.
-template <typename T,
-          bool use_move = !std::is_reference<T>::value &&
-                          !std::is_pointer<T>::value &&
-                          !std::is_fundamental<std::decay_t<T>>::value &&
-                          !IsScopedRefPtr<T>::value>
-struct UseMoveSemantics : public std::integral_constant<bool, use_move> {
+template <typename T>
+constexpr bool UseMove() {
+  return !std::is_reference<T>::value && !std::is_pointer<T>::value &&
+         !std::is_fundamental<std::decay_t<T>>::value &&
+         !IsScopedRefPtr<T>::value;
+}
+
+template <typename T>
+struct UseMoveSemantics : public std::integral_constant<bool, UseMove<T>()> {
   static_assert(!std::is_rvalue_reference<T>::value,
                 "Promise<T&&> not supported");
 
   static constexpr AbstractPromise::Executor::ArgumentPassingType
       argument_passing_type =
-          use_move ? AbstractPromise::Executor::ArgumentPassingType::kMove
-                   : AbstractPromise::Executor::ArgumentPassingType::kNormal;
+          UseMove<T>()
+              ? AbstractPromise::Executor::ArgumentPassingType::kMove
+              : AbstractPromise::Executor::ArgumentPassingType::kNormal;
+};
+
+// A std::tuple is deemed to need move semantics if any of it's members need
+// to be moved according to UseMove<>.
+template <typename... Ts>
+struct UseMoveSemantics<std::tuple<Ts...>>
+    : public std::integral_constant<bool, any_of({UseMove<Ts>()...})> {
+  static constexpr AbstractPromise::Executor::ArgumentPassingType
+      argument_passing_type =
+          any_of({UseMove<Ts>()...})
+              ? AbstractPromise::Executor::ArgumentPassingType::kMove
+              : AbstractPromise::Executor::ArgumentPassingType::kNormal;
 };
 
 // CallbackTraits extracts properties relevant to Promises from a callback.
@@ -323,7 +342,8 @@ struct EmplaceHelper {
   static void Emplace(AbstractPromise* promise, Result&& result) {
     static_assert(std::is_same<typename ResolveStorage::Type, Result>::value,
                   "Result should match ResolveStorage");
-    promise->emplace(Resolved<Result>{std::forward<Result>(result)});
+    promise->emplace(in_place_type_t<Resolved<Result>>(),
+                     std::forward<Result>(result));
   }
 
   template <typename Resolve>
@@ -593,6 +613,18 @@ struct IsValidPromiseArg<PromiseType&, CallbackArgType> {
   static constexpr bool value =
       std::is_same<PromiseType&, CallbackArgType>::value;
 };
+
+// This template helps assign the reject value from a prerequisite into the
+// rejection storage type.
+template <typename RejectT>
+struct AllPromiseRejectHelper {
+  static void Reject(AbstractPromise* result,
+                     const scoped_refptr<AbstractPromise>& prerequisite) {
+    result->emplace(scoped_refptr<AbstractPromise>(prerequisite));
+  }
+};
+
+// TODO(alexclarke): Specalize AllPromiseRejectHelper for variants.
 
 }  // namespace internal
 }  // namespace base

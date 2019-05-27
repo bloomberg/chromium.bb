@@ -755,6 +755,8 @@ jumbo_component("base") {
     "task/post_task.h",
     "task/promise/abstract_promise.cc",
     "task/promise/abstract_promise.h",
+    "task/promise/all_container_executor.h",
+    "task/promise/all_tuple_executor.h",
     "task/promise/dependent_list.cc",
     "task/promise/dependent_list.h",
     "task/promise/finally_executor.cc",
