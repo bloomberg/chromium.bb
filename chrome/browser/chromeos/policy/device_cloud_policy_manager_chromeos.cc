@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
+#include "chrome/browser/chromeos/attestation/enrollment_certificate_uploader_impl.h"
 #include "chrome/browser/chromeos/attestation/enrollment_policy_observer.h"
 #include "chrome/browser/chromeos/attestation/machine_certificate_uploader_impl.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
@@ -303,6 +304,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   external_data_manager_->Connect(
       g_browser_process->shared_url_loader_factory());
 
+  enrollment_certificate_uploader_.reset(
+      new chromeos::attestation::EnrollmentCertificateUploaderImpl(client()));
   enrollment_policy_observer_.reset(
       new chromeos::attestation::EnrollmentPolicyObserver(client()));
 

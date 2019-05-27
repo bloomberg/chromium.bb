@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -577,6 +576,22 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& requisition,
       const std::string& current_state_key,
       enterprise_management::DeviceRegisterRequest* request);
+
+  // Prepare the certifiate upload request field for uploading a certificate.
+  void PrepareCertUploadRequest(
+      DeviceManagementRequestJob* request_job,
+      const std::string& certificate_data,
+      enterprise_management::DeviceCertUploadRequest::CertificateType
+          certificate_type);
+
+  // Creates a job to upload a certificate.
+  std::unique_ptr<DeviceManagementRequestJob> CreateCertUploadJob();
+
+  // Executes a job to upload a certificate. Onwership of the job is
+  // retained by this method.
+  void ExecuteCertUploadJob(
+      std::unique_ptr<DeviceManagementRequestJob> request_job,
+      const CloudPolicyClient::StatusCallback& callback);
 
   // Used to store a copy of the previously used |dm_token_|. This is used
   // during re-registration, which gets triggered by a failed policy fetch with
