@@ -2771,6 +2771,10 @@ crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/
 crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-layout-button-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-button-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-001-manual.html [ Skip ]
