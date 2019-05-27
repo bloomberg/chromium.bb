@@ -157,9 +157,9 @@ void MimeHandlerViewAttachHelper::ResumeAttachOrDestroy(
     content::RenderFrameHost* plugin_rfh) {
   DCHECK(!plugin_rfh || (plugin_rfh->GetProcess() == render_process_host_));
   auto guest_view = pending_guests_[element_instance_id];
+  pending_guests_.erase(element_instance_id);
   if (!guest_view)
     return;
-  pending_guests_.erase(element_instance_id);
   if (!plugin_rfh) {
     mojom::MimeHandlerViewContainerManagerAssociatedPtr container_manager;
     guest_view->GetEmbedderFrame()
