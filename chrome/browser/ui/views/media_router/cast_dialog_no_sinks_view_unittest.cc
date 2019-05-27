@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +38,13 @@ class CastDialogNoSinksViewTest : public ChromeViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(CastDialogNoSinksViewTest);
 };
 
-TEST_F(CastDialogNoSinksViewTest, SwitchViews) {
+// Crashes on Mac.  https://crbug.com/967300
+#if defined(OS_MACOSX)
+#define MAYBE_SwitchViews DISABLED_SwitchViews
+#else
+#define MAYBE_SwitchViews SwitchViews
+#endif
+TEST_F(CastDialogNoSinksViewTest, MAYBE_SwitchViews) {
   // Initially, only the throbber view should be shown.
   EXPECT_TRUE(looking_for_sinks_view()->GetVisible());
   EXPECT_FALSE(help_icon_view());
