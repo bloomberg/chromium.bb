@@ -128,6 +128,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/signin/signin_status_metrics_provider_chromeos.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider.h"
 #include "chromeos/assistant/buildflags.h"
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
@@ -679,6 +680,10 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<chromeos::PrinterMetricsProvider>());
+
+  // Using WrapUnique to access a private constructor.
+  metrics_service_->RegisterMetricsProvider(
+      base::WrapUnique(new app_list::AppListLaunchMetricsProvider()));
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)

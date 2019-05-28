@@ -182,9 +182,9 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   expected_providers++;  // AssistantServiceMetricsProvider.
 #endif                   // BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  // ChromeOSMetricsProvider, SigninStatusMetricsProviderChromeOS and
-  // PrinterMetricsProvider.
-  expected_providers += 3;
+  // ChromeOSMetricsProvider, SigninStatusMetricsProviderChromeOS,
+  // PrinterMetricsProvider, and HashedLoggingMetricsProvider.
+  expected_providers += 4;
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)

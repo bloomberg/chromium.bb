@@ -39,8 +39,6 @@ AppListLaunchRecorder::~AppListLaunchRecorder() = default;
 
 std::unique_ptr<AppListLaunchRecorder::LaunchEventSubscription>
 AppListLaunchRecorder::RegisterCallback(const LaunchEventCallback& callback) {
-  // TODO(951287): implement a metrics provider that is notified of these
-  // events.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return callback_list_.Add(callback);
 }

@@ -3315,6 +3315,8 @@ jumbo_split_static_library("ui") {
       "app_list/search/search_resource_manager.h",
       "app_list/search/search_result_ranker/app_launch_predictor.cc",
       "app_list/search/search_result_ranker/app_launch_predictor.h",
+      "app_list/search/search_result_ranker/app_list_launch_metrics_provider.cc",
+      "app_list/search/search_result_ranker/app_list_launch_metrics_provider.h",
       "app_list/search/search_result_ranker/app_list_launch_recorder.cc",
       "app_list/search/search_result_ranker/app_list_launch_recorder.h",
       "app_list/search/search_result_ranker/app_search_result_ranker.cc",
@@ -3346,6 +3348,7 @@ jumbo_split_static_library("ui") {
       "//ash/resources/vector_icons",
       "//chrome/browser/ui:app_launch_event_logger_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_predictor_proto",
+      "//chrome/browser/ui/app_list/search/search_result_ranker:app_list_launch_recorder_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:recurrence_ranker_proto",
     ]
 
