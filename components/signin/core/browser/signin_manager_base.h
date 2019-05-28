@@ -238,9 +238,6 @@ class SigninManagerBase {
 
   AccountTrackerService* account_tracker_service_;
 
-  // Object used to use the token to push a GAIA cookie into the cookie jar.
-  GaiaCookieManagerService* cookie_manager_service_;
-
   bool initialized_;
 
   // Account id after successful authentication.
