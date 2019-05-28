@@ -255,6 +255,7 @@ bool CrashAnalyzer::AnalyzeCrashedAllocator(
                          metadata.dealloc, proto->mutable_deallocation());
   }
 
+  ReportHistogram(allocator, GwpAsanCrashAnalysisResult::kGwpAsanCrash);
   return true;
 }
 
