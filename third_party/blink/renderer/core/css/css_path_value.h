@@ -23,10 +23,10 @@ class CSSPathValue : public CSSValue {
  public:
   static CSSPathValue& EmptyPathValue();
 
-  CSSPathValue(scoped_refptr<StylePath>,
-               PathSerializationFormat = kNoTransformation);
-  CSSPathValue(std::unique_ptr<SVGPathByteStream>,
-               PathSerializationFormat = kNoTransformation);
+  explicit CSSPathValue(scoped_refptr<StylePath>,
+                        PathSerializationFormat = kNoTransformation);
+  explicit CSSPathValue(std::unique_ptr<SVGPathByteStream>,
+                        PathSerializationFormat = kNoTransformation);
 
   StylePath* GetStylePath() const { return style_path_.get(); }
   String CustomCSSText() const;
