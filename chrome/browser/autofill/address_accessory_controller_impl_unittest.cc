@@ -9,12 +9,13 @@
 #include <ostream>
 #include <string>
 #include <vector>
-
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/autofill/mock_manual_filling_controller.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
@@ -52,6 +53,13 @@ AccessorySheetData::Builder AddressAccessorySheetDataBuilder(
                            AccessoryAction::MANAGE_ADDRESSES);
 }
 
+std::unique_ptr<KeyedService> BuildTestPersonalDataManager(
+    content::BrowserContext* context) {
+  auto personal_data_manager = std::make_unique<TestPersonalDataManager>();
+  personal_data_manager->SetAutofillProfileEnabled(true);
+  return personal_data_manager;
+}
+
 }  // namespace
 
 class AddressAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
@@ -60,22 +68,27 @@ class AddressAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    personal_data_manager_.SetAutofillProfileEnabled(true);
+    PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
+        GetBrowserContext(),
+        base::BindRepeating(&BuildTestPersonalDataManager));
 
     AddressAccessoryControllerImpl::CreateForWebContentsForTesting(
-        web_contents(), mock_manual_filling_controller_.AsWeakPtr(),
-        &personal_data_manager_);
+        web_contents(), mock_manual_filling_controller_.AsWeakPtr());
   }
 
-  void TearDown() override { personal_data_manager_.ClearProfiles(); }
+  void TearDown() override { personal_data_manager()->ClearProfiles(); }
 
   AddressAccessoryController* controller() {
     return AddressAccessoryControllerImpl::FromWebContents(web_contents());
   }
 
+  TestPersonalDataManager* personal_data_manager() {
+    return static_cast<TestPersonalDataManager*>(
+        PersonalDataManagerFactory::GetForProfile(profile()));
+  }
+
  protected:
   StrictMock<MockManualFillingController> mock_manual_filling_controller_;
-  autofill::TestPersonalDataManager personal_data_manager_;
 };
 
 TEST_F(AddressAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
@@ -89,10 +102,9 @@ TEST_F(AddressAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
 
 TEST_F(AddressAccessoryControllerTest, RefreshSuggestionsCallsUI) {
   AutofillProfile canadian = test::GetFullValidProfileForCanada();
-  personal_data_manager_.AddProfile(canadian);
+  personal_data_manager()->AddProfile(canadian);
 
-  autofill::AccessorySheetData result(autofill::AccessoryTabType::PASSWORDS,
-                                      base::string16());
+  AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestionsForField(
                   mojom::FocusedFieldType::kFillableTextField, _))
@@ -128,8 +140,7 @@ TEST_F(AddressAccessoryControllerTest, RefreshSuggestionsCallsUI) {
 }
 
 TEST_F(AddressAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
-  autofill::AccessorySheetData result(autofill::AccessoryTabType::PASSWORDS,
-                                      base::string16());
+  AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestionsForField(
                   mojom::FocusedFieldType::kFillableTextField, _))
@@ -139,6 +150,49 @@ TEST_F(AddressAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
 
   ASSERT_EQ(result,
             AddressAccessorySheetDataBuilder(addresses_empty_str()).Build());
+}
+
+TEST_F(AddressAccessoryControllerTest, TriggersRefreshWhenDataChanges) {
+  AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestionsForField(
+                  mojom::FocusedFieldType::kFillableTextField, _))
+      .WillRepeatedly(SaveArg<1>(&result));
+
+  // A refresh without data stores an empty sheet and registers an observer.
+  controller()->RefreshSuggestions();
+  ASSERT_EQ(result,
+            AddressAccessorySheetDataBuilder(addresses_empty_str()).Build());
+
+  // When new data is added, a refresh is automatically triggered.
+  AutofillProfile email = test::GetIncompleteProfile2();
+  personal_data_manager()->AddProfile(email);
+  ASSERT_EQ(result, AddressAccessorySheetDataBuilder(base::string16())
+                        .AddUserInfo()
+                        /*name first:*/
+                        .AppendSimpleField(base::string16())
+                        /*name middle:*/
+                        .AppendSimpleField(base::string16())
+                        /*name last:*/
+                        .AppendSimpleField(base::string16())
+                        /*company name:*/
+                        .AppendSimpleField(base::string16())
+                        /*address line1:*/
+                        .AppendSimpleField(base::string16())
+                        /*address line2:*/
+                        .AppendSimpleField(base::string16())
+                        /*address zip:*/
+                        .AppendSimpleField(base::string16())
+                        /*address city:*/
+                        .AppendSimpleField(base::string16())
+                        /*address state:*/
+                        .AppendSimpleField(base::string16())
+                        /*address country:*/
+                        .AppendSimpleField(base::string16())
+                        /*phone number:*/.AppendSimpleField(base::string16())
+                        .AppendSimpleField(
+                            email.GetRawInfo(ServerFieldType::EMAIL_ADDRESS))
+                        .Build());
 }
 
 }  // namespace autofill

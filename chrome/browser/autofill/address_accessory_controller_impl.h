@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autofill/address_accessory_controller.h"
+#include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
@@ -26,6 +27,7 @@ class PersonalDataManager;
 // contents of one of its frames.
 class AddressAccessoryControllerImpl
     : public AddressAccessoryController,
+      public PersonalDataManagerObserver,
       public content::WebContentsUserData<AddressAccessoryControllerImpl> {
  public:
   ~AddressAccessoryControllerImpl() override;
@@ -37,13 +39,15 @@ class AddressAccessoryControllerImpl
   // AddressAccessoryController:
   void RefreshSuggestions() override;
 
+  // PersonalDataManagerObserver:
+  void OnPersonalDataChanged() override;
+
   // Like |CreateForWebContents|, it creates the controller and attaches it to
   // the given |web_contents|. Additionally, it allows inject a manual filling
   // controller.
   static void CreateForWebContentsForTesting(
       content::WebContents* web_contents,
-      base::WeakPtr<ManualFillingController> mf_controller,
-      autofill::PersonalDataManager* personal_data_manager);
+      base::WeakPtr<ManualFillingController> mf_controller);
 
  private:
   friend class content::WebContentsUserData<AddressAccessoryControllerImpl>;
@@ -53,11 +57,10 @@ class AddressAccessoryControllerImpl
 
   std::vector<autofill::AutofillProfile*> GetProfiles();
 
-  // Constructor that allows to inject a mock or fake view.
+  // Constructor that allows to inject a mock filling controller.
   AddressAccessoryControllerImpl(
       content::WebContents* web_contents,
-      base::WeakPtr<ManualFillingController> mf_controller,
-      autofill::PersonalDataManager* personal_data_manager);
+      base::WeakPtr<ManualFillingController> mf_controller);
 
   // Lazy-initializes and returns the ManualFillingController for the current
   // |web_contents_|. The lazy initialization allows injecting mocks for tests.
@@ -69,8 +72,8 @@ class AddressAccessoryControllerImpl
   // The password accessory controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;
 
-  // The data manager used to retrieve the profiles in tests.
-  const autofill::PersonalDataManager* personal_data_manager_for_testing_;
+  // The data manager used to retrieve the profiles.
+  autofill::PersonalDataManager* personal_data_manager_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

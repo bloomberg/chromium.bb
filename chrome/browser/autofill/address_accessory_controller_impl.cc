@@ -77,7 +77,10 @@ std::vector<FooterCommand> CreateManageAddressesFooter() {
 
 }  // namespace
 
-AddressAccessoryControllerImpl::~AddressAccessoryControllerImpl() = default;
+AddressAccessoryControllerImpl::~AddressAccessoryControllerImpl() {
+  if (personal_data_manager_)
+    personal_data_manager_->RemoveObserver(this);
+}
 
 // static
 bool AddressAccessoryController::AllowedForWebContents(
@@ -141,44 +144,42 @@ void AddressAccessoryControllerImpl::RefreshSuggestions() {
           UserInfosForProfiles(profiles), CreateManageAddressesFooter()));
 }
 
+void AddressAccessoryControllerImpl::OnPersonalDataChanged() {
+  RefreshSuggestions();
+}
 // static
 void AddressAccessoryControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
-    base::WeakPtr<ManualFillingController> mf_controller,
-    autofill::PersonalDataManager* personal_data_manager) {
+    base::WeakPtr<ManualFillingController> mf_controller) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
   DCHECK(mf_controller);
 
-  web_contents->SetUserData(
-      UserDataKey(),
-      base::WrapUnique(new AddressAccessoryControllerImpl(
-          web_contents, std::move(mf_controller), personal_data_manager)));
+  web_contents->SetUserData(UserDataKey(),
+                            base::WrapUnique(new AddressAccessoryControllerImpl(
+                                web_contents, std::move(mf_controller))));
 }
 
 AddressAccessoryControllerImpl::AddressAccessoryControllerImpl(
     content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      personal_data_manager_for_testing_(nullptr) {}
+    : AddressAccessoryControllerImpl(web_contents, nullptr) {}
 
 // Additional creation functions in unit tests only:
 AddressAccessoryControllerImpl::AddressAccessoryControllerImpl(
     content::WebContents* web_contents,
-    base::WeakPtr<ManualFillingController> mf_controller,
-    autofill::PersonalDataManager* personal_data_manager)
+    base::WeakPtr<ManualFillingController> mf_controller)
     : web_contents_(web_contents),
       mf_controller_(std::move(mf_controller)),
-      personal_data_manager_for_testing_(personal_data_manager) {}
+      personal_data_manager_(nullptr) {}
 
 std::vector<AutofillProfile*> AddressAccessoryControllerImpl::GetProfiles() {
-  const autofill::PersonalDataManager* data_manager =
-      personal_data_manager_for_testing_;
-  if (!data_manager)
-    data_manager = autofill::PersonalDataManagerFactory::GetForProfile(
-        Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
-  if (!data_manager)
-    return {};  // No data available yet or anymore!
-  return data_manager->GetProfilesToSuggest();
+  if (!personal_data_manager_) {
+    personal_data_manager_ =
+        autofill::PersonalDataManagerFactory::GetForProfile(
+            Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+    personal_data_manager_->AddObserver(this);
+  }
+  return personal_data_manager_->GetProfilesToSuggest();
 }
 
 base::WeakPtr<ManualFillingController>
