@@ -28,6 +28,11 @@ issues]].
     in computer braille mode.
   - en-us-compbrl.ctb was deleted because it was identical to
     en-us-comp6.ctb.
+- Update Bopomofo-based Chinese Braille thanks to Sponge Jhan
+  - Correct various dot patterns of Chinese characters.
+  - Add more known pattern exceptions of Chinese characters.
+  - Apply "word" opcode to 倔 and 据.
+  - Change dot pattern of ＆ to 456-12346.
 
 ** Other changes
 - Remove some code duplication in pattern.c thanks to Bert Frees
