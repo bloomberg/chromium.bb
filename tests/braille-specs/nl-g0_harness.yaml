@@ -3,7 +3,7 @@
 # Autoriteit, 2018) http://liblouis.org/braille-specs/dutch
 #
 # Copyright © 2010-2011 by DocArch <http://www.docarch.be>
-# Copyright © 2014-2015 by Bert Frees
+# Copyright © 2014-2015, 2019 by Bert Frees
 # Copyright © 2015-2016, 2018 by Dedicon <http://www.dedicon.nl>
 #
 # Copying and distribution of this file, with or without modification,
@@ -78,10 +78,10 @@ tests:
   - [registered ®, ⠗⠑⠛⠊⠎⠞⠑⠗⠑⠙ ⠐⠗]
   - [trademark ™, ⠞⠗⠁⠙⠑⠍⠁⠗⠅ ⠐⠞⠍]
   # §2.17 Muntsymbolen/valutatekens
-  - [dollar $, ⠙⠕⠇⠇⠁⠗ ⠙]
-  - [euro €, ⠑⠥⠗⠕ ⠑]
-  - [pond £, ⠏⠕⠝⠙ ⠏]
-  - [yen ¥, ⠽⠑⠝ ⠽]
+  - [dollar $, ⠙⠕⠇⠇⠁⠗ ⠙⠕⠇⠇⠁⠗]
+  - [euro €, ⠑⠥⠗⠕ ⠑⠥⠗⠕]
+  - [pond £, ⠏⠕⠝⠙ ⠏⠕⠝⠙]
+  - [yen ¥, ⠽⠑⠝ ⠽⠑⠝]
   - ['€ 12,35', ⠑⠼⠁⠃⠂⠉⠑]
   - ['€12,35', ⠑⠼⠁⠃⠂⠉⠑]
   - ['$ 10,00', ⠙⠼⠁⠚⠂⠚⠚]
