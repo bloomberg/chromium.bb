@@ -929,6 +929,11 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (delegate_ && was_created)
     delegate_->RenderFrameDeleted(this);
 
+#if !defined(OS_ANDROID)
+  AuthenticatorEnvironmentImpl::GetInstance()->DisableVirtualAuthenticatorFor(
+      this);
+#endif  // !defined(OS_ANDROID)
+
   // Ensure that the render process host has been notified that all audio
   // streams from this frame have terminated. This is required to ensure the
   // process host has the correct media stream count, which affects its
@@ -5977,11 +5982,6 @@ void RenderFrameHostImpl::GetAuthenticator(
     blink::mojom::AuthenticatorRequest request) {
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableWebAuthTestingAPI)) {
-      AuthenticatorEnvironmentImpl::GetInstance()
-          ->EnableVirtualAuthenticatorFor(this);
-    }
     BindAuthenticatorRequest(std::move(request));
   }
 #else

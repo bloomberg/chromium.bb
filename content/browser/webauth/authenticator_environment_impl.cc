@@ -6,10 +6,12 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "content/browser/webauth/virtual_discovery.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_switches.h"
 #include "device/fido/fido_discovery_factory.h"
 
 namespace content {
@@ -25,8 +27,14 @@ AuthenticatorEnvironmentImpl* AuthenticatorEnvironmentImpl::GetInstance() {
   return environment.get();
 }
 
-AuthenticatorEnvironmentImpl::AuthenticatorEnvironmentImpl()
-    : discovery_factory_(std::make_unique<device::FidoDiscoveryFactory>()) {}
+AuthenticatorEnvironmentImpl::AuthenticatorEnvironmentImpl() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebAuthTestingAPI)) {
+    discovery_factory_ = std::make_unique<VirtualFidoDiscoveryFactory>();
+  } else {
+    discovery_factory_ = std::make_unique<device::FidoDiscoveryFactory>();
+  }
+}
 
 AuthenticatorEnvironmentImpl::~AuthenticatorEnvironmentImpl() = default;
 
@@ -44,7 +52,9 @@ device::FidoDiscoveryFactory* AuthenticatorEnvironmentImpl::GetFactory() {
 
 void AuthenticatorEnvironmentImpl::EnableVirtualAuthenticatorFor(
     RenderFrameHost* host) {
-  if (GetVirtualFactoryFor(host))
+  // Do not create a new virtual authenticator if there is one already defined
+  // for the |host|.
+  if (base::ContainsKey(virtual_discovery_factories_, host))
     return;
   virtual_discovery_factories_[host] =
       std::make_unique<VirtualFidoDiscoveryFactory>();
@@ -52,12 +62,8 @@ void AuthenticatorEnvironmentImpl::EnableVirtualAuthenticatorFor(
 
 void AuthenticatorEnvironmentImpl::DisableVirtualAuthenticatorFor(
     RenderFrameHost* host) {
-  do {
-    if (base::ContainsKey(virtual_discovery_factories_, host)) {
-      virtual_discovery_factories_.erase(host);
-      return;
-    }
-  } while ((host = host->GetParent()));
+  if (base::ContainsKey(virtual_discovery_factories_, host))
+    virtual_discovery_factories_.erase(host);
 }
 
 void AuthenticatorEnvironmentImpl::AddVirtualAuthenticatorBinding(

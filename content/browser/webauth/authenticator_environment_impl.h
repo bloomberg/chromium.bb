@@ -41,9 +41,13 @@ class CONTENT_EXPORT AuthenticatorEnvironmentImpl
 
   // Enables the scoped virtual authenticator environment for the frame host and
   // its descendants.
+  // Does not have any effect if the |host| already has the virtual environment
+  // enabled.
   void EnableVirtualAuthenticatorFor(RenderFrameHost* host);
 
-  // Disables the scoped virtual authenticator environment, resetting the state.
+  // Disables the scoped virtual authenticator environment for this |host|,
+  // resetting the state. If the environment is set on one of the |host|'s
+  // parents instead, this won't have any effect.
   void DisableVirtualAuthenticatorFor(RenderFrameHost* host);
 
   // Binds the request to the virtual authenticator enabled for the frame host.
