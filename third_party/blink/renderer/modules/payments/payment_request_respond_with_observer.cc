@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/payments/payment_request_respond_with_observer.h"
 
+#include "third_party/blink/public/platform/modules/payments/web_payment_handler_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_handler_response.h"
@@ -11,7 +12,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/payments/payment_handler_response.h"
 #include "third_party/blink/renderer/modules/payments/payment_handler_utils.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "v8/include/v8.h"
@@ -31,10 +32,9 @@ void PaymentRequestRespondWithObserver::OnResponseRejected(
   PaymentHandlerUtils::ReportResponseError(GetExecutionContext(),
                                            "PaymentRequestEvent", error);
 
-  To<ServiceWorkerGlobalScope>(GetExecutionContext())
-      ->RespondToPaymentRequestEvent(
-          event_id_,
-          payments::mojom::blink::PaymentHandlerResponse::New("", ""));
+  WebPaymentHandlerResponse web_data;
+  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+      ->RespondToPaymentRequestEvent(event_id_, web_data);
 }
 
 void PaymentRequestRespondWithObserver::OnResponseFulfilled(
@@ -66,6 +66,9 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
     return;
   }
 
+  WebPaymentHandlerResponse web_data;
+  web_data.method_name = response->methodName();
+
   v8::Local<v8::String> details_value;
   if (!v8::JSON::Stringify(response->details().GetContext(),
                            response->details().V8Value().As<v8::Object>())
@@ -78,18 +81,15 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
     OnResponseRejected(mojom::ServiceWorkerResponseError::kUnknown);
     return;
   }
-  To<ServiceWorkerGlobalScope>(GetExecutionContext())
-      ->RespondToPaymentRequestEvent(
-          event_id_, payments::mojom::blink::PaymentHandlerResponse::New(
-                         response->methodName(), ToCoreString(details_value)));
+  web_data.stringified_details = ToCoreString(details_value);
+  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+      ->RespondToPaymentRequestEvent(event_id_, web_data);
 }
 
 void PaymentRequestRespondWithObserver::OnNoResponse() {
   DCHECK(GetExecutionContext());
-  To<ServiceWorkerGlobalScope>(GetExecutionContext())
-      ->RespondToPaymentRequestEvent(
-          event_id_,
-          payments::mojom::blink::PaymentHandlerResponse::New("", ""));
+  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+      ->RespondToPaymentRequestEvent(event_id_, WebPaymentHandlerResponse());
 }
 
 PaymentRequestRespondWithObserver::PaymentRequestRespondWithObserver(

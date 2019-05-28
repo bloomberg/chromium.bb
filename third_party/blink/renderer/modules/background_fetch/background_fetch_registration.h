@@ -23,6 +23,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
 class RequestOrUSVString;
+struct WebBackgroundFetchRegistration;
 
 // Represents an individual Background Fetch registration. Gives developers
 // access to its properties, options, and enables them to abort the fetch.
@@ -44,9 +45,8 @@ class BackgroundFetchRegistration final
       mojom::BackgroundFetchResult result,
       mojom::BackgroundFetchFailureReason failure_reason);
 
-  BackgroundFetchRegistration(
-      ServiceWorkerRegistration* service_worker_registration,
-      mojom::blink::BackgroundFetchRegistrationPtr registration);
+  BackgroundFetchRegistration(ServiceWorkerRegistration* registration,
+                              WebBackgroundFetchRegistration web_registration);
 
   ~BackgroundFetchRegistration() override;
 

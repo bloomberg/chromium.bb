@@ -12,6 +12,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_http_header_set.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
@@ -26,6 +27,7 @@ namespace blink {
 class ExceptionState;
 class FetchHeaderList;
 class ScriptState;
+class WebServiceWorkerResponse;
 
 class CORE_EXPORT FetchResponseData final
     : public GarbageCollectedFinalized<FetchResponseData> {
@@ -106,7 +108,9 @@ class CORE_EXPORT FetchResponseData final
   // If the type is Error or Opaque, does nothing.
   void ReplaceBodyStreamBuffer(BodyStreamBuffer*);
 
-  // Does not contain the blob response body.
+  // Does not call response.setBlobDataHandle().
+  void PopulateWebServiceWorkerResponse(
+      WebServiceWorkerResponse& /* response */);
   mojom::blink::FetchAPIResponsePtr PopulateFetchAPIResponse();
 
   void Trace(blink::Visitor*);

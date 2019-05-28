@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/service_worker/service_worker_timeout_timer.h"
+#include "content/renderer/service_worker/service_worker_timeout_timer.h"
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
 
-namespace blink {
+namespace content {
 
 namespace {
 
@@ -60,15 +59,15 @@ ServiceWorkerTimeoutTimer::ServiceWorkerTimeoutTimer(
     const base::TickClock* tick_clock)
     : idle_callback_(std::move(idle_callback)),
       tick_clock_(tick_clock),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 ServiceWorkerTimeoutTimer::~ServiceWorkerTimeoutTimer() {
   in_dtor_ = true;
   // Abort all callbacks.
-  for (auto& event : inflight_events_) {
+  for (auto& event : inflight_events_)
     std::move(event.abort_callback)
         .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED);
-  }
 }
 
 void ServiceWorkerTimeoutTimer::Start() {
@@ -77,8 +76,8 @@ void ServiceWorkerTimeoutTimer::Start() {
   if (!HasInflightEvent() && idle_time_.is_null())
     idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
   timer_.Start(FROM_HERE, kUpdateInterval,
-               WTF::BindRepeating(&ServiceWorkerTimeoutTimer::UpdateStatus,
-                                  WTF::Unretained(this)));
+               base::BindRepeating(&ServiceWorkerTimeoutTimer::UpdateStatus,
+                                   base::Unretained(this)));
 }
 
 int ServiceWorkerTimeoutTimer::StartEvent(AbortCallback abort_callback) {
@@ -94,8 +93,9 @@ int ServiceWorkerTimeoutTimer::StartEventWithCustomTimeout(
     did_idle_timeout_ = false;
 
     running_pending_tasks_ = true;
-    while (!pending_tasks_.IsEmpty()) {
-      pending_tasks_.TakeFirst().Run();
+    while (!pending_tasks_.empty()) {
+      std::move(pending_tasks_.front()).Run();
+      pending_tasks_.pop();
     }
     running_pending_tasks_ = false;
   }
@@ -104,9 +104,9 @@ int ServiceWorkerTimeoutTimer::StartEventWithCustomTimeout(
   const int event_id = NextEventId();
   std::set<EventInfo>::iterator iter;
   bool is_inserted;
-  std::tie(iter, is_inserted) =
-      inflight_events_.emplace(event_id, tick_clock_->NowTicks() + timeout,
-                               WTF::Bind(std::move(abort_callback), event_id));
+  std::tie(iter, is_inserted) = inflight_events_.emplace(
+      event_id, tick_clock_->NowTicks() + timeout,
+      base::BindOnce(std::move(abort_callback), event_id));
   DCHECK(is_inserted);
   id_event_map_.emplace(event_id, iter);
   return event_id;
@@ -136,7 +136,7 @@ ServiceWorkerTimeoutTimer::CreateStayAwakeToken() {
 void ServiceWorkerTimeoutTimer::PushPendingTask(
     base::OnceClosure pending_task) {
   DCHECK(did_idle_timeout());
-  pending_tasks_.emplace_back(std::move(pending_task));
+  pending_tasks_.emplace(std::move(pending_task));
 }
 
 void ServiceWorkerTimeoutTimer::SetIdleTimerDelayToZero() {
@@ -214,4 +214,4 @@ bool ServiceWorkerTimeoutTimer::EventInfo::operator<(
   return expiration_time < other.expiration_time;
 }
 
-}  // namespace blink
+}  // namespace content

@@ -24,6 +24,7 @@ namespace blink {
 class ExceptionState;
 class ResponseInit;
 class ScriptState;
+class WebServiceWorkerResponse;
 
 class CORE_EXPORT Response final : public Body {
   DEFINE_WRAPPERTYPEINFO();
@@ -76,7 +77,9 @@ class CORE_EXPORT Response final : public Body {
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // Does not contain the blob response body.
+  // Does not call response.setBlobDataHandle().
+  void PopulateWebServiceWorkerResponse(
+      WebServiceWorkerResponse& /* response */);
   mojom::blink::FetchAPIResponsePtr PopulateFetchAPIResponse();
 
   bool HasBody() const;

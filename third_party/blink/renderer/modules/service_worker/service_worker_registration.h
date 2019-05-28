@@ -44,10 +44,6 @@ class ServiceWorkerRegistration final
   ServiceWorkerRegistration(ExecutionContext*,
                             WebServiceWorkerRegistrationObjectInfo);
 
-  ServiceWorkerRegistration(
-      ExecutionContext*,
-      mojom::blink::ServiceWorkerRegistrationObjectInfoPtr);
-
   // Eager finalization needed to promptly invalidate the corresponding entry of
   // the (registration id, WeakMember<ServiceWorkerRegistration>) map inside
   // ServiceWorkerContainer.

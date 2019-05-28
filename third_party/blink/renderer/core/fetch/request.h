@@ -25,6 +25,7 @@ class AbortSignal;
 class BodyStreamBuffer;
 class ExceptionState;
 class RequestInit;
+class WebServiceWorkerRequest;
 
 using RequestInfo = RequestOrUSVString;
 
@@ -32,9 +33,6 @@ class CORE_EXPORT Request final : public Body {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  using ForServiceWorkerFetchEvent =
-      FetchRequestData::ForServiceWorkerFetchEvent;
-
   // These "create" function must be called with entering an appropriate
   // V8 context.
   // From Request.idl:
@@ -54,9 +52,8 @@ class CORE_EXPORT Request final : public Body {
                          const RequestInit*,
                          ExceptionState&);
   static Request* Create(ScriptState*, FetchRequestData*);
-  static Request* Create(ScriptState*,
-                         const mojom::blink::FetchAPIRequest&,
-                         ForServiceWorkerFetchEvent);
+  static Request* Create(ScriptState*, const WebServiceWorkerRequest&);
+  static Request* Create(ScriptState*, const mojom::blink::FetchAPIRequest&);
 
   Request(ScriptState*, FetchRequestData*, Headers*, AbortSignal*);
   Request(ScriptState*, FetchRequestData*);

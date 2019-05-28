@@ -246,8 +246,8 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       break;
   }
 
-  ServiceWorkerGlobalScope* service_worker_global_scope =
-      To<ServiceWorkerGlobalScope>(GetExecutionContext());
+  ServiceWorkerGlobalScopeClient* client =
+      ServiceWorkerGlobalScopeClient::From(GetExecutionContext());
   mojom::ServiceWorkerEventStatus status =
       (event_dispatch_state_ == EventDispatchState::kFailed ||
        has_rejected_promise_)
@@ -255,71 +255,59 @@ void WaitUntilObserver::MaybeCompleteEvent() {
           : mojom::ServiceWorkerEventStatus::COMPLETED;
   switch (type_) {
     case kAbortPayment:
-      service_worker_global_scope->DidHandleAbortPaymentEvent(event_id_,
-                                                              status);
+      client->DidHandleAbortPaymentEvent(event_id_, status);
       break;
     case kActivate:
-      service_worker_global_scope->DidHandleActivateEvent(event_id_, status);
+      client->DidHandleActivateEvent(event_id_, status);
       break;
     case kCanMakePayment:
-      service_worker_global_scope->DidHandleCanMakePaymentEvent(event_id_,
-                                                                status);
+      client->DidHandleCanMakePaymentEvent(event_id_, status);
       break;
     case kCookieChange:
-      service_worker_global_scope->DidHandleCookieChangeEvent(event_id_,
-                                                              status);
+      client->DidHandleCookieChangeEvent(event_id_, status);
       break;
     case kFetch:
-      service_worker_global_scope->DidHandleFetchEvent(event_id_, status);
+      client->DidHandleFetchEvent(event_id_, status);
       break;
     case kInstall:
       To<ServiceWorkerGlobalScope>(*GetExecutionContext())
           .SetIsInstalling(false);
-      service_worker_global_scope->DidHandleInstallEvent(event_id_, status);
+      client->DidHandleInstallEvent(event_id_, status);
       break;
     case kMessage:
-      service_worker_global_scope->DidHandleExtendableMessageEvent(event_id_,
-                                                                   status);
+      client->DidHandleExtendableMessageEvent(event_id_, status);
       break;
     case kNotificationClick:
-      service_worker_global_scope->DidHandleNotificationClickEvent(event_id_,
-                                                                   status);
+      client->DidHandleNotificationClickEvent(event_id_, status);
       consume_window_interaction_timer_.Stop();
       ConsumeWindowInteraction(nullptr);
       break;
     case kNotificationClose:
-      service_worker_global_scope->DidHandleNotificationCloseEvent(event_id_,
-                                                                   status);
+      client->DidHandleNotificationCloseEvent(event_id_, status);
       break;
     case kPush:
-      service_worker_global_scope->DidHandlePushEvent(event_id_, status);
+      client->DidHandlePushEvent(event_id_, status);
       break;
     case kSync:
-      service_worker_global_scope->DidHandleSyncEvent(event_id_, status);
+      client->DidHandleSyncEvent(event_id_, status);
       break;
     case kPeriodicSync:
-      service_worker_global_scope->DidHandlePeriodicSyncEvent(event_id_,
-                                                              status);
+      client->DidHandlePeriodicSyncEvent(event_id_, status);
       break;
     case kPaymentRequest:
-      service_worker_global_scope->DidHandlePaymentRequestEvent(event_id_,
-                                                                status);
+      client->DidHandlePaymentRequestEvent(event_id_, status);
       break;
     case kBackgroundFetchAbort:
-      service_worker_global_scope->DidHandleBackgroundFetchAbortEvent(event_id_,
-                                                                      status);
+      client->DidHandleBackgroundFetchAbortEvent(event_id_, status);
       break;
     case kBackgroundFetchClick:
-      service_worker_global_scope->DidHandleBackgroundFetchClickEvent(event_id_,
-                                                                      status);
+      client->DidHandleBackgroundFetchClickEvent(event_id_, status);
       break;
     case kBackgroundFetchFail:
-      service_worker_global_scope->DidHandleBackgroundFetchFailEvent(event_id_,
-                                                                     status);
+      client->DidHandleBackgroundFetchFailEvent(event_id_, status);
       break;
     case kBackgroundFetchSuccess:
-      service_worker_global_scope->DidHandleBackgroundFetchSuccessEvent(
-          event_id_, status);
+      client->DidHandleBackgroundFetchSuccessEvent(event_id_, status);
       break;
   }
 }
