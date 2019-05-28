@@ -35,6 +35,8 @@ struct TabRendererData {
   base::string16 title;
   // This corresponds to WebContents::GetVisibleUrl().
   GURL visible_url;
+  // This corresponds to WebContents::GetLastCommittedUrl().
+  GURL last_committed_url;
   base::TerminationStatus crashed_status =
       base::TERMINATION_STATUS_STILL_RUNNING;
   bool incognito = false;

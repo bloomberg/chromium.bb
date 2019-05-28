@@ -564,6 +564,7 @@ TabRendererData BrowserTabStripController::TabRendererDataFromModel(
   data.network_state = TabNetworkStateForWebContents(contents);
   data.title = tab_ui_helper->GetTitle();
   data.visible_url = contents->GetVisibleURL();
+  data.last_committed_url = contents->GetLastCommittedURL();
   data.crashed_status = contents->GetCrashedStatus();
   data.incognito = contents->GetBrowserContext()->IsOffTheRecord();
   data.pinned = model_->IsTabPinned(model_index);

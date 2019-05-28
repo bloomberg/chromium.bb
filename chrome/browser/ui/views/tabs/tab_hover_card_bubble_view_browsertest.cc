@@ -203,10 +203,11 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest, WidgetDataUpdate) {
   TabStrip* tab_strip =
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
-  TabRendererData newTabData = TabRendererData();
-  newTabData.title = base::UTF8ToUTF16("Test Tab 2");
-  newTabData.visible_url = GURL("http://example.com/this/should/not/be/seen");
-  tab_strip->AddTabAt(1, newTabData, false);
+  TabRendererData new_tab_data = TabRendererData();
+  new_tab_data.title = base::UTF8ToUTF16("Test Tab 2");
+  new_tab_data.last_committed_url =
+      GURL("http://example.com/this/should/not/be/seen");
+  tab_strip->AddTabAt(1, new_tab_data, false);
 
   ShowUi("default");
   TabHoverCardBubbleView* hover_card = GetHoverCard(tab_strip);
