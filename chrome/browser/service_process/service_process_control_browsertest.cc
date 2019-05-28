@@ -418,16 +418,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, HistogramsNoService) {
       base::TimeDelta()));
 }
 
-// Histograms disabled on OSX http://crbug.com/406227
-#if defined(OS_MACOSX)
-#define MAYBE_HistogramsTimeout DISABLED_HistogramsTimeout
-#define MAYBE_Histograms DISABLED_Histograms
-#else
-#define MAYBE_HistogramsTimeout HistogramsTimeout
-#define MAYBE_Histograms Histograms
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
-                       MAYBE_HistogramsTimeout) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, HistogramsTimeout) {
   LaunchServiceProcessControlAndWait();
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   // Callback should not be called during GetHistograms call.
@@ -442,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   run_loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_Histograms) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, Histograms) {
   LaunchServiceProcessControlAndWait();
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   // Callback should not be called during GetHistograms call.
