@@ -31,6 +31,11 @@ extern const char kUpdaterJSONDefaultUrl[];
 extern const char kCrashUploadURL[];
 extern const char kCrashStagingUploadURL[];
 
+// Errors.
+//
+// The install directory for the application could not be created.
+const int kCustomInstallErrorCreateAppInstallDirectory = 0;
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_UPDATER_CONSTANTS_H_

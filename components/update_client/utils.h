@@ -46,6 +46,9 @@ bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath);
 // format similar with the format of an extension id.
 std::string GetCrxComponentID(const CrxComponent& component);
 
+// Returns a CRX id from a public key hash.
+std::string GetCrxIdFromPublicKeyHash(const std::vector<uint8_t>& pk_hash);
+
 // Returns true if the actual SHA-256 hash of the |filepath| matches the
 // |expected_hash|.
 bool VerifyFileHash256(const base::FilePath& filepath,
