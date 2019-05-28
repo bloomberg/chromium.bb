@@ -197,8 +197,7 @@ jumbo_static_library("test_support") {
   ]
 }
 
-# Disabled on mac due to build failure (crbug.com/967098).
-if (!is_android && !is_fuchsia && !is_mac) {
+if (!is_android && !is_fuchsia) {
   proto_library("gl_lpm_fuzzer_proto") {
     sources = [
       "command_buffer/tests/lpm/gl_lpm_fuzzer.proto",
@@ -245,6 +244,10 @@ if (!is_android && !is_fuchsia && !is_mac) {
     ]
 
     defines = [ "GL_GLEXT_PROTOTYPES" ]
+
+    if (is_mac) {
+      libs = [ "IOSurface.framework" ]
+    }
 
     deps = [
       ":gl_lpm_fuzzer_proto",
