@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -404,6 +406,44 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
     pref.AddPolicyBlockedHost("*", "*://example.com");
   }
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
+}
+
+class ContentScriptPolicyStartupTest : public ExtensionApiTest {
+ public:
+  // We need to do this work here because the runtime host policy values are
+  // checked pretty early on in the startup of the ExtensionService, which
+  // happens between SetUpInProcessBrowserTestFixture and SetUpOnMainThread.
+  void SetUpInProcessBrowserTestFixture() override {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+    // ExtensionManagementPolicyUpdater requires a single-threaded context to
+    // call RunLoop::RunUntilIdle internally, and it isn't ready at this setup
+    // moment.
+    base::test::ScopedTaskEnvironment env;
+    ExtensionManagementPolicyUpdater management_policy(&policy_provider_);
+    management_policy.AddPolicyBlockedHost("*", "*://example.com");
+  }
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+};
+
+// Regression test for: https://crbug.com/954215.
+IN_PROC_BROWSER_TEST_F(ContentScriptPolicyStartupTest, RuntimeBlockedHosts) {
+  // Tests that default scoped runtime blocked host policy values for the
+  // ExtensionSettings policy are applied at startup.
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
 }
