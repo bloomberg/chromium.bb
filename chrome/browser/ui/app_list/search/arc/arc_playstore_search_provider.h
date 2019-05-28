@@ -32,13 +32,15 @@ class ArcPlayStoreSearchProvider : public SearchProvider {
   void Start(const base::string16& query) override;
 
  private:
-  void OnResults(base::TimeTicks query_start_time,
+  void OnResults(const base::string16& query,
+                 base::TimeTicks query_start_time,
                  arc::ArcPlayStoreSearchRequestState state,
                  std::vector<arc::mojom::AppDiscoveryResultPtr> results);
 
   const int max_results_;
   Profile* const profile_;                            // Owned by ProfileInfo.
   AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
+  base::string16 last_query_;  // Most recent query issued.
   base::WeakPtrFactory<ArcPlayStoreSearchProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreSearchProvider);

@@ -96,6 +96,11 @@ ArcPlayStoreSearchProvider::ArcPlayStoreSearchProvider(
 ArcPlayStoreSearchProvider::~ArcPlayStoreSearchProvider() = default;
 
 void ArcPlayStoreSearchProvider::Start(const base::string16& query) {
+  last_query_ = query;
+
+  // Clear any results from the previous query.
+  ClearResultsSilently();
+
   arc::mojom::AppInstance* app_instance =
       arc::ArcServiceManager::Get()
           ? ARC_GET_INSTANCE_FOR_METHOD(
@@ -104,17 +109,18 @@ void ArcPlayStoreSearchProvider::Start(const base::string16& query) {
           : nullptr;
 
   if (app_instance == nullptr || query.empty()) {
-    ClearResults();
     return;
   }
 
   app_instance->GetRecentAndSuggestedAppsFromPlayStore(
       base::UTF16ToUTF8(query), max_results_,
       base::Bind(&ArcPlayStoreSearchProvider::OnResults,
-                 weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
+                 weak_ptr_factory_.GetWeakPtr(), query,
+                 base::TimeTicks::Now()));
 }
 
 void ArcPlayStoreSearchProvider::OnResults(
+    const base::string16& query,
     base::TimeTicks query_start_time,
     arc::ArcPlayStoreSearchRequestState state,
     std::vector<arc::mojom::AppDiscoveryResultPtr> results) {
@@ -122,7 +128,17 @@ void ArcPlayStoreSearchProvider::OnResults(
     DCHECK(results.empty());
     UMA_HISTOGRAM_ENUMERATION(kAppListPlayStoreQueryStateHistogram, state,
                               arc::ArcPlayStoreSearchRequestState::STATE_COUNT);
-    ClearResults();
+    return;
+  }
+
+  // Play store could have a long latency that when the results come back,
+  // user has entered a different query. Do not return the staled results
+  // from the previous query in such case.
+  if (query != last_query_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        kAppListPlayStoreQueryStateHistogram,
+        arc::ArcPlayStoreSearchRequestState::FAILED_TO_CALL_CANCEL,
+        arc::ArcPlayStoreSearchRequestState::STATE_COUNT);
     return;
   }
 
@@ -134,7 +150,6 @@ void ArcPlayStoreSearchProvider::OnResults(
           kAppListPlayStoreQueryStateHistogram,
           arc::ArcPlayStoreSearchRequestState::CHROME_GOT_INVALID_RESULT,
           arc::ArcPlayStoreSearchRequestState::STATE_COUNT);
-      ClearResults();
       return;
     }
 
