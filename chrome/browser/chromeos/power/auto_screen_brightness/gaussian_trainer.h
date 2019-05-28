@@ -89,6 +89,10 @@ class GaussianTrainer : public Trainer {
   // of |center_index|.
   void EnforceMonotonicity(size_t center_index);
 
+  // Calculates (possibly) updated curve's MAE error w.r.t. |data|. The error
+  // will be in the range of [0, 100].
+  double CalculateCurveError(const std::vector<TrainingDataPoint>& data) const;
+
   // Default params_ are valid.
   bool valid_params_ = true;
 

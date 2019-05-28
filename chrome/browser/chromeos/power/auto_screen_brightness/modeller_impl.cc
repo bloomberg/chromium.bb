@@ -317,9 +317,11 @@ ModellerImpl::ModelSavingSpec ModellerImpl::GetModelSavingSpecFromProfile(
 
   const base::FilePath model_dir = profile_path.Append(kModelDir);
   if (!base::DirectoryExists(model_dir) && !base::CreateDirectory(model_dir)) {
+    VLOG(1) << "Auto screen brightness model dir does not exist.";
     return model_saving_spec;
   }
 
+  VLOG(1) << "Auto screen brightness model dir: " << model_dir.value();
   model_saving_spec.global_curve = model_dir.Append(kGlobalCurveFileName);
   model_saving_spec.personal_curve = model_dir.Append(kPersonalCurveFileName);
   model_saving_spec.iteration_count =

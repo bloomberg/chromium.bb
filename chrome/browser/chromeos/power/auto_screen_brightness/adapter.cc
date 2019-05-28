@@ -356,14 +356,16 @@ void Adapter::InitParams(const ModelConfig& model_config) {
       features::kAutoScreenBrightness, "stabilization_threshold",
       params_.stabilization_threshold);
 
-  const int model_curve = base::GetFieldTrialParamByFeatureAsInt(
-      features::kAutoScreenBrightness, "model_curve", 2);
-  if (model_curve < 0 || model_curve > 2) {
+  const int model_curve_as_int = base::GetFieldTrialParamByFeatureAsInt(
+      features::kAutoScreenBrightness, "model_curve",
+      static_cast<int>(params_.model_curve));
+  if (model_curve_as_int < static_cast<int>(ModelCurve::kGlobal) ||
+      model_curve_as_int > static_cast<int>(ModelCurve::kMaxValue)) {
     enabled_by_model_configs_ = false;
     LogParameterError(ParameterError::kAdapterError);
     return;
   }
-  params_.model_curve = static_cast<ModelCurve>(model_curve);
+  params_.model_curve = static_cast<ModelCurve>(model_curve_as_int);
   params_.auto_brightness_als_horizon = base::TimeDelta::FromSeconds(
       model_config.auto_brightness_als_horizon_seconds);
   log_als_values_ = std::make_unique<AmbientLightSampleBuffer>(
