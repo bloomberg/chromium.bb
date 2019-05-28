@@ -445,6 +445,41 @@ if (is_win) {
   }
 }
 
+if (is_android) {
+  test("android_browsertests") {
+    configs += [ "//build/config:precompiled_headers" ]
+    defines = [
+      "HAS_OUT_OF_PROC_TEST_RUNNER",
+      "CHROME_VERSION_MAJOR=" + chrome_version_major,
+    ]
+    use_default_launcher = false
+
+    deps = [
+      ":test_support",
+      ":test_support_ui_android",
+      "//chrome/android:app_hooks_java",
+      "//chrome/android:chrome_java",
+    ]
+
+    sources = []
+  }
+
+  static_library("test_support_ui_android") {
+    configs += [ "//build/config:precompiled_headers" ]
+    testonly = true
+
+    sources = [
+      # TODO(crbug.com/961849): Write an AndroidBrowserTest base class and put
+      # it here.
+    ]
+    public_deps = []
+    deps = [
+      "//chrome/browser",
+      "//content/public/browser",
+    ]
+  }
+}
+
 if (!is_android) {
   static_library("browser_tests_runner") {
     testonly = true
@@ -466,129 +501,144 @@ if (!is_android) {
   }
 
   test("browser_tests") {
-    sources = [
-      # TODO(jbudorick): Move tests here from other lists as Android support is
-      # implemented. See crbug.com/611756
-    ]
-
     configs += [ "//build/config:precompiled_headers" ]
-
-    deps = [
-      ":browser_tests_runner",
-      ":test_support",
-      "//base",
-      "//chrome/browser/profiling_host:profiling_browsertests",
-      "//components/cbor",
-      "//components/nacl/common:buildflags",
-      "//components/spellcheck:buildflags",
-      "//components/sync:test_support_model",
-      "//extensions/buildflags",
-      "//media:media_buildflags",
-      "//net:test_support",
-      "//ppapi/buildflags",
-      "//printing/buildflags",
-      "//rlz/buildflags",
-      "//services/strings",
-      "//third_party/blink/public:buildflags",
-    ]
-
-    data_deps = [
-      "//testing/buildbot/filters:browser_tests_filters",
-      "//tools/media_engagement_preload:generator",
-    ]
-
-    data = []
-
     defines = [
       "HAS_OUT_OF_PROC_TEST_RUNNER",
       "CHROME_VERSION_MAJOR=" + chrome_version_major,
     ]
 
-    if (is_win) {
-      data += [ "$root_out_dir/chrome_200_percent.pak" ]
-      deps += [ "//chrome/app:chrome_dll_resources" ]
-    }
-    if (is_chromeos) {
-      data += [
-        # TODO(GYP): figure out which of these things are
-        # actually needed and also which should be pulled in via
-        # data or data_deps and through which dependencies.
-        "//chrome/browser/chromeos/login/test/https_forwarder.py",
-        "//chrome/browser/resources/chromeos/wallpaper_manager/",
-        "//chrome/browser/resources/chromeos/zip_archiver/",
-        "//google_apis/test/",
-        "//chrome/browser/resources/chromeos/zip_archiver/test/",
-        "//chromeos/test/data/",
-        "//ui/file_manager/base/",
-        "//ui/file_manager/file_manager/",
-        "//ui/file_manager/gallery/",
-        "//ui/file_manager/image_loader/",
-        "//ui/file_manager/integration_tests/",
-        "//ui/file_manager/video_player",
-        "//third_party/polymer/v1_0/components-chromium/",
-        "$root_gen_dir/ui/file_manager/file_manager/",
-        "$root_out_dir/chromevox_test_data/",
-        "$root_out_dir/content_shell.pak",
-        "$root_out_dir/resources/chromeos/",
-      ]
+    deps = [
+      ":browser_tests_runner",
+      ":policy_testserver_pyproto",
+      ":test_support",
+      ":test_support_ui",
+      "//base",
+      "//base:i18n",
+      "//base/test:test_support",
+      "//chrome:browser_tests_pak",
+      "//chrome:packed_resources",
+      "//chrome:resources",
+      "//chrome:strings",
+      "//chrome/browser",
+      "//chrome/browser/devtools:test_support",
+      "//chrome/browser/profiling_host:profiling_browsertests",
+      "//chrome/browser/web_applications:browser_tests",
+      "//chrome/renderer",
+      "//chrome/services/removable_storage_writer:lib",
+      "//components/autofill/content/browser:risk_proto",
+      "//components/autofill/content/common:mojo_interfaces",
+      "//components/autofill/content/renderer:test_support",
+      "//components/captive_portal:test_support",
+      "//components/cbor",
+      "//components/data_reduction_proxy/core/browser:test_support",
+      "//components/dom_distiller/content/browser",
+      "//components/dom_distiller/content/renderer",
+      "//components/dom_distiller/core:test_support",
+      "//components/feature_engagement/test:test_support",
+      "//components/nacl/common:buildflags",
+      "//components/offline_items_collection/core/test_support",
+      "//components/optimization_guide:test_support",
+      "//components/policy:chrome_settings_proto_generated_compile",
+      "//components/resources",
+      "//components/safe_browsing/db:test_database_manager",
+      "//components/services/quarantine:test_support",
+      "//components/spellcheck:buildflags",
+      "//components/strings",
+      "//components/sync",
+      "//components/sync:test_support_model",
+      "//components/translate/core/common",
+      "//content/public/common:buildflags",
+      "//content/test:test_support",
+      "//crypto:platform",
+      "//crypto:test_support",
+      "//device/bluetooth:mocks",
+      "//extensions/buildflags",
+      "//google_apis:test_support",
+      "//media:media_buildflags",
+      "//media:test_support",
+      "//media/cast:test_support",
+      "//mojo/public/cpp/system",
+      "//net",
+      "//net:test_support",
+      "//net:test_support",
+      "//ppapi/buildflags",
+      "//printing/buildflags",
+      "//rlz/buildflags",
+      "//services/device/public/cpp:test_support",
+      "//services/device/public/mojom",
+      "//services/network/public/cpp",
+      "//services/service_manager/public/cpp",
+      "//services/strings",
+      "//skia",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//testing/perf",
+      "//third_party/blink/public:blink_headers",
+      "//third_party/blink/public:buildflags",
+      "//third_party/cacheinvalidation",
+      "//third_party/icu",
+      "//third_party/leveldatabase",
+      "//third_party/webrtc_overrides",
+      "//third_party/widevine/cdm:buildflags",
+      "//third_party/widevine/cdm:headers",
+      "//ui/accessibility:test_support",
+      "//ui/base:test_support",
+      "//ui/base/clipboard:clipboard_test_support",
+      "//ui/compositor:test_support",
+      "//ui/native_theme:test_support",
+      "//ui/resources",
+      "//ui/web_dialogs:test_support",
+      "//v8",
+    ]
 
-      data_deps += [
-        "//chrome",
-        "//ash/keyboard/ui:resources",
-        "//ui/file_manager:unit_test_data",
-      ]
+    # Runtime dependencies
+    data_deps = [
+      "//ppapi:ppapi_tests",
+      "//ppapi:power_saver_test_plugin",
+      "//remoting/webapp:browser_test_resources",
+      "//remoting/webapp:unit_tests",
+      "//testing/buildbot/filters:browser_tests_filters",
+      "//third_party/mesa_headers",
+      "//third_party/widevine/cdm:widevine_test_license_server",
+      "//tools/media_engagement_preload:generator",
+    ]
 
-      if (use_dbus) {
-        deps += [ "//dbus:test_support" ]
-      }
+    data = [
+      "data/",
+      "//chrome/browser/policy/test/asn1der.py",
+      "//chrome/browser/policy/test/policy_testserver.py",
+      "//chrome/common/extensions/docs/examples/apps/calculator/",
+      "//chrome/third_party/mock4js/",
+      "//components/test/data/arc/",
+      "//components/test/data/autofill/",
+      "//components/test/data/payments/",
+      "//components/test/data/update_client/",
+      "//content/test/data/",
+      "//google_apis/test/",
+      "//media/test/data/",
+      "//net/tools/testserver/",
+      "//ppapi/tests/test_case.html",
+      "//ppapi/tests/test_case.html.mock-http-headers",
+      "//ppapi/tests/test_page.css",
+      "//ppapi/tests/test_page.css.mock-http-headers",
+      "//testing/test_env.py",
+      "//third_party/accessibility-audit/axs_testing.js",
+      "//third_party/chaijs/chai.js",
+      "//third_party/mocha/mocha.js",
+      "//third_party/polymer/v1_0/components-chromium/iron-test-helpers/mock-interactions.js",
+      "//third_party/pywebsocket/src/mod_pywebsocket/",
+      "//third_party/simplejson/",
+      "//third_party/tlslite/",
+      "//ui/webui/resources/",
+      "$root_out_dir/browser_tests.pak",
+      "$root_out_dir/test_case.html",
+      "$root_out_dir/test_case.html.mock-http-headers",
+      "$root_out_dir/test_page.css",
+      "$root_out_dir/test_page.css.mock-http-headers",
+      "$root_out_dir/test_url_loader_data/",
+    ]
 
-      if (enable_nacl) {
-        data_deps += [
-          "//components/nacl/loader:nacl_helper",
-          "//ppapi/native_client:irt",
-        ]
-
-        if (enable_nacl_nonsfi) {
-          data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
-        }
-      }
-
-      deps += [
-        "//ash:test_support",
-        "//ash/keyboard/ui:test_support",
-        "//ash/public/interfaces:test_interfaces",
-        "//chrome/browser/chromeos:arc_test_support",
-        "//chrome/browser/chromeos:test_support",
-        "//chrome/browser/media/router:test_support",
-        "//chrome/browser/resources/chromeos/chromevox:browser_tests",
-        "//chrome/browser/resources/chromeos/login:browser_tests",
-        "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
-        "//chrome/browser/resources/chromeos/switch_access:browser_tests",
-        "//chrome/services/file_util/public/cpp:browser_tests",
-        "//chromeos:test_support",
-        "//chromeos/components/drivefs:test_support",
-        "//chromeos/dbus:test_support",
-        "//chromeos/dbus/session_manager",
-        "//components/arc:arc_test_support",
-        "//components/exo:test_support",
-        "//components/prefs",
-        "//components/user_manager:test_support",
-        "//content/public/common:feature_h264_with_openh264_ffmpeg",
-        "//mojo/core/embedder",
-        "//services/audio/public/cpp:test_support",
-        "//services/identity/public/cpp",
-        "//services/network/public/mojom",
-        "//services/preferences/public/cpp",
-        "//services/preferences/public/mojom",
-        "//services/service_manager/public/cpp",
-        "//services/ws/public/cpp/input_devices:test_support",
-        "//url",
-      ]
-    }
-
-    sources += [
-      # The list of sources which is only used by chrome browser tests on
-      # desktop platforms.
+    sources = [
       "../../apps/app_restore_service_browsertest.cc",
       "../../apps/load_and_launch_browsertest.cc",
       "../app/chrome_version.rc.version",
@@ -1139,72 +1189,76 @@ if (!is_android) {
       "v8/wasm_trap_handler_browsertest.cc",
     ]
 
-    deps += [
-      ":policy_testserver_pyproto",
-      ":test_support_ui",
-      "//base:i18n",
-      "//base/test:test_support",
-      "//chrome:browser_tests_pak",
-      "//chrome:packed_resources",
-      "//chrome:resources",
-      "//chrome:strings",
-      "//chrome/browser",
-      "//chrome/browser/devtools:test_support",
-      "//chrome/browser/web_applications:browser_tests",
-      "//chrome/renderer",
-      "//chrome/services/removable_storage_writer:lib",
-      "//components/autofill/content/browser:risk_proto",
-      "//components/autofill/content/common:mojo_interfaces",
-      "//components/autofill/content/renderer:test_support",
-      "//components/captive_portal:test_support",
-      "//components/data_reduction_proxy/core/browser:test_support",
-      "//components/dom_distiller/content/browser",
-      "//components/dom_distiller/content/renderer",
-      "//components/dom_distiller/core:test_support",
-      "//components/feature_engagement/test:test_support",
-      "//components/offline_items_collection/core/test_support",
-      "//components/optimization_guide:test_support",
-      "//components/policy:chrome_settings_proto_generated_compile",
-      "//components/resources",
-      "//components/safe_browsing/db:test_database_manager",
-      "//components/services/quarantine:test_support",
-      "//components/strings",
-      "//components/sync",
-      "//components/translate/core/common",
-      "//content/public/common:buildflags",
-      "//content/test:test_support",
-      "//crypto:platform",
-      "//crypto:test_support",
-      "//device/bluetooth:mocks",
-      "//google_apis:test_support",
-      "//media:test_support",
-      "//media/cast:test_support",
-      "//mojo/public/cpp/system",
-      "//net",
-      "//net:test_support",
-      "//services/device/public/cpp:test_support",
-      "//services/device/public/mojom",
-      "//services/network/public/cpp",
-      "//services/service_manager/public/cpp",
-      "//skia",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//testing/perf",
-      "//third_party/cacheinvalidation",
-      "//third_party/icu",
-      "//third_party/leveldatabase",
-      "//third_party/webrtc_overrides",
-      "//third_party/widevine/cdm:buildflags",
-      "//third_party/widevine/cdm:headers",
-      "//ui/accessibility:test_support",
-      "//ui/base:test_support",
-      "//ui/base/clipboard:clipboard_test_support",
-      "//ui/compositor:test_support",
-      "//ui/native_theme:test_support",
-      "//ui/resources",
-      "//ui/web_dialogs:test_support",
-      "//v8",
-    ]
+    if (is_win) {
+      data += [ "$root_out_dir/chrome_200_percent.pak" ]
+      deps += [ "//chrome/app:chrome_dll_resources" ]
+    }
+
+    if (is_chromeos) {
+      data += [
+        # TODO(GYP): figure out which of these things are
+        # actually needed and also which should be pulled in via
+        # data or data_deps and through which dependencies.
+        "//chrome/browser/chromeos/login/test/https_forwarder.py",
+        "//chrome/browser/resources/chromeos/wallpaper_manager/",
+        "//chrome/browser/resources/chromeos/zip_archiver/",
+        "//chrome/browser/resources/chromeos/zip_archiver/test/",
+        "//chromeos/test/data/",
+        "//ui/file_manager/base/",
+        "//ui/file_manager/file_manager/",
+        "//ui/file_manager/gallery/",
+        "//ui/file_manager/image_loader/",
+        "//ui/file_manager/integration_tests/",
+        "//ui/file_manager/video_player",
+        "//third_party/polymer/v1_0/components-chromium/",
+        "$root_gen_dir/ui/file_manager/file_manager/",
+        "$root_out_dir/chromevox_test_data/",
+        "$root_out_dir/content_shell.pak",
+        "$root_out_dir/resources/chromeos/",
+      ]
+
+      data_deps += [
+        "//chrome",
+        "//ash/keyboard/ui:resources",
+        "//ui/file_manager:unit_test_data",
+      ]
+
+      if (use_dbus) {
+        deps += [ "//dbus:test_support" ]
+      }
+
+      deps += [
+        "//ash:test_support",
+        "//ash/keyboard/ui:test_support",
+        "//ash/public/interfaces:test_interfaces",
+        "//chrome/browser/chromeos:arc_test_support",
+        "//chrome/browser/chromeos:test_support",
+        "//chrome/browser/media/router:test_support",
+        "//chrome/browser/resources/chromeos/chromevox:browser_tests",
+        "//chrome/browser/resources/chromeos/login:browser_tests",
+        "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
+        "//chrome/browser/resources/chromeos/switch_access:browser_tests",
+        "//chrome/services/file_util/public/cpp:browser_tests",
+        "//chromeos:test_support",
+        "//chromeos/components/drivefs:test_support",
+        "//chromeos/dbus:test_support",
+        "//chromeos/dbus/session_manager",
+        "//components/arc:arc_test_support",
+        "//components/exo:test_support",
+        "//components/prefs",
+        "//components/user_manager:test_support",
+        "//content/public/common:feature_h264_with_openh264_ffmpeg",
+        "//mojo/core/embedder",
+        "//services/audio/public/cpp:test_support",
+        "//services/identity/public/cpp",
+        "//services/network/public/mojom",
+        "//services/preferences/public/cpp",
+        "//services/preferences/public/mojom",
+        "//services/service_manager/public/cpp",
+        "//services/ws/public/cpp/input_devices:test_support",
+        "//url",
+      ]
+    }
 
     if (include_js_tests) {
       deps += [
@@ -1217,51 +1271,6 @@ if (!is_android) {
       deps += [ ":sync_integration_test_support" ]
     }
 
-    # Runtime dependencies
-    data_deps += [
-      "//ppapi:ppapi_tests",
-      "//ppapi:power_saver_test_plugin",
-      "//remoting/webapp:browser_test_resources",
-      "//remoting/webapp:unit_tests",
-      "//third_party/mesa_headers",
-      "//third_party/widevine/cdm:widevine_test_license_server",
-    ]
-
-    data += [
-      "data/",
-      "//chrome/browser/policy/test/asn1der.py",
-      "//chrome/browser/policy/test/policy_testserver.py",
-      "//chrome/common/extensions/docs/examples/apps/calculator/",
-      "//chrome/third_party/mock4js/",
-      "//components/test/data/arc/",
-      "//components/test/data/autofill/",
-      "//components/test/data/payments/",
-      "//components/test/data/update_client/",
-      "//content/test/data/",
-      "//google_apis/test/",
-      "//media/test/data/",
-      "//net/tools/testserver/",
-      "//ppapi/tests/test_case.html",
-      "//ppapi/tests/test_case.html.mock-http-headers",
-      "//ppapi/tests/test_page.css",
-      "//ppapi/tests/test_page.css.mock-http-headers",
-      "//testing/test_env.py",
-      "//third_party/accessibility-audit/axs_testing.js",
-      "//third_party/chaijs/chai.js",
-      "//third_party/mocha/mocha.js",
-      "//third_party/polymer/v1_0/components-chromium/iron-test-helpers/mock-interactions.js",
-      "//third_party/pywebsocket/src/mod_pywebsocket/",
-      "//third_party/simplejson/",
-      "//third_party/tlslite/",
-      "//ui/webui/resources/",
-      "$root_out_dir/browser_tests.pak",
-      "$root_out_dir/test_case.html",
-      "$root_out_dir/test_case.html.mock-http-headers",
-      "$root_out_dir/test_page.css",
-      "$root_out_dir/test_page.css.mock-http-headers",
-      "$root_out_dir/test_url_loader_data/",
-    ]
-
     if (!is_mac) {
       data += [
         "$root_out_dir/locales/",
@@ -1270,10 +1279,12 @@ if (!is_android) {
         "$root_out_dir/resources.pak",
       ]
     }
+
     if (enable_captive_portal_detection) {
       sources +=
           [ "../browser/ssl/captive_portal_blocking_page_browsertest.cc" ]
     }
+
     if (enable_dice_support) {
       sources += [
         "../browser/signin/dice_browsertest.cc",
@@ -1313,7 +1324,14 @@ if (!is_android) {
           "//third_party/liblouis/wasm/liblouis_wrapper_browsertest.cc",
         ]
         deps += [ "//chrome/browser/chromeos" ]
-        data_deps += [ "//third_party/liblouis:liblouis_test_data" ]
+        data_deps += [
+          "//third_party/liblouis:liblouis_test_data",
+          "//components/nacl/loader:nacl_helper",
+          "//ppapi/native_client:irt",
+        ]
+        if (enable_nacl_nonsfi) {
+          data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
+        }
       } else if (is_linux || is_win) {
         sources += [
           "../browser/ui/views/ime/ime_warning_bubble_browsertest.cc",
@@ -4922,7 +4940,6 @@ if (!is_android) {
       "//extensions/buildflags",
       "//skia",
       "//testing/gtest",
-      "//third_party/blink/public:blink_headers",
     ]
 
     if (enable_plugins) {
