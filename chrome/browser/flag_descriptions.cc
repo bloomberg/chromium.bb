@@ -3120,8 +3120,8 @@ const char kShowTouchHudDescription[] =
     "Ctrl-Alt-I shows a heads-up display view in the top-left corner. Helps "
     "debug hardware issues that generate spurious touch events.";
 
-const char kSmartDim20190221Name[] = "Smart Dim updated model";
-const char kSmartDim20190221Description[] =
+const char kSmartDimModelV3Name[] = "Smart Dim updated model";
+const char kSmartDimModelV3Description[] =
     "Uses an updated model for user activity prediction (Smart Dim).";
 
 const char kSmartTextSelectionName[] = "Smart Text Selection";

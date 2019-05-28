@@ -50,7 +50,7 @@ extern const base::Feature kImeInputLogicFst;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kInstantTethering;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kSmartDim20190221;
+extern const base::Feature kSmartDimModelV3;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSplitSettings;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

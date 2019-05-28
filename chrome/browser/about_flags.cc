@@ -3821,9 +3821,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if defined(OS_CHROMEOS)
-    {"smart-dim-20190221", flag_descriptions::kSmartDim20190221Name,
-     flag_descriptions::kSmartDim20190221Description, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kSmartDim20190221)},
+    {"smart-dim-model-v3", flag_descriptions::kSmartDimModelV3Name,
+     flag_descriptions::kSmartDimModelV3Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kSmartDimModelV3)},
 #endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

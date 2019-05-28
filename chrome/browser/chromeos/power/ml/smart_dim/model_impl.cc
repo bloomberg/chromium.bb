@@ -46,7 +46,7 @@ LoadExamplePreprocessorConfig() {
   auto config = std::make_unique<assist_ranker::ExamplePreprocessorConfig>();
 
   const int res_id =
-      base::FeatureList::IsEnabled(features::kSmartDim20190221)
+      base::FeatureList::IsEnabled(features::kSmartDimModelV3)
           ? IDR_SMART_DIM_20190221_EXAMPLE_PREPROCESSOR_CONFIG_PB
           : IDR_SMART_DIM_20181115_EXAMPLE_PREPROCESSOR_CONFIG_PB;
 
@@ -227,7 +227,7 @@ void LogPowerMLSmartDimParameterResult(SmartDimParameterResult result) {
 // Returns "dim_threshold" from experiment parameter. Also logs status to UMA.
 float GetDimThreshold() {
   const double default_threshold =
-      base::FeatureList::IsEnabled(features::kSmartDim20190221)
+      base::FeatureList::IsEnabled(features::kSmartDimModelV3)
           ? k20190221ModelDefaultDimThreshold
           : k20181115ModelDefaultDimThreshold;
   const double dim_threshold = base::GetFieldTrialParamByFeatureAsDouble(
@@ -316,7 +316,7 @@ void SmartDimModelImpl::ShouldDim(
   }
 
   const size_t expected_size =
-      base::FeatureList::IsEnabled(features::kSmartDim20190221)
+      base::FeatureList::IsEnabled(features::kSmartDimModelV3)
           ? k20190221ModelInputVectorSize
           : k20181115ModelInputVectorSize;
 

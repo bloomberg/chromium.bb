@@ -133,7 +133,7 @@ void MlServiceClientImpl::InitMlServiceHandlesIfNeeded() {
   if (!model_) {
     // Load the model.
     ModelSpecPtr spec =
-        ModelSpec::New(base::FeatureList::IsEnabled(features::kSmartDim20190221)
+        ModelSpec::New(base::FeatureList::IsEnabled(features::kSmartDimModelV3)
                            ? ModelId::SMART_DIM_20190221
                            : ModelId::SMART_DIM_20181115);
     chromeos::machine_learning::ServiceConnection::GetInstance()->LoadModel(
