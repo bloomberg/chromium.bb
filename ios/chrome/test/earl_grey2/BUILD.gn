@@ -9,19 +9,28 @@ import("//ios/chrome/test/earl_grey2/chrome_ios_eg2_test.gni")
 group("all_tests") {
   testonly = true
   deps = [
-    ":ios_chrome_eg2_test_app_host",
-    ":ios_chrome_smoke_eg2tests",
+    ":ios_chrome_eg2tests",
+    ":ios_chrome_smoke_eg2tests_module",
+    ":ios_chrome_web_eg2tests_module",
   ]
 }
 
-chrome_ios_eg2_test_app_host("ios_chrome_eg2_test_app_host") {
+chrome_ios_eg2_test_app_host("ios_chrome_eg2tests") {
 }
 
-chrome_ios_eg2_test("ios_chrome_smoke_eg2tests") {
-  xcode_test_application_name = "ios_chrome_eg2_test_app_host"
+chrome_ios_eg2_test("ios_chrome_smoke_eg2tests_module") {
+  xcode_test_application_name = "ios_chrome_eg2tests"
 
   deps = [
     "//ios/chrome/test/earl_grey2:eg2_tests",
+  ]
+}
+
+chrome_ios_eg2_test("ios_chrome_web_eg2tests_module") {
+  xcode_test_application_name = "ios_chrome_eg2tests"
+
+  deps = [
+    "//ios/chrome/browser/web:eg2_tests",
   ]
 }
 

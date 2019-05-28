@@ -373,6 +373,33 @@ source_set("eg_tests") {
   ]
 }
 
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+
+  sources = []
+
+  deps = [
+    "//components/content_settings/core/common",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/net:test_support",
+    "//ios/testing:embedded_test_server_support",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test:element_selector",
+    "//ios/web/public/test/http_server",
+    "//net:test_support",
+    "//ui/base",
+    "//url",
+  ]
+
+  libs = [ "UIKit.framework" ]
+}
+
 source_set("perf_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
