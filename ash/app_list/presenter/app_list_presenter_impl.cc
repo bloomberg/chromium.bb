@@ -173,12 +173,11 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
                             show_source == kShelfButtonFullscreen;
   if (IsVisible()) {
     if (request_fullscreen) {
-      if (view_->app_list_state() == ash::mojom::AppListViewState::kPeeking) {
-        view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
+      if (view_->app_list_state() == ash::AppListViewState::kPeeking) {
+        view_->SetState(ash::AppListViewState::kFullscreenAllApps);
         return ash::SHELF_ACTION_APP_LIST_SHOWN;
-      } else if (view_->app_list_state() ==
-                 ash::mojom::AppListViewState::kHalf) {
-        view_->SetState(ash::mojom::AppListViewState::kFullscreenSearch);
+      } else if (view_->app_list_state() == ash::AppListViewState::kHalf) {
+        view_->SetState(ash::AppListViewState::kFullscreenSearch);
         return ash::SHELF_ACTION_APP_LIST_SHOWN;
       }
     }
@@ -187,7 +186,7 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
   }
   Show(display_id, event_time_stamp);
   if (request_fullscreen)
-    view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
+    view_->SetState(ash::AppListViewState::kFullscreenAllApps);
   return ash::SHELF_ACTION_APP_LIST_SHOWN;
 }
 
@@ -209,7 +208,7 @@ void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
 }
 
 void AppListPresenterImpl::EndDragFromShelf(
-    ash::mojom::AppListViewState app_list_state) {
+    ash::AppListViewState app_list_state) {
   if (view_)
     view_->EndDragFromShelf(app_list_state);
 }
@@ -440,7 +439,7 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
 void AppListPresenterImpl::OnImplicitAnimationsCompleted() {
   // This class observes the closing animation only.
   TRACE_EVENT_ASYNC_END1("ui", "AppList::StateTransitionAnimations", this,
-                         "state", ash::mojom::AppListViewState::kClosed);
+                         "state", ash::AppListViewState::kClosed);
   NotifyVisibilityChanged(GetTargetVisibility(), GetDisplayId());
 
   if (is_visible_) {

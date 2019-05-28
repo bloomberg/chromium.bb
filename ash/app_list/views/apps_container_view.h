@@ -63,7 +63,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
 
   // Updates the visibility of the items in this view according to
   // |app_list_state| and |is_in_drag|.
-  void UpdateControlVisibility(ash::mojom::AppListViewState app_list_state,
+  void UpdateControlVisibility(ash::AppListViewState app_list_state,
                                bool is_in_drag);
 
   // Updates y position and opacity of the items in this view during dragging.

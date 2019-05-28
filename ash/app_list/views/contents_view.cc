@@ -157,8 +157,8 @@ void ContentsView::SetDragAndDropHostOfCurrentAppList(
 }
 
 void ContentsView::OnAppListViewTargetStateChanged(
-    ash::mojom::AppListViewState target_state) {
-  if (target_state == ash::mojom::AppListViewState::kClosed) {
+    ash::AppListViewState target_state) {
+  if (target_state == ash::AppListViewState::kClosed) {
     CancelDrag();
     return;
   }
@@ -301,7 +301,7 @@ bool ContentsView::IsShowingEmbeddedAssistantUI() const {
 void ContentsView::UpdatePageBounds() {
   // No need to do anything while closed. To layout while closed may result in
   // the search-box going offscreen.
-  if (app_list_view_->app_list_state() == ash::mojom::AppListViewState::kClosed)
+  if (app_list_view_->app_list_state() == ash::AppListViewState::kClosed)
     return;
 
   // The bounds calculations will potentially be mid-transition (depending on
@@ -393,9 +393,9 @@ void ContentsView::UpdateExpandArrowOpacity(double progress,
 }
 
 void ContentsView::UpdateExpandArrowFocusBehavior(
-    ash::mojom::AppListViewState target_state) {
+    ash::AppListViewState target_state) {
   const bool expand_arrow_enabled =
-      target_state == ash::mojom::AppListViewState::kPeeking;
+      target_state == ash::AppListViewState::kPeeking;
   // The expand arrow is only focusable and has InkDropMode on in peeking
   // state.
   expand_arrow_view_->SetFocusBehavior(
@@ -583,16 +583,16 @@ views::View* ContentsView::GetSelectedView() const {
 }
 
 void ContentsView::UpdateYPositionAndOpacity() {
-  ash::mojom::AppListViewState state = app_list_view_->app_list_state();
-  if (state == ash::mojom::AppListViewState::kClosed ||
-      state == ash::mojom::AppListViewState::kFullscreenSearch ||
-      state == ash::mojom::AppListViewState::kHalf) {
+  ash::AppListViewState state = app_list_view_->app_list_state();
+  if (state == ash::AppListViewState::kClosed ||
+      state == ash::AppListViewState::kFullscreenSearch ||
+      state == ash::AppListViewState::kHalf) {
     return;
   }
 
   const bool should_restore_opacity =
-      !app_list_view_->is_in_drag() && (app_list_view_->app_list_state() !=
-                                        ash::mojom::AppListViewState::kClosed);
+      !app_list_view_->is_in_drag() &&
+      (app_list_view_->app_list_state() != ash::AppListViewState::kClosed);
 
   // Changes the opacity of expand arrow between 0 and 1 when app list
   // transition progress changes between |kExpandArrowOpacityStartProgress|

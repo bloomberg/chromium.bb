@@ -12,7 +12,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
@@ -106,8 +106,7 @@ class OverviewAnimationStateWaiter : public OverviewObserver {
 // execute the callback.  This self destruction upon completion.
 class LauncherStateWaiter {
  public:
-  LauncherStateWaiter(ash::mojom::AppListViewState state,
-                      base::OnceClosure closure)
+  LauncherStateWaiter(ash::AppListViewState state, base::OnceClosure closure)
       : target_state_(state), closure_(std::move(closure)) {
     Shell::Get()->app_list_controller()->SetStateTransitionAnimationCallback(
         base::BindRepeating(&LauncherStateWaiter::OnStateChanged,
@@ -118,7 +117,7 @@ class LauncherStateWaiter {
         base::NullCallback());
   }
 
-  void OnStateChanged(ash::mojom::AppListViewState state) {
+  void OnStateChanged(ash::AppListViewState state) {
     if (target_state_ == state) {
       std::move(closure_).Run();
       delete this;
@@ -126,7 +125,7 @@ class LauncherStateWaiter {
   }
 
  private:
-  ash::mojom::AppListViewState target_state_;
+  ash::AppListViewState target_state_;
   base::OnceClosure closure_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherStateWaiter);
@@ -245,7 +244,7 @@ void ShellTestApi::WaitForOverviewAnimationState(OverviewAnimationState state) {
 }
 
 void ShellTestApi::WaitForLauncherAnimationState(
-    ash::mojom::AppListViewState target_state) {
+    ash::AppListViewState target_state) {
   base::RunLoop run_loop;
   new LauncherStateWaiter(target_state, run_loop.QuitWhenIdleClosure());
   run_loop.Run();

@@ -939,9 +939,8 @@ void AppsGridView::Layout() {
   views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model_);
 }
 
-void AppsGridView::UpdateControlVisibility(
-    ash::mojom::AppListViewState app_list_state,
-    bool is_in_drag) {
+void AppsGridView::UpdateControlVisibility(ash::AppListViewState app_list_state,
+                                           bool is_in_drag) {
   if (!folder_delegate_ && app_list_features::IsBackgroundBlurEnabled()) {
     if (is_in_drag) {
       layer()->SetMaskLayer(nullptr);
@@ -960,8 +959,7 @@ void AppsGridView::UpdateControlVisibility(
   }
 
   const bool fullscreen_apps_in_drag =
-      app_list_state == ash::mojom::AppListViewState::kFullscreenAllApps ||
-      is_in_drag;
+      app_list_state == ash::AppListViewState::kFullscreenAllApps || is_in_drag;
   for (int i = 0; i < view_model_.view_size(); ++i) {
     AppListItemView* view = GetItemViewAt(i);
     view->SetVisible(fullscreen_apps_in_drag);
@@ -1863,8 +1861,8 @@ void AppsGridView::UpdateOpacity() {
   // centerline reaches |kAllAppsOpacityEndPx| above the work area bottom.
   AppListView* app_list_view = contents_view_->app_list_view();
   const bool should_restore_opacity =
-      !app_list_view->is_in_drag() && (app_list_view->app_list_state() !=
-                                       ash::mojom::AppListViewState::kClosed);
+      !app_list_view->is_in_drag() &&
+      (app_list_view->app_list_state() != ash::AppListViewState::kClosed);
   const int selected_page = pagination_model_.selected_page();
   auto current_page = view_structure_.pages()[selected_page];
   float centerline_above_work_area = 0.f;
@@ -2462,7 +2460,7 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
     // shown while in PEEKING. The visibility of the app icons will be updated
     // on drag/animation from PEEKING.
     view->SetVisible(model_->state_fullscreen() !=
-                     ash::mojom::AppListViewState::kPeeking);
+                     ash::AppListViewState::kPeeking);
   }
 
   if (!folder_delegate_)

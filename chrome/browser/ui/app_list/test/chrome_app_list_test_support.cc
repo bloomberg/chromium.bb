@@ -9,7 +9,6 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"

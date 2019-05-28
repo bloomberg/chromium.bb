@@ -9,7 +9,6 @@
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/test_app_list_client.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 
 namespace app_list {
 class AppListView;
@@ -18,6 +17,7 @@ class AppListView;
 namespace ash {
 
 class AppListControllerImpl;
+enum class AppListViewState;
 
 class AppListTestHelper {
  public:
@@ -56,7 +56,7 @@ class AppListTestHelper {
   void CheckVisibility(bool visible);
 
   // Check the current app list view state.
-  void CheckState(ash::mojom::AppListViewState state);
+  void CheckState(ash::AppListViewState state);
 
   // Run all pending in message loop to wait for animation to finish.
   void WaitUntilIdle();

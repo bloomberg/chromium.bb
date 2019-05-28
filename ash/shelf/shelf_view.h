@@ -12,9 +12,9 @@
 
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -711,7 +711,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // The AppListViewState recorded before a button press, used to record app
   // launching metrics. This allows an accurate AppListViewState to be recorded
   // before AppListViewState changes.
-  ash::mojom::AppListViewState recorded_app_list_view_state_;
+  ash::AppListViewState recorded_app_list_view_state_;
 
   // Whether home launcher was shown before a button press, used to record app
   // launching metrics. This is recorded in case home_launcher_shown_ is changed

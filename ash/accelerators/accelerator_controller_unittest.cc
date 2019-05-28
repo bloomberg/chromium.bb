@@ -927,8 +927,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(
-      ash::mojom::AppListViewState::kFullscreenAllApps);
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
   histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
                                     ++toggle_count_total);
   histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
@@ -946,7 +945,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kPeeking);
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kPeeking);
   histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
                                     ++toggle_count_total);
   histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
@@ -957,8 +956,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(
-      ash::mojom::AppListViewState::kFullscreenAllApps);
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
   histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
                                     ++toggle_count_total);
   histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
@@ -976,7 +974,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kPeeking);
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kPeeking);
   histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
                                     ++toggle_count_total);
   histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
@@ -987,14 +985,13 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
   generator->ReleaseKey(ui::VKEY_0, ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(ash::mojom::AppListViewState::kHalf);
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kHalf);
   // Shift+VKEY_BROWSER_SEARCH transitions to FULLSCREEN_SEARCH.
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
-  GetAppListTestHelper()->CheckState(
-      ash::mojom::AppListViewState::kFullscreenSearch);
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenSearch);
   histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
                                     ++toggle_count_total);
   histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,

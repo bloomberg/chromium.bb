@@ -27,9 +27,9 @@
 #include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -561,7 +561,7 @@ void AppListControllerImpl::UpdateYPositionAndOpacity(
 }
 
 void AppListControllerImpl::EndDragFromShelf(
-    ash::mojom::AppListViewState app_list_state) {
+    ash::AppListViewState app_list_state) {
   // Avoid dragging app list when homecher is enabled.
   if (IsHomeScreenAvailable())
     return;
@@ -586,7 +586,7 @@ ash::ShelfAction AppListControllerImpl::ToggleAppList(
   return action;
 }
 
-ash::mojom::AppListViewState AppListControllerImpl::GetAppListViewState() {
+ash::AppListViewState AppListControllerImpl::GetAppListViewState() {
   return model_->state_fullscreen();
 }
 
@@ -694,8 +694,8 @@ void AppListControllerImpl::OnUiVisibilityChanged(
 
       if (!IsShowingEmbeddedAssistantUI()) {
         if (presenter_.GetView()->app_list_state() ==
-            ash::mojom::AppListViewState::kPeeking) {
-          presenter_.GetView()->SetState(ash::mojom::AppListViewState::kHalf);
+            ash::AppListViewState::kPeeking) {
+          presenter_.GetView()->SetState(ash::AppListViewState::kHalf);
         }
         presenter_.ShowEmbeddedAssistantUI(true);
       }
@@ -712,7 +712,7 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       if (IsHomeScreenAvailable()) {
         presenter_.GetView()->app_list_main_view()->ResetForShow();
         presenter_.GetView()->SetState(
-            ash::mojom::AppListViewState::kFullscreenAllApps);
+            ash::AppListViewState::kFullscreenAllApps);
       } else if (exit_point != AssistantExitPoint::kBackInLauncher) {
         DismissAppList();
       }
@@ -829,14 +829,13 @@ void AppListControllerImpl::UpdateExpandArrowVisibility() {
   presenter_.SetExpandArrowViewVisibility(should_show);
 }
 
-ash::mojom::AppListViewState
-AppListControllerImpl::CalculateStateAfterShelfDrag(
+ash::AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
     const ui::GestureEvent& gesture_in_screen,
     float launcher_above_shelf_bottom_amount) const {
   if (presenter_.GetView())
     return presenter_.GetView()->CalculateStateAfterShelfDrag(
         gesture_in_screen, launcher_above_shelf_bottom_amount);
-  return ash::mojom::AppListViewState::kClosed;
+  return ash::AppListViewState::kClosed;
 }
 
 void AppListControllerImpl::SetAppListModelForTest(
@@ -852,7 +851,7 @@ void AppListControllerImpl::SetStateTransitionAnimationCallback(
 }
 
 void AppListControllerImpl::RecordShelfAppLaunched(
-    base::Optional<mojom::AppListViewState> recorded_app_list_view_state,
+    base::Optional<AppListViewState> recorded_app_list_view_state,
     base::Optional<bool> recorded_home_launcher_shown) {
   app_list::RecordAppListAppLaunched(
       AppListLaunchedFrom::kLaunchedFromShelf,
@@ -1159,7 +1158,7 @@ void AppListControllerImpl::MarkAssistantPrivacyInfoDismissed() {
 }
 
 void AppListControllerImpl::OnStateTransitionAnimationCompleted(
-    ash::mojom::AppListViewState state) {
+    ash::AppListViewState state) {
   if (!state_transition_animation_callback_.is_null())
     state_transition_animation_callback_.Run(state);
 }

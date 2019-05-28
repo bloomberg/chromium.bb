@@ -176,11 +176,11 @@ APP_LIST_EXPORT void RecordSearchResultOpenSource(
     return;
 
   ApplistSearchResultOpenedSource source;
-  ash::mojom::AppListViewState state = model->state_fullscreen();
+  ash::AppListViewState state = model->state_fullscreen();
   if (search_model->tablet_mode()) {
     source = ApplistSearchResultOpenedSource::kFullscreenTablet;
   } else {
-    source = state == ash::mojom::AppListViewState::kHalf
+    source = state == ash::AppListViewState::kHalf
                  ? ApplistSearchResultOpenedSource::kHalfClamshell
                  : ApplistSearchResultOpenedSource::kFullscreenClamshell;
   }
@@ -231,21 +231,21 @@ void RecordZeroStateSearchResultRemovalHistogram(
 }
 
 void RecordAppListAppLaunched(ash::AppListLaunchedFrom launched_from,
-                              ash::mojom::AppListViewState app_list_state,
+                              ash::AppListViewState app_list_state,
                               bool is_tablet_mode,
                               bool home_launcher_shown) {
   UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunched, launched_from);
   switch (app_list_state) {
-    case ash::mojom::AppListViewState::kClosed:
+    case ash::AppListViewState::kClosed:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedClosed, launched_from);
       break;
-    case ash::mojom::AppListViewState::kPeeking:
+    case ash::AppListViewState::kPeeking:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedPeeking, launched_from);
       break;
-    case ash::mojom::AppListViewState::kHalf:
+    case ash::AppListViewState::kHalf:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHalf, launched_from);
       break;
-    case ash::mojom::AppListViewState::kFullscreenAllApps:
+    case ash::AppListViewState::kFullscreenAllApps:
       if (is_tablet_mode) {
         if (home_launcher_shown) {
           UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherAllApps,
@@ -259,7 +259,7 @@ void RecordAppListAppLaunched(ash::AppListLaunchedFrom launched_from,
                                   launched_from);
       }
       break;
-    case ash::mojom::AppListViewState::kFullscreenSearch:
+    case ash::AppListViewState::kFullscreenSearch:
       if (is_tablet_mode) {
         if (home_launcher_shown) {
           UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedHomecherSearch,

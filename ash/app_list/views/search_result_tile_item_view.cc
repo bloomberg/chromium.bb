@@ -17,7 +17,6 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
@@ -467,17 +466,17 @@ AppListMenuModelAdapter::AppListViewAppType
 SearchResultTileItemView::GetAppType() const {
   if (IsSuggestedAppTile()) {
     if (view_delegate_->GetModel()->state_fullscreen() ==
-        ash::mojom::AppListViewState::kPeeking) {
+        ash::AppListViewState::kPeeking) {
       return AppListMenuModelAdapter::PEEKING_SUGGESTED;
     } else {
       return AppListMenuModelAdapter::FULLSCREEN_SUGGESTED;
     }
   } else {
     if (view_delegate_->GetModel()->state_fullscreen() ==
-        ash::mojom::AppListViewState::kHalf) {
+        ash::AppListViewState::kHalf) {
       return AppListMenuModelAdapter::HALF_SEARCH_RESULT;
     } else if (view_delegate_->GetModel()->state_fullscreen() ==
-               ash::mojom::AppListViewState::kFullscreenSearch) {
+               ash::AppListViewState::kFullscreenSearch) {
       return AppListMenuModelAdapter::FULLSCREEN_SEARCH_RESULT;
     }
   }

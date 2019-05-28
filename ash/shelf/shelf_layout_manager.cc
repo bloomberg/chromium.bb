@@ -17,8 +17,8 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
@@ -1579,7 +1579,7 @@ void ShelfLayoutManager::CompleteAppListDrag(
   }
   DCHECK(Shell::Get()->app_list_controller());
 
-  using ash::mojom::AppListViewState;
+  using ash::AppListViewState;
   AppListViewState app_list_state =
       Shell::Get()->app_list_controller()->CalculateStateAfterShelfDrag(
           gesture_in_screen, launcher_above_shelf_bottom_amount_);

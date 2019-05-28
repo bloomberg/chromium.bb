@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/app_list_view.mojom-forward.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 
@@ -18,6 +17,7 @@ class Window;
 }
 
 namespace ash {
+enum class AppListViewState;
 class DragDropController;
 class MessageCenterController;
 class NativeCursorManagerAsh;
@@ -92,7 +92,7 @@ class ASH_EXPORT ShellTestApi {
 
   // Runs the callback when the launcher state becomes |state| after
   // state transition animation.
-  void WaitForLauncherAnimationState(mojom::AppListViewState state);
+  void WaitForLauncherAnimationState(AppListViewState state);
 
   // Returns the list of windows used in overview item. Returns empty
   // if not in the overview mode.

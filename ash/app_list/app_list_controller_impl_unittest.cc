@@ -159,8 +159,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
       GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
   gfx::Rect app_list_screen_bounds = native_window->GetBoundsInScreen();
   EXPECT_EQ(0, app_list_screen_bounds.y());
-  EXPECT_EQ(ash::mojom::AppListViewState::kHalf,
-            GetAppListView()->app_list_state());
+  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
   gfx::Transform expected_transform;
   expected_transform.Translate(0, -app_list::kAppListBackgroundRadius);
   EXPECT_EQ(
@@ -205,11 +204,11 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
   // the PEEKING state.
   ShowAppListNow();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::mojom::AppListViewState::kPeeking,
+  EXPECT_EQ(ash::AppListViewState::kPeeking,
             GetAppListView()->app_list_state());
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                ash::mojom::AppListViewState::kPeeking),
+                ash::AppListViewState::kPeeking),
             GetAppListViewNativeWindow()->bounds());
 }
 
@@ -241,10 +240,10 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   // (1) AppListView's state is FULLSCREEN_SEARCH
   // (2) AppListView's bounds are the same as the preferred bounds for
   // the FULLSCREEN_SEARCH state.
-  EXPECT_EQ(ash::mojom::AppListViewState::kFullscreenSearch,
+  EXPECT_EQ(ash::AppListViewState::kFullscreenSearch,
             GetAppListView()->app_list_state());
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                ash::mojom::AppListViewState::kFullscreenSearch),
+                ash::AppListViewState::kFullscreenSearch),
             GetAppListViewNativeWindow()->bounds());
 }
 
@@ -345,7 +344,7 @@ TEST_F(AppListControllerImplMetricsTest,
       ->home_launcher_gesture_handler()
       ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_FALSE(w->IsVisible());
-  EXPECT_EQ(mojom::AppListViewState::kFullscreenAllApps,
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 
   int delta_y = 1;
@@ -420,7 +419,7 @@ TEST_F(AppListControllerImplMetricsTest,
       ->home_launcher_gesture_handler()
       ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_FALSE(w->IsVisible());
-  EXPECT_EQ(mojom::AppListViewState::kFullscreenAllApps,
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 
   gfx::Point start = GetAppListView()
@@ -462,7 +461,7 @@ TEST_F(AppListControllerImplMetricsTest,
   generator->GestureScrollSequence(shelf_center, target_point,
                                    base::TimeDelta::FromMicroseconds(500), 1);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(mojom::AppListViewState::kFullscreenAllApps,
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
   histogram_tester_.ExpectTotalCount(
       "Apps.StateTransition.Drag.PresentationTime.TabletMode", 0);

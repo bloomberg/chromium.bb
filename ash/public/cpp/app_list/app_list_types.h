@@ -61,6 +61,24 @@ enum class AppListState {
   kStateLast = kInvalidState,  // Don't use over IPC
 };
 
+// All possible states of the app list view.
+enum class AppListViewState {
+  // Closes |app_list_main_view_| and dismisses the delegate.
+  kClosed,
+  // The initial state for the app list when neither maximize or side shelf
+  // modes are active. If set, the widget will peek over the shelf by
+  // kPeekingAppListHeight DIPs.
+  kPeeking,
+  // Entered when text is entered into the search box from peeking mode.
+  kHalf,
+  // Default app list state in maximize and side shelf modes. Entered from an
+  // upward swipe from |PEEKING| or from clicking the chevron.
+  kFullscreenAllApps,
+  // Entered from an upward swipe from |HALF| or by entering text in the
+  // search box from |FULLSCREEN_ALL_APPS|.
+  kFullscreenSearch
+};
+
 // The status of the app list model.
 enum class AppListModelStatus {
   kStatusNormal,

@@ -15,7 +15,6 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -25,6 +24,10 @@
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget_observer.h"
+
+namespace ash {
+enum class AppListViewState;
+}
 
 namespace app_list {
 class AppListView;
@@ -109,7 +112,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
                                  float background_opacity);
 
   // Ends the drag of app list from shelf.
-  void EndDragFromShelf(ash::mojom::AppListViewState app_list_state);
+  void EndDragFromShelf(ash::AppListViewState app_list_state);
 
   // Passes a MouseWheelEvent from the shelf to the AppListView.
   void ProcessMouseWheelOffset(const gfx::Vector2d& scroll_offset_vector);

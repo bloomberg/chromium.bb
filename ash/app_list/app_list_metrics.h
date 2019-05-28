@@ -7,7 +7,6 @@
 
 #include "ash/app_list/app_list_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ui/events/event.h"
 
 namespace app_list {
@@ -261,8 +260,7 @@ struct AppLaunchedMetricParams {
       ash::AppListLaunchedFrom::kLaunchedFromGrid;
   ash::AppListLaunchType search_launch_type =
       ash::AppListLaunchType::kSearchResult;
-  ash::mojom::AppListViewState app_list_view_state =
-      ash::mojom::AppListViewState::kClosed;
+  ash::AppListViewState app_list_view_state = ash::AppListViewState::kClosed;
   bool is_tablet_mode = false;
   bool home_launcher_shown = false;
 };
@@ -303,7 +301,7 @@ APP_LIST_EXPORT void RecordSearchLaunchIndexAndQueryLength(
 
 APP_LIST_EXPORT void RecordAppListAppLaunched(
     ash::AppListLaunchedFrom launched_from,
-    ash::mojom::AppListViewState app_list_state,
+    ash::AppListViewState app_list_state,
     bool is_tablet_mode,
     bool home_launcher_shown);
 

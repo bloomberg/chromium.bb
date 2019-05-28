@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/shelf/shelf_constants.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Open) {
   generator.Wait();
 
   shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kFullscreenAllApps);
+      ash::AppListViewState::kFullscreenAllApps);
 }
 
 // Drag to close the launcher.
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Close) {
                             /*alt=*/false,
                             /*command=*/false);
   shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kFullscreenAllApps);
+      ash::AppListViewState::kFullscreenAllApps);
 
   gfx::Rect display_bounds = GetDisplayBounds(browser_window);
   gfx::Point start_point = gfx::Point(display_bounds.width() / 4, 10);
@@ -101,6 +101,5 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Close) {
       /*touch=*/true);
   generator.Wait();
 
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kClosed);
+  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }

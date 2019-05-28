@@ -11,7 +11,6 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -20,6 +19,10 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point.h"
+
+namespace ash {
+enum class AppListViewState;
+}
 
 namespace ui {
 class GestureEvent;
@@ -161,7 +164,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Called when the app list view animation is completed.
   virtual void OnStateTransitionAnimationCompleted(
-      ash::mojom::AppListViewState state) = 0;
+      ash::AppListViewState state) = 0;
 
   // Returns true if the Assistant privacy info view should be shown.
   virtual bool ShouldShowAssistantPrivacyInfo() const = 0;

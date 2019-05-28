@@ -154,7 +154,7 @@ bool AppListTestViewDelegate::IsAssistantAllowedAndEnabled() const {
 }
 
 void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
-    ash::mojom::AppListViewState state) {}
+    ash::AppListViewState state) {}
 
 bool AppListTestViewDelegate::ShouldShowAssistantPrivacyInfo() const {
   return false;

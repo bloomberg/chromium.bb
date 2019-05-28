@@ -100,7 +100,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                                        bool visibility) override;
   bool IsAssistantAllowedAndEnabled() const override;
   void OnStateTransitionAnimationCompleted(
-      ash::mojom::AppListViewState state) override;
+      ash::AppListViewState state) override;
   bool ShouldShowAssistantPrivacyInfo() const override;
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
   void MarkAssistantPrivacyInfoDismissed() override;

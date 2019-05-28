@@ -19,7 +19,6 @@ mojom("interfaces_internal") {
     "accessibility_controller.mojom",
     "accessibility_controller_enums.mojom",
     "accessibility_focus_ring_controller.mojom",
-    "app_list_view.mojom",
     "ash_message_center_controller.mojom",
     "assistant_controller.mojom",
     "assistant_image_downloader.mojom",

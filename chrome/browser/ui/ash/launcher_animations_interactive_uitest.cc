@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -66,15 +66,14 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Fullscreen) {
                             /*alt=*/false,
                             /* command = */ false);
   shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kFullscreenAllApps);
+      ash::AppListViewState::kFullscreenAllApps);
 
   ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
                             /*control=*/false,
                             /*shift=*/true,
                             /*alt=*/false,
                             /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kClosed);
+  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Peeking) {
@@ -89,16 +88,14 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Peeking) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kPeeking);
+  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kPeeking);
 
   ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
                             /*control=*/false,
                             /*shift=*/false,
                             /*alt=*/false,
                             /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kClosed);
+  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Half) {
@@ -114,8 +111,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Half) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kPeeking);
+  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kPeeking);
 
   // Type some query in the launcher; it should show search results in kHalf
   // state.
@@ -124,8 +120,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Half) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kHalf);
+  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kHalf);
 
   // Search key to close the launcher.
   ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
@@ -133,8 +128,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, Half) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kClosed);
+  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, FullscreenSearch) {
@@ -150,8 +144,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, FullscreenSearch) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kPeeking);
+  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kPeeking);
 
   // Type some query; it should show the search results in the kHalf state.
   ui_controls::SendKeyPress(browser_window, ui::VKEY_A,
@@ -159,8 +152,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, FullscreenSearch) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kHalf);
+  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kHalf);
 
   // Shift+search key; it should expand to fullscreen with search results
   // (i.e. kFullscreenSearch state).
@@ -170,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, FullscreenSearch) {
                             /*alt=*/false,
                             /* command = */ false);
   shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kFullscreenSearch);
+      ash::AppListViewState::kFullscreenSearch);
 
   // Search key to close the launcher.
   ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
@@ -178,6 +170,5 @@ IN_PROC_BROWSER_TEST_F(LauncherAnimationsTest, FullscreenSearch) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /* command = */ false);
-  shell_test_api.WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kClosed);
+  shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }

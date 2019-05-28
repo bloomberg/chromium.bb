@@ -25,7 +25,6 @@
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
@@ -145,12 +144,12 @@ class ASH_EXPORT AppListControllerImpl
             base::TimeTicks event_time_stamp);
   void UpdateYPositionAndOpacity(int y_position_in_screen,
                                  float background_opacity);
-  void EndDragFromShelf(ash::mojom::AppListViewState app_list_state);
+  void EndDragFromShelf(ash::AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
   ash::ShelfAction ToggleAppList(int64_t display_id,
                                  app_list::AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp);
-  ash::mojom::AppListViewState GetAppListViewState();
+  ash::AppListViewState GetAppListViewState();
 
   // app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
@@ -201,7 +200,7 @@ class ASH_EXPORT AppListControllerImpl
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
   void MarkAssistantPrivacyInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
-      ash::mojom::AppListViewState state) override;
+      ash::AppListViewState state) override;
   void GetAppLaunchedMetricParams(
       app_list::AppLaunchedMetricParams* metric_params) override;
 
@@ -289,20 +288,20 @@ class ASH_EXPORT AppListControllerImpl
   bool IsShowingEmbeddedAssistantUI() const;
 
   // Get updated app list view state after dragging from shelf.
-  ash::mojom::AppListViewState CalculateStateAfterShelfDrag(
+  ash::AppListViewState CalculateStateAfterShelfDrag(
       const ui::GestureEvent& gesture_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
   void SetAppListModelForTest(std::unique_ptr<app_list::AppListModel> model);
 
   using StateTransitionAnimationCallback =
-      base::RepeatingCallback<void(ash::mojom::AppListViewState)>;
+      base::RepeatingCallback<void(ash::AppListViewState)>;
 
   void SetStateTransitionAnimationCallback(
       StateTransitionAnimationCallback callback);
 
   void RecordShelfAppLaunched(
-      base::Optional<mojom::AppListViewState> recorded_app_list_view_state,
+      base::Optional<AppListViewState> recorded_app_list_view_state,
       base::Optional<bool> home_launcher_shown);
 
  private:
