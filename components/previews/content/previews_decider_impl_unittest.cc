@@ -87,6 +87,8 @@ bool IsPreviewFieldTrialEnabled(PreviewsType type) {
       return params::IsResourceLoadingHintsEnabled();
     case previews::PreviewsType::LITE_PAGE_REDIRECT:
       return params::IsLitePageServerPreviewsEnabled();
+    case PreviewsType::DEFER_ALL_SCRIPT:
+      return params::IsDeferAllScriptPreviewsEnabled();
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::LAST:

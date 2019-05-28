@@ -50,12 +50,13 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
       std::make_unique<optimization_guide::proto::GetHintsRequest>();
 
   // Add all the optimizations supported by the current version of Chrome,
-  // regardless of whether the session is in holdback for either of them.
+  // regardless of whether the session is in holdback for any of them.
   get_hints_request_->add_supported_optimizations(
       optimization_guide::proto::NOSCRIPT);
   get_hints_request_->add_supported_optimizations(
       optimization_guide::proto::RESOURCE_LOADING);
-  static_assert(static_cast<int>(PreviewsType::LITE_PAGE_REDIRECT) + 1 ==
+  // TODO(dougarnett): Add DEFER_ALL_SCRIPT once supported.
+  static_assert(static_cast<int>(PreviewsType::DEFER_ALL_SCRIPT) + 1 ==
                     static_cast<int>(PreviewsType::LAST),
                 "PreviewsType has been updated, make sure Optimization Guide "
                 "Service hints are not affected");

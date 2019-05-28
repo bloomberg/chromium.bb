@@ -101,6 +101,8 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
         return params::IsResourceLoadingHintsEnabled();
       case previews::PreviewsType::LITE_PAGE_REDIRECT:
         return params::IsLitePageServerPreviewsEnabled();
+      case previews::PreviewsType::DEFER_ALL_SCRIPT:
+        return params::IsDeferAllScriptPreviewsEnabled();
       case PreviewsType::LITE_PAGE:
       case PreviewsType::NONE:
       case PreviewsType::UNSPECIFIED:

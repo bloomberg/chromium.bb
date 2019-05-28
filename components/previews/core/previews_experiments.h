@@ -45,9 +45,12 @@ enum class PreviewsType {
   // Allows the browser to redirect navigations to a Lite Page server.
   LITE_PAGE_REDIRECT = 8,
 
+  // Preview that defers script execution until after parsing completes.
+  DEFER_ALL_SCRIPT = 9,
+
   // Insert new enum values here. Keep values sequential to allow looping from
   // NONE+1 to LAST-1. Also add the enum to Previews.Types histogram suffix.
-  LAST = 9,
+  LAST = 10,
 };
 
 enum class CoinFlipHoldbackResult {

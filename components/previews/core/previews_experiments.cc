@@ -284,6 +284,10 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
       return GetParamValueAsECTByFeature(features::kResourceLoadingHints,
                                          kEffectiveConnectionTypeThreshold,
                                          net::EFFECTIVE_CONNECTION_TYPE_2G);
+    case PreviewsType::DEFER_ALL_SCRIPT:
+      return GetParamValueAsECTByFeature(features::kDeferAllScriptPreviews,
+                                         kEffectiveConnectionTypeThreshold,
+                                         net::EFFECTIVE_CONNECTION_TYPE_2G);
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::LAST:
       break;
@@ -455,6 +459,8 @@ std::string GetStringNameForType(PreviewsType type) {
       return "Unspecified";
     case PreviewsType::RESOURCE_LOADING_HINTS:
       return "ResourceLoadingHints";
+    case PreviewsType::DEFER_ALL_SCRIPT:
+      return "DeferAllScript";
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::LAST:
       break;

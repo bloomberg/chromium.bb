@@ -56,6 +56,7 @@ bool ShouldCheckOptimizationHints(PreviewsType type) {
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
     case PreviewsType::LOFI:
+    case PreviewsType::DEFER_ALL_SCRIPT:
       return false;
     case PreviewsType::NONE:
     case PreviewsType::UNSPECIFIED:
@@ -73,6 +74,7 @@ bool CheckECTOnlyAtCommitTime(PreviewsType type) {
   switch (type) {
     case PreviewsType::NOSCRIPT:
     case PreviewsType::RESOURCE_LOADING_HINTS:
+    case PreviewsType::DEFER_ALL_SCRIPT:
       return true;
     case PreviewsType::LOFI:
     case PreviewsType::LITE_PAGE_REDIRECT:

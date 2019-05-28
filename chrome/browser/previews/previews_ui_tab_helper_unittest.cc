@@ -384,3 +384,18 @@ TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsLitePageRedirect) {
   EXPECT_EQ(previews_url,
             web_contents()->GetController().GetLastCommittedEntry()->GetURL());
 }
+
+TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsDeferAllScript) {
+  GURL test_url("https://tribbles.com");
+  content::WebContentsTester::For(web_contents())->NavigateAndCommit(test_url);
+
+  PreviewsUITabHelper::FromWebContents(web_contents())
+      ->ReloadWithoutPreviews(previews::PreviewsType::DEFER_ALL_SCRIPT);
+  base::RunLoop().RunUntilIdle();
+
+  ui::PageTransition transition_type = web_contents()
+                                           ->GetController()
+                                           .GetLastCommittedEntry()
+                                           ->GetTransitionType();
+  EXPECT_TRUE(transition_type & ui::PAGE_TRANSITION_RELOAD);
+}

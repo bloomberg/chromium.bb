@@ -46,13 +46,15 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
       return server_previews_enabled;
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::IsNoScriptPreviewsEnabled();
+    case previews::PreviewsType::RESOURCE_LOADING_HINTS:
+      return previews::params::IsResourceLoadingHintsEnabled();
+    case previews::PreviewsType::DEFER_ALL_SCRIPT:
+      return previews::params::IsDeferAllScriptPreviewsEnabled();
     case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
       return false;
     case previews::PreviewsType::UNSPECIFIED:
       // Not a real previews type so treat as false.
       return false;
-    case previews::PreviewsType::RESOURCE_LOADING_HINTS:
-      return previews::params::IsResourceLoadingHintsEnabled();
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::LAST:
       break;
@@ -77,6 +79,8 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
       return previews::params::NoScriptPreviewsVersion();
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:
       return previews::params::ResourceLoadingHintsVersion();
+    case previews::PreviewsType::DEFER_ALL_SCRIPT:
+      return previews::params::DeferAllScriptPreviewsVersion();
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
