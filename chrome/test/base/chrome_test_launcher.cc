@@ -71,6 +71,10 @@ int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
   ChromeTestSuite test_suite(argc, argv);
   // Browser tests are expected not to tear-down various globals.
   test_suite.DisableCheckForLeakedGlobals();
+#if defined(OS_ANDROID)
+  // Android browser tests run child processes as threads instead.
+  content::ContentTestSuiteBase::RegisterInProcessThreads();
+#endif
   return test_suite.Run();
 }
 
