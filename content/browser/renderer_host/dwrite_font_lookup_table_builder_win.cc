@@ -49,13 +49,9 @@ const base::FilePath::CharType kProtobufFilename[] =
 // Timeout after which font scanning and metadata extraction is stopped and the
 // local lookup table is cleared. Font scanning and lookup table construction is
 // only needed pre Windows 10. If the timeout is hit, no local font matching
-// will be performed on this particular pre Win 10 system. Previously we had
-// this set to 15 seconds, which did mean timeouts on a number of systems, but
-// also previously the render was waiting synchronously for a result, which is
-// no longer the case.  Experimentally raise this to 150 to see what scanning
-// times are occurring in the field.
+// will be performed on this particular pre Win 10 system.
 constexpr base::TimeDelta kFontIndexingTimeoutDefault =
-    base::TimeDelta::FromSeconds(150);
+    base::TimeDelta::FromMinutes(5);
 
 // In timeout test case, slow down indexing of one font file to this percentage
 // of the timeout value. Assuming that at least two fonts are indexed, the
@@ -364,7 +360,7 @@ void DWriteFontLookupTableBuilder::
 
 void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
   TRACE_EVENT0("dwrite,fonts",
-               "DWriteFontLookupTableBuilder::BuildFontUniqueNameTable");
+               "DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable");
   DCHECK(!HasDWriteUniqueFontLookups());
   // The table must only be built once.
   DCHECK(!font_table_built_.IsSignaled());
@@ -407,9 +403,14 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
   }
   for (UINT32 family_index = 0; family_index < outstanding_family_results_;
        ++family_index) {
+    // Specify base::ThreadPolicy::MUST_USE_FOREGROUND because in
+    // https://crbug.com/960263 we observed a priority inversion when running
+    // DWrite worker tasks in the background.
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+         base::ThreadPolicy::MUST_USE_FOREGROUND,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(
             &DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily,
             collection_, family_index, start_time_table_build_,
