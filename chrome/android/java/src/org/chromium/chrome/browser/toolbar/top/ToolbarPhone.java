@@ -1803,7 +1803,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         if (inTabSwitcherMode) {
             if (mUrlFocusLayoutAnimator != null && mUrlFocusLayoutAnimator.isRunning()) {
-                mUrlFocusLayoutAnimator.end();
+                mUrlFocusLayoutAnimator.cancel();
                 mUrlFocusLayoutAnimator = null;
                 // After finishing the animation, force a re-layout of the location bar,
                 // so that the final translation position is correct (since onMeasure updates
@@ -2106,7 +2106,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     private void triggerUrlFocusAnimation(final boolean hasFocus) {
         if (mUrlFocusLayoutAnimator != null && mUrlFocusLayoutAnimator.isRunning()) {
-            mUrlFocusLayoutAnimator.end();
+            mUrlFocusLayoutAnimator.cancel();
             mUrlFocusLayoutAnimator = null;
         }
         if (mExperimentalButtonAnimationRunning) mExperimentalButtonAnimator.end();
