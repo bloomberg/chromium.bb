@@ -139,7 +139,8 @@ bool SendKeyEventImpl(const std::string& type,
 
   // Indicate that the simulated key event is from the Virtual Keyboard.
   ui::Event::Properties properties;
-  properties[ui::kPropertyFromVK] = std::vector<uint8_t>();
+  properties[ui::kPropertyFromVK] =
+      std::vector<uint8_t>(ui::kPropertyFromVKSize);
   event.SetProperties(properties);
 
   ui::EventDispatchDetails details = aura::EventInjector().Inject(host, &event);

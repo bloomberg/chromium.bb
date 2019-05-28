@@ -567,7 +567,8 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
       ui::KeyEvent event(ch, ui::VKEY_UNKNOWN, ui::DomCode::NONE, flags);
       if (from_vk) {
         ui::Event::Properties properties;
-        properties[ui::kPropertyFromVK] = std::vector<uint8_t>();
+        properties[ui::kPropertyFromVK] =
+            std::vector<uint8_t>(ui::kPropertyFromVKSize);
         event.SetProperties(properties);
       }
 #if defined(OS_MACOSX)

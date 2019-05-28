@@ -315,7 +315,10 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
 
   // Marks the simulated key event is from the Virtual Keyboard.
   ui::Event::Properties properties;
-  properties[ui::kPropertyFromVK] = std::vector<uint8_t>();
+  properties[ui::kPropertyFromVK] =
+      std::vector<uint8_t>(ui::kPropertyFromVKSize);
+  properties[ui::kPropertyFromVK][ui::kPropertyFromVKIsMirroringIndex] =
+      (uint8_t)is_mirroring_;
   event->SetProperties(properties);
 
   ui::IMEInputContextHandlerInterface* input_context =

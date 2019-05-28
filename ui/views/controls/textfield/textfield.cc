@@ -218,12 +218,21 @@ ui::TextEditCommand GetTextEditCommandFromMenuCommand(int command_id,
 
 base::TimeDelta GetPasswordRevealDuration(const ui::KeyEvent& event) {
   // The key event may carries the property that indicates it was from the
-  // virtual keyboard.
-  // In that case, reveals the password characters for 1 second.
+  // virtual keyboard and mirroring is not occurring
+  // In that case, reveal the password characters for 1 second.
   auto* properties = event.properties();
   bool from_vk =
       properties && properties->find(ui::kPropertyFromVK) != properties->end();
-  return from_vk ? base::TimeDelta::FromSeconds(1) : base::TimeDelta();
+  if (from_vk) {
+    std::vector<uint8_t> fromVKPropertyArray =
+        properties->find(ui::kPropertyFromVK)->second;
+    DCHECK_GT(fromVKPropertyArray.size(), ui::kPropertyFromVKIsMirroringIndex);
+    uint8_t is_mirroring =
+        fromVKPropertyArray[ui::kPropertyFromVKIsMirroringIndex];
+    if (!is_mirroring)
+      return base::TimeDelta::FromSeconds(1);
+  }
+  return base::TimeDelta();
 }
 
 bool IsControlKeyModifier(int flags) {
