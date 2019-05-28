@@ -16,8 +16,6 @@
 
 namespace syncer {
 
-const char kNigoriTag[] = "google_chrome_nigori";
-
 KeyParams::KeyParams(KeyDerivationParams derivation_params,
                      const std::string& password)
     : derivation_params(derivation_params), password(password) {}
@@ -26,21 +24,15 @@ KeyParams::KeyParams(const KeyParams& other) = default;
 KeyParams::KeyParams(KeyParams&& other) = default;
 KeyParams::~KeyParams() = default;
 
-Cryptographer::Cryptographer(Encryptor* encryptor) : encryptor_(encryptor) {
+Cryptographer::Cryptographer(Encryptor* encryptor)
+    : encryptor_(encryptor), key_bag_(NigoriKeyBag::CreateEmpty()) {
   DCHECK(encryptor);
 }
 
 Cryptographer::Cryptographer(const Cryptographer& other)
     : encryptor_(other.encryptor_),
+      key_bag_(other.key_bag_.Clone()),
       default_nigori_name_(other.default_nigori_name_) {
-  for (auto it = other.nigoris_.begin(); it != other.nigoris_.end(); ++it) {
-    std::string user_key, encryption_key, mac_key;
-    it->second->ExportKeys(&user_key, &encryption_key, &mac_key);
-    auto nigori_copy = std::make_unique<Nigori>();
-    nigori_copy->InitByImport(user_key, encryption_key, mac_key);
-    nigoris_.emplace(it->first, std::move(nigori_copy));
-  }
-
   if (other.pending_keys_) {
     pending_keys_ =
         std::make_unique<sync_pb::EncryptedData>(*(other.pending_keys_));
@@ -63,7 +55,7 @@ void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
 }
 
 bool Cryptographer::CanDecrypt(const sync_pb::EncryptedData& data) const {
-  return nigoris_.end() != nigoris_.find(data.key_name());
+  return key_bag_.HasKey(data.key_name());
 }
 
 bool Cryptographer::CanDecryptUsingDefaultKey(
@@ -100,18 +92,12 @@ bool Cryptographer::EncryptString(const std::string& serialized,
     }
   }
 
-  auto default_nigori = nigoris_.find(default_nigori_name_);
-  if (default_nigori == nigoris_.end()) {
+  if (!key_bag_.HasKey(default_nigori_name_)) {
     LOG(ERROR) << "Corrupt default key.";
     return false;
   }
 
-  encrypted->set_key_name(default_nigori_name_);
-  if (!default_nigori->second->Encrypt(serialized, encrypted->mutable_blob())) {
-    LOG(ERROR) << "Failed to encrypt data.";
-    return false;
-  }
-  return true;
+  return key_bag_.EncryptWithKey(default_nigori_name_, serialized, encrypted);
 }
 
 bool Cryptographer::Decrypt(const sync_pb::EncryptedData& encrypted,
@@ -126,35 +112,15 @@ bool Cryptographer::Decrypt(const sync_pb::EncryptedData& encrypted,
 
 bool Cryptographer::DecryptToString(const sync_pb::EncryptedData& encrypted,
                                     std::string* decrypted) const {
-  decrypted->clear();
-  auto it = nigoris_.find(encrypted.key_name());
-  if (nigoris_.end() == it) {
-    // The key used to encrypt the blob is not part of the set of installed
-    // nigoris.
-    LOG(ERROR) << "Cannot decrypt message";
-    return false;
-  }
-
-  if (!it->second->Decrypt(encrypted.blob(), decrypted)) {
-    return false;
-  }
-
-  return true;
+  return key_bag_.Decrypt(encrypted, decrypted);
 }
 
 bool Cryptographer::GetKeys(sync_pb::EncryptedData* encrypted) const {
   DCHECK(encrypted);
-  DCHECK(!nigoris_.empty());
+  DCHECK_NE(size_t(0), key_bag_.size());
 
   // Create a bag of all the Nigori parameters we know about.
-  sync_pb::NigoriKeyBag bag;
-  for (const auto& key_name_and_nigori : nigoris_) {
-    const Nigori& nigori = *key_name_and_nigori.second;
-    sync_pb::NigoriKey* key = bag.add_key();
-    key->set_name(key_name_and_nigori.first);
-    nigori.ExportKeys(key->mutable_user_key(), key->mutable_encryption_key(),
-                      key->mutable_mac_key());
-  }
+  sync_pb::NigoriKeyBag bag = key_bag_.ToProto();
 
   // Encrypt the bag with the default Nigori.
   return Encrypt(bag, encrypted);
@@ -191,13 +157,11 @@ bool Cryptographer::AddKeyFromBootstrapToken(
 
 bool Cryptographer::AddKeyImpl(std::unique_ptr<Nigori> initialized_nigori,
                                bool set_as_default) {
-  std::string name;
-  if (!initialized_nigori->Permute(Nigori::Password, kNigoriKeyName, &name)) {
+  std::string key_name = key_bag_.AddKey(std::move(initialized_nigori));
+  if (key_name.empty()) {
     NOTREACHED();
     return false;
   }
-
-  nigoris_[name] = std::move(initialized_nigori);
 
   // Check if the key we just added can decrypt the pending keys and add them
   // too if so.
@@ -211,7 +175,7 @@ bool Cryptographer::AddKeyImpl(std::unique_ptr<Nigori> initialized_nigori,
 
   // The just-added key takes priority over the pending keys as default.
   if (set_as_default)
-    SetDefaultKey(name);
+    SetDefaultKey(key_name);
   return true;
 }
 
@@ -225,8 +189,12 @@ void Cryptographer::InstallKeys(const sync_pb::EncryptedData& encrypted) {
 }
 
 void Cryptographer::SetDefaultKey(const std::string& key_name) {
-  DCHECK(nigoris_.end() != nigoris_.find(key_name));
+  DCHECK(key_bag_.HasKey(key_name));
   default_nigori_name_ = key_name;
+}
+
+bool Cryptographer::is_initialized() const {
+  return !default_nigori_name_.empty();
 }
 
 void Cryptographer::SetPendingKeys(const sync_pb::EncryptedData& encrypted) {
@@ -299,20 +267,7 @@ std::string Cryptographer::UnpackBootstrapToken(
 }
 
 void Cryptographer::InstallKeyBag(const sync_pb::NigoriKeyBag& bag) {
-  int key_size = bag.key_size();
-  for (int i = 0; i < key_size; ++i) {
-    const sync_pb::NigoriKey key = bag.key(i);
-    // Only use this key if we don't already know about it.
-    if (nigoris_.end() == nigoris_.find(key.name())) {
-      std::unique_ptr<Nigori> new_nigori(new Nigori);
-      if (!new_nigori->InitByImport(key.user_key(), key.encryption_key(),
-                                    key.mac_key())) {
-        NOTREACHED();
-        continue;
-      }
-      nigoris_[key.name()] = std::move(new_nigori);
-    }
-  }
+  key_bag_.AddAllUnknownKeysFrom(NigoriKeyBag::CreateFromProto(bag));
 }
 
 bool Cryptographer::KeybagIsStale(
@@ -331,7 +286,7 @@ bool Cryptographer::KeybagIsStale(
                << "Assuming keybag is corrupted.";
     return true;
   }
-  if (static_cast<size_t>(bag.key_size()) < nigoris_.size())
+  if (static_cast<size_t>(bag.key_size()) < key_bag_.size())
     return true;
   return false;
 }
@@ -343,12 +298,8 @@ std::string Cryptographer::GetDefaultNigoriKeyName() const {
 std::string Cryptographer::GetDefaultNigoriKeyData() const {
   if (!is_initialized())
     return std::string();
-  auto iter = nigoris_.find(default_nigori_name_);
-  if (iter == nigoris_.end())
-    return std::string();
-  sync_pb::NigoriKey key;
-  iter->second->ExportKeys(key.mutable_user_key(), key.mutable_encryption_key(),
-                           key.mutable_mac_key());
+  sync_pb::NigoriKey key = key_bag_.ExportKey(default_nigori_name_);
+  key.clear_name();
   return key.SerializeAsString();
 }
 

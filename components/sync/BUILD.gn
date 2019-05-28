@@ -555,6 +555,7 @@ source_set("unit_tests") {
     "base/hash_util_unittest.cc",
     "base/immutable_unittest.cc",
     "base/model_type_unittest.cc",
+    "base/nigori_key_bag_unittest.cc",
     "base/nigori_unittest.cc",
     "base/node_ordinal_unittest.cc",
     "base/ordinal_unittest.cc",

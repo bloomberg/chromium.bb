@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "components/sync/base/nigori.h"
+#include "components/sync/base/nigori_key_bag.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/protocol/encryption.pb.h"
 
@@ -21,8 +22,6 @@ class NigoriKeyBag;
 namespace syncer {
 
 class Encryptor;
-
-extern const char kNigoriTag[];
 
 // The parameters used to initialize a Nigori instance.
 // TODO(davidovic): Stop relying on KeyParams and inline it, because it's now
@@ -159,9 +158,7 @@ class Cryptographer {
   // correspond to a nigori that has already been installed into the keybag.
   void SetDefaultKey(const std::string& key_name);
 
-  bool is_initialized() const {
-    return !nigoris_.empty() && !default_nigori_name_.empty();
-  }
+  bool is_initialized() const;
 
   // Returns whether this Cryptographer is ready to encrypt and decrypt data.
   bool is_ready() const { return is_initialized() && !has_pending_keys(); }
@@ -176,8 +173,8 @@ class Cryptographer {
 
   Encryptor* encryptor() const { return encryptor_; }
 
-  // Returns true if |keybag| is decryptable and either is a subset of nigoris_
-  // and/or has a different default key.
+  // Returns true if |keybag| is decryptable and either is a subset of
+  // |key_bag_| and/or has a different default key.
   bool KeybagIsStale(const sync_pb::EncryptedData& keybag) const;
 
   // Returns the name of the Nigori key currently used for encryption.
@@ -192,8 +189,6 @@ class Cryptographer {
   bool ImportNigoriKey(const std::string& serialized_nigori_key);
 
  private:
-  using NigoriMap = std::map<std::string, std::unique_ptr<const Nigori>>;
-
   // Helper method to instantiate Nigori instances for each set of key
   // parameters in |bag|.
   // Does not update the default nigori.
@@ -208,11 +203,11 @@ class Cryptographer {
 
   Encryptor* const encryptor_;
 
-  // The Nigoris we know about, mapped by key name.
-  NigoriMap nigoris_;
+  // The actual keys we know about.
+  NigoriKeyBag key_bag_;
 
   // The key name associated with the default nigori. If non-empty, must
-  // correspond to a nigori within |nigoris_|.
+  // correspond to a nigori within |key_bag_|.
   std::string default_nigori_name_;
 
   std::unique_ptr<sync_pb::EncryptedData> pending_keys_;

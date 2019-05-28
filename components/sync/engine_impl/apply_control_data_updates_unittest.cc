@@ -33,10 +33,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
+namespace {
 
 using syncable::MutableEntry;
 using syncable::UNITTEST;
 using syncable::Id;
+
+const char kNigoriTag[] = "google_chrome_nigori";
 
 class ApplyControlDataUpdatesTest : public ::testing::Test {
  public:
@@ -878,4 +881,5 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriApplyMarksDownloadCompleted) {
   EXPECT_TRUE(directory()->InitialSyncEndedForType(NIGORI));
 }
 
+}  // namespace
 }  // namespace syncer

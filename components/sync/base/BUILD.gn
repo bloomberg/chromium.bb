@@ -36,6 +36,8 @@ jumbo_static_library("base") {
     "model_type.h",
     "nigori.cc",
     "nigori.h",
+    "nigori_key_bag.cc",
+    "nigori_key_bag.h",
     "node_ordinal.cc",
     "node_ordinal.h",
     "ordinal.h",
