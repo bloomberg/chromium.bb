@@ -681,6 +681,16 @@ bool ExternalVkImageBacking::BeginAccessInternal(
     DLOG_IF(ERROR, reads_in_progress_)
         << "Concurrent reading may cause problem.";
     ++reads_in_progress_;
+    // If a shared image is read repeatedly without any write access,
+    // |read_semaphore_handles_| will never be consumed and released, and then
+    // chrome will run out of file descriptors. To avoid this problem, we wait
+    // on read semaphores for readonly access too. And in most cases, a shared
+    // image is only read from one vulkan device queue, so it should not have
+    // performance impact.
+    // TODO(penghuang): avoid waiting on read semaphores.
+    *semaphore_handles = std::move(read_semaphore_handles_);
+    read_semaphore_handles_.clear();
+
     // A semaphore will become unsignaled, when it has been signaled and waited,
     // so it is not safe to reuse it.
     if (write_semaphore_handle_.is_valid())
