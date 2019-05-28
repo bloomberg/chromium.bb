@@ -27,5 +27,13 @@ constexpr base::FeatureParam<double> kExperimentalPoolSizeRatio{
 
 constexpr base::FeatureParam<double> kPerHostRatio{&kQuotaExpandPoolSize,
                                                    "PerHostRatio", 0.2};
+
+// StaticHostQuota enables a simpler per-host quota model, where the quota is
+// only based on disk capacity (partition size). When the flag is disabled, the
+// quota computation takes into account free disk space, in addition to the
+// disk's total capacity.
+const base::Feature kStaticHostQuota{"StaticHostQuota",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace storage

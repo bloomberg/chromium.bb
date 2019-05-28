@@ -5036,6 +5036,25 @@
             ]
         }
     ],
+    "StaticHostQuota": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "StaticHostQuota"
+                    ]
+                }
+            ]
+        }
+    ],
     "StopLoadingInBackground": [
         {
             "platforms": [

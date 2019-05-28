@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -33,6 +34,7 @@
 #include "base/trace_event/trace_event.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/client_usage_tracker.h"
+#include "storage/browser/quota/quota_features.h"
 #include "storage/browser/quota/quota_macros.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"
@@ -272,14 +274,18 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     weak_factory_.InvalidateWeakPtrs();
 
-    // Constrain the desired |host_quota| to something that fits.
-    // If available space is too low, cap usage at current levels.
-    // If it's close to being too low, cap growth to avoid it getting too low.
-    int64_t host_quota =
-        std::min(desired_host_quota_,
-                 host_usage_ +
-                     std::max(INT64_C(0), available_space_ -
-                                              settings_.must_remain_available));
+    int64_t host_quota = desired_host_quota_;
+
+    if (!base::FeatureList::IsEnabled(features::kStaticHostQuota)) {
+      // Constrain the desired |host_quota| to something that fits.
+      // If available space is too low, cap usage at current levels.
+      // If it's close to being too low, cap growth to avoid it getting too low.
+      int64_t temp_pool_free_space =
+          std::max(static_cast<int64_t>(0),
+                   available_space_ - settings_.must_remain_available);
+      host_quota = std::min(host_quota, temp_pool_free_space + host_usage_);
+    }
+
     std::move(callback_).Run(blink::mojom::QuotaStatusCode::kOk, host_usage_,
                              host_quota, std::move(host_usage_breakdown_));
     if (type_ == StorageType::kTemporary && !is_incognito_ && !is_unlimited_) {
