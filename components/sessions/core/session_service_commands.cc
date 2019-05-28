@@ -655,6 +655,15 @@ bool CreateTabsAndWindows(
   return true;
 }
 
+template <typename Payload>
+std::unique_ptr<SessionCommand> CreateSessionCommandForPayload(
+    SessionCommand::id_type id,
+    const Payload& payload) {
+  auto command = std::make_unique<SessionCommand>(id, sizeof(payload));
+  memcpy(command->contents(), &payload, sizeof(payload));
+  return command;
+}
+
 }  // namespace
 
 std::unique_ptr<SessionCommand> CreateSetSelectedTabInWindowCommand(
@@ -663,20 +672,14 @@ std::unique_ptr<SessionCommand> CreateSetSelectedTabInWindowCommand(
   SelectedTabInIndexPayload payload = { 0 };
   payload.id = window_id.id();
   payload.index = index;
-  std::unique_ptr<SessionCommand> command = std::make_unique<SessionCommand>(
-      kCommandSetSelectedTabInIndex, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandSetSelectedTabInIndex, payload);
 }
 
 std::unique_ptr<SessionCommand> CreateSetTabWindowCommand(
     const SessionID& window_id,
     const SessionID& tab_id) {
   SessionID::id_type payload[] = { window_id.id(), tab_id.id() };
-  std::unique_ptr<SessionCommand> command =
-      std::make_unique<SessionCommand>(kCommandSetTabWindow, sizeof(payload));
-  memcpy(command->contents(), payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandSetTabWindow, payload);
 }
 
 std::unique_ptr<SessionCommand> CreateSetWindowBoundsCommand(
@@ -690,10 +693,7 @@ std::unique_ptr<SessionCommand> CreateSetWindowBoundsCommand(
   payload.w = bounds.width();
   payload.h = bounds.height();
   payload.show_state = ShowStateToPersistedShowState(show_state);
-  std::unique_ptr<SessionCommand> command = std::make_unique<SessionCommand>(
-      kCommandSetWindowBounds3, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandSetWindowBounds3, payload);
 }
 
 std::unique_ptr<SessionCommand> CreateSetTabIndexInWindowCommand(
@@ -702,10 +702,7 @@ std::unique_ptr<SessionCommand> CreateSetTabIndexInWindowCommand(
   TabIndexInWindowPayload payload = { 0 };
   payload.id = tab_id.id();
   payload.index = new_index;
-  std::unique_ptr<SessionCommand> command = std::make_unique<SessionCommand>(
-      kCommandSetTabIndexInWindow, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandSetTabIndexInWindow, payload);
 }
 
 std::unique_ptr<SessionCommand> CreateTabClosedCommand(const SessionID tab_id) {
@@ -716,10 +713,7 @@ std::unique_ptr<SessionCommand> CreateTabClosedCommand(const SessionID tab_id) {
   memset(&payload, 0, sizeof(payload));
   payload.id = tab_id.id();
   payload.close_time = base::Time::Now().ToInternalValue();
-  std::unique_ptr<SessionCommand> command =
-      std::make_unique<SessionCommand>(kCommandTabClosed, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandTabClosed, payload);
 }
 
 std::unique_ptr<SessionCommand> CreateWindowClosedCommand(
@@ -729,10 +723,7 @@ std::unique_ptr<SessionCommand> CreateWindowClosedCommand(
   memset(&payload, 0, sizeof(payload));
   payload.id = window_id.id();
   payload.close_time = base::Time::Now().ToInternalValue();
-  std::unique_ptr<SessionCommand> command =
-      std::make_unique<SessionCommand>(kCommandWindowClosed, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandWindowClosed, payload);
 }
 
 std::unique_ptr<SessionCommand> CreateSetSelectedNavigationIndexCommand(
@@ -741,10 +732,8 @@ std::unique_ptr<SessionCommand> CreateSetSelectedNavigationIndexCommand(
   SelectedNavigationIndexPayload payload = { 0 };
   payload.id = tab_id.id();
   payload.index = index;
-  std::unique_ptr<SessionCommand> command = std::make_unique<SessionCommand>(
-      kCommandSetSelectedNavigationIndex, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandSetSelectedNavigationIndex,
+                                        payload);
 }
 
 std::unique_ptr<SessionCommand> CreateSetWindowTypeCommand(
@@ -753,10 +742,7 @@ std::unique_ptr<SessionCommand> CreateSetWindowTypeCommand(
   WindowTypePayload payload = { 0 };
   payload.id = window_id.id();
   payload.index = static_cast<int32_t>(type);
-  std::unique_ptr<SessionCommand> command =
-      std::make_unique<SessionCommand>(kCommandSetWindowType, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandSetWindowType, payload);
 }
 
 std::unique_ptr<SessionCommand> CreatePinnedStateCommand(
@@ -765,10 +751,7 @@ std::unique_ptr<SessionCommand> CreatePinnedStateCommand(
   PinnedStatePayload payload = { 0 };
   payload.tab_id = tab_id.id();
   payload.pinned_state = is_pinned;
-  std::unique_ptr<SessionCommand> command =
-      std::make_unique<SessionCommand>(kCommandSetPinnedState, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandSetPinnedState, payload);
 }
 
 std::unique_ptr<SessionCommand> CreateSessionStorageAssociatedCommand(
@@ -777,18 +760,15 @@ std::unique_ptr<SessionCommand> CreateSessionStorageAssociatedCommand(
   base::Pickle pickle;
   pickle.WriteInt(tab_id.id());
   pickle.WriteString(session_storage_persistent_id);
-  return std::unique_ptr<SessionCommand>(std::make_unique<SessionCommand>(
-      kCommandSessionStorageAssociated, pickle));
+  return std::make_unique<SessionCommand>(kCommandSessionStorageAssociated,
+                                          pickle);
 }
 
 std::unique_ptr<SessionCommand> CreateSetActiveWindowCommand(
     const SessionID& window_id) {
   ActiveWindowPayload payload = 0;
   payload = window_id.id();
-  std::unique_ptr<SessionCommand> command = std::make_unique<SessionCommand>(
-      kCommandSetActiveWindow, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandSetActiveWindow, payload);
 }
 
 std::unique_ptr<SessionCommand> CreateLastActiveTimeCommand(
@@ -797,10 +777,7 @@ std::unique_ptr<SessionCommand> CreateLastActiveTimeCommand(
   LastActiveTimePayload payload = {0};
   payload.tab_id = tab_id.id();
   payload.last_active_time = last_active_time.ToInternalValue();
-  std::unique_ptr<SessionCommand> command =
-      std::make_unique<SessionCommand>(kCommandLastActiveTime, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandLastActiveTime, payload);
 }
 
 std::unique_ptr<SessionCommand> CreateSetWindowWorkspaceCommand(
@@ -809,9 +786,7 @@ std::unique_ptr<SessionCommand> CreateSetWindowWorkspaceCommand(
   base::Pickle pickle;
   pickle.WriteInt(window_id.id());
   pickle.WriteString(workspace);
-  std::unique_ptr<SessionCommand> command =
-      std::make_unique<SessionCommand>(kCommandSetWindowWorkspace2, pickle);
-  return command;
+  return std::make_unique<SessionCommand>(kCommandSetWindowWorkspace2, pickle);
 }
 
 std::unique_ptr<SessionCommand> CreateTabNavigationPathPrunedCommand(
@@ -822,10 +797,8 @@ std::unique_ptr<SessionCommand> CreateTabNavigationPathPrunedCommand(
   payload.id = tab_id.id();
   payload.index = index;
   payload.count = count;
-  std::unique_ptr<SessionCommand> command = std::make_unique<SessionCommand>(
-      kCommandTabNavigationPathPruned, sizeof(payload));
-  memcpy(command->contents(), &payload, sizeof(payload));
-  return command;
+  return CreateSessionCommandForPayload(kCommandTabNavigationPathPruned,
+                                        payload);
 }
 
 std::unique_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
