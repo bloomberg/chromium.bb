@@ -71,7 +71,8 @@ if subprocess.mswindows:
   # Constants passed to CreateProcess creationflags argument.
   # https://docs.microsoft.com/windows/desktop/api/processthreadsapi/nf-processthreadsapi-createprocessw
   CREATE_SUSPENDED = 0x4
-
+  CREATE_NEW_CONSOLE = subprocess.CREATE_NEW_CONSOLE
+  CREATE_NEW_PROCESS_GROUP = subprocess.CREATE_NEW_PROCESS_GROUP
 
   # Job Objects constants and structs.
   JobObjectBasicLimitInformation = 2
@@ -498,7 +499,7 @@ class Popen(subprocess.Popen):
     if self.detached:
       if subprocess.mswindows:
         prev = kwargs.get('creationflags') or 0
-        kwargs['creationflags'] = prev | subprocess.CREATE_NEW_PROCESS_GROUP
+        kwargs['creationflags'] = prev | CREATE_NEW_PROCESS_GROUP
       else:
         old_preexec_fn_1 = kwargs.get('preexec_fn')
         def new_preexec_fn_1():
