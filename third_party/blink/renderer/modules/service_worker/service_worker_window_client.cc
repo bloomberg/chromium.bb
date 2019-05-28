@@ -41,22 +41,10 @@ void DidFocus(ScriptPromiseResolver* resolver,
 }  // namespace
 
 ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
-    const WebServiceWorkerClientInfo& info) {
-  DCHECK_EQ(mojom::blink::ServiceWorkerClientType::kWindow, info.client_type);
-  return MakeGarbageCollected<ServiceWorkerWindowClient>(info);
-}
-
-ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
     const mojom::blink::ServiceWorkerClientInfo& info) {
   DCHECK_EQ(mojom::blink::ServiceWorkerClientType::kWindow, info.client_type);
   return MakeGarbageCollected<ServiceWorkerWindowClient>(info);
 }
-
-ServiceWorkerWindowClient::ServiceWorkerWindowClient(
-    const WebServiceWorkerClientInfo& info)
-    : ServiceWorkerClient(info),
-      page_hidden_(info.page_hidden),
-      is_focused_(info.is_focused) {}
 
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(
     const mojom::blink::ServiceWorkerClientInfo& info)

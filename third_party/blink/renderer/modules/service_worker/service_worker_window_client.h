@@ -21,11 +21,9 @@ class MODULES_EXPORT ServiceWorkerWindowClient final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ServiceWorkerWindowClient* Create(const WebServiceWorkerClientInfo&);
   static ServiceWorkerWindowClient* Create(
       const mojom::blink::ServiceWorkerClientInfo&);
 
-  explicit ServiceWorkerWindowClient(const WebServiceWorkerClientInfo&);
   explicit ServiceWorkerWindowClient(
       const mojom::blink::ServiceWorkerClientInfo&);
   ~ServiceWorkerWindowClient() override;

@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/fetch/request.h"
 
 #include "third_party/blink/public/common/blob/blob_utils.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -625,17 +624,12 @@ Request* Request::Create(ScriptState* script_state, FetchRequestData* request) {
   return MakeGarbageCollected<Request>(script_state, request);
 }
 
-Request* Request::Create(ScriptState* script_state,
-                         const WebServiceWorkerRequest& web_request) {
-  FetchRequestData* data = FetchRequestData::Create(script_state, web_request);
-  return MakeGarbageCollected<Request>(script_state, data);
-}
-
 Request* Request::Create(
     ScriptState* script_state,
-    const mojom::blink::FetchAPIRequest& fetch_api_request) {
-  FetchRequestData* data =
-      FetchRequestData::Create(script_state, fetch_api_request);
+    const mojom::blink::FetchAPIRequest& fetch_api_request,
+    ForServiceWorkerFetchEvent for_service_worker_fetch_event) {
+  FetchRequestData* data = FetchRequestData::Create(
+      script_state, fetch_api_request, for_service_worker_fetch_event);
   return MakeGarbageCollected<Request>(script_state, data);
 }
 

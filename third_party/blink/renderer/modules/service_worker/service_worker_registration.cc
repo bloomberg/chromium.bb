@@ -138,6 +138,33 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
   Attach(std::move(info));
 }
 
+ServiceWorkerRegistration::ServiceWorkerRegistration(
+    ExecutionContext* execution_context,
+    mojom::blink::ServiceWorkerRegistrationObjectInfoPtr info)
+    : ContextLifecycleObserver(execution_context),
+      registration_id_(info->registration_id),
+      scope_(std::move(info->scope)),
+      binding_(this),
+      stopped_(false) {
+  DCHECK_NE(mojom::blink::kInvalidServiceWorkerRegistrationId,
+            registration_id_);
+
+  host_.Bind(
+      std::move(info->host_ptr_info),
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kInternalDefault));
+  // The host expects us to use |info.request| so bind to it.
+  binding_.Bind(
+      std::move(info->request),
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kInternalDefault));
+
+  update_via_cache_ = info->update_via_cache;
+  installing_ =
+      ServiceWorker::From(GetExecutionContext(), std::move(info->installing));
+  waiting_ =
+      ServiceWorker::From(GetExecutionContext(), std::move(info->waiting));
+  active_ = ServiceWorker::From(GetExecutionContext(), std::move(info->active));
+}
+
 void ServiceWorkerRegistration::Attach(
     WebServiceWorkerRegistrationObjectInfo info) {
   DCHECK_EQ(registration_id_, info.registration_id);

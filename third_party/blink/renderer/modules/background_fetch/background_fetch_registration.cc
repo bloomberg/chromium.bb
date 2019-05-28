@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
@@ -45,26 +44,20 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       observer_binding_(this) {}
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
-    ServiceWorkerRegistration* registration,
-    WebBackgroundFetchRegistration web_registration)
-    : developer_id_(std::move(web_registration.developer_id)),
-      upload_total_(web_registration.upload_total),
-      uploaded_(web_registration.uploaded),
-      download_total_(web_registration.download_total),
-      downloaded_(web_registration.downloaded),
-      result_(web_registration.result),
-      failure_reason_(web_registration.failure_reason),
+    ServiceWorkerRegistration* service_worker_registration,
+    mojom::blink::BackgroundFetchRegistrationPtr registration)
+    : developer_id_(registration->registration_data->developer_id),
+      upload_total_(registration->registration_data->upload_total),
+      uploaded_(registration->registration_data->uploaded),
+      download_total_(registration->registration_data->download_total),
+      downloaded_(registration->registration_data->downloaded),
+      result_(registration->registration_data->result),
+      failure_reason_(registration->registration_data->failure_reason),
       observer_binding_(this) {
-  DCHECK(registration);
-
-  mojom::blink::BackgroundFetchRegistrationServicePtrInfo
-      registration_service_info(
-          std::move(web_registration.registration_service_handle),
-          web_registration.registration_service_version);
-  DCHECK(registration_service_info);
-
-  Initialize(registration, mojom::blink::BackgroundFetchRegistrationServicePtr(
-                               std::move(registration_service_info)));
+  DCHECK(service_worker_registration);
+  Initialize(service_worker_registration,
+             mojom::blink::BackgroundFetchRegistrationServicePtr(
+                 std::move(registration->registration_interface)));
 }
 
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
@@ -268,7 +261,9 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
   to_return.ReserveInitialCapacity(settled_fetches.size());
 
   for (auto& fetch : settled_fetches) {
-    Request* request = Request::Create(script_state, *(fetch->request));
+    Request* request =
+        Request::Create(script_state, *(fetch->request),
+                        Request::ForServiceWorkerFetchEvent::kFalse);
     auto* record =
         MakeGarbageCollected<BackgroundFetchRecord>(request, script_state);
 

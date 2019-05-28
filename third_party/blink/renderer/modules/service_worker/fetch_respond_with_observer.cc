@@ -13,7 +13,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_stream_handle.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -21,7 +21,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
@@ -122,7 +122,7 @@ bool IsClientRequest(network::mojom::RequestContextFrameType frame_type,
 }
 
 // Notifies the result of FetchDataLoader to |handle_|. |handle_| pass through
-// the result to its observer which is outside of blink.
+// the result to its observer.
 class FetchLoaderClient final
     : public GarbageCollectedFinalized<FetchLoaderClient>,
       public FetchDataLoader::Client {
@@ -221,13 +221,14 @@ void FetchRespondWithObserver::OnResponseRejected(
                              mojom::ConsoleMessageLevel::kWarning,
                              GetMessageForResponseError(error, request_url_)));
 
-  // The default value of WebServiceWorkerResponse's status is 0, which maps
-  // to a network error.
-  WebServiceWorkerResponse web_response;
-  web_response.SetError(error);
-  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_,
-                            base::TimeTicks::Now());
+  // The default value of FetchAPIResponse's status is 0, which maps to a
+  // network error.
+  auto response = mojom::blink::FetchAPIResponse::New();
+  response->status_text = "";
+  response->error = error;
+  To<ServiceWorkerGlobalScope>(GetExecutionContext())
+      ->RespondToFetchEvent(event_id_, std::move(response),
+                            event_dispatch_time_, base::TimeTicks::Now());
 }
 
 void FetchRespondWithObserver::OnResponseFulfilled(
@@ -313,8 +314,8 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     return;
   }
 
-  WebServiceWorkerResponse web_response;
-  response->PopulateWebServiceWorkerResponse(web_response);
+  mojom::blink::FetchAPIResponsePtr fetch_api_response =
+      response->PopulateFetchAPIResponse();
 
   BodyStreamBuffer* buffer = response->InternalBodyBuffer();
   if (buffer) {
@@ -328,10 +329,10 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     }
     if (blob_data_handle) {
       // Handle the blob response body.
-      web_response.SetBlobDataHandle(blob_data_handle);
-      ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-          ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_,
-                                base::TimeTicks::Now());
+      fetch_api_response->blob = blob_data_handle;
+      To<ServiceWorkerGlobalScope>(GetExecutionContext())
+          ->RespondToFetchEvent(event_id_, std::move(fetch_api_response),
+                                event_dispatch_time_, base::TimeTicks::Now());
       return;
     }
 
@@ -353,22 +354,23 @@ void FetchRespondWithObserver::OnResponseFulfilled(
       return;
     }
 
-    ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+    To<ServiceWorkerGlobalScope>(GetExecutionContext())
         ->RespondToFetchEventWithResponseStream(
-            event_id_, web_response, fetch_loader_client->Handle(),
-            event_dispatch_time_, base::TimeTicks::Now());
+            event_id_, std::move(fetch_api_response),
+            fetch_loader_client->Handle(), event_dispatch_time_,
+            base::TimeTicks::Now());
 
     fetch_loader_client->SetStarted();
     return;
   }
-  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
-      ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_,
-                            base::TimeTicks::Now());
+  To<ServiceWorkerGlobalScope>(GetExecutionContext())
+      ->RespondToFetchEvent(event_id_, std::move(fetch_api_response),
+                            event_dispatch_time_, base::TimeTicks::Now());
 }
 
 void FetchRespondWithObserver::OnNoResponse() {
   DCHECK(GetExecutionContext());
-  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+  To<ServiceWorkerGlobalScope>(GetExecutionContext())
       ->RespondToFetchEventWithNoResponse(event_id_, event_dispatch_time_,
                                           base::TimeTicks::Now());
 }

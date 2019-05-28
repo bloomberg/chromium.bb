@@ -39,10 +39,6 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
         return input_api.FilterSourceFile(path,
                                           black_list=[r'third_party/blink/common/', r'third_party/blink/public/common'])
 
-    # The list of files that we specifically want to allow including
-    # -blink variant files (e.g. because it has #if INSIDE_BLINK).
-    allow_blink_files = [r'third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h']
-
     pattern = input_api.re.compile(r'#include\s+.+\.mojom(.*)\.h[>"]')
     public_folder = input_api.os_path.normpath('third_party/blink/public/')
     non_blink_mojom_errors = []
@@ -56,8 +52,7 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
             match = pattern.match(line)
             if match:
                 if match.group(1) != '-shared':
-                    if f.LocalPath().startswith(public_folder) and \
-                            not f.LocalPath() in allow_blink_files:
+                    if f.LocalPath().startswith(public_folder):
                         error_list = public_blink_mojom_errors
                     elif match.group(1) not in ('-blink', '-blink-forward', '-blink-test-utils'):
                         # Neither -shared.h, -blink.h, -blink-forward.h nor -blink-test-utils.h.

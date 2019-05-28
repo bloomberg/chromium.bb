@@ -16,7 +16,6 @@ namespace blink {
 // across the boundary into Blink.
 // TODO(crbug.com/879019): Remove this class once we make the following Mojo
 // interfaces receive blink.mojom.ServiceWorkerObjectInfo directly inside Blink.
-//  - content.mojom.ServiceWorker
 //  - content.mojom.ServiceWorkerContainer
 //
 // As we're on the border line between non-Blink and Blink variants, we need

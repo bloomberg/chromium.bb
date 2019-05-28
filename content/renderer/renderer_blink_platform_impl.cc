@@ -1050,6 +1050,13 @@ void RendererBlinkPlatformImpl::WorkerContextCreated(
       worker);
 }
 
+bool RendererBlinkPlatformImpl::IsExcludedHeaderForServiceWorkerFetchEvent(
+    const blink::WebString& header_name) {
+  return GetContentClient()
+      ->renderer()
+      ->IsExcludedHeaderForServiceWorkerFetchEvent(header_name.Ascii());
+}
+
 //------------------------------------------------------------------------------
 
 void RendererBlinkPlatformImpl::RecordMetricsForBackgroundedRendererPurge() {
