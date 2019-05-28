@@ -597,6 +597,10 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
     aom_film_grain_table_free(cpi->film_grain_table);
     cpi->film_grain_table = NULL;
   }
+
+  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
+    aom_free(cpi->level_info[i]);
+  }
 }
 
 static void save_coding_context(AV1_COMP *cpi) {
@@ -2412,6 +2416,10 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
     if (cpi->target_seq_level_idx[i] < SEQ_LEVELS) {
       cpi->keep_level_stats |= 1u << i;
+      if (!cpi->level_info[i]) {
+        CHECK_MEM_ERROR(cm, cpi->level_info[i],
+                        aom_calloc(1, sizeof(*cpi->level_info[i])));
+      }
     }
   }
 

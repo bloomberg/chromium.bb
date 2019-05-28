@@ -639,12 +639,14 @@ void av1_decoder_model_process_frame(const AV1_COMP *const cpi,
   }
 }
 
-void av1_init_level_info(AV1LevelInfo *level_info) {
-  memset(level_info, 0, MAX_NUM_OPERATING_POINTS * sizeof(*level_info));
+void av1_init_level_info(AV1LevelInfo *level_info[]) {
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    AV1LevelSpec *const level_spec = &level_info[i].level_spec;
+    AV1LevelInfo *this_level_info = level_info[i];
+    if (!this_level_info) continue;
+    memset(this_level_info, 0, sizeof(*this_level_info));
+    AV1LevelSpec *const level_spec = &this_level_info->level_spec;
     level_spec->level = SEQ_LEVEL_MAX;
-    AV1LevelStats *const level_stats = &level_info[i].level_stats;
+    AV1LevelStats *const level_stats = &this_level_info->level_stats;
     level_stats->min_cropped_tile_width = INT_MAX;
     level_stats->min_cropped_tile_height = INT_MAX;
     level_stats->min_frame_width = INT_MAX;
@@ -1003,7 +1005,8 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
       continue;
     }
 
-    AV1LevelInfo *const level_info = &cpi->level_info[i];
+    AV1LevelInfo *const level_info = cpi->level_info[i];
+    assert(level_info != NULL);
     AV1LevelStats *const level_stats = &level_info->level_stats;
 
     level_stats->max_tile_size =
@@ -1066,7 +1069,8 @@ aom_codec_err_t av1_get_seq_level_idx(const AV1_COMP *cpi, int *seq_level_idx) {
     seq_level_idx[op] = (int)SEQ_LEVEL_MAX;
     if (!((cpi->keep_level_stats >> op) & 1)) continue;
     const int tier = seq_params->tier[op];
-    const AV1LevelInfo *const level_info = &cpi->level_info[op];
+    const AV1LevelInfo *const level_info = cpi->level_info[op];
+    assert(level_info != NULL);
     const AV1LevelStats *const level_stats = &level_info->level_stats;
     const AV1LevelSpec *const level_spec = &level_info->level_spec;
     for (int level = 0; level < SEQ_LEVELS; ++level) {

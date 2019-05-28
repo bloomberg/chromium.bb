@@ -143,7 +143,7 @@ typedef struct {
   size_t coded_bits;
 } DECODER_MODEL;
 
-void av1_init_level_info(AV1LevelInfo *level_info);
+void av1_init_level_info(AV1LevelInfo *level_info[]);
 
 void av1_update_level_info(struct AV1_COMP *cpi, size_t size, int64_t ts_start,
                            int64_t ts_end);
