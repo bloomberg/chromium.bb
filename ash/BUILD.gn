@@ -491,8 +491,6 @@ component("ash") {
     "multi_user/user_switch_animator.h",
     "network_connect_delegate_mus.cc",
     "network_connect_delegate_mus.h",
-    "note_taking_controller.cc",
-    "note_taking_controller.h",
     "policy/policy_recommendation_restorer.cc",
     "policy/policy_recommendation_restorer.h",
     "root_window_controller.cc",

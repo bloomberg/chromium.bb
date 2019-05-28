@@ -143,7 +143,6 @@ class MouseCursorEventFilter;
 class MruWindowTracker;
 class MultiDeviceNotificationPresenter;
 class NightLightController;
-class NoteTakingController;
 class OverlayEventFilter;
 class OverviewController;
 class PartialMagnificationController;
@@ -415,9 +414,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
   NightLightController* night_light_controller();
-  NoteTakingController* note_taking_controller() {
-    return note_taking_controller_.get();
-  }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
   PartialMagnificationController* partial_magnification_controller() {
     return partial_magnification_controller_.get();
@@ -682,7 +678,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionControllerImpl> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;
-  std::unique_ptr<NoteTakingController> note_taking_controller_;
   std::unique_ptr<PolicyRecommendationRestorer> policy_recommendation_restorer_;
   std::unique_ptr<ScreenSwitchCheckController> screen_switch_check_controller_;
   std::unique_ptr<ShelfController> shelf_controller_;

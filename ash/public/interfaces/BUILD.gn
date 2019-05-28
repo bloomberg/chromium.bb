@@ -38,7 +38,6 @@ mojom("interfaces_internal") {
     "login_screen.mojom",
     "media.mojom",
     "night_light_controller.mojom",
-    "note_taking_controller.mojom",
     "shelf_integration_test_api.mojom",
     "shutdown.mojom",
     "tablet_mode.mojom",

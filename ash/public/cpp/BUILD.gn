@@ -99,6 +99,8 @@ component("cpp") {
     "network_icon_image_source.h",
     "new_window_delegate.cc",
     "new_window_delegate.h",
+    "note_taking_client.cc",
+    "note_taking_client.h",
     "notification_utils.cc",
     "notification_utils.h",
     "pagination/pagination_controller.cc",
