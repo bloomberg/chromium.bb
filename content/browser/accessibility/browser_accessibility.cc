@@ -662,8 +662,10 @@ gfx::Rect BrowserAccessibility::GetInnerTextRangeBoundsRectInSubtree(
     // The text bounds queried are not in this subtree; skip it and continue.
     const int child_start_offset =
         std::max(start_offset - child_offset_in_parent, 0);
-    if (child_start_offset > child_inner_text_length)
+    if (child_start_offset > child_inner_text_length) {
+      child_offset_in_parent += child_inner_text_length;
       continue;
+    }
 
     // The text bounds queried have already been gathered; short circuit.
     const int child_end_offset =

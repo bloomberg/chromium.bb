@@ -152,26 +152,18 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextProviderWinBrowserTest,
   LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
       <!DOCTYPE html>
       <html>
-        <head>
-          <style>
-            .overflow_y {
-              overflow-x: hidden;
-              overflow-y: visible;
-            }
-          </style>
-        </head>
         <body>
-          <div class='overflow_y' style='width: 110px; height: 40px;'>
-            <span>
-              A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
-            </span>
+          <div style='overflow: hidden visible; width: 10em; height: 2.4em;'>
+            <span style='white-space: pre-line;'>AAA BBB
+              CCCCCC
+              DDDDDD</span>
           </div>
         </body>
       </html>
   )HTML"));
 
-  auto* node = FindNode(ax::mojom::Role::kStaticText,
-                        "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
+  auto* node =
+      FindNode(ax::mojom::Role::kStaticText, "AAA BBB\nCCCCCC\nDDDDDD");
   ASSERT_NE(nullptr, node);
   EXPECT_TRUE(node->PlatformIsLeaf());
   EXPECT_EQ(0u, node->PlatformChildCount());
@@ -188,8 +180,8 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextProviderWinBrowserTest,
   ASSERT_HRESULT_SUCCEEDED(::SafeArrayAccessData(
       text_provider_ranges.Get(), reinterpret_cast<void**>(&array_data)));
 
-  EXPECT_UIA_TEXTRANGE_EQ(array_data[0], L"A B C D E F ");
-  EXPECT_UIA_TEXTRANGE_EQ(array_data[1], L"G H I J K L ");
+  EXPECT_UIA_TEXTRANGE_EQ(array_data[0], L"AAA BBB");
+  EXPECT_UIA_TEXTRANGE_EQ(array_data[1], L"CCCCCC");
 
   ASSERT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(text_provider_ranges.Get()));
   text_provider_ranges.Reset();
