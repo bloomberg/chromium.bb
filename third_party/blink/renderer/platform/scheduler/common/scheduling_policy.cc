@@ -16,6 +16,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kOutstandingNetworkRequest:
     case Feature::kOutstandingIndexedDBTransaction:
     case Feature::kHasScriptableFramesInMultipleTabs:
+    case Feature::kBroadcastChannel:
       return false;
     case Feature::kMainResourceHasCacheControlNoStore:
     case Feature::kMainResourceHasCacheControlNoCache:

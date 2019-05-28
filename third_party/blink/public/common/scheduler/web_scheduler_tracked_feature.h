@@ -57,7 +57,9 @@ enum class WebSchedulerTrackedFeature {
   // background fetch and others.
   kRequestedBackgroundWorkPermission = 26,
 
-  kMaxValue = kRequestedBackgroundWorkPermission
+  kBroadcastChannel = 27,
+
+  kMaxValue = kBroadcastChannel
 };
 
 }  // namespace scheduler
