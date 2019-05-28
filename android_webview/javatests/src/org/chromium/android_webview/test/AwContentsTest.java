@@ -450,13 +450,12 @@ public class AwContentsTest {
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         final CallbackHelper callback = new CallbackHelper();
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            AwContents awContents = testView.getAwContents();
-            AwSettings awSettings = awContents.getSettings();
-            awSettings.setJavaScriptEnabled(true);
-            awContents.addJavascriptInterface(new JavaScriptObject(callback), "bridge");
-            awContents.evaluateJavaScriptForTests("window.bridge.run();", null);
-        });
+        AwContents awContents = testView.getAwContents();
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.addJavascriptInterfaceOnUiThread(
+                awContents, new JavaScriptObject(callback), "bridge");
+        mActivityTestRule.executeJavaScriptAndWaitForResult(
+                awContents, mContentsClient, "window.bridge.run();");
         callback.waitForCallback(0, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 

@@ -2184,9 +2184,8 @@ public class AwSettingsTest {
                     + "</body></html>";
             // Actual test. Blocking should trigger onerror handler.
             awSettings.setBlockNetworkLoads(true);
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                    () -> awContents.addJavascriptInterface(new AudioEvent(callback),
-                            "AudioEvent"));
+            AwActivityTestRule.addJavascriptInterfaceOnUiThread(
+                    awContents, new AudioEvent(callback), "AudioEvent");
             int count = callback.getCallCount();
             mActivityTestRule.loadDataSync(awContents, contentClient.getOnPageFinishedHelper(),
                     pageHtml, "text/html", false);

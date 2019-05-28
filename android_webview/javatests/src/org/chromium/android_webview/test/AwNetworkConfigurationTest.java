@@ -22,7 +22,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 
@@ -221,10 +220,8 @@ public class AwNetworkConfigurationTest {
                     fetchResultFuture.set(false);
                 }
             };
-            TestThreadUtils.runOnUiThreadBlocking(() -> {
-                mTestContainerView.getAwContents().addJavascriptInterface(
-                        injectedObject, "injectedObject");
-            });
+            AwActivityTestRule.addJavascriptInterfaceOnUiThread(
+                    mAwContents, injectedObject, "injectedObject");
 
             // The test server will add the Access-Control-Allow-Origin header to the HTTP response
             // for this resource. We should check WebView correctly respects this.

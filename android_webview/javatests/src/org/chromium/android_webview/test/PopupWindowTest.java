@@ -115,8 +115,7 @@ public class PopupWindowTest {
         }
         final DummyJavaScriptInterface obj = new DummyJavaScriptInterface();
 
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> popupContents.addJavascriptInterface(obj, "dummy"));
+        AwActivityTestRule.addJavascriptInterfaceOnUiThread(popupContents, obj, "dummy");
 
         mActivityTestRule.loadPopupContents(mParentContents, popupInfo, null);
 

@@ -138,8 +138,8 @@ public class PostMessageTest {
         AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         try {
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                    () -> mAwContents.addJavascriptInterface(mMessageObject, "messageObject"));
+            AwActivityTestRule.addJavascriptInterfaceOnUiThread(
+                    mAwContents, mMessageObject, "messageObject");
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
