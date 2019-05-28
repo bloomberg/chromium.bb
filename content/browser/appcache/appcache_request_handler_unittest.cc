@@ -196,6 +196,8 @@ class AppCacheRequestHandlerTest
     AppCacheRequestHandler::SetRunningInTests(true);
     if (request_handler_type_ == URLLOADER)
       feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+    else
+      feature_list_.InitAndDisableFeature(network::features::kNetworkService);
   }
 
   ~AppCacheRequestHandlerTest() {

@@ -23,7 +23,8 @@ namespace {
 // Determines whether it is safe to redirect from |from_url| to |to_url|.
 bool IsRedirectSafe(const GURL& from_url, const GURL& to_url) {
   return IsSafeRedirectTarget(from_url, to_url) &&
-         GetContentClient()->renderer()->IsSafeRedirectTarget(to_url);
+         (!GetContentClient()->renderer() ||  // null in unit tests.
+          GetContentClient()->renderer()->IsSafeRedirectTarget(to_url));
 }
 
 }  // namespace
