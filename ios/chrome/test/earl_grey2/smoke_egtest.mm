@@ -147,7 +147,6 @@
 - (void)testAutofillProfileSyncToFakeServer {
   std::string fakeGUID = "b67e5ca1e09345d0aecfc2155c1f6b11";
   std::string profileName = "testAutofillProfileSyncToFakeServer";
-  [ChromeEarlGrey setUpFakeSyncServer];
 
   [ChromeEarlGrey clearAutofillProfileWithGUID:fakeGUID];
   GREYAssertTrue(![ChromeEarlGrey isAutofillProfilePresentWithGUID:fakeGUID
@@ -155,8 +154,6 @@
                  @"Autofill profile should not be present.");
   [ChromeEarlGrey injectAutofillProfileOnFakeSyncServerWithGUID:fakeGUID
                                             autofillProfileName:profileName];
-
-  [ChromeEarlGrey tearDownFakeSyncServer];
 }
 
 // Tests waitForSufficientlyVisibleElementWithMatcher in chrome_earl_grey.h
