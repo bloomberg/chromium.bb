@@ -145,7 +145,9 @@ let kRTCRemoteInboundRtpStreamStats =
   roundTripTime: 'number',
   fractionLost: 'number',
 });
-// TODO(hbos): When remote-inbound-rtp is implemented, make presence MANDATORY.
+// TODO(https://crbug.com/967382): Update the browser_tests to wait for the
+// existence of remote-inbound-rtp as well (these are created later than
+// outbound-rtp). When this is done, change presence to MANDATORY.
 addRTCStatsToWhitelist(
     Presence.OPTIONAL, 'remote-inbound-rtp', kRTCRemoteInboundRtpStreamStats);
 
