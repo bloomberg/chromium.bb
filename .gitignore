@@ -42,6 +42,9 @@ TAGS
 # Netbeans
 /nbproject/
 
+# VSCode
+/.vscode
+
 # /build-aux/
 /build-aux/ar-lib
 /build-aux/compile
