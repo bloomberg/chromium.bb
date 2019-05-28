@@ -563,11 +563,6 @@
       "chromiumos_preflight"
     ]
   },
-  "chromeos-daisy-rel": {
-    "additional_compile_targets": [
-      "chromiumos_preflight"
-    ]
-  },
   "chromeos-kevin-rel": {
     "additional_compile_targets": [
       "chromiumos_preflight"
