@@ -38,8 +38,5 @@ public abstract class ContentFeatureList {
 
     public static final String SERVICE_GROUP_IMPORTANCE = "ServiceGroupImportance";
 
-    public static final String SERVICE_WORKER_FOREGROUND_PRIORITY =
-            "ServiceWorkerForegroundPriority";
-
     private static native boolean nativeIsEnabled(String featureName);
 }

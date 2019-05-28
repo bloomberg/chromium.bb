@@ -37,7 +37,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -2114,8 +2113,6 @@ ServiceWorkerVersion::TakePausedStateOfChangedScript(const GURL& script_url) {
 bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
     int worker_process_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!base::FeatureList::IsEnabled(features::kServiceWorkerForegroundPriority))
-    return false;
 
   // Currently FetchEvents are the only type of event we need to really process
   // at foreground priority.  If the service worker does not have a FetchEvent

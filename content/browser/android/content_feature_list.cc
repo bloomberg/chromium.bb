@@ -24,7 +24,6 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &features::kBackgroundMediaRendererHasModerateBinding,
     &kEnhancedSelectionInsertionHandle,
-    &features::kServiceWorkerForegroundPriority,
     &kServiceGroupImportance,
 };
 

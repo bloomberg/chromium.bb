@@ -35,7 +35,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -278,8 +277,6 @@ bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
 
 void NotifyForegroundServiceWorkerOnUIThread(bool added, int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kServiceWorkerForegroundPriority));
 
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
   if (!rph)
@@ -1190,8 +1187,6 @@ void EmbeddedWorkerInstance::SetNetworkFactoryForTesting(
 
 void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerAdded() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kServiceWorkerForegroundPriority));
 
   if (!process_handle_ || foreground_notified_)
     return;
@@ -1205,9 +1200,6 @@ void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerAdded() {
 
 void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerRemoved() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(
-      !foreground_notified_ ||
-      base::FeatureList::IsEnabled(features::kServiceWorkerForegroundPriority));
 
   if (!process_handle_ || !foreground_notified_)
     return;

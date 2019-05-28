@@ -28,7 +28,6 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service.mojom.h"
@@ -1192,9 +1191,6 @@ TEST_F(ServiceWorkerVersionTest, BadOrigin) {
 
 TEST_F(ServiceWorkerVersionTest,
        ForegroundServiceWorkerCountUpdatedByControllee) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kServiceWorkerForegroundPriority);
-
   // Start the worker before we have a controllee.
   base::Optional<blink::ServiceWorkerStatusCode> status;
   base::RunLoop run_loop;
@@ -1230,9 +1226,6 @@ TEST_F(ServiceWorkerVersionTest,
 
 TEST_F(ServiceWorkerVersionTest,
        ForegroundServiceWorkerCountNotUpdatedBySameProcessControllee) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kServiceWorkerForegroundPriority);
-
   // Start the worker before we have a controllee.
   base::Optional<blink::ServiceWorkerStatusCode> status;
   base::RunLoop run_loop;
@@ -1258,9 +1251,6 @@ TEST_F(ServiceWorkerVersionTest,
 
 TEST_F(ServiceWorkerVersionTest,
        ForegroundServiceWorkerCountUpdatedByControlleeProcessIdChange) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kServiceWorkerForegroundPriority);
-
   // Start the worker before we have a controllee.
   base::Optional<blink::ServiceWorkerStatusCode> status;
   base::RunLoop run_loop;
@@ -1313,9 +1303,6 @@ TEST_F(ServiceWorkerVersionTest,
 
 TEST_F(ServiceWorkerVersionTest,
        ForegroundServiceWorkerCountUpdatedByWorkerStatus) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kServiceWorkerForegroundPriority);
-
   // Add a controllee in a different process from the service worker.
   auto remote_endpoint = ActivateWithControllee();
 
@@ -1358,9 +1345,6 @@ class ServiceWorkerVersionNoFetchHandlerTest : public ServiceWorkerVersionTest {
 
 TEST_F(ServiceWorkerVersionNoFetchHandlerTest,
        ForegroundServiceWorkerCountNotUpdated) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kServiceWorkerForegroundPriority);
-
   // Start the worker before we have a controllee.
   base::Optional<blink::ServiceWorkerStatusCode> status;
   base::RunLoop run_loop;
