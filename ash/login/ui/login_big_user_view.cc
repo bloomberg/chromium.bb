@@ -5,7 +5,7 @@
 #include "ash/login/ui/login_big_user_view.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "components/account_id/account_id.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"

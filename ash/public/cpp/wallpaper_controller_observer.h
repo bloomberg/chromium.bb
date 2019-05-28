@@ -1,20 +1,29 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WALLPAPER_WALLPAPER_CONTROLLER_OBSERVER_H_
-#define ASH_WALLPAPER_WALLPAPER_CONTROLLER_OBSERVER_H_
+#ifndef ASH_PUBLIC_CPP_WALLPAPER_CONTROLLER_OBSERVER_H_
+#define ASH_PUBLIC_CPP_WALLPAPER_CONTROLLER_OBSERVER_H_
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
+#include "base/macros.h"
 
 namespace ash {
 
-class ASH_EXPORT WallpaperControllerObserver {
+// Used to listen for wallpaper state changes.
+class ASH_PUBLIC_EXPORT WallpaperControllerObserver {
  public:
+  WallpaperControllerObserver();
+
+  // Invoked when the wallpaper is changed.
+  virtual void OnWallpaperChanged() {}
+
   // Invoked when the colors extracted from the current wallpaper change.
   virtual void OnWallpaperColorsChanged() {}
 
   // Invoked when the blur state of the wallpaper changes.
+  // TODO(crbug.com/875128): Remove this after web-ui login code is completely
+  // removed.
   virtual void OnWallpaperBlurChanged() {}
 
   // Invoked when the wallpaper preview mode starts.
@@ -28,9 +37,12 @@ class ASH_EXPORT WallpaperControllerObserver {
   virtual void OnFirstWallpaperShown() {}
 
  protected:
-  virtual ~WallpaperControllerObserver() {}
+  virtual ~WallpaperControllerObserver();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WallpaperControllerObserver);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WALLPAPER_WALLPAPER_CONTROLLER_OBSERVER_H_
+#endif  // ASH_PUBLIC_CPP_WALLPAPER_CONTROLLER_OBSERVER_H_

@@ -10,7 +10,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"

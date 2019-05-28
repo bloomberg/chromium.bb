@@ -17,7 +17,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shutdown_controller.h"
 #include "ash/shutdown_reason.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/session_state_animator_impl.h"
 #include "base/bind.h"

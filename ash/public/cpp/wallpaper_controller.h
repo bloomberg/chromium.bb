@@ -1,73 +1,34 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ash.mojom;
+#ifndef ASH_PUBLIC_CPP_WALLPAPER_CONTROLLER_H_
+#define ASH_PUBLIC_CPP_WALLPAPER_CONTROLLER_H_
 
-import "components/account_id/interfaces/account_id.mojom";
-import "mojo/public/mojom/base/file_path.mojom";
-import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/image/mojo/image.mojom";
-import "url/mojom/url.mojom";
+#include <string>
+#include <vector>
 
-// These values match ash::WallpaperLayout.
-enum WallpaperLayout {
-  CENTER,
-  CENTER_CROPPED,
-  STRETCH,
-  TILE,
-};
+#include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/wallpaper_info.h"
+#include "ash/public/cpp/wallpaper_types.h"
+#include "base/files/file_path.h"
+#include "base/time/time.h"
 
-// Matches user_manager::UserType.
-enum UserType {
-  // Regular user, has a user name and password.
-  REGULAR,
+namespace gfx {
+class ImageSkia;
+}
 
-  // Guest user, logs in without authentication.
-  GUEST,
+namespace ash {
 
-  // Public account user, logs in without authentication. Available only if
-  // enabled through policy.
-  PUBLIC_ACCOUNT,
-
-  // Supervised user, logs in only with local authentication.
-  SUPERVISED,
-
-  // Kiosk app robot, logs in without authentication.
-  KIOSK,
-
-  // Child user, with supervised options.
-  CHILD,
-
-  // Android app in kiosk mode, logs in without authentication.
-  ARC_KIOSK,
-
-  // Active Directory user. Authenticates against Active Directory server.
-  ACTIVE_DIRECTORY,
-};
-
-// User info needed to set wallpapers. Clients must specify the user because
-// it's not always the same with the active user, e.g., when showing wallpapers
-// for different user pods at login screen, or setting wallpapers selectively
-// for primary user and active user during a multi-profile session.
-struct WallpaperUserInfo {
-  // The user's account id.
-  signin.mojom.AccountId account_id;
-
-  // The user type.
-  UserType type;
-
-  // True if the user's non-cryptohome data (wallpaper, avatar etc.) is
-  // ephemeral. See |UserManager::IsCurrentUserNonCryptohomeDataEphemeral| for
-  // more details.
-  bool is_ephemeral;
-
-  // True if the user has gaia account.
-  bool has_gaia_account;
-};
+class WallpaperControllerObserver;
+class WallpaperControllerClient;
+struct WallpaperUserInfo;
 
 // Used by Chrome to set the wallpaper displayed by ash.
-interface WallpaperController {
+class ASH_PUBLIC_EXPORT WallpaperController {
+ public:
+  static WallpaperController* Get();
+
   // Do the initialization: Sets the client interface, the paths of wallpaper
   // directories and the device wallpaper policy enforcement flag. The paths
   // must be sent over IPC because chrome owns the concept of user data
@@ -80,11 +41,11 @@ interface WallpaperController {
   //                                    reside.
   // |device_policy_wallpaper_path|: The file path of the device policy
   //                                 wallpaper (if any).
-  Init(WallpaperControllerClient client,
-       mojo_base.mojom.FilePath user_data_path,
-       mojo_base.mojom.FilePath chromeos_wallpapers_path,
-       mojo_base.mojom.FilePath chromeos_custom_wallpapers_path,
-       mojo_base.mojom.FilePath device_policy_wallpaper_path);
+  virtual void Init(WallpaperControllerClient* client,
+                    const base::FilePath& user_data_path,
+                    const base::FilePath& chromeos_wallpapers_path,
+                    const base::FilePath& chromeos_custom_wallpapers_path,
+                    const base::FilePath& device_policy_wallpaper_path) = 0;
 
   // Sets wallpaper from a local file and updates the saved wallpaper info for
   // the user.
@@ -96,12 +57,12 @@ interface WallpaperController {
   // |preview_mode|: If true, show the wallpaper immediately but doesn't change
   //                 the user wallpaper info until |ConfirmPreviewWallpaper| is
   //                 called.
-  SetCustomWallpaper(WallpaperUserInfo user_info,
-                     string wallpaper_files_id,
-                     string file_name,
-                     WallpaperLayout layout,
-                     gfx.mojom.ImageSkia image,
-                     bool preview_mode);
+  virtual void SetCustomWallpaper(const WallpaperUserInfo& user_info,
+                                  const std::string& wallpaper_files_id,
+                                  const std::string& file_name,
+                                  WallpaperLayout layout,
+                                  const gfx::ImageSkia& image,
+                                  bool preview_mode) = 0;
 
   // Sets wallpaper from the Chrome OS wallpaper picker. If the wallpaper file
   // corresponding to |url| already exists in local file system (i.e.
@@ -113,11 +74,14 @@ interface WallpaperController {
   // |preview_mode|: If true, show the wallpaper immediately but doesn't change
   //                 the user wallpaper info until |ConfirmPreviewWallpaper| is
   //                 called.
-  // |file_exists|: If the wallpaper file exists in local file system.
-  SetOnlineWallpaperIfExists(WallpaperUserInfo user_info,
-                             string url,
-                             WallpaperLayout layout,
-                             bool preview_mode) => (bool file_exists);
+  // Responds with true if the wallpaper file exists in local file system.
+  using SetOnlineWallpaperIfExistsCallback = base::OnceCallback<void(bool)>;
+  virtual void SetOnlineWallpaperIfExists(
+      const WallpaperUserInfo& user_info,
+      const std::string& url,
+      WallpaperLayout layout,
+      bool preview_mode,
+      SetOnlineWallpaperIfExistsCallback callback) = 0;
 
   // Sets wallpaper from the Chrome OS wallpaper picker and saves the wallpaper
   // to local file system. After this, |SetOnlineWallpaperIfExists| will return
@@ -129,22 +93,25 @@ interface WallpaperController {
   // |preview_mode|: If true, show the wallpaper immediately but doesn't change
   //                 the user wallpaper info until |ConfirmPreviewWallpaper| is
   //                 called.
-  // |success|: If the wallpaper is set successfully (i.e. no decoding error
-  //            etc.).
-  SetOnlineWallpaperFromData(WallpaperUserInfo user_info,
-                             string image_data,
-                             string url,
-                             WallpaperLayout layout,
-                             bool preview_mode) => (bool success);
+  // Responds with true if the wallpaper is set successfully (i.e. no decoding
+  // error etc.).
+  using SetOnlineWallpaperFromDataCallback = base::OnceCallback<void(bool)>;
+  virtual void SetOnlineWallpaperFromData(
+      const WallpaperUserInfo& user_info,
+      const std::string& image_data,
+      const std::string& url,
+      WallpaperLayout layout,
+      bool preview_mode,
+      SetOnlineWallpaperFromDataCallback callback) = 0;
 
   // Sets the user's wallpaper to be the default wallpaper. Note: different user
   // types may have different default wallpapers.
   // |wallpaper_files_id|: The file id for user_info.account_id.
   // |show_wallpaper|: If false, don't show the new wallpaper now but only
   //                   update cache.
-  SetDefaultWallpaper(WallpaperUserInfo user_info,
-                      string wallpaper_files_id,
-                      bool show_wallpaper);
+  virtual void SetDefaultWallpaper(const WallpaperUserInfo& user_info,
+                                   const std::string& wallpaper_files_id,
+                                   bool show_wallpaper) = 0;
 
   // Sets the paths of the customized default wallpaper to be used wherever a
   // default wallpaper is needed. If a default wallpaper is being shown, updates
@@ -154,9 +121,9 @@ interface WallpaperController {
   //                                  default wallpaper, if any.
   // |customized_default_large_path|: The file path of the large-size customized
   //                                  default wallpaper, if any.
-  SetCustomizedDefaultWallpaperPaths(
-      mojo_base.mojom.FilePath customized_default_small_path,
-      mojo_base.mojom.FilePath customized_default_large_path);
+  virtual void SetCustomizedDefaultWallpaperPaths(
+      const base::FilePath& customized_default_small_path,
+      const base::FilePath& customized_default_large_path) = 0;
 
   // Sets wallpaper from policy. If the user has logged in, show the policy
   // wallpaper immediately, otherwise, the policy wallpaper will be shown the
@@ -165,16 +132,16 @@ interface WallpaperController {
   // |user_info|: The user's information related to wallpaper.
   // |wallpaper_files_id|: The file id for user_info.account_id.
   // |data|: The data used to decode the image.
-  SetPolicyWallpaper(WallpaperUserInfo user_info,
-                     string wallpaper_files_id,
-                     string data);
+  virtual void SetPolicyWallpaper(const WallpaperUserInfo& user_info,
+                                  const std::string& wallpaper_files_id,
+                                  const std::string& data) = 0;
 
   // Sets the path of device policy wallpaper.
   // |device_policy_wallpaper_path|: The file path of the device policy
   //                                 wallpaper if it was set or empty value if
   //                                 it was cleared.
-  SetDevicePolicyWallpaperPath(
-      mojo_base.mojom.FilePath device_policy_wallpaper_path);
+  virtual void SetDevicePolicyWallpaperPath(
+      const base::FilePath& device_policy_wallpaper_path) = 0;
 
   // Sets wallpaper from a third-party app (as opposed to the Chrome OS
   // wallpaper picker).
@@ -183,36 +150,29 @@ interface WallpaperController {
   // |file_name|: The name of the wallpaper file.
   // |layout|: The layout of the wallpaper, used for wallpaper resizing.
   // |image|: The wallpaper image.
-  // |allowed|: If the wallpaper is allowed to be shown on screen. It's false if
-  //            1) the user is not permitted to change wallpaper, or
-  //            2) updating the on-screen wallpaper is not allowed at the
-  //               given moment.
-  // |image_id|: A unique id assigned to the image. Clients may be interested in
-  //             observing all wallpaper changes and acting differently based on
-  //             if the wallpaper change is due to their own request. In order
-  //             to do so, they should compare this value with the one that's
-  //             returned by |OnWallpaperChanged|.
-  SetThirdPartyWallpaper(WallpaperUserInfo user_info,
-                         string wallpaper_files_id,
-                         string file_name,
-                         WallpaperLayout layout,
-                         gfx.mojom.ImageSkia image)
-                         => (bool allowed, uint32 image_id);
+  // Returns if the wallpaper is allowed to be shown on screen. It's false if:
+  // 1) the user is not permitted to change wallpaper, or
+  // 2) updating the on-screen wallpaper is not allowed at the given moment.
+  virtual bool SetThirdPartyWallpaper(const WallpaperUserInfo& user_info,
+                                      const std::string& wallpaper_files_id,
+                                      const std::string& file_name,
+                                      WallpaperLayout layout,
+                                      const gfx::ImageSkia& image) = 0;
 
   // Confirms the wallpaper being previewed to be set as the actual user
   // wallpaper. Must be called in preview mode.
-  ConfirmPreviewWallpaper();
+  virtual void ConfirmPreviewWallpaper() = 0;
 
   // Cancels the wallpaper preview and reverts to the user wallpaper. Must be
   // called in preview mode.
-  CancelPreviewWallpaper();
+  virtual void CancelPreviewWallpaper() = 0;
 
   // Updates the layout for the user's custom wallpaper and reloads the
   // wallpaper with the new layout.
   // |user_info|: The user's information related to wallpaper.
   // |layout|: The new layout of the wallpaper.
-  UpdateCustomWallpaperLayout(WallpaperUserInfo user_info,
-                              WallpaperLayout layout);
+  virtual void UpdateCustomWallpaperLayout(const WallpaperUserInfo& user_info,
+                                           WallpaperLayout layout) = 0;
 
   // Shows the user's wallpaper, which is determined in the following order:
   // 1) Use device policy wallpaper if it exists AND we are at the login screen.
@@ -220,32 +180,33 @@ interface WallpaperController {
   // 3) Use the wallpaper set by the user (either by |SetOnlineWallpaper| or
   //    |SetCustomWallpaper|), if any.
   // 4) Use the default wallpaper of this user.
-  ShowUserWallpaper(WallpaperUserInfo user_info);
+  virtual void ShowUserWallpaper(const WallpaperUserInfo& user_info) = 0;
 
   // Used by the gaia-signin UI. Signin wallpaper is considered either as the
   // device policy wallpaper or the default wallpaper.
-  ShowSigninWallpaper();
+  virtual void ShowSigninWallpaper() = 0;
 
   // Shows a one-shot wallpaper, which does not belong to any particular user
   // and is not saved to file. Note: the wallpaper will never be dimmed or
   // blurred because it's assumed that the caller wants to show the image as is
   // when using this method.
-  ShowOneShotWallpaper(gfx.mojom.ImageSkia image);
+  virtual void ShowOneShotWallpaper(const gfx::ImageSkia& image) = 0;
 
   // Shows a wallpaper that stays on top of everything except for the power off
   // animation. All other wallpaper requests are ignored when the always-on-top
   // wallpaper is being shown.
   // |image_path|: The file path to read the image data from.
-  ShowAlwaysOnTopWallpaper(mojo_base.mojom.FilePath image_path);
+  virtual void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) = 0;
 
   // Removes the always-on-top wallpaper. The wallpaper will revert to the
   // previous one, or a default one if there was none. No-op if the current
   // wallpaper is not always-on-top.
-  RemoveAlwaysOnTopWallpaper();
+  virtual void RemoveAlwaysOnTopWallpaper() = 0;
 
   // Removes all of the user's saved wallpapers and related info.
   // |wallpaper_files_id|: The file id for user_info.account_id.
-  RemoveUserWallpaper(WallpaperUserInfo user_info, string wallpaper_files_id);
+  virtual void RemoveUserWallpaper(const WallpaperUserInfo& user_info,
+                                   const std::string& wallpaper_files_id) = 0;
 
   // Removes all of the user's saved wallpapers and related info if the
   // wallpaper was set by |SetPolicyWallpaper|. In addition, sets the user's
@@ -254,90 +215,64 @@ interface WallpaperController {
   // next time |ShowUserWallpaper| is called.
   // |user_info|: The user's information related to wallpaper.
   // |wallpaper_files_id|: The file id for user_info.account_id.
-  RemovePolicyWallpaper(WallpaperUserInfo user_info, string wallpaper_files_id);
+  virtual void RemovePolicyWallpaper(const WallpaperUserInfo& user_info,
+                                     const std::string& wallpaper_files_id) = 0;
 
   // Returns the urls of the wallpapers that exist in local file system (i.e.
   // |SetOnlineWallpaperFromData| was called earlier). The url is used as id
   // to identify which wallpapers are available to be set offline.
-  GetOfflineWallpaperList() => (array<string> url_list);
+  using GetOfflineWallpaperListCallback =
+      base::OnceCallback<void(const std::vector<std::string>&)>;
+  virtual void GetOfflineWallpaperList(
+      GetOfflineWallpaperListCallback callback) = 0;
 
   // Sets wallpaper animation duration. Passing an empty value disables the
   // animation.
-  SetAnimationDuration(mojo_base.mojom.TimeDelta animation_duration);
+  virtual void SetAnimationDuration(base::TimeDelta animation_duration) = 0;
 
   // Opens the wallpaper picker if the active user is not controlled by policy
   // and it's allowed to change wallpaper per the user type and the login state.
-  OpenWallpaperPickerIfAllowed();
+  virtual void OpenWallpaperPickerIfAllowed() = 0;
 
   // Minimizes all windows except the active window.
   // |user_id_hash|: The hash value corresponding to |User::username_hash|.
-  MinimizeInactiveWindows(string user_id_hash);
+  virtual void MinimizeInactiveWindows(const std::string& user_id_hash) = 0;
 
   // Restores all minimized windows to their previous states. This should only
   // be called after calling |MinimizeInactiveWindows|.
   // |user_id_hash|: The hash value corresponding to |User::username_hash|.
-  RestoreMinimizedWindows(string user_id_hash);
+  virtual void RestoreMinimizedWindows(const std::string& user_id_hash) = 0;
 
-  // Calling this method triggers an initial notification of the wallpaper
-  // state. Observers are automatically removed as their connections are closed.
-  AddObserver(associated WallpaperObserver observer);
+  // Add and remove wallpaper observers.
+  virtual void AddObserver(WallpaperControllerObserver* observer) = 0;
+  virtual void RemoveObserver(WallpaperControllerObserver* observer) = 0;
 
   // Returns the wallpaper image currently being shown.
-  GetWallpaperImage() => (gfx.mojom.ImageSkia image);
+  virtual gfx::ImageSkia GetWallpaperImage() = 0;
 
   // Returns the wallpaper prominent colors.
-  GetWallpaperColors() => (array<uint32> prominent_colors);
+  virtual const std::vector<SkColor>& GetWallpaperColors() = 0;
 
   // Returns whether the current wallpaper is blurred.
-  IsWallpaperBlurred() => (bool blurred);
+  virtual bool IsWallpaperBlurred() = 0;
 
   // Returns true if the wallpaper of the currently active user (if any) is
   // controlled by policy (excluding device policy). If there's no active user,
   // returns false.
-  IsActiveUserWallpaperControlledByPolicy() => (bool controlled);
+  virtual bool IsActiveUserWallpaperControlledByPolicy() = 0;
 
-  // Returns the location and the layout of the active user's wallpaper. The
-  // location is either a url or a file path, corresponding to
-  // |WallpaperInfo.location|. Returns an empty string and an invalid layout if
-  // there's no active user.
-  GetActiveUserWallpaperInfo() => (string location, WallpaperLayout layout);
+  // Returns a struct with info about the active user's wallpaper; the location
+  // is an empty string and the layout is invalid if there's no active user.
+  virtual WallpaperInfo GetActiveUserWallpaperInfo() = 0;
 
   // Returns true if the wallpaper setting (used to open the wallpaper picker)
   // should be visible.
-  ShouldShowWallpaperSetting() => (bool show);
+  virtual bool ShouldShowWallpaperSetting() = 0;
+
+ protected:
+  static WallpaperController* g_instance_;
 };
 
-// Used by ash to control a Chrome client.
-interface WallpaperControllerClient {
-  // Opens the wallpaper picker window.
-  OpenWallpaperPicker();
+}  // namespace ash
 
-  // Signals to the client that ash is ready to set wallpapers. The client is
-  // able to decide whatever the first wallpaper it wants to display.
-  OnReadyToSetWallpaper();
-
-  // Notifies the client that the animation of the first wallpaper since the
-  // controller initialization has completed.
-  // TODO(crbug.com/875128): Remove this after web-ui login code is completely
-  // removed.
-  OnFirstWallpaperAnimationFinished();
-};
-
-// Used to listen for wallpaper state changed.
-interface WallpaperObserver {
-  // Invoked when the wallpaper is changed. |image_id| is the unique id assigned
-  // to the current wallpaper image. It should only be used to compare against
-  // the value returned by a setting wallpaper request earlier
-  // (e.g. SetThirdPartyWallpaper). This value is unique to each |ImageSkia|
-  // object and is different for two objects with the same pixels.
-  OnWallpaperChanged(uint32 image_id);
-
-  // Invoked when the colors extracted from the current wallpaper change. Colors
-  // are ordered and are referenced in wallpaper::ColorProfileType.
-  OnWallpaperColorsChanged(array<uint32> prominent_colors);
-
-  // Invoked when the blur state of the wallpaper changes.
-  // TODO(crbug.com/875128): Remove this after web-ui login code is completely
-  // removed.
-  OnWallpaperBlurChanged(bool blurred);
-};
+#endif  // ASH_PUBLIC_CPP_WALLPAPER_CONTROLLER_H_

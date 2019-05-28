@@ -24,7 +24,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"

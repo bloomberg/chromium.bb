@@ -7,7 +7,7 @@
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/gfx/canvas.h"
@@ -62,7 +62,7 @@ void WallpaperBaseView::OnPaint(gfx::Canvas* canvas) {
   // to fill the wallpaper. Ideally the image should be larger than the largest
   // display supported, if not we will scale and center it if the layout is
   // WALLPAPER_LAYOUT_CENTER_CROPPED.
-  WallpaperController* controller = Shell::Get()->wallpaper_controller();
+  auto* controller = Shell::Get()->wallpaper_controller();
   gfx::ImageSkia wallpaper = controller->GetWallpaper();
   WallpaperLayout layout = controller->GetWallpaperLayout();
 

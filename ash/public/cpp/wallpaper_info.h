@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WALLPAPER_WALLPAPER_INFO_H_
-#define ASH_WALLPAPER_WALLPAPER_INFO_H_
+#ifndef ASH_PUBLIC_CPP_WALLPAPER_INFO_H_
+#define ASH_PUBLIC_CPP_WALLPAPER_INFO_H_
 
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/time/time.h"
@@ -40,4 +40,4 @@ struct WallpaperInfo {
 
 }  // namespace ash
 
-#endif  // ASH_WALLPAPER_WALLPAPER_INFO_H_
+#endif  // ASH_PUBLIC_CPP_WALLPAPER_INFO_H_
