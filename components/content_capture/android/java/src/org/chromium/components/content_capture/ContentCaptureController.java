@@ -34,6 +34,16 @@ public abstract class ContentCaptureController {
     public abstract boolean shouldStartCapture();
 
     /**
+     * Clear all ContentCapture data associated with Chrome.
+     */
+    public void clearAllContentCaptureData() {}
+
+    /**
+     * Clear ContentCapture data for specific URLs.
+     */
+    public void clearContentCaptureDataForURLs(String[] urlsToDelete) {}
+
+    /**
      * Invoked by native side to pull the whitelist, the subclass should implement this and set
      * the whitelist by call setWhiteList.
      */
