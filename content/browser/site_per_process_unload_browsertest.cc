@@ -1016,6 +1016,230 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
+// Regression test for https://crbug.com/960006.
+//
+// 1. Navigate to a1(a2(b3),c4),
+// 2. b3 has a slow unload handler.
+// 3. a2 navigates same process.
+// 4. When the new document is loaded, a message is sent to c4 to check it
+//    cannot see b3 anymore, even if b3 is still unloading.
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessBrowserTest,
+    IsDetachedSubframeObservableDuringUnloadHandlerSameProcess) {
+  GURL page_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a(b),c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  RenderFrameHostImpl* node1 =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+  RenderFrameHostImpl* node2 = node1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* node3 = node2->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* node4 = node1->child_at(1)->current_frame_host();
+  ASSERT_TRUE(ExecJs(node1, "window.name = 'node1'"));
+  ASSERT_TRUE(ExecJs(node2, "window.name = 'node2'"));
+  ASSERT_TRUE(ExecJs(node3, "window.name = 'node3'"));
+  ASSERT_TRUE(ExecJs(node4, "window.name = 'node4'"));
+
+  // Test sanity check.
+  EXPECT_EQ(true, EvalJs(node1, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node2, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node3, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node4, "!!top.node2.node3"));
+
+  // Simulate a long-running unload handler in |node3|.
+  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  node3->GetProcess()->AddFilter(detach_filter.get());
+  node2->DisableSwapOutTimerForTesting();
+  ASSERT_TRUE(ExecJs(node3, "window.onunload = ()=>{}"));
+
+  // Prepare |node4| to respond to postMessage with a report of whether it can
+  // still find |node3|.
+  const char* kPostMessageHandlerScript = R"(
+      window.postMessageGotData == false;
+      window.postMessageCallback = function() {};
+      function receiveMessage(event) {
+          console.log('node4 - receiveMessage...');
+
+          var can_node3_be_found = false;
+          try {
+            can_node3_be_found = !!top.node2.node3;
+          } catch(e) {
+            can_node3_be_found = false;
+          }
+
+          window.postMessageGotData = true;
+          window.postMessageData = can_node3_be_found;
+          window.postMessageCallback(window.postMessageData);
+      }
+      window.addEventListener("message", receiveMessage, false);
+  )";
+  ASSERT_TRUE(ExecJs(node4, kPostMessageHandlerScript));
+
+  // Make |node1| navigate |node2| same process and after the navigation
+  // succeeds, send a post message to |node4|. We expect that the effects of the
+  // commit should be visible to |node4| by the time it receives the posted
+  // message.
+  const char* kNavigationScript = R"(
+      var node2_frame = document.getElementsByTagName('iframe')[0];
+      node2_frame.onload = function() {
+          console.log('node2_frame.onload ...');
+          node4.postMessage('try to find node3', '*');
+      };
+      node2_frame.src = $1;
+  )";
+  GURL url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  ASSERT_TRUE(ExecJs(node1, JsReplace(kNavigationScript, url)));
+
+  // Check if |node4| has seen |node3| even after |node2| navigation finished
+  // (no other frame should see |node3| after the navigation of its parent).
+  const char* kPostMessageResultsScript = R"(
+      new Promise(function (resolve, reject) {
+          if (window.postMessageGotData)
+            resolve(window.postMessageData);
+          else
+            window.postMessageCallback = resolve;
+      });
+  )";
+  EXPECT_EQ(false, EvalJs(node4, kPostMessageResultsScript));
+}
+
+// Regression test for https://crbug.com/960006.
+//
+// 1. Navigate to a1(a2(b3),c4),
+// 2. b3 has a slow unload handler.
+// 3. a2 navigates cross process.
+// 4. When the new document is loaded, a message is sent to c4 to check it
+//    cannot see b3 anymore, even if b3 is still unloading.
+//
+// Note: This test is the same as the above, except it uses a cross-process
+// navigation at step 3.
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessBrowserTest,
+    IsDetachedSubframeObservableDuringUnloadHandlerCrossProcess) {
+  GURL page_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a(b),c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  RenderFrameHostImpl* node1 =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+  RenderFrameHostImpl* node2 = node1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* node3 = node2->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* node4 = node1->child_at(1)->current_frame_host();
+  ASSERT_TRUE(ExecJs(node1, "window.name = 'node1'"));
+  ASSERT_TRUE(ExecJs(node2, "window.name = 'node2'"));
+  ASSERT_TRUE(ExecJs(node3, "window.name = 'node3'"));
+  ASSERT_TRUE(ExecJs(node4, "window.name = 'node4'"));
+
+  // Test sanity check.
+  EXPECT_EQ(true, EvalJs(node1, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node2, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node3, "!!top.node2.node3"));
+  EXPECT_EQ(true, EvalJs(node4, "!!top.node2.node3"));
+
+  // Add a long-running unload handler to |node3|.
+  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  node3->GetProcess()->AddFilter(detach_filter.get());
+  node2->DisableSwapOutTimerForTesting();
+  ASSERT_TRUE(ExecJs(node3, "window.onunload = ()=>{}"));
+
+  // Prepare |node4| to respond to postMessage with a report of whether it can
+  // still find |node3|.
+  const char* kPostMessageHandlerScript = R"(
+      window.postMessageGotData == false;
+      window.postMessageCallback = function() {};
+      function receiveMessage(event) {
+          console.log('node4 - receiveMessage...');
+
+          var can_node3_be_found = false;
+          try {
+            can_node3_be_found = !!top.node2.node3;
+          } catch(e) {
+            can_node3_be_found = false;
+          }
+
+          window.postMessageGotData = true;
+          window.postMessageData = can_node3_be_found;
+          window.postMessageCallback(window.postMessageData);
+      }
+      window.addEventListener("message", receiveMessage, false);
+  )";
+  ASSERT_TRUE(ExecJs(node4, kPostMessageHandlerScript));
+
+  // Make |node1| navigate |node2| cross process and after the navigation
+  // succeeds, send a post message to |node4|. We expect that the effects of the
+  // commit should be visible to |node4| by the time it receives the posted
+  // message.
+  const char* kNavigationScript = R"(
+      var node2_frame = document.getElementsByTagName('iframe')[0];
+      node2_frame.onload = function() {
+          console.log('node2_frame.onload ...');
+          node4.postMessage('try to find node3', '*');
+      };
+      node2_frame.src = $1;
+  )";
+  GURL url = embedded_test_server()->GetURL("d.com", "/title1.html");
+  ASSERT_TRUE(ExecJs(node1, JsReplace(kNavigationScript, url)));
+
+  // Check if |node4| has seen |node3| even after |node2| navigation finished
+  // (no other frame should see |node3| after the navigation of its parent).
+  const char* kPostMessageResultsScript = R"(
+      new Promise(function (resolve, reject) {
+          if (window.postMessageGotData)
+            resolve(window.postMessageData);
+          else
+            window.postMessageCallback = resolve;
+      });
+  )";
+  EXPECT_EQ(false, EvalJs(node4, kPostMessageResultsScript));
+}
+
+// Regression test. https://crbug.com/963330
+// 1. Start from A1(B2,C3)
+// 2. B2 is the "focused frame", is deleted and starts unloading.
+// 3. C3 commits a new navigation before B2 has completed its unload.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusedFrameUnload) {
+  // 1) Start from A1(B2,C3)
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "a.com", "/cross_site_iframe_factory.html?a(b,c)")));
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* C3 = A1->child_at(1)->current_frame_host();
+  FrameTree* frame_tree = A1->frame_tree_node()->frame_tree();
+
+  // 2.1) Make B2 to be the focused frame.
+  EXPECT_EQ(A1->frame_tree_node(), frame_tree->GetFocusedFrame());
+  EXPECT_TRUE(ExecJs(A1, "document.querySelector('iframe').focus()"));
+  EXPECT_EQ(B2->frame_tree_node(), frame_tree->GetFocusedFrame());
+
+  // 2.2 Unload B2. Drop detach message to simulate a long unloading.
+  auto filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  B2->GetProcess()->AddFilter(filter.get());
+
+  EXPECT_FALSE(B2->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+  EXPECT_TRUE(ExecJs(B2, "window.onunload = ()=>{};"));
+  EXPECT_TRUE(B2->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+
+  EXPECT_TRUE(B2->is_active());
+  EXPECT_TRUE(ExecJs(A1, "document.querySelector('iframe').remove()"));
+  EXPECT_EQ(nullptr, frame_tree->GetFocusedFrame());
+  EXPECT_EQ(2u, A1->child_count());
+  EXPECT_FALSE(B2->is_active());
+
+  // 3. C3 navigates.
+  NavigateFrameToURL(C3->frame_tree_node(),
+                     embedded_test_server()->GetURL("d.com", "/title1.html"));
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_EQ(2u, A1->child_count());
+}
+
 // Test the unload timeout is effective.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadTimeout) {
   GURL main_url(embedded_test_server()->GetURL(
