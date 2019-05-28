@@ -606,12 +606,6 @@ void SyncEngineBackend::DoOnInvalidatorClientIdChange(
   sync_manager_->UpdateInvalidationClientId(client_id);
 }
 
-base::WeakPtr<ModelTypeControllerDelegate>
-SyncEngineBackend::GetNigoriControllerDelegate() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return sync_manager_->GetNigoriControllerDelegate();
-}
-
 bool SyncEngineBackend::HasUnsyncedItemsForTest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_manager_);

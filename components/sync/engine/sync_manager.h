@@ -50,7 +50,6 @@ class EngineComponentsFactory;
 class ExtensionsActivity;
 class JsBackend;
 class JsEventHandler;
-class ModelTypeControllerDelegate;
 class ProtocolEvent;
 class SyncCycleSnapshot;
 class TypeDebugInfoObserver;
@@ -363,11 +362,6 @@ class SyncManager {
 
   // Returns the SyncManager's encryption handler.
   virtual SyncEncryptionHandler* GetEncryptionHandler() = 0;
-
-  // Returns ModelTypeControllerDelegate for Nigori. USS implementation of
-  // Nigori must be enabled.
-  virtual base::WeakPtr<ModelTypeControllerDelegate>
-  GetNigoriControllerDelegate() = 0;
 
   // Ask the SyncManager to fetch updates for the given types.
   virtual void RefreshTypes(ModelTypeSet types) = 0;

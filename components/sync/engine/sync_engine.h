@@ -33,7 +33,6 @@ namespace syncer {
 
 class CancelationSignal;
 class HttpPostProviderFactory;
-class ModelTypeControllerDelegate;
 class SyncEngineHost;
 class SyncManagerFactory;
 class UnrecoverableErrorHandler;
@@ -191,10 +190,6 @@ class SyncEngine : public ModelTypeConfigurer {
 
   // Enables/Disables invalidations for session sync related datatypes.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
-
-  // Returns ModelTypeControllerDelegate for Nigori.
-  virtual std::unique_ptr<ModelTypeControllerDelegate>
-  GetNigoriControllerDelegate() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);

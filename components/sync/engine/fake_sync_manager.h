@@ -105,8 +105,6 @@ class FakeSyncManager : public SyncManager {
   std::string bag_of_chips() override;
   bool HasUnsyncedItemsForTest() override;
   SyncEncryptionHandler* GetEncryptionHandler() override;
-  base::WeakPtr<ModelTypeControllerDelegate> GetNigoriControllerDelegate()
-      override;
   std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents()
       override;
   void RefreshTypes(ModelTypeSet types) override;

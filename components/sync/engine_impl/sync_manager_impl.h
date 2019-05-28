@@ -98,8 +98,6 @@ class SyncManagerImpl
   std::string bag_of_chips() override;
   bool HasUnsyncedItemsForTest() override;
   SyncEncryptionHandler* GetEncryptionHandler() override;
-  base::WeakPtr<ModelTypeControllerDelegate> GetNigoriControllerDelegate()
-      override;
   std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents()
       override;
   void RegisterDirectoryTypeDebugInfoObserver(
@@ -320,9 +318,6 @@ class SyncManagerImpl
   // Points to either SyncEncryptionHandlerImpl or NigoriSyncBridgeImpl
   // depending on whether USS implementation of Nigori is enabled or not.
   std::unique_ptr<SyncEncryptionHandler> sync_encryption_handler_;
-
-  // Initialized iff USS implementation of Nigori is enabled.
-  base::WeakPtr<ModelTypeControllerDelegate> nigori_controller_delegate_;
 
   std::unique_ptr<SyncEncryptionHandler::Observer> encryption_observer_proxy_;
 

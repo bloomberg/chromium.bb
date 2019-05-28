@@ -303,12 +303,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
   syncable::NigoriHandler* nigori_handler = nullptr;
   KeystoreKeysHandler* keystore_keys_handler = nullptr;
   if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
-    auto nigori_model_type_processor =
-        std::make_unique<NigoriModelTypeProcessor>();
-    nigori_controller_delegate_ =
-        nigori_model_type_processor->GetControllerDelegate();
     auto nigori_sync_bridge_impl = std::make_unique<NigoriSyncBridgeImpl>(
-        std::move(nigori_model_type_processor), args->encryptor);
+        std::make_unique<NigoriModelTypeProcessor>(), args->encryptor);
     keystore_keys_handler = nigori_sync_bridge_impl.get();
     sync_encryption_handler_ = std::move(nigori_sync_bridge_impl);
   } else {
@@ -1047,11 +1043,6 @@ bool SyncManagerImpl::HasUnsyncedItemsForTest() {
 
 SyncEncryptionHandler* SyncManagerImpl::GetEncryptionHandler() {
   return sync_encryption_handler_.get();
-}
-
-base::WeakPtr<ModelTypeControllerDelegate>
-SyncManagerImpl::GetNigoriControllerDelegate() {
-  return nigori_controller_delegate_;
 }
 
 std::vector<std::unique_ptr<ProtocolEvent>>
