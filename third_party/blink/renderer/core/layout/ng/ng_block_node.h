@@ -24,6 +24,7 @@ class NGPhysicalContainerFragment;
 class NGPhysicalFragment;
 struct MinMaxSize;
 struct NGBoxStrut;
+struct NGLayoutAlgorithmParams;
 struct LogicalOffset;
 
 // Represents a node to be laid out.
@@ -108,10 +109,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       FontBaseline,
       bool use_first_line_style);
 
-  // Runs layout on the underlying LayoutObject and creates a fragment for the
-  // resulting geometry.
-  scoped_refptr<const NGLayoutResult> RunLegacyLayout(const NGConstraintSpace&);
-
   // Called if this is an out-of-flow block which needs to be
   // positioned with legacy layout.
   void UseLegacyOutOfFlowPositioning() const;
@@ -130,6 +127,13 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
  private:
   void PrepareForLayout();
+
+  // Runs layout on the underlying LayoutObject and creates a fragment for the
+  // resulting geometry.
+  scoped_refptr<const NGLayoutResult> RunLegacyLayout(const NGConstraintSpace&);
+
+  scoped_refptr<const NGLayoutResult> RunSimplifiedLayout(
+      const NGLayoutAlgorithmParams&) const;
 
   // If this node is a LayoutNGMixin, the caller must pass the layout object for
   // this node cast to a LayoutBlockFlow as the first argument.

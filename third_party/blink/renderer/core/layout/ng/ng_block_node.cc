@@ -251,9 +251,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     // may have gained or removed scrollbars, changing its size). In these
     // cases "simplified" layout will return a null layout-result, indicating
     // we need to perform a full layout.
-    layout_result =
-        NGSimplifiedLayoutAlgorithm(params, *box_->GetCachedLayoutResult())
-            .Layout();
+    layout_result = RunSimplifiedLayout(params);
 
 #if DCHECK_IS_ON()
     if (layout_result) {
@@ -1043,6 +1041,12 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
       *layout_result, constraint_space.PercentageResolutionInlineSize());
 
   return layout_result;
+}
+
+scoped_refptr<const NGLayoutResult> NGBlockNode::RunSimplifiedLayout(
+    const NGLayoutAlgorithmParams& params) const {
+  return NGSimplifiedLayoutAlgorithm(params, *box_->GetCachedLayoutResult())
+      .Layout();
 }
 
 void NGBlockNode::CopyBaselinesFromLegacyLayout(
