@@ -122,7 +122,7 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
       // Removes our old blob directories if they exist.
-      BrowserThread::PostAfterStartupTask(
+      BrowserThread::PostBestEffortTask(
           FROM_HERE, file_task_runner,
           base::BindOnce(&RemoveOldBlobStorageDirectories,
                          std::move(blob_storage_parent), blob_storage_dir));
@@ -149,9 +149,8 @@ void ChromeBlobStorageContext::InitializeOnIOThread(
                                         std::move(file_task_runner)));
   // Signal the BlobMemoryController when it's appropriate to calculate its
   // storage limits.
-  BrowserThread::PostAfterStartupTask(
-      FROM_HERE,
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO, base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&storage::BlobMemoryController::CalculateBlobStorageLimits,
                      context_->mutable_memory_controller()->GetWeakPtr()));
 }
