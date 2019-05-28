@@ -52,9 +52,7 @@ class IOSWebViewSigninClient : public SigninClient {
   void DelayNetworkCall(base::OnceClosure callback) override;
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      override;
+      gaia::GaiaSource source) override;
 
   // CWVSyncController setter/getter.
   void SetSyncController(CWVSyncController* sync_controller);

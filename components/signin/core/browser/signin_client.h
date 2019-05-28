@@ -95,8 +95,7 @@ class SigninClient : public KeyedService {
   // Creates a new platform-specific GaiaAuthFetcher.
   virtual std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      gaia::GaiaSource source,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
+      gaia::GaiaSource source) = 0;
 
   // Schedules migration to happen at next startup.
   virtual void SetReadyForDiceMigration(bool is_ready) {}

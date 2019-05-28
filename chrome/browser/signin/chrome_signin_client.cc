@@ -301,10 +301,9 @@ void ChromeSigninClient::DelayNetworkCall(base::OnceClosure callback) {
 
 std::unique_ptr<GaiaAuthFetcher> ChromeSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
-    gaia::GaiaSource source,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    gaia::GaiaSource source) {
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
-                                           url_loader_factory);
+                                           GetURLLoaderFactory());
 }
 
 void ChromeSigninClient::VerifySyncToken() {

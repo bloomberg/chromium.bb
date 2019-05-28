@@ -110,8 +110,7 @@ std::unique_ptr<KeyedService> IdentityTestEnvironmentChromeBrowserStateAdaptor::
   return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
       chrome_browser_state->GetPrefs(), base::FilePath(),
-      signin::AccountConsistencyMethod::kMirror,
-      /*test_url_loader_factory=*/nullptr, std::move(extra_params));
+      signin::AccountConsistencyMethod::kMirror, std::move(extra_params));
 }
 
 // static

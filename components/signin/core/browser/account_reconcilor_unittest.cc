@@ -328,8 +328,8 @@ INSTANTIATE_TEST_SUITE_P(Dice_Mirror,
 
 AccountReconcilorTest::AccountReconcilorTest()
     : account_consistency_(signin::AccountConsistencyMethod::kDisabled),
-      test_signin_client_(&pref_service_),
-      identity_test_env_(&test_url_loader_factory_,
+      test_signin_client_(&pref_service_, &test_url_loader_factory_),
+      identity_test_env_(/*test_url_loader_factory=*/nullptr,
                          &pref_service_,
                          account_consistency_,
                          &test_signin_client_) {

@@ -259,7 +259,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
   CleanupTransientState();
   results_.clear();
   helper_->gaia_auth_fetcher_ = helper_->signin_client_->CreateGaiaAuthFetcher(
-      this, gaia::GaiaSource::kChrome, helper_->GetURLLoaderFactory());
+      this, gaia::GaiaSource::kChrome);
   helper_->gaia_auth_fetcher_->StartGetCheckConnectionInfo();
 
   // Some fetches may timeout.  Start a timer to decide when the result fetcher
@@ -451,20 +451,8 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
 GaiaCookieManagerService::GaiaCookieManagerService(
     OAuth2TokenService* token_service,
     SigninClient* signin_client)
-    : GaiaCookieManagerService(
-          token_service,
-          signin_client,
-          base::BindRepeating(&SigninClient::GetURLLoaderFactory,
-                              base::Unretained(signin_client))) {}
-
-GaiaCookieManagerService::GaiaCookieManagerService(
-    OAuth2TokenService* token_service,
-    SigninClient* signin_client,
-    base::RepeatingCallback<scoped_refptr<network::SharedURLLoaderFactory>()>
-        shared_url_loader_factory_getter)
     : token_service_(token_service),
       signin_client_(signin_client),
-      shared_url_loader_factory_getter_(shared_url_loader_factory_getter),
       external_cc_result_fetcher_(this),
       fetcher_backoff_(&kBackoffPolicy),
       fetcher_retries_(0),
@@ -684,7 +672,7 @@ void GaiaCookieManagerService::CancelAll() {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 GaiaCookieManagerService::GetURLLoaderFactory() {
-  return shared_url_loader_factory_getter_.Run();
+  return signin_client_->GetURLLoaderFactory();
 }
 
 void GaiaCookieManagerService::MarkListAccountsStale() {
@@ -939,18 +927,17 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
                      base::Unretained(this)),
       base::BindRepeating(
           [](SigninClient* client,
-             scoped_refptr<network::SharedURLLoaderFactory> url_loader,
              GaiaAuthConsumer* consumer) -> std::unique_ptr<GaiaAuthFetcher> {
-            return client->CreateGaiaAuthFetcher(
-                consumer, gaia::GaiaSource::kChrome, url_loader);
+            return client->CreateGaiaAuthFetcher(consumer,
+                                                 gaia::GaiaSource::kChrome);
           },
-          base::Unretained(signin_client_), GetURLLoaderFactory()));
+          base::Unretained(signin_client_)));
 }
 
 void GaiaCookieManagerService::StartFetchingMergeSession() {
   DCHECK(!uber_token_.empty());
-  gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
-      this, requests_.front().source(), GetURLLoaderFactory());
+  gaia_auth_fetcher_ =
+      signin_client_->CreateGaiaAuthFetcher(this, requests_.front().source());
 
   gaia_auth_fetcher_->StartMergeSession(
       uber_token_, external_cc_result_fetcher_.GetExternalCcResult());
@@ -967,15 +954,15 @@ void GaiaCookieManagerService::StartGaiaLogOut() {
 
 void GaiaCookieManagerService::StartFetchingLogOut() {
   RecordLogoutRequestState(LogoutRequestState::kStarted);
-  gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
-      this, requests_.front().source(), GetURLLoaderFactory());
+  gaia_auth_fetcher_ =
+      signin_client_->CreateGaiaAuthFetcher(this, requests_.front().source());
   gaia_auth_fetcher_->StartLogOut();
 }
 
 void GaiaCookieManagerService::StartFetchingListAccounts() {
   VLOG(1) << "GaiaCookieManagerService::ListAccounts";
-  gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
-      this, requests_.front().source(), GetURLLoaderFactory());
+  gaia_auth_fetcher_ =
+      signin_client_->CreateGaiaAuthFetcher(this, requests_.front().source());
   gaia_auth_fetcher_->StartListAccounts();
 }
 

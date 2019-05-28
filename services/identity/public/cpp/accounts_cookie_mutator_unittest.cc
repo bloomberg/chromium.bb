@@ -63,7 +63,7 @@ class AccountsCookieMutatorTest : public testing::Test {
  public:
   AccountsCookieMutatorTest()
       : test_signin_client_(&prefs_),
-        identity_test_env_(test_url_loader_factory(),
+        identity_test_env_(/*test_url_loader_factory=*/nullptr,
                            &prefs_,
                            signin::AccountConsistencyMethod::kDisabled,
                            &test_signin_client_) {}

@@ -100,8 +100,8 @@ void OAuthMultiloginHelper::OnAccessTokensFailure(
 
 void OAuthMultiloginHelper::StartFetchingMultiLogin() {
   DCHECK_EQ(token_id_pairs_.size(), account_ids_.size());
-  gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
-      this, gaia::GaiaSource::kChrome, signin_client_->GetURLLoaderFactory());
+  gaia_auth_fetcher_ =
+      signin_client_->CreateGaiaAuthFetcher(this, gaia::GaiaSource::kChrome);
   gaia_auth_fetcher_->StartOAuthMultilogin(token_id_pairs_);
 }
 

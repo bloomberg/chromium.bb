@@ -212,7 +212,8 @@ class TestIdentityManagerDiagnosticsObserver
 
 class IdentityManagerTest : public testing::Test {
  protected:
-  IdentityManagerTest() : signin_client_(&pref_service_) {
+  IdentityManagerTest()
+      : signin_client_(&pref_service_, &test_url_loader_factory_) {
     IdentityManager::RegisterProfilePrefs(pref_service_.registry());
     IdentityManager::RegisterLocalStatePrefs(pref_service_.registry());
 
@@ -280,14 +281,8 @@ class IdentityManagerTest : public testing::Test {
         std::make_unique<CustomFakeProfileOAuth2TokenService>(&pref_service_);
 
     auto gaia_cookie_manager_service =
-        std::make_unique<GaiaCookieManagerService>(
-            token_service.get(), &signin_client_,
-            base::BindRepeating(
-                [](network::TestURLLoaderFactory* test_url_loader_factory)
-                    -> scoped_refptr<network::SharedURLLoaderFactory> {
-                  return test_url_loader_factory->GetSafeWeakWrapper();
-                },
-                test_url_loader_factory()));
+        std::make_unique<GaiaCookieManagerService>(token_service.get(),
+                                                   &signin_client_);
 
     auto account_tracker_service = std::make_unique<AccountTrackerService>();
     account_tracker_service->Initialize(&pref_service_, base::FilePath());
@@ -375,8 +370,8 @@ class IdentityManagerTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  TestSigninClient signin_client_;
   network::TestURLLoaderFactory test_url_loader_factory_;
+  TestSigninClient signin_client_;
   std::unique_ptr<IdentityManager> identity_manager_;
   std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
   std::unique_ptr<TestIdentityManagerDiagnosticsObserver>

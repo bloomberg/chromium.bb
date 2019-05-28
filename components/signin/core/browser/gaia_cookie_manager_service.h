@@ -228,19 +228,6 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   GaiaCookieManagerService(OAuth2TokenService* token_service,
                            SigninClient* signin_client);
 
-  // Creates a GaiaCookieManagerService that uses the provided
-  // |shared_url_loader_factory_getter| to determine the SharedUrlLoaderFactory
-  // used for cookie-related requests.
-  // Note: SharedUrlLoaderFactory is passed via callback, so that if the
-  // callback has side-effects (e.g. network initialization), they do not occur
-  // until the first time GaiaCookieManagerService::GetSharedUrlLoaderFactory is
-  // called.
-  GaiaCookieManagerService(
-      OAuth2TokenService* token_service,
-      SigninClient* signin_client,
-      base::RepeatingCallback<scoped_refptr<network::SharedURLLoaderFactory>()>
-          shared_url_loader_factory_getter);
-
   ~GaiaCookieManagerService() override;
 
   void InitCookieListener();
@@ -373,8 +360,6 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   OAuth2TokenService* token_service_;
   SigninClient* signin_client_;
 
-  base::RepeatingCallback<scoped_refptr<network::SharedURLLoaderFactory>()>
-      shared_url_loader_factory_getter_;
   std::unique_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   std::unique_ptr<signin::UbertokenFetcherImpl> uber_token_fetcher_;
   ExternalCcResultFetcher external_cc_result_fetcher_;
