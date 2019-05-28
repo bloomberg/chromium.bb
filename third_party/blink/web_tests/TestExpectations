@@ -5734,3 +5734,9 @@ crbug.com/966932 [ Linux ] http/tests/devtools/a11y-axe-core/elements/main-tool-
 
 # Sheriff 2019-05-27
 crbug.com/942411 [ Win ] http/tests/devtools/network/network-search.js [ Pass Timeout ]
+
+# Failing because of revert of If931c1faff528a87d8a78808f30225ebe2377072.
+crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_tracks.html [ Failure ]
+crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/3_tracks.html [ Failure ]
+crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/class_object/class_white-space_normal_wrapped.html [ Failure ]
+crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/class_object/class_white-space_pre-line_wrapped.html [ Failure ]

@@ -1189,6 +1189,7 @@ video::cue {
     display: inline;
 
     background-color: rgba(0, 0, 0, 0.8);
+    padding: 2px 2px;
 }
 
 video::-webkit-media-text-track-region {
