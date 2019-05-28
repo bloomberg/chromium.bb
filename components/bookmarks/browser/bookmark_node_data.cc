@@ -97,13 +97,14 @@ bool BookmarkNodeData::Element::ReadFromPickle(base::PickleIterator* iterator) {
       LOG(WARNING) << "children_count failed bounds check";
       return false;
     }
+    // Note: do not preallocate the children vector. A pickle could be
+    // constructed to contain N nested Elements. By continually recursing on
+    // this ReadFromPickle function, the fast-fail logic is subverted. Each
+    // child would claim it contains M more children. The first (and only) child
+    // provided would claim M more children. We would allocate N * M Elements
+    // along the way, while only receiving N Elements.
     const size_t children_count =
         base::checked_cast<size_t>(children_count_tmp);
-    // Restrict vector preallocation to prevent OOM crashes on invalid (or
-    // malicious) pickles.
-    if (children_count > kMaxVectorPreallocateSize)
-      LOG(WARNING) << "children_count exceeds kMaxVectorPreallocateSize";
-    children.reserve(std::min(children_count, kMaxVectorPreallocateSize));
     for (size_t i = 0; i < children_count; ++i) {
       children.emplace_back();
       if (!children.back().ReadFromPickle(iterator))
