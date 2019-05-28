@@ -58373,6 +58373,14 @@ Full version information for the fingerprint enum values:
   <int value="64" label=".gdoc"/>
   <int value="65" label=".gsheet"/>
   <int value="66" label=".gslides"/>
+  <int value="67" label=".arw"/>
+  <int value="68" label=".cr2"/>
+  <int value="69" label=".dng"/>
+  <int value="70" label=".nef"/>
+  <int value="71" label=".nrw"/>
+  <int value="72" label=".orf"/>
+  <int value="73" label=".raf"/>
+  <int value="74" label=".rw2"/>
 </enum>
 
 <enum name="VirtualKeyboardContainerType">

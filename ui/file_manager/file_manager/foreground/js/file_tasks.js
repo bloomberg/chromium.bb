@@ -1236,10 +1236,12 @@ FileTasks.TaskPickerType = {
 };
 
 /**
- * The list of known extensions to record UMA.
- * Note: Because the data is recorded by the index, so new item shouldn't be
- * inserted.
- * Must match the ViewFileType entry in enums.xml.
+ * List of file extensions to record in UMA.
+ *
+ * Note: since the data is recorded by list index, new items should be added
+ * to the end of this list.
+ *
+ * The list must also match the FileBrowser ViewFileType entry in enums.xml.
  *
  * @const {Array<string>}
  */
@@ -1266,7 +1268,9 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
   '.torrent',  '.txt',         '.zip',
   'directory', 'no extension', 'unknown extension',
   '.mhtml',    '.gdoc',        '.gsheet',
-  '.gslides'
+  '.gslides',  '.arw',         '.cr2',
+  '.dng',      '.nef',         '.nrw',
+  '.orf',      '.raf',         '.rw2'
 ]);
 
 /**
