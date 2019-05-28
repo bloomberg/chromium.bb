@@ -318,10 +318,11 @@ void AccountManager::RemoveAccountInternal(const AccountKey& account_key) {
   }
 
   const std::string raw_email = it->second.raw_email;
-  MaybeRevokeTokenOnServer(account_key);
+  const std::string old_token = it->second.token;
   accounts_.erase(it);
   PersistAccountsAsync();
   NotifyAccountRemovalObservers(Account{account_key, raw_email});
+  MaybeRevokeTokenOnServer(account_key, old_token);
 }
 
 void AccountManager::RemoveAccount(const std::string& email) {
@@ -440,15 +441,16 @@ void AccountManager::UpsertAccountInternal(const AccountKey& account_key,
 
   // Precondition: Iterator |it| is valid and points to a previously known
   // account.
-  const bool did_token_change = (it->second.token != account.token);
-  if (did_token_change && revoke_old_token) {
-    MaybeRevokeTokenOnServer(account_key);
-  }
+  const std::string old_token = it->second.token;
+  const bool did_token_change = (old_token != account.token);
   it->second = account;
   PersistAccountsAsync();
 
   if (did_token_change) {
     NotifyTokenObservers(Account{account_key, account.raw_email});
+  }
+  if (did_token_change && revoke_old_token) {
+    MaybeRevokeTokenOnServer(account_key, old_token);
   }
 }
 
@@ -551,18 +553,12 @@ bool AccountManager::HasDummyGaiaToken(const AccountKey& account_key) const {
   return it != accounts_.end() && it->second.token == kInvalidToken;
 }
 
-void AccountManager::MaybeRevokeTokenOnServer(const AccountKey& account_key) {
-  auto it = accounts_.find(account_key);
-  if (it == accounts_.end()) {
-    return;
-  }
-
-  const std::string& token = it->second.token;
-
+void AccountManager::MaybeRevokeTokenOnServer(const AccountKey& account_key,
+                                              const std::string& old_token) {
   if ((account_key.account_type ==
        account_manager::AccountType::ACCOUNT_TYPE_GAIA) &&
-      !token.empty() && (token != kInvalidToken)) {
-    RevokeGaiaTokenOnServer(token);
+      !old_token.empty() && (old_token != kInvalidToken)) {
+    RevokeGaiaTokenOnServer(old_token);
   }
 }
 
