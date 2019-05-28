@@ -124,6 +124,9 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
   // Number of times polled to check if still offline.
   int offline_polls_;
 
+  // Keeps track of whether DnsConfigService::WatchConfig() has been called.
+  bool posted_watch_config_ = false;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Used for calling WatchForAddressChange again on failure.

@@ -294,11 +294,14 @@ void NetworkChangeNotifierWin::WatchForAddressChange() {
 bool NetworkChangeNotifierWin::WatchForAddressChangeInternal() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  dns_config_service_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&DnsConfigService::WatchConfig,
-                                base::Unretained(dns_config_service_.get()),
-                                base::BindRepeating(
-                                    &NetworkChangeNotifier::SetDnsConfig)));
+  if (!posted_watch_config_) {
+    posted_watch_config_ = true;
+    dns_config_service_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&DnsConfigService::WatchConfig,
+                                  base::Unretained(dns_config_service_.get()),
+                                  base::BindRepeating(
+                                      &NetworkChangeNotifier::SetDnsConfig)));
+  }
 
   ResetEventIfSignaled(addr_overlapped_.hEvent);
   HANDLE handle = nullptr;
