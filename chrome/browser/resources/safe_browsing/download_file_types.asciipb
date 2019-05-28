@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 36
+version_id: 37
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -706,7 +706,7 @@ file_types {
   ping_setting: FULL_PING
   inspection_type: ZIP
   platform_settings {
-    max_file_size_to_analyze: 15728640 # 15MB
+    max_file_size_to_analyze: 52428800 # 50MB
   }
 }
 file_types {
