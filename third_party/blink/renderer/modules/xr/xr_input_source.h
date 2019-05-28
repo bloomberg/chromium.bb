@@ -61,6 +61,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   uint32_t source_id() const { return source_id_; }
 
   void SetPointerTransformMatrix(std::unique_ptr<TransformationMatrix>);
+  void SetGamepadConnected(bool state);
 
   // Gamepad::Client
   GamepadHapticActuator* GetVibrationActuatorForGamepad(

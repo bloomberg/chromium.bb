@@ -120,6 +120,7 @@ class MockXRInputSource {
     this.primary_input_pressed_ = false;
     this.primary_input_clicked_ = false;
     this.grip_ = null;
+    this.gamepad_ = null;
 
     this.target_ray_mode_ = 'gaze';
     this.pointer_offset_ = null;
@@ -205,6 +206,28 @@ class MockXRInputSource {
     }
   }
 
+  get gamepad() {
+    return this.gamepad_;
+  }
+
+  connectGamepad() {
+    // Mojo complains if some of the properties on Gamepad are null, so set
+    // everything to reasonable defaults that tests can override.
+    this.gamepad_ = new device.mojom.Gamepad();
+    this.gamepad_.connected = true;
+    this.gamepad_.id = "unknown";
+    this.gamepad_.timestamp = 0;
+    this.gamepad_.axes = [];
+    this.gamepad_.buttons = [];
+    this.gamepad_.mapping = "";
+    this.gamepad_.display_id = 0;
+    this.gamepad_.hand = device.mojom.GamepadHand.GamepadHandNone;
+  }
+
+  disconnectGamepad() {
+    this.gamepad_ = null;
+  }
+
   getInputSourceState() {
     let input_state = new device.mojom.XRInputSourceState();
 
@@ -214,6 +237,8 @@ class MockXRInputSource {
     input_state.primaryInputClicked = this.primary_input_clicked_;
 
     input_state.grip = this.grip_;
+
+    input_state.gamepad = this.gamepad_;
 
     if (this.desc_dirty_) {
       let input_desc = new device.mojom.XRInputSourceDescription();

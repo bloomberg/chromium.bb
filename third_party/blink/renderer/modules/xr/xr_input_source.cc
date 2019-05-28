@@ -263,6 +263,11 @@ void XRInputSource::SetPointerTransformMatrix(
   pointer_transform_matrix_ = std::move(pointer_transform_matrix);
 }
 
+void XRInputSource::SetGamepadConnected(bool state) {
+  if (gamepad_)
+    gamepad_->SetConnected(state);
+}
+
 void XRInputSource::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(target_ray_space_);

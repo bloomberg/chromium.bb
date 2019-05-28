@@ -483,6 +483,10 @@ void XRSession::ForceEnd() {
     canvas_input_provider_ = nullptr;
   }
 
+  for (auto& input_source : input_sources_.Values()) {
+    input_source->SetGamepadConnected(false);
+  }
+
   // If this session is the active immersive session, notify the frameProvider
   // that it's ended.
   if (xr_->frameProvider()->immersive_session() == this) {
@@ -767,17 +771,20 @@ void XRSession::OnInputStateChange(
       input_sources_.Set(input_state->source_id, input_source);
       added.push_back(input_source);
 
-      // If we previously had a stored_input_source
-      if (stored_input_source)
+      // If we previously had a stored_input_source, disconnect it's gamepad
+      // and mark that it was removed.
+      if (stored_input_source) {
+        stored_input_source->SetGamepadConnected(false);
         removed.push_back(stored_input_source);
+      }
     }
 
     input_source->active_frame_id = frame_id;
   }
 
-  // Remove any input sources that are inactive.  Note that this is done in
-  // two passes because HeapHashMap makes no guarantees about iterators on
-  // removal.
+  // Remove any input sources that are inactive, and disconnect their gamepad.
+  // Note that this is done in two passes because HeapHashMap makes no
+  // guarantees about iterators on removal.
   // We use a separate array of inactive sources here rather than just
   // processing removed, because if we replaced any input sources, they would
   // also be in removed, and we'd remove our newly added source.
@@ -785,6 +792,7 @@ void XRSession::OnInputStateChange(
   for (const auto& input_source : input_sources_.Values()) {
     if (input_source->active_frame_id != frame_id) {
       inactive_sources.push_back(input_source->source_id());
+      input_source->SetGamepadConnected(false);
       removed.push_back(input_source);
     }
   }
