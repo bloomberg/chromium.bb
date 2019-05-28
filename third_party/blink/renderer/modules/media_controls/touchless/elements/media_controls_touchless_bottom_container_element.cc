@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_bottom_container_element.h"
 
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_timeline_element.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -25,6 +27,14 @@ MediaControlsTouchlessBottomContainerElement::
 
   ParserAppendChild(time_display_element_);
   ParserAppendChild(timeline_element_);
+
+  event_listener_ =
+      MakeGarbageCollected<MediaControlsSharedHelpers::TransitionEventListener>(
+          this,
+          WTF::BindRepeating(&MediaControlsTouchlessBottomContainerElement::
+                                 HandleTransitionEndEvent,
+                             WrapWeakPersistent(this)));
+  event_listener_->Attach();
 }
 
 LayoutObject*
@@ -37,10 +47,30 @@ MediaControlsTouchlessBottomContainerElement::TimeDisplayLayoutObject() {
   return time_display_element_->GetLayoutObject();
 }
 
+void MediaControlsTouchlessBottomContainerElement::MakeOpaque(
+    bool should_hide) {
+  SetDisplayed(true);
+  MediaElement().MediaControlsDidBecomeVisible();
+  MediaControlsTouchlessElement::MakeOpaque(should_hide);
+}
+
+void MediaControlsTouchlessBottomContainerElement::HandleTransitionEndEvent() {
+  SetDisplayed(false);
+}
+
+void MediaControlsTouchlessBottomContainerElement::SetDisplayed(
+    bool displayed) {
+  if (displayed)
+    RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
+  else
+    SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
+}
+
 void MediaControlsTouchlessBottomContainerElement::Trace(
     blink::Visitor* visitor) {
   visitor->Trace(timeline_element_);
   visitor->Trace(time_display_element_);
+  visitor->Trace(event_listener_);
   MediaControlsTouchlessElement::Trace(visitor);
 }
 

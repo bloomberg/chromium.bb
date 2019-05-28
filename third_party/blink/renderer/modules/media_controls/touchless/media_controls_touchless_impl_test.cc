@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/html/time_ranges.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/test_media_controls_menu_host.h"
@@ -146,7 +147,16 @@ class MediaControlsTouchlessImplTest : public PageTestBase {
   }
 
   bool IsControlsVisible(Element* element) {
-    return !element->classList().contains("transparent");
+    return !element->classList().contains("transparent") &&
+           !element->classList().contains("transparent-immediate");
+  }
+
+  bool IsElementDisplayed(Element* element) {
+    if (!element->InlineStyle())
+      return true;
+
+    return element->InlineStyle()->GetPropertyValue(CSSPropertyID::kDisplay) !=
+           "none";
   }
 
   void SetHasAudio(bool has_audio) { WebMediaPlayer()->has_audio_ = has_audio; }
@@ -480,6 +490,7 @@ TEST_F(MediaControlsTouchlessImplTestWithMockScheduler,
 
   // Bottom container starts opaque since video is paused.
   EXPECT_TRUE(IsControlsVisible(bottom_container));
+  EXPECT_TRUE(IsElementDisplayed(bottom_container));
 
   MediaElement().Play();
   platform()->RunForPeriodSeconds(3);
@@ -505,6 +516,11 @@ TEST_F(MediaControlsTouchlessImplTestWithMockScheduler,
   // Hide after 3 seconds
   platform()->RunForPeriodSeconds(3);
   EXPECT_FALSE(IsControlsVisible(bottom_container));
+
+  // Display should be none after hide transition ends.
+  bottom_container->DispatchEvent(
+      *Event::Create(event_type_names::kTransitionend));
+  EXPECT_FALSE(IsElementDisplayed(bottom_container));
 
   // Bottom container should show after pressing right/left arrow.
   SimulateKeydownEvent(MediaElement(), VK_RIGHT);
