@@ -101,7 +101,13 @@ IDBDatabase::IDBDatabase(ExecutionContext* context,
       event_queue_(
           MakeGarbageCollected<EventQueue>(context, TaskType::kDatabaseAccess)),
       database_callbacks_(callbacks),
-      isolate_(isolate) {
+      isolate_(isolate),
+      feature_handle_for_scheduler_(
+          context
+              ? context->GetScheduler()->RegisterFeature(
+                    SchedulingPolicy::Feature::kIndexedDBConnection,
+                    {SchedulingPolicy::RecordMetricsForBackForwardCache()})
+              : FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle()) {
   database_callbacks_->Connect(this);
 }
 
@@ -436,6 +442,7 @@ void IDBDatabase::close() {
     return;
 
   close_pending_ = true;
+  feature_handle_for_scheduler_.reset();
 
   if (transactions_.IsEmpty())
     CloseConnection();
