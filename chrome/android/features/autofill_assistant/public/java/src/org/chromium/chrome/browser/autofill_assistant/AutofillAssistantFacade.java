@@ -66,8 +66,10 @@ public class AutofillAssistantFacade {
      * .../variations/generate_server_hashes.py and
      * .../website/components/variations_dash/variations_histogram_entry.js.
      */
-    private static final String SYNTHETIC_TRIAL = "AutofillAssistantTriggered";
+    private static final String TRIGGERED_SYNTHETIC_TRIAL = "AutofillAssistantTriggered";
     private static final String ENABLED_GROUP = "Enabled";
+
+    private static final String EXPERIMENTS_SYNTHETIC_TRIAL = "AutofillAssistantExperimentsTrial";
 
     /** Returns true if conditions are satisfied to attempt to start Autofill Assistant. */
     public static boolean isConfigured(@Nullable Bundle intentExtras) {
@@ -77,7 +79,15 @@ public class AutofillAssistantFacade {
     /** Starts Autofill Assistant on the given {@code activity}. */
     public static void start(ChromeActivity activity) {
         // Register synthetic trial as soon as possible.
-        UmaSessionStats.registerSyntheticFieldTrial(SYNTHETIC_TRIAL, ENABLED_GROUP);
+        UmaSessionStats.registerSyntheticFieldTrial(TRIGGERED_SYNTHETIC_TRIAL, ENABLED_GROUP);
+        // Synthetic trial for experiments.
+        String experimentIds = getExperimentIds(activity.getInitialIntent().getExtras());
+        if (!experimentIds.isEmpty()) {
+            for (String experimentId : experimentIds.split(",")) {
+                UmaSessionStats.registerSyntheticFieldTrial(
+                        EXPERIMENTS_SYNTHETIC_TRIAL, experimentId);
+            }
+        }
 
         // Early exit if autofill assistant should not be triggered.
         if (!canStart(activity.getInitialIntent())
