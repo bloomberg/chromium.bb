@@ -157,6 +157,7 @@ void JourneyLogger::SetRequestedPaymentMethodTypes(
 }
 
 void JourneyLogger::SetCompleted() {
+  DCHECK(WasPaymentRequestTriggered());
   RecordJourneyStatsHistograms(COMPLETION_STATUS_COMPLETED);
 }
 
@@ -175,6 +176,8 @@ void JourneyLogger::SetAborted(AbortReason reason) {
 }
 
 void JourneyLogger::SetNotShown(NotShownReason reason) {
+  DCHECK(!WasPaymentRequestTriggered());
+  RecordJourneyStatsHistograms(COMPLETION_STATUS_COULD_NOT_SHOW);
   base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.NoShow", reason,
                                 NOT_SHOWN_REASON_MAX);
 }
@@ -231,6 +234,9 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
     case COMPLETION_STATUS_OTHER_ABORTED:
       events_ |= EVENT_OTHER_ABORTED;
       break;
+    case COMPLETION_STATUS_COULD_NOT_SHOW:
+      events_ |= EVENT_COULD_NOT_SHOW;
+      break;
     default:
       NOTREACHED();
   }
@@ -278,6 +284,7 @@ void JourneyLogger::ValidateEventBits() const {
   bit_vector.push_back(events_ & EVENT_COMPLETED);
   bit_vector.push_back(events_ & EVENT_OTHER_ABORTED);
   bit_vector.push_back(events_ & EVENT_USER_ABORTED);
+  bit_vector.push_back(events_ & EVENT_COULD_NOT_SHOW);
   DCHECK(ValidateExclusiveBitVector(bit_vector));
   bit_vector.clear();
   if (events_ & EVENT_COMPLETED)

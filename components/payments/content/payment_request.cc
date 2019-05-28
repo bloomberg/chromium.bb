@@ -188,6 +188,8 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
   display_handle_ = display_manager_->TryShow(delegate_.get());
   if (!display_handle_) {
     log_.Error(errors::kAnotherUiShowing);
+    DCHECK(!has_recorded_completion_);
+    has_recorded_completion_ = true;
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS);
     client_->OnError(mojom::PaymentErrorReason::ALREADY_SHOWING);
@@ -197,6 +199,8 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
 
   if (!delegate_->IsBrowserWindowActive()) {
     log_.Error(errors::kCannotShowInBackgroundTab);
+    DCHECK(!has_recorded_completion_);
+    has_recorded_completion_ = true;
     journey_logger_.SetNotShown(JourneyLogger::NOT_SHOWN_REASON_OTHER);
     client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
     OnConnectionTerminated();
@@ -451,6 +455,8 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
     if (SatisfiesSkipUIConstraints())
       Pay();
   } else {
+    DCHECK(!has_recorded_completion_);
+    has_recorded_completion_ = true;
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
     client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED);

@@ -114,6 +114,7 @@ using payments::JourneyLogger;
                  @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 - (void)testOnlyBobpaySupported {
@@ -151,7 +152,7 @@ using payments::JourneyLogger;
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SKIPPED_SHOW, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COMPLETED, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_USER_ABORTED, @"");
-  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_OTHER_ABORTED, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_OTHER_ABORTED, @"");
   GREYAssertFalse(
       buckets[0].min & JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT, @"");
   GREYAssertFalse(
@@ -178,6 +179,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // TODO(crbug.com/795663): Fails on iphone11 devices.
@@ -243,6 +245,7 @@ using payments::JourneyLogger;
                  @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // TODO(crbug.com/602666): add a test to verify that the correct metrics get
@@ -323,6 +326,7 @@ using payments::JourneyLogger;
                  @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -399,6 +403,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -475,6 +480,7 @@ using payments::JourneyLogger;
                  @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -552,6 +558,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -630,6 +637,7 @@ using payments::JourneyLogger;
                  @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -712,6 +720,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 // Tests that the correct number of suggestions shown for each section is logged
@@ -810,6 +819,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 - (void)testUserHadIncompleteSuggestionsForEverything_NoCard {
@@ -861,6 +871,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 - (void)testUserHadIncompleteSuggestionsForEverything_CardNetworkNotSupported {
@@ -913,6 +924,7 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COULD_NOT_SHOW, @"");
 }
 
 @end
