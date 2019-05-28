@@ -8,10 +8,10 @@
 
 #include "base/base64.h"
 #include "base/location.h"
-#include "components/sync/base/nigori.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/entity_data.h"
+#include "components/sync/nigori/nigori.h"
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 

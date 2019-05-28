@@ -10,11 +10,11 @@
 
 #include "base/base64.h"
 #include "base/hash/sha1.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

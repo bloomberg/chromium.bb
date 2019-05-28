@@ -17,8 +17,8 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/syncable/nigori_handler.h"
 

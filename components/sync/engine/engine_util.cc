@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "components/sync/base/cryptographer.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 

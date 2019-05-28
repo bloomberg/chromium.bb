@@ -10,12 +10,12 @@
 
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/engine/cycle/update_counters.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/engine_impl/syncer_util.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 #include "components/sync/syncable/syncable_model_neutral_write_transaction.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_BASE_NIGORI_KEY_BAG_H_
-#define COMPONENTS_SYNC_BASE_NIGORI_KEY_BAG_H_
+#ifndef COMPONENTS_SYNC_NIGORI_NIGORI_KEY_BAG_H_
+#define COMPONENTS_SYNC_NIGORI_NIGORI_KEY_BAG_H_
 
 #include <map>
 #include <memory>
@@ -70,4 +70,4 @@ class NigoriKeyBag {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_BASE_NIGORI_KEY_BAG_H_
+#endif  // COMPONENTS_SYNC_NIGORI_NIGORI_KEY_BAG_H_

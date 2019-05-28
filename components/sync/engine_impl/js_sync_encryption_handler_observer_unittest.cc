@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/passphrase_enums.h"
@@ -19,6 +18,7 @@
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_test_util.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/base/cryptographer.h"
+#include "components/sync/nigori/cryptographer.h"
 
 #include "base/strings/string_util.h"
 #include "components/sync/base/fake_encryptor.h"

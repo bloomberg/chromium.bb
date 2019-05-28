@@ -8,8 +8,8 @@
 
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/engine_impl/syncer_util.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/nigori_handler.h"
 #include "components/sync/syncable/nigori_util.h"

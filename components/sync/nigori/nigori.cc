@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/base/nigori.h"
+#include "components/sync/nigori/nigori.h"
 
 #include <stdint.h>
 
@@ -24,8 +24,8 @@
 #include "crypto/random.h"
 #include "crypto/symmetric_key.h"
 
-using base::Base64Encode;
 using base::Base64Decode;
+using base::Base64Encode;
 using crypto::HMAC;
 using crypto::SymmetricKey;
 
@@ -88,8 +88,7 @@ const char* GetHistogramSuffixForKeyDerivationMethod(
 
 KeyDerivationParams::KeyDerivationParams(KeyDerivationMethod method,
                                          const std::string& scrypt_salt)
-    : method_(method),
-      scrypt_salt_(scrypt_salt) {}
+    : method_(method), scrypt_salt_(scrypt_salt) {}
 
 KeyDerivationParams::KeyDerivationParams(const KeyDerivationParams& other) =
     default;
@@ -99,8 +98,7 @@ KeyDerivationParams& KeyDerivationParams::operator=(
     const KeyDerivationParams& other) = default;
 
 bool KeyDerivationParams::operator==(const KeyDerivationParams& other) const {
-  return method_ == other.method_ &&
-         scrypt_salt_ == other.scrypt_salt_;
+  return method_ == other.method_ && scrypt_salt_ == other.scrypt_salt_;
 }
 
 bool KeyDerivationParams::operator!=(const KeyDerivationParams& other) const {

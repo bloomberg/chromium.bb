@@ -6,7 +6,7 @@
 #include "base/macros.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/sync/base/nigori.h"
+#include "components/sync/nigori/nigori.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {

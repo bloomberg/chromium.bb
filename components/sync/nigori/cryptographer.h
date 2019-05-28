@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_BASE_CRYPTOGRAPHER_H_
-#define COMPONENTS_SYNC_BASE_CRYPTOGRAPHER_H_
+#ifndef COMPONENTS_SYNC_NIGORI_CRYPTOGRAPHER_H_
+#define COMPONENTS_SYNC_NIGORI_CRYPTOGRAPHER_H_
 
 #include <map>
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "components/sync/base/nigori.h"
-#include "components/sync/base/nigori_key_bag.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/nigori/nigori.h"
+#include "components/sync/nigori/nigori_key_bag.h"
 #include "components/sync/protocol/encryption.pb.h"
 
 namespace sync_pb {
 class NigoriKeyBag;
-}
+}  // namespace sync_pb
 
 namespace syncer {
 
@@ -217,4 +217,4 @@ class Cryptographer {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_BASE_CRYPTOGRAPHER_H_
+#endif  // COMPONENTS_SYNC_NIGORI_CRYPTOGRAPHER_H_

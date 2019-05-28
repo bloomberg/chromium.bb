@@ -5,10 +5,10 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/system_encryptor.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/nigori/cryptographer.h"
 
 namespace {
 

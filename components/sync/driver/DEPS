@@ -18,6 +18,7 @@ include_rules = [
   "+components/sync/js",
   "+components/sync/model",
   "+components/sync/model_impl",
+  "+components/sync/nigori",
   "+components/sync/protocol",
   "+components/sync/syncable",
   "+components/sync/test",
