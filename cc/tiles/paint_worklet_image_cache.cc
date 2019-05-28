@@ -48,10 +48,7 @@ void PaintWorkletImageCache::SetPaintWorkletLayerPainter(
 
 scoped_refptr<TileTask> PaintWorkletImageCache::GetTaskForPaintWorkletImage(
     const DrawImage& image) {
-  // As described in crbug.com/939192, the |painter_| could be null, and we
-  // should not create any raster task.
-  if (!painter_)
-    return nullptr;
+  DCHECK(painter_);
   DCHECK(image.paint_image().IsPaintWorklet());
   return base::MakeRefCounted<PaintWorkletTaskImpl>(this, image.paint_image());
 }
@@ -91,10 +88,7 @@ void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
 std::pair<sk_sp<PaintRecord>, base::OnceCallback<void()>>
 PaintWorkletImageCache::GetPaintRecordAndRef(PaintWorkletInput* input) {
   base::AutoLock hold(records_lock_);
-  // If the |painter_| was null when GetTaskForPaintWorkletImage was called
-  // there will be no cache entry for this input.
-  if (records_.find(input) == records_.end())
-    return std::make_pair(sk_make_sp<PaintOpBuffer>(), base::DoNothing::Once());
+  DCHECK(records_.find(input) != records_.end());
   records_[input].used_ref_count++;
   records_[input].num_of_frames_not_accessed = 0u;
   // The PaintWorkletImageCache object lives as long as the LayerTreeHostImpl,

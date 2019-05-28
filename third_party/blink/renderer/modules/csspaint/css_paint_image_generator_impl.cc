@@ -60,6 +60,8 @@ scoped_refptr<Image> CSSPaintImageGeneratorImpl::Paint(
 }
 
 bool CSSPaintImageGeneratorImpl::HasDocumentDefinition() const {
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
+    return paint_worklet_->GetMainThreadDocumentDefinitionMap().Contains(name_);
   return paint_worklet_->GetDocumentDefinitionMap().Contains(name_);
 }
 

@@ -29,10 +29,30 @@ using testing::Values;
 namespace blink {
 namespace {
 
-using CSSPaintValueTest = RenderingTest;
+class CSSPaintValueTest : public RenderingTest,
+                          public ::testing::WithParamInterface<bool> {
+ public:
+  CSSPaintValueTest() : scoped_off_main_thread_css_paint_(GetParam()) {}
+
+ private:
+  ScopedOffMainThreadCSSPaintForTest scoped_off_main_thread_css_paint_;
+};
+
+INSTANTIATE_TEST_SUITE_P(, CSSPaintValueTest, Values(false, true));
 
 class MockCSSPaintImageGenerator : public CSSPaintImageGenerator {
  public:
+  MockCSSPaintImageGenerator() {
+    // These methods return references, so setup a default ON_CALL to make them
+    // easier to use. They can be overridden by a specific test if desired.
+    ON_CALL(*this, NativeInvalidationProperties())
+        .WillByDefault(ReturnRef(native_properties_));
+    ON_CALL(*this, CustomInvalidationProperties())
+        .WillByDefault(ReturnRef(custom_properties_));
+    ON_CALL(*this, InputArgumentTypes())
+        .WillByDefault(ReturnRef(input_argument_types_));
+  }
+
   MOCK_METHOD3(Paint,
                scoped_refptr<Image>(const ImageResourceObserver&,
                                     const FloatSize& container_size,
@@ -43,6 +63,11 @@ class MockCSSPaintImageGenerator : public CSSPaintImageGenerator {
   MOCK_CONST_METHOD0(InputArgumentTypes, Vector<CSSSyntaxDescriptor>&());
   MOCK_CONST_METHOD0(IsImageGeneratorReady, bool());
   MOCK_CONST_METHOD0(WorkletId, int());
+
+ private:
+  Vector<CSSPropertyID> native_properties_;
+  Vector<AtomicString> custom_properties_;
+  Vector<CSSSyntaxDescriptor> input_argument_types_;
 };
 
 // CSSPaintImageGenerator requires that CSSPaintImageGeneratorCreateFunction be
@@ -57,7 +82,7 @@ CSSPaintImageGenerator* ProvideOverrideGenerator(
 }
 }  // namespace
 
-TEST_F(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
+TEST_P(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
   NiceMock<MockCSSPaintImageGenerator>* mock_generator =
       MakeGarbageCollected<NiceMock<MockCSSPaintImageGenerator>>();
   base::AutoReset<MockCSSPaintImageGenerator*> scoped_override_generator(
@@ -67,12 +92,15 @@ TEST_F(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
           CSSPaintImageGenerator::GetCreateFunctionForTesting(),
           ProvideOverrideGenerator);
 
-  Vector<CSSSyntaxDescriptor> input_argument_types;
-  ON_CALL(*mock_generator, InputArgumentTypes())
-      .WillByDefault(ReturnRef(input_argument_types));
   const FloatSize target_size(100, 100);
-  ON_CALL(*mock_generator, Paint(_, _, _))
-      .WillByDefault(Return(PaintGeneratedImage::Create(nullptr, target_size)));
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    // In off-thread CSS Paint, the actual paint call is deferred.
+    EXPECT_CALL(*mock_generator, Paint(_, _, _)).Times(0);
+  } else {
+    ON_CALL(*mock_generator, Paint(_, _, _))
+        .WillByDefault(
+            Return(PaintGeneratedImage::Create(nullptr, target_size)));
+  }
 
   SetBodyInnerHTML(R"HTML(
     <div id="target"></div>
@@ -94,7 +122,7 @@ TEST_F(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
 }
 
 // Regression test for https://crbug.com/835589.
-TEST_F(CSSPaintValueTest, DoNotPaintForLink) {
+TEST_P(CSSPaintValueTest, DoNotPaintForLink) {
   SetBodyInnerHTML(R"HTML(
     <style>
       a {
@@ -116,7 +144,7 @@ TEST_F(CSSPaintValueTest, DoNotPaintForLink) {
 }
 
 // Regression test for https://crbug.com/835589.
-TEST_F(CSSPaintValueTest, DoNotPaintWhenAncestorHasLink) {
+TEST_P(CSSPaintValueTest, DoNotPaintWhenAncestorHasLink) {
   SetBodyInnerHTML(R"HTML(
     <style>
       a {

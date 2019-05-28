@@ -257,29 +257,5 @@ TEST(PaintWorkletImageCacheTest, CacheEntryLookup) {
   }
 }
 
-TEST(PaintWorkletImageCacheTest, TaskIsNullWhenPainterIsNull) {
-  TestPaintWorkletImageCache cache;
-  PaintImage paint_image = CreatePaintImage(100, 100);
-  scoped_refptr<TileTask> task =
-      GetTaskForPaintWorkletImage(paint_image, &cache);
-  EXPECT_EQ(task, nullptr);
-}
-
-TEST(PaintWorkletImageCacheTest,
-     RecordAndCallbackAreEmptyWhenInputWasntPainted) {
-  TestPaintWorkletImageCache cache;
-  std::unique_ptr<TestPaintWorkletLayerPainter> painter =
-      std::make_unique<TestPaintWorkletLayerPainter>();
-  cache.SetPaintWorkletLayerPainter(std::move(painter));
-
-  // We request a record and callback without ever painting the input.
-  PaintImage paint_image = CreatePaintImage(100, 100);
-  std::pair<sk_sp<PaintRecord>, base::OnceCallback<void()>> result =
-      cache.GetPaintRecordAndRef(paint_image.paint_worklet_input());
-  EXPECT_EQ(result.first->total_op_count(), 0u);
-  // This is an empty callback, running it should not crash.
-  std::move(result.second).Run();
-}
-
 }  // namespace
 }  // namespace cc

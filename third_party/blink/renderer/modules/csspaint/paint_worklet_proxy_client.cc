@@ -163,8 +163,17 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
   PaintWorkletStylePropertyMap* style_map =
       MakeGarbageCollected<PaintWorkletStylePropertyMap>(input->StyleMapData());
 
-  return definition->Paint(FloatSize(input->GetSize()), input->EffectiveZoom(),
-                           style_map, nullptr);
+  sk_sp<PaintRecord> result = definition->Paint(
+      FloatSize(input->GetSize()), input->EffectiveZoom(), style_map, nullptr);
+
+  // CSSPaintDefinition::Paint returns nullptr if it fails, but for
+  // OffThread-PaintWorklet we prefer to insert empty PaintRecords into the
+  // cache. Do the conversion here.
+  // TODO(smcgruer): Once OffThread-PaintWorklet launches, we can make
+  // CSSPaintDefinition::Paint return empty PaintRecords.
+  if (!result)
+    result = sk_make_sp<PaintRecord>();
+  return result;
 }
 
 void ProvidePaintWorkletProxyClientTo(WorkerClients* clients,

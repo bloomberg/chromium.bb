@@ -107,6 +107,10 @@ sk_sp<cc::PaintRecord> PaintWorkletPaintDispatcher::Paint(
 
   done_event.Wait();
 
+  // If the paint fails, PaintWorkletPainter should return an empty record
+  // rather than a nullptr.
+  DCHECK(output);
+
   return output;
 }
 
