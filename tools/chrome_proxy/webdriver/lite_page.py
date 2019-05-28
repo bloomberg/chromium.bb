@@ -115,8 +115,11 @@ class LitePage(IntegrationTest):
       self.assertGreater(1, image_responses)
 
   # Tests that the stale previews UI is shown on a stale Lite page.
+  # The stale timestamp histogram is not logged with the new UI unless the page
+  # info dialog is opened which can't be done in a ChromeDriver test.
   @AndroidOnly
   @ChromeVersionEqualOrAfterM(65)
+  @ChromeVersionBeforeM(76)
   def testStaleLitePageNano(self):
     # If it was attempted to run with another experiment, skip this test.
     if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
