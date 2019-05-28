@@ -20,7 +20,6 @@ group("scheduler") {
 
 source_set("public") {
   sources = [
-    "internal_types.h",
     "notification_background_task_scheduler.h",
     "notification_data.cc",
     "notification_data.h",
@@ -86,7 +85,6 @@ source_set("lib") {
     "impression_types.h",
     "init_aware_scheduler.cc",
     "init_aware_scheduler.h",
-    "internal_types.h",
     "notification_entry.cc",
     "notification_entry.h",
     "notification_schedule_service_impl.cc",
@@ -142,4 +140,12 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+}
+
+if (is_android) {
+  java_cpp_enum("jni_enums") {
+    sources = [
+      "notification_scheduler_types.h",
+    ]
+  }
 }

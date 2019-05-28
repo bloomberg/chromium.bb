@@ -7,6 +7,20 @@
 
 namespace notifications {
 
+// Enum to describe the time to process scheduled notification data.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: (
+//   org.chromium.chrome.browser.notifications.scheduler)
+enum class SchedulerTaskTime {
+  // The system is started from normal user launch or other background
+  // tasks.
+  kUnknown = 0,
+  // Background task runs in the morning.
+  kMorning = 1,
+  // Background task runs in the evening.
+  kEvening = 2,
+};
+
 // The type of a list of clients using the notification scheduler system.
 enum class SchedulerClientType {
   // Test only values.
