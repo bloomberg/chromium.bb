@@ -147,6 +147,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/common",
     "//ios/chrome/common/favicon",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/images",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//net",
