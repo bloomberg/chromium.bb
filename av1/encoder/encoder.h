@@ -1007,7 +1007,9 @@ typedef struct AV1_COMP {
 
   // The following data are for AV1 bitstream levels.
   AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];
-  int keep_level_stats;
+  // Bit mask to indicate whether to keep level stats for corresponding
+  // operating points.
+  uint32_t keep_level_stats;
   AV1LevelInfo level_info[MAX_NUM_OPERATING_POINTS];
   // Count the number of OBU_FRAME and OBU_FRAME_HEADER for level calculation.
   int frame_header_count;

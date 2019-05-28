@@ -2411,8 +2411,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cpi->keep_level_stats = 0;
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
     if (cpi->target_seq_level_idx[i] < SEQ_LEVELS) {
-      cpi->keep_level_stats = 1;
-      break;
+      cpi->keep_level_stats |= 1u << i;
     }
   }
 

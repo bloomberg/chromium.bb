@@ -998,7 +998,8 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
   // TODO(kyslov@) fix the implementation according to buffer model
   for (int i = 0; i < seq_params->operating_points_cnt_minus_1 + 1; ++i) {
     if (!is_in_operating_point(seq_params->operating_point_idc[i],
-                               temporal_layer_id, spatial_layer_id)) {
+                               temporal_layer_id, spatial_layer_id) ||
+        !((cpi->keep_level_stats >> i) & 1)) {
       continue;
     }
 
@@ -1059,17 +1060,11 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
 
 aom_codec_err_t av1_get_seq_level_idx(const AV1_COMP *cpi, int *seq_level_idx) {
   const SequenceHeader *const seq_params = &cpi->common.seq_params;
-  if (!cpi->keep_level_stats) {
-    for (int op = 0; op < seq_params->operating_points_cnt_minus_1 + 1; ++op) {
-      seq_level_idx[op] = (int)SEQ_LEVEL_MAX;
-    }
-    return AOM_CODEC_OK;
-  }
-
   const int is_still_picture = seq_params->still_picture;
   const BITSTREAM_PROFILE profile = seq_params->profile;
   for (int op = 0; op < seq_params->operating_points_cnt_minus_1 + 1; ++op) {
     seq_level_idx[op] = (int)SEQ_LEVEL_MAX;
+    if (!((cpi->keep_level_stats >> op) & 1)) continue;
     const int tier = seq_params->tier[op];
     const AV1LevelInfo *const level_info = &cpi->level_info[op];
     const AV1LevelStats *const level_stats = &level_info->level_stats;
