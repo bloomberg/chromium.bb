@@ -23,17 +23,12 @@ void ThreadHeapStatsCollector::IncreaseCompactionFreedPages(size_t pages) {
 void ThreadHeapStatsCollector::IncreaseAllocatedObjectSize(size_t bytes) {
   // The current GC may not have been started. This is ok as recording considers
   // the whole time range between garbage collections.
-  allocated_bytes_since_prev_gc_ += bytes;
+  allocated_bytes_since_prev_gc_ += static_cast<int64_t>(bytes);
 }
 
 void ThreadHeapStatsCollector::DecreaseAllocatedObjectSize(size_t bytes) {
   // See IncreaseAllocatedObjectSize.
-
-  // TODO(mlippautz): Fix underflow.
-  if (bytes > allocated_bytes_since_prev_gc_)
-    return;
-
-  allocated_bytes_since_prev_gc_ -= bytes;
+  allocated_bytes_since_prev_gc_ -= static_cast<int64_t>(bytes);
 }
 
 void ThreadHeapStatsCollector::AllocatedObjectSizeSafepoint() {
@@ -102,7 +97,11 @@ void ThreadHeapStatsCollector::UpdateReason(BlinkGC::GCReason reason) {
 }
 
 size_t ThreadHeapStatsCollector::object_size_in_bytes() const {
-  return previous().marked_bytes + allocated_bytes_since_prev_gc_;
+  DCHECK_GE(static_cast<int64_t>(previous().marked_bytes) +
+                allocated_bytes_since_prev_gc_,
+            0);
+  return static_cast<size_t>(static_cast<int64_t>(previous().marked_bytes) +
+                             allocated_bytes_since_prev_gc_);
 }
 
 double ThreadHeapStatsCollector::estimated_marking_time_in_seconds() const {
@@ -138,7 +137,7 @@ TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {
          scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
 }
 
-size_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {
+int64_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {
   return allocated_bytes_since_prev_gc_;
 }
 

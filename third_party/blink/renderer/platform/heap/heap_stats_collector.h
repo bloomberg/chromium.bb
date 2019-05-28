@@ -258,7 +258,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   TimeDelta estimated_marking_time() const;
 
   size_t marked_bytes() const;
-  size_t allocated_bytes_since_prev_gc() const;
+  int64_t allocated_bytes_since_prev_gc() const;
 
   size_t allocated_space_bytes() const;
 
@@ -287,9 +287,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   Event previous_;
 
   // Allocated bytes since the last garbage collection. These bytes are reset
-  // after marking as they should be accounted in marked_bytes then (which are
-  // only available after sweeping though).
-  size_t allocated_bytes_since_prev_gc_ = 0;
+  // after marking as they are accounted in marked_bytes then.
+  int64_t allocated_bytes_since_prev_gc_ = 0;
 
   // Allocated space in bytes for all arenas.
   size_t allocated_space_bytes_ = 0;

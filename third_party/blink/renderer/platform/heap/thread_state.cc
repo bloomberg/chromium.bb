@@ -396,7 +396,7 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
   // If the allocated object size or the total memory size is small, don't
   // trigger a GC.
   if (heap_->stats_collector()->allocated_bytes_since_prev_gc() <
-          allocated_object_size_threshold ||
+          static_cast<int64_t>(allocated_object_size_threshold) ||
       TotalMemorySize() < total_memory_size_threshold)
     return false;
 
@@ -916,10 +916,13 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "BlinkGC.AllocatedSpaceKB",
                  CappedSizeInKB(stats_collector.allocated_space_bytes()));
-  TRACE_COUNTER1(
-      TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-      "BlinkGC.AllocatedObjectSizeSincePreviousGCKB",
-      CappedSizeInKB(stats_collector.allocated_bytes_since_prev_gc()));
+  size_t allocated_bytes_since_prev_gc =
+      stats_collector.allocated_bytes_since_prev_gc() > 0
+          ? static_cast<size_t>(stats_collector.allocated_bytes_since_prev_gc())
+          : 0;
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.AllocatedObjectSizeSincePreviousGCKB",
+                 CappedSizeInKB(allocated_bytes_since_prev_gc));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "PartitionAlloc.TotalSizeOfCommittedPagesKB",
                  CappedSizeInKB(WTF::Partitions::TotalSizeOfCommittedPages()));
@@ -964,7 +967,8 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   constexpr size_t kMinObjectSizeForReportingThroughput = 1024 * 1024;
   if (WTF::TimeTicks::IsHighResolution() &&
       (event.object_size_in_bytes_before_sweeping >
-       kMinObjectSizeForReportingThroughput)) {
+       kMinObjectSizeForReportingThroughput) &&
+      !marking_duration.is_zero()) {
     DCHECK_GT(marking_duration.InMillisecondsF(), 0.0);
     // For marking throughput computation all marking steps, independent of
     // whether they are triggered from V8 or Blink, are relevant.
@@ -1633,8 +1637,13 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   if (ShouldVerifyMarking())
     VerifyMarking(marking_type);
 
-  ProcessHeap::DecreaseTotalAllocatedObjectSize(
-      Heap().stats_collector()->allocated_bytes_since_prev_gc());
+  if (Heap().stats_collector()->allocated_bytes_since_prev_gc() > 0) {
+    ProcessHeap::DecreaseTotalAllocatedObjectSize(static_cast<size_t>(
+        Heap().stats_collector()->allocated_bytes_since_prev_gc()));
+  } else {
+    ProcessHeap::IncreaseTotalAllocatedObjectSize(static_cast<size_t>(
+        -Heap().stats_collector()->allocated_bytes_since_prev_gc()));
+  }
   ProcessHeap::DecreaseTotalMarkedObjectSize(
       Heap().stats_collector()->previous().marked_bytes);
   ProcessHeap::IncreaseTotalMarkedObjectSize(marked_bytes);

@@ -182,7 +182,7 @@ bool UnifiedHeapController::IsRootForNonTracingGC(
 }
 
 void UnifiedHeapController::UpdateAllocatedObjectSize(
-    size_t allocated_bytes_since_prev_gc) {
+    int64_t allocated_bytes_since_prev_gc) {
   int64_t delta =
       allocated_bytes_since_prev_gc - old_allocated_bytes_since_prev_gc_;
   old_allocated_bytes_since_prev_gc_ = allocated_bytes_since_prev_gc;

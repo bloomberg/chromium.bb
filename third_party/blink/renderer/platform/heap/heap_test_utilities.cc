@@ -35,4 +35,9 @@ void ClearOutOldGarbage() {
   }
 }
 
+void CompleteSweepingIfNeeded() {
+  if (ThreadState::Current()->IsSweepingInProgress())
+    ThreadState::Current()->CompleteSweep();
+}
+
 }  // namespace blink

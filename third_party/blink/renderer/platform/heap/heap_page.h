@@ -885,7 +885,6 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   void SetAllocationPoint(Address, size_t);
 
   void SetRemainingAllocationSize(size_t);
-  void UpdateRemainingAllocationSize();
 
   FreeList free_list_;
   Address current_allocation_point_;

@@ -1712,6 +1712,8 @@ TEST(HeapTest, BasicFunctionality) {
     persistents[persistent_count++] = new Persistent<DynamicallySizedObject>(
         DynamicallySizedObject::Create(size));
     slack += 4;
+    // The allocations in the loop may trigger GC with lazy sweeping.
+    CompleteSweepingIfNeeded();
     CheckWithSlack(base_level + total, heap.ObjectPayloadSizeForTesting(),
                    slack);
     if (test_pages_allocated) {

@@ -779,10 +779,10 @@ void NormalPageArena::SetRemainingAllocationSize(
     size_t new_remaining_allocation_size) {
   remaining_allocation_size_ = new_remaining_allocation_size;
 
-  // Sync recorded allocated-object size:
-  //  - if previous alloc checkpoint is larger, allocation size has increased.
-  //  - if smaller, a net reduction in size since last call to
-  //  updateRemainingAllocationSize().
+  // Sync recorded allocated-object size using the recorded checkpoint in
+  // |remaining_allocation_size_|:
+  // - If checkpoint is larger, the allocated size has increased.
+  // - The allocated size has decreased, otherwise.
   if (last_remaining_allocation_size_ > remaining_allocation_size_) {
     GetThreadState()->Heap().IncreaseAllocatedObjectSize(
         last_remaining_allocation_size_ - remaining_allocation_size_);
@@ -791,15 +791,6 @@ void NormalPageArena::SetRemainingAllocationSize(
         remaining_allocation_size_ - last_remaining_allocation_size_);
   }
   last_remaining_allocation_size_ = remaining_allocation_size_;
-}
-
-void NormalPageArena::UpdateRemainingAllocationSize() {
-  if (last_remaining_allocation_size_ > RemainingAllocationSize()) {
-    GetThreadState()->Heap().IncreaseAllocatedObjectSize(
-        last_remaining_allocation_size_ - RemainingAllocationSize());
-    last_remaining_allocation_size_ = RemainingAllocationSize();
-  }
-  DCHECK_EQ(last_remaining_allocation_size_, RemainingAllocationSize());
 }
 
 void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
@@ -811,13 +802,18 @@ void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
     DCHECK_LE(size, static_cast<NormalPage*>(page)->PayloadSize());
   }
 #endif
+  // Free and clear the old linear allocation area.
   if (HasCurrentAllocationArea()) {
     AddToFreeList(CurrentAllocationPoint(), RemainingAllocationSize());
+    SetRemainingAllocationSize(0);
   }
-  UpdateRemainingAllocationSize();
+  // Set up a new linear allocation area.
   current_allocation_point_ = point;
   last_remaining_allocation_size_ = remaining_allocation_size_ = size;
   if (point) {
+    // Only, update allocated size and object start bitmap if the area is
+    // actually set up with a non-null address.
+    GetThreadState()->Heap().IncreaseAllocatedObjectSize(size);
     // Current allocation point can never be part of the object bitmap start
     // because the area can grow or shrink. Will be added back before a GC when
     // clearing the allocation point.
@@ -843,7 +839,6 @@ Address NormalPageArena::OutOfLineAllocateImpl(size_t allocation_size,
     return AllocateLargeObject(allocation_size, gc_info_index);
 
   // 2. Try to allocate from a free list.
-  UpdateRemainingAllocationSize();
   Address result = AllocateFromFreeList(allocation_size, gc_info_index);
   if (result)
     return result;

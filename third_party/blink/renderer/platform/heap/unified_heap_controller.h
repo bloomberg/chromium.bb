@@ -48,7 +48,7 @@ class PLATFORM_EXPORT UnifiedHeapController final
   ThreadState* thread_state() const { return thread_state_; }
 
   // Forwarded from ThreadHeapStatsCollector.
-  void UpdateAllocatedObjectSize(size_t);
+  void UpdateAllocatedObjectSize(int64_t);
 
  private:
   static bool IsRootForNonTracingGCInternal(

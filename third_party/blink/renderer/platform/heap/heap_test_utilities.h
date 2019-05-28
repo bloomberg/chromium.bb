@@ -20,6 +20,7 @@ void PreciselyCollectGarbage();
 void ConservativelyCollectGarbage(
     BlinkGC::SweepingType sweeping_type = BlinkGC::kEagerSweeping);
 void ClearOutOldGarbage();
+void CompleteSweepingIfNeeded();
 
 template <typename T>
 class ObjectWithCallbackBeforeInitializer
