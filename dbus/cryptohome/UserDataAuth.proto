@@ -418,9 +418,12 @@ message GetAccountDiskUsageReply {
 
 // ------------------------- ArcQuota Interface -------------------------
 
+// Input parameters to GetArcDiskFeatures().
 message GetArcDiskFeaturesRequest {}
 
+// Output parameters for GetArcDiskFeatures().
 message GetArcDiskFeaturesReply {
+  // Set to true if Quota feature is supported for ARC Disk/Storage.
   bool quota_supported = 1;
 }
 
