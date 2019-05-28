@@ -4831,7 +4831,7 @@
   },
 
   "BrowserSwitcherExternalGreylistUrl": {
-    "os": ["win", "linux", "mac"],
+    "os": [],
     "test_policy": {
       "BrowserSwitcherExternalGreylistUrl": "file:///C:/src/greylist.xml"
     },

@@ -14895,7 +14895,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'supported_on': ['chrome.*:76-'],
+      'supported_on': ['chrome.*:77-'],
       'caption': '''URL of an XML file that contains URLs that should never trigger a browser switch.''',
       'tags': [],
       'desc': '''This policy is a URL, that points to an XML file in the same format as Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy. This loads rules from an XML file, without sharing those rules with Internet Explorer.
