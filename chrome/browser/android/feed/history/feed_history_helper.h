@@ -12,7 +12,7 @@
 
 namespace history {
 class HistoryService;
-class URLRow;
+struct QueryURLResult;
 }  // namespace history
 
 namespace feed {
@@ -37,9 +37,7 @@ class FeedHistoryHelper {
   base::CancelableTaskTracker tracker_;
 
   void OnCheckURLDone(FeedLoggingMetrics::CheckURLVisitCallback callback,
-                      bool success,
-                      const history::URLRow& row,
-                      const history::VisitVector& visit_vector);
+                      history::QueryURLResult result);
 
   base::WeakPtrFactory<FeedHistoryHelper> weak_ptr_factory_;
 

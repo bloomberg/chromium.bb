@@ -34,6 +34,7 @@ class WebContents;
 
 namespace history {
 class HistoryService;
+struct QueryURLResult;
 }
 
 namespace safe_browsing {
@@ -140,9 +141,7 @@ class BrowserFeatureExtractor {
   // in the history.
   void QueryUrlHistoryDone(std::unique_ptr<ClientPhishingRequest> request,
                            const DoneCallback& callback,
-                           bool success,
-                           const history::URLRow& row,
-                           const history::VisitVector& visits);
+                           history::QueryURLResult result);
 
   // HistoryService callback which is called when we're done querying HTTP host
   // visits in the history.

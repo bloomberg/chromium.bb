@@ -264,11 +264,10 @@ void NTPSnippetsBridge::DismissSuggestion(
 
   history_service_->QueryURL(
       GURL(ConvertJavaStringToUTF8(env, jurl)), /*want_visits=*/false,
-      base::Bind(
+      base::BindOnce(
           [](int global_position, Category category, int position_in_category,
-             bool success, const history::URLRow& row,
-             const history::VisitVector& visit_vector) {
-            bool visited = success && row.visit_count() != 0;
+             history::QueryURLResult result) {
+            bool visited = result.success && result.row.visit_count() != 0;
             ntp_snippets::metrics::OnSuggestionDismissed(
                 global_position, category, position_in_category, visited);
           },

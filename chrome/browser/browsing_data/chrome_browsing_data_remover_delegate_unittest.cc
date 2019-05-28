@@ -368,17 +368,20 @@ class RemoveHistoryTester {
 
   // Returns true, if the given URL exists in the history service.
   bool HistoryContainsURL(const GURL& url) {
-    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
-        new content::MessageLoopRunner;
-    quit_closure_ = message_loop_runner->QuitClosure();
+    bool contains_url = false;
+
+    base::RunLoop run_loop;
+    base::CancelableTaskTracker tracker;
     history_service_->QueryURL(
-        url,
-        true,
-        base::Bind(&RemoveHistoryTester::SaveResultAndQuit,
-                   base::Unretained(this)),
-        &tracker_);
-    message_loop_runner->Run();
-    return query_url_success_;
+        url, true,
+        base::BindLambdaForTesting([&](history::QueryURLResult result) {
+          contains_url = result.success;
+          run_loop.Quit();
+        }),
+        &tracker);
+    run_loop.Run();
+
+    return contains_url;
   }
 
   void AddHistory(const GURL& url, base::Time time) {
@@ -388,19 +391,6 @@ class RemoveHistoryTester {
   }
 
  private:
-  // Callback for HistoryService::QueryURL.
-  void SaveResultAndQuit(bool success,
-                         const history::URLRow&,
-                         const history::VisitVector&) {
-    query_url_success_ = success;
-    quit_closure_.Run();
-  }
-
-  // For History requests.
-  base::CancelableTaskTracker tracker_;
-  bool query_url_success_ = false;
-  base::Closure quit_closure_;
-
   // TestingProfile owns the history service; we shouldn't delete it.
   history::HistoryService* history_service_ = nullptr;
 

@@ -1086,14 +1086,13 @@ bool HistoryBackend::GetURLByID(URLID url_id, URLRow* url_row) {
   return false;
 }
 
-void HistoryBackend::QueryURL(const GURL& url,
-                              bool want_visits,
-                              QueryURLResult* result) {
-  DCHECK(result);
-  result->success = db_ && db_->GetRowForURL(url, &result->row);
+QueryURLResult HistoryBackend::QueryURL(const GURL& url, bool want_visits) {
+  QueryURLResult result;
+  result.success = db_ && db_->GetRowForURL(url, &result.row);
   // Optionally query the visits.
-  if (result->success && want_visits)
-    db_->GetVisitsForURL(result->row.id(), &result->visits);
+  if (result.success && want_visits)
+    db_->GetVisitsForURL(result.row.id(), &result.visits);
+  return result;
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>

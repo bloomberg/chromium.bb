@@ -217,11 +217,7 @@ class HistoryService : public KeyedService {
   // empty.
   //
   // If success is false, neither the row nor the vector will be valid.
-  typedef base::OnceCallback<void(
-      bool,  // Success flag, when false, nothing else is valid.
-      const URLRow&,
-      const VisitVector&)>
-      QueryURLCallback;
+  using QueryURLCallback = base::OnceCallback<void(QueryURLResult)>;
 
   // Queries the basic information about the URL in the history database. If
   // the caller is interested in the visits (each time the URL is visited),

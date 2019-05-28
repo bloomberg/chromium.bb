@@ -273,7 +273,9 @@ struct QueryOptions {
 struct QueryURLResult {
   QueryURLResult();
   QueryURLResult(const QueryURLResult&);
-  QueryURLResult(QueryURLResult&&);
+  QueryURLResult(QueryURLResult&&) noexcept;
+  QueryURLResult& operator=(const QueryURLResult&);
+  QueryURLResult& operator=(QueryURLResult&&) noexcept;
   ~QueryURLResult();
 
   // Indicates whether the call to HistoryBackend::QueryURL was successfull

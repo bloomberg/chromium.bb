@@ -174,7 +174,11 @@ QueryURLResult::~QueryURLResult() = default;
 
 QueryURLResult::QueryURLResult(const QueryURLResult&) = default;
 
-QueryURLResult::QueryURLResult(QueryURLResult&&) = default;
+QueryURLResult::QueryURLResult(QueryURLResult&&) noexcept = default;
+
+QueryURLResult& QueryURLResult::operator=(const QueryURLResult&) = default;
+
+QueryURLResult& QueryURLResult::operator=(QueryURLResult&&) noexcept = default;
 
 // MostVisitedURL --------------------------------------------------------------
 

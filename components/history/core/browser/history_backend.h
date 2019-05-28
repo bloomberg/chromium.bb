@@ -235,9 +235,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void ScheduleAutocomplete(
       const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback);
 
-  void QueryURL(const GURL& url,
-                bool want_visits,
-                QueryURLResult* query_url_result);
+  QueryURLResult QueryURL(const GURL& url, bool want_visits);
   void QueryHistory(const base::string16& text_query,
                     const QueryOptions& options,
                     QueryResults* query_results);

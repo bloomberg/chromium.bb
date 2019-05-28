@@ -1293,9 +1293,8 @@ IN_PROC_BROWSER_TEST_P(
     base::RunLoop loop;
     history_service->QueryURL(
         HttpsLitePageURL(kSuccess), false /* want_visits */,
-        base::BindLambdaForTesting([&](bool success, const history::URLRow& row,
-                                       const history::VisitVector&) {
-          EXPECT_TRUE(success);
+        base::BindLambdaForTesting([&](history::QueryURLResult result) {
+          EXPECT_TRUE(result.success);
           loop.Quit();
         }),
         &tracker_);
@@ -1307,9 +1306,8 @@ IN_PROC_BROWSER_TEST_P(
         PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
             HttpsLitePageURL(kSuccess)),
         false /* want_visits */,
-        base::BindLambdaForTesting([&](bool success, const history::URLRow& row,
-                                       const history::VisitVector&) {
-          EXPECT_FALSE(success);
+        base::BindLambdaForTesting([&](history::QueryURLResult result) {
+          EXPECT_FALSE(result.success);
           loop.Quit();
         }),
         &tracker_);

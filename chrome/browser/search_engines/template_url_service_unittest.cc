@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread.h"
@@ -47,26 +48,6 @@ namespace {
 // A prepopulated ID to set for engines we want to show in the default list.
 // This must simply be greater than 0.
 static constexpr int kPrepopulatedId = 999999;
-
-// QueryHistoryCallbackImpl ---------------------------------------------------
-
-struct QueryHistoryCallbackImpl {
-  QueryHistoryCallbackImpl() : success(false) {}
-
-  void Callback(bool success,
-                const history::URLRow& row,
-                const history::VisitVector& visits) {
-    this->success = success;
-    if (success) {
-      this->row = row;
-      this->visits = visits;
-    }
-  }
-
-  bool success;
-  history::URLRow row;
-  history::VisitVector visits;
-};
 
 std::unique_ptr<TemplateURL> CreateKeywordWithDate(
     TemplateURLService* model,
@@ -1237,22 +1218,24 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
 
   // Query history for the generated url.
   base::CancelableTaskTracker tracker;
-  QueryHistoryCallbackImpl callback;
-  history->QueryURL(GURL("http://keyword"),
-                    true,
-                    base::Bind(&QueryHistoryCallbackImpl::Callback,
-                               base::Unretained(&callback)),
-                    &tracker);
+  history::QueryURLResult query_url_result;
+  history->QueryURL(
+      GURL("http://keyword"), true,
+      base::BindLambdaForTesting([&](history::QueryURLResult result) {
+        query_url_result = std::move(result);
+      }),
+      &tracker);
 
   // Wait for the request to be processed.
   test_util()->profile()->BlockUntilHistoryProcessesPendingRequests();
 
   // And make sure the url and visit were added.
-  EXPECT_TRUE(callback.success);
-  EXPECT_NE(0, callback.row.id());
-  ASSERT_EQ(1U, callback.visits.size());
-  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
-      callback.visits[0].transition, ui::PAGE_TRANSITION_KEYWORD_GENERATED));
+  EXPECT_TRUE(query_url_result.success);
+  EXPECT_NE(0, query_url_result.row.id());
+  ASSERT_EQ(1U, query_url_result.visits.size());
+  EXPECT_TRUE(
+      ui::PageTransitionCoreTypeIs(query_url_result.visits[0].transition,
+                                   ui::PAGE_TRANSITION_KEYWORD_GENERATED));
 }
 
 // Make sure that the load routine deletes prepopulated engines that no longer

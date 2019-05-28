@@ -277,13 +277,10 @@ ExtensionFunction::ResponseAction HistoryGetVisitsFunction::Run() {
   return RespondLater();  // QueryComplete() will be called asynchronously.
 }
 
-void HistoryGetVisitsFunction::QueryComplete(
-    bool success,
-    const history::URLRow& url_row,
-    const history::VisitVector& visits) {
+void HistoryGetVisitsFunction::QueryComplete(history::QueryURLResult result) {
   VisitItemList visit_item_vec;
-  if (success && !visits.empty()) {
-    for (const history::VisitRow& visit : visits)
+  if (result.success && !result.visits.empty()) {
+    for (const history::VisitRow& visit : result.visits)
       visit_item_vec.push_back(GetVisitItem(visit));
   }
 

@@ -304,37 +304,35 @@ void BrowserFeatureExtractor::StartExtractFeatures(
 void BrowserFeatureExtractor::QueryUrlHistoryDone(
     std::unique_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback,
-    bool success,
-    const history::URLRow& row,
-    const history::VisitVector& visits) {
+    history::QueryURLResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(!callback.is_null());
-  if (!success) {
+  if (!result.success) {
     // URL is not found in the history.  In practice this should not
     // happen (unless there is a real error) because we just visited
     // that URL.
     callback.Run(false, std::move(request));
     return;
   }
-  AddFeature(kUrlHistoryVisitCount, static_cast<double>(row.visit_count()),
-             request.get());
+  AddFeature(kUrlHistoryVisitCount,
+             static_cast<double>(result.row.visit_count()), request.get());
 
   base::Time threshold = base::Time::Now() - base::TimeDelta::FromDays(1);
   int num_visits_24h_ago = 0;
   int num_visits_typed = 0;
   int num_visits_link = 0;
-  for (auto it = visits.begin(); it != visits.end(); ++it) {
-    if (!ui::PageTransitionIsMainFrame(it->transition)) {
+  for (auto& visit : result.visits) {
+    if (!ui::PageTransitionIsMainFrame(visit.transition)) {
       continue;
     }
-    if (it->visit_time < threshold) {
+    if (visit.visit_time < threshold) {
       ++num_visits_24h_ago;
     }
-    if (ui::PageTransitionCoreTypeIs(it->transition,
+    if (ui::PageTransitionCoreTypeIs(visit.transition,
                                      ui::PAGE_TRANSITION_TYPED)) {
       ++num_visits_typed;
-    } else if (ui::PageTransitionCoreTypeIs(it->transition,
+    } else if (ui::PageTransitionCoreTypeIs(visit.transition,
                                             ui::PAGE_TRANSITION_LINK)) {
       ++num_visits_link;
     }
