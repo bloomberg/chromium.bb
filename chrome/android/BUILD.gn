@@ -484,6 +484,10 @@ java_group("chrome_all_java") {
     "//chrome/android/features/keyboard_accessory:internal_java",
     "//chrome/android/features/media_router:java",
   ]
+
+  if (disable_autofill_assistant_dfm) {
+    deps += [ "//chrome/android/features/autofill_assistant:java" ]
+  }
 }
 
 # This is a list of all base module jni headers. New features should add their
@@ -2320,17 +2324,19 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
         },
       ]
     }
-    extra_modules += [
-      {
-        name = "autofill_assistant"
-        module_target = ":${target_name}__autofill_assistant_bundle_module"
-      },
-    ]
     if (dfmify_devtools) {
       extra_modules += [
         {
           name = "devtools"
           module_target = ":${target_name}__devtools_bundle_module"
+        },
+      ]
+    }
+    if (!disable_autofill_assistant_dfm) {
+      extra_modules += [
+        {
+          name = "autofill_assistant"
+          module_target = ":${target_name}__autofill_assistant_bundle_module"
         },
       ]
     }

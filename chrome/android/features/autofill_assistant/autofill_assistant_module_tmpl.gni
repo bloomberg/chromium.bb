@@ -2,6 +2,15 @@ import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 import("//chrome/android/features/dynamic_feature_modules.gni")
 
+declare_args() {
+  # This is a developer flag to be able to use the incremental build/install workflow for autofill
+  # assistant. When set to true, autofill_assistant is built as part of the base apk and not a
+  # separate feature module which currently doesn't support incremental builds.
+  #
+  # TODO(http://crbug/864142): Remove once incremental bundle install is available.
+  disable_autofill_assistant_dfm = false
+}
+
 template("autofill_assistant_module_tmpl") {
   _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
   _manifest_target = "${target_name}__manifest"
