@@ -33,7 +33,8 @@ struct TabRendererData {
   ThumbnailImage thumbnail;
   TabNetworkState network_state = TabNetworkState::kNone;
   base::string16 title;
-  GURL url;
+  // This corresponds to WebContents::GetVisibleUrl().
+  GURL visible_url;
   base::TerminationStatus crashed_status =
       base::TERMINATION_STATUS_STILL_RUNNING;
   bool incognito = false;

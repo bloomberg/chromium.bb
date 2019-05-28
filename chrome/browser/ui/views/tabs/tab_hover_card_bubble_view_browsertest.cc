@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest, WidgetDataUpdate) {
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
   TabRendererData newTabData = TabRendererData();
   newTabData.title = base::UTF8ToUTF16("Test Tab 2");
-  newTabData.url = GURL("http://example.com/this/should/not/be/seen");
+  newTabData.visible_url = GURL("http://example.com/this/should/not/be/seen");
   tab_strip->AddTabAt(1, newTabData, false);
 
   ShowUi("default");

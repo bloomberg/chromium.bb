@@ -102,7 +102,7 @@ void TabIcon::SetData(const TabRendererData& data) {
   const bool was_showing_load = ShowingLoadingAnimation();
 
   inhibit_loading_animation_ = data.should_hide_throbber;
-  SetIcon(data.url, data.favicon);
+  SetIcon(data.visible_url, data.favicon);
   SetNetworkState(data.network_state);
   SetIsCrashed(data.IsCrashed());
   has_tab_renderer_data_ = true;

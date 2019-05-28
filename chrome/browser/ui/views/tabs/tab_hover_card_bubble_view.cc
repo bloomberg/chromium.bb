@@ -478,7 +478,7 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
   title_label_->SetText(data.title);
 
   base::string16 domain = url_formatter::FormatUrl(
-      data.url,
+      data.visible_url,
       url_formatter::kFormatUrlOmitDefaults |
           url_formatter::kFormatUrlOmitHTTPS |
           url_formatter::kFormatUrlOmitTrivialSubdomains |

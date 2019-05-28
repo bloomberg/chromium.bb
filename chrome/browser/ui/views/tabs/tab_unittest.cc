@@ -580,7 +580,7 @@ TEST_F(TabTest, LayeredThrobber) {
   TabIcon* icon = GetTabIcon(tab);
   SetupFakeClock(icon);
   TabRendererData data;
-  data.url = GURL("http://example.com");
+  data.visible_url = GURL("http://example.com");
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
   EXPECT_EQ(TabNetworkState::kNone, tab.data().network_state);
 
