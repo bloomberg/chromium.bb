@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -183,6 +184,49 @@ ScrollableArea* ScrollableAreaFor(const Node* node) {
     return nullptr;
 
   return ToLayoutBox(object)->GetScrollableArea();
+}
+
+bool IsUnobscured(const FocusCandidate& candidate) {
+  DCHECK(candidate.visible_node);
+
+  const LocalFrame* local_main_frame = DynamicTo<LocalFrame>(
+      candidate.visible_node->GetDocument().GetPage()->MainFrame());
+  if (!local_main_frame)
+    return false;
+
+  // TODO(crbug.com/955952): We cannot evaluate visibility for media element
+  // using hit test since attached media controls cover media element.
+  if (candidate.visible_node->IsMediaElement())
+    return true;
+
+  LayoutRect viewport_rect = LayoutRect(
+      local_main_frame->GetPage()->GetVisualViewport().VisibleContentRect());
+  LayoutRect interesting_rect =
+      Intersection(candidate.rect_in_root_frame, viewport_rect);
+
+  if (interesting_rect.IsEmpty())
+    return false;
+
+  HitTestLocation location(interesting_rect);
+  HitTestResult result =
+      local_main_frame->GetEventHandler().HitTestResultAtLocation(
+          location, HitTestRequest::kReadOnly | HitTestRequest::kListBased |
+                        HitTestRequest::kIgnoreZeroOpacityObjects |
+                        HitTestRequest::kAllowChildFrameContent);
+
+  const HitTestResult::NodeSet& nodes = result.ListBasedTestResult();
+  for (auto hit_node = nodes.rbegin(); hit_node != nodes.rend(); ++hit_node) {
+    if (candidate.visible_node->ContainsIncludingHostElements(**hit_node))
+      return true;
+
+    if (FrameOwnerElement(candidate) &&
+        FrameOwnerElement(candidate)
+            ->contentDocument()
+            ->ContainsIncludingHostElements(**hit_node))
+      return true;
+  }
+
+  return false;
 }
 
 bool HasRemoteFrame(const Node* node) {

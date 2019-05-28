@@ -11,12 +11,19 @@
     position: absolute;
   }
 
+  #blocker {
+    top: 30px;
+    background-color: yellow;
+  }
+
   #A {
     top: 601px;
+    height: 50px;
   }
 </style>
 
 <div id="start" tabindex="0"></div>
+<div id="blocker"></div>
 <div id="A" tabindex="0"></div>
 
 <script>
@@ -49,6 +56,16 @@
     snav.triggerMove('Down');
     assert_equals(window.internals.interestedElement,
                   A,
+                  "Navigate to onscreen element.");
+
+    snav.triggerMove('Up');
+    assert_equals(window.internals.interestedElement,
+                  A,
+                  "Don't navigate to obscured(in viewport) element even if it has visible part outside of viewport.");
+
+    snav.triggerMove('Up');
+    assert_equals(window.internals.interestedElement,
+                  start,
                   "Navigate to onscreen element.");
   }, "Don't navigate to elements that are off screen.");
 </script>
