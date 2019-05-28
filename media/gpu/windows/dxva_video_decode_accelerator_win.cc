@@ -90,12 +90,6 @@ const CLSID CLSID_AMDWebmMfVp9Dec = {
 
 const wchar_t kMSVP9DecoderDLLName[] = L"MSVP9DEC.dll";
 
-const CLSID MEDIASUBTYPE_VP80 = {
-    0x30385056,
-    0x0000,
-    0x0010,
-    {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
-
 const CLSID MEDIASUBTYPE_VP90 = {
     0x30395056,
     0x0000,
@@ -347,8 +341,8 @@ ResolutionPair GetMaxResolutionsForGUIDs(
 namespace media {
 
 static const VideoCodecProfile kSupportedProfiles[] = {
-    H264PROFILE_BASELINE, H264PROFILE_MAIN,    H264PROFILE_HIGH,
-    VP8PROFILE_ANY,       VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE2};
+    H264PROFILE_BASELINE, H264PROFILE_MAIN, H264PROFILE_HIGH,
+    VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE2};
 
 CreateDXGIDeviceManager
     DXVAVideoDecodeAccelerator::create_dxgi_device_manager_ = NULL;
@@ -773,7 +767,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       break;
     }
   }
-  RETURN_ON_FAILURE(profile_supported, "Unsupported h.264, vp8, or vp9 profile",
+  RETURN_ON_FAILURE(profile_supported, "Unsupported h.264 or vp9 profile",
                     false);
 
   if (config.profile == VP9PROFILE_PROFILE2 ||
@@ -1464,7 +1458,7 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
             {gfx::Size(2560, 1440), gfx::Size(3840, 2160),
              gfx::Size(4096, 2160), gfx::Size(4096, 2304)});
 
-        // Despite the name this is the GUID for VP8/VP9.
+        // Despite the name this is the GUID for VP9.
         if (preferences.enable_accelerated_vpx_decode &&
             !workarounds.disable_accelerated_vpx_decode) {
           max_vpx_resolutions = GetMaxResolutionsForGUIDs(
@@ -1479,7 +1473,7 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
   }
 
   for (const auto& supported_profile : kSupportedProfiles) {
-    const bool kIsVPX = supported_profile >= VP8PROFILE_MIN &&
+    const bool kIsVPX = supported_profile >= VP9PROFILE_MIN &&
                         supported_profile <= VP9PROFILE_MAX;
 
     // Skip adding VPX profiles if it's not supported or disabled.
@@ -1566,24 +1560,15 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
     codec_ = kCodecH264;
     clsid = __uuidof(CMSH264DecoderMFT);
   } else if (enable_accelerated_vpx_decode_ &&
-             (profile == VP8PROFILE_ANY || profile == VP9PROFILE_PROFILE0 ||
-              profile == VP9PROFILE_PROFILE1 ||
-              profile == VP9PROFILE_PROFILE2 ||
-              profile == VP9PROFILE_PROFILE3)) {
-    if (profile != VP8PROFILE_ANY &&
-        (enable_accelerated_vpx_decode_ &
-         gpu::GpuPreferences::VPX_VENDOR_MICROSOFT)) {
+             (profile >= VP9PROFILE_PROFILE0 &&
+              profile <= VP9PROFILE_PROFILE3)) {
+    if (enable_accelerated_vpx_decode_ &
+        gpu::GpuPreferences::VPX_VENDOR_MICROSOFT) {
       codec_ = kCodecVP9;
       clsid = CLSID_MSVPxDecoder;
       decoder_dll = ::LoadLibrary(kMSVP9DecoderDLLName);
       if (decoder_dll)
         using_ms_vp9_mft_ = true;
-    }
-
-    int program_files_key = base::DIR_PROGRAM_FILES;
-    if (base::win::OSInfo::GetInstance()->wow64_status() ==
-        base::win::OSInfo::WOW64_ENABLED) {
-      program_files_key = base::DIR_PROGRAM_FILES6432;
     }
 
 // Avoid loading AMD VP9 decoder on Windows ARM64.
@@ -1592,6 +1577,12 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
     if (!decoder_dll &&
         enable_accelerated_vpx_decode_ & gpu::GpuPreferences::VPX_VENDOR_AMD &&
         profile == VP9PROFILE_PROFILE0) {
+      int program_files_key = base::DIR_PROGRAM_FILES;
+      if (base::win::OSInfo::GetInstance()->wow64_status() ==
+          base::win::OSInfo::WOW64_ENABLED) {
+        program_files_key = base::DIR_PROGRAM_FILES6432;
+      }
+
       base::FilePath dll_path;
       if (base::PathService::Get(program_files_key, &dll_path)) {
         codec_ = media::kCodecVP9;
@@ -1784,8 +1775,6 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
 
   if (codec_ == kCodecH264) {
     hr = media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
-  } else if (codec_ == kCodecVP8) {
-    hr = media_type->SetGUID(MF_MT_SUBTYPE, MEDIASUBTYPE_VP80);
   } else if (codec_ == kCodecVP9) {
     hr = media_type->SetGUID(MF_MT_SUBTYPE, MEDIASUBTYPE_VP90);
   } else {
