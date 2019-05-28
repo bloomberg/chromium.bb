@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "services/media_session/audio_focus_request.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 
 namespace media_session {
@@ -51,8 +52,8 @@ class MediaController::ImageObserverHolder {
       return;
     }
 
-    DCHECK(owner_->session_);
-    owner_->session_->GetMediaImageBitmap(
+    DCHECK(owner_->session_->ipc());
+    owner_->session_->ipc()->GetMediaImageBitmap(
         *image, minimum_size_px_, desired_size_px_,
         base::BindOnce(&MediaController::ImageObserverHolder::OnImage,
                        base::Unretained(this)));
@@ -92,21 +93,21 @@ void MediaController::Suspend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->Suspend(mojom::MediaSession::SuspendType::kUI);
+    session_->ipc()->Suspend(mojom::MediaSession::SuspendType::kUI);
 }
 
 void MediaController::Resume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->Resume(mojom::MediaSession::SuspendType::kUI);
+    session_->ipc()->Resume(mojom::MediaSession::SuspendType::kUI);
 }
 
 void MediaController::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->Stop(mojom::MediaSession::SuspendType::kUI);
+    session_->ipc()->Stop(mojom::MediaSession::SuspendType::kUI);
 }
 
 void MediaController::ToggleSuspendResume() {
@@ -128,8 +129,13 @@ void MediaController::ToggleSuspendResume() {
 void MediaController::AddObserver(mojom::MediaControllerObserverPtr observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (session_) {
+    observer->MediaSessionChanged(session_->id());
+  } else {
+    observer->MediaSessionChanged(base::nullopt);
+  }
+
   // Flush the new observer with the current state.
-  observer->MediaSessionChanged(request_id_);
   observer->MediaSessionInfoChanged(session_info_.Clone());
   observer->MediaSessionMetadataChanged(session_metadata_);
   observer->MediaSessionActionsChanged(session_actions_);
@@ -203,21 +209,21 @@ void MediaController::PreviousTrack() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->PreviousTrack();
+    session_->ipc()->PreviousTrack();
 }
 
 void MediaController::NextTrack() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->NextTrack();
+    session_->ipc()->NextTrack();
 }
 
 void MediaController::Seek(base::TimeDelta seek_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->Seek(seek_time);
+    session_->ipc()->Seek(seek_time);
 }
 
 void MediaController::ObserveImages(
@@ -234,13 +240,10 @@ void MediaController::ObserveImages(
       it == session_images_.end() ? std::vector<MediaImage>() : it->second));
 }
 
-void MediaController::SetMediaSession(
-    mojom::MediaSession* session,
-    const base::UnguessableToken& request_id) {
+void MediaController::SetMediaSession(AudioFocusRequest* session) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(session);
-  DCHECK(request_id);
 
   if (session_ == session)
     return;
@@ -248,18 +251,16 @@ void MediaController::SetMediaSession(
   Reset();
 
   session_ = session;
-  request_id_ = request_id;
 
   // We should always notify the observers that the media session has changed.
-  observers_.ForAllPtrs(
-      [&request_id](mojom::MediaControllerObserver* observer) {
-        observer->MediaSessionChanged(request_id);
-      });
+  observers_.ForAllPtrs([session](mojom::MediaControllerObserver* observer) {
+    observer->MediaSessionChanged(session->id());
+  });
 
   // Add |this| as an observer for |session|.
   mojom::MediaSessionObserverPtr observer;
   session_binding_.Bind(mojo::MakeRequest(&observer));
-  session->AddObserver(std::move(observer));
+  session->ipc()->AddObserver(std::move(observer));
 }
 
 void MediaController::ClearMediaSession() {
@@ -300,7 +301,6 @@ void MediaController::CleanupImageObservers() {
 
 void MediaController::Reset() {
   session_ = nullptr;
-  request_id_.reset();
   session_binding_.Close();
   session_info_.reset();
   session_metadata_.reset();
