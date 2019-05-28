@@ -136,13 +136,6 @@ void VrShellDelegate::RecordVrStartAction(
     jint start_action) {
   VrStartAction action = static_cast<VrStartAction>(start_action);
 
-  if (action == VrStartAction::kDeepLinkedApp) {
-    // If this is a deep linked app we expect a DisplayActivate to be coming
-    // down the pipeline shortly.
-    possible_presentation_start_action_ =
-        PresentationStartAction::kDeepLinkedApp;
-  }
-
   if (!vr_shell_) {
     pending_vr_start_action_ = action;
     return;
@@ -212,15 +205,9 @@ void VrShellDelegate::DisplayActivate(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
   device::GvrDevice* gvr_device = GetGvrDevice();
   if (gvr_device) {
-    if (!possible_presentation_start_action_ ||
-        possible_presentation_start_action_ !=
-            PresentationStartAction::kDeepLinkedApp) {
-      // The only possible sources for DisplayActivate are at the moment DLAs
-      // and HeadsetActivations. Therefore if it's not a DLA it must be a
-      // HeadsetActivation.
-      possible_presentation_start_action_ =
-          PresentationStartAction::kHeadsetActivation;
-    }
+    // The only possible source for DisplayActivate is HeadsetActivation.
+    possible_presentation_start_action_ =
+        PresentationStartAction::kHeadsetActivation;
 
     gvr_device->Activate(
         device::mojom::VRDisplayEventReason::MOUNTED,

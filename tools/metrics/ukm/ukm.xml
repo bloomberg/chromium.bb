@@ -7679,8 +7679,8 @@ be describing additional metrics about the same event.
       page requested presentation while Chrome was in VR browsing mode. 3:
       HeadsetActivation, the user activated the VR headset while in 2D browsing
       on the page, which listens for headset activations to request
-      presentation. 4: DeepLinkedApp, The page was launched in Chrome from the
-      VR system home (e.g., Daydream Home) and requested presentation.
+      presentation. 4: DeepLinkedApp (Obsolete), The page was launched in Chrome
+      from the VR system home (e.g., Daydream Home) and requested presentation.
     </summary>
   </metric>
 </event>

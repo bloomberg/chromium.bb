@@ -30,8 +30,8 @@ enum class VrStartAction : int {
   // The user triggered a presentation request on a page, probably by clicking
   // an enter VR button.
   kPresentationRequest = 2,
-  // The user launched a deep linked app, probably from Daydream home.
-  kDeepLinkedApp = 3,
+  // OBSOLETE: The user launched a deep linked app, probably from Daydream Home.
+  // kDeepLinkedApp = 3,
   // Chrome VR was started by an intent from another app. Most likely the user
   // clicked the icon in Daydream home.
   kIntentLaunch = 4,
@@ -55,9 +55,9 @@ enum PresentationStartAction {
   // The user activated a headset on a page that listens for headset activations
   // and requests presentation.
   kHeadsetActivation = 3,
-  // The user opened a deep linked app, probably from the Daydream homescreen.
-  kDeepLinkedApp = 4,
-  kMaxValue = kDeepLinkedApp,
+  // OBSOLETE: The user launched a deep linked app, probably from Daydream Home.
+  // kDeepLinkedApp = 4,
+  kMaxValue = 4,
 };
 
 // SessionTimer will monitor the time between calls to StartSession and
