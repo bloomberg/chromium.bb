@@ -18,8 +18,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/remote_cocoa/browser/window.h"
 #import "ui/base/cocoa/controls/textfield_utils.h"
-#include "ui/base/cocoa/remote_views_window.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -189,7 +189,7 @@ void SelectFileDialogImpl::SelectFileImpl(
   // Cocoa should be wrapped in a mojo interface in order to allow instantiating
   // across processes. As a temporary solution, raise the remote windows'
   // transparent in-process window to the front.
-  if (ui::IsWindowUsingRemoteViews(owning_window)) {
+  if (remote_cocoa::IsWindowRemote(owning_window)) {
     [owning_window makeKeyAndOrderFront:nil];
     [owning_window setLevel:NSModalPanelWindowLevel];
   }

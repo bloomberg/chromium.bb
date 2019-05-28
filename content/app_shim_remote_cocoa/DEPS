@@ -3,6 +3,7 @@
 # add any additional dependencies on content code.
 # https://crbug.com/958255
 include_rules = [
+  "+components/remote_cocoa/app_shim",
   "+content/app_shim_remote_cocoa",
   "+content/browser/accessibility/browser_accessibility_cocoa.h",
   "+content/browser/accessibility/browser_accessibility_mac.h",

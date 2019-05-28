@@ -13,6 +13,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #import "components/remote_cocoa/app_shim/mouse_capture_delegate.h"
+#include "components/remote_cocoa/app_shim/ns_view_ids.h"
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
 #include "components/remote_cocoa/common/text_input_host.mojom.h"
@@ -20,7 +21,6 @@
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/base/cocoa/command_dispatcher.h"
-#include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
 
@@ -303,7 +303,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
   base::scoped_nsobject<NSEvent> saved_redispatch_event_;
 
   base::scoped_nsobject<BridgedContentView> bridged_view_;
-  std::unique_ptr<ui::ScopedNSViewIdMapping> bridged_view_id_mapping_;
+  std::unique_ptr<remote_cocoa::ScopedNSViewIdMapping> bridged_view_id_mapping_;
   base::scoped_nsobject<ModalShowAnimationWithLayer> show_animation_;
   std::unique_ptr<CocoaMouseCapture> mouse_capture_;
   std::unique_ptr<CocoaWindowMoveLoop> window_move_loop_;

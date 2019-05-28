@@ -75,6 +75,7 @@ jumbo_component("shell_dialogs") {
       "Foundation.framework",
       "AppKit.framework",
     ]
+    deps += [ "//components/remote_cocoa/browser" ]
   }
 
   if (is_fuchsia) {

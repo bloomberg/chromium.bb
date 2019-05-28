@@ -2101,7 +2101,11 @@ jumbo_source_set("browser") {
       "sandbox_support_mac_impl.h",
       "sandbox_support_mac_impl.mm",
     ]
-    deps += [ "//ui/events:dom_keyboard_layout" ]
+    deps += [
+      "//components/remote_cocoa/app_shim",
+      "//components/remote_cocoa/browser",
+      "//ui/events:dom_keyboard_layout",
+    ]
   }
 
   if (!is_mac) {

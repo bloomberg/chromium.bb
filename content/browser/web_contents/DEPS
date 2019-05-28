@@ -1,5 +1,6 @@
 specific_include_rules = {
   ".*_mac.*": [
+    "+components/remote_cocoa/browser/ns_view_ids.h",
     "+content/app_shim_remote_cocoa",
   ],
 }

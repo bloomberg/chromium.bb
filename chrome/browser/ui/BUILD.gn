@@ -2207,6 +2207,7 @@ jumbo_split_static_library("ui") {
     deps += [
       "//chrome/browser/apps/app_shim",
       "//components/remote_cocoa/app_shim",
+      "//components/remote_cocoa/browser",
       "//extensions/components/native_app_window",
       "//third_party/google_toolbox_for_mac",
       "//third_party/mozilla",

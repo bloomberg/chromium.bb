@@ -6,12 +6,12 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/remote_cocoa/app_shim/ns_view_ids.h"
 #include "content/app_shim_remote_cocoa/render_widget_host_ns_view_client_helper.h"
 #include "content/common/cursors/webcursor.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #import "ui/base/cocoa/animation_utils.h"
-#include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/display/screen.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -67,7 +67,7 @@ void RenderWidgetHostNSViewBridgeLocal::InitAsPopup(
 
 void RenderWidgetHostNSViewBridgeLocal::SetParentWebContentsNSView(
     uint64_t parent_ns_view_id) {
-  NSView* parent_ns_view = ui::NSViewIds::GetNSView(parent_ns_view_id);
+  NSView* parent_ns_view = remote_cocoa::GetNSViewFromId(parent_ns_view_id);
   // If the browser passed an invalid handle, then there is no recovery.
   CHECK(parent_ns_view);
   // Set the frame and autoresizing mask of the RenderWidgetHostViewCocoa as is

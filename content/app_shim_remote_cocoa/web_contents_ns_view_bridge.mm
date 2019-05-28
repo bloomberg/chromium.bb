@@ -4,6 +4,7 @@
 
 #include "content/app_shim_remote_cocoa/web_contents_ns_view_bridge.h"
 
+#include "components/remote_cocoa/app_shim/ns_view_ids.h"
 #import "content/app_shim_remote_cocoa/web_contents_view_cocoa.h"
 #include "content/browser/web_contents/web_contents_view_mac.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
@@ -17,8 +18,8 @@ WebContentsNSViewBridge::WebContentsNSViewBridge(
   cocoa_view_.reset(
       [[WebContentsViewCocoa alloc] initWithViewsHostableView:nullptr]);
   [cocoa_view_ setClient:client_.get()];
-  view_id_ =
-      std::make_unique<ui::ScopedNSViewIdMapping>(view_id, cocoa_view_.get());
+  view_id_ = std::make_unique<remote_cocoa::ScopedNSViewIdMapping>(
+      view_id, cocoa_view_.get());
 }
 
 WebContentsNSViewBridge::WebContentsNSViewBridge(
@@ -27,8 +28,8 @@ WebContentsNSViewBridge::WebContentsNSViewBridge(
   cocoa_view_.reset([[WebContentsViewCocoa alloc]
       initWithViewsHostableView:web_contents_view]);
   [cocoa_view_ setClient:web_contents_view];
-  view_id_ =
-      std::make_unique<ui::ScopedNSViewIdMapping>(view_id, cocoa_view_.get());
+  view_id_ = std::make_unique<remote_cocoa::ScopedNSViewIdMapping>(
+      view_id, cocoa_view_.get());
 }
 
 WebContentsNSViewBridge::~WebContentsNSViewBridge() {
@@ -42,7 +43,7 @@ WebContentsNSViewBridge::~WebContentsNSViewBridge() {
 }
 
 void WebContentsNSViewBridge::SetParentNSView(uint64_t parent_ns_view_id) {
-  NSView* parent_ns_view = ui::NSViewIds::GetNSView(parent_ns_view_id);
+  NSView* parent_ns_view = remote_cocoa::GetNSViewFromId(parent_ns_view_id);
   // If the browser passed an invalid handle, then there is no recovery.
   CHECK(parent_ns_view);
   [parent_ns_view addSubview:cocoa_view_];

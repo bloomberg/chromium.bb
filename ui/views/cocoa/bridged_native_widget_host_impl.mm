@@ -11,6 +11,7 @@
 #include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #include "components/remote_cocoa/app_shim/mouse_capture.h"
 #include "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
+#include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
@@ -293,7 +294,7 @@ BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromId(
 BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(NativeWidgetMac* owner)
     : widget_id_(++g_last_bridged_native_widget_id),
       native_widget_mac_(owner),
-      root_view_id_(ui::NSViewIds::GetNewId()),
+      root_view_id_(remote_cocoa::GetNewNSViewId()),
       accessibility_focus_overrider_(this),
       text_input_host_(new TextInputHost(this)),
       host_mojo_binding_(this) {
@@ -387,8 +388,9 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
         local_window_create_params.get());
     [local_window_ setBridgedNativeWidgetId:widget_id_];
     [local_window_ setAlphaValue:0.0];
-    local_view_id_mapping_ = std::make_unique<ui::ScopedNSViewIdMapping>(
-        root_view_id_, [local_window_ contentView]);
+    local_view_id_mapping_ =
+        std::make_unique<remote_cocoa::ScopedNSViewIdMapping>(
+            root_view_id_, [local_window_ contentView]);
   }
 
   // Initialize |bridge_ptr_| to point to a bridge created by |factory|.

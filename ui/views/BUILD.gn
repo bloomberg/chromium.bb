@@ -783,6 +783,7 @@ jumbo_component("views") {
     deps += [
       "//components/crash/core/common",
       "//components/remote_cocoa/app_shim",
+      "//components/remote_cocoa/browser",
       "//ui/accelerated_widget_mac",
       "//ui/events:dom_keycode_converter",
     ]

@@ -11,9 +11,9 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "components/remote_cocoa/app_shim/ns_view_ids.h"
 #include "content/common/content_export.h"
 #include "content/public/common/web_contents_ns_view_bridge.mojom.h"
-#include "ui/base/cocoa/ns_view_ids.h"
 
 @class WebContentsViewCocoa;
 
@@ -55,7 +55,7 @@ class CONTENT_EXPORT WebContentsNSViewBridge
   base::scoped_nsobject<WebContentsViewCocoa> cocoa_view_;
   mojom::WebContentsNSViewClientAssociatedPtr client_;
 
-  std::unique_ptr<ui::ScopedNSViewIdMapping> view_id_;
+  std::unique_ptr<remote_cocoa::ScopedNSViewIdMapping> view_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsNSViewBridge);
 };

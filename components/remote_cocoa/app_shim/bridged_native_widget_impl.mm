@@ -535,8 +535,9 @@ void BridgedNativeWidgetImpl::CreateContentView(uint64_t ns_view_id,
 
   bridged_view_.reset([[BridgedContentView alloc] initWithBridge:this
                                                           bounds:bounds]);
-  bridged_view_id_mapping_ = std::make_unique<ui::ScopedNSViewIdMapping>(
-      ns_view_id, bridged_view_.get());
+  bridged_view_id_mapping_ =
+      std::make_unique<remote_cocoa::ScopedNSViewIdMapping>(
+          ns_view_id, bridged_view_.get());
 
   // Objective C initializers can return nil. However, if |view| is non-NULL
   // this should be treated as an error and caught early.

@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop_current.h"
 #import "base/message_loop/message_pump_mac.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "content/app_shim_remote_cocoa/web_contents_ns_view_bridge.h"
 #import "content/app_shim_remote_cocoa/web_contents_view_cocoa.h"
 #include "content/browser/download/drag_download_file.h"
@@ -32,7 +33,6 @@
 #include "content/public/common/web_contents_ns_view_bridge.mojom-shared.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
-#include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
 using blink::WebDragOperation;
@@ -89,7 +89,7 @@ WebContentsViewMac::WebContentsViewMac(WebContentsImpl* web_contents,
                                        WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
       delegate_(delegate),
-      ns_view_id_(ui::NSViewIds::GetNewId()),
+      ns_view_id_(remote_cocoa::GetNewNSViewId()),
       ns_view_client_binding_(this),
       deferred_close_weak_ptr_factory_(this) {}
 

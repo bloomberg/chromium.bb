@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_COCOA_REMOTE_VIEWS_WINDOW_H_
-#define UI_BASE_COCOA_REMOTE_VIEWS_WINDOW_H_
+#ifndef COMPONENTS_REMOTE_COCOA_BROWSER_WINDOW_H_
+#define COMPONENTS_REMOTE_COCOA_BROWSER_WINDOW_H_
 
-#include "ui/base/ui_base_export.h"
+#include "components/remote_cocoa/browser/remote_cocoa_browser_export.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace ui {
+namespace remote_cocoa {
 
 // Returns true if the specified NSWindow corresponds to an NSWindow that is
 // being viewed in a remote process.
-bool UI_BASE_EXPORT IsWindowUsingRemoteViews(gfx::NativeWindow window);
+bool REMOTE_COCOA_BROWSER_EXPORT IsWindowRemote(gfx::NativeWindow window);
 
 // Create a transparent NSWindow that is in the same position as |window|,
 // but is at the ModalPanel window level, so that it will appear over all
 // other window.
-NSWindow* UI_BASE_EXPORT
-CreateTransparentRemoteViewsClone(gfx::NativeWindow window);
+NSWindow* REMOTE_COCOA_BROWSER_EXPORT
+CreateInProcessTransparentClone(gfx::NativeWindow window);
 
-}  // namespace ui
+}  // namespace remote_cocoa
 
-#endif  // UI_BASE_COCOA_REMOTE_VIEWS_WINDOW_H_
+#endif  // COMPONENTS_REMOTE_COCOA_BROWSER_WINDOW_H_
