@@ -645,7 +645,7 @@ void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
     tracking->AddInvalidation(&client, client.DebugName(), rect, reason);
 }
 
-String GraphicsLayer::DebugName(cc::Layer* layer) const {
+String GraphicsLayer::DebugName(const cc::Layer* layer) const {
   if (layer->id() == contents_layer_id_)
     return "ContentsLayer for " + client_.DebugName(this);
 
@@ -986,7 +986,7 @@ void GraphicsLayer::RemoveLinkHighlight(LinkHighlight* link_highlight) {
 }
 
 std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
-    cc::Layer* layer) {
+    const cc::Layer* layer) {
   auto traced_value = std::make_unique<base::trace_event::TracedValue>();
 
   traced_value->SetString(

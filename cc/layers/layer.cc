@@ -1268,9 +1268,22 @@ void Layer::SetShouldFlattenTransform(bool should_flatten) {
   SetSubtreePropertyChanged();
 }
 
+#if DCHECK_IS_ON()
+std::string Layer::DebugName() const {
+  if (inputs_.client) {
+    if (auto debug_info = inputs_.client->TakeDebugInfo(this))
+      return debug_info->ToBaseValue()->FindKey("layer_name")->GetString();
+  }
+  return "";
+}
+#endif
+
 std::string Layer::ToString() const {
   return base::StringPrintf(
       "layer_id: %d\n"
+#if DCHECK_IS_ON()
+      "  name: %s\n"
+#endif
       "  Bounds: %s\n"
       "  ElementId: %s\n"
       "  OffsetToTransformParent: %s\n"
@@ -1280,7 +1293,11 @@ std::string Layer::ToString() const {
       "  effect_tree_index: %d\n"
       "  scroll_tree_index: %d\n"
       "  transform_tree_index: %d\n",
-      id(), bounds().ToString().c_str(), element_id().ToString().c_str(),
+      id(),
+#if DCHECK_IS_ON()
+      DebugName().c_str(),
+#endif
+      bounds().ToString().c_str(), element_id().ToString().c_str(),
       offset_to_transform_parent().ToString().c_str(),
       position().ToString().c_str(), scrollable(), clip_tree_index(),
       effect_tree_index(), scroll_tree_index(), transform_tree_index());

@@ -442,7 +442,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // LayerClient implementation.
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
-      cc::Layer* layer) override;
+      const cc::Layer* layer) override;
   void DidChangeScrollbarsHiddenIfOverlay(bool) override;
 
   // Triggers a call to SwitchToLayer.

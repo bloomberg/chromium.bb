@@ -264,7 +264,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   // cc::LayerClient implementation.
   std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
-      cc::Layer*) override;
+      const cc::Layer*) override;
   void DidChangeScrollbarsHiddenIfOverlay(bool) override;
 
   PaintController& GetPaintController() const;
@@ -319,7 +319,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
       const base::Optional<IntRect>& interest_rect = base::nullopt);
 
  protected:
-  String DebugName(cc::Layer*) const;
+  String DebugName(const cc::Layer*) const;
 
  private:
   friend class CompositedLayerMappingTest;

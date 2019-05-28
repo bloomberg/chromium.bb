@@ -1182,7 +1182,7 @@ bool Layer::PrepareTransferableResource(
 }
 
 std::unique_ptr<base::trace_event::TracedValue> Layer::TakeDebugInfo(
-    cc::Layer* layer) {
+    const cc::Layer* layer) {
   auto value = std::make_unique<base::trace_event::TracedValue>();
   value->SetString("layer_name", name_);
   return value;

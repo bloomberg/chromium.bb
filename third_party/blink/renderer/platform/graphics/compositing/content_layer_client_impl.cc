@@ -147,7 +147,7 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
 }
 
 std::unique_ptr<base::trace_event::TracedValue>
-ContentLayerClientImpl::TakeDebugInfo(cc::Layer* layer) {
+ContentLayerClientImpl::TakeDebugInfo(const cc::Layer* layer) {
   DCHECK_EQ(layer, cc_picture_layer_.get());
   auto traced_value = std::make_unique<base::trace_event::TracedValue>();
   traced_value->SetString("layer_name",

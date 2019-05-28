@@ -21,7 +21,7 @@ class MockLayerClient : public LayerClient {
   MockLayerClient& operator=(const MockLayerClient&) = delete;
 
   MOCK_METHOD1(TakeDebugInfo,
-               std::unique_ptr<base::trace_event::TracedValue>(Layer*));
+               std::unique_ptr<base::trace_event::TracedValue>(const Layer*));
   MOCK_METHOD1(didChangeScrollbarsHiddenIfOverlay, void(bool));
 };
 
