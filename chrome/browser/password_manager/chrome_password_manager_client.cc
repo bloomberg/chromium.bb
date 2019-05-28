@@ -1036,17 +1036,10 @@ void ChromePasswordManagerClient::FocusedInputChanged(
     autofill::mojom::FocusedFieldType focused_field_type) {
 #if defined(OS_ANDROID)
   if (PasswordAccessoryController::AllowedForWebContents(web_contents())) {
-    bool is_manual_generation_available =
-        password_manager_util::ManualPasswordGenerationEnabled(driver);
-
-    password_manager::ContentPasswordManagerDriver* content_driver =
-        static_cast<password_manager::ContentPasswordManagerDriver*>(driver);
-    url::Origin last_committed_origin =
-        content_driver->render_frame_host()->GetLastCommittedOrigin();
-
     PasswordAccessoryController::GetOrCreate(web_contents())
-        ->RefreshSuggestionsForField(last_committed_origin, focused_field_type,
-                                     is_manual_generation_available);
+        ->RefreshSuggestionsForField(
+            focused_field_type,
+            password_manager_util::ManualPasswordGenerationEnabled(driver));
   }
 #endif  // defined(OS_ANDROID)
 }

@@ -73,7 +73,6 @@ class PasswordAccessoryController
   // Makes sure, that all shown suggestions are appropriate for the currently
   // focused field and for fields that lost the focus.
   virtual void RefreshSuggestionsForField(
-      const url::Origin& origin,
       autofill::mojom::FocusedFieldType focused_field_type,
       bool is_manual_generation_available) = 0;
 

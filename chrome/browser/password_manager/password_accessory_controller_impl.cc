@@ -184,7 +184,6 @@ void PasswordAccessoryControllerImpl::OnOptionSelected(
 }
 
 void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
-    const url::Origin& origin,
     FocusedFieldType focused_field_type,
     bool is_manual_generation_available) {
   std::vector<UserInfo> info_to_add;

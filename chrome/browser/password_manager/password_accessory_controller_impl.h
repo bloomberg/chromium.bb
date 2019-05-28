@@ -69,7 +69,6 @@ class PasswordAccessoryControllerImpl
       const url::Origin& origin) override;
   void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
   void RefreshSuggestionsForField(
-      const url::Origin& origin,
       autofill::mojom::FocusedFieldType focused_field_type,
       bool is_manual_generation_available) override;
   void DidNavigateMainFrame() override;

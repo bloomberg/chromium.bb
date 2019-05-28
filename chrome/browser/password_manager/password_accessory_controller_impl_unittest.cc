@@ -175,7 +175,6 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 }
@@ -197,7 +196,6 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 }
@@ -237,7 +235,6 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 }
@@ -261,7 +258,6 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 }
@@ -279,7 +275,6 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 }
@@ -317,7 +312,6 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
@@ -337,7 +331,6 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   EXPECT_CALL(mock_manual_filling_controller_,
               ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillablePasswordField,
       /*is_manual_generation_available=*/false);
 }
@@ -359,7 +352,6 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
@@ -379,7 +371,6 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 }
@@ -403,7 +394,6 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
@@ -418,7 +408,6 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kUnfillableElement,
       /*is_manual_generation_available=*/false);
 }
@@ -442,7 +431,6 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
@@ -460,7 +448,6 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL("https://random.other-site.org/")),
       FocusedFieldType::kUnfillableElement,
       /*is_manual_generation_available=*/false);
 }
@@ -474,7 +461,6 @@ TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
@@ -502,7 +488,6 @@ TEST_F(PasswordAccessoryControllerTest, RequestsFaviconsOnceForOneOrigin) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
@@ -550,7 +535,6 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
@@ -586,7 +570,6 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
@@ -615,7 +598,6 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField, false);
 
   // Right after starting the favicon request for example.com, a navigation
@@ -642,7 +624,6 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL("https://other.frame.com/")),
       FocusedFieldType::kFillableUsernameField, false);
 
   base::RunLoop().RunUntilIdle();
@@ -665,7 +646,6 @@ TEST_F(PasswordAccessoryControllerTest, AddsGenerationCommandWhenAvailable) {
   EXPECT_CALL(mock_manual_filling_controller_,
               ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillablePasswordField,
       /*is_manual_generation_available=*/true);
 }
@@ -682,7 +662,6 @@ TEST_F(PasswordAccessoryControllerTest, NoGenerationCommandIfNotPasswordField) {
   EXPECT_CALL(mock_manual_filling_controller_,
               Hide(FillingSource::PASSWORD_FALLBACKS));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/true);
 }
