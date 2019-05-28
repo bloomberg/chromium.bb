@@ -8,6 +8,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.metrics.RecordHistogram;
@@ -25,6 +26,28 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @MainDex
 @JNINamespace("base::android")
 public class LibraryPrefetcher {
+    /**
+     * Used to pass ordered code info back from native.
+     */
+    private final static class OrderedCodeInfo {
+        public final String filename;
+        public final long startOffset;
+        public final long length;
+
+        @CalledByNative("OrderedCodeInfo")
+        public OrderedCodeInfo(String filename, long startOffset, long length) {
+            this.filename = filename;
+            this.startOffset = startOffset;
+            this.length = length;
+        }
+
+        @Override
+        public String toString() {
+            return "filename = " + filename + " startOffset = " + startOffset
+                    + " length = " + length;
+        }
+    }
+
     // One-way switch that becomes true once
     // {@link asyncPrefetchLibrariesToMemory} has been called.
     private final static AtomicBoolean sPrefetchLibraryHasBeenCalled = new AtomicBoolean();
@@ -70,7 +93,16 @@ public class LibraryPrefetcher {
             }
             // Removes a dead flag, don't remove the removal code before M77 at least.
             ContextUtils.getAppSharedPreferences().edit().remove("dont_prefetch_libraries").apply();
+
+            pinOrderedCodeInMemory();
         });
+    }
+
+    public static void pinOrderedCodeInMemory() {
+        try (TraceEvent e = TraceEvent.scoped("LibraryPrefetcher::pinOrderedCodeInMemory")) {
+            OrderedCodeInfo info = nativeGetOrderedCodeInfo();
+            if (info != null) TraceEvent.instant("pinOrderedCodeInMemory", info.toString());
+        }
     }
 
     // Finds the ranges corresponding to the native library pages, forks a new
@@ -84,4 +116,8 @@ public class LibraryPrefetcher {
 
     // Periodically logs native library residency from this thread.
     private static native void nativePeriodicallyCollectResidency();
+
+    // Returns the range within a file of the ordered code section, or null if this is not
+    // available.
+    private static native OrderedCodeInfo nativeGetOrderedCodeInfo();
 }
