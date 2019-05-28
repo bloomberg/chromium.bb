@@ -62,6 +62,7 @@ class Profile;
 
 namespace policy {
 
+class EnterpriseActivityStorage;
 struct DeviceLocalAccount;
 class DeviceStatusCollectorState;
 
@@ -166,10 +167,6 @@ class DeviceStatusCollector : public StatusCollector,
   // testing. A null callback can be passed for any *Fetcher parameter, to use
   // the default implementation. These callbacks are always executed on Blocking
   // Pool. Caller is responsible for passing already initialized |pref_service|.
-  // |activity_day_start| indicates what time does the new day start for
-  // activity reporting daily data aggregation. It is represented by the
-  // distance from midnight. If |is_enterprise_device| additional enterprise
-  // relevant status data will be reported.
   DeviceStatusCollector(PrefService* pref_service,
                         chromeos::system::StatisticsProvider* provider,
                         const VolumeInfoFetcher& volume_info_fetcher,
@@ -178,7 +175,6 @@ class DeviceStatusCollector : public StatusCollector,
                         const AndroidStatusFetcher& android_status_fetcher,
                         const TpmStatusFetcher& tpm_status_fetcher,
                         const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
-                        base::TimeDelta activity_day_start,
                         bool is_enterprise_reporting);
   ~DeviceStatusCollector() override;
 
@@ -453,6 +449,9 @@ class DeviceStatusCollector : public StatusCollector,
       board_status_subscription_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  // Stores and filters activity periods used for reporting.
+  std::unique_ptr<EnterpriseActivityStorage> activity_storage_;
 
   base::WeakPtrFactory<DeviceStatusCollector> weak_factory_;
 

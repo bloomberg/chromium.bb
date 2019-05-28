@@ -77,8 +77,7 @@ class StatusCollector {
   StatusCollector(chromeos::system::StatisticsProvider* provider,
                   chromeos::CrosSettings* cros_settings,
                   chromeos::PowerManagerClient* power_manager,
-                  session_manager::SessionManager* session_manager,
-                  base::TimeDelta activity_day_start);
+                  session_manager::SessionManager* session_manager);
   virtual ~StatusCollector();
 
   // Gathers status information and calls the passed response callback.
@@ -131,17 +130,10 @@ class StatusCollector {
   // Session manager. Used to listen to session state changes.
   session_manager::SessionManager* const session_manager_;
 
-  // Stores and filters activity periods used for reporting.
-  std::unique_ptr<ActivityStorage> activity_storage_;
-
   // Cached values of the reporting settings.
   bool report_version_info_ = false;
   bool report_activity_times_ = false;
   bool report_boot_mode_ = false;
-
-  // New day start time used to separate the children usage time into different
-  // days.
-  const base::TimeDelta activity_day_start_;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       version_info_subscription_;

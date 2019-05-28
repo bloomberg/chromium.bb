@@ -44,7 +44,7 @@ class PrefService;
 
 namespace policy {
 
-class ActivityStorage;
+class ChildActivityStorage;
 class ChildStatusCollectorState;
 
 // Collects and summarizes the status of a child user in a Chrome OS device,
@@ -180,6 +180,9 @@ class ChildStatusCollector : public StatusCollector,
   std::string os_version_;
 
   AndroidStatusFetcher android_status_fetcher_;
+
+  // Stores and filters activity periods used for reporting.
+  std::unique_ptr<ChildActivityStorage> activity_storage_;
 
   base::WeakPtrFactory<ChildStatusCollector> weak_factory_{this};
 

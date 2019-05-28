@@ -102,13 +102,11 @@ StatusCollector::StatusCollector(
     chromeos::system::StatisticsProvider* provider,
     chromeos::CrosSettings* cros_settings,
     chromeos::PowerManagerClient* power_manager,
-    session_manager::SessionManager* session_manager,
-    base::TimeDelta activity_day_start)
+    session_manager::SessionManager* session_manager)
     : statistics_provider_(provider),
       cros_settings_(cros_settings),
       power_manager_(power_manager),
-      session_manager_(session_manager),
-      activity_day_start_(activity_day_start) {}
+      session_manager_(session_manager) {}
 
 StatusCollector::~StatusCollector() = default;
 

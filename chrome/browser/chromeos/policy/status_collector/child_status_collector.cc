@@ -30,7 +30,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
+#include "chrome/browser/chromeos/policy/status_collector/child_activity_storage.h"
 #include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector_state.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -139,8 +139,7 @@ ChildStatusCollector::ChildStatusCollector(
     : StatusCollector(provider,
                       chromeos::CrosSettings::Get(),
                       chromeos::PowerManagerClient::Get(),
-                      session_manager::SessionManager::Get(),
-                      activity_day_start),
+                      session_manager::SessionManager::Get()),
       pref_service_(pref_service),
       android_status_fetcher_(android_status_fetcher) {
   // protected fields of `StatusCollector`.
@@ -188,8 +187,8 @@ ChildStatusCollector::ChildStatusCollector(
 
   DCHECK(pref_service_->GetInitializationStatus() !=
          PrefService::INITIALIZATION_STATUS_WAITING);
-  activity_storage_ = std::make_unique<ActivityStorage>(
-      pref_service_, prefs::kUserActivityTimes, activity_day_start, false);
+  activity_storage_ = std::make_unique<ChildActivityStorage>(
+      pref_service_, prefs::kUserActivityTimes, activity_day_start);
 }
 
 ChildStatusCollector::~ChildStatusCollector() {
@@ -284,7 +283,7 @@ void ChildStatusCollector::UpdateChildUsageTime() {
   }
 
   Time now = GetCurrentTime();
-  Time reset_time = now.LocalMidnight() + activity_day_start_;
+  Time reset_time = activity_storage_->GetBeginningOfDay(now);
   if (reset_time > now)
     reset_time -= TimeDelta::FromDays(1);
   // Reset screen time if it has not been reset today.
@@ -302,11 +301,9 @@ void ChildStatusCollector::UpdateChildUsageTime() {
     if (active_seconds < base::TimeDelta::FromSeconds(0) ||
         active_seconds >= (2 * kUpdateChildActiveTimeInterval)) {
       activity_storage_->AddActivityPeriod(now - kUpdateChildActiveTimeInterval,
-                                           now, now,
-                                           /*active_user_email=*/std::string());
+                                           now, now);
     } else {
-      activity_storage_->AddActivityPeriod(last_active_check_, now, now,
-                                           /*active_user_email=*/std::string());
+      activity_storage_->AddActivityPeriod(last_active_check_, now, now);
     }
 
     activity_storage_->PruneActivityPeriods(
@@ -322,7 +319,7 @@ bool ChildStatusCollector::GetActivityTimes(
 
   // Signed-in user is reported in child reporting.
   std::vector<ActivityStorage::ActivityPeriod> activity_times =
-      activity_storage_->GetFilteredActivityPeriods(/*omit_emails=*/false);
+      activity_storage_->GetStoredActivityPeriods();
 
   bool anything_reported = false;
   for (const auto& activity_period : activity_times) {
@@ -354,7 +351,7 @@ bool ChildStatusCollector::GetActivityTimes(
 
   // Signed-in user is reported in child reporting.
   std::vector<ActivityStorage::ActivityPeriod> activity_times =
-      activity_storage_->GetFilteredActivityPeriods(/*omit_emails=*/false);
+      activity_storage_->GetStoredActivityPeriods();
 
   bool anything_reported = false;
   for (const auto& activity_period : activity_times) {

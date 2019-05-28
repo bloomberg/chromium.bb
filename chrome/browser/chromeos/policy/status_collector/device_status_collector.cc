@@ -44,7 +44,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
+#include "chrome/browser/chromeos/policy/status_collector/enterprise_activity_storage.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector_state.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -684,13 +684,11 @@ DeviceStatusCollector::DeviceStatusCollector(
     const AndroidStatusFetcher& android_status_fetcher,
     const TpmStatusFetcher& tpm_status_fetcher,
     const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
-    TimeDelta activity_day_start,
     bool is_enterprise_reporting)
     : StatusCollector(provider,
                       chromeos::CrosSettings::Get(),
                       chromeos::PowerManagerClient::Get(),
-                      session_manager::SessionManager::Get(),
-                      activity_day_start),
+                      session_manager::SessionManager::Get()),
       pref_service_(pref_service),
       volume_info_fetcher_(volume_info_fetcher),
       cpu_statistics_fetcher_(cpu_statistics_fetcher),
@@ -811,11 +809,8 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   DCHECK(pref_service_->GetInitializationStatus() !=
          PrefService::INITIALIZATION_STATUS_WAITING);
-  activity_storage_ = std::make_unique<ActivityStorage>(
-      pref_service_,
-      (is_enterprise_reporting_ ? prefs::kDeviceActivityTimes
-                                : prefs::kUserActivityTimes),
-      activity_day_start, is_enterprise_reporting_);
+  activity_storage_ = std::make_unique<EnterpriseActivityStorage>(
+      pref_service_, prefs::kDeviceActivityTimes);
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {
@@ -951,11 +946,10 @@ void DeviceStatusCollector::ProcessIdleState(ui::IdleState state) {
     if (active_seconds < 0 ||
         active_seconds >= static_cast<int>((2 * kIdlePollIntervalSeconds))) {
       activity_storage_->AddActivityPeriod(
-          now - TimeDelta::FromSeconds(kIdlePollIntervalSeconds), now, now,
+          now - TimeDelta::FromSeconds(kIdlePollIntervalSeconds), now,
           user_email);
     } else {
-      activity_storage_->AddActivityPeriod(last_idle_check_, now, now,
-                                           user_email);
+      activity_storage_->AddActivityPeriod(last_idle_check_, now, user_email);
     }
 
     activity_storage_->PruneActivityPeriods(
@@ -1034,7 +1028,7 @@ void DeviceStatusCollector::UpdateChildUsageTime() {
   CHECK(user_manager::UserManager::Get()->IsLoggedInAsChildUser());
 
   Time now = GetCurrentTime();
-  Time reset_time = now.LocalMidnight() + activity_day_start_;
+  Time reset_time = activity_storage_->GetBeginningOfDay(now);
   if (reset_time > now)
     reset_time -= TimeDelta::FromDays(1);
   // Reset screen time if it has not been reset today.
@@ -1052,10 +1046,9 @@ void DeviceStatusCollector::UpdateChildUsageTime() {
     if (active_seconds < base::TimeDelta::FromSeconds(0) ||
         active_seconds >= (2 * kUpdateChildActiveTimeInterval)) {
       activity_storage_->AddActivityPeriod(now - kUpdateChildActiveTimeInterval,
-                                           now, now,
-                                           GetUserForActivityReporting());
+                                           now, GetUserForActivityReporting());
     } else {
-      activity_storage_->AddActivityPeriod(last_active_check_, now, now,
+      activity_storage_->AddActivityPeriod(last_active_check_, now,
                                            GetUserForActivityReporting());
     }
 
@@ -1288,6 +1281,7 @@ void DeviceStatusCollector::ReportingUsersChanged() {
     if (value.is_string())
       reporting_users.push_back(value.GetString());
   }
+
   activity_storage_->FilterActivityPeriodsByUsers(reporting_users);
 }
 
@@ -1404,11 +1398,26 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
     const char* type_string;
     em::NetworkInterface::NetworkDeviceType type_constant;
   } kDeviceTypeMap[] = {
-    { shill::kTypeEthernet,  em::NetworkInterface::TYPE_ETHERNET,  },
-    { shill::kTypeWifi,      em::NetworkInterface::TYPE_WIFI,      },
-    { shill::kTypeWimax,     em::NetworkInterface::TYPE_WIMAX,     },
-    { shill::kTypeBluetooth, em::NetworkInterface::TYPE_BLUETOOTH, },
-    { shill::kTypeCellular,  em::NetworkInterface::TYPE_CELLULAR,  },
+      {
+          shill::kTypeEthernet,
+          em::NetworkInterface::TYPE_ETHERNET,
+      },
+      {
+          shill::kTypeWifi,
+          em::NetworkInterface::TYPE_WIFI,
+      },
+      {
+          shill::kTypeWimax,
+          em::NetworkInterface::TYPE_WIMAX,
+      },
+      {
+          shill::kTypeBluetooth,
+          em::NetworkInterface::TYPE_BLUETOOTH,
+      },
+      {
+          shill::kTypeCellular,
+          em::NetworkInterface::TYPE_CELLULAR,
+      },
   };
 
   // Maps shill device connection status to proto enum constants.

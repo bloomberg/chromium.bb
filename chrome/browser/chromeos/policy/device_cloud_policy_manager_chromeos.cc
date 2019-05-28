@@ -78,9 +78,6 @@ const char kZeroTouchEnrollmentHandsOff[] = "hands-off";
 constexpr base::TimeDelta kDeviceStatusUploadFrequency =
     base::TimeDelta::FromHours(3);
 
-// Start of the day for activity data aggregation. Defaults to midnight.
-constexpr base::TimeDelta kActivityDayStart;
-
 // Fetches a machine statistic value from StatisticsProvider, returns an empty
 // string on failure.
 std::string GetMachineStatistic(const std::string& key) {
@@ -429,7 +426,7 @@ void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
           DeviceStatusCollector::CPUTempFetcher(),
           DeviceStatusCollector::AndroidStatusFetcher(),
           DeviceStatusCollector::TpmStatusFetcher(),
-          DeviceStatusCollector::EMMCLifetimeFetcher(), kActivityDayStart,
+          DeviceStatusCollector::EMMCLifetimeFetcher(),
           true /* is_enterprise_device */),
       task_runner_, kDeviceStatusUploadFrequency));
 }
