@@ -48,18 +48,24 @@ enum class FormRetrievalResult {
 };
 
 // Error values for adding a login to the store.
+// Used in metrics: "PasswordManager.MergeSyncData.AddLoginSyncError" and
+// "PasswordManager.ApplySyncChanges.AddLoginSyncError". These values are
+// persisted to logs. Entries should not be renumbered and numeric values should
+// never be reused.
 enum class AddLoginError {
   // Success.
-  kNone,
+  kNone = 0,
   // Database not available.
-  kDbNotAvailable,
+  kDbNotAvailable = 1,
   // The form doesn't the satisfy the constraints.
-  kConstraintViolation,
+  kConstraintViolation = 2,
   // A service-level failure (e.g., on a platform using a keyring, the keyring
   // is temporarily unavailable).
-  kEncrytionServiceFailure,
+  kEncrytionServiceFailure = 3,
   // Database error.
-  kDbError
+  kDbError = 4,
+
+  kMaxValue = kDbError,
 };
 
 // PasswordStore interface for PasswordSyncableService. It provides access to

@@ -431,6 +431,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
       PasswordStoreChangeList changes = password_store_sync_->AddLoginSync(
           PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now),
           &add_login_error);
+      base::UmaHistogramEnumeration(
+          "PasswordManager.MergeSyncData.AddLoginSyncError", add_login_error);
 
       // TODO(crbug.com/939302): It's not yet clear if the DCHECK_LE below is
       // legit. However, recent crashes suggest that 2 changes are returned
@@ -526,6 +528,9 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           changes = password_store_sync_->AddLoginSync(
               PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now),
               &add_login_error);
+          base::UmaHistogramEnumeration(
+              "PasswordManager.ApplySyncChanges.AddLoginSyncError",
+              add_login_error);
           // If the addition has been successful, inform the processor about the
           // assigned storage key. AddLoginSync() might return multiple changes
           // and the last one should be the one representing the actual addition

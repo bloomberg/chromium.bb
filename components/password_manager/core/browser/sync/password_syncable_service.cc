@@ -11,6 +11,7 @@
 
 #include "base/auto_reset.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
@@ -219,7 +220,7 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
                            SyncDataFromPassword(*it->second)));
   }
 
-  WriteToPasswordStore(sync_entries);
+  WriteToPasswordStore(sync_entries, /*is_merge=*/true);
   merge_result.set_error(
       sync_processor->ProcessSyncChanges(FROM_HERE, updated_db_entries));
   if (merge_result.error().IsSet()) {
@@ -288,7 +289,7 @@ syncer::SyncError PasswordSyncableService::ProcessSyncChanges(
         specifics.password().client_only_encrypted_data(), time_now, entries);
   }
 
-  WriteToPasswordStore(sync_entries);
+  WriteToPasswordStore(sync_entries, /*is_merge=*/false);
   return syncer::SyncError();
 }
 
@@ -362,13 +363,24 @@ bool PasswordSyncableService::ReadFromPasswordStore(
   return true;
 }
 
-void PasswordSyncableService::WriteToPasswordStore(const SyncEntries& entries) {
+void PasswordSyncableService::WriteToPasswordStore(const SyncEntries& entries,
+                                                   bool is_merge) {
   PasswordStoreChangeList changes;
 
   for (const std::unique_ptr<autofill::PasswordForm>& form :
        entries.new_entries) {
-    PasswordStoreChangeList new_changes = password_store_->AddLoginSync(*form);
+    AddLoginError add_login_error;
+    PasswordStoreChangeList new_changes =
+        password_store_->AddLoginSync(*form, &add_login_error);
     changes.insert(changes.end(), new_changes.begin(), new_changes.end());
+    if (is_merge) {
+      base::UmaHistogramEnumeration(
+          "PasswordManager.MergeSyncData.AddLoginSyncError", add_login_error);
+    } else {
+      base::UmaHistogramEnumeration(
+          "PasswordManager.ApplySyncChanges.AddLoginSyncError",
+          add_login_error);
+    }
   }
 
   for (const std::unique_ptr<autofill::PasswordForm>& form :

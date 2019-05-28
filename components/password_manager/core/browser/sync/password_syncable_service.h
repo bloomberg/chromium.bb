@@ -75,7 +75,7 @@ class PasswordSyncableService : public syncer::SyncableService {
       PasswordEntryMap* passwords_entry_map) const;
 
   // Uses the |PasswordStore| APIs to change entries.
-  void WriteToPasswordStore(const SyncEntries& entries);
+  void WriteToPasswordStore(const SyncEntries& entries, bool is_merge);
 
   // Examines |data|, an entry in sync db, and updates |sync_entries| or
   // |updated_db_entries| accordingly. An element is removed from

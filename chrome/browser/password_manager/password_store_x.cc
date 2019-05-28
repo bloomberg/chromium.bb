@@ -182,7 +182,7 @@ PasswordStoreChangeList PasswordStoreX::AddLoginImpl(
   if (use_native_backend() && AddLoginToBackend(backend_, form, &changes)) {
     allow_fallback_ = false;
   } else if (allow_default_store()) {
-    changes = PasswordStoreDefault::AddLoginImpl(form);
+    changes = PasswordStoreDefault::AddLoginImpl(form, error);
   }
   return changes;
 }

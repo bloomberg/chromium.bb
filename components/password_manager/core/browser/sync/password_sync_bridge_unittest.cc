@@ -121,13 +121,13 @@ class FakeDatabase {
 
   PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form,
                                    AddLoginError* error) {
+    if (error) {
+      *error = error_;
+    }
     if (error_ == AddLoginError::kNone) {
       data_[primary_key_] = std::make_unique<autofill::PasswordForm>(form);
       return {
           PasswordStoreChange(PasswordStoreChange::ADD, form, primary_key_++)};
-    }
-    if (error) {
-      *error = error_;
     }
     return PasswordStoreChangeList();
   }
