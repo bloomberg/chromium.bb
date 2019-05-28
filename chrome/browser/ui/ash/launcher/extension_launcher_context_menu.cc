@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -214,6 +215,9 @@ void ExtensionLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
       int index = 0;
       extension_items_->AppendExtensionItems(app_key, base::string16(), &index,
                                              false);  // is_action_menu
+      app_list::AddMenuItemIconsForSystemApps(
+          item().id.app_id, menu_model, menu_model->GetItemCount() - index,
+          index);
     }
   }
 }
