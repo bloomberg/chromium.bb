@@ -18,7 +18,6 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
@@ -144,7 +143,6 @@ class OverviewSessionTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    NonClientFrameViewAsh::set_use_empty_minimum_size_for_test(true);
 
     aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
     shelf_view_test_api_ = std::make_unique<ShelfViewTestAPI>(
@@ -161,7 +159,6 @@ class OverviewSessionTest : public AshTestBase {
         false);
     FpsCounter::SetForceReportZeroAnimationForTest(false);
     trace_names_.clear();
-    NonClientFrameViewAsh::set_use_empty_minimum_size_for_test(false);
     AshTestBase::TearDown();
   }
 
@@ -2522,13 +2519,13 @@ TEST_F(OverviewSessionTest, DropTargetStackedAtBottomForOverviewItem) {
 // the window is to be letter or pillar fitted.
 TEST_F(OverviewSessionTest, Backdrop) {
   // Add three windows which in overview mode will be considered wide, tall and
-  // normal. Window |wide|, with size (400, 160) will be resized to (200, 160)
-  // when the 400x200 is rotated to 200x400, and should be considered a normal
+  // normal. Window |wide|, with size (400, 160) will be resized to (300, 160)
+  // when the 400x300 is rotated to 300x400, and should be considered a normal
   // overview window after display change.
-  UpdateDisplay("400x200");
+  UpdateDisplay("400x300");
   std::unique_ptr<aura::Window> wide(CreateTestWindow(gfx::Rect(400, 160)));
-  std::unique_ptr<aura::Window> tall(CreateTestWindow(gfx::Rect(50, 200)));
-  std::unique_ptr<aura::Window> normal(CreateTestWindow(gfx::Rect(200, 200)));
+  std::unique_ptr<aura::Window> tall(CreateTestWindow(gfx::Rect(100, 300)));
+  std::unique_ptr<aura::Window> normal(CreateTestWindow(gfx::Rect(300, 300)));
 
   ToggleOverview();
   base::RunLoop().RunUntilIdle();

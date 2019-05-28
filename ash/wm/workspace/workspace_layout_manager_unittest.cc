@@ -147,34 +147,14 @@ class ScopedStickyKeyboardEnabler {
 
 }  // namespace
 
-// NOTE: many of these tests use NonClientFrameViewAshSizeLock. This is needed
-// as the tests assume a minimum size of 0x0. In mash the minimum size, for
-// top-level windows, is not 0x0, so without this the tests fails.
-// TODO(sky): update the tests so that this isn't necessary.
-class NonClientFrameViewAshSizeLock {
- public:
-  NonClientFrameViewAshSizeLock() {
-    NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = true;
-  }
-  ~NonClientFrameViewAshSizeLock() {
-    NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = false;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAshSizeLock);
-};
-
 using WorkspaceLayoutManagerTest = AshTestBase;
 
 // Verifies that a window containing a restore coordinate will be restored to
 // to the size prior to minimize, keeping the restore rectangle in tact (if
 // there is one).
 TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
-  // See comment at top of file for why this is needed.
-  NonClientFrameViewAshSizeLock min_size_lock;
-  std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
-  gfx::Rect bounds(10, 15, 25, 35);
-  window->SetBounds(bounds);
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(10, 15, 125, 35)));
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
 
@@ -183,16 +163,16 @@ TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
   window_state->Minimize();
   window_state->Restore();
   EXPECT_EQ("0,0 100x100", window_state->GetRestoreBoundsInScreen().ToString());
-  EXPECT_EQ("10,15 25x35", window->bounds().ToString());
+  EXPECT_EQ("10,15 125x35", window->bounds().ToString());
 
   UpdateDisplay("400x300,500x400");
-  window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100), GetSecondaryDisplay());
+  window->SetBoundsInScreen(gfx::Rect(600, 0, 125, 100), GetSecondaryDisplay());
   EXPECT_EQ(Shell::Get()->GetAllRootWindows()[1], window->GetRootWindow());
   window_state->Minimize();
   // This will not be used for un-minimizing window.
   window_state->SetRestoreBoundsInScreen(gfx::Rect(0, 0, 100, 100));
   window_state->Restore();
-  EXPECT_EQ("600,0 100x100", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("600,0 125x100", window->GetBoundsInScreen().ToString());
 
   // Make sure the unminimized window moves inside the display when
   // 2nd display is disconnected.
@@ -235,59 +215,55 @@ TEST_F(WorkspaceLayoutManagerTest, NoMinimumVisibilityForPopupWindows) {
 }
 
 TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
-  // See comment at top of file for why this is needed.
-  NonClientFrameViewAshSizeLock min_size_lock;
   std::unique_ptr<aura::Window> window(
-      CreateTestWindow(gfx::Rect(1, 2, 30, 40)));
+      CreateTestWindow(gfx::Rect(1, 2, 130, 40)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
 
   // Maximized -> Normal transition.
   window_state->Maximize();
-  window_state->SetRestoreBoundsInScreen(gfx::Rect(-100, -100, 30, 40));
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(-100, -100, 130, 40));
   window_state->Restore();
   EXPECT_TRUE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
   // Y bounds should not be negative.
-  EXPECT_EQ("-5,0 30x40", window->bounds().ToString());
+  EXPECT_GE(window->bounds().y(), 0);
 
   // Minimized -> Normal transition.
-  window->SetBounds(gfx::Rect(-100, -100, 30, 40));
+  window->SetBounds(gfx::Rect(-100, -100, 130, 40));
   window_state->Minimize();
   EXPECT_FALSE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
-  EXPECT_EQ("-100,-100 30x40", window->bounds().ToString());
+  EXPECT_EQ("-100,-100 130x40", window->bounds().ToString());
   window->Show();
   EXPECT_TRUE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
   // Y bounds should not be negative.
-  EXPECT_EQ("-5,0 30x40", window->bounds().ToString());
+  EXPECT_GE(window->bounds().y(), 0);
 
   // Fullscreen -> Normal transition.
-  window->SetBounds(gfx::Rect(0, 0, 30, 40));  // reset bounds.
-  ASSERT_EQ("0,0 30x40", window->bounds().ToString());
+  window->SetBounds(gfx::Rect(0, 0, 130, 40));  // reset bounds.
+  ASSERT_EQ("0,0 130x40", window->bounds().ToString());
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   EXPECT_EQ(window->bounds(), window->GetRootWindow()->bounds());
-  window_state->SetRestoreBoundsInScreen(gfx::Rect(-100, -100, 30, 40));
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(-100, -100, 130, 40));
   window_state->Restore();
   EXPECT_TRUE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
   // Y bounds should not be negative.
-  EXPECT_EQ("-5,0 30x40", window->bounds().ToString());
+  EXPECT_GE(window->bounds().y(), 0);
 }
 
 TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
-  // See comment at top of file for why this is needed.
-  NonClientFrameViewAshSizeLock min_size_lock;
   UpdateDisplay("300x400,400x500");
 
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
 
   std::unique_ptr<aura::Window> window(
-      CreateTestWindow(gfx::Rect(1, 2, 30, 40)));
+      CreateTestWindow(gfx::Rect(1, 2, 130, 40)));
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
-  window_state->SetRestoreBoundsInScreen(gfx::Rect(400, 0, 30, 40));
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(400, 0, 130, 40));
   // Maximize the window in 2nd display as the restore bounds
   // is inside 2nd display.
   window_state->Maximize();
@@ -298,11 +274,11 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
 
   window_state->Restore();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ("400,0 30x40", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("400,0 130x40", window->GetBoundsInScreen().ToString());
 
   // If the restore bounds intersects with the current display,
   // don't move.
-  window_state->SetRestoreBoundsInScreen(gfx::Rect(295, 0, 30, 40));
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(295, 0, 130, 40));
   window_state->Maximize();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   EXPECT_EQ(
@@ -311,13 +287,13 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
 
   window_state->Restore();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ("295,0 30x40", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("295,0 130x40", window->GetBoundsInScreen().ToString());
 
   // Restoring widget state.
   std::unique_ptr<views::Widget> w1(new views::Widget);
   views::Widget::InitParams params;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.delegate = new MaximizeDelegateView(gfx::Rect(400, 0, 30, 40));
+  params.delegate = new MaximizeDelegateView(gfx::Rect(400, 0, 130, 40));
   params.context = CurrentContext();
   w1->Init(params);
   EXPECT_EQ(root_windows[0], w1->GetNativeWindow()->GetRootWindow());
@@ -329,12 +305,10 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
       w1->GetWindowBoundsInScreen().ToString());
   w1->Restore();
   EXPECT_EQ(root_windows[1], w1->GetNativeWindow()->GetRootWindow());
-  EXPECT_EQ("400,0 30x40", w1->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("400,0 130x40", w1->GetWindowBoundsInScreen().ToString());
 }
 
 TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
-  // See comment at top of file for why this is needed.
-  NonClientFrameViewAshSizeLock min_size_lock;
   UpdateDisplay("300x400,400x500");
 
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
@@ -344,7 +318,7 @@ TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
-  window_state->SetRestoreBoundsInScreen(gfx::Rect(400, 0, 30, 40));
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(400, 0, 130, 40));
   // Maximize the window in 2nd display as the restore bounds
   // is inside 2nd display.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
@@ -353,18 +327,18 @@ TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
 
   window_state->Restore();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ("400,0 30x40", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("400,0 130x40", window->GetBoundsInScreen().ToString());
 
   // If the restore bounds intersects with the current display,
   // don't move.
-  window_state->SetRestoreBoundsInScreen(gfx::Rect(295, 0, 30, 40));
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(295, 0, 130, 40));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
   EXPECT_EQ("300,0 400x500", window->GetBoundsInScreen().ToString());
 
   window_state->Restore();
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-  EXPECT_EQ("295,0 30x40", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("295,0 130x40", window->GetBoundsInScreen().ToString());
 }
 
 // aura::WindowObserver implementation used by
@@ -1701,9 +1675,6 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
 TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
   ScopedStickyKeyboardEnabler sticky_enabler;
 
-  // See comment at top of file for why this is needed.
-  NonClientFrameViewAshSizeLock min_size_lock;
-
   InitKeyboardBounds();
 
   gfx::Rect work_area(GetPrimaryDisplay().work_area());
@@ -1733,15 +1704,10 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
 TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   ScopedStickyKeyboardEnabler sticky_enabler;
 
-  // See comment at top of file for why this is needed.
-  NonClientFrameViewAshSizeLock min_size_lock;
   InitKeyboardBounds();
   gfx::Rect work_area(GetPrimaryDisplay().work_area());
 
   std::unique_ptr<aura::Window> window(CreateToplevelTestWindow(work_area));
-  // The additional SetBounds() is needed as the aura-mus case uses Widget,
-  // which alters the supplied bounds.
-  window->SetBounds(work_area);
 
   int available_height =
       GetPrimaryDisplay().bounds().height() - keyboard_bounds().height();
@@ -1787,9 +1753,6 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, IgnoreKeyboardBoundsChange) {
   InitKeyboardBounds();
 
   std::unique_ptr<aura::Window> window(CreateTestWindow(keyboard_bounds()));
-  // The additional SetBounds() is needed as the aura-mus case uses Widget,
-  // which alters the supplied bounds.
-  window->SetBounds(keyboard_bounds());
   wm::GetWindowState(window.get())->set_ignore_keyboard_bounds_change(true);
   wm::ActivateWindow(window.get());
 

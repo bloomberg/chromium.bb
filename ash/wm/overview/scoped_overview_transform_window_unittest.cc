@@ -4,7 +4,6 @@
 
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 
-#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/test/ash_test_base.h"
@@ -212,19 +211,14 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformingPillaredRect) {
 
 // Tests the cases when very wide or tall windows enter overview mode.
 TEST_F(ScopedOverviewTransformWindowTest, ExtremeWindowBounds) {
-  NonClientFrameViewAsh::set_use_empty_minimum_size_for_test(true);
-
   // Add three windows which in overview mode will be considered wide, tall and
-  // normal. Window |wide|, with size (400, 160) will be resized to (200, 160)
-  // when the 400x200 is rotated to 200x400, and should be considered a normal
+  // normal. Window |wide|, with size (400, 160) will be resized to (300, 160)
+  // when the 400x300 is rotated to 300x400, and should be considered a normal
   // overview window after display change.
-  UpdateDisplay("400x200");
-  std::unique_ptr<aura::Window> wide =
-      CreateTestWindow(gfx::Rect(10, 10, 400, 160));
-  std::unique_ptr<aura::Window> tall =
-      CreateTestWindow(gfx::Rect(10, 10, 50, 200));
-  std::unique_ptr<aura::Window> normal =
-      CreateTestWindow(gfx::Rect(10, 10, 200, 200));
+  UpdateDisplay("400x300");
+  std::unique_ptr<aura::Window> wide = CreateTestWindow(gfx::Rect(400, 160));
+  std::unique_ptr<aura::Window> tall = CreateTestWindow(gfx::Rect(100, 300));
+  std::unique_ptr<aura::Window> normal = CreateTestWindow(gfx::Rect(300, 300));
 
   ScopedOverviewTransformWindow scoped_wide(nullptr, wide.get());
   ScopedOverviewTransformWindow scoped_tall(nullptr, tall.get());
@@ -251,8 +245,6 @@ TEST_F(ScopedOverviewTransformWindowTest, ExtremeWindowBounds) {
   EXPECT_EQ(GridWindowFillMode::kNormal, scoped_wide.type());
   EXPECT_EQ(GridWindowFillMode::kPillarBoxed, scoped_tall.type());
   EXPECT_EQ(GridWindowFillMode::kNormal, scoped_normal.type());
-
-  NonClientFrameViewAsh::set_use_empty_minimum_size_for_test(false);
 }
 
 // Tests that transients which should be invisible in overview do not have their

@@ -146,9 +146,6 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAshImmersiveHelper);
 };
 
-// static
-bool NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = false;
-
 ///////////////////////////////////////////////////////////////////////////////
 // NonClientFrameViewAsh::OverlayView
 
@@ -380,7 +377,7 @@ const char* NonClientFrameViewAsh::GetClassName() const {
 }
 
 gfx::Size NonClientFrameViewAsh::GetMinimumSize() const {
-  if (use_empty_minimum_size_for_test_ || !GetEnabled())
+  if (!GetEnabled())
     return gfx::Size();
 
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
