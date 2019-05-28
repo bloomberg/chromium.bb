@@ -79,6 +79,7 @@ class ModelTypeWorker : public UpdateHandler,
   // |response_data| must be not null.
   static DecryptionStatus PopulateUpdateResponseData(
       const Cryptographer* cryptographer,
+      ModelType model_type,
       const sync_pb::SyncEntity& update_entity,
       UpdateResponseData* response_data);
 

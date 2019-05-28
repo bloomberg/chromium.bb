@@ -495,6 +495,23 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, DownloadBookmarkFolder) {
   ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
 }
 
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       DownloadLegacyBookmarkFolder) {
+  const std::string title = "Seattle Sounders FC";
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title);
+  fake_server_->InjectEntity(bookmark_builder.BuildFolder(/*is_legacy=*/true));
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupClients());
+  ASSERT_EQ(0, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
+
+  ASSERT_TRUE(SetupSync());
+
+  ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
+}
+
 // Legacy bookmark clients append a blank space to empty titles, ".", ".." tiles
 // before committing them because historically they were illegal server titles.
 // This test makes sure that this functionality is implemented for backward
