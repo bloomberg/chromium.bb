@@ -118,7 +118,7 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
 
     @Override
     public void showAppMenuForKeyboardEvent() {
-        if (mAppMenuHandler == null || !mAppMenuDelegate.shouldShowAppMenu()) return;
+        if (mAppMenuHandler == null || !mAppMenuHandler.shouldShowAppMenu()) return;
 
         boolean hasPermanentMenuKey = ViewConfiguration.get(mContext).hasPermanentMenuKey();
         mAppMenuHandler.showAppMenu(
@@ -134,6 +134,16 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
     @Override
     public AppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
         return mAppMenuPropertiesDelegate;
+    }
+
+    @Override
+    public void registerAppMenuBlocker(AppMenuBlocker blocker) {
+        mAppMenuHandler.registerAppMenuBlocker(blocker);
+    }
+
+    @Override
+    public void unregisterAppMenuBlocker(AppMenuBlocker blocker) {
+        mAppMenuHandler.unregisterAppMenuBlocker(blocker);
     }
 
     // Testing methods

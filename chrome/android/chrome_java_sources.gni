@@ -71,6 +71,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/accessibility/FontSizePrefs.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenu.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuAdapter.java",
+  "java/src/org/chromium/chrome/browser/appmenu/AppMenuBlocker.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuButtonHelper.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuButtonHelperImpl.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuCoordinator.java",

@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.util.ObservableSupplier;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Object responsible for handling the creation, showing, hiding of the AppMenu and notifying the
@@ -42,7 +43,8 @@ class AppMenuHandlerImpl implements AppMenuHandler, StartStopWithNativeObserver,
     private AppMenu mAppMenu;
     private AppMenuDragHelper mAppMenuDragHelper;
     private Menu mMenu;
-    private final ArrayList<AppMenuObserver> mObservers;
+    private final List<AppMenuBlocker> mBlockers;
+    private final List<AppMenuObserver> mObservers;
     private final int mMenuResourceId;
     private final View mHardwareButtonMenuAnchor;
 
@@ -86,6 +88,7 @@ class AppMenuHandlerImpl implements AppMenuHandler, StartStopWithNativeObserver,
         mAppMenuDelegate = appMenuDelegate;
         mDelegate = delegate;
         mDecorView = decorView;
+        mBlockers = new ArrayList<>();
         mObservers = new ArrayList<>();
         mMenuResourceId = menuResourceId;
         mHardwareButtonMenuAnchor = mDecorView.findViewById(R.id.menu_anchor_stub);
@@ -163,7 +166,7 @@ class AppMenuHandlerImpl implements AppMenuHandler, StartStopWithNativeObserver,
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("ResourceType")
     boolean showAppMenu(View anchorView, boolean startDragging, boolean showFromBottom) {
-        if (!mAppMenuDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
+        if (!shouldShowAppMenu() || isAppMenuShowing()) return false;
 
         TextBubble.dismissBubbles();
         boolean isByPermanentButton = false;
@@ -342,5 +345,27 @@ class AppMenuHandlerImpl implements AppMenuHandler, StartStopWithNativeObserver,
      */
     void onFooterViewInflated(View view) {
         if (mDelegate != null) mDelegate.onFooterViewInflated(this, view);
+    }
+
+    /**
+     * Registers an {@link AppMenuBlocker} used to help determine whether the app menu can be shown.
+     * @param blocker An {@link AppMenuBlocker} to check before attempting to show the app menu.
+     */
+    void registerAppMenuBlocker(AppMenuBlocker blocker) {
+        if (!mBlockers.contains(blocker)) mBlockers.add(blocker);
+    }
+
+    /**
+     * @param blocker The {@link AppMenuBlocker} to unregister.
+     */
+    void unregisterAppMenuBlocker(AppMenuBlocker blocker) {
+        mBlockers.remove(blocker);
+    }
+
+    boolean shouldShowAppMenu() {
+        for (int i = 0; i < mBlockers.size(); i++) {
+            if (!mBlockers.get(i).canShowAppMenu()) return false;
+        }
+        return true;
     }
 }

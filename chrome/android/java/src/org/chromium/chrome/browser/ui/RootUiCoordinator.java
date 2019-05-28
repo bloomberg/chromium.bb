@@ -9,10 +9,12 @@ import android.support.annotation.Nullable;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinatorFactory;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * The root UI coordinator. This class will eventually be responsible for inflating and managing
@@ -21,8 +23,9 @@ import org.chromium.chrome.browser.lifecycle.InflationObserver;
  * The specific things this component will manage and how it will hook into Chrome*Activity are
  * still being discussed See https://crbug.com/931496.
  */
-public class RootUiCoordinator
-        implements Destroyable, InflationObserver, ChromeActivity.MenuOrKeyboardActionHandler {
+public class RootUiCoordinator implements Destroyable, InflationObserver,
+                                          ChromeActivity.MenuOrKeyboardActionHandler,
+                                          AppMenuBlocker {
     protected ChromeActivity mActivity;
     protected @Nullable AppMenuCoordinator mAppMenuCoordinator;
 
@@ -41,7 +44,11 @@ public class RootUiCoordinator
     public void destroy() {
         mActivity.unregisterMenuOrKeyboardActionHandler(this);
         mActivity = null;
-        if (mAppMenuCoordinator != null) mAppMenuCoordinator.destroy();
+        if (mAppMenuCoordinator != null) {
+            mAppMenuCoordinator.unregisterAppMenuBlocker(this);
+            mAppMenuCoordinator.unregisterAppMenuBlocker(mActivity);
+            mAppMenuCoordinator.destroy();
+        }
     }
 
     @Override
@@ -59,6 +66,8 @@ public class RootUiCoordinator
             mActivity.getToolbarManager().onAppMenuInitialized(
                     mAppMenuCoordinator.getAppMenuHandler(),
                     mAppMenuCoordinator.getAppMenuPropertiesDelegate());
+            mAppMenuCoordinator.registerAppMenuBlocker(this);
+            mAppMenuCoordinator.registerAppMenuBlocker(mActivity);
         } else if (mActivity.getToolbarManager() != null) {
             mActivity.getToolbarManager().getToolbar().disableMenuButton();
         }
@@ -77,5 +86,31 @@ public class RootUiCoordinator
     @VisibleForTesting
     public AppMenuCoordinator getAppMenuCoordinatorForTesting() {
         return mAppMenuCoordinator;
+    }
+
+    @Override
+    public boolean canShowAppMenu() {
+        // TODO(https:crbug.com/931496): Eventually the ContextualSearchManager, EphemeralTabPanel,
+        // and FindToolbarManager will all be owned by this class.
+
+        // Do not show the menu if Contextual Search panel is opened.
+        if (mActivity.getContextualSearchManager() != null
+                && mActivity.getContextualSearchManager().isSearchPanelOpened()) {
+            return false;
+        }
+
+        if (mActivity.getEphemeralTabPanel() != null
+                && mActivity.getEphemeralTabPanel().isPanelOpened()) {
+            return false;
+        }
+
+        // Do not show the menu if we are in find in page view.
+        if (mActivity.getFindToolbarManager() != null
+                && mActivity.getFindToolbarManager().isShowing()
+                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
+            return false;
+        }
+
+        return true;
     }
 }

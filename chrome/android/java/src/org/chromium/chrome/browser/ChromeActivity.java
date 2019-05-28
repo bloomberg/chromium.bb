@@ -57,6 +57,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
+import org.chromium.chrome.browser.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
@@ -200,7 +201,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         extends AsyncInitializationActivity
         implements TabCreatorManager, AccessibilityStateChangeListener, PolicyChangeListener,
                    ContextualSearchTabPromotionDelegate, SnackbarManageable, SceneChangeObserver,
-                   StatusBarColorController.StatusBarColorProvider, AppMenuDelegate {
+                   StatusBarColorController.StatusBarColorProvider, AppMenuDelegate,
+                   AppMenuBlocker {
     /**
      * No control container to inflate during initialization.
      */
@@ -1538,29 +1540,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @CallSuper
     @Override
-    public boolean shouldShowAppMenu() {
+    public boolean canShowAppMenu() {
         if (isActivityFinishingOrDestroyed()) return false;
 
         @ActivityState
         int state = ApplicationStatus.getStateForActivity(this);
         boolean inMultiWindow = MultiWindowUtils.getInstance().isInMultiWindowMode(this);
         if (state != ActivityState.RESUMED && (!inMultiWindow || state != ActivityState.PAUSED)) {
-            return false;
-        }
-
-        // TODO(https://crbug.com/956260): Move UI state related logic out of ChromeActivity.
-
-        // Do not show the menu if Contextual Search panel is opened.
-        if (mContextualSearchManager != null && mContextualSearchManager.isSearchPanelOpened()) {
-            return false;
-        }
-
-        if (getEphemeralTabPanel() != null && getEphemeralTabPanel().isPanelOpened()) {
-            return false;
-        }
-
-        // Do not show the menu if we are in find in page view.
-        if (mFindToolbarManager != null && mFindToolbarManager.isShowing() && !isTablet()) {
             return false;
         }
 

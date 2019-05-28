@@ -26,4 +26,15 @@ public interface AppMenuCoordinator {
      * @return The {@link AppMenuPropertiesDelegate} associated with this activity.
      */
     AppMenuPropertiesDelegate getAppMenuPropertiesDelegate();
+
+    /**
+     * Registers an {@link AppMenuBlocker} used to help determine whether the app menu can be shown.
+     * @param blocker An {@link AppMenuBlocker} to check before attempting to show the app menu.
+     */
+    void registerAppMenuBlocker(AppMenuBlocker blocker);
+
+    /**
+     * @param blocker The {@link AppMenuBlocker} to unregister.
+     */
+    void unregisterAppMenuBlocker(AppMenuBlocker blocker);
 }

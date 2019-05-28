@@ -23,9 +23,4 @@ public interface AppMenuDelegate {
      *         should be using.
      */
     AppMenuPropertiesDelegate createAppMenuPropertiesDelegate();
-
-    /**
-     * @return Whether the app menu should be shown.
-     */
-    boolean shouldShowAppMenu();
 }

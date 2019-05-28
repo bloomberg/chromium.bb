@@ -2256,7 +2256,7 @@ public class ChromeTabbedActivity
     // App Menu related code -----------------------------------------------------------------------
 
     @Override
-    public boolean shouldShowAppMenu() {
+    public boolean canShowAppMenu() {
         // The popup menu relies on the model created during the full UI initialization, so do not
         // attempt to show the menu until the UI creation has finished.
         if (!mUIWithNativeInitialized) return false;
@@ -2266,7 +2266,7 @@ public class ChromeTabbedActivity
         Tab tab = getActivityTab();
         if (tab != null && TabModalPresenter.isDialogShowing(tab)) return false;
 
-        return super.shouldShowAppMenu();
+        return super.canShowAppMenu();
     }
 
     @Override
