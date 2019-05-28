@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -1162,12 +1163,27 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
   if (!layout_object->IsText()) {
     if (!descendants_depth)
       return;
+
+    // Skip recursing inside a display-locked tree.
+    if (layout_object->GetNode() &&
+        DisplayLockUtilities::NearestLockedInclusiveAncestor(
+            *layout_object->GetNode())) {
+      return;
+    }
+
     if (!layout_object->IsAnonymous())
       --descendants_depth;
     for (LayoutObject* child = layout_object->SlowFirstChild(); child;
          child = child->NextSibling()) {
       CollectPlatformFontsForLayoutObject(child, font_stats, descendants_depth);
     }
+    return;
+  }
+
+  // Don't gather text on a display-locked tree.
+  if (layout_object->GetNode() &&
+      DisplayLockUtilities::NearestLockedExclusiveAncestor(
+          *layout_object->GetNode())) {
     return;
   }
 

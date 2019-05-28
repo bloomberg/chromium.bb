@@ -249,10 +249,21 @@ crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional
 
 # Display locking, currently only available via a virtual test.
 crbug.com/882663 wpt_internal/display-lock [ Skip ]
+
+# Display locking, run highlight-display-locked.js only with display locking.
+crbug.com/882663 http/tests/devtools/elements/highlight/highlight-display-locked.js [ Skip ]
+crbug.com/882663 virtual/display-lock/http/tests/devtools/elements/highlight [ Skip ]
+Bug(none) virtual/display-lock/http/tests/devtools/elements/highlight/highlight-display-locked.js [ Pass ]
+
+# Display locking, run css-get-platform-fonts-display-locked.js only with display locking.
+crbug.com/882663 inspector-protocol/css/css-get-platform-fonts-display-locked.js [ Skip ]
+crbug.com/882663 virtual/display-lock/inspector-protocol/css [ Skip ]
+Bug(none) virtual/display-lock/inspector-protocol/css/css-get-platform-fonts-display-locked.js [ Pass ]
+
+# Display locking failures
 crbug.com/926276 virtual/display-lock/wpt_internal/display-lock/lock-after-append/nested-update.html [ Timeout ]
 crbug.com/926276 virtual/display-lock/wpt_internal/display-lock/lock-after-append/nested-update-and-commit.html [ Timeout ]
 crbug.com/955533 virtual/display-lock/wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
-crbug.com/882663 http/tests/devtools/elements/highlight/highlight-display-locked.js [ Skip ]
 
 # Render throttling
 crbug.com/520170 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]

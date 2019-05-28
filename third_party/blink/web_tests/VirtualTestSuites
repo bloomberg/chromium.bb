@@ -669,6 +669,11 @@
     "args": ["--enable-blink-features=DisplayLocking"]
   },
   {
+    "prefix": "display-lock",
+    "base": "inspector-protocol/css",
+    "args": ["--enable-blink-features=DisplayLocking"]
+  },
+  {
     "prefix" : "autoupgrade-optionally-blockable-mixed-content",
     "base": "http/tests/mixed-autoupgrade/optionally",
     "args": ["--enable-features=AutoupgradeMixedContent<AU --force-fieldtrials=AU/G1 --force-fieldtrial-params=AU.G1:mode/optionally-blockable"]
