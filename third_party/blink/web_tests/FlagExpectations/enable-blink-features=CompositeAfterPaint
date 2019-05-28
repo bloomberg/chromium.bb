@@ -392,7 +392,7 @@ crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-global.html [ Fail
 crbug.com/909749 fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
 
 # Backdrop filter
-crbug.com/923429 css3/filters/backdrop-filter-basic-blur.html [ Failure ]
+crbug.com/923429 css3/filters/backdrop-filter-basic-blur.html [ Timeout Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-browser-zoom.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-border-radius.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-clip-rect-zoom.html [ Failure ]
@@ -400,6 +400,7 @@ crbug.com/923429 css3/filters/backdrop-filter-plus-filter.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-rendering.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-transform.html [ Failure ]
+crbug.com/923429 css3/filters/backdrop-filter-edge-pixels.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-background-color.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic.html [ Failure ]

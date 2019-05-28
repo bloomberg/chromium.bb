@@ -3310,7 +3310,10 @@ PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
   }
   float zoom = style.EffectiveZoom();
   FloatRect reference_box = BackdropFilterReferenceBox();
-  return_value = FilterEffectBuilder(reference_box, zoom)
+  // Use kClamp tile mode to avoid pixel moving filters bringing in black
+  // transparent pixels from the viewport edge.
+  return_value = FilterEffectBuilder(reference_box, zoom, nullptr, nullptr,
+                                     SkBlurImageFilter::kClamp_TileMode)
                      .BuildFilterOperations(style.BackdropFilter());
   DCHECK(!return_value.IsEmpty());
   return return_value;

@@ -121,14 +121,17 @@ Vector<float> SepiaMatrix(double amount) {
 
 }  // namespace
 
-FilterEffectBuilder::FilterEffectBuilder(const FloatRect& reference_box,
-                                         float zoom,
-                                         const PaintFlags* fill_flags,
-                                         const PaintFlags* stroke_flags)
+FilterEffectBuilder::FilterEffectBuilder(
+    const FloatRect& reference_box,
+    float zoom,
+    const PaintFlags* fill_flags,
+    const PaintFlags* stroke_flags,
+    SkBlurImageFilter::TileMode blur_tile_mode)
     : reference_box_(reference_box),
       zoom_(zoom),
       fill_flags_(fill_flags),
-      stroke_flags_(stroke_flags) {}
+      stroke_flags_(stroke_flags),
+      blur_tile_mode_(blur_tile_mode) {}
 
 FilterEffect* FilterEffectBuilder::BuildFilterEffect(
     const FilterOperations& operations,
@@ -370,7 +373,7 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
       case FilterOperation::BLUR: {
         float pixel_radius =
             To<BlurFilterOperation>(*op).StdDeviation().GetFloatValue();
-        filters.AppendBlurFilter(pixel_radius);
+        filters.AppendBlurFilter(pixel_radius, blur_tile_mode_);
         break;
       }
       case FilterOperation::DROP_SHADOW: {

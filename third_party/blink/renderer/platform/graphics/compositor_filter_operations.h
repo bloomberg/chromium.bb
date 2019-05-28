@@ -30,7 +30,9 @@ class PLATFORM_EXPORT CompositorFilterOperations {
   void AppendBrightnessFilter(float amount);
   void AppendContrastFilter(float amount);
   void AppendOpacityFilter(float amount);
-  void AppendBlurFilter(float amount);
+  void AppendBlurFilter(float amount,
+                        SkBlurImageFilter::TileMode tile_mode =
+                            SkBlurImageFilter::kClampToBlack_TileMode);
   void AppendDropShadowFilter(IntPoint offset, float std_deviation, Color);
   void AppendColorMatrixFilter(const cc::FilterOperation::Matrix&);
   void AppendZoomFilter(float amount, int inset);
