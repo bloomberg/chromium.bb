@@ -167,11 +167,18 @@ void OAuth2LoginManager::StoreOAuth2Token() {
 
     user_manager::User* const user =
         ProfileHelper::Get()->GetUserByProfile(user_profile_);
+
+    // We MUST NOT revoke old Device Account tokens, otherwise Gaia will revoke
+    // all tokens associated to this user's device id, including
+    // |refresh_token_| and the user will be stuck performing an online auth
+    // with Gaia at every login. See https://crbug.com/952570 and
+    // https://crbug.com/865189 for context.
     account_manager->UpsertAccount(
         AccountManager::AccountKey{
             user->GetAccountId().GetGaiaId(),
             account_manager::AccountType::ACCOUNT_TYPE_GAIA},
-        user->display_email() /* raw_email */, refresh_token_);
+        user->display_email() /* raw_email */, refresh_token_,
+        false /* revoke_old_token */);
   } else {
     // TODO(sinhak): Remove this when Account Manager is enabled by default.
 

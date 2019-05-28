@@ -398,7 +398,7 @@ TEST_F(AccountManagerTest,
   account_manager_->RemoveAccount(kGaiaAccountKey_);
 }
 
-TEST_F(AccountManagerTest, OldTokenIsRevokedOnTokenUpdate) {
+TEST_F(AccountManagerTest, OldTokenIsRevokedOnTokenUpdateByDefault) {
   ResetAndInitializeAccountManager();
   // Only 1 token should be revoked.
   EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(kGaiaToken))
@@ -407,6 +407,34 @@ TEST_F(AccountManagerTest, OldTokenIsRevokedOnTokenUpdate) {
 
   // Update the token.
   account_manager_->UpdateToken(kGaiaAccountKey_, kNewGaiaToken);
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(AccountManagerTest,
+       OldTokenIsNotRevokedOnTokenUpdateIfRequestedByClient) {
+  ResetAndInitializeAccountManager();
+  // Token should not be revoked.
+  EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(kGaiaToken))
+      .Times(0);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+
+  // Update the token.
+  account_manager_->UpdateToken(kGaiaAccountKey_, kNewGaiaToken,
+                                false /* revoke_old_token */);
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(AccountManagerTest,
+       OldTokenIsNotRevokedOnAccountUpdateIfRequestedByClient) {
+  ResetAndInitializeAccountManager();
+  // Token should not be revoked.
+  EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(kGaiaToken))
+      .Times(0);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+
+  // Update the token.
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail,
+                                  kNewGaiaToken, false /* revoke_old_token */);
   scoped_task_environment_.RunUntilIdle();
 }
 

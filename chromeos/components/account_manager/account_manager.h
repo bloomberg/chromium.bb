@@ -166,16 +166,24 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   // email id for |account_key|. |raw_email| must not be empty. Use
   // |AccountManager::kActiveDirectoryDummyToken| as the |token| for Active
   // Directory accounts, and |AccountManager::kInvalidToken| for Gaia accounts
-  // with unknown tokens.
+  // with unknown tokens. |revoke_old_token| is an optional parameter that tells
+  // |AccountManager| whether or not to revoke the old token associated with
+  // |account_key| in the event of a token update.
+  // Note: This API is idempotent.
   void UpsertAccount(const AccountKey& account_key,
                      const std::string& raw_email,
-                     const std::string& token);
+                     const std::string& token,
+                     bool revoke_old_token = true);
 
   // Updates the token for the account corresponding to the given |account_key|.
   // The account must be known to Account Manager. See |UpsertAccount| for
-  // information about adding an account.
+  // information about adding an account. |revoke_old_token| is an optional
+  // parameter that tells |AccountManager| whether or not to revoke the old
+  // token associated with |account_key| in the event of a token update.
   // Note: This API is idempotent.
-  void UpdateToken(const AccountKey& account_key, const std::string& token);
+  void UpdateToken(const AccountKey& account_key,
+                   const std::string& token,
+                   bool revoke_old_token = true);
 
   // Updates the email associated with |account_key|. The account must be known
   // to Account Manager. See |UpsertAccount| for information about adding an
@@ -287,7 +295,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
 
   // Assumes that |AccountManager| initialization (|init_state_|) is complete.
   void UpdateTokenInternal(const AccountKey& account_key,
-                           const std::string& token);
+                           const std::string& token,
+                           bool revoke_old_token);
 
   // Assumes that |AccountManager| initialization (|init_state_|) is complete.
   void UpdateEmailInternal(const AccountKey& account_key,
@@ -298,7 +307,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   // funnel through to this method. Assumes that |AccountManager| initialization
   // (|init_state_|) is complete.
   void UpsertAccountInternal(const AccountKey& account_key,
-                             const AccountInfo& account);
+                             const AccountInfo& account,
+                             bool revoke_old_token);
 
   // Posts a task on |task_runner_|, which is usually a background thread, to
   // persist the current state of |accounts_|.
