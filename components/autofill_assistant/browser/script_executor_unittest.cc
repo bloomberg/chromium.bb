@@ -846,7 +846,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
   EXPECT_THAT(scripts_update_, SizeIs(1));
   EXPECT_THAT(scripts_update_count_, Eq(1));
   EXPECT_THAT("path", scripts_update_[0]->handle.path);
-  EXPECT_THAT("name", scripts_update_[0]->handle.name);
+  EXPECT_THAT("name", scripts_update_[0]->handle.chip.text());
 }
 
 TEST_F(ScriptExecutorTest, UpdateScriptListShouldNotifyMultipleTimes) {
@@ -921,7 +921,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
   EXPECT_THAT(scripts_update_, SizeIs(1));
   EXPECT_THAT(scripts_update_count_, Eq(1));
   EXPECT_THAT("path", scripts_update_[0]->handle.path);
-  EXPECT_THAT("update_from_interrupt", scripts_update_[0]->handle.name);
+  EXPECT_THAT("update_from_interrupt", scripts_update_[0]->handle.chip.text());
 }
 
 TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {

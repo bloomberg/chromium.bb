@@ -55,7 +55,7 @@ TEST(ProtocolUtilsTest, MinimalValidScript) {
 
   ASSERT_THAT(scripts, SizeIs(1));
   EXPECT_EQ("path", scripts[0]->handle.path);
-  EXPECT_EQ("name", scripts[0]->handle.name);
+  EXPECT_EQ("name", scripts[0]->handle.chip.text());
   EXPECT_NE(nullptr, scripts[0]->precondition);
 }
 
@@ -73,7 +73,7 @@ TEST(ProtocolUtilsTest, OneFullyFeaturedScript) {
 
   ASSERT_THAT(scripts, SizeIs(1));
   EXPECT_EQ("path", scripts[0]->handle.path);
-  EXPECT_EQ("name", scripts[0]->handle.name);
+  EXPECT_EQ("name", scripts[0]->handle.chip.text());
   EXPECT_EQ("prompt", scripts[0]->handle.initial_prompt);
   EXPECT_TRUE(scripts[0]->handle.autostart);
   EXPECT_NE(nullptr, scripts[0]->precondition);
@@ -92,7 +92,7 @@ TEST(ProtocolUtilsTest, AllowInterruptsWithNoName) {
   ProtocolUtils::AddScript(script_proto, &scripts);
   ASSERT_THAT(scripts, SizeIs(1));
   EXPECT_EQ("path", scripts[0]->handle.path);
-  EXPECT_EQ("", scripts[0]->handle.name);
+  EXPECT_EQ("", scripts[0]->handle.chip.text());
   EXPECT_TRUE(scripts[0]->handle.interrupt);
 }
 
@@ -186,7 +186,7 @@ TEST(ProtocolUtilsTest, AddScriptValid) {
 
   EXPECT_NE(nullptr, script);
   EXPECT_EQ("path", script->handle.path);
-  EXPECT_EQ("name", script->handle.name);
+  EXPECT_EQ("name", script->handle.chip.text());
   EXPECT_EQ("prompt", script->handle.initial_prompt);
   EXPECT_TRUE(script->handle.autostart);
   EXPECT_NE(nullptr, script->precondition);
@@ -268,7 +268,7 @@ TEST(ProtocolUtilsTest, ParseActionsUpdateScriptListFullFeatured) {
   EXPECT_TRUE(should_update_scripts);
   EXPECT_THAT(scripts, SizeIs(1));
   EXPECT_THAT("a", Eq(scripts[0]->handle.path));
-  EXPECT_THAT("name", Eq(scripts[0]->handle.name));
+  EXPECT_THAT("name", Eq(scripts[0]->handle.chip.text()));
 }
 
 }  // namespace

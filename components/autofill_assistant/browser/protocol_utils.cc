@@ -92,15 +92,11 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
   script->handle.initial_prompt = presentation.initial_prompt();
 
   if (presentation.has_chip()) {
-    const ChipProto& chip = presentation.chip();
-    script->handle.name = chip.text();
-    script->handle.chip_type = chip.type();
-    script->handle.chip_icon = chip.icon();
-    script->handle.chip_sticky = chip.sticky();
+    script->handle.chip = presentation.chip();
   } else {
-    script->handle.name = presentation.name();
-    script->handle.chip_type = presentation.chip_type();
-    script->handle.chip_icon = presentation.chip_icon();
+    script->handle.chip.set_text(presentation.name());
+    script->handle.chip.set_type(presentation.chip_type());
+    script->handle.chip.set_icon(presentation.chip_icon());
   }
 
   script->precondition = ScriptPrecondition::FromProto(
@@ -108,8 +104,8 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
   script->priority = presentation.priority();
 
   if (script->handle.path.empty() || !script->precondition ||
-      (script->handle.name.empty() &&
-       script->handle.chip_icon == ChipIcon::NO_ICON &&
+      (script->handle.chip.text().empty() &&
+       script->handle.chip.icon() == ChipIcon::NO_ICON &&
        !script->handle.interrupt)) {
     return;
   }

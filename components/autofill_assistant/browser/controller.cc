@@ -1000,13 +1000,9 @@ void Controller::OnRunnableScriptsChanged(
   // Update the set of scripts in the UI.
   auto chips = std::make_unique<std::vector<Chip>>();
   for (const auto& script : runnable_scripts) {
-    if (!script.autostart &&
-        (!script.name.empty() || script.chip_icon != ChipIcon::NO_ICON)) {
-      chips->emplace_back();
-      chips->back().text = script.name;
-      chips->back().type = script.chip_type;
-      chips->back().icon = script.chip_icon;
-      chips->back().sticky = script.chip_sticky;
+    if (!script.autostart && (!script.chip.text().empty() ||
+                              script.chip.icon() != ChipIcon::NO_ICON)) {
+      chips->emplace_back(script.chip);
       chips->back().callback =
           base::BindOnce(&Controller::OnScriptSelected,
                          weak_ptr_factory_.GetWeakPtr(), script.path);
