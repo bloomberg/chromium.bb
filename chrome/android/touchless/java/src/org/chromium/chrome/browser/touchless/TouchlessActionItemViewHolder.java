@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
@@ -16,6 +17,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.touchless.R;
 import org.chromium.ui.widget.ChromeImageView;
+import org.chromium.ui.widget.Toast;
 
 /** ViewHolder associated to {@link ItemViewType#ACTION} for touchless devices. */
 class TouchlessActionItemViewHolder extends ActionItem.ViewHolder {
@@ -63,5 +65,24 @@ class TouchlessActionItemViewHolder extends ActionItem.ViewHolder {
             // Not even HIDDEN is supported as the item should not be able to receive updates.
             assert false : "ActionViewHolder got notified of an unsupported state: " + state;
         }
+    }
+
+    @Override
+    protected void showFetchFailureMessage() {
+        Toast.makeText(itemView.getContext(), R.string.ntp_suggestions_fetch_failed,
+                     Toast.LENGTH_SHORT)
+                .show();
+    }
+
+    @Override
+    protected void showNoNewSuggestionsMessage() {
+        Toast.makeText(itemView.getContext(), R.string.ntp_suggestions_fetch_no_new_suggestions,
+                     Toast.LENGTH_SHORT)
+                .show();
+    }
+
+    @VisibleForTesting
+    View getButtonForTesting() {
+        return mButton;
     }
 }
