@@ -274,13 +274,12 @@ class DirectoryModel extends cr.EventTarget {
       // If the change is deletion of currentDir, move up to its parent
       // directory.
       directoryEntry.getDirectory(
-          directoryEntry.fullPath, {create: false}, () => {}, () => {
+          directoryEntry.fullPath, {create: false}, () => {}, async () => {
             const volumeInfo =
                 this.volumeManager_.getVolumeInfo(assert(directoryEntry));
             if (volumeInfo) {
-              volumeInfo.resolveDisplayRoot().then(displayRoot => {
-                this.changeDirectoryEntry(displayRoot);
-              });
+              const displayRoot = await volumeInfo.resolveDisplayRoot();
+              this.changeDirectoryEntry(displayRoot);
             }
           });
     }
@@ -323,7 +322,7 @@ class DirectoryModel extends cr.EventTarget {
    * Invoked when filters are changed.
    * @private
    */
-  onFilterChanged_() {
+  async onFilterChanged_() {
     const currentDirectory = this.getCurrentDirEntry();
     if (currentDirectory && util.isNativeEntry(currentDirectory) &&
         !this.fileFilter_.filter(
@@ -332,9 +331,8 @@ class DirectoryModel extends cr.EventTarget {
       // change the current directory to the current volume's root.
       const volumeInfo = this.volumeManager_.getVolumeInfo(currentDirectory);
       if (volumeInfo) {
-        volumeInfo.resolveDisplayRoot().then(displayRoot => {
-          this.changeDirectoryEntry(displayRoot);
-        });
+        const displayRoot = await volumeInfo.resolveDisplayRoot();
+        this.changeDirectoryEntry(displayRoot);
       }
     } else {
       this.rescanSoon(false);
@@ -364,9 +362,7 @@ class DirectoryModel extends cr.EventTarget {
     const indexes = this.fileListSelection_.selectedIndexes;
     const fileList = this.getFileList();
     if (fileList) {
-      return indexes.map(i => {
-        return fileList.item(i);
-      });
+      return indexes.map(i => fileList.item(i));
     }
     return [];
   }
@@ -822,7 +818,7 @@ class DirectoryModel extends cr.EventTarget {
    * @param {EntriesChangedEvent} event Entry change event.
    * @private
    */
-  onEntriesChanged_(event) {
+  async onEntriesChanged_(event) {
     const kind = event.kind;
     const entries = event.entries;
     // TODO(hidehiko): We should update directory model even the search result
@@ -838,32 +834,32 @@ class DirectoryModel extends cr.EventTarget {
 
     switch (kind) {
       case util.EntryChangedKind.CREATED:
-        const parentPromises = [];
-        for (let i = 0; i < entries.length; i++) {
-          parentPromises.push(new Promise((resolve, reject) => {
-            entries[i].getParent(resolve, reject);
-          }));
+        try {
+          const parentPromises =
+              entries.map(entry => new Promise((resolve, reject) => {
+                            entry.getParent(resolve, reject);
+                          }));
+          const parents = await Promise.all(parentPromises);
+          const entriesToAdd = [];
+
+          for (let i = 0; i < parents.length; i++) {
+            if (!util.isSameEntry(parents[i], this.getCurrentDirEntry())) {
+              continue;
+            }
+
+            const index = this.findIndexByEntry_(entries[i]);
+            if (index >= 0) {
+              this.getFileList().replaceItem(
+                  this.getFileList().item(index), entries[i]);
+            } else {
+              entriesToAdd.push(entries[i]);
+            }
+          }
+
+          this.partialUpdate_(entriesToAdd, []);
+        } catch (error) {
+          console.error(error.stack || error);
         }
-        Promise.all(parentPromises)
-            .then(parents => {
-              const entriesToAdd = [];
-              for (let i = 0; i < parents.length; i++) {
-                if (!util.isSameEntry(parents[i], this.getCurrentDirEntry())) {
-                  continue;
-                }
-                const index = this.findIndexByEntry_(entries[i]);
-                if (index >= 0) {
-                  this.getFileList().replaceItem(
-                      this.getFileList().item(index), entries[i]);
-                } else {
-                  entriesToAdd.push(entries[i]);
-                }
-              }
-              this.partialUpdate_(entriesToAdd, []);
-            })
-            .catch(error => {
-              console.error(error.stack || error);
-            });
         break;
 
       case util.EntryChangedKind.DELETED:
@@ -953,38 +949,36 @@ class DirectoryModel extends cr.EventTarget {
   /**
    * Updates data model and selects new directory.
    * @param {!DirectoryEntry} newDirectory Directory entry to be selected.
-   * @return {Promise} A promise which is resolved when new directory is
+   * @return {!Promise<void>} A promise which is resolved when new directory is
    *     selected. If current directory has changed during the operation, this
    *     will be rejected.
    */
-  updateAndSelectNewDirectory(newDirectory) {
+  async updateAndSelectNewDirectory(newDirectory) {
     // Refresh the cache.
     this.metadataModel_.notifyEntriesCreated([newDirectory]);
     const dirContents = this.currentDirContents_;
+    const sequence = this.changeDirectorySequence_;
+    await new Promise(resolve => {
+      dirContents.prefetchMetadata([newDirectory], false, resolve);
+    });
 
-    return new Promise((onFulfilled, onRejected) => {
-             dirContents.prefetchMetadata([newDirectory], false, onFulfilled);
-           })
-        .then((sequence => {
-                // If current directory has changed during the prefetch, do not
-                // try to select new directory.
-                if (sequence !== this.changeDirectorySequence_) {
-                  return Promise.reject();
-                }
+    // If current directory has changed during the prefetch, do not try to
+    // select new directory.
+    if (sequence !== this.changeDirectorySequence_) {
+      return Promise.reject();
+    }
 
-                // If target directory is already in the list, just select it.
-                const existing = this.getFileList().slice().filter(e => {
-                  return e.name === newDirectory.name;
-                });
-                if (existing.length) {
-                  this.selectEntry(newDirectory);
-                } else {
-                  this.fileListSelection_.beginChange();
-                  this.getFileList().splice(0, 0, newDirectory);
-                  this.selectEntry(newDirectory);
-                  this.fileListSelection_.endChange();
-                }
-              }).bind(null, this.changeDirectorySequence_));
+    // If target directory is already in the list, just select it.
+    const existing =
+        this.getFileList().slice().filter(e => e.name === newDirectory.name);
+    if (existing.length) {
+      this.selectEntry(newDirectory);
+    } else {
+      this.fileListSelection_.beginChange();
+      this.getFileList().splice(0, 0, newDirectory);
+      this.selectEntry(newDirectory);
+      this.fileListSelection_.endChange();
+    }
   }
 
   /**
@@ -1013,7 +1007,7 @@ class DirectoryModel extends cr.EventTarget {
    */
   changeDirectoryEntry(dirEntry, opt_callback) {
     // Increment the sequence value.
-    this.changeDirectorySequence_++;
+    const sequence = ++this.changeDirectorySequence_;
     this.clearSearch_();
 
     // When switching to MyFiles volume, we should use a FilesAppEntry if
@@ -1031,49 +1025,46 @@ class DirectoryModel extends cr.EventTarget {
       this.currentDirContents_.cancelScan();
     }
 
-    this.directoryChangeQueue_.run(
-        ((sequence, queueTaskCallback) => {
-          this.fileWatcher_.changeWatchedDirectory(dirEntry).then(() => {
-            if (this.changeDirectorySequence_ !== sequence) {
-              queueTaskCallback();
-              return;
-            }
+    this.directoryChangeQueue_.run(async queueTaskCallback => {
+      await this.fileWatcher_.changeWatchedDirectory(dirEntry);
+      if (this.changeDirectorySequence_ !== sequence) {
+        queueTaskCallback();
+        return;
+      }
 
-            const newDirectoryContents = this.createDirectoryContents_(
-                this.currentFileListContext_, dirEntry, '');
-            if (!newDirectoryContents) {
-              queueTaskCallback();
-              return;
-            }
+      const newDirectoryContents = this.createDirectoryContents_(
+          this.currentFileListContext_, dirEntry, '');
+      if (!newDirectoryContents) {
+        queueTaskCallback();
+        return;
+      }
 
-            const previousDirEntry =
-                this.currentDirContents_.getDirectoryEntry();
-            this.clearAndScan_(newDirectoryContents, result => {
-              // Calls the callback of the method when successful.
-              if (result && opt_callback) {
-                opt_callback();
-              }
+      const previousDirEntry = this.currentDirContents_.getDirectoryEntry();
+      this.clearAndScan_(newDirectoryContents, result => {
+        // Calls the callback of the method when successful.
+        if (result && opt_callback) {
+          opt_callback();
+        }
 
-              // Notify that the current task of this.directoryChangeQueue_
-              // is completed.
-              setTimeout(queueTaskCallback, 0);
-            });
+        // Notify that the current task of this.directoryChangeQueue_
+        // is completed.
+        setTimeout(queueTaskCallback, 0);
+      });
 
-            // For tests that open the dialog to empty directories, everything
-            // is loaded at this point.
-            util.testSendMessage('directory-change-complete');
-            const previousVolumeInfo = previousDirEntry ?
-                this.volumeManager_.getVolumeInfo(previousDirEntry) :
-                null;
-            // VolumeInfo for dirEntry.
-            const currentVolumeInfo = this.getCurrentVolumeInfo();
-            const event = new Event('directory-changed');
-            event.previousDirEntry = previousDirEntry;
-            event.newDirEntry = dirEntry;
-            event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
-            this.dispatchEvent(event);
-          });
-        }).bind(null, this.changeDirectorySequence_));
+      // For tests that open the dialog to empty directories, everything
+      // is loaded at this point.
+      util.testSendMessage('directory-change-complete');
+      const previousVolumeInfo = previousDirEntry ?
+          this.volumeManager_.getVolumeInfo(previousDirEntry) :
+          null;
+      // VolumeInfo for dirEntry.
+      const currentVolumeInfo = this.getCurrentVolumeInfo();
+      const event = new Event('directory-changed');
+      event.previousDirEntry = previousDirEntry;
+      event.newDirEntry = dirEntry;
+      event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
+      this.dispatchEvent(event);
+    });
   }
 
   /**
@@ -1218,7 +1209,7 @@ class DirectoryModel extends cr.EventTarget {
     // mounted, switch to it.
     if (this.getCurrentRootType() ===
         VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT) {
-      for (let newVolume of event.added) {
+      for (const newVolume of event.added) {
         if (newVolume.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
           newVolume.resolveDisplayRoot().then((displayRoot) => {
             this.changeDirectoryEntry(displayRoot);
@@ -1265,7 +1256,7 @@ class DirectoryModel extends cr.EventTarget {
     }
 
     const rootType = this.getCurrentRootType();
-    for (let volume of removedVolumes) {
+    for (const volume of removedVolumes) {
       if (volume.fakeEntries[rootType]) {
         return true;
       }
@@ -1397,37 +1388,36 @@ class DirectoryModel extends cr.EventTarget {
       return;
     }
 
-    this.changeDirectorySequence_++;
-    this.directoryChangeQueue_.run(
-        ((sequence, callback) => {
-          if (this.changeDirectorySequence_ !== sequence) {
-            callback();
-            return;
-          }
+    const sequence = ++this.changeDirectorySequence_;
+    this.directoryChangeQueue_.run(callback => {
+      if (this.changeDirectorySequence_ !== sequence) {
+        callback();
+        return;
+      }
 
-          if (!(query || '').trimLeft()) {
-            if (this.isSearching()) {
-              const newDirContents = this.createDirectoryContents_(
-                  this.currentFileListContext_, assert(currentDirEntry));
-              this.clearAndScan_(newDirContents, callback);
-            } else {
-              callback();
-            }
-            return;
-          }
-
+      if (!(query || '').trimLeft()) {
+        if (this.isSearching()) {
           const newDirContents = this.createDirectoryContents_(
-              this.currentFileListContext_, assert(currentDirEntry), query);
-          if (!newDirContents) {
-            callback();
-            return;
-          }
-
-          this.onSearchCompleted_ = onSearchRescan;
-          this.onClearSearch_ = onClearSearch;
-          this.addEventListener('scan-completed', this.onSearchCompleted_);
+              this.currentFileListContext_, assert(currentDirEntry));
           this.clearAndScan_(newDirContents, callback);
-        }).bind(null, this.changeDirectorySequence_));
+        } else {
+          callback();
+        }
+        return;
+      }
+
+      const newDirContents = this.createDirectoryContents_(
+          this.currentFileListContext_, assert(currentDirEntry), query);
+      if (!newDirContents) {
+        callback();
+        return;
+      }
+
+      this.onSearchCompleted_ = onSearchRescan;
+      this.onClearSearch_ = onClearSearch;
+      this.addEventListener('scan-completed', this.onSearchCompleted_);
+      this.clearAndScan_(newDirContents, callback);
+    });
   }
 
   /**
