@@ -154,6 +154,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/history:unit_tests",
     "//ios/chrome/browser/infobars:unit_tests",
     "//ios/chrome/browser/itunes_urls:unit_tests",
+    "//ios/chrome/browser/json_parser:unit_tests",
     "//ios/chrome/browser/language:unit_tests",
     "//ios/chrome/browser/main:unit_tests",
     "//ios/chrome/browser/metrics:unit_tests",

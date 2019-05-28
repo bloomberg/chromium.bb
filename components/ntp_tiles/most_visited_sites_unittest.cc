@@ -30,12 +30,12 @@
 #include "components/ntp_tiles/custom_links_manager.h"
 #include "components/ntp_tiles/features.h"
 #include "components/ntp_tiles/icon_cacher.h"
-#include "components/ntp_tiles/json_unsafe_parser.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/section_type.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -293,7 +293,7 @@ class PopularSitesFactoryForTest {
               "title": "PopularSite2",
               "url": "http://popularsite2/",
               "favicon_url": "http://popularsite2/favicon.ico"
-            },
+            }
            ])");
 
     test_url_loader_factory_.AddResponse(
@@ -310,7 +310,7 @@ class PopularSitesFactoryForTest {
               "title": "Google News",
               "url": "http://news.google.com",
               "favicon_url": "http://news.google.com/favicon.ico"
-            },
+            }
            ])");
 
     test_url_loader_factory_.AddResponse(
@@ -364,7 +364,7 @@ class PopularSitesFactoryForTest {
         prefs_,
         /*template_url_service=*/nullptr,
         /*variations_service=*/nullptr, test_shared_loader_factory_,
-        base::Bind(JsonUnsafeParser::Parse));
+        base::Bind(&data_decoder::SafeJsonParser::Parse, nullptr));
   }
 
  private:
@@ -517,6 +517,7 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
   TopSitesCallbackList top_sites_callbacks_;
 
   base::test::ScopedTaskEnvironment task_environment_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   PopularSitesFactoryForTest popular_sites_factory_;
   scoped_refptr<StrictMock<MockTopSites>> mock_top_sites_;

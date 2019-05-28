@@ -22,11 +22,11 @@
 #include "components/invalidation/impl/invalidation_service_test_template.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator.h"
-#include "components/invalidation/impl/json_unsafe_parser.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -133,7 +133,7 @@ class FCMInvalidationServiceTestDelegate {
     invalidation_service_ = std::make_unique<FCMInvalidationService>(
         identity_provider_.get(), gcm_driver_.get(),
         mock_instance_id_driver_.get(), &pref_service_,
-        base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
+        base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
         &url_loader_factory_);
   }
 
@@ -158,6 +158,7 @@ class FCMInvalidationServiceTestDelegate {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<MockInstanceIDDriver> mock_instance_id_driver_;
   std::unique_ptr<MockInstanceID> mock_instance_id_;

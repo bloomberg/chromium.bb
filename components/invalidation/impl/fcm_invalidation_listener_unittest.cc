@@ -13,7 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
 #include "components/invalidation/impl/fcm_invalidation_listener.h"
-#include "components/invalidation/impl/json_unsafe_parser.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
 #include "components/invalidation/impl/push_client_channel.h"
 #include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
@@ -23,6 +22,7 @@
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -164,7 +164,7 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
             nullptr /* identity_provider */,
             nullptr /* pref_service */,
             nullptr /* loader_factory */,
-            base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
+            base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
             "fake_sender_id",
             false) {
     ON_CALL(*this, LookupRegisteredPublicTopicByPrivateTopic)
@@ -285,6 +285,7 @@ class FCMInvalidationListenerTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   FCMSyncNetworkChannel* fcm_sync_network_channel_;
   MockRegistrationManager* registration_manager_;
 

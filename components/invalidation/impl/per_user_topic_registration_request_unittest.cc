@@ -16,9 +16,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "components/invalidation/impl/json_unsafe_parser.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,6 +75,7 @@ class PerUserTopicRegistrationRequestTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   network::TestURLLoaderFactory url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PerUserTopicRegistrationRequestTest);
@@ -101,9 +102,10 @@ TEST_F(PerUserTopicRegistrationRequestTest,
           .SetProjectId(project_id)
           .SetType(type)
           .Build();
-  request->Start(callback.Get(),
-                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
-                 url_loader_factory());
+  request->Start(
+      callback.Get(),
+      base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
+      url_loader_factory());
   base::RunLoop().RunUntilIdle();
 
   // Destroy the request before getting any response.
@@ -145,9 +147,10 @@ TEST_F(PerUserTopicRegistrationRequestTest, ShouldSubscribeWithoutErrors) {
   url_loader_factory()->AddResponse(url(request.get()),
                                     CreateHeadersForTest(net::HTTP_OK),
                                     response_body, response_status);
-  request->Start(callback.Get(),
-                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
-                 url_loader_factory());
+  request->Start(
+      callback.Get(),
+      base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
+      url_loader_factory());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(status.code, StatusCode::SUCCESS);
@@ -190,9 +193,10 @@ TEST_F(PerUserTopicRegistrationRequestTest,
   url_loader_factory()->AddResponse(url(request.get()),
                                     CreateHeadersForTest(net::HTTP_OK),
                                     response_body, response_status);
-  request->Start(callback.Get(),
-                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
-                 url_loader_factory());
+  request->Start(
+      callback.Get(),
+      base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
+      url_loader_factory());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(status.code, StatusCode::FAILED);
@@ -233,9 +237,10 @@ TEST_F(PerUserTopicRegistrationRequestTest,
   url_loader_factory()->AddResponse(url(request.get()),
                                     CreateHeadersForTest(net::HTTP_OK),
                                     response_body, response_status);
-  request->Start(callback.Get(),
-                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
-                 url_loader_factory());
+  request->Start(
+      callback.Get(),
+      base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
+      url_loader_factory());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(status.code, StatusCode::FAILED);
@@ -276,9 +281,10 @@ TEST_F(PerUserTopicRegistrationRequestTest, ShouldUnsubscribe) {
   url_loader_factory()->AddResponse(url(request.get()),
                                     CreateHeadersForTest(net::HTTP_OK),
                                     response_body, response_status);
-  request->Start(callback.Get(),
-                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
-                 url_loader_factory());
+  request->Start(
+      callback.Get(),
+      base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
+      url_loader_factory());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(status.code, StatusCode::SUCCESS);
@@ -325,9 +331,10 @@ TEST_P(PerUserTopicRegistrationRequestParamTest,
   url_loader_factory()->AddResponse(
       url(request.get()), CreateHeadersForTest(GetParam()),
       /* response_body */ std::string(), response_status);
-  request->Start(callback.Get(),
-                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
-                 url_loader_factory());
+  request->Start(
+      callback.Get(),
+      base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
+      url_loader_factory());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(status.code, StatusCode::FAILED_NON_RETRIABLE);

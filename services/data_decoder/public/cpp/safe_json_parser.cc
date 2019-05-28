@@ -28,7 +28,10 @@ SafeJsonParser* Create(service_manager::Connector* connector,
   if (g_factory)
     return g_factory(unsafe_json, success_callback, error_callback);
 
-#if defined(OS_ANDROID)
+#if defined(OS_IOS)
+  NOTREACHED() << "SafeJsonParser is not supported on iOS (except in tests)";
+  return nullptr;
+#elif defined(OS_ANDROID)
   return new SafeJsonParserAndroid(unsafe_json, success_callback,
                                    error_callback);
 #else

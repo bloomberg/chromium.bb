@@ -15,11 +15,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/invalidation/impl/invalidation_switches.h"
-#include "components/invalidation/impl/json_unsafe_parser.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/http/http_status_code.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -136,8 +136,8 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
       bool migrate_prefs = true) {
     auto reg_manager = std::make_unique<PerUserTopicRegistrationManager>(
         identity_provider_.get(), &pref_service_, url_loader_factory(),
-        base::BindRepeating(&syncer::JsonUnsafeParser::Parse), kProjectId,
-        migrate_prefs);
+        base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
+        kProjectId, migrate_prefs);
     reg_manager->Init();
     reg_manager->AddObserver(&state_observer_);
     return reg_manager;
@@ -183,6 +183,7 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   network::TestURLLoaderFactory url_loader_factory_;
   TestingPrefServiceSimple pref_service_;
 
