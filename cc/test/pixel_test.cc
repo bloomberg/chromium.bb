@@ -40,6 +40,7 @@
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
@@ -271,7 +272,12 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   renderer_->SetVisible(true);
 }
 
-void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface) {
+void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface,
+                                  bool enable_vulkan) {
+  if (enable_vulkan) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableVulkan);
+  }
   // Set up the GPU service.
   gpu_service_holder_ = viz::TestGpuServiceHolder::GetInstance();
 

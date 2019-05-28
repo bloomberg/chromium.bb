@@ -47,7 +47,6 @@
 
 using cc::RendererPixelTest;
 using cc::GLRendererPixelTest;
-using cc::SkiaRendererPixelTest;
 using gpu::gles2::GLES2Interface;
 
 namespace viz {
@@ -876,13 +875,30 @@ void CreateTestAxisAlignedQuads(const gfx::Rect& rect,
                force_aa_off);
 }
 
-using RendererTypes =
+using RendererTypes = ::testing::Types<GLRenderer,
+                                       SoftwareRenderer,
+                                       SkiaRenderer,
+                                       cc::GLRendererWithExpandedViewport,
+                                       cc::SoftwareRendererWithExpandedViewport
+#if defined(USE_X11)
+                                       ,
+                                       cc::VulkanSkiaRenderer
+#endif
+                                       >;
+TYPED_TEST_SUITE(RendererPixelTest, RendererTypes);
+
+// TODO(samans): Make these tests pass with Vulkan. https://crbug.com/960795
+template <typename RendererType>
+class NonVulkanRendererPixelTest : public cc::RendererPixelTest<RendererType> {
+};
+
+using NonVulkanRendererTypes =
     ::testing::Types<GLRenderer,
                      SoftwareRenderer,
                      SkiaRenderer,
                      cc::GLRendererWithExpandedViewport,
                      cc::SoftwareRendererWithExpandedViewport>;
-TYPED_TEST_SUITE(RendererPixelTest, RendererTypes);
+TYPED_TEST_SUITE(NonVulkanRendererPixelTest, NonVulkanRendererTypes);
 
 template <typename RendererType>
 class SoftwareRendererPixelTest : public cc::RendererPixelTest<RendererType> {};
@@ -894,14 +910,19 @@ TYPED_TEST_SUITE(SoftwareRendererPixelTest, SoftwareRendererTypes);
 
 // Test GLRenderer as well as SkiaRenderer.
 template <typename RendererType>
-class GLCapableRendererPixelTest : public cc::RendererPixelTest<RendererType> {
-};
+class GPURendererPixelTest : public cc::RendererPixelTest<RendererType> {};
 
-using GLCapableRendererTypes = ::testing::Types<GLRenderer, SkiaRenderer>;
-TYPED_TEST_SUITE(GLCapableRendererPixelTest, GLCapableRendererTypes);
+using GPURendererTypes = ::testing::Types<GLRenderer,
+                                          SkiaRenderer
+#if defined(USE_X11)
+                                          ,
+                                          cc::VulkanSkiaRenderer
+#endif
+                                          >;
+TYPED_TEST_SUITE(GPURendererPixelTest, GPURendererTypes);
 
 // TODO(crbug.com/939442): Fix these tests for SkiaRenderer and switch them over
-// to GLCapableRendererPixelTest.
+// to GPURendererPixelTest.
 template <typename RendererType>
 class GLOnlyRendererPixelTest : public cc::RendererPixelTest<RendererType> {};
 
@@ -1006,7 +1027,7 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect_NonRootRenderPass) {
       cc::ExactPixelComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, PremultipliedTextureWithoutBackground) {
+TYPED_TEST(NonVulkanRendererPixelTest, PremultipliedTextureWithoutBackground) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -1035,7 +1056,7 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithoutBackground) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
+TYPED_TEST(NonVulkanRendererPixelTest, PremultipliedTextureWithBackground) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -1069,7 +1090,7 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
 
 // TODO(backer): Blending is not correct for SkiaRenderer
 // (https://crbug.com/953284)
-TYPED_TEST(GLCapableRendererPixelTest, DISABLED_SolidColorBlend) {
+TYPED_TEST(GPURendererPixelTest, DISABLED_SolidColorBlend) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -1174,7 +1195,7 @@ TYPED_TEST(GLOnlyRendererPixelTest,
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(GLCapableRendererPixelTest,
+TYPED_TEST(GPURendererPixelTest,
            PremultipliedTextureWithBackgroundAndVertexOpacity) {
   gfx::Rect rect(this->device_viewport_size_);
 
@@ -1558,8 +1579,7 @@ TYPED_TEST(IntersectingVideoQuadPixelTest, Y16VideoQuads) {
 }
 
 // TODO(skaslev): The software renderer does not support non-premultplied alpha.
-TYPED_TEST(GLCapableRendererPixelTest,
-           NonPremultipliedTextureWithoutBackground) {
+TYPED_TEST(GPURendererPixelTest, NonPremultipliedTextureWithoutBackground) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -1589,7 +1609,7 @@ TYPED_TEST(GLCapableRendererPixelTest,
 }
 
 // TODO(skaslev): The software renderer does not support non-premultplied alpha.
-TYPED_TEST(GLCapableRendererPixelTest, NonPremultipliedTextureWithBackground) {
+TYPED_TEST(GPURendererPixelTest, NonPremultipliedTextureWithBackground) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -1687,7 +1707,9 @@ class VideoRendererPixelTest : public cc::RendererPixelTest<RendererType> {
   std::unique_ptr<media::VideoResourceUpdater> video_resource_updater_;
 };
 
-TYPED_TEST_SUITE(VideoRendererPixelTest, GLCapableRendererTypes);
+// TODO(samans): Make these tests pass with Vulkan. https://crbug.com/960795
+using NonVulkanGPURendererTypes = ::testing::Types<GLRenderer, SkiaRenderer>;
+TYPED_TEST_SUITE(VideoRendererPixelTest, NonVulkanGPURendererTypes);
 
 template <typename RendererType>
 class VideoRendererPixelHiLoTest : public VideoRendererPixelTest<RendererType>,
@@ -2396,7 +2418,7 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
 
 // This tests the case where we have a RenderPass with a mask, but the quad
 // for the masked surface does not include the full surface texture.
-TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
+TYPED_TEST(NonVulkanRendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2493,7 +2515,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
 
 // This tests the case where we have a RenderPass with a mask, but the quad
 // for the masked surface does not include the full surface texture.
-TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
+TYPED_TEST(NonVulkanRendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2588,7 +2610,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
       cc::ExactPixelComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCorner) {
+TYPED_TEST(NonVulkanRendererPixelTest, RenderPassAndMaskForRoundedCorner) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   constexpr int kCornerRadius = 20;
@@ -2677,7 +2699,8 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCorner) {
       cc::FuzzyPixelComparator(true, 0.6f, 0.f, 255.f, 255, 0)));
 }
 
-TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCornerMultiRadii) {
+TYPED_TEST(NonVulkanRendererPixelTest,
+           RenderPassAndMaskForRoundedCornerMultiRadii) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   const SkVector kCornerRadii[4] = {
@@ -2887,7 +2910,13 @@ class RendererPixelTestWithBackdropFilter
 };
 
 // TODO(916318): The software renderer does not support background filters yet.
-using BackdropFilterRendererTypes = ::testing::Types<GLRenderer, SkiaRenderer>;
+using BackdropFilterRendererTypes = ::testing::Types<GLRenderer,
+                                                     SkiaRenderer
+#if defined(USE_X11)
+                                                     ,
+                                                     cc::VulkanSkiaRenderer
+#endif
+                                                     >;
 
 TYPED_TEST_SUITE(RendererPixelTestWithBackdropFilter,
                  BackdropFilterRendererTypes);
@@ -3029,7 +3058,7 @@ TYPED_TEST(ExternalStencilPixelTest, RenderSurfacesIgnoreStencil) {
 }
 
 // Software renderer does not support anti-aliased edges.
-TYPED_TEST(GLCapableRendererPixelTest, AntiAliasing) {
+TYPED_TEST(GPURendererPixelTest, AntiAliasing) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -3069,7 +3098,7 @@ TYPED_TEST(GLCapableRendererPixelTest, AntiAliasing) {
 }
 
 // Software renderer does not support anti-aliased edges.
-TYPED_TEST(GLCapableRendererPixelTest, AntiAliasingPerspective) {
+TYPED_TEST(GPURendererPixelTest, AntiAliasingPerspective) {
   gfx::Rect rect(this->device_viewport_size_);
 
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(1, rect);
@@ -3107,7 +3136,7 @@ TYPED_TEST(GLCapableRendererPixelTest, AntiAliasingPerspective) {
 
 // This test tests that anti-aliasing works for axis aligned quads.
 // Anti-aliasing is only supported in the gl and skia renderers.
-TYPED_TEST(GLCapableRendererPixelTest, AxisAligned) {
+TYPED_TEST(GPURendererPixelTest, AxisAligned) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -3136,7 +3165,7 @@ TYPED_TEST(GLCapableRendererPixelTest, AxisAligned) {
 // This test tests that forcing anti-aliasing off works as expected for
 // solid color draw quads.
 // Anti-aliasing is only supported in the gl and skia renderers.
-TYPED_TEST(GLCapableRendererPixelTest, SolidColorDrawQuadForceAntiAliasingOff) {
+TYPED_TEST(GPURendererPixelTest, SolidColorDrawQuadForceAntiAliasingOff) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -3174,7 +3203,7 @@ TYPED_TEST(GLCapableRendererPixelTest, SolidColorDrawQuadForceAntiAliasingOff) {
 // This test tests that forcing anti-aliasing off works as expected for
 // render pass draw quads.
 // Anti-aliasing is only supported in the gl and skia renderers.
-TYPED_TEST(GLCapableRendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
+TYPED_TEST(GPURendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -3232,7 +3261,7 @@ TYPED_TEST(GLCapableRendererPixelTest, RenderPassDrawQuadForceAntiAliasingOff) {
 // This test tests that forcing anti-aliasing off works as expected for
 // tile draw quads.
 // Anti-aliasing is only supported in the gl and skia renderers.
-TYPED_TEST(GLCapableRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
+TYPED_TEST(GPURendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
   gfx::Rect rect(this->device_viewport_size_);
 
   SkBitmap bitmap;
@@ -3300,7 +3329,7 @@ TYPED_TEST(GLCapableRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
 // This test tests that forcing anti-aliasing off works as expected while
 // blending is still enabled.
 // Anti-aliasing is only supported in the gl and skia renderers.
-TYPED_TEST(GLCapableRendererPixelTest, BlendingWithoutAntiAliasing) {
+TYPED_TEST(GPURendererPixelTest, BlendingWithoutAntiAliasing) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -3328,7 +3357,7 @@ TYPED_TEST(GLCapableRendererPixelTest, BlendingWithoutAntiAliasing) {
 }
 
 // Trilinear filtering is only supported in the gl renderer.
-TYPED_TEST(GLCapableRendererPixelTest, TrilinearFiltering) {
+TYPED_TEST(GPURendererPixelTest, TrilinearFiltering) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -3650,7 +3679,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
 
 // This disables filtering by setting |nearest_neighbor| on the
 // TileDrawQuad.
-TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
+TYPED_TEST(NonVulkanRendererPixelTest, TileDrawQuadNearestNeighbor) {
   constexpr bool contents_premultiplied = true;
   constexpr bool needs_blending = true;
   constexpr bool nearest_neighbor = true;
@@ -3960,7 +3989,12 @@ class RendererPixelTestWithFlippedOutputSurface
 
 using FlippedOutputSurfaceRendererTypes =
     ::testing::Types<cc::GLRendererWithFlippedSurface,
-                     cc::SkiaRendererWithFlippedSurface>;
+                     cc::SkiaRendererWithFlippedSurface
+#if defined(USE_X11)
+                     ,
+                     cc::VulkanSkiaRendererWithFlippedSurface
+#endif
+                     >;
 
 TYPED_TEST_SUITE(RendererPixelTestWithFlippedOutputSurface,
                  FlippedOutputSurfaceRendererTypes);
@@ -4054,7 +4088,7 @@ TYPED_TEST(RendererPixelTestWithFlippedOutputSurface, CheckChildPassUnflipped) {
       cc::ExactPixelComparator(true)));
 }
 
-TYPED_TEST(GLCapableRendererPixelTest, CheckReadbackSubset) {
+TYPED_TEST(GPURendererPixelTest, CheckReadbackSubset) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -4103,7 +4137,7 @@ TYPED_TEST(GLCapableRendererPixelTest, CheckReadbackSubset) {
       cc::ExactPixelComparator(true), &capture_rect));
 }
 
-TYPED_TEST(GLCapableRendererPixelTest, TextureQuadBatching) {
+TYPED_TEST(GPURendererPixelTest, TextureQuadBatching) {
   // This test verifies that multiple texture quads using the same resource
   // get drawn correctly.  It implicitly is trying to test that the
   // GLRenderer does the right thing with its draw quad cache.
@@ -4188,7 +4222,7 @@ TYPED_TEST(GLCapableRendererPixelTest, TextureQuadBatching) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(GLCapableRendererPixelTest, TileQuadClamping) {
+TYPED_TEST(GPURendererPixelTest, TileQuadClamping) {
   gfx::Rect viewport(this->device_viewport_size_);
   bool contents_premultiplied = true;
   bool needs_blending = true;
@@ -4310,7 +4344,7 @@ TYPED_TEST(RendererPixelTest, RoundedCornerSimpleSolidDrawQuad) {
   }
 }
 
-TYPED_TEST(GLCapableRendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
+TYPED_TEST(GPURendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   constexpr int kCornerRadius = 20;
@@ -4643,21 +4677,25 @@ TYPED_TEST(RendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
       cc::ExactPixelComparator(true)));
 }
 
-using SkiaRendererTypes = ::testing::Types<SkiaRenderer>;
+using SkiaRendererTypes = ::testing::Types<SkiaRenderer
+#if defined(USE_X11)
+                                           ,
+                                           cc::VulkanSkiaRenderer
+#endif
+                                           >;
 TYPED_TEST_SUITE(SkiaRendererPixelTestWithOverdrawFeedback, SkiaRendererTypes);
 
+template <typename RendererType>
 class SkiaRendererPixelTestWithOverdrawFeedback
-    : public cc::RendererPixelTest<SkiaRenderer> {
+    : public cc::RendererPixelTest<RendererType> {
  protected:
-  void SetUp() override;
+  void SetUp() override {
+    this->renderer_settings_.show_overdraw_feedback = true;
+    RendererPixelTest<RendererType>::SetUp();
+  }
 };
 
-void SkiaRendererPixelTestWithOverdrawFeedback::SetUp() {
-  renderer_settings_.show_overdraw_feedback = true;
-  SkiaRendererPixelTest::SetUp();
-}
-
-TEST_F(SkiaRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
+TYPED_TEST(SkiaRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
