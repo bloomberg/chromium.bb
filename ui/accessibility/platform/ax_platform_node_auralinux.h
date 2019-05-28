@@ -86,6 +86,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void GetFloatAttributeInGValue(ax::mojom::FloatAttribute attr, GValue* value);
 
   // Event helpers
+  void OnActiveDescendantChanged();
   void OnCheckedStateChanged();
   void OnExpandedStateChanged(bool is_expanded);
   void OnFocused();

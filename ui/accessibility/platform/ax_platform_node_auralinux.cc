@@ -107,6 +107,12 @@ AXPlatformNode* g_root_application = nullptr;
 // ATK_STATE_FOCUSED change to false.
 AtkObject* g_current_focused = nullptr;
 
+// The last AtkObject which was the active descendant in the currently-focused
+// object (example: The highlighted option within a focused select element).
+// As with g_current_focused, we track this to emit events when this object is
+// no longer the active descendant.
+AtkObject* g_current_active_descendant = nullptr;
+
 // The last object which was selected. Tracking this is required because
 // widgets in the browser UI only emit notifications upon becoming selected,
 // but clients also expect notifications when items become unselected.
@@ -2100,6 +2106,8 @@ void AXPlatformNodeAuraLinux::DestroyAtkObjects() {
   if (atk_object_) {
     if (atk_object_ == g_current_focused)
       g_current_focused = nullptr;
+    if (atk_object_ == g_current_active_descendant)
+      SetWeakGPtrToAtkObject(&g_current_active_descendant, nullptr);
     atk_object::Detach(AX_PLATFORM_NODE_AURALINUX(atk_object_));
 
     g_object_unref(atk_object_);
@@ -2515,6 +2523,19 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
   }
 }
 
+static AtkObject* GetActiveDescendantOfCurrentFocused() {
+  if (!g_current_focused)
+    return nullptr;
+
+  auto* node = AtkObjectToAXPlatformNodeAuraLinux(g_current_focused);
+  int32_t id =
+      node->GetIntAttribute(ax::mojom::IntAttribute::kActivedescendantId);
+  if (auto* descendant = node->GetDelegate()->GetFromNodeID(id))
+    return descendant->GetNativeViewAccessible();
+
+  return nullptr;
+}
+
 void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   AXNodeData data = GetData();
 
@@ -2613,6 +2634,14 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   }
 
   if (delegate_->GetFocus() == GetNativeViewAccessible())
+    atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
+
+  // It is insufficient to compare with g_current_activedescendant due to both
+  // timing and event ordering for objects which implement AtkSelection and also
+  // have an active descendant. For instance, if we check the state set of a
+  // selectable child, it will only have ATK_STATE_FOCUSED if we've processed
+  // the activedescendant change.
+  if (GetActiveDescendantOfCurrentFocused() == GetNativeViewAccessible())
     atk_state_set_add_state(atk_state_set, ATK_STATE_FOCUSED);
 }
 
@@ -2948,6 +2977,43 @@ gfx::NativeViewAccessible AXPlatformNodeAuraLinux::GetNativeViewAccessible() {
   return atk_object_;
 }
 
+void AXPlatformNodeAuraLinux::OnActiveDescendantChanged() {
+  DCHECK(atk_object_);
+
+  // Active-descendant-changed notifications are typically only relevant when
+  // the change is within the focused widget.
+  if (atk_object_ != g_current_focused)
+    return;
+
+  AtkObject* descendant = GetActiveDescendantOfCurrentFocused();
+  if (descendant == g_current_active_descendant)
+    return;
+
+  // If selection and focus are the same, when the active descendant changes
+  // as a result of selection, a focus event will be emitted. We don't want to
+  // emit duplicate notifications.
+  auto* node = AtkObjectToAXPlatformNodeAuraLinux(descendant);
+  if (node->SelectionAndFocusAreTheSame())
+    return;
+
+  // While there is an ATK active-descendant-changed event, it is meant for
+  // objects which manage their descendants (and claim to do so). The Core-AAM
+  // specification states that focus events should be emitted when the active
+  // descendant changes. This behavior is also consistent with Gecko.
+  if (g_current_active_descendant) {
+    g_signal_emit_by_name(g_current_active_descendant, "focus-event", false);
+    atk_object_notify_state_change(ATK_OBJECT(g_current_active_descendant),
+                                   ATK_STATE_FOCUSED, false);
+  }
+
+  SetWeakGPtrToAtkObject(&g_current_active_descendant, descendant);
+  if (g_current_active_descendant) {
+    g_signal_emit_by_name(g_current_active_descendant, "focus-event", true);
+    atk_object_notify_state_change(ATK_OBJECT(g_current_active_descendant),
+                                   ATK_STATE_FOCUSED, true);
+  }
+}
+
 void AXPlatformNodeAuraLinux::OnCheckedStateChanged() {
   DCHECK(atk_object_);
 
@@ -3271,6 +3337,9 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       break;
     case ax::mojom::Event::kMenuPopupStart:
       OnMenuPopupStart();
+      break;
+    case ax::mojom::Event::kActiveDescendantChanged:
+      OnActiveDescendantChanged();
       break;
     case ax::mojom::Event::kCheckedStateChanged:
       OnCheckedStateChanged();

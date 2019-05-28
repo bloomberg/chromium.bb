@@ -139,6 +139,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
         FireEvent(focus_object, ax::mojom::Event::kTextSelectionChanged);
       break;
     }
+    case ui::AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
+      FireEvent(node, ax::mojom::Event::kActiveDescendantChanged);
+      break;
     case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
       FireEvent(node, ax::mojom::Event::kCheckedStateChanged);
       break;
