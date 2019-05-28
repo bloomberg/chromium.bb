@@ -3154,9 +3154,6 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0'
         ],
-        'swarming': {
-          'shards': 4,
-        },
       },
       'dawn_end2end_wire_tests': {
         'desktop_args': [
@@ -3165,9 +3162,6 @@
           '--test-launcher-retry-limit=0',
           '--use-wire',
         ],
-        'swarming': {
-          'shards': 4,
-        },
         'test': 'dawn_end2end_tests',
       },
     },
