@@ -2752,6 +2752,7 @@ resolveEmphasisAllCapsSymbols(
 
 static void
 resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
+		const TranslationTableCharacterAttribute emphModeCharsAttr,
 		const TranslationTableHeader *table, const InString *input,
 		unsigned int *wordBuffer) {
 	int in_word = 0, in_pass = 0, word_start = -1, word_reset = 0, orig_reset = -1,
@@ -2839,7 +2840,8 @@ resolveEmphasisResets(EmphasisInfo *buffer, const EmphasisClass class,
 						if (wordBuffer[i] & WORD_RESET ||
 								!checkAttr(input->chars[i], CTC_Letter, 0, table)) {
 							if (!checkAttr(input->chars[i], CTC_Letter, 0, table)) {
-								if (checkAttr(input->chars[i], CTC_CapsMode, 0, table)) {
+								if (checkAttr(input->chars[i], emphModeCharsAttr, 0,
+											table)) {
 									/* chars marked as not resetting */
 									orig_reset = i;
 									continue;
@@ -2993,7 +2995,8 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 		if (table->emphRules[capsRule][lenPhraseOffset])
 			resolveEmphasisPassages(
 					emphasisBuffer, capsRule, capsEmphClass, table, input, wordBuffer);
-		resolveEmphasisResets(emphasisBuffer, capsEmphClass, table, input, wordBuffer);
+		resolveEmphasisResets(
+				emphasisBuffer, capsEmphClass, CTC_CapsMode, table, input, wordBuffer);
 	} else if (table->emphRules[capsRule][letterOffset]) {
 		if (table->capsNoCont) /* capsnocont and no capsword */
 			resolveEmphasisAllCapsSymbols(emphasisBuffer, typebuf, input);
@@ -3008,6 +3011,9 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 			if (table->emphRules[emph1Rule + j][lenPhraseOffset])
 				resolveEmphasisPassages(emphasisBuffer, emph1Rule + j, emphClasses[j],
 						table, input, wordBuffer);
+			if (table->usesEmphMode)
+				resolveEmphasisResets(emphasisBuffer, emphClasses[j], CTC_EmphMode, table,
+						input, wordBuffer);
 		} else if (table->emphRules[emph1Rule + j][letterOffset])
 			resolveEmphasisSingleSymbols(emphasisBuffer, emphClasses[j], input);
 	}

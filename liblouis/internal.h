@@ -130,15 +130,16 @@ typedef enum {
 	CTC_UserDefined6 = 0x400000,
 	CTC_UserDefined7 = 0x800000,  // class 12
 	CTC_CapsMode = 0x1000000,
-	CTC_NumericMode = 0x2000000,
-	CTC_NumericNoContract = 0x4000000,
-	CTC_EndOfInput = 0x8000000,  // only used by pattern matcher
-	CTC_EmpMatch = 0x10000000,   // only used in TranslationTableRule->before and
-								 // TranslationTableRule->after
-	CTC_MidEndNumericMode = 0x20000000,
-	// two more bits available in a unsigned int of width 32
-	// currently used for class 13 and 14
-	CTC_Class13 = 0x40000000,
+	CTC_EmphMode = 0x2000000,
+	CTC_NumericMode = 0x4000000,
+	CTC_NumericNoContract = 0x8000000,
+	CTC_EndOfInput = 0x10000000,  // only used by pattern matcher
+	CTC_EmpMatch = 0x20000000,	// only used in TranslationTableRule->before and
+								  // TranslationTableRule->after
+	CTC_MidEndNumericMode = 0x40000000,
+	// one more bit available in a unsigned int of width 32
+	// currently used for class 13
+	CTC_Class13 = 0x80000000,
 } TranslationTableCharacterAttribute;
 
 typedef enum {
@@ -267,7 +268,7 @@ typedef enum { /* Op codes */
 	/* End of ordered opcodes */
 
 	CTO_CapsModeChars,
-	// CTO_EmphModeChars,
+	CTO_EmphModeChars,
 	CTO_BegComp,
 	CTO_CompBegEmph1,
 	CTO_CompEndEmph1,
@@ -504,6 +505,7 @@ typedef struct { /* translation table */
 	int syllables;
 	int usesSequences;
 	int usesNumericMode;
+	int usesEmphMode;
 	TranslationTableOffset tableSize;
 	TranslationTableOffset bytesUsed;
 	TranslationTableOffset undefined;
