@@ -161,10 +161,9 @@ tests:
   - [Jozef II-straat, ⠨⠚⠕⠵⠑⠋ ⠘⠊⠊⠤⠎⠞⠗⠁⠁⠞]
   - [WO II, ⠘⠺⠕ ⠘⠊⠊]
   - [E.T.A., ⠘⠑⠲⠞⠲⠁⠲]
-  - - Complex numbers mixed with letters (not fully implemented)
+  - - Complex numbers mixed with letters
     - Zie refertes D-NE004W, D-NB007B en D-NB007BDK.
-    - ⠨⠵⠊⠑ ⠗⠑⠋⠑⠗⠞⠑⠎ ⠨⠙⠤⠘⠝⠑⠼⠚⠚⠙⠺⠂ ⠨⠙⠤⠘⠝⠃⠼⠚⠚⠛⠨⠃ ⠑⠝ ⠨⠙⠤⠘⠝⠃⠼⠚⠚⠛⠘⠃⠙⠅⠲
-    - xfail: true
+    - ⠨⠵⠊⠑ ⠗⠑⠋⠑⠗⠞⠑⠎ ⠨⠙⠤⠘⠝⠑⠼⠚⠚⠙⠨⠺⠂ ⠨⠙⠤⠘⠝⠃⠼⠚⠚⠛⠨⠃ ⠑⠝ ⠨⠙⠤⠘⠝⠃⠼⠚⠚⠛⠘⠃⠙⠅⠲
   - [EEN woord in hoofdletters, ⠘⠑⠑⠝ ⠺⠕⠕⠗⠙ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎]
   - [TWEE WOORDEN in hoofdletters, ⠘⠞⠺⠑⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎]
   - [DRIE WOORDEN IN hoofdletters, ⠘⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠘⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎]
