@@ -273,6 +273,12 @@ TEST_F(StructTraitsTest, RRectF) {
   EXPECT_EQ(input.GetType(), RRectF::Type::kOval);
   proxy->EchoRRectF(input, &output);
   EXPECT_EQ(input, output);
+  input.SetCornerRadii(RRectF::Corner::kUpperLeft, 50, 50);
+  input.SetCornerRadii(RRectF::Corner::kUpperRight, 20, 20);
+  input.SetCornerRadii(RRectF::Corner::kLowerRight, 0, 0);
+  input.SetCornerRadii(RRectF::Corner::kLowerLeft, 0, 0);
+  proxy->EchoRRectF(input, &output);
+  EXPECT_EQ(input, output);
 }
 
 }  // namespace gfx
