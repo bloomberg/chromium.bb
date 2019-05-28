@@ -37,7 +37,11 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::HISTORY_TITLE:
     case AutocompleteMatchType::HISTORY_URL:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
-      return HISTORY;
+      return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout) &&
+                     base::FeatureList::IsEnabled(
+                         kOmniboxUseDefaultSearchEngineFavicon)
+                 ? DEFAULT_FAVICON
+                 : HISTORY;
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
     case AutocompleteMatchType::SEARCH_SUGGEST:
