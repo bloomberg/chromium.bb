@@ -108,6 +108,8 @@ extern const base::Feature kImmersiveFullscreen;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kCrostini;
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kCrostiniAdditionalEnterpriseReporting;
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAppSearch;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAppUninstallGui;

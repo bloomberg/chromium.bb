@@ -180,6 +180,11 @@ const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
 // Enable project Crostini, Linux VMs on Chrome OS.
 const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable additional Crostini session status reporting for
+// managed devices only, i.e. reports of installed apps and kernel version.
+const base::Feature kCrostiniAdditionalEnterpriseReporting{
+    "CrostiniAdditionalEnterpriseReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables not installed apps/packages to be searched for and installed in the
 // App launcher.
 const base::Feature kCrostiniAppSearch{"CrostiniAppSearch",
