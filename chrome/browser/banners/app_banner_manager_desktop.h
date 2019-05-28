@@ -8,8 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+namespace web_app {
+enum class InstallResultCode;
+}
 
 namespace banners {
 
@@ -30,12 +35,16 @@ class AppBannerManagerDesktop
   explicit AppBannerManagerDesktop(content::WebContents* web_contents);
 
   // AppBannerManager overrides.
-  void CreateWebApp(WebappInstallSource install_source) override;
-  void DidFinishCreatingWebApp(const web_app::AppId& app_id,
-                               web_app::InstallResultCode code) override;
+  base::WeakPtr<AppBannerManager> GetWeakPtr() override;
+  void InvalidateWeakPtrs() override;
+
+  // Called when the web app install initiated by a banner has completed.
+  virtual void DidFinishCreatingWebApp(const web_app::AppId& app_id,
+                                       web_app::InstallResultCode code);
 
  private:
   friend class content::WebContentsUserData<AppBannerManagerDesktop>;
+  friend class FakeAppBannerManagerDesktop;
 
   // AppBannerManager overrides.
   bool IsWebAppConsideredInstalled(content::WebContents* web_contents,
@@ -53,6 +62,10 @@ class AppBannerManagerDesktop
                          const GURL& url,
                          double score,
                          SiteEngagementService::EngagementType type) override;
+
+  void CreateWebApp(WebappInstallSource install_source);
+
+  base::WeakPtrFactory<AppBannerManagerDesktop> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

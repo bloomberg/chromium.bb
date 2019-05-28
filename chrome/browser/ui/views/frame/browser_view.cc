@@ -3206,7 +3206,7 @@ void BrowserView::OnImmersiveModeControllerDestroyed() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, banners::AppBannerManager::Observer implementation:
-void BrowserView::OnInstallabilityUpdated() {
+void BrowserView::OnInstallableWebAppStatusUpdated() {
   GetOmniboxPageActionIconContainer()->UpdatePageActionIcon(
       PageActionIconType::kPwaInstall);
 }

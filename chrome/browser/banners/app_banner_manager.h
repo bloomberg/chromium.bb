@@ -15,7 +15,6 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
-#include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -35,22 +34,12 @@ class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
-// This forward declaration exists solely for the DidFinishCreatingWebApp
-// callback, implemented and called on desktop platforms only.
-namespace web_app {
-enum class InstallResultCode;
-}
-
 namespace banners {
 
 // Coordinates the creation of an app banner, from detecting eligibility to
 // fetching data and creating the infobar. Sites declare that they want an app
 // banner using the web app manifest. One web/native app may occupy the pipeline
 // at a time; navigation resets the manager and discards any work in progress.
-//
-// This class contains the generic functionality shared between all platforms,
-// as well as no-op callbacks that the platform-specific implementations pass to
-// base::Bind. This allows a WeakPtrFactory to be housed in this class.
 //
 // The InstallableManager fetches and validates whether a site is eligible for
 // banners. The manager is first called to fetch the manifest, so we can verify
@@ -59,7 +48,6 @@ namespace banners {
 // web app banner (checking manifest validity, service worker, and icon).
 class AppBannerManager : public content::WebContentsObserver,
                          public blink::mojom::AppBannerService,
-                         public InstallableAmbientBadgeInfoBarDelegate::Client,
                          public SiteEngagementObserver {
  public:
   class Observer : public base::CheckedObserver {
@@ -69,7 +57,7 @@ class AppBannerManager : public content::WebContentsObserver,
 
     void ObserveAppBannerManager(AppBannerManager* manager);
 
-    virtual void OnInstallabilityUpdated() = 0;
+    virtual void OnInstallableWebAppStatusUpdated() = 0;
 
    private:
     ScopedObserver<AppBannerManager, Observer> scoped_observer_{this};
@@ -119,7 +107,7 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Installable describes whether a site satisifes the installablity
   // requirements.
-  enum class Installable { INSTALLABLE_YES, INSTALLABLE_NO, UNKNOWN };
+  enum class InstallableWebAppCheckResult { kUnknown, kNo, kYes };
 
   // Retrieves the platform specific instance of AppBannerManager from
   // |web_contents|.
@@ -140,13 +128,13 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns the app name if the current page is installable, otherwise returns
   // the empty string.
-  static base::string16 GetInstallableAppName(
+  static base::string16 GetInstallableWebAppName(
       content::WebContents* web_contents);
 
   // Returns whether installability checks have passed (e.g. having a service
   // worker fetch event) or have passed previously within the current manifest
   // scope.
-  bool IsProbablyInstallable() const;
+  bool IsProbablyInstallableWebApp() const;
 
   // Each successful installability check gets to show one animation prompt,
   // this returns and consumes the animation prompt if it is available.
@@ -167,33 +155,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // Sends a message to the renderer that the user dismissed the banner.
   void SendBannerDismissed();
 
-  // Returns a WeakPtr to this object. Exposed so subclasses/infobars may
-  // may bind callbacks without needing their own WeakPtrFactory.
-  base::WeakPtr<AppBannerManager> GetWeakPtr();
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  // Overridden on desktop platforms. Called to initiate the web app
-  // install. Not used on Android.
-  virtual void CreateWebApp(WebappInstallSource install_source) {}
-
-  // Overridden and passed through base::Bind on desktop platforms. Called when
-  // the web app install initiated by a banner has completed. Not used on
-  // Android.
-  virtual void DidFinishCreatingWebApp(const web_app::AppId& app_id,
-                                       web_app::InstallResultCode code) {}
-
-  // Overridden and passed through base::Bind on Android. Called when the
-  // download of a native app's icon is complete, as native banners use an icon
-  // provided from the Play Store rather than the web manifest. Not used on
-  // desktop platforms.
-  virtual void OnAppIconFetched(const SkBitmap& bitmap) {}
-
-  // InstallableAmbientBadgeInfoBarDelegate::Client overrides. Further
-  // overridden on Android.
-  void AddToHomescreenFromBadge() override {}
-  void BadgeDismissed() override {}
 
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);
@@ -219,6 +182,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // alerting websites that a banner is about to be created.
   virtual std::string GetBannerType();
 
+  virtual base::WeakPtr<AppBannerManager> GetWeakPtr() = 0;
+  virtual void InvalidateWeakPtrs() = 0;
+
   // Returns true if |has_sufficient_engagement_| is true or
   // ShouldBypassEngagementChecks() returns true.
   bool HasSufficientEngagement() const;
@@ -226,7 +192,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns true if the kBypassAppBannerEngagementChecks flag is set.
   bool ShouldBypassEngagementChecks() const;
 
-  // Returns true if the webapp at |start_url| has already been installed, or
+  // Returns true if the web app at |start_url| has already been installed, or
   // should be considered installed. On Android, we rely on a heuristic that
   // may yield false negatives or false positives (crbug.com/786268).
   virtual bool IsWebAppConsideredInstalled(content::WebContents* web_contents,
@@ -240,18 +206,21 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns an InstallableParams object that requests all checks necessary for
   // a web app banner.
-  virtual InstallableParams ParamsToPerformInstallableCheck();
+  virtual InstallableParams ParamsToPerformInstallableWebAppCheck();
 
   // Run at the conclusion of OnDidGetManifest. For web app banners, this calls
   // back to the InstallableManager to continue checking criteria. For native
   // app banners, this checks whether native apps are preferred in the manifest,
   // and calls to Java to verify native app details. If a native banner isn't or
   // can't be requested, it continues with the web app banner checks.
-  virtual void PerformInstallableCheck();
+  virtual void PerformInstallableChecks();
+
+  virtual void PerformInstallableWebAppCheck();
 
   // Callback invoked by the InstallableManager once it has finished checking
   // all other installable properties.
-  virtual void OnDidPerformInstallableCheck(const InstallableData& result);
+  virtual void OnDidPerformInstallableWebAppCheck(
+      const InstallableData& result);
 
   // Records that a banner was shown. The |event_name| corresponds to the RAPPOR
   // metric being recorded.
@@ -280,7 +249,7 @@ class AppBannerManager : public content::WebContentsObserver,
   void SendBannerPromptRequest();
 
   // Shows the ambient badge if the current page advertises a native app or is
-  // a PWA. By default this shows nothing, but platform-specific code might
+  // a web app. By default this shows nothing, but platform-specific code might
   // override this to show UI (e.g. on Android).
   virtual void MaybeShowAmbientBadge();
 
@@ -368,8 +337,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns a status code based on the current state, to log when terminating.
   InstallableStatusCode TerminationCode() const;
 
-  bool IsInstallable() const;
-  void SetInstallable(Installable installable);
+  bool IsInstallableWebApp() const;
+  void SetInstallableWebAppCheckResult(InstallableWebAppCheckResult result);
 
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;
@@ -390,18 +359,13 @@ class AppBannerManager : public content::WebContentsObserver,
 
   std::unique_ptr<StatusReporter> status_reporter_;
   bool install_animation_pending_;
-  Installable installable_;
+  InstallableWebAppCheckResult installable_web_app_check_result_;
 
   // The scope of the most recent installability check if successful otherwise
   // invalid.
-  GURL last_installable_scope_;
+  GURL last_installable_web_app_scope_;
 
   base::ObserverList<Observer, true> observer_list_;
-
-  // The concrete subclasses of this class are expected to have their lifetimes
-  // scoped to the WebContents which they are observing. This allows us to use
-  // weak pointers for callbacks.
-  base::WeakPtrFactory<AppBannerManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerManager);
 };

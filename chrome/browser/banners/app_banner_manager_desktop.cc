@@ -43,45 +43,12 @@ AppBannerManagerDesktop::AppBannerManagerDesktop(
 
 AppBannerManagerDesktop::~AppBannerManagerDesktop() { }
 
-void AppBannerManagerDesktop::CreateWebApp(WebappInstallSource install_source) {
-  content::WebContents* contents = web_contents();
-  DCHECK(contents);
-
-  // TODO(loyso): Take appropriate action if WebApps disabled for profile.
-  web_app::CreateWebAppFromManifest(
-      contents, install_source,
-      base::BindOnce(&AppBannerManager::DidFinishCreatingWebApp, GetWeakPtr()));
+base::WeakPtr<AppBannerManager> AppBannerManagerDesktop::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
-void AppBannerManagerDesktop::DidFinishCreatingWebApp(
-    const web_app::AppId& app_id,
-    web_app::InstallResultCode code) {
-  content::WebContents* contents = web_contents();
-  if (!contents)
-    return;
-
-  // BookmarkAppInstallManager returns kFailedUnknownReason for any error.
-  // We can't distinguish kUserInstallDeclined case so far.
-  // If kFailedUnknownReason, we assume that the confirmation dialog was
-  // cancelled. Alternatively, the web app installation may have failed, but
-  // we can't tell the difference here.
-  // TODO(crbug.com/789381): plumb through enough information to be able to
-  // distinguish between extension install failures and user-cancellations of
-  // the app install dialog.
-  if (code != web_app::InstallResultCode::kSuccess) {
-    SendBannerDismissed();
-    TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
-    AppBannerSettingsHelper::RecordBannerDismissEvent(
-        contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
-    return;
-  }
-
-  SendBannerAccepted();
-  AppBannerSettingsHelper::RecordBannerInstallEvent(
-      contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
-
-  // OnInstall must be called last since it resets Mojo bindings.
-  OnInstall(false /* is_native app */, blink::kWebDisplayModeStandalone);
+void AppBannerManagerDesktop::InvalidateWeakPtrs() {
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
@@ -121,6 +88,48 @@ void AppBannerManagerDesktop::OnEngagementEvent(
     return;
 
   AppBannerManager::OnEngagementEvent(web_contents, url, score, type);
+}
+
+void AppBannerManagerDesktop::CreateWebApp(WebappInstallSource install_source) {
+  content::WebContents* contents = web_contents();
+  DCHECK(contents);
+
+  // TODO(loyso): Take appropriate action if WebApps disabled for profile.
+  web_app::CreateWebAppFromManifest(
+      contents, install_source,
+      base::BindOnce(&AppBannerManagerDesktop::DidFinishCreatingWebApp,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void AppBannerManagerDesktop::DidFinishCreatingWebApp(
+    const web_app::AppId& app_id,
+    web_app::InstallResultCode code) {
+  content::WebContents* contents = web_contents();
+  if (!contents)
+    return;
+
+  // BookmarkAppInstallManager returns kFailedUnknownReason for any error.
+  // We can't distinguish kUserInstallDeclined case so far.
+  // If kFailedUnknownReason, we assume that the confirmation dialog was
+  // cancelled. Alternatively, the web app installation may have failed, but
+  // we can't tell the difference here.
+  // TODO(crbug.com/789381): plumb through enough information to be able to
+  // distinguish between extension install failures and user-cancellations of
+  // the app install dialog.
+  if (code != web_app::InstallResultCode::kSuccess) {
+    SendBannerDismissed();
+    TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
+    AppBannerSettingsHelper::RecordBannerDismissEvent(
+        contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
+    return;
+  }
+
+  SendBannerAccepted();
+  AppBannerSettingsHelper::RecordBannerInstallEvent(
+      contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
+
+  // OnInstall must be called last since it resets Mojo bindings.
+  OnInstall(false /* is_native app */, blink::kWebDisplayModeStandalone);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AppBannerManagerDesktop)

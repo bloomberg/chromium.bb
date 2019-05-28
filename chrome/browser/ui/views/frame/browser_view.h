@@ -537,7 +537,7 @@ class BrowserView : public BrowserWindow,
   void OnImmersiveModeControllerDestroyed() override;
 
   // banners::AppBannerManager::Observer:
-  void OnInstallabilityUpdated() override;
+  void OnInstallableWebAppStatusUpdated() override;
 
   // Creates an accessible tab label for screen readers that includes the tab
   // status for the given tab index. This takes the form of

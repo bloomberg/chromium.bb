@@ -35,7 +35,7 @@ bool PwaInstallView::Update() {
   if (!manager)
     return false;
 
-  bool is_probably_installable = manager->IsProbablyInstallable();
+  bool is_probably_installable = manager->IsProbablyInstallableWebApp();
   auto* tab_helper =
       web_app::WebAppTabHelperBase::FromWebContents(web_contents);
   bool is_installed = tab_helper && tab_helper->HasAssociatedApp();
@@ -74,5 +74,5 @@ base::string16 PwaInstallView::GetTextForTooltipAndAccessibleName() const {
     return base::string16();
   return l10n_util::GetStringFUTF16(
       IDS_OMNIBOX_PWA_INSTALL_ICON_TOOLTIP,
-      banners::AppBannerManager::GetInstallableAppName(web_contents));
+      banners::AppBannerManager::GetInstallableWebAppName(web_contents));
 }

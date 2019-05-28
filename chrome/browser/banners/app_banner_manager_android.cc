@@ -114,7 +114,8 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
       web_contents(), primary_icon_url_,
       ShortcutHelper::GetIdealHomescreenIconSizeInPx(),
       ShortcutHelper::GetMinimumHomescreenIconSizeInPx(),
-      base::BindOnce(&AppBannerManager::OnAppIconFetched, GetWeakPtr()));
+      base::BindOnce(&AppBannerManagerAndroid::OnNativeAppIconFetched,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url) {
@@ -165,44 +166,31 @@ bool AppBannerManagerAndroid::IsWebAppConsideredInstalled(
                                            start_url, manifest_url);
 }
 
-InstallableParams AppBannerManagerAndroid::ParamsToPerformInstallableCheck() {
+InstallableParams
+AppBannerManagerAndroid::ParamsToPerformInstallableWebAppCheck() {
   InstallableParams params =
-      AppBannerManager::ParamsToPerformInstallableCheck();
+      AppBannerManager::ParamsToPerformInstallableWebAppCheck();
   params.valid_badge_icon = can_install_webapk_;
 
   return params;
 }
 
-void AppBannerManagerAndroid::PerformInstallableCheck() {
-  // Check if the manifest prefers that we show a native app banner. If so, call
-  // to Java to verify the details.
-  if (manifest_.prefer_related_applications &&
-      manifest_.related_applications.size() &&
-      !java_banner_manager_.is_null()) {
-    InstallableStatusCode code = NO_ERROR_DETECTED;
-    for (const auto& application : manifest_.related_applications) {
-      std::string platform = base::UTF16ToUTF8(application.platform.string());
-      std::string id = base::UTF16ToUTF8(application.id.string());
-      code = QueryNativeApp(platform, application.url, id);
-      if (code == NO_ERROR_DETECTED)
-        return;
-    }
+void AppBannerManagerAndroid::PerformInstallableChecks() {
+  if (ShouldPerformInstallableNativeAppCheck())
+    PerformInstallableNativeAppCheck();
+  else
+    PerformInstallableWebAppCheck();
+}
 
-    // We must have some error in |code| if we reached this point, so report it.
-    Stop(code);
-    return;
-  }
-
+void AppBannerManagerAndroid::PerformInstallableWebAppCheck() {
   if (can_install_webapk_ && !AreWebManifestUrlsWebApkCompatible(manifest_)) {
     Stop(URL_NOT_SUPPORTED_FOR_WEBAPK);
     return;
   }
-
-  // No native app banner was requested. Continue checking for a web app banner.
-  AppBannerManager::PerformInstallableCheck();
+  AppBannerManager::PerformInstallableWebAppCheck();
 }
 
-void AppBannerManagerAndroid::OnDidPerformInstallableCheck(
+void AppBannerManagerAndroid::OnDidPerformInstallableWebAppCheck(
     const InstallableData& data) {
   if (data.badge_icon && !data.badge_icon->drawsNothing()) {
     DCHECK(!data.badge_icon_url.is_empty());
@@ -211,27 +199,7 @@ void AppBannerManagerAndroid::OnDidPerformInstallableCheck(
     badge_icon_ = *data.badge_icon;
   }
 
-  AppBannerManager::OnDidPerformInstallableCheck(data);
-}
-
-void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
-  if (bitmap.drawsNothing()) {
-    Stop(NO_ICON_AVAILABLE);
-    return;
-  }
-
-  primary_icon_ = bitmap;
-
-  // If we triggered the installability check on page load, then it's possible
-  // we don't have enough engagement yet. If that's the case, return here but
-  // don't call Terminate(). We wait for OnEngagementEvent to tell us that we
-  // should trigger.
-  if (!HasSufficientEngagement()) {
-    UpdateState(State::PENDING_ENGAGEMENT);
-    return;
-  }
-
-  SendBannerPromptRequest();
+  AppBannerManager::OnDidPerformInstallableWebAppCheck(data);
 }
 
 void AppBannerManagerAndroid::ResetCurrentPageData() {
@@ -247,13 +215,13 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
 
   if (native_app_data_.is_null()) {
     ui_delegate_ = AppBannerUiDelegateAndroid::Create(
-        GetWeakPtr(),
+        weak_factory_.GetWeakPtr(),
         ShortcutHelper::CreateShortcutInfo(manifest_url_, manifest_,
                                            primary_icon_url_, badge_icon_url_),
         primary_icon_, badge_icon_, install_source, can_install_webapk_);
   } else {
     ui_delegate_ = AppBannerUiDelegateAndroid::Create(
-        GetWeakPtr(), native_app_title_,
+        weak_factory_.GetWeakPtr(), native_app_title_,
         base::android::ScopedJavaLocalRef<jobject>(native_app_data_),
         primary_icon_, native_app_package_);
   }
@@ -293,6 +261,27 @@ std::string AppBannerManagerAndroid::ExtractQueryValueForName(
       return it.GetValue();
   }
   return std::string();
+}
+
+bool AppBannerManagerAndroid::ShouldPerformInstallableNativeAppCheck() {
+  return manifest_.prefer_related_applications &&
+         manifest_.related_applications.size() &&
+         !java_banner_manager_.is_null();
+}
+
+void AppBannerManagerAndroid::PerformInstallableNativeAppCheck() {
+  DCHECK(ShouldPerformInstallableNativeAppCheck());
+  InstallableStatusCode code = NO_ERROR_DETECTED;
+  for (const auto& application : manifest_.related_applications) {
+    std::string platform = base::UTF16ToUTF8(application.platform.string());
+    std::string id = base::UTF16ToUTF8(application.id.string());
+    code = QueryNativeApp(platform, application.url, id);
+    if (code == NO_ERROR_DETECTED)
+      return;
+  }
+
+  // We must have some error in |code| if we reached this point, so report it.
+  Stop(code);
 }
 
 InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(
@@ -335,6 +324,26 @@ InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(
   return NO_ERROR_DETECTED;
 }
 
+void AppBannerManagerAndroid::OnNativeAppIconFetched(const SkBitmap& bitmap) {
+  if (bitmap.drawsNothing()) {
+    Stop(NO_ICON_AVAILABLE);
+    return;
+  }
+
+  primary_icon_ = bitmap;
+
+  // If we triggered the installability check on page load, then it's possible
+  // we don't have enough engagement yet. If that's the case, return here but
+  // don't call Terminate(). We wait for OnEngagementEvent to tell us that we
+  // should trigger.
+  if (!HasSufficientEngagement()) {
+    UpdateState(State::PENDING_ENGAGEMENT);
+    return;
+  }
+
+  SendBannerPromptRequest();
+}
+
 base::string16 AppBannerManagerAndroid::GetAppName() const {
   if (native_app_data_.is_null()) {
     // Prefer the short name if it's available. It's guaranteed that at least
@@ -361,9 +370,9 @@ void AppBannerManagerAndroid::MaybeShowAmbientBadge() {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents());
   if (GetVisibleAmbientBadgeInfoBar(infobar_service) == nullptr) {
-    InstallableAmbientBadgeInfoBarDelegate::Create(web_contents(), GetWeakPtr(),
-                                                   GetAppName(), primary_icon_,
-                                                   manifest_.start_url);
+    InstallableAmbientBadgeInfoBarDelegate::Create(
+        web_contents(), weak_factory_.GetWeakPtr(), GetAppName(), primary_icon_,
+        manifest_.start_url);
   }
 }
 
@@ -375,6 +384,14 @@ void AppBannerManagerAndroid::HideAmbientBadge() {
 
   if (ambient_badge_infobar)
     infobar_service->RemoveInfoBar(ambient_badge_infobar);
+}
+
+base::WeakPtr<AppBannerManager> AppBannerManagerAndroid::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+void AppBannerManagerAndroid::InvalidateWeakPtrs() {
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 // static

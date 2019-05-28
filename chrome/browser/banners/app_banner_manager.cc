@@ -210,10 +210,6 @@ void AppBannerManager::SendBannerDismissed() {
   SendBannerPromptRequest();
 }
 
-base::WeakPtr<AppBannerManager> AppBannerManager::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
 void AppBannerManager::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -233,8 +229,8 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       load_finished_(false),
       status_reporter_(std::make_unique<NullStatusReporter>()),
       install_animation_pending_(false),
-      installable_(Installable::UNKNOWN),
-      weak_factory_(this) {
+      installable_web_app_check_result_(
+          InstallableWebAppCheckResult::kUnknown) {
   DCHECK(manager_);
 
   AppBannerSettingsHelper::UpdateFromFieldTrial();
@@ -314,10 +310,10 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   manifest_url_ = data.manifest_url;
   manifest_ = *data.manifest;
 
-  PerformInstallableCheck();
+  PerformInstallableChecks();
 }
 
-InstallableParams AppBannerManager::ParamsToPerformInstallableCheck() {
+InstallableParams AppBannerManager::ParamsToPerformInstallableWebAppCheck() {
   InstallableParams params;
   params.valid_primary_icon = true;
   params.valid_manifest = true;
@@ -327,27 +323,32 @@ InstallableParams AppBannerManager::ParamsToPerformInstallableCheck() {
   return params;
 }
 
-void AppBannerManager::PerformInstallableCheck() {
+void AppBannerManager::PerformInstallableChecks() {
+  PerformInstallableWebAppCheck();
+}
+
+void AppBannerManager::PerformInstallableWebAppCheck() {
   if (!CheckIfShouldShowBanner())
     return;
 
   // Fetch and verify the other required information.
   UpdateState(State::PENDING_INSTALLABLE_CHECK);
   manager_->GetData(
-      ParamsToPerformInstallableCheck(),
-      base::BindOnce(&AppBannerManager::OnDidPerformInstallableCheck,
+      ParamsToPerformInstallableWebAppCheck(),
+      base::BindOnce(&AppBannerManager::OnDidPerformInstallableWebAppCheck,
                      GetWeakPtr()));
 }
 
-void AppBannerManager::OnDidPerformInstallableCheck(
+void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     const InstallableData& data) {
   UpdateState(State::ACTIVE);
   if (data.has_worker && data.valid_manifest)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
 
   auto error = data.errors.empty() ? NO_ERROR_DETECTED : data.errors[0];
-  SetInstallable(error == NO_ERROR_DETECTED ? Installable::INSTALLABLE_YES
-                                            : Installable::INSTALLABLE_NO);
+  SetInstallableWebAppCheckResult(error == NO_ERROR_DETECTED
+                                      ? InstallableWebAppCheckResult::kYes
+                                      : InstallableWebAppCheckResult::kNo);
 
   if (error != NO_ERROR_DETECTED) {
     if (error == NO_MATCHING_SERVICE_WORKER)
@@ -410,7 +411,7 @@ void AppBannerManager::ResetCurrentPageData() {
   manifest_ = blink::Manifest();
   manifest_url_ = GURL();
   validated_url_ = GURL();
-  SetInstallable(Installable::UNKNOWN);
+  SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kUnknown);
 }
 
 void AppBannerManager::Terminate() {
@@ -448,34 +449,36 @@ InstallableStatusCode AppBannerManager::TerminationCode() const {
   return NO_ERROR_DETECTED;
 }
 
-bool AppBannerManager::IsInstallable() const {
-  return installable_ == Installable::INSTALLABLE_YES;
+bool AppBannerManager::IsInstallableWebApp() const {
+  return installable_web_app_check_result_ ==
+         InstallableWebAppCheckResult::kYes;
 }
 
-void AppBannerManager::SetInstallable(Installable installable) {
-  if (installable_ == installable)
+void AppBannerManager::SetInstallableWebAppCheckResult(
+    InstallableWebAppCheckResult result) {
+  if (installable_web_app_check_result_ == result)
     return;
 
-  installable_ = installable;
+  installable_web_app_check_result_ = result;
 
-  switch (installable) {
-    case Installable::UNKNOWN:
+  switch (result) {
+    case InstallableWebAppCheckResult::kUnknown:
       break;
-    case Installable::INSTALLABLE_YES:
-      last_installable_scope_ = manifest_.scope;
-      DCHECK(!last_installable_scope_.is_empty());
+    case InstallableWebAppCheckResult::kYes:
+      last_installable_web_app_scope_ = manifest_.scope;
+      DCHECK(!last_installable_web_app_scope_.is_empty());
       install_animation_pending_ =
           AppBannerSettingsHelper::CanShowInstallTextAnimation(
-              web_contents(), last_installable_scope_);
+              web_contents(), last_installable_web_app_scope_);
       break;
-    case Installable::INSTALLABLE_NO:
-      last_installable_scope_ = GURL();
+    case InstallableWebAppCheckResult::kNo:
+      last_installable_web_app_scope_ = GURL();
       install_animation_pending_ = false;
       break;
   }
 
   for (Observer& observer : observer_list_)
-    observer.OnInstallabilityUpdated();
+    observer.OnInstallableWebAppStatusUpdated();
 }
 
 void AppBannerManager::MigrateObserverListForTesting(
@@ -491,9 +494,10 @@ void AppBannerManager::MigrateObserverListForTesting(
 void AppBannerManager::Stop(InstallableStatusCode code) {
   ReportStatus(code);
 
-  if (installable_ == Installable::UNKNOWN)
-    SetInstallable(Installable::INSTALLABLE_NO);
-  weak_factory_.InvalidateWeakPtrs();
+  if (installable_web_app_check_result_ ==
+      InstallableWebAppCheckResult::kUnknown)
+    SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kNo);
+  InvalidateWeakPtrs();
   ResetBindings();
   UpdateState(State::COMPLETE);
   status_reporter_ = std::make_unique<NullStatusReporter>(),
@@ -634,30 +638,31 @@ bool AppBannerManager::IsRunning() const {
 }
 
 // static
-base::string16 AppBannerManager::GetInstallableAppName(
+base::string16 AppBannerManager::GetInstallableWebAppName(
     content::WebContents* web_contents) {
   AppBannerManager* manager = FromWebContents(web_contents);
-  if (!manager || !manager->IsInstallable())
+  if (!manager || !manager->IsInstallableWebApp())
     return base::string16();
   return manager->GetAppName();
 }
 
-bool AppBannerManager::IsProbablyInstallable() const {
-  if (IsInstallable())
+bool AppBannerManager::IsProbablyInstallableWebApp() const {
+  if (IsInstallableWebApp())
     return true;
-  return installable_ == Installable::UNKNOWN &&
-         last_installable_scope_.is_valid() &&
+  return installable_web_app_check_result_ ==
+             InstallableWebAppCheckResult::kUnknown &&
+         last_installable_web_app_scope_.is_valid() &&
          base::StartsWith(web_contents()->GetLastCommittedURL().spec(),
-                          last_installable_scope_.spec(),
+                          last_installable_web_app_scope_.spec(),
                           base::CompareCase::SENSITIVE);
 }
 
 bool AppBannerManager::MaybeConsumeInstallAnimation() {
-  DCHECK(IsProbablyInstallable());
+  DCHECK(IsProbablyInstallableWebApp());
   if (!install_animation_pending_)
     return false;
   AppBannerSettingsHelper::RecordInstallTextAnimationShown(
-      web_contents(), last_installable_scope_);
+      web_contents(), last_installable_web_app_scope_);
   install_animation_pending_ = false;
   return true;
 }

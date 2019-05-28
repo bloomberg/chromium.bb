@@ -57,9 +57,9 @@ void TestAppBannerManagerDesktop::OnDidGetManifest(
   if (!result.errors.empty())
     SetInstallable(false);
 }
-void TestAppBannerManagerDesktop::OnDidPerformInstallableCheck(
+void TestAppBannerManagerDesktop::OnDidPerformInstallableWebAppCheck(
     const InstallableData& result) {
-  AppBannerManagerDesktop::OnDidPerformInstallableCheck(result);
+  AppBannerManagerDesktop::OnDidPerformInstallableWebAppCheck(result);
   SetInstallable(result.errors.empty());
 }
 

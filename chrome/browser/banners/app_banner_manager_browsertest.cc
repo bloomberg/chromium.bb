@@ -111,6 +111,12 @@ class AppBannerManagerTest : public AppBannerManager {
     }
   }
 
+  base::WeakPtr<AppBannerManager> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  void InvalidateWeakPtrs() override { weak_factory_.InvalidateWeakPtrs(); }
+
  private:
   base::Closure on_done_;
 
@@ -120,6 +126,8 @@ class AppBannerManagerTest : public AppBannerManager {
 
   std::unique_ptr<bool> banner_shown_;
   std::unique_ptr<WebappInstallSource> install_source_;
+
+  base::WeakPtrFactory<AppBannerManagerTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerManagerTest);
 };

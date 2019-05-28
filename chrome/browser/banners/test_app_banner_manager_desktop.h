@@ -34,7 +34,8 @@ class TestAppBannerManagerDesktop : public AppBannerManagerDesktop {
 
   // AppBannerManager:
   void OnDidGetManifest(const InstallableData& result) override;
-  void OnDidPerformInstallableCheck(const InstallableData& result) override;
+  void OnDidPerformInstallableWebAppCheck(
+      const InstallableData& result) override;
   void ResetCurrentPageData() override;
 
  private:
