@@ -90,7 +90,8 @@ class AssistantManagerServiceImpl
       public assistant_client::AssistantManagerDelegate,
       public assistant_client::DeviceStateListener,
       public assistant_client::MediaManager::Listener,
-      public media_session::mojom::MediaControllerObserver {
+      public media_session::mojom::MediaControllerObserver,
+      public mojom::AppListEventSubscriber {
  public:
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
@@ -183,6 +184,10 @@ class AssistantManagerServiceImpl
   void OnStartFinished() override;
   void OnTimerSoundingStarted() override;
   void OnTimerSoundingFinished() override;
+
+  // mojom::AppListEventSubscriber overrides:
+  void OnAndroidAppListRefreshed(
+      std::vector<mojom::AndroidAppInfoPtr> apps_info) override;
 
   void UpdateInternalOptions(
       assistant_client::AssistantManagerInternal* assistant_manager_internal);
@@ -336,6 +341,8 @@ class AssistantManagerServiceImpl
   base::Optional<media_session::MediaMetadata> media_metadata_ = base::nullopt;
 
   bool start_finished_ = false;
+
+  mojo::Binding<mojom::AppListEventSubscriber> app_list_subscriber_binding_;
 
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 

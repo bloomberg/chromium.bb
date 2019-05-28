@@ -81,9 +81,43 @@ std::string GetLaunchIntent(AndroidAppInfoPtr app_info) {
                             kPackage, package_name.c_str(), kEndSuffix);
 }
 
+std::vector<AndroidAppInfoPtr> GetAppsInfo() {
+  std::vector<AndroidAppInfoPtr> android_apps_info;
+  auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
+  if (!prefs) {
+    LOG(ERROR) << "ArcAppListPrefs is not available.";
+    return android_apps_info;
+  }
+  for (const auto& app_id : prefs->GetAppIds()) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+    if (!app_info)
+      continue;
+    AndroidAppInfoPtr app_info_ptr =
+        chromeos::assistant::mojom::AndroidAppInfo::New();
+    app_info_ptr->package_name = app_info->package_name;
+    auto package = prefs->GetPackage(app_info->package_name);
+    if (package)
+      app_info_ptr->version = package->package_version;
+    app_info_ptr->localized_app_name = app_info->name;
+    app_info_ptr->intent = app_info->intent_uri;
+    android_apps_info.push_back(std::move(app_info_ptr));
+  }
+  return android_apps_info;
+}
+
+void NotifyAndroidAppListRefreshed(
+    mojo::InterfacePtrSet<chromeos::assistant::mojom::AppListEventSubscriber>
+        subscribers) {
+  std::vector<AndroidAppInfoPtr> android_apps_info = GetAppsInfo();
+
+  subscribers.ForAllPtrs([&android_apps_info](auto* ptr) {
+    ptr->OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
+  });
+}
+
 }  // namespace
 
-DeviceActions::DeviceActions() {}
+DeviceActions::DeviceActions() : scoped_prefs_observer_(this) {}
 
 DeviceActions::~DeviceActions() {
   bindings_.CloseAllBindings();
@@ -172,9 +206,8 @@ void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
   std::move(callback).Run(!!app);
 }
 
-void DeviceActions::VerifyAndroidApp(
-    std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
-    VerifyAndroidAppCallback callback) {
+void DeviceActions::VerifyAndroidApp(std::vector<AndroidAppInfoPtr> apps_info,
+                                     VerifyAndroidAppCallback callback) {
   for (const auto& app_info : apps_info) {
     app_info->status = GetAndroidAppStatus(app_info->package_name);
   }
@@ -191,4 +224,33 @@ void DeviceActions::LaunchAndroidIntent(const std::string& intent) {
 
   // TODO(updowndota): Launch the intent in current active display.
   app->LaunchIntent(intent, display::kDefaultDisplayId);
+}
+
+void DeviceActions::AddAppListEventSubscriber(
+    chromeos::assistant::mojom::AppListEventSubscriberPtr subscriber) {
+  app_list_subscribers_.AddPtr(std::move(subscriber));
+  auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
+  if (!prefs)
+    return;
+
+  if (!scoped_prefs_observer_.IsObserving(prefs)) {
+    scoped_prefs_observer_.Add(prefs);
+  }
+  if (prefs->package_list_initial_refreshed()) {
+    std::vector<AndroidAppInfoPtr> android_apps_info = GetAppsInfo();
+    subscriber->OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
+  }
+}
+
+void DeviceActions::OnPackageListInitialRefreshed() {
+  NotifyAndroidAppListRefreshed(app_list_subscribers_);
+}
+
+void DeviceActions::OnAppRegistered(const std::string& app_id,
+                                    const ArcAppListPrefs::AppInfo& app_info) {
+  NotifyAndroidAppListRefreshed(app_list_subscribers_);
+}
+
+void DeviceActions::OnAppRemoved(const std::string& id) {
+  NotifyAndroidAppListRefreshed(app_list_subscribers_);
 }

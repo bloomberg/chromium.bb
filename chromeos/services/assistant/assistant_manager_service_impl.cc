@@ -148,6 +148,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       service_(service),
       background_thread_("background thread"),
       media_controller_observer_binding_(this),
+      app_list_subscriber_binding_(this),
       weak_factory_(this) {
   background_thread_.Start();
   platform_api_ = std::make_unique<PlatformApiImpl>(
@@ -1030,6 +1031,13 @@ void AssistantManagerServiceImpl::PostInitAssistant(
       service_->assistant_state()->hotword_enabled().value()) {
     assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
   }
+
+  if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport)) {
+    mojom::AppListEventSubscriberPtr subscriber_ptr;
+    app_list_subscriber_binding_.Bind(mojo::MakeRequest(&subscriber_ptr));
+    service_->device_actions()->AddAppListEventSubscriber(
+        std::move(subscriber_ptr));
+  }
 }
 
 void AssistantManagerServiceImpl::HandleLaunchMediaIntentResponse(
@@ -1116,6 +1124,17 @@ void AssistantManagerServiceImpl::OnTimerSoundingFinished() {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnTimerSoundingFinished);
   if (service_->assistant_alarm_timer_controller())
     service_->assistant_alarm_timer_controller()->OnTimerSoundingFinished();
+}
+
+void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
+    std::vector<mojom::AndroidAppInfoPtr> apps_info) {
+  std::vector<action::AndroidAppInfo> android_apps_info;
+  for (const auto& app_info : apps_info) {
+    android_apps_info.push_back({app_info->package_name, app_info->version,
+                                 app_info->localized_app_name,
+                                 app_info->intent});
+  }
+  display_connection_->OnAndroidAppListRefreshed(android_apps_info);
 }
 
 void AssistantManagerServiceImpl::UpdateInternalOptions(
