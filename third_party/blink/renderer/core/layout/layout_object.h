@@ -1527,11 +1527,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.CanContainFixedPositionObjects();
   }
 
-  // Convert the given local point to absolute coordinates
+  // Convert the given local physical point to absolute coordinates.
   // FIXME: Temporary. If UseTransforms is true, take transforms into account.
-  // Eventually localToAbsolute() will always be transform-aware.
-  FloatPoint LocalToAbsolute(const FloatPoint& local_point = FloatPoint(),
-                             MapCoordinatesFlags = 0) const;
+  // Eventually LocalToAbsolute() will be transform-aware by default.
+  PhysicalOffset LocalToAbsolutePoint(
+      const PhysicalOffset& local_point = PhysicalOffset(),
+      MapCoordinatesFlags mode = 0) const {
+    return PhysicalOffset::FromFloatPointRound(
+        LocalToAbsoluteFloatPoint(FloatPoint(local_point), mode));
+  }
+  FloatPoint LocalToAbsoluteFloatPoint(const FloatPoint&,
+                                       MapCoordinatesFlags mode = 0) const;
 
   // If the LayoutBoxModelObject ancestor is non-null, the input point is in the
   // space of the ancestor.
@@ -1539,57 +1545,102 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   //   If TraverseDocumentBoundaries is specified, the input point is in the
   //   space of the local root frame.
   //   Otherwise, the input point is in the space of the containing frame.
-  FloatPoint AncestorToLocal(LayoutBoxModelObject*,
-                             const FloatPoint&,
-                             MapCoordinatesFlags = 0) const;
-  FloatPoint AbsoluteToLocal(const FloatPoint& point,
-                             MapCoordinatesFlags mode = 0) const {
-    return AncestorToLocal(nullptr, point, mode);
+  PhysicalOffset AncestorToLocalPoint(const LayoutBoxModelObject* ancestor,
+                                      const PhysicalOffset& p,
+                                      MapCoordinatesFlags mode = 0) const {
+    return PhysicalOffset::FromFloatPointRound(
+        AncestorToLocalFloatPoint(ancestor, FloatPoint(p), mode));
+  }
+  PhysicalOffset AbsoluteToLocalPoint(const PhysicalOffset& p,
+                                      MapCoordinatesFlags mode = 0) const {
+    return AncestorToLocalPoint(nullptr, p, mode);
+  }
+  FloatPoint AncestorToLocalFloatPoint(const LayoutBoxModelObject* ancestor,
+                                       const FloatPoint& p,
+                                       MapCoordinatesFlags = 0) const;
+  FloatPoint AbsoluteToLocalFloatPoint(const FloatPoint& p,
+                                       MapCoordinatesFlags mode = 0) const {
+    return AncestorToLocalFloatPoint(nullptr, p, mode);
   }
 
-  // Convert a local quad to absolute coordinates, taking transforms into
-  // account.
+  // Convert a rect/quad in local physical coordinates to absolute coordinates,
+  // taking transforms into account. PhysicalRect parameter/return value is
+  // preferred to FloatQuad because they force physical coordinates, unless we
+  // do need quads or float precision.
+  PhysicalRect LocalToAbsoluteRect(const PhysicalRect& rect,
+                                   MapCoordinatesFlags mode = 0) const {
+    return LocalToAncestorRect(rect, nullptr, mode);
+  }
+  FloatQuad LocalRectToAbsoluteQuad(const PhysicalRect& rect,
+                                    MapCoordinatesFlags mode = 0) const {
+    return LocalRectToAncestorQuad(rect, nullptr, mode);
+  }
   FloatQuad LocalToAbsoluteQuad(const FloatQuad& quad,
                                 MapCoordinatesFlags mode = 0) const {
     return LocalToAncestorQuad(quad, nullptr, mode);
   }
 
-  // Convert a quad in ancestor coordinates to local coordinates.
+  // Convert a quad/rect in ancestor coordinates to local coordinates.
+  // PhysicalRect parameter/return value is preferred to FloatQuad because they
+  // force physical coordinates, unless we do need quads or float precision.
   // If the LayoutBoxModelObject ancestor is non-null, the input quad is in the
   // space of the ancestor.
   // Otherwise:
   //   If TraverseDocumentBoundaries is specified, the input quad is in the
   //   space of the local root frame.
   //   Otherwise, the input quad is in the space of the containing frame.
-  FloatQuad AncestorToLocalQuad(LayoutBoxModelObject*,
+  PhysicalRect AncestorToLocalRect(const LayoutBoxModelObject* ancestor,
+                                   const PhysicalRect& rect,
+                                   MapCoordinatesFlags mode = 0) const {
+    return PhysicalRect::EnclosingRect(
+        AncestorToLocalQuad(ancestor, FloatRect(rect), mode).BoundingBox());
+  }
+  FloatQuad AncestorToLocalQuad(const LayoutBoxModelObject*,
                                 const FloatQuad&,
                                 MapCoordinatesFlags mode = 0) const;
+  PhysicalRect AbsoluteToLocalRect(const PhysicalRect& rect,
+                                   MapCoordinatesFlags mode = 0) const {
+    return AncestorToLocalRect(nullptr, rect, mode);
+  }
   FloatQuad AbsoluteToLocalQuad(const FloatQuad& quad,
                                 MapCoordinatesFlags mode = 0) const {
     return AncestorToLocalQuad(nullptr, quad, mode);
   }
 
-  // Convert a local quad into the coordinate system of container, taking
-  // transforms into account.
+  // Convert a quad/rect in local physical coordinates into the coordinate
+  // system of container, taking transforms into account.
+  // PhysicalRect parameter/return value is preferred to FloatQuad because they
+  // force physical coordinates, unless we do need quads or float precision.
   // If the LayoutBoxModelObject ancestor is non-null, the result will be in the
   // space of the ancestor.
   // Otherwise:
   //   If TraverseDocumentBoundaries is specified, the result will be in the
   //   space of the local root frame.
   //   Otherwise, the result will be in the space of the containing frame.
+  PhysicalRect LocalToAncestorRect(const PhysicalRect& rect,
+                                   const LayoutBoxModelObject* ancestor,
+                                   MapCoordinatesFlags mode = 0) const {
+    return PhysicalRect::EnclosingRect(
+        LocalRectToAncestorQuad(rect, ancestor, mode).BoundingBox());
+  }
+  FloatQuad LocalRectToAncestorQuad(const PhysicalRect& rect,
+                                    const LayoutBoxModelObject* ancestor,
+                                    MapCoordinatesFlags mode = 0) const {
+    return LocalToAncestorQuad(FloatRect(rect), ancestor, mode);
+  }
   FloatQuad LocalToAncestorQuad(const FloatQuad&,
                                 const LayoutBoxModelObject* ancestor,
                                 MapCoordinatesFlags = 0) const;
-  FloatPoint LocalToAncestorPoint(const FloatPoint&,
-                                  const LayoutBoxModelObject* ancestor,
-                                  MapCoordinatesFlags = 0) const;
+  PhysicalOffset LocalToAncestorPoint(const PhysicalOffset&,
+                                      const LayoutBoxModelObject* ancestor,
+                                      MapCoordinatesFlags = 0) const;
   void LocalToAncestorRects(Vector<PhysicalRect>&,
                             const LayoutBoxModelObject* ancestor,
                             const PhysicalOffset& pre_offset,
                             const PhysicalOffset& post_offset) const;
 
   // Convert a local quad into the coordinate system of container, not
-  // include transforms. See localToAncestorQuad for details.
+  // include transforms. See LocalToAncestorQuad() for details.
   FloatQuad LocalToAncestorQuadWithoutTransforms(
       const FloatQuad&,
       const LayoutBoxModelObject* ancestor,
@@ -1905,20 +1956,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Map points and quads through elements, potentially via 3d transforms. You
   // should never need to call these directly; use localToAbsolute/
   // absoluteToLocal methods instead.
-  virtual void MapLocalToAncestor(
-      const LayoutBoxModelObject* ancestor,
-      TransformState&,
-      MapCoordinatesFlags = kApplyContainerFlip) const;
+  virtual void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
+                                  TransformState&,
+                                  MapCoordinatesFlags = 0) const;
   // If the LayoutBoxModelObject ancestor is non-null, the input quad is in the
   // space of the ancestor.
   // Otherwise:
   //   If TraverseDocumentBoundaries is specified, the input quad is in the
   //   space of the local root frame.
   //   Otherwise, the input quad is in the space of the containing frame.
-  virtual void MapAncestorToLocal(
-      const LayoutBoxModelObject*,
-      TransformState&,
-      MapCoordinatesFlags = kApplyContainerFlip) const;
+  virtual void MapAncestorToLocal(const LayoutBoxModelObject*,
+                                  TransformState&,
+                                  MapCoordinatesFlags = 0) const;
 
   // Pushes state onto LayoutGeometryMap about how to map coordinates from this
   // layoutObject to its container, or ancestorToStopAt (whichever is

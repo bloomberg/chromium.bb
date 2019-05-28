@@ -372,8 +372,8 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   if (mode & kTraverseDocumentBoundaries) {
     auto* parent_doc_layout_object = GetFrame()->OwnerLayoutObject();
     if (parent_doc_layout_object) {
-      transform_state.MoveBy(
-          parent_doc_layout_object->PhysicalContentBoxOffset().ToLayoutPoint());
+      transform_state.Move(
+          parent_doc_layout_object->PhysicalContentBoxOffset());
       parent_doc_layout_object->MapLocalToAncestor(ancestor, transform_state,
                                                    mode);
     } else {
@@ -423,7 +423,7 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                                                    mode & ~kIsFixed);
 
       transform_state.Move(
-          parent_doc_layout_object->PhysicalContentBoxOffset().ToLayoutSize());
+          parent_doc_layout_object->PhysicalContentBoxOffset());
     }
   } else {
     DCHECK(this == ancestor || !ancestor);
@@ -564,8 +564,9 @@ PhysicalOffset LayoutView::OffsetForFixedPosition() const {
 
 void LayoutView::AbsoluteQuads(Vector<FloatQuad>& quads,
                                MapCoordinatesFlags mode) const {
-  quads.push_back(LocalToAbsoluteQuad(
-      FloatRect(FloatPoint(), FloatSize(Layer()->Size())), mode));
+  quads.push_back(LocalRectToAbsoluteQuad(
+      PhysicalRect(PhysicalOffset(), PhysicalSizeToBeNoop(Layer()->Size())),
+      mode));
 }
 
 void LayoutView::CommitPendingSelection() {

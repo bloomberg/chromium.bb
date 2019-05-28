@@ -43,6 +43,7 @@ namespace blink {
 class LayoutBox;
 class LineLayoutBlockFlow;
 class FloatingObject;
+struct PhysicalRect;
 
 class ShapeOutsideDeltas final {
   DISALLOW_NEW();
@@ -127,7 +128,7 @@ class ShapeOutsideInfo final {
   bool IsShapeDirty() { return !shape_.get(); }
   bool IsComputingShape() const { return is_computing_shape_; }
 
-  LayoutRect ComputedShapePhysicalBoundingBox() const;
+  PhysicalRect ComputedShapePhysicalBoundingBox() const;
   FloatPoint ShapeToLayoutObjectPoint(FloatPoint) const;
   const Shape& ComputedShape() const;
 

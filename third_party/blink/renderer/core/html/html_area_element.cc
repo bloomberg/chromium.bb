@@ -97,10 +97,10 @@ LayoutRect HTMLAreaElement::ComputeAbsoluteRect(
     return LayoutRect();
 
   // FIXME: This doesn't work correctly with transforms.
-  FloatPoint abs_pos = container_object->LocalToAbsolute();
+  PhysicalOffset abs_pos = container_object->LocalToAbsolutePoint();
 
   Path path = GetPath(container_object);
-  path.Translate(ToFloatSize(abs_pos));
+  path.Translate(FloatSize(abs_pos));
   return EnclosingLayoutRect(path.BoundingRect());
 }
 

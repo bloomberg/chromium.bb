@@ -2034,6 +2034,8 @@ static PhysicalRect MapLocalRectToAncestorLayer(
     const LayoutBox& box,
     const PhysicalRect& local_rect,
     const PaintLayer& ancestor_layer) {
+  // TODO(wangxianzhu): Use LocalToAncestorPoint() when it supports ignoring
+  // transforms.
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint(local_rect.offset));
   box.MapLocalToAncestor(&ancestor_layer.GetLayoutObject(), transform_state, 0);
@@ -2154,10 +2156,12 @@ static PhysicalOffset PaintOffsetInPaginationContainer(
                                             enclosing_pagination_layer);
   }
 
+  // TODO(wangxianzhu): Use LocalToAncestorPoint() when it supports ignoring
+  // transforms.
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint());
   object.MapLocalToAncestor(&enclosing_pagination_layer.GetLayoutObject(),
-                            transform_state, kApplyContainerFlip);
+                            transform_state);
   transform_state.Flatten();
   return PhysicalOffset::FromFloatPointRound(transform_state.LastPlanarPoint());
 }
@@ -2776,8 +2780,10 @@ static LayoutUnit FragmentLogicalTopInParentFlowThread(
     location = location.TransposedPoint();
 
   // Convert into parent_flow_thread's coordinates.
-  location = LayoutPoint(flow_thread.LocalToAncestorPoint(FloatPoint(location),
-                                                          parent_flow_thread));
+  location = flow_thread
+                 .LocalToAncestorPoint(PhysicalOffsetToBeNoop(location),
+                                       parent_flow_thread)
+                 .ToLayoutPoint();
   if (!parent_flow_thread->IsHorizontalWritingMode())
     location = location.TransposedPoint();
 

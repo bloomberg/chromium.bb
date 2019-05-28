@@ -931,16 +931,13 @@ static LayoutUnit LineDirectionPointForBlockDirectionNavigationOf(
   // This ignores transforms on purpose, for now. Vertical navigation is done
   // without consulting transforms, so that 'up' in transformed text is 'up'
   // relative to the text, not absolute 'up'.
-  // TODO(wangxianzhu): For now LocalToAbsolute() requires the input to be in
-  // flipped blocks direction. Will make LocalToAbsolute() accept physical
-  // coordinates.
-  LayoutRect caret_layout_rect =
-      caret_rect.layout_object->FlipForWritingMode(caret_rect.rect);
-  const FloatPoint& caret_point = caret_rect.layout_object->LocalToAbsolute(
-      FloatPoint(caret_layout_rect.Location()));
-  return LayoutUnit(caret_rect.layout_object->IsHorizontalWritingMode()
-                        ? caret_point.X()
-                        : caret_point.Y());
+  PhysicalOffset caret_point =
+      UNLIKELY(caret_rect.layout_object->HasFlippedBlocksWritingMode())
+          ? caret_rect.rect.MaxXMinYCorner()
+          : caret_rect.rect.MinXMinYCorner();
+  caret_point = caret_rect.layout_object->LocalToAbsolutePoint(caret_point);
+  return caret_rect.layout_object->IsHorizontalWritingMode() ? caret_point.left
+                                                             : caret_point.top;
 }
 
 LayoutUnit SelectionModifier::LineDirectionPointForBlockDirectionNavigation(

@@ -905,10 +905,8 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
           scrollable_area->ResizerCornerRect(bounds_in_frame, kResizerForTouch);
 
       IntRect corner_in_root_frame =
-          scrollable_area->GetLayoutBox()
-              ->LocalToAbsoluteQuad(FloatRect(corner_in_frame),
-                                    kTraverseDocumentBoundaries)
-              .EnclosingBoundingBox();
+          EnclosingIntRect(scrollable_area->GetLayoutBox()->LocalToAbsoluteRect(
+              PhysicalRect(corner_in_frame), kTraverseDocumentBoundaries));
 
       if (ScrollsWithRootFrame(scrollable_area->GetLayoutBox())) {
         scrolling_region->Unite(

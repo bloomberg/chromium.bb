@@ -119,12 +119,11 @@ LayoutUnit SnapToLinesLayouter::ComputeInitialPositionAdjustment(
 // incorrect results.
 IntRect ContentBoxRelativeToAncestor(const LayoutBox& box,
                                      const LayoutBoxModelObject& ancestor) {
-  FloatRect cue_content_box(box.PhysicalContentBoxRect());
+  PhysicalRect cue_content_box = box.PhysicalContentBoxRect();
   // We pass UseTransforms here primarily because we use a transform for
   // non-snap-to-lines positioning (see VTTCue.cpp.)
-  FloatQuad mapped_content_quad =
-      box.LocalToAncestorQuad(cue_content_box, &ancestor, kUseTransforms);
-  return mapped_content_quad.EnclosingBoundingBox();
+  return EnclosingIntRect(
+      box.LocalToAncestorRect(cue_content_box, &ancestor, kUseTransforms));
 }
 
 // Similar to above except uses the full bounding box instead of just the
@@ -132,12 +131,11 @@ IntRect ContentBoxRelativeToAncestor(const LayoutBox& box,
 // timeline is mostly padding.
 IntRect PaddingBoxRelativeToAncestor(const LayoutBox& box,
                                      const LayoutBoxModelObject& ancestor) {
-  FloatRect cue_content_box(box.PhysicalPaddingBoxRect());
+  PhysicalRect cue_content_box = box.PhysicalPaddingBoxRect();
   // We pass UseTransforms here primarily because we use a transform for
   // non-snap-to-lines positioning (see VTTCue.cpp.)
-  FloatQuad mapped_content_quad =
-      box.LocalToAncestorQuad(cue_content_box, &ancestor, kUseTransforms);
-  return mapped_content_quad.EnclosingBoundingBox();
+  return EnclosingIntRect(
+      box.LocalToAncestorRect(cue_content_box, &ancestor, kUseTransforms));
 }
 
 IntRect CueBoundingBox(const LayoutBox& cue_box) {

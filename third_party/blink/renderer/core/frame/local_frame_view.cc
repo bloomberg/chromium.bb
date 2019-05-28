@@ -2984,17 +2984,14 @@ IntRect LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const IntRect& layout_object_rect) const {
   // Convert from page ("absolute") to LocalFrameView coordinates.
-  LayoutRect rect = EnclosingLayoutRect(
-      layout_object.LocalToAbsoluteQuad(FloatRect(layout_object_rect))
-          .BoundingBox());
-  return PixelSnappedIntRect(rect);
+  return PixelSnappedIntRect(
+      layout_object.LocalToAbsoluteRect(PhysicalRect(layout_object_rect)));
 }
 
 IntRect LocalFrameView::ConvertToLayoutObject(const LayoutObject& layout_object,
                                               const IntRect& frame_rect) const {
-  FloatQuad quad((FloatRect(frame_rect)));
-  quad = layout_object.AbsoluteToLocalQuad(quad, kUseTransforms);
-  return RoundedIntRect(quad.BoundingBox());
+  return PixelSnappedIntRect(layout_object.AbsoluteToLocalRect(
+      PhysicalRect(frame_rect), kUseTransforms));
 }
 
 IntPoint LocalFrameView::ConvertFromLayoutObject(
@@ -3014,15 +3011,16 @@ IntPoint LocalFrameView::ConvertToLayoutObject(
 LayoutPoint LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const LayoutPoint& layout_object_point) const {
-  return LayoutPoint(layout_object.LocalToAbsolute(
-      FloatPoint(layout_object_point), kUseTransforms));
+  return layout_object
+      .LocalToAbsolutePoint(PhysicalOffset(layout_object_point), kUseTransforms)
+      .ToLayoutPoint();
 }
 
 PhysicalOffset LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const PhysicalOffset& layout_object_offset) const {
-  return PhysicalOffset::FromFloatPointRound(layout_object.LocalToAbsolute(
-      FloatPoint(layout_object_offset), kUseTransforms));
+  return layout_object.LocalToAbsolutePoint(layout_object_offset,
+                                            kUseTransforms);
 }
 
 LayoutPoint LocalFrameView::ConvertToLayoutObject(
@@ -3042,7 +3040,7 @@ PhysicalOffset LocalFrameView::ConvertToLayoutObject(
 FloatPoint LocalFrameView::ConvertToLayoutObject(
     const LayoutObject& layout_object,
     const FloatPoint& frame_point) const {
-  return layout_object.AbsoluteToLocal(frame_point, kUseTransforms);
+  return layout_object.AbsoluteToLocalFloatPoint(frame_point, kUseTransforms);
 }
 
 IntPoint LocalFrameView::ConvertSelfToChild(const EmbeddedContentView& child,
@@ -3234,13 +3232,13 @@ FloatPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
     if (!layout_object)
       return local_point;
 
-    FloatPoint point(local_point);
+    PhysicalOffset point = PhysicalOffset::FromFloatPointRound(local_point);
 
     // Add borders and padding
-    point.Move(
-        (layout_object->BorderLeft() + layout_object->PaddingLeft()).ToFloat(),
-        (layout_object->BorderTop() + layout_object->PaddingTop()).ToFloat());
-    return layout_object->LocalToAbsolute(point, kUseTransforms);
+    point.left += layout_object->BorderLeft() + layout_object->PaddingLeft();
+    point.top += layout_object->BorderTop() + layout_object->PaddingTop();
+    return FloatPoint(
+        layout_object->LocalToAbsolutePoint(point, kUseTransforms));
   }
 
   return local_point;

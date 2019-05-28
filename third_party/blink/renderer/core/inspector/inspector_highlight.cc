@@ -123,10 +123,10 @@ class ShapePathBuilder : public PathBuilder {
 
  protected:
   FloatPoint TranslatePoint(const FloatPoint& point) override {
-    FloatPoint layout_object_point =
-        shape_outside_info_.ShapeToLayoutObjectPoint(point);
-    return FloatPoint(view_->FrameToViewport(
-        RoundedIntPoint(layout_object_.LocalToAbsolute(layout_object_point))));
+    PhysicalOffset layout_object_point = PhysicalOffset::FromFloatPointRound(
+        shape_outside_info_.ShapeToLayoutObjectPoint(point));
+    return FloatPoint(view_->FrameToViewport(RoundedIntPoint(
+        layout_object_.LocalToAbsolutePoint(layout_object_point))));
   }
 
  private:
@@ -189,9 +189,9 @@ const ShapeOutsideInfo* ShapeOutsideInfoForNode(Node* node,
 
   shape_outside_info->ComputedShape().BuildDisplayPaths(*paths);
 
-  LayoutRect shape_bounds =
+  PhysicalRect shape_bounds =
       shape_outside_info->ComputedShapePhysicalBoundingBox();
-  *bounds = layout_box->LocalToAbsoluteQuad(FloatRect(shape_bounds));
+  *bounds = layout_box->LocalRectToAbsoluteQuad(shape_bounds);
   FrameQuadToViewport(containing_view, *bounds);
 
   return shape_outside_info;
@@ -347,15 +347,15 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
 
   for (size_t i = 1; i < rows.size(); ++i) {
     for (size_t j = 1; j < columns.size(); ++j) {
-      FloatPoint position(columns.at(j - 1), rows.at(i - 1));
-      FloatSize size(columns.at(j) - columns.at(j - 1),
-                     rows.at(i) - rows.at(i - 1));
+      PhysicalOffset position(columns.at(j - 1), rows.at(i - 1));
+      PhysicalSize size(columns.at(j) - columns.at(j - 1),
+                        rows.at(i) - rows.at(i - 1));
       if (i != rows.size() - 1)
-        size.Expand(0, -row_gap);
+        size.height -= row_gap;
       if (j != columns.size() - 1)
-        size.Expand(-column_gap, 0);
-      FloatRect cell(position, size);
-      FloatQuad cell_quad = layout_grid->LocalToAbsoluteQuad(cell);
+        size.width -= column_gap;
+      PhysicalRect cell(position, size);
+      FloatQuad cell_quad = layout_grid->LocalRectToAbsoluteQuad(cell);
       FrameQuadToViewport(containing_view, cell_quad);
       cell_builder.AppendPath(QuadToPath(cell_quad), scale);
     }
@@ -421,14 +421,14 @@ LayoutRect RectInRootFrame(const LayoutObject* layout_object) {
 LayoutRect TextFragmentRectInRootFrame(
     const LayoutObject* layout_object,
     const LayoutText::TextBoxInfo& text_box) {
-  FloatRect local_coords_text_box_rect(text_box.local_rect);
-  LayoutRect absolute_coords_text_box_rect(
-      layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
-          .BoundingBox());
+  PhysicalRect absolute_coords_text_box_rect =
+      layout_object->LocalToAbsoluteRect(
+          layout_object->FlipForWritingMode(text_box.local_rect));
   LocalFrameView* local_frame_view = layout_object->GetFrameView();
-  return local_frame_view ? local_frame_view->ConvertToRootFrame(
-                                absolute_coords_text_box_rect)
-                          : absolute_coords_text_box_rect;
+  return (local_frame_view ? local_frame_view->ConvertToRootFrame(
+                                 absolute_coords_text_box_rect)
+                           : absolute_coords_text_box_rect)
+      .ToLayoutRect();
 }
 
 }  // namespace
@@ -836,14 +836,15 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
       !layout_object->IsText())
     return false;
 
-  LayoutRect content_box;
-  LayoutRect padding_box;
-  LayoutRect border_box;
-  LayoutRect margin_box;
+  PhysicalRect content_box;
+  PhysicalRect padding_box;
+  PhysicalRect border_box;
+  PhysicalRect margin_box;
 
   if (layout_object->IsText()) {
     LayoutText* layout_text = ToLayoutText(layout_object);
-    LayoutRect text_rect = layout_text->VisualOverflowRect();
+    PhysicalRect text_rect =
+        layout_text->FlipForWritingMode(layout_text->VisualOverflowRect());
     content_box = text_rect;
     padding_box = text_rect;
     border_box = text_rect;
@@ -857,49 +858,50 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
     const int vertical_scrollbar_width = layout_box->VerticalScrollbarWidth();
     const int horizontal_scrollbar_height =
         layout_box->HorizontalScrollbarHeight();
-    content_box = layout_box->PhysicalContentBoxRect().ToLayoutRect();
+    content_box = layout_box->PhysicalContentBoxRect();
     content_box.SetWidth(content_box.Width() + vertical_scrollbar_width);
     content_box.SetHeight(content_box.Height() + horizontal_scrollbar_height);
 
-    padding_box = layout_box->PhysicalPaddingBoxRect().ToLayoutRect();
+    padding_box = layout_box->PhysicalPaddingBoxRect();
     padding_box.SetWidth(padding_box.Width() + vertical_scrollbar_width);
     padding_box.SetHeight(padding_box.Height() + horizontal_scrollbar_height);
 
-    border_box = layout_box->BorderBoxRect();
+    border_box = layout_box->PhysicalBorderBoxRect();
 
-    margin_box = LayoutRect(border_box.X() - layout_box->MarginLeft(),
-                            border_box.Y() - layout_box->MarginTop(),
-                            border_box.Width() + layout_box->MarginWidth(),
-                            border_box.Height() + layout_box->MarginHeight());
+    margin_box = PhysicalRect(border_box.X() - layout_box->MarginLeft(),
+                              border_box.Y() - layout_box->MarginTop(),
+                              border_box.Width() + layout_box->MarginWidth(),
+                              border_box.Height() + layout_box->MarginHeight());
   } else {
     LayoutInline* layout_inline = ToLayoutInline(layout_object);
 
     // LayoutInline's bounding box includes paddings and borders, excludes
     // margins.
-    border_box = layout_inline->PhysicalLinesBoundingBox().ToLayoutRect();
-    padding_box = LayoutRect(border_box.X() + layout_inline->BorderLeft(),
-                             border_box.Y() + layout_inline->BorderTop(),
-                             border_box.Width() - layout_inline->BorderLeft() -
-                                 layout_inline->BorderRight(),
-                             border_box.Height() - layout_inline->BorderTop() -
-                                 layout_inline->BorderBottom());
+    border_box = layout_inline->PhysicalLinesBoundingBox();
+    padding_box =
+        PhysicalRect(border_box.X() + layout_inline->BorderLeft(),
+                     border_box.Y() + layout_inline->BorderTop(),
+                     border_box.Width() - layout_inline->BorderLeft() -
+                         layout_inline->BorderRight(),
+                     border_box.Height() - layout_inline->BorderTop() -
+                         layout_inline->BorderBottom());
     content_box =
-        LayoutRect(padding_box.X() + layout_inline->PaddingLeft(),
-                   padding_box.Y() + layout_inline->PaddingTop(),
-                   padding_box.Width() - layout_inline->PaddingLeft() -
-                       layout_inline->PaddingRight(),
-                   padding_box.Height() - layout_inline->PaddingTop() -
-                       layout_inline->PaddingBottom());
+        PhysicalRect(padding_box.X() + layout_inline->PaddingLeft(),
+                     padding_box.Y() + layout_inline->PaddingTop(),
+                     padding_box.Width() - layout_inline->PaddingLeft() -
+                         layout_inline->PaddingRight(),
+                     padding_box.Height() - layout_inline->PaddingTop() -
+                         layout_inline->PaddingBottom());
     // Ignore marginTop and marginBottom for inlines.
-    margin_box = LayoutRect(
+    margin_box = PhysicalRect(
         border_box.X() - layout_inline->MarginLeft(), border_box.Y(),
         border_box.Width() + layout_inline->MarginWidth(), border_box.Height());
   }
 
-  *content = layout_object->LocalToAbsoluteQuad(FloatRect(content_box));
-  *padding = layout_object->LocalToAbsoluteQuad(FloatRect(padding_box));
-  *border = layout_object->LocalToAbsoluteQuad(FloatRect(border_box));
-  *margin = layout_object->LocalToAbsoluteQuad(FloatRect(margin_box));
+  *content = layout_object->LocalRectToAbsoluteQuad(content_box);
+  *padding = layout_object->LocalRectToAbsoluteQuad(padding_box);
+  *border = layout_object->LocalRectToAbsoluteQuad(border_box);
+  *margin = layout_object->LocalRectToAbsoluteQuad(margin_box);
 
   FrameQuadToViewport(containing_view, *content);
   FrameQuadToViewport(containing_view, *padding);

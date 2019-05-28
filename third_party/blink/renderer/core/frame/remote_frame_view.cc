@@ -124,13 +124,12 @@ IntRect RemoteFrameView::GetCompositingRect() {
 
   // The viewport size needs to account for intermediate CSS transforms before
   // being compared to the frame size.
-  FloatQuad viewport_quad =
-      remote_frame_->OwnerLayoutObject()->AncestorToLocalQuad(
+  PhysicalRect viewport_rect =
+      remote_frame_->OwnerLayoutObject()->AncestorToLocalRect(
           local_root_view->GetLayoutView(),
-          FloatRect(FloatPoint(), FloatSize(viewport_size)),
+          PhysicalRect(PhysicalOffset(), PhysicalSize(viewport_size)),
           kTraverseDocumentBoundaries | kUseTransforms);
-  IntSize converted_viewport_size =
-      EnclosingIntRect(viewport_quad.BoundingBox()).Size();
+  IntSize converted_viewport_size = EnclosingIntRect(viewport_rect).Size();
 
   IntSize frame_size = Size();
 

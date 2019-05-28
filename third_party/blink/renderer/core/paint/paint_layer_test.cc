@@ -1566,13 +1566,13 @@ TEST_P(PaintLayerTest, SquashingOffsets) {
   auto* squashed =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
   EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
-  FloatPoint point;
+  PhysicalOffset point;
   PaintLayer::MapPointInPaintInvalidationContainerToBacking(
       squashed->GetLayoutObject(), point);
-  EXPECT_EQ(FloatPoint(), point);
+  EXPECT_EQ(PhysicalOffset(), point);
 
-  EXPECT_EQ(PhysicalOffset(0, 0), squashed->ComputeOffsetFromAncestor(
-                                      squashed->TransformAncestorOrRoot()));
+  EXPECT_EQ(PhysicalOffset(), squashed->ComputeOffsetFromAncestor(
+                                  squashed->TransformAncestorOrRoot()));
 
   GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 25),
                                                    kUserScroll);
@@ -1580,10 +1580,10 @@ TEST_P(PaintLayerTest, SquashingOffsets) {
 
   PaintLayer::MapPointInPaintInvalidationContainerToBacking(
       squashed->GetLayoutObject(), point);
-  EXPECT_EQ(FloatPoint(), point);
+  EXPECT_EQ(PhysicalOffset(), point);
 
-  EXPECT_EQ(PhysicalOffset(0, 0), squashed->ComputeOffsetFromAncestor(
-                                      squashed->TransformAncestorOrRoot()));
+  EXPECT_EQ(PhysicalOffset(), squashed->ComputeOffsetFromAncestor(
+                                  squashed->TransformAncestorOrRoot()));
 }
 
 TEST_P(PaintLayerTest, HitTestWithIgnoreClipping) {

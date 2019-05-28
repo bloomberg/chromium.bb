@@ -98,51 +98,33 @@ class CORE_EXPORT TransformState {
     // of the current state.  This breaks if we're simultaneously mapping a
     // point.  https://bugs.webkit.org/show_bug.cgi?id=106680
     DCHECK(!map_point_);
-    accumulated_offset_ = LayoutSize();
+    accumulated_offset_ = PhysicalOffset();
     last_planar_quad_ = quad;
   }
 
-  void Move(LayoutUnit x,
-            LayoutUnit y,
-            TransformAccumulation accumulate = kFlattenTransform) {
-    Move(LayoutSize(x, y), accumulate);
-  }
   void Move(const PhysicalOffset& offset,
-            TransformAccumulation accumulate = kFlattenTransform) {
-    Move(offset.ToLayoutSize(), accumulate);
-  }
-  void Move(const LayoutSize&, TransformAccumulation = kFlattenTransform);
-  void Move(const IntSize& size,
-            TransformAccumulation accumulate = kFlattenTransform) {
-    Move(LayoutSize(size), accumulate);
-  }
-  void MoveBy(const LayoutPoint& point,
-              TransformAccumulation accumulate = kFlattenTransform) {
-    Move(LayoutSize(point.X(), point.Y()), accumulate);
-  }
+            TransformAccumulation accumulate = kFlattenTransform);
   void ApplyTransform(const AffineTransform& transform_from_container,
-                      TransformAccumulation = kFlattenTransform,
-                      bool* was_clamped = nullptr);
+                      TransformAccumulation = kFlattenTransform);
   void ApplyTransform(const TransformationMatrix& transform_from_container,
-                      TransformAccumulation = kFlattenTransform,
-                      bool* was_clamped = nullptr);
-  void Flatten(bool* was_clamped = nullptr);
+                      TransformAccumulation = kFlattenTransform);
+  void Flatten();
 
   // Return the coords of the point or quad in the last flattened layer
   FloatPoint LastPlanarPoint() const { return last_planar_point_; }
   FloatQuad LastPlanarQuad() const { return last_planar_quad_; }
 
   // Return the point or quad mapped through the current transform
-  FloatPoint MappedPoint(bool* was_clamped = nullptr) const;
-  FloatQuad MappedQuad(bool* was_clamped = nullptr) const;
+  PhysicalOffset MappedPoint() const;
+  FloatQuad MappedQuad() const;
 
   // Return the accumulated transform.
   const TransformationMatrix& AccumulatedTransform() const;
 
  private:
-  void TranslateTransform(const LayoutSize&);
-  void TranslateMappedCoordinates(const LayoutSize&);
-  void FlattenWithTransform(const TransformationMatrix&, bool* was_clamped);
+  void TranslateTransform(const PhysicalOffset&);
+  void TranslateMappedCoordinates(const PhysicalOffset&);
+  void FlattenWithTransform(const TransformationMatrix&);
   void ApplyAccumulatedOffset();
 
   FloatPoint last_planar_point_;
@@ -150,7 +132,7 @@ class CORE_EXPORT TransformState {
 
   // We only allocate the transform if we need to
   std::unique_ptr<TransformationMatrix> accumulated_transform_;
-  LayoutSize accumulated_offset_;
+  PhysicalOffset accumulated_offset_;
   bool accumulating_transform_;
   bool force_accumulating_transform_;
   bool map_point_, map_quad_;

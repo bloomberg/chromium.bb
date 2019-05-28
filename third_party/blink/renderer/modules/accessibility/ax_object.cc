@@ -2916,9 +2916,8 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
   LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
   if (!layout_object || !node->isConnected())
     return false;
-  LayoutRect target_rect(
-      layout_object->LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)))
-          .BoundingBox());
+  PhysicalRect target_rect =
+      layout_object->LocalToAbsoluteRect(PhysicalRect(rect));
   // TODO(szager): This scroll alignment is intended to preserve existing
   // behavior to the extent possible, but it's not clear that this behavior is
   // well-spec'ed or optimal.  In particular, it favors centering things in
@@ -2927,7 +2926,7 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
   ScrollAlignment scroll_alignment = {
       kScrollAlignmentNoScroll, kScrollAlignmentCenter, kScrollAlignmentCenter};
   layout_object->ScrollRectToVisible(
-      target_rect,
+      target_rect.ToLayoutRect(),
       WebScrollIntoViewParams(scroll_alignment, scroll_alignment,
                               kProgrammaticScroll, false, kScrollBehaviorAuto));
   AXObjectCache().PostNotification(

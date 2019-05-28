@@ -449,7 +449,7 @@ ShapeOutsideDeltas ShapeOutsideInfo::ComputeDeltasForContainingBlockLine(
   return shape_outside_deltas_;
 }
 
-LayoutRect ShapeOutsideInfo::ComputedShapePhysicalBoundingBox() const {
+PhysicalRect ShapeOutsideInfo::ComputedShapePhysicalBoundingBox() const {
   LayoutRect physical_bounding_box =
       ComputedShape().ShapeMarginLogicalBoundingBox();
   physical_bounding_box.SetX(physical_bounding_box.X() + LogicalLeftOffset());
@@ -465,7 +465,7 @@ LayoutRect ShapeOutsideInfo::ComputedShapePhysicalBoundingBox() const {
   else
     physical_bounding_box.SetY(physical_bounding_box.Y() + LogicalTopOffset());
 
-  return physical_bounding_box;
+  return PhysicalRect(physical_bounding_box);
 }
 
 FloatPoint ShapeOutsideInfo::ShapeToLayoutObjectPoint(FloatPoint point) const {

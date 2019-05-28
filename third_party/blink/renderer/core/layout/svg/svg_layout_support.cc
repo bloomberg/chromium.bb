@@ -174,7 +174,7 @@ void SVGLayoutSupport::MapAncestorToLocal(const LayoutObject& object,
   const LayoutSVGRoot& svg_root =
       ComputeTransformToSVGRoot(object, local_to_svg_root);
 
-  MapCoordinatesFlags mode = flags | kUseTransforms | kApplyContainerFlip;
+  MapCoordinatesFlags mode = flags | kUseTransforms;
   svg_root.MapAncestorToLocal(ancestor, transform_state, mode);
 
   transform_state.ApplyTransform(local_to_svg_root);

@@ -28,12 +28,10 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_geometry_map_step.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
-#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -58,15 +56,21 @@ class CORE_EXPORT LayoutGeometryMap {
     return map_coordinates_flags_;
   }
 
-  FloatRect AbsoluteRect(const FloatRect& rect) const {
-    return MapToAncestor(rect, nullptr).BoundingBox();
+  PhysicalRect AbsoluteRect(const PhysicalRect& rect) const {
+    return MapToAncestor(rect, nullptr);
+  }
+  FloatQuad AbsoluteQuad(const PhysicalRect& rect) const {
+    return MapToAncestorQuad(rect, nullptr);
   }
 
   // Map to an ancestor. Will assert that the ancestor has been pushed onto this
   // map. A null ancestor maps through the LayoutView (including its scale
   // transform, if any). If the ancestor is the LayoutView, the scroll offset is
   // applied, but not the scale.
-  FloatQuad MapToAncestor(const FloatRect&, const LayoutBoxModelObject*) const;
+  PhysicalRect MapToAncestor(const PhysicalRect&,
+                             const LayoutBoxModelObject*) const;
+  FloatQuad MapToAncestorQuad(const PhysicalRect&,
+                              const LayoutBoxModelObject*) const;
 
   // Called by code walking the layout or layer trees.
   void PushMappingsToAncestor(const PaintLayer*,
@@ -92,6 +96,7 @@ class CORE_EXPORT LayoutGeometryMap {
             PhysicalOffset offset_for_fixed_position = PhysicalOffset());
 
  private:
+  bool CanUseAccumulatedOffset(const LayoutBoxModelObject*) const;
   void PopMappingsToAncestor(const LayoutBoxModelObject*);
   void MapToAncestor(TransformState&,
                      const LayoutBoxModelObject* ancestor = nullptr) const;

@@ -622,8 +622,8 @@ int HTMLImageElement::x() const {
     return 0;
 
   // FIXME: This doesn't work correctly with transforms.
-  FloatPoint abs_pos = r->LocalToAbsolute();
-  return abs_pos.X();
+  PhysicalOffset abs_pos = r->LocalToAbsolutePoint();
+  return abs_pos.left.ToInt();
 }
 
 int HTMLImageElement::y() const {
@@ -633,8 +633,8 @@ int HTMLImageElement::y() const {
     return 0;
 
   // FIXME: This doesn't work correctly with transforms.
-  FloatPoint abs_pos = r->LocalToAbsolute();
-  return abs_pos.Y();
+  PhysicalOffset abs_pos = r->LocalToAbsolutePoint();
+  return abs_pos.top.ToInt();
 }
 
 ScriptPromise HTMLImageElement::decode(ScriptState* script_state,

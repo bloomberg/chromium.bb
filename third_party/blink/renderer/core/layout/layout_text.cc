@@ -375,9 +375,9 @@ String LayoutText::PlainText() const {
   return plain_text_builder.ToString();
 }
 
-static FloatRect LocalQuadForTextBox(InlineTextBox* box,
-                                     unsigned start,
-                                     unsigned end) {
+static LayoutRect LocalQuadForTextBox(InlineTextBox* box,
+                                      unsigned start,
+                                      unsigned end) {
   unsigned real_end = std::min(box->end() + 1, end);
   const bool include_newline_space_width = false;
   LayoutRect r =
@@ -392,9 +392,9 @@ static FloatRect LocalQuadForTextBox(InlineTextBox* box,
       r.SetWidth(box->Width());
       r.SetX(box->X());
     }
-    return FloatRect(r);
+    return r;
   }
-  return FloatRect();
+  return LayoutRect();
 }
 
 static IntRect EllipsisRectForBox(InlineTextBox* box,
@@ -456,15 +456,9 @@ void LayoutText::CollectLineBoxRects(const PhysicalRectCollector& yield,
 
 void LayoutText::AbsoluteQuads(Vector<FloatQuad>& quads,
                                MapCoordinatesFlags mode) const {
-  const LayoutBlock* block_for_flipping =
-      UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
-  CollectLineBoxRects(
-      [this, &quads, mode, block_for_flipping](const PhysicalRect& r) {
-        // LocalToAbsoluteQuad requires the input to be in flipped blocks
-        // direction.
-        LayoutRect rect = FlipForWritingMode(r, block_for_flipping);
-        quads.push_back(LocalToAbsoluteQuad(FloatRect(rect), mode));
-      });
+  CollectLineBoxRects([this, &quads, mode](const PhysicalRect& r) {
+    quads.push_back(LocalRectToAbsoluteQuad(r, mode));
+  });
 }
 
 bool LayoutText::MapDOMOffsetToTextContentOffset(const NGOffsetMapping& mapping,
@@ -557,10 +551,7 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       const unsigned clamped_end = std::min(end, text_fragment.EndOffset());
       PhysicalRect rect = text_fragment.LocalRect(clamped_start, clamped_end);
       rect.Move(fragment->InlineOffsetToContainerBox());
-      // LocalToAbsoluteQuad requires the input to be in flipped blocks
-      // direction.
-      LayoutRect layout_rect = FlipForWritingMode(rect, block_for_flipping);
-      const FloatQuad quad = LocalToAbsoluteQuad(FloatRect(layout_rect));
+      const FloatQuad quad = LocalRectToAbsoluteQuad(rect);
       if (clamped_start < clamped_end) {
         quads.push_back(quad);
         found_non_collapsed_quad = true;
@@ -584,32 +575,35 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
   // This function is always called in sequence that this check should work.
   bool has_checked_box_in_range = !quads.IsEmpty();
 
+  const LayoutBlock* block_for_flipping =
+      UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
   for (InlineTextBox* box : TextBoxes()) {
     // Note: box->end() returns the index of the last character, not the index
     // past it
+    LayoutRect rect;
     if (start <= box->Start() && box->end() < end) {
-      LayoutRect r(box->FrameRect());
+      rect = box->FrameRect();
       if (!has_checked_box_in_range) {
         has_checked_box_in_range = true;
         quads.clear();
       }
-      quads.push_back(LocalToAbsoluteQuad(FloatRect(r)));
     } else if ((box->Start() <= start && start <= box->end()) ||
                (box->Start() < end && end <= box->end())) {
-      FloatRect rect = LocalQuadForTextBox(box, start, end);
-      if (!rect.IsZero()) {
+      rect = LocalQuadForTextBox(box, start, end);
+      if (!rect.Size().IsZero()) {
         if (!has_checked_box_in_range) {
           has_checked_box_in_range = true;
           quads.clear();
         }
-        quads.push_back(LocalToAbsoluteQuad(rect));
       }
     } else if (!has_checked_box_in_range) {
       // consider when the offset of range is area of leading or trailing
       // whitespace
-      FloatRect rect = LocalQuadForTextBox(box, start, end);
-      if (!rect.IsZero())
-        quads.push_back(LocalToAbsoluteQuad(rect).EnclosingBoundingBox());
+      rect = LocalQuadForTextBox(box, start, end);
+    }
+    if (!rect.Size().IsZero()) {
+      PhysicalRect physical_rect = FlipForWritingMode(rect, block_for_flipping);
+      quads.push_back(LocalRectToAbsoluteQuad(physical_rect));
     }
   }
 }

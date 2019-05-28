@@ -2623,9 +2623,9 @@ void LayoutBlockFlow::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
   // them to form a single irregular shape).
   // FIXME: This is wrong for vertical writing-modes.
   // https://bugs.webkit.org/show_bug.cgi?id=46781
-  LayoutRect local_rect(LayoutPoint(), Size());
+  PhysicalRect local_rect = PhysicalBorderBoxRect();
   local_rect.Expand(CollapsedMarginBoxLogicalOutsets());
-  quads.push_back(LocalToAbsoluteQuad(FloatRect(local_rect), mode));
+  quads.push_back(LocalRectToAbsoluteQuad(local_rect, mode));
 }
 
 LayoutObject* LayoutBlockFlow::HoverAncestor() const {

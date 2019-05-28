@@ -237,15 +237,16 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
     FloatQuad transformed_quad =
         paint_invalidation_container.AbsoluteToLocalQuad(
             absolute_quad, kUseTransforms | kTraverseDocumentBoundaries);
-    FloatPoint offset_to_backing;
+    PhysicalOffset offset_to_backing;
 
     PaintLayer::MapPointInPaintInvalidationContainerToBacking(
         paint_invalidation_container, offset_to_backing);
 
     // Adjust for offset from LayoutObject.
-    offset_to_backing.Move(-current_graphics_layer_->OffsetFromLayoutObject());
+    offset_to_backing -=
+        PhysicalOffset(current_graphics_layer_->OffsetFromLayoutObject());
 
-    transformed_quad.Move(ToFloatSize(offset_to_backing));
+    transformed_quad.Move(FloatSize(offset_to_backing));
 
     // FIXME: for now, we'll only use rounded paths if we have a single node
     // quad. The reason for this is that we may sometimes get a chain of

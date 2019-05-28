@@ -130,9 +130,7 @@ bool IsUrlIncrementedByOne(const HTMLAnchorElement& anchor_element) {
 IntRect AbsoluteElementBoundingBoxRect(const LayoutObject* layout_object) {
   Vector<PhysicalRect> rects = layout_object->OutlineRects(
       PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
-  return layout_object
-      ->LocalToAbsoluteQuad(FloatQuad(FloatRect(UnionRect(rects))))
-      .EnclosingBoundingBox();
+  return EnclosingIntRect(layout_object->LocalToAbsoluteRect(UnionRect(rects)));
 }
 
 }  // anonymous namespace

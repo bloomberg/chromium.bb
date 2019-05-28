@@ -49,17 +49,17 @@ TransformState& TransformState::operator=(const TransformState& other) {
   return *this;
 }
 
-void TransformState::TranslateTransform(const LayoutSize& offset) {
+void TransformState::TranslateTransform(const PhysicalOffset& offset) {
   if (direction_ == kApplyTransformDirection) {
-    accumulated_transform_->PostTranslate(offset.Width().ToDouble(),
-                                          offset.Height().ToDouble());
+    accumulated_transform_->PostTranslate(offset.left.ToDouble(),
+                                          offset.top.ToDouble());
   } else {
-    accumulated_transform_->Translate(offset.Width().ToDouble(),
-                                      offset.Height().ToDouble());
+    accumulated_transform_->Translate(offset.left.ToDouble(),
+                                      offset.top.ToDouble());
   }
 }
 
-void TransformState::TranslateMappedCoordinates(const LayoutSize& offset) {
+void TransformState::TranslateMappedCoordinates(const PhysicalOffset& offset) {
   FloatSize adjusted_offset((direction_ == kApplyTransformDirection) ? offset
                                                                      : -offset);
   if (map_point_)
@@ -68,7 +68,7 @@ void TransformState::TranslateMappedCoordinates(const LayoutSize& offset) {
     last_planar_quad_.Move(adjusted_offset);
 }
 
-void TransformState::Move(const LayoutSize& offset,
+void TransformState::Move(const PhysicalOffset& offset,
                           TransformAccumulation accumulate) {
   if (force_accumulating_transform_)
     accumulate = kAccumulateTransform;
@@ -90,8 +90,8 @@ void TransformState::Move(const LayoutSize& offset,
 }
 
 void TransformState::ApplyAccumulatedOffset() {
-  LayoutSize offset = accumulated_offset_;
-  accumulated_offset_ = LayoutSize();
+  PhysicalOffset offset = accumulated_offset_;
+  accumulated_offset_ = PhysicalOffset();
   if (!offset.IsZero()) {
     if (accumulated_transform_) {
       TranslateTransform(offset);
@@ -106,23 +106,16 @@ void TransformState::ApplyAccumulatedOffset() {
 // inefficient.
 void TransformState::ApplyTransform(
     const AffineTransform& transform_from_container,
-    TransformAccumulation accumulate,
-    bool* was_clamped) {
-  ApplyTransform(transform_from_container.ToTransformationMatrix(), accumulate,
-                 was_clamped);
+    TransformAccumulation accumulate) {
+  ApplyTransform(transform_from_container.ToTransformationMatrix(), accumulate);
 }
 
 void TransformState::ApplyTransform(
     const TransformationMatrix& transform_from_container,
-    TransformAccumulation accumulate,
-    bool* was_clamped) {
-  if (was_clamped)
-    *was_clamped = false;
-
+    TransformAccumulation accumulate) {
   if (transform_from_container.IsIntegerTranslation()) {
-    Move(LayoutSize(LayoutUnit(transform_from_container.E()),
-                    LayoutUnit(transform_from_container.F())),
-         accumulate);
+    Move(PhysicalOffset::FromFloatSizeRound(
+        transform_from_container.To2DTranslation()));
     return;
   }
 
@@ -149,17 +142,15 @@ void TransformState::ApplyTransform(
       const TransformationMatrix* final_transform =
           accumulated_transform_ ? accumulated_transform_.get()
                                  : &transform_from_container;
-      FlattenWithTransform(*final_transform, was_clamped);
+      FlattenWithTransform(*final_transform);
     }
   }
   accumulating_transform_ =
       accumulate == kAccumulateTransform || force_accumulating_transform_;
 }
 
-void TransformState::Flatten(bool* was_clamped) {
+void TransformState::Flatten() {
   DCHECK(!force_accumulating_transform_);
-  if (was_clamped)
-    *was_clamped = false;
 
   ApplyAccumulatedOffset();
 
@@ -168,30 +159,23 @@ void TransformState::Flatten(bool* was_clamped) {
     return;
   }
 
-  FlattenWithTransform(*accumulated_transform_, was_clamped);
+  FlattenWithTransform(*accumulated_transform_);
 }
 
-FloatPoint TransformState::MappedPoint(bool* was_clamped) const {
-  if (was_clamped)
-    *was_clamped = false;
-
+PhysicalOffset TransformState::MappedPoint() const {
   FloatPoint point = last_planar_point_;
   point.Move(FloatSize(direction_ == kApplyTransformDirection
                            ? accumulated_offset_
                            : -accumulated_offset_));
-  if (!accumulated_transform_)
-    return point;
-
-  if (direction_ == kApplyTransformDirection)
-    return accumulated_transform_->MapPoint(point);
-
-  return accumulated_transform_->Inverse().ProjectPoint(point, was_clamped);
+  if (accumulated_transform_) {
+    point = direction_ == kApplyTransformDirection
+                ? accumulated_transform_->MapPoint(point)
+                : accumulated_transform_->Inverse().ProjectPoint(point);
+  }
+  return PhysicalOffset::FromFloatPointRound(point);
 }
 
-FloatQuad TransformState::MappedQuad(bool* was_clamped) const {
-  if (was_clamped)
-    *was_clamped = false;
-
+FloatQuad TransformState::MappedQuad() const {
   FloatQuad quad = last_planar_quad_;
   quad.Move(FloatSize((direction_ == kApplyTransformDirection)
                           ? accumulated_offset_
@@ -202,7 +186,7 @@ FloatQuad TransformState::MappedQuad(bool* was_clamped) const {
   if (direction_ == kApplyTransformDirection)
     return accumulated_transform_->MapQuad(quad);
 
-  return accumulated_transform_->Inverse().ProjectQuad(quad, was_clamped);
+  return accumulated_transform_->Inverse().ProjectQuad(quad);
 }
 
 const TransformationMatrix& TransformState::AccumulatedTransform() const {
@@ -211,8 +195,7 @@ const TransformationMatrix& TransformState::AccumulatedTransform() const {
   return *accumulated_transform_;
 }
 
-void TransformState::FlattenWithTransform(const TransformationMatrix& t,
-                                          bool* was_clamped) {
+void TransformState::FlattenWithTransform(const TransformationMatrix& t) {
   if (direction_ == kApplyTransformDirection) {
     if (map_point_)
       last_planar_point_ = t.MapPoint(last_planar_point_);
@@ -222,9 +205,9 @@ void TransformState::FlattenWithTransform(const TransformationMatrix& t,
     TransformationMatrix inverse_transform = t.Inverse();
     if (map_point_)
       last_planar_point_ = inverse_transform.ProjectPoint(last_planar_point_);
-    if (map_quad_)
-      last_planar_quad_ =
-          inverse_transform.ProjectQuad(last_planar_quad_, was_clamped);
+    if (map_quad_) {
+      last_planar_quad_ = inverse_transform.ProjectQuad(last_planar_quad_);
+    }
   }
 
   // We could throw away m_accumulatedTransform if we wanted to here, but that

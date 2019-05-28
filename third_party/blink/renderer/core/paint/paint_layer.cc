@@ -590,7 +590,7 @@ const PaintLayer& PaintLayer::TransformAncestorOrRoot() const {
 
 void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
     const LayoutBoxModelObject& paint_invalidation_container,
-    FloatPoint& point) {
+    PhysicalOffset& point) {
   PaintLayer* paint_invalidation_layer = paint_invalidation_container.Layer();
   if (!paint_invalidation_layer->GroupedMapping())
     return;
@@ -604,12 +604,12 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
 
   // Move the point into the source_state transform space, map to dest_state
   // transform space, then move into squashing layer state.
-  point.MoveBy(
-      FloatPoint(paint_invalidation_container.FirstFragment().PaintOffset()));
-  point = GeometryMapper::SourceToDestinationProjection(
-              source_state.Transform(), dest_state.Transform())
-              .MapPoint(point);
-  point.MoveBy(-squashing_layer->GetOffsetFromTransformNode());
+  point += paint_invalidation_container.FirstFragment().PaintOffset();
+  point = PhysicalOffset::FromFloatPointRound(
+      GeometryMapper::SourceToDestinationProjection(source_state.Transform(),
+                                                    dest_state.Transform())
+          .MapPoint(FloatPoint(point)));
+  point -= PhysicalOffset(squashing_layer->GetOffsetFromTransformNode());
 }
 
 void PaintLayer::DirtyVisibleContentStatus() {
@@ -965,13 +965,17 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
 
 PhysicalOffset PaintLayer::ComputeOffsetFromAncestor(
     const PaintLayer& ancestor_layer) const {
+  // TODO(wangxianzhu): Use LocalToAncestorPoint() when it supports ignoring
+  // transforms.
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint());
   const LayoutBoxModelObject& ancestor_object =
       ancestor_layer.GetLayoutObject();
   GetLayoutObject().MapLocalToAncestor(&ancestor_object, transform_state, 0);
-  if (ancestor_object.UsesCompositedScrolling())
-    transform_state.Move(ToLayoutBox(ancestor_object).ScrolledContentOffset());
+  if (ancestor_object.UsesCompositedScrolling()) {
+    transform_state.Move(
+        PhysicalOffset(ToLayoutBox(ancestor_object).ScrolledContentOffset()));
+  }
   transform_state.Flatten();
   return PhysicalOffset::FromFloatPointRound(transform_state.LastPlanarPoint());
 }
@@ -1529,8 +1533,7 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
       (!ancestor_layer || ancestor_layer == layout_object.View()->Layer())) {
     // If the fixed layer's container is the root, just add in the offset of the
     // view. We can obtain this by calling localToAbsolute() on the LayoutView.
-    FloatPoint abs_pos = layout_object.LocalToAbsolute();
-    location += PhysicalOffset::FromFloatPointRound(abs_pos);
+    location += layout_object.LocalToAbsolutePoint();
     return ancestor_layer;
   }
 

@@ -2562,19 +2562,21 @@ PhysicalRect LayoutObject::ViewRect() const {
   return View()->ViewRect();
 }
 
-FloatPoint LayoutObject::LocalToAbsolute(const FloatPoint& local_point,
-                                         MapCoordinatesFlags mode) const {
+FloatPoint LayoutObject::LocalToAbsoluteFloatPoint(
+    const FloatPoint& local_point,
+    MapCoordinatesFlags mode) const {
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  local_point);
-  MapLocalToAncestor(nullptr, transform_state, mode | kApplyContainerFlip);
+  MapLocalToAncestor(nullptr, transform_state, mode);
   transform_state.Flatten();
 
   return transform_state.LastPlanarPoint();
 }
 
-FloatPoint LayoutObject::AncestorToLocal(LayoutBoxModelObject* ancestor,
-                                         const FloatPoint& container_point,
-                                         MapCoordinatesFlags mode) const {
+FloatPoint LayoutObject::AncestorToLocalFloatPoint(
+    const LayoutBoxModelObject* ancestor,
+    const FloatPoint& container_point,
+    MapCoordinatesFlags mode) const {
   TransformState transform_state(
       TransformState::kUnapplyInverseTransformDirection, container_point);
   MapAncestorToLocal(ancestor, transform_state, mode);
@@ -2583,9 +2585,10 @@ FloatPoint LayoutObject::AncestorToLocal(LayoutBoxModelObject* ancestor,
   return transform_state.LastPlanarPoint();
 }
 
-FloatQuad LayoutObject::AncestorToLocalQuad(LayoutBoxModelObject* ancestor,
-                                            const FloatQuad& quad,
-                                            MapCoordinatesFlags mode) const {
+FloatQuad LayoutObject::AncestorToLocalQuad(
+    const LayoutBoxModelObject* ancestor,
+    const FloatQuad& quad,
+    MapCoordinatesFlags mode) const {
   TransformState transform_state(
       TransformState::kUnapplyInverseTransformDirection,
       quad.BoundingBox().Center(), quad);
@@ -2605,20 +2608,6 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   if (!container)
     return;
 
-  if (mode & kApplyContainerFlip) {
-    if (IsBox()) {
-      mode &= ~kApplyContainerFlip;
-    } else if (container->IsBox()) {
-      if (container->StyleRef().IsFlippedBlocksWritingMode()) {
-        IntPoint center_point = RoundedIntPoint(transform_state.MappedPoint());
-        transform_state.Move(ToLayoutBox(container)->FlipForWritingMode(
-                                 LayoutPoint(center_point)) -
-                             PhysicalOffset(center_point));
-      }
-      mode &= ~kApplyContainerFlip;
-    }
-  }
-
   PhysicalOffset container_offset =
       OffsetFromContainer(container, mode & kIgnoreScrollOffset);
   // TODO(smcgruer): This is inefficient. Instead we should avoid including
@@ -2633,7 +2622,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     // Convert it to a visual point now, since we're about to escape the flow
     // thread.
     container_offset += PhysicalOffsetToBeNoop(
-        ColumnOffset(LayoutPoint(transform_state.MappedPoint())));
+        ColumnOffset(transform_state.MappedPoint().ToLayoutPoint()));
   }
 
   // Text objects just copy their parent's computed style, so we need to ignore
@@ -2649,7 +2638,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                           ? TransformState::kAccumulateTransform
                                           : TransformState::kFlattenTransform);
   } else {
-    transform_state.Move(container_offset.left, container_offset.top,
+    transform_state.Move(container_offset,
                          preserve3d ? TransformState::kAccumulateTransform
                                     : TransformState::kFlattenTransform);
   }
@@ -2692,16 +2681,6 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   if (!container)
     return;
 
-  bool apply_container_flip = false;
-  if (mode & kApplyContainerFlip) {
-    if (IsBox()) {
-      mode &= ~kApplyContainerFlip;
-    } else if (container->IsBox()) {
-      apply_container_flip = container->StyleRef().IsFlippedBlocksWritingMode();
-      mode &= ~kApplyContainerFlip;
-    }
-  }
-
   if (!skip_info.AncestorSkipped())
     container->MapAncestorToLocal(ancestor, transform_state, mode);
 
@@ -2716,7 +2695,7 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                                           ? TransformState::kAccumulateTransform
                                           : TransformState::kFlattenTransform);
   } else {
-    transform_state.Move(container_offset.left, container_offset.top,
+    transform_state.Move(container_offset,
                          preserve3d ? TransformState::kAccumulateTransform
                                     : TransformState::kFlattenTransform);
   }
@@ -2724,22 +2703,17 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   if (IsLayoutFlowThread()) {
     // Descending into a flow thread. Convert to the local coordinate space,
     // i.e. flow thread coordinates.
-    LayoutPoint visual_point = LayoutPoint(transform_state.MappedPoint());
+    PhysicalOffset visual_point = transform_state.MappedPoint();
     transform_state.Move(
         visual_point -
-        ToLayoutFlowThread(this)->VisualPointToFlowThreadPoint(visual_point));
-  }
-
-  if (apply_container_flip) {
-    IntPoint center_point = RoundedIntPoint(transform_state.MappedPoint());
-    transform_state.Move(
-        PhysicalOffset(center_point) -
-        ToLayoutBox(container)->FlipForWritingMode(LayoutPoint(center_point)));
+        PhysicalOffsetToBeNoop(
+            ToLayoutFlowThread(this)->VisualPointToFlowThreadPoint(
+                visual_point.ToLayoutPoint())));
   }
 
   if (skip_info.AncestorSkipped()) {
     container_offset = ancestor->OffsetFromAncestor(container);
-    transform_state.Move(-container_offset.left, -container_offset.top);
+    transform_state.Move(-container_offset);
     // If the ancestor is fixed, then the rect is already in its coordinates so
     // doesn't need viewport-adjusting.
     if (ancestor->StyleRef().GetPosition() != EPosition::kFixed &&
@@ -2813,27 +2787,24 @@ FloatQuad LayoutObject::LocalToAncestorQuadInternal(
   // mapLocalToAncestor() calls offsetFromContainer(), it will use that point
   // as the reference point to decide which column's transform to apply in
   // multiple-column blocks.
-  // TODO(chrishtr): the second argument to this constructor is unnecessary,
-  // since we never call lastPlanarPoint().
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  local_quad.BoundingBox().Center(), local_quad);
-  MapLocalToAncestor(ancestor, transform_state, mode | kApplyContainerFlip);
+  MapLocalToAncestor(ancestor, transform_state, mode);
   transform_state.Flatten();
 
   return transform_state.LastPlanarQuad();
 }
 
-FloatPoint LayoutObject::LocalToAncestorPoint(
-    const FloatPoint& local_point,
+PhysicalOffset LayoutObject::LocalToAncestorPoint(
+    const PhysicalOffset& local_point,
     const LayoutBoxModelObject* ancestor,
     MapCoordinatesFlags mode) const {
   TransformState transform_state(TransformState::kApplyTransformDirection,
-                                 local_point);
-  MapLocalToAncestor(ancestor, transform_state,
-                     mode | kApplyContainerFlip | kUseTransforms);
+                                 FloatPoint(local_point));
+  MapLocalToAncestor(ancestor, transform_state, mode | kUseTransforms);
   transform_state.Flatten();
 
-  return transform_state.LastPlanarPoint();
+  return PhysicalOffset::FromFloatPointRound(transform_state.LastPlanarPoint());
 }
 
 void LayoutObject::LocalToAncestorRects(
@@ -2861,8 +2832,7 @@ TransformationMatrix LayoutObject::LocalToAncestorTransform(
     const LayoutBoxModelObject* ancestor,
     MapCoordinatesFlags mode) const {
   TransformState transform_state(TransformState::kApplyTransformDirection);
-  MapLocalToAncestor(ancestor, transform_state,
-                     mode | kApplyContainerFlip | kUseTransforms);
+  MapLocalToAncestor(ancestor, transform_state, mode | kUseTransforms);
   return transform_state.AccumulatedTransform();
 }
 
@@ -3520,13 +3490,13 @@ void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
     return;
 
   LayoutBox* box = ToLayoutBox(this);
-  FloatRect local_bounds(FloatPoint(), FloatSize(box->Size()));
-  FloatRect abs_bounds = LocalToAbsoluteQuad(local_bounds).BoundingBox();
+  PhysicalRect local_bounds = box->PhysicalBorderBoxRect();
+  PhysicalRect abs_bounds = LocalToAbsoluteRect(local_bounds);
 
   AnnotatedRegionValue region;
   region.draggable =
       StyleRef().DraggableRegionMode() == EDraggableRegionMode::kDrag;
-  region.bounds = PhysicalRect::EnclosingRect(abs_bounds);
+  region.bounds = abs_bounds;
   regions.push_back(region);
 }
 

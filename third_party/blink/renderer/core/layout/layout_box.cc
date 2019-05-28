@@ -714,12 +714,12 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
         AllowedToPropagateRecursiveScrollToParentFrame(params)) {
       parent_box = owner_element->GetLayoutObject()->EnclosingBox();
       LayoutView* parent_view = owner_element->GetLayoutObject()->View();
-      absolute_rect_for_parent = EnclosingLayoutRect(
+      absolute_rect_for_parent =
           View()
-              ->LocalToAncestorQuad(
-                  FloatRect(absolute_rect_for_parent), parent_view,
+              ->LocalToAncestorRect(
+                  PhysicalRectToBeNoop(absolute_rect_for_parent), parent_view,
                   kUseTransforms | kTraverseDocumentBoundaries)
-              .BoundingBox());
+              .ToLayoutRect();
     }
   } else {
     absolute_rect_for_parent = absolute_rect_to_scroll;
@@ -756,10 +756,7 @@ void LayoutBox::AbsoluteQuads(Vector<FloatQuad>& quads,
     flow_thread->AbsoluteQuadsForDescendant(*this, quads, mode);
     return;
   }
-  quads.push_back(
-      LocalToAbsoluteQuad(FloatRect(0, 0, frame_rect_.Width().ToFloat(),
-                                    frame_rect_.Height().ToFloat()),
-                          mode));
+  quads.push_back(LocalRectToAbsoluteQuad(PhysicalBorderBoxRect(), mode));
 }
 
 FloatRect LayoutBox::LocalBoundingBoxRectForAccessibility() const {
@@ -894,7 +891,7 @@ void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
 
 FloatQuad LayoutBox::AbsoluteContentQuad(MapCoordinatesFlags flags) const {
   PhysicalRect rect = PhysicalContentBoxRect();
-  return LocalToAbsoluteQuad(FloatRect(rect), flags);
+  return LocalRectToAbsoluteQuad(rect, flags);
 }
 
 PhysicalRect LayoutBox::PhysicalBackgroundRect(
@@ -1112,11 +1109,10 @@ LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object) {
 void LayoutBox::MayUpdateHoverWhenContentUnderMouseChanged(
     EventHandler& event_handler) {
   const LayoutBoxModelObject& container = ContainerForPaintInvalidation();
-  FloatQuad scroller_rect_in_frame =
-      FloatQuad(FloatRect(VisualRectIncludingCompositedScrolling(container)));
-  scroller_rect_in_frame =
-      container.LocalToAbsoluteQuad(scroller_rect_in_frame);
-  event_handler.MayUpdateHoverAfterScroll(scroller_rect_in_frame);
+  PhysicalRect scroller_rect(VisualRectIncludingCompositedScrolling(container));
+  FloatQuad scroller_quad_in_frame =
+      container.LocalRectToAbsoluteQuad(scroller_rect);
+  event_handler.MayUpdateHoverAfterScroll(scroller_quad_in_frame);
 }
 
 void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
@@ -1283,10 +1279,8 @@ bool LayoutBox::MapContentsRectToBoxSpace(
   if (!HasClipRelatedProperty())
     return true;
 
-  if (ContainedContentsScroll(contents)) {
-    LayoutSize offset = LayoutSize(-ScrolledContentOffset());
-    transform_state.Move(offset, accumulation);
-  }
+  if (ContainedContentsScroll(contents))
+    transform_state.Move(PhysicalOffset(-ScrolledContentOffset()));
 
   return ApplyBoxClips(transform_state, accumulation, visual_rect_flags);
 }
@@ -1932,7 +1926,7 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
 ResourcePriority LayoutBox::ComputeResourcePriority() const {
   PhysicalRect view_bounds = ViewRect();
   PhysicalRect object_bounds = PhysicalContentBoxRect();
-  object_bounds.Move(PhysicalOffset::FromFloatPointRound(LocalToAbsolute()));
+  object_bounds.Move(LocalToAbsolutePoint(PhysicalOffset()));
 
   // The object bounds might be empty right now, so intersects will fail since
   // it doesn't deal with empty rects. Use LayoutRect::contains in that case.

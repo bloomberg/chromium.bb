@@ -113,8 +113,7 @@ void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
     quads.push_back(LocalToAbsoluteQuad(
         FloatRect(text_bounding_box.X() + box->X().ToFloat(),
                   text_bounding_box.Y() + box->Y().ToFloat(),
-                  box->LogicalWidth().ToFloat(),
-                  box->LogicalHeight().ToFloat()),
+                  box->Width().ToFloat(), box->Height().ToFloat()),
         mode));
   }
 }

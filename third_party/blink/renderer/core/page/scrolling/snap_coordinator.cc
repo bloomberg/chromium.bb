@@ -255,22 +255,20 @@ cc::SnapAreaData SnapCoordinator::CalculateSnapAreaData(
   // We assume that the snap_container is the snap_area's ancestor in layout
   // tree, as the snap_container is found by walking up the layout tree in
   // FindSnapContainer(). Under this assumption,
-  // snap_area.LocalToAncestorQuad() returns the snap_area's position relative
+  // snap_area.LocalToAncestorRect() returns the snap_area's position relative
   // to its container's border box. And the |area| below represents the
   // snap_area rect in respect to the snap_container.
-  LayoutRect area_rect(LayoutPoint(), LayoutSize(snap_area.OffsetWidth(),
-                                                 snap_area.OffsetHeight()));
-  area_rect = EnclosingLayoutRect(
-      snap_area
-          .LocalToAncestorQuad(FloatRect(area_rect), &snap_container,
-                               kUseTransforms | kTraverseDocumentBoundaries)
-          .BoundingBox());
+  PhysicalRect area_rect = snap_area.PhysicalBorderBoxRect();
+  area_rect = snap_area.LocalToAncestorRect(
+      area_rect, &snap_container, kUseTransforms | kTraverseDocumentBoundaries);
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
   if (scrollable_area) {
-    if (snap_container.IsLayoutView())
+    if (snap_container.IsLayoutView()) {
       area_rect = snap_container.GetFrameView()->FrameToDocument(area_rect);
-    else
-      area_rect.MoveBy(LayoutPoint(scrollable_area->ScrollPosition()));
+    } else {
+      area_rect.Move(PhysicalOffset::FromFloatPointRound(
+          scrollable_area->ScrollPosition()));
+    }
   }
 
   LayoutRectOutsets area_margin(

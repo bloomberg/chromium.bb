@@ -920,16 +920,11 @@ void LayoutInline::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
                                         MapCoordinatesFlags mode) const {
   LayoutGeometryMap geometry_map(mode);
   geometry_map.PushMappingsToAncestor(this, nullptr);
-  const LayoutBlock* block_for_flipping =
-      UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
-  CollectLineBoxRects(
-      [this, &quads, &geometry_map, block_for_flipping](const PhysicalRect& r) {
-        // LayoutGeometryMap requires flipped rect as the input.
-        LayoutRect rect = FlipForWritingMode(r, block_for_flipping);
-        quads.push_back(geometry_map.AbsoluteRect(FloatRect(rect)));
-      });
+  CollectLineBoxRects([&quads, &geometry_map](const PhysicalRect& r) {
+    quads.push_back(geometry_map.AbsoluteQuad(r));
+  });
   if (quads.IsEmpty())
-    quads.push_back(geometry_map.AbsoluteRect(FloatRect()));
+    quads.push_back(geometry_map.AbsoluteQuad(PhysicalRect()));
 }
 
 base::Optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
@@ -984,12 +979,7 @@ PhysicalRect LayoutInline::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
   PhysicalRect rect = UnionRect(rects);
   if (rects.IsEmpty())
     rect.offset = AnchorPhysicalLocation();
-
-  // rect is pure physical, while LocalToAbsolute() requires physical
-  // coordinates with flipped block direction.
-  FloatRect flipped_rect(FlipForWritingMode(rect));
-  return PhysicalRect(
-      LocalToAbsoluteQuad(flipped_rect, kUseTransforms).EnclosingBoundingBox());
+  return LocalToAbsoluteRect(rect, kUseTransforms);
 }
 
 LayoutUnit LayoutInline::OffsetLeft(const Element* parent) const {
@@ -1718,9 +1708,7 @@ void LayoutInline::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   if (!container)
     container = this;
 
-  FloatPoint abs_pos = container->LocalToAbsolute();
-  region.bounds.offset += PhysicalOffset::FromFloatPointRound(abs_pos);
-
+  region.bounds.offset += container->LocalToAbsolutePoint();
   regions.push_back(region);
 }
 

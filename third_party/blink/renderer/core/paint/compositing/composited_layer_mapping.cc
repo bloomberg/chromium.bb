@@ -690,12 +690,9 @@ void CompositedLayerMapping::
     return;
   }
 
-  FloatRect bounds_in_ancestor_space =
-      GetLayoutObject()
-          .LocalToAncestorQuad(FloatRect(composited_bounds_),
-                               &clip_inheritance_ancestor_->GetLayoutObject(),
-                               kUseTransforms)
-          .BoundingBox();
+  FloatRect bounds_in_ancestor_space(GetLayoutObject().LocalToAncestorRect(
+      composited_bounds_, &clip_inheritance_ancestor_->GetLayoutObject(),
+      kUseTransforms));
   owning_layer_is_masked =
       AncestorRoundedCornersWillClip(bounds_in_ancestor_space);
 }
@@ -1479,11 +1476,11 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
   if (!overflow_controls_host_layer_)
     return;
 
-  // To position and clip the scrollbars correctly, m_overflowControlsHostLayer
-  // should match our border box rect, which is at the origin of our
-  // LayoutObject. Its position is computed in various ways depending on who its
-  // parent GraphicsLayer is going to be.
-  LayoutPoint host_layer_position;
+  // To position and clip the scrollbars correctly,
+  // overflow_controls_host_layer_ should match our border box rect, which is at
+  // the origin of our LayoutObject. Its position is computed in various ways
+  // depending on who its parent GraphicsLayer is going to be.
+  PhysicalOffset host_layer_position;
 
   if (NeedsToReparentOverflowControls()) {
     // This should never be true, but for some reason it is.
@@ -1523,27 +1520,30 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
       }
 
       overflow_controls_ancestor_clipping_layer_->SetPosition(position);
-      host_layer_position.Move(
-          -ancestor_clipping_layer_->OffsetFromLayoutObject());
+      host_layer_position =
+          -PhysicalOffset(ancestor_clipping_layer_->OffsetFromLayoutObject());
     } else {
       // The controls are in the same 2D space as the compositing container, so
       // we can map them into the space of the container.
+      // TODO(wangxianzhu): Use LocalToAncestorPoint() when it supports
+      // ignoring transforms.
       TransformState transform_state(TransformState::kApplyTransformDirection,
                                      FloatPoint());
       owning_layer_.GetLayoutObject().MapLocalToAncestor(
-          &compositing_stacking_context->GetLayoutObject(), transform_state,
-          kApplyContainerFlip);
+          &compositing_stacking_context->GetLayoutObject(), transform_state);
       transform_state.Flatten();
-      host_layer_position = LayoutPoint(transform_state.LastPlanarPoint());
+      host_layer_position = PhysicalOffset::FromFloatPointRound(
+          transform_state.LastPlanarPoint());
       if (PaintLayerScrollableArea* scrollable_area =
               compositing_stacking_context->GetScrollableArea()) {
-        host_layer_position.Move(
-            LayoutSize(ToFloatSize(scrollable_area->ScrollPosition())));
+        host_layer_position += PhysicalOffset::FromFloatPointRound(
+            scrollable_area->ScrollPosition());
       }
-      host_layer_position.Move(-stacking_offset_from_layout_object);
+      host_layer_position -= PhysicalOffset(stacking_offset_from_layout_object);
     }
   } else {
-    host_layer_position.Move(-graphics_layer_->OffsetFromLayoutObject());
+    host_layer_position -=
+        PhysicalOffset(graphics_layer_->OffsetFromLayoutObject());
   }
 
   overflow_controls_host_layer_->SetPosition(FloatPoint(host_layer_position));
@@ -3395,7 +3395,7 @@ void CompositedLayerMapping::PaintContents(
   TRACE_EVENT1(
       "devtools.timeline,rail", "Paint", "data",
       inspector_paint_event::Data(&owning_layer_.GetLayoutObject(),
-                                  LayoutRect(interest_rect), graphics_layer));
+                                  PhysicalRect(interest_rect), graphics_layer));
 
   PaintLayerFlags paint_layer_flags = 0;
   if (graphics_layer_painting_phase & kGraphicsLayerPaintBackground)

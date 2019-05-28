@@ -1321,10 +1321,12 @@ PositionWithAffinity PositionRespectingEditingBoundary(
     if (!editable_element->GetLayoutObject())
       return PositionWithAffinity();
 
-    FloatPoint absolute_point = target_node->GetLayoutObject()->LocalToAbsolute(
-        FloatPoint(selection_end_point));
-    selection_end_point = LayoutPoint(
-        editable_element->GetLayoutObject()->AbsoluteToLocal(absolute_point));
+    PhysicalOffset absolute_point =
+        target_node->GetLayoutObject()->LocalToAbsolutePoint(
+            PhysicalOffsetToBeNoop(selection_end_point));
+    selection_end_point = editable_element->GetLayoutObject()
+                              ->AbsoluteToLocalPoint(absolute_point)
+                              .ToLayoutPoint();
     target_node = editable_element;
   }
 
@@ -1561,11 +1563,7 @@ wtf_size_t ComputeDistanceToRightGraphemeBoundary(const Position& position) {
 }
 
 FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
-  // TODO(wangxianzhu): Don't flip when LayoutObject::LocalToAbsoluteQuad()
-  // accepts physical coordinates.
-  LayoutRect rect =
-      caret_rect.layout_object->FlipForWritingMode(caret_rect.rect);
-  return caret_rect.layout_object->LocalToAbsoluteQuad(FloatRect(rect));
+  return caret_rect.layout_object->LocalRectToAbsoluteQuad(caret_rect.rect);
 }
 
 const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {

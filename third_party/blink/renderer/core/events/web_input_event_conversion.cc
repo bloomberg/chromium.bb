@@ -78,7 +78,8 @@ FloatPoint FrameTranslation(const LocalFrameView* frame_view) {
 FloatPoint ConvertAbsoluteLocationForLayoutObjectFloat(
     const DoublePoint& location,
     const LayoutObject* layout_object) {
-  return layout_object->AbsoluteToLocal(FloatPoint(location), kUseTransforms);
+  return layout_object->AbsoluteToLocalFloatPoint(FloatPoint(location),
+                                                  kUseTransforms);
 }
 
 // FIXME: Change |LocalFrameView| to const FrameView& after RemoteFrames get

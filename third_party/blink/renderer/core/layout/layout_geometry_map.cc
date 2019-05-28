@@ -50,8 +50,7 @@ void LayoutGeometryMap::MapToAncestor(
   // layoutObjects.
   if (HasNonUniformStep()) {
     mapping_.back().layout_object_->MapLocalToAncestor(
-        ancestor, transform_state,
-        kApplyContainerFlip | map_coordinates_flags_);
+        ancestor, transform_state, map_coordinates_flags_);
     transform_state.Flatten();
     return;
   }
@@ -149,19 +148,42 @@ void LayoutGeometryMap::DumpSteps() const {
 }
 #endif
 
-FloatQuad LayoutGeometryMap::MapToAncestor(
-    const FloatRect& rect,
+bool LayoutGeometryMap::CanUseAccumulatedOffset(
+    const LayoutBoxModelObject* ancestor) const {
+  if (HasFixedPositionStep() || HasTransformStep() || HasNonUniformStep())
+    return false;
+  if (!ancestor)
+    return true;
+  if (mapping_.size() && ancestor == mapping_[0].layout_object_)
+    return true;
+  return false;
+}
+
+PhysicalRect LayoutGeometryMap::MapToAncestor(
+    const PhysicalRect& rect,
+    const LayoutBoxModelObject* ancestor) const {
+  if (CanUseAccumulatedOffset(ancestor)) {
+    PhysicalRect result = rect;
+    result.Move(accumulated_offset_);
+    return result;
+  }
+
+  return PhysicalRect::EnclosingRect(
+      MapToAncestorQuad(rect, ancestor).BoundingBox());
+}
+
+FloatQuad LayoutGeometryMap::MapToAncestorQuad(
+    const PhysicalRect& rect,
     const LayoutBoxModelObject* ancestor) const {
   FloatQuad result;
+  FloatRect float_rect(rect);
 
-  if (!HasFixedPositionStep() && !HasTransformStep() && !HasNonUniformStep() &&
-      (!ancestor ||
-       (mapping_.size() && ancestor == mapping_[0].layout_object_))) {
-    result = rect;
+  if (CanUseAccumulatedOffset(ancestor)) {
+    result = float_rect;
     result.Move(FloatSize(accumulated_offset_));
   } else {
     TransformState transform_state(TransformState::kApplyTransformDirection,
-                                   rect.Center(), rect);
+                                   FloatRect(rect).Center(), float_rect);
     MapToAncestor(transform_state, ancestor);
     result = transform_state.LastPlanarQuad();
   }
@@ -172,7 +194,7 @@ FloatQuad LayoutGeometryMap::MapToAncestor(
 
     FloatRect layout_object_mapped_result =
         last_layout_object
-            ->LocalToAncestorQuad(rect, ancestor, map_coordinates_flags_)
+            ->LocalToAncestorQuad(float_rect, ancestor, map_coordinates_flags_)
             .BoundingBox();
 
     DCHECK(layout_object_mapped_result.EqualWithinEpsilon(result.BoundingBox(),

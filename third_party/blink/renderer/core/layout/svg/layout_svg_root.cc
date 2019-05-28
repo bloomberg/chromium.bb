@@ -447,8 +447,7 @@ AffineTransform LayoutSVGRoot::LocalToSVGParentTransform() const {
 void LayoutSVGRoot::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                        TransformState& transform_state,
                                        MapCoordinatesFlags mode) const {
-  LayoutReplaced::MapLocalToAncestor(ancestor, transform_state,
-                                     mode | kApplyContainerFlip);
+  LayoutReplaced::MapLocalToAncestor(ancestor, transform_state, mode);
 }
 
 const LayoutObject* LayoutSVGRoot::PushMappingToContainer(

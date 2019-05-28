@@ -109,8 +109,8 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   if (!input_object || !thumb_box || !track_box)
     return;
 
-  PhysicalOffset point_in_track = PhysicalOffset::FromFloatPointRound(
-      track_box->AbsoluteToLocal(FloatPoint(point), kUseTransforms));
+  PhysicalOffset point_in_track = track_box->AbsoluteToLocalPoint(
+      PhysicalOffsetToBeNoop(point), kUseTransforms);
   bool is_vertical = HasVerticalAppearance(input);
   bool is_left_to_right_direction =
       thumb_box->StyleRef().IsLeftToRightDirection();

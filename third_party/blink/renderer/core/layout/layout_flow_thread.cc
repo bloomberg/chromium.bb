@@ -153,7 +153,8 @@ void LayoutFlowThread::AbsoluteQuadsForDescendant(const LayoutBox& descendant,
     LayoutRect clip_rect = iterator.ClipRectInFlowThread();
     fragment.InclusiveIntersect(clip_rect);
     fragment.MoveBy(-offset_from_flow_thread);
-    quads.push_back(descendant.LocalToAbsoluteQuad(FloatRect(fragment), mode));
+    quads.push_back(descendant.LocalRectToAbsoluteQuad(
+        PhysicalRectToBeNoop(fragment), mode));
   }
 }
 

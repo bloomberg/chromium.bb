@@ -84,7 +84,7 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
   }
 
   auto& mouse_event = ToMouseEvent(event);
-  IntPoint local = RoundedIntPoint(box->AbsoluteToLocal(
+  IntPoint local = RoundedIntPoint(box->AbsoluteToLocalFloatPoint(
       FloatPoint(mouse_event.AbsoluteLocation()), kUseTransforms));
   if (mouse_event.type() == event_type_names::kMousedown &&
       mouse_event.button() ==

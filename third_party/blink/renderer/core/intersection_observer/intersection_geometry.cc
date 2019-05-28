@@ -34,17 +34,12 @@ bool IsContainingBlockChainDescendant(LayoutObject* descendant,
 }
 
 void MapRectUpToDocument(PhysicalRect& rect, const LayoutObject& descendant) {
-  FloatQuad mapped_quad =
-      descendant.LocalToAncestorQuad(FloatQuad(FloatRect(rect)), nullptr,
-                                     kUseTransforms | kApplyContainerFlip);
-  rect = PhysicalRect::EnclosingRect(mapped_quad.BoundingBox());
+  rect = descendant.LocalToAncestorRect(rect, nullptr, kUseTransforms);
 }
 
 void MapRectDownToDocument(PhysicalRect& rect, const Document& document) {
-  FloatQuad mapped_quad = document.GetLayoutView()->AncestorToLocalQuad(
-      nullptr, FloatQuad(FloatRect(rect)),
-      kUseTransforms | kApplyContainerFlip | kTraverseDocumentBoundaries);
-  rect = PhysicalRect::EnclosingRect(mapped_quad.BoundingBox());
+  rect = document.GetLayoutView()->AbsoluteToLocalRect(
+      rect, kUseTransforms | kTraverseDocumentBoundaries);
 }
 
 LayoutUnit ComputeMargin(const Length& length, LayoutUnit reference_length) {
@@ -209,14 +204,9 @@ PhysicalRect IntersectionGeometry::InitializeTargetRect(LayoutObject* target) {
   if (target->IsBox())
     return PhysicalRect(ToLayoutBoxModelObject(target)->BorderBoundingBox());
   if (target->IsLayoutInline()) {
-    // TODO(szager): Is this correct in flipped blocks writing mode or with
-    // rotation transforms above the inline?
-    return PhysicalRect::EnclosingRect(
-        target
-            ->AncestorToLocalQuad(
-                nullptr, FloatQuad(target->AbsoluteBoundingBoxFloatRect()),
-                kUseTransforms | kApplyContainerFlip)
-            .BoundingBox());
+    return target->AbsoluteToLocalRect(
+        PhysicalRect::EnclosingRect(target->AbsoluteBoundingBoxFloatRect()),
+        kUseTransforms);
   }
   return ToLayoutText(target)->PhysicalLinesBoundingBox();
 }

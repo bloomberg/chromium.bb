@@ -997,12 +997,11 @@ static FloatPoint LocalCoordToFloatPoint(LocalFrameView* view,
 }
 
 static void LocalToPageQuad(const LayoutObject& layout_object,
-                            const LayoutRect& rect,
+                            const PhysicalRect& rect,
                             FloatQuad* quad) {
   LocalFrame* frame = layout_object.GetFrame();
   LocalFrameView* view = frame->View();
-  FloatQuad absolute =
-      layout_object.LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)));
+  FloatQuad absolute = layout_object.LocalRectToAbsoluteQuad(rect);
   quad->SetP1(LocalCoordToFloatPoint(view, absolute.P1()));
   quad->SetP2(LocalCoordToFloatPoint(view, absolute.P2()));
   quad->SetP3(LocalCoordToFloatPoint(view, absolute.P3()));
@@ -1040,7 +1039,7 @@ std::unique_ptr<TracedValue> inspector_layer_invalidation_tracking_event::Data(
 
 std::unique_ptr<TracedValue> inspector_paint_event::Data(
     LayoutObject* layout_object,
-    const LayoutRect& clip_rect,
+    const PhysicalRect& clip_rect,
     const GraphicsLayer* graphics_layer) {
   auto value = std::make_unique<TracedValue>();
   value->SetString("frame",

@@ -297,13 +297,13 @@ HitTestResult EventHandler::HitTestResultAtLocation(
           DCHECK(location.IsRectilinear());
           if (hit_type & HitTestRequest::kHitTestVisualOverflow) {
             // Apply ancestor transforms to location rect
-            FloatQuad local_quad(FloatRect(location.BoundingBox()));
-            FloatQuad main_frame_quad(
-                frame_view->GetLayoutView()->LocalToAncestorQuad(
-                    local_quad, main_view->GetLayoutView(),
-                    kTraverseDocumentBoundaries));
-            adjusted_location =
-                HitTestLocation(LayoutRect(main_frame_quad.BoundingBox()));
+            PhysicalRect local_rect =
+                PhysicalRectToBeNoop(location.BoundingBox());
+            PhysicalRect main_frame_rect =
+                frame_view->GetLayoutView()->LocalToAncestorRect(
+                    local_rect, main_view->GetLayoutView(),
+                    kTraverseDocumentBoundaries);
+            adjusted_location = HitTestLocation(main_frame_rect.ToLayoutRect());
           } else {
             // Don't apply ancestor transforms to bounding box
             LayoutPoint main_content_point =
@@ -2295,8 +2295,10 @@ MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
       LayoutObject* layout_object = capture_target->GetLayoutObject();
 
       LayoutPoint local_point =
-          layout_object ? LayoutPoint(layout_object->AbsoluteToLocal(
-                              FloatPoint(document_point)))
+          layout_object ? layout_object
+                              ->AbsoluteToLocalPoint(
+                                  PhysicalOffsetToBeNoop(document_point))
+                              .ToLayoutPoint()
                         : document_point;
 
       result.SetNodeAndPosition(capture_target, local_point);

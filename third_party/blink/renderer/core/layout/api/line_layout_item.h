@@ -269,14 +269,10 @@ class LineLayoutItem {
     return LineLayoutItem(layout_object_->PreviousInPreOrder(stay_within));
   }
 
-  FloatQuad LocalToAbsoluteQuad(const FloatQuad& quad,
-                                MapCoordinatesFlags mode = 0) const {
-    return layout_object_->LocalToAbsoluteQuad(quad, mode);
-  }
-
-  FloatPoint LocalToAbsolute(const FloatPoint& local_point = FloatPoint(),
-                             MapCoordinatesFlags flags = 0) const {
-    return layout_object_->LocalToAbsolute(local_point, flags);
+  PhysicalOffset LocalToAbsolute(
+      const PhysicalOffset& local_point = PhysicalOffset(),
+      MapCoordinatesFlags flags = 0) const {
+    return layout_object_->LocalToAbsolutePoint(local_point, flags);
   }
 
   bool HasOverflowClip() const { return layout_object_->HasOverflowClip(); }

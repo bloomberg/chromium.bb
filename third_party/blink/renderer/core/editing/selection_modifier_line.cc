@@ -113,22 +113,22 @@ class AbstractLineBox {
       LayoutUnit line_direction_point) {
     DCHECK(!IsNull());
     const LayoutBlockFlow& containing_block = GetBlock();
-    FloatPoint absolute_block_point =
-        containing_block.LocalToAbsolute(FloatPoint());
+    PhysicalOffset absolute_block_point =
+        containing_block.LocalToAbsolutePoint(PhysicalOffset());
     if (containing_block.HasOverflowClip()) {
       absolute_block_point -=
-          FloatSize(containing_block.ScrolledContentOffset());
+          PhysicalOffset(containing_block.ScrolledContentOffset());
     }
 
     if (containing_block.Style()->IsHorizontalWritingMode()) {
       return LayoutPoint(
-          LayoutUnit(line_direction_point - absolute_block_point.X()),
+          LayoutUnit(line_direction_point - absolute_block_point.left),
           BlockDirectionPointInLine());
     }
 
     return LayoutPoint(
         BlockDirectionPointInLine(),
-        LayoutUnit(line_direction_point - absolute_block_point.Y()));
+        LayoutUnit(line_direction_point - absolute_block_point.top));
   }
 
   const LayoutObject* ClosestLeafChildForPoint(

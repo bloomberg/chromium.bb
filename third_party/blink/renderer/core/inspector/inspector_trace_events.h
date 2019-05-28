@@ -57,11 +57,11 @@ class InvalidationSet;
 class KURL;
 class LayoutImage;
 class LayoutObject;
-class LayoutRect;
 class LocalFrame;
 class LocalFrameView;
 class Node;
 class PaintLayer;
+struct PhysicalRect;
 class QualifiedName;
 class Resource;
 class ResourceError;
@@ -372,7 +372,7 @@ std::unique_ptr<TracedValue> Data(const PaintLayer*, const char* reason);
 
 namespace inspector_paint_event {
 std::unique_ptr<TracedValue> Data(LayoutObject*,
-                                  const LayoutRect& clip_rect,
+                                  const PhysicalRect& clip_rect,
                                   const GraphicsLayer*);
 }
 

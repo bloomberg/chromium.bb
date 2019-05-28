@@ -649,15 +649,15 @@ WebPoint WebPluginContainerImpl::RootFrameToLocalPoint(
     const WebPoint& point_in_root_frame) {
   WebPoint point_in_content =
       ParentFrameView()->ConvertFromRootFrame(point_in_root_frame);
-  return RoundedIntPoint(GetLayoutEmbeddedContent()->AbsoluteToLocal(
-      FloatPoint(point_in_content), kUseTransforms));
+  return RoundedIntPoint(GetLayoutEmbeddedContent()->AbsoluteToLocalPoint(
+      PhysicalOffset(point_in_content), kUseTransforms));
 }
 
 WebPoint WebPluginContainerImpl::LocalToRootFramePoint(
     const WebPoint& point_in_local) {
   IntPoint absolute_point =
-      RoundedIntPoint(GetLayoutEmbeddedContent()->LocalToAbsolute(
-          FloatPoint(point_in_local), kUseTransforms));
+      RoundedIntPoint(GetLayoutEmbeddedContent()->LocalToAbsolutePoint(
+          PhysicalOffset(point_in_local), kUseTransforms));
   return ParentFrameView()->ConvertToRootFrame(absolute_point);
 }
 
@@ -861,8 +861,9 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
   absolute_location =
       ParentFrameView()->ConvertFromRootFrame(absolute_location);
 
-  FloatPoint local_point = GetLayoutEmbeddedContent()->AbsoluteToLocal(
-      absolute_location, kUseTransforms);
+  FloatPoint local_point =
+      GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(absolute_location,
+                                                            kUseTransforms);
   WebMouseWheelEvent translated_event = event.NativeEvent().FlattenTransform();
   translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
 
@@ -956,8 +957,9 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
     // Translate the root frame position to content coordinates.
     absolute_location = parent->ConvertFromRootFrame(absolute_location);
 
-    FloatPoint local_point = GetLayoutEmbeddedContent()->AbsoluteToLocal(
-        absolute_location, kUseTransforms);
+    FloatPoint local_point =
+        GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(absolute_location,
+                                                              kUseTransforms);
     transformed_event.touches[i].SetPositionInWidget(local_point);
   }
   return transformed_event;
@@ -1018,8 +1020,9 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
   WebGestureEvent translated_event = event.NativeEvent();
   WebFloatPoint absolute_root_frame_location =
       event.NativeEvent().PositionInRootFrame();
-  FloatPoint local_point = GetLayoutEmbeddedContent()->AbsoluteToLocal(
-      absolute_root_frame_location, kUseTransforms);
+  FloatPoint local_point =
+      GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(
+          absolute_root_frame_location, kUseTransforms);
   translated_event.FlattenTransform();
   translated_event.SetPositionInWidget(local_point);
 
@@ -1084,13 +1087,9 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
   // The frameRect is already in absolute space of the local frame to the
   // plugin so map it up to the root frame.
   window_rect = FrameRect();
-  PhysicalRect layout_window_rect = PhysicalRect::EnclosingRect(
-      element_->GetDocument()
-          .View()
-          ->GetLayoutView()
-          ->LocalToAbsoluteQuad(FloatQuad(FloatRect(window_rect)),
-                                kTraverseDocumentBoundaries)
-          .BoundingBox());
+  PhysicalRect layout_window_rect =
+      element_->GetDocument().View()->GetLayoutView()->LocalToAbsoluteRect(
+          PhysicalRect(window_rect), kTraverseDocumentBoundaries);
 
   window_rect = PixelSnappedIntRect(layout_window_rect);
 
@@ -1098,17 +1097,13 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
   clipped_root_frame_rect.Intersect(PhysicalRect(
       PhysicalOffset(), PhysicalSize(root_view->GetFrameView()->Size())));
 
-  unclipped_int_local_rect =
-      box->AbsoluteToLocalQuad(FloatRect(unclipped_root_frame_rect),
-                               kTraverseDocumentBoundaries | kUseTransforms)
-          .EnclosingBoundingBox();
+  unclipped_int_local_rect = EnclosingIntRect(box->AbsoluteToLocalRect(
+      unclipped_root_frame_rect, kTraverseDocumentBoundaries | kUseTransforms));
   // As a performance optimization, map the clipped rect separately if is
   // different than the unclipped rect.
   if (clipped_root_frame_rect != unclipped_root_frame_rect) {
-    clipped_local_rect =
-        box->AbsoluteToLocalQuad(FloatRect(clipped_root_frame_rect),
-                                 kTraverseDocumentBoundaries | kUseTransforms)
-            .EnclosingBoundingBox();
+    clipped_local_rect = EnclosingIntRect(box->AbsoluteToLocalRect(
+        clipped_root_frame_rect, kTraverseDocumentBoundaries | kUseTransforms));
   } else {
     clipped_local_rect = unclipped_int_local_rect;
   }

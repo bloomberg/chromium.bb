@@ -339,7 +339,7 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   // in absolute, unscrolled space, without any scroll applied.
   properties.unclipped_absolute_bounding_box =
       EnclosingIntRect(geometry_map_.AbsoluteRect(
-          FloatRect(layer->BoundingBoxForCompositingOverlapTest())));
+          layer->BoundingBoxForCompositingOverlapTest()));
 
   bool affected_by_scroll = root_layer_->GetScrollableArea() &&
                             layer->IsAffectedByScrollOf(root_layer_);

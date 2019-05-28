@@ -417,8 +417,10 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
 
   rect.MoveBy(AccumulatedScrollOffsetForFixedBackground(obj, container));
 
-  if (container)
-    rect.MoveBy(LayoutPoint(-container->LocalToAbsolute(FloatPoint())));
+  if (container) {
+    rect.MoveBy(
+        -container->LocalToAbsolutePoint(PhysicalOffset()).ToLayoutPoint());
+  }
 
   // By now we have converted the viewport rect to the border box space of
   // |container|, however |container| does not necessarily create a paint

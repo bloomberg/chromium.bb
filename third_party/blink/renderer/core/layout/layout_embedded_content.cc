@@ -340,16 +340,16 @@ void LayoutEmbeddedContent::UpdateGeometry(
   // Ignore transform here, as we only care about the sub-pixel accumulation.
   // TODO(trchen): What about multicol? Need a LayoutBox function to query
   // sub-pixel accumulation.
-  LayoutRect replaced_rect = ReplacedContentRect().ToLayoutRect();
+  PhysicalRect replaced_rect = ReplacedContentRect();
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint(),
                                  FloatQuad(FloatRect(replaced_rect)));
-  MapLocalToAncestor(nullptr, transform_state,
-                     kApplyContainerFlip | kUseTransforms);
+  MapLocalToAncestor(nullptr, transform_state, kUseTransforms);
   transform_state.Flatten();
-  LayoutPoint absolute_location(transform_state.LastPlanarPoint());
-  LayoutRect absolute_replaced_rect(replaced_rect);
-  absolute_replaced_rect.MoveBy(absolute_location);
+  PhysicalOffset absolute_location =
+      PhysicalOffset::FromFloatPointRound(transform_state.LastPlanarPoint());
+  PhysicalRect absolute_replaced_rect = replaced_rect;
+  absolute_replaced_rect.Move(absolute_location);
   FloatRect absolute_bounding_box =
       transform_state.LastPlanarQuad().BoundingBox();
   IntRect frame_rect(IntPoint(),

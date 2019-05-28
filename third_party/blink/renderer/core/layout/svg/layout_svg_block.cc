@@ -83,7 +83,7 @@ void LayoutSVGBlock::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                         TransformState& transform_state,
                                         MapCoordinatesFlags flags) const {
   // Convert from local HTML coordinates to local SVG coordinates.
-  transform_state.Move(LocationOffset());
+  transform_state.Move(PhysicalLocation());
   // Apply other mappings on local SVG coordinates.
   SVGLayoutSupport::MapLocalToAncestor(this, ancestor, transform_state, flags);
 }
@@ -97,14 +97,14 @@ void LayoutSVGBlock::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   // Map to local SVG coordinates.
   SVGLayoutSupport::MapAncestorToLocal(*this, ancestor, transform_state, flags);
   // Convert from local SVG coordinates to local HTML coordinates.
-  transform_state.Move(LocationOffset());
+  transform_state.Move(PhysicalLocation());
 }
 
 const LayoutObject* LayoutSVGBlock::PushMappingToContainer(
     const LayoutBoxModelObject* ancestor_to_stop_at,
     LayoutGeometryMap& geometry_map) const {
   // Convert from local HTML coordinates to local SVG coordinates.
-  geometry_map.Push(this, PhysicalOffset(Location()));
+  geometry_map.Push(this, PhysicalLocation());
   // Apply other mappings on local SVG coordinates.
   return SVGLayoutSupport::PushMappingToContainer(this, ancestor_to_stop_at,
                                                   geometry_map);
