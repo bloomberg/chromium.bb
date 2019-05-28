@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/favicon/core/favicon_service.h"
@@ -192,9 +193,7 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
   const bool is_password_field =
       focused_field_type == FocusedFieldType::kFillablePasswordField;
 
-  if (focused_field_type == FocusedFieldType::kFillableTextField ||
-      focused_field_type == FocusedFieldType::kFillableUsernameField ||
-      focused_field_type == FocusedFieldType::kFillablePasswordField) {
+  if (autofill::IsFillable(focused_field_type)) {
     const std::vector<PasswordAccessorySuggestion> suggestions =
         GetSuggestions();
     info_to_add.resize(suggestions.size());
