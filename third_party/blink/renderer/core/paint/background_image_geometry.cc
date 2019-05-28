@@ -389,6 +389,8 @@ bool ShouldUseFixedAttachment(const FillLayer& fill_layer) {
 LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
                                           const LayoutBoxModelObject* container,
                                           const GlobalPaintFlags flags) {
+  // TODO(crbug.com/966142): We should consider ancestor with transform as the
+  // fixed background container, instead of always the viewport.
   LocalFrameView* frame_view = obj.View()->GetFrameView();
   if (!frame_view)
     return LayoutRect();
@@ -419,7 +421,8 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
 
   if (container) {
     rect.MoveBy(
-        -container->LocalToAbsolutePoint(PhysicalOffset()).ToLayoutPoint());
+        -container->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms)
+             .ToLayoutPoint());
   }
 
   // By now we have converted the viewport rect to the border box space of

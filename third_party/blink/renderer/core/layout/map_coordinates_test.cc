@@ -620,9 +620,9 @@ TEST_F(MapCoordinatesTest, FixedPosInTransform) {
   ASSERT_TRUE(view->IsLayoutView());
 
   PhysicalOffset mapped_point =
-      MapLocalToAncestor(target, view, PhysicalOffset(), kUseTransforms);
+      MapLocalToAncestor(target, view, PhysicalOffset());
   EXPECT_EQ(AdjustForFrameScroll(PhysicalOffset(0, 200)), mapped_point);
-  mapped_point = MapAncestorToLocal(target, view, mapped_point, kUseTransforms);
+  mapped_point = MapAncestorToLocal(target, view, mapped_point);
   EXPECT_EQ(PhysicalOffset(), mapped_point);
 
   mapped_point = MapLocalToAncestor(target, container, PhysicalOffset());
@@ -630,11 +630,9 @@ TEST_F(MapCoordinatesTest, FixedPosInTransform) {
   mapped_point = MapAncestorToLocal(target, container, PhysicalOffset(0, 0));
   EXPECT_EQ(PhysicalOffset(), mapped_point);
 
-  mapped_point =
-      MapLocalToAncestor(container, view, PhysicalOffset(), kUseTransforms);
+  mapped_point = MapLocalToAncestor(container, view, PhysicalOffset());
   EXPECT_EQ(AdjustForFrameScroll(PhysicalOffset(0, 200)), mapped_point);
-  mapped_point =
-      MapAncestorToLocal(container, view, mapped_point, kUseTransforms);
+  mapped_point = MapAncestorToLocal(container, view, mapped_point);
   EXPECT_EQ(PhysicalOffset(), mapped_point);
 }
 
@@ -730,9 +728,9 @@ TEST_F(MapCoordinatesTest, IFrameTransformed) {
 
   Element* target = ChildDocument().getElementById("target");
   ASSERT_TRUE(target);
-  PhysicalOffset mapped_point = MapAncestorToLocal(
-      target->GetLayoutObject(), nullptr, PhysicalOffset(200, 200),
-      kTraverseDocumentBoundaries | kUseTransforms);
+  PhysicalOffset mapped_point =
+      MapAncestorToLocal(target->GetLayoutObject(), nullptr,
+                         PhysicalOffset(200, 200), kTraverseDocumentBoundaries);
 
   // Derivation:
   // (200, 200) -> (-50, -50)  (Adjust for transform origin of scale, which is
@@ -766,9 +764,9 @@ TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
 
   Element* target = ChildDocument().getElementById("target");
   ASSERT_TRUE(target);
-  PhysicalOffset mapped_point = MapAncestorToLocal(
-      target->GetLayoutObject(), nullptr, PhysicalOffset(0, 0),
-      kUseTransforms | kTraverseDocumentBoundaries);
+  PhysicalOffset mapped_point =
+      MapAncestorToLocal(target->GetLayoutObject(), nullptr,
+                         PhysicalOffset(0, 0), kTraverseDocumentBoundaries);
 
   EXPECT_EQ(PhysicalOffset(0, 0), mapped_point);
 }
@@ -1356,13 +1354,11 @@ TEST_F(MapCoordinatesTest, Transforms) {
 
   FloatQuad initial_quad(FloatPoint(0, 0), FloatPoint(200, 0),
                          FloatPoint(200, 200), FloatPoint(0, 200));
-  FloatQuad mapped_quad =
-      MapLocalToAncestor(target, container, initial_quad, kUseTransforms);
+  FloatQuad mapped_quad = MapLocalToAncestor(target, container, initial_quad);
   EXPECT_FLOAT_QUAD_EQ(FloatQuad(FloatPoint(200, 0), FloatPoint(200, 200),
                                  FloatPoint(0, 200), FloatPoint(0, 0)),
                        mapped_quad);
-  mapped_quad =
-      MapAncestorToLocal(target, container, mapped_quad, kUseTransforms);
+  mapped_quad = MapAncestorToLocal(target, container, mapped_quad);
   EXPECT_FLOAT_QUAD_EQ(initial_quad, mapped_quad);
 
   // Walk each ancestor in the chain separately, to verify each step on the way.
@@ -1371,38 +1367,34 @@ TEST_F(MapCoordinatesTest, Transforms) {
   LayoutBox* outer_transform =
       ToLayoutBox(GetLayoutObjectByElementId("outerTransform"));
 
-  mapped_quad =
-      MapLocalToAncestor(target, inner_transform, initial_quad, kUseTransforms);
+  mapped_quad = MapLocalToAncestor(target, inner_transform, initial_quad);
   EXPECT_FLOAT_QUAD_EQ(FloatQuad(FloatPoint(0, 0), FloatPoint(200, 0),
                                  FloatPoint(200, 200), FloatPoint(0, 200)),
                        mapped_quad);
-  mapped_quad =
-      MapAncestorToLocal(target, inner_transform, mapped_quad, kUseTransforms);
+  mapped_quad = MapAncestorToLocal(target, inner_transform, mapped_quad);
   EXPECT_FLOAT_QUAD_EQ(initial_quad, mapped_quad);
 
   initial_quad = FloatQuad(FloatPoint(0, 0), FloatPoint(200, 0),
                            FloatPoint(200, 200), FloatPoint(0, 200));
-  mapped_quad = MapLocalToAncestor(inner_transform, outer_transform,
-                                   initial_quad, kUseTransforms);
+  mapped_quad =
+      MapLocalToAncestor(inner_transform, outer_transform, initial_quad);
   // Clockwise rotation by 45 degrees.
   EXPECT_FLOAT_QUAD_EQ(
       FloatQuad(FloatPoint(100, -41.42), FloatPoint(241.42, 100),
                 FloatPoint(100, 241.42), FloatPoint(-41.42, 100)),
       mapped_quad);
-  mapped_quad = MapAncestorToLocal(inner_transform, outer_transform,
-                                   mapped_quad, kUseTransforms);
+  mapped_quad =
+      MapAncestorToLocal(inner_transform, outer_transform, mapped_quad);
   EXPECT_FLOAT_QUAD_EQ(initial_quad, mapped_quad);
 
   initial_quad = FloatQuad(FloatPoint(100, -41.42), FloatPoint(241.42, 100),
                            FloatPoint(100, 241.42), FloatPoint(-41.42, 100));
-  mapped_quad = MapLocalToAncestor(outer_transform, container, initial_quad,
-                                   kUseTransforms);
+  mapped_quad = MapLocalToAncestor(outer_transform, container, initial_quad);
   // Another clockwise rotation by 45 degrees. So now 90 degrees in total.
   EXPECT_FLOAT_QUAD_EQ(FloatQuad(FloatPoint(200, 0), FloatPoint(200, 200),
                                  FloatPoint(0, 200), FloatPoint(0, 0)),
                        mapped_quad);
-  mapped_quad = MapAncestorToLocal(outer_transform, container, mapped_quad,
-                                   kUseTransforms);
+  mapped_quad = MapAncestorToLocal(outer_transform, container, mapped_quad);
   EXPECT_FLOAT_QUAD_EQ(initial_quad, mapped_quad);
 }
 

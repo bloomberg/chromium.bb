@@ -2294,10 +2294,12 @@ MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
     if (capture_target) {
       LayoutObject* layout_object = capture_target->GetLayoutObject();
 
+      // TODO(eirage): Is kIgnoreTransforms correct here?
       LayoutPoint local_point =
           layout_object ? layout_object
                               ->AbsoluteToLocalPoint(
-                                  PhysicalOffsetToBeNoop(document_point))
+                                  PhysicalOffsetToBeNoop(document_point),
+                                  kIgnoreTransforms)
                               .ToLayoutPoint()
                         : document_point;
 

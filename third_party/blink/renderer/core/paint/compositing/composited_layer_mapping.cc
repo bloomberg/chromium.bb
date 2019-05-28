@@ -691,8 +691,7 @@ void CompositedLayerMapping::
   }
 
   FloatRect bounds_in_ancestor_space(GetLayoutObject().LocalToAncestorRect(
-      composited_bounds_, &clip_inheritance_ancestor_->GetLayoutObject(),
-      kUseTransforms));
+      composited_bounds_, &clip_inheritance_ancestor_->GetLayoutObject()));
   owning_layer_is_masked =
       AncestorRoundedCornersWillClip(bounds_in_ancestor_space);
 }
@@ -1525,15 +1524,11 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
     } else {
       // The controls are in the same 2D space as the compositing container, so
       // we can map them into the space of the container.
-      // TODO(wangxianzhu): Use LocalToAncestorPoint() when it supports
-      // ignoring transforms.
-      TransformState transform_state(TransformState::kApplyTransformDirection,
-                                     FloatPoint());
-      owning_layer_.GetLayoutObject().MapLocalToAncestor(
-          &compositing_stacking_context->GetLayoutObject(), transform_state);
-      transform_state.Flatten();
-      host_layer_position = PhysicalOffset::FromFloatPointRound(
-          transform_state.LastPlanarPoint());
+      host_layer_position =
+          owning_layer_.GetLayoutObject().LocalToAncestorPoint(
+              PhysicalOffset(),
+              &compositing_stacking_context->GetLayoutObject(),
+              kIgnoreTransforms);
       if (PaintLayerScrollableArea* scrollable_area =
               compositing_stacking_context->GetScrollableArea()) {
         host_layer_position += PhysicalOffset::FromFloatPointRound(

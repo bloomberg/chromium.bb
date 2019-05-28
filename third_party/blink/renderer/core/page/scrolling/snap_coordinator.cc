@@ -259,8 +259,8 @@ cc::SnapAreaData SnapCoordinator::CalculateSnapAreaData(
   // to its container's border box. And the |area| below represents the
   // snap_area rect in respect to the snap_container.
   PhysicalRect area_rect = snap_area.PhysicalBorderBoxRect();
-  area_rect = snap_area.LocalToAncestorRect(
-      area_rect, &snap_container, kUseTransforms | kTraverseDocumentBoundaries);
+  area_rect = snap_area.LocalToAncestorRect(area_rect, &snap_container,
+                                            kTraverseDocumentBoundaries);
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
   if (scrollable_area) {
     if (snap_container.IsLayoutView()) {

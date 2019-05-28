@@ -41,10 +41,10 @@ class LayoutSVGBlock : public LayoutBlockFlow {
   // These mapping functions map coordinates in HTML spaces.
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
-                          MapCoordinatesFlags = 0) const final;
+                          MapCoordinatesFlags) const final;
   void MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                           TransformState&,
-                          MapCoordinatesFlags = 0) const final;
+                          MapCoordinatesFlags) const final;
   const LayoutObject* PushMappingToContainer(
       const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const final;

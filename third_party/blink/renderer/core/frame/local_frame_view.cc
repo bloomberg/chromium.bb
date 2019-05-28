@@ -2990,8 +2990,8 @@ IntRect LocalFrameView::ConvertFromLayoutObject(
 
 IntRect LocalFrameView::ConvertToLayoutObject(const LayoutObject& layout_object,
                                               const IntRect& frame_rect) const {
-  return PixelSnappedIntRect(layout_object.AbsoluteToLocalRect(
-      PhysicalRect(frame_rect), kUseTransforms));
+  return PixelSnappedIntRect(
+      layout_object.AbsoluteToLocalRect(PhysicalRect(frame_rect)));
 }
 
 IntPoint LocalFrameView::ConvertFromLayoutObject(
@@ -3011,16 +3011,14 @@ IntPoint LocalFrameView::ConvertToLayoutObject(
 LayoutPoint LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const LayoutPoint& layout_object_point) const {
-  return layout_object
-      .LocalToAbsolutePoint(PhysicalOffset(layout_object_point), kUseTransforms)
+  return layout_object.LocalToAbsolutePoint(PhysicalOffset(layout_object_point))
       .ToLayoutPoint();
 }
 
 PhysicalOffset LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const PhysicalOffset& layout_object_offset) const {
-  return layout_object.LocalToAbsolutePoint(layout_object_offset,
-                                            kUseTransforms);
+  return layout_object.LocalToAbsolutePoint(layout_object_offset);
 }
 
 LayoutPoint LocalFrameView::ConvertToLayoutObject(
@@ -3040,7 +3038,7 @@ PhysicalOffset LocalFrameView::ConvertToLayoutObject(
 FloatPoint LocalFrameView::ConvertToLayoutObject(
     const LayoutObject& layout_object,
     const FloatPoint& frame_point) const {
-  return layout_object.AbsoluteToLocalFloatPoint(frame_point, kUseTransforms);
+  return layout_object.AbsoluteToLocalFloatPoint(frame_point);
 }
 
 IntPoint LocalFrameView::ConvertSelfToChild(const EmbeddedContentView& child,
@@ -3237,8 +3235,7 @@ FloatPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
     // Add borders and padding
     point.left += layout_object->BorderLeft() + layout_object->PaddingLeft();
     point.top += layout_object->BorderTop() + layout_object->PaddingTop();
-    return FloatPoint(
-        layout_object->LocalToAbsolutePoint(point, kUseTransforms));
+    return FloatPoint(layout_object->LocalToAbsolutePoint(point));
   }
 
   return local_point;

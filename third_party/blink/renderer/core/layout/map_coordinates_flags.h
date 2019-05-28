@@ -9,7 +9,9 @@ namespace blink {
 
 enum MapCoordinatesMode {
   kIsFixed = 1 << 0,
-  kUseTransforms = 1 << 1,
+
+  // Only needed in some special cases to intentionally ignore transforms.
+  kIgnoreTransforms = 1 << 2,
 
   kTraverseDocumentBoundaries = 1 << 3,
 

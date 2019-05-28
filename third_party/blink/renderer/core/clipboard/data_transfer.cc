@@ -119,8 +119,7 @@ class DraggedNodeImageBuilder {
 
     FloatRect bounding_box =
         layer->GetLayoutObject()
-            .AbsoluteToLocalQuad(FloatQuad(absolute_bounding_box),
-                                 kUseTransforms)
+            .AbsoluteToLocalQuad(FloatQuad(absolute_bounding_box))
             .BoundingBox();
     PaintLayerPaintingInfo painting_info(
         layer, CullRect(EnclosingIntRect(bounding_box)),

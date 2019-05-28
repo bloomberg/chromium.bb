@@ -1442,7 +1442,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
-                          MapCoordinatesFlags = 0) const override;
+                          MapCoordinatesFlags) const override;
   void MapAncestorToLocal(const LayoutBoxModelObject*,
                           TransformState&,
                           MapCoordinatesFlags) const override;

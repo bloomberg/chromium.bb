@@ -353,7 +353,7 @@ PhysicalRect LayoutView::LocalVisualRectIgnoringVisibility() const {
 void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                     TransformState& transform_state,
                                     MapCoordinatesFlags mode) const {
-  if (!ancestor && mode & kUseTransforms &&
+  if (!ancestor && !(mode & kIgnoreTransforms) &&
       ShouldUseTransformFromContainer(nullptr)) {
     TransformationMatrix t;
     GetTransformFromContainer(nullptr, PhysicalOffset(), t);

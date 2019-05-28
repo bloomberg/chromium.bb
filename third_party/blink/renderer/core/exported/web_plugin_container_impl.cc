@@ -650,14 +650,14 @@ WebPoint WebPluginContainerImpl::RootFrameToLocalPoint(
   WebPoint point_in_content =
       ParentFrameView()->ConvertFromRootFrame(point_in_root_frame);
   return RoundedIntPoint(GetLayoutEmbeddedContent()->AbsoluteToLocalPoint(
-      PhysicalOffset(point_in_content), kUseTransforms));
+      PhysicalOffset(point_in_content)));
 }
 
 WebPoint WebPluginContainerImpl::LocalToRootFramePoint(
     const WebPoint& point_in_local) {
   IntPoint absolute_point =
       RoundedIntPoint(GetLayoutEmbeddedContent()->LocalToAbsolutePoint(
-          PhysicalOffset(point_in_local), kUseTransforms));
+          PhysicalOffset(point_in_local)));
   return ParentFrameView()->ConvertToRootFrame(absolute_point);
 }
 
@@ -862,8 +862,7 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
       ParentFrameView()->ConvertFromRootFrame(absolute_location);
 
   FloatPoint local_point =
-      GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(absolute_location,
-                                                            kUseTransforms);
+      GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(absolute_location);
   WebMouseWheelEvent translated_event = event.NativeEvent().FlattenTransform();
   translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
 
@@ -958,8 +957,8 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
     absolute_location = parent->ConvertFromRootFrame(absolute_location);
 
     FloatPoint local_point =
-        GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(absolute_location,
-                                                              kUseTransforms);
+        GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(
+            absolute_location);
     transformed_event.touches[i].SetPositionInWidget(local_point);
   }
   return transformed_event;
@@ -1022,7 +1021,7 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
       event.NativeEvent().PositionInRootFrame();
   FloatPoint local_point =
       GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(
-          absolute_root_frame_location, kUseTransforms);
+          absolute_root_frame_location);
   translated_event.FlattenTransform();
   translated_event.SetPositionInWidget(local_point);
 
@@ -1098,12 +1097,12 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
       PhysicalOffset(), PhysicalSize(root_view->GetFrameView()->Size())));
 
   unclipped_int_local_rect = EnclosingIntRect(box->AbsoluteToLocalRect(
-      unclipped_root_frame_rect, kTraverseDocumentBoundaries | kUseTransforms));
+      unclipped_root_frame_rect, kTraverseDocumentBoundaries));
   // As a performance optimization, map the clipped rect separately if is
   // different than the unclipped rect.
   if (clipped_root_frame_rect != unclipped_root_frame_rect) {
     clipped_local_rect = EnclosingIntRect(box->AbsoluteToLocalRect(
-        clipped_root_frame_rect, kTraverseDocumentBoundaries | kUseTransforms));
+        clipped_root_frame_rect, kTraverseDocumentBoundaries));
   } else {
     clipped_local_rect = unclipped_int_local_rect;
   }

@@ -391,7 +391,7 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
   LayoutRect absolute_rect =
       owner_object
           ->LocalToAncestorRect(PhysicalRect(rect_to_scroll),
-                                owner_object->View(), kUseTransforms)
+                                owner_object->View())
           .ToLayoutRect();
 
   if (!params.zoom_into_rect ||

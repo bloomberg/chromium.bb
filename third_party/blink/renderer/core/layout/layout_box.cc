@@ -718,7 +718,7 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
           View()
               ->LocalToAncestorRect(
                   PhysicalRectToBeNoop(absolute_rect_for_parent), parent_view,
-                  kUseTransforms | kTraverseDocumentBoundaries)
+                  kTraverseDocumentBoundaries)
               .ToLayoutRect();
     }
   } else {
@@ -1926,7 +1926,10 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
 ResourcePriority LayoutBox::ComputeResourcePriority() const {
   PhysicalRect view_bounds = ViewRect();
   PhysicalRect object_bounds = PhysicalContentBoxRect();
-  object_bounds.Move(LocalToAbsolutePoint(PhysicalOffset()));
+  // TODO(japhet): Is this IgnoreTransforms correct? Would it be better to use
+  // the visual rect (which has ancestor clips and transforms applied)? Should
+  // we map to the top-level viewport instead of the current (sub) frame?
+  object_bounds.Move(LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms));
 
   // The object bounds might be empty right now, so intersects will fail since
   // it doesn't deal with empty rects. Use LayoutRect::contains in that case.

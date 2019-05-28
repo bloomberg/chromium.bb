@@ -1321,12 +1321,14 @@ PositionWithAffinity PositionRespectingEditingBoundary(
     if (!editable_element->GetLayoutObject())
       return PositionWithAffinity();
 
+    // TODO(yosin): This kIgnoreTransforms correct here?
     PhysicalOffset absolute_point =
         target_node->GetLayoutObject()->LocalToAbsolutePoint(
-            PhysicalOffsetToBeNoop(selection_end_point));
-    selection_end_point = editable_element->GetLayoutObject()
-                              ->AbsoluteToLocalPoint(absolute_point)
-                              .ToLayoutPoint();
+            PhysicalOffsetToBeNoop(selection_end_point), kIgnoreTransforms);
+    selection_end_point =
+        editable_element->GetLayoutObject()
+            ->AbsoluteToLocalPoint(absolute_point, kIgnoreTransforms)
+            .ToLayoutPoint();
     target_node = editable_element;
   }
 

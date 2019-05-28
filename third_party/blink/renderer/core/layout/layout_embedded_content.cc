@@ -337,14 +337,15 @@ void LayoutEmbeddedContent::UpdateOnEmbeddedContentViewChange() {
 
 void LayoutEmbeddedContent::UpdateGeometry(
     EmbeddedContentView& embedded_content_view) {
-  // Ignore transform here, as we only care about the sub-pixel accumulation.
-  // TODO(trchen): What about multicol? Need a LayoutBox function to query
-  // sub-pixel accumulation.
+  // TODO(wangxianzhu): We reset subpixel accumulation at some boundaries, so
+  // the following code is incorrect when some ancestors are such boundaries.
+  // What about multicol? Need a LayoutBox function to query sub-pixel
+  // accumulation.
   PhysicalRect replaced_rect = ReplacedContentRect();
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint(),
                                  FloatQuad(FloatRect(replaced_rect)));
-  MapLocalToAncestor(nullptr, transform_state, kUseTransforms);
+  MapLocalToAncestor(nullptr, transform_state, 0);
   transform_state.Flatten();
   PhysicalOffset absolute_location =
       PhysicalOffset::FromFloatPointRound(transform_state.LastPlanarPoint());

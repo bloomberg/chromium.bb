@@ -485,7 +485,7 @@ void MouseEvent::ComputeRelativePosition() {
   // Adjust offsetLocation to be relative to the target's padding box.
   if (const LayoutObject* layout_object = FindTargetLayoutObject(target_node)) {
     FloatPoint local_pos = layout_object->AbsoluteToLocalFloatPoint(
-        FloatPoint(AbsoluteLocation()), kUseTransforms);
+        FloatPoint(AbsoluteLocation()));
 
     // Adding this here to address crbug.com/570666. Basically we'd like to
     // find the local coordinates relative to the padding box not the border

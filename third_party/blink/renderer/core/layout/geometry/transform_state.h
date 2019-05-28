@@ -40,6 +40,10 @@
 
 namespace blink {
 
+// Accumulates transforms/offsets across multiple coordinate spaces.
+// This is mainly used by other layout geometry mapping functions/classes (e.g.
+// LayoutObject::LocalToAncestorPoint() and LayoutGeometryMap). In most cases
+// other code should not use this class directly.
 class CORE_EXPORT TransformState {
   STACK_ALLOCATED();
 

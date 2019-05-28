@@ -51,7 +51,7 @@ class LayoutSVGInline : public LayoutInline {
       VisualRectFlags = kDefaultVisualRectFlags) const final;
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
-                          MapCoordinatesFlags = 0) const final;
+                          MapCoordinatesFlags) const final;
   const LayoutObject* PushMappingToContainer(
       const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const final;

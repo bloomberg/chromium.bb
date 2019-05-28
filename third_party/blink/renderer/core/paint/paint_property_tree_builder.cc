@@ -2034,14 +2034,8 @@ static PhysicalRect MapLocalRectToAncestorLayer(
     const LayoutBox& box,
     const PhysicalRect& local_rect,
     const PaintLayer& ancestor_layer) {
-  // TODO(wangxianzhu): Use LocalToAncestorPoint() when it supports ignoring
-  // transforms.
-  TransformState transform_state(TransformState::kApplyTransformDirection,
-                                 FloatPoint(local_rect.offset));
-  box.MapLocalToAncestor(&ancestor_layer.GetLayoutObject(), transform_state, 0);
-  transform_state.Flatten();
-  return PhysicalRect::EnclosingRect(
-      FloatRect(transform_state.LastPlanarPoint(), FloatSize(local_rect.size)));
+  return box.LocalToAncestorRect(local_rect, &ancestor_layer.GetLayoutObject(),
+                                 kIgnoreTransforms);
 }
 
 static bool IsRepeatingTableSection(const LayoutObject& object) {
@@ -2155,15 +2149,9 @@ static PhysicalOffset PaintOffsetInPaginationContainer(
     return PaintOffsetInPaginationContainer(*object.ContainingBlock(),
                                             enclosing_pagination_layer);
   }
-
-  // TODO(wangxianzhu): Use LocalToAncestorPoint() when it supports ignoring
-  // transforms.
-  TransformState transform_state(TransformState::kApplyTransformDirection,
-                                 FloatPoint());
-  object.MapLocalToAncestor(&enclosing_pagination_layer.GetLayoutObject(),
-                            transform_state);
-  transform_state.Flatten();
-  return PhysicalOffset::FromFloatPointRound(transform_state.LastPlanarPoint());
+  return object.LocalToAncestorPoint(
+      PhysicalOffset(), &enclosing_pagination_layer.GetLayoutObject(),
+      kIgnoreTransforms);
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {

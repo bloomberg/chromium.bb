@@ -1271,6 +1271,7 @@ bool LayoutObject::ComputeIsAbsoluteContainer(
 
 FloatRect LayoutObject::AbsoluteBoundingBoxFloatRect(
     MapCoordinatesFlags flags) const {
+  DCHECK(!(flags & kIgnoreTransforms));
   Vector<FloatQuad> quads;
   AbsoluteQuads(quads, flags);
 
@@ -1285,6 +1286,7 @@ FloatRect LayoutObject::AbsoluteBoundingBoxFloatRect(
 }
 
 IntRect LayoutObject::AbsoluteBoundingBoxRect(MapCoordinatesFlags flags) const {
+  DCHECK(!(flags & kIgnoreTransforms));
   Vector<FloatQuad> quads;
   AbsoluteQuads(quads, flags);
 
@@ -2562,17 +2564,6 @@ PhysicalRect LayoutObject::ViewRect() const {
   return View()->ViewRect();
 }
 
-FloatPoint LayoutObject::LocalToAbsoluteFloatPoint(
-    const FloatPoint& local_point,
-    MapCoordinatesFlags mode) const {
-  TransformState transform_state(TransformState::kApplyTransformDirection,
-                                 local_point);
-  MapLocalToAncestor(nullptr, transform_state, mode);
-  transform_state.Flatten();
-
-  return transform_state.LastPlanarPoint();
-}
-
 FloatPoint LayoutObject::AncestorToLocalFloatPoint(
     const LayoutBoxModelObject* ancestor,
     const FloatPoint& container_point,
@@ -2627,11 +2618,12 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
 
   // Text objects just copy their parent's computed style, so we need to ignore
   // them.
+  bool use_transforms = !(mode & kIgnoreTransforms);
   bool preserve3d =
-      mode & kUseTransforms &&
+      use_transforms &&
       ((container->StyleRef().Preserves3D() && !container->IsText()) ||
        (StyleRef().Preserves3D() && !IsText()));
-  if (mode & kUseTransforms && ShouldUseTransformFromContainer(container)) {
+  if (use_transforms && ShouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
     GetTransformFromContainer(container, container_offset, t);
     transform_state.ApplyTransform(t, preserve3d
@@ -2685,10 +2677,10 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     container->MapAncestorToLocal(ancestor, transform_state, mode);
 
   PhysicalOffset container_offset = OffsetFromContainer(container);
-  bool preserve3d =
-      mode & kUseTransforms &&
-      (container->StyleRef().Preserves3D() || StyleRef().Preserves3D());
-  if (mode & kUseTransforms && ShouldUseTransformFromContainer(container)) {
+  bool use_transforms = !(mode & kIgnoreTransforms);
+  bool preserve3d = use_transforms && (container->StyleRef().Preserves3D() ||
+                                       StyleRef().Preserves3D());
+  if (use_transforms && ShouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
     GetTransformFromContainer(container, container_offset, t);
     transform_state.ApplyTransform(t, preserve3d
@@ -2763,28 +2755,24 @@ void LayoutObject::GetTransformFromContainer(
   }
 }
 
+FloatPoint LayoutObject::LocalToAncestorFloatPoint(
+    const FloatPoint& local_point,
+    const LayoutBoxModelObject* ancestor,
+    MapCoordinatesFlags mode) const {
+  TransformState transform_state(TransformState::kApplyTransformDirection,
+                                 local_point);
+  MapLocalToAncestor(ancestor, transform_state, mode);
+  transform_state.Flatten();
+
+  return transform_state.LastPlanarPoint();
+}
+
 FloatQuad LayoutObject::LocalToAncestorQuad(
     const FloatQuad& local_quad,
     const LayoutBoxModelObject* ancestor,
     MapCoordinatesFlags mode) const {
-  return LocalToAncestorQuadInternal(local_quad, ancestor,
-                                     mode | kUseTransforms);
-}
-
-FloatQuad LayoutObject::LocalToAncestorQuadWithoutTransforms(
-    const FloatQuad& local_quad,
-    const LayoutBoxModelObject* ancestor,
-    MapCoordinatesFlags mode) const {
-  DCHECK(!(mode & kUseTransforms));
-  return LocalToAncestorQuadInternal(local_quad, ancestor, mode);
-}
-
-FloatQuad LayoutObject::LocalToAncestorQuadInternal(
-    const FloatQuad& local_quad,
-    const LayoutBoxModelObject* ancestor,
-    MapCoordinatesFlags mode) const {
   // Track the point at the center of the quad's bounding box. As
-  // mapLocalToAncestor() calls offsetFromContainer(), it will use that point
+  // MapLocalToAncestor() calls OffsetFromContainer(), it will use that point
   // as the reference point to decide which column's transform to apply in
   // multiple-column blocks.
   TransformState transform_state(TransformState::kApplyTransformDirection,
@@ -2793,18 +2781,6 @@ FloatQuad LayoutObject::LocalToAncestorQuadInternal(
   transform_state.Flatten();
 
   return transform_state.LastPlanarQuad();
-}
-
-PhysicalOffset LayoutObject::LocalToAncestorPoint(
-    const PhysicalOffset& local_point,
-    const LayoutBoxModelObject* ancestor,
-    MapCoordinatesFlags mode) const {
-  TransformState transform_state(TransformState::kApplyTransformDirection,
-                                 FloatPoint(local_point));
-  MapLocalToAncestor(ancestor, transform_state, mode | kUseTransforms);
-  transform_state.Flatten();
-
-  return PhysicalOffset::FromFloatPointRound(transform_state.LastPlanarPoint());
 }
 
 void LayoutObject::LocalToAncestorRects(
@@ -2831,8 +2807,9 @@ void LayoutObject::LocalToAncestorRects(
 TransformationMatrix LayoutObject::LocalToAncestorTransform(
     const LayoutBoxModelObject* ancestor,
     MapCoordinatesFlags mode) const {
+  DCHECK(!(mode & kIgnoreTransforms));
   TransformState transform_state(TransformState::kApplyTransformDirection);
-  MapLocalToAncestor(ancestor, transform_state, mode | kUseTransforms);
+  MapLocalToAncestor(ancestor, transform_state, mode);
   return transform_state.AccumulatedTransform();
 }
 

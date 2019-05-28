@@ -125,8 +125,10 @@ class ShapePathBuilder : public PathBuilder {
   FloatPoint TranslatePoint(const FloatPoint& point) override {
     PhysicalOffset layout_object_point = PhysicalOffset::FromFloatPointRound(
         shape_outside_info_.ShapeToLayoutObjectPoint(point));
-    return FloatPoint(view_->FrameToViewport(RoundedIntPoint(
-        layout_object_.LocalToAbsolutePoint(layout_object_point))));
+    // TODO(pfeldman): Is this kIgnoreTransforms correct?
+    return FloatPoint(view_->FrameToViewport(
+        RoundedIntPoint(layout_object_.LocalToAbsolutePoint(
+            layout_object_point, kIgnoreTransforms))));
   }
 
  private:

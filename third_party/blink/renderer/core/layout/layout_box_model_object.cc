@@ -835,13 +835,12 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   // The sticky position constraint rects should be independent of the current
   // scroll position therefore we should ignore the scroll offset when
   // calculating the quad.
-  MapCoordinatesFlags flags = kIgnoreScrollOffset | kIgnoreStickyOffset;
+  // TODO(crbug.com/966131): Is kIgnoreTransforms correct here?
+  MapCoordinatesFlags flags =
+      kIgnoreTransforms | kIgnoreScrollOffset | kIgnoreStickyOffset;
   skipped_containers_offset =
-      ToFloatSize(location_container
-                      ->LocalToAncestorQuadWithoutTransforms(
-                          FloatQuad(), containing_block, flags)
-                      .BoundingBox()
-                      .Location());
+      FloatSize(location_container->LocalToAncestorPoint(
+          PhysicalOffset(), containing_block, flags));
   LayoutBox& scroll_ancestor =
       ToLayoutBox(Layer()->AncestorOverflowLayer()->GetLayoutObject());
 
@@ -863,12 +862,10 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   FloatSize scroll_container_border_offset =
       FloatSize(scroll_ancestor.BorderLeft(), scroll_ancestor.BorderTop());
   if (containing_block != &scroll_ancestor) {
-    FloatQuad local_quad(FloatRect(containing_block->PhysicalPaddingBoxRect()));
+    PhysicalRect local_rect = containing_block->PhysicalPaddingBoxRect();
     scroll_container_relative_padding_box_rect =
-        containing_block
-            ->LocalToAncestorQuadWithoutTransforms(local_quad, &scroll_ancestor,
-                                                   flags)
-            .BoundingBox();
+        FloatRect(containing_block->LocalToAncestorRect(
+            local_rect, &scroll_ancestor, flags));
   }
   // Remove top-left border offset from overflow scroller.
   scroll_container_relative_padding_box_rect.Move(

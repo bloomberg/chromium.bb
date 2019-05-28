@@ -965,19 +965,15 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
 
 PhysicalOffset PaintLayer::ComputeOffsetFromAncestor(
     const PaintLayer& ancestor_layer) const {
-  // TODO(wangxianzhu): Use LocalToAncestorPoint() when it supports ignoring
-  // transforms.
-  TransformState transform_state(TransformState::kApplyTransformDirection,
-                                 FloatPoint());
   const LayoutBoxModelObject& ancestor_object =
       ancestor_layer.GetLayoutObject();
-  GetLayoutObject().MapLocalToAncestor(&ancestor_object, transform_state, 0);
+  PhysicalOffset result = GetLayoutObject().LocalToAncestorPoint(
+      PhysicalOffset(), &ancestor_object, kIgnoreTransforms);
   if (ancestor_object.UsesCompositedScrolling()) {
-    transform_state.Move(
-        PhysicalOffset(ToLayoutBox(ancestor_object).ScrolledContentOffset()));
+    result +=
+        PhysicalOffset(ToLayoutBox(ancestor_object).ScrolledContentOffset());
   }
-  transform_state.Flatten();
-  return PhysicalOffset::FromFloatPointRound(transform_state.LastPlanarPoint());
+  return result;
 }
 
 PaintLayer* PaintLayer::CompositingContainer() const {
@@ -1533,7 +1529,8 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
       (!ancestor_layer || ancestor_layer == layout_object.View()->Layer())) {
     // If the fixed layer's container is the root, just add in the offset of the
     // view. We can obtain this by calling localToAbsolute() on the LayoutView.
-    location += layout_object.LocalToAbsolutePoint();
+    location +=
+        layout_object.LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms);
     return ancestor_layer;
   }
 

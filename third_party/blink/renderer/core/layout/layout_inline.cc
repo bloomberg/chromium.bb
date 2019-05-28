@@ -979,7 +979,7 @@ PhysicalRect LayoutInline::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
   PhysicalRect rect = UnionRect(rects);
   if (rects.IsEmpty())
     rect.offset = AnchorPhysicalLocation();
-  return LocalToAbsoluteRect(rect, kUseTransforms);
+  return LocalToAbsoluteRect(rect);
 }
 
 LayoutUnit LayoutInline::OffsetLeft(const Element* parent) const {
@@ -1703,12 +1703,16 @@ void LayoutInline::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   region.draggable =
       StyleRef().DraggableRegionMode() == EDraggableRegionMode::kDrag;
   region.bounds = PhysicalLinesBoundingBox();
+  // TODO(crbug.com/966048): We probably want to also cover continuations.
 
   LayoutObject* container = ContainingBlock();
   if (!container)
     container = this;
 
-  region.bounds.offset += container->LocalToAbsolutePoint();
+  // TODO(crbug.com/966048): The kIgnoreTransforms seems incorrect. We probably
+  // want to map visual rect (with clips applied).
+  region.bounds.offset +=
+      container->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms);
   regions.push_back(region);
 }
 

@@ -1245,9 +1245,10 @@ IntRect Element::BoundsInViewport() const {
       !GetLayoutObject()->IsSVGForeignObject()) {
     // Get the bounding rectangle from the SVG model.
     // TODO(pdr): This should include stroke.
-    if (svg_element->IsSVGGraphicsElement())
+    if (svg_element->IsSVGGraphicsElement()) {
       quads.push_back(GetLayoutObject()->LocalToAbsoluteQuad(
           GetLayoutObject()->ObjectBoundingBox()));
+    }
   } else {
     // Get the bounding rectangle from the box model.
     if (GetLayoutBoxModelObject())
@@ -1282,8 +1283,7 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
   // MapToVisualRectInAncestorSpace applies ancestors' frame's clipping but does
   // not apply (overflow) element clipping.
   GetDocument().View()->GetLayoutView()->MapToVisualRectInAncestorSpace(
-      nullptr, rect, kUseTransforms | kTraverseDocumentBoundaries,
-      kDefaultVisualRectFlags);
+      nullptr, rect, kTraverseDocumentBoundaries, kDefaultVisualRectFlags);
 
   IntRect visible_rect = PixelSnappedIntRect(rect);
   // If the rect is in the coordinates of the main frame, then it should
@@ -1318,16 +1318,17 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) {
     // TODO(pdr): ObjectBoundingBox does not include stroke and the spec is not
     // clear (see: https://github.com/w3c/svgwg/issues/339, crbug.com/529734).
     // If stroke is desired, we can update this to use AbsoluteQuads, below.
-    if (svg_element->IsSVGGraphicsElement())
+    if (svg_element->IsSVGGraphicsElement()) {
       quads.push_back(element_layout_object->LocalToAbsoluteQuad(
           element_layout_object->ObjectBoundingBox()));
+    }
     return;
   }
 
   // FIXME: Handle table/inline-table with a caption.
   if (element_layout_object->IsBoxModelObject() ||
       element_layout_object->IsBR())
-    element_layout_object->AbsoluteQuads(quads, kUseTransforms);
+    element_layout_object->AbsoluteQuads(quads);
 }
 
 DOMRectList* Element::getClientRects() {

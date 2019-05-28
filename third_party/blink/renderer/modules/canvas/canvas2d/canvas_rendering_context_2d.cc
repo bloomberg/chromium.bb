@@ -360,7 +360,10 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   // We first map canvas coordinates to layout coordinates.
   LayoutRect path_rect(bounding_rect);
   LayoutRect canvas_rect = layout_box->PhysicalContentBoxRect().ToLayoutRect();
-  canvas_rect.MoveBy(layout_box->LocalToAbsolutePoint().ToLayoutPoint());
+  // TODO(fserb): Is this kIgnoreTransforms correct?
+  canvas_rect.MoveBy(
+      layout_box->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms)
+          .ToLayoutPoint());
   path_rect.SetX(
       (canvas_rect.X() + path_rect.X() * canvas_rect.Width() / Width()));
   path_rect.SetY(
@@ -672,8 +675,8 @@ HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
     return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
 
   LayoutBox* box = canvas()->GetLayoutBox();
-  FloatPoint local_pos(box->AbsoluteToLocalPoint(
-      PhysicalOffsetToBeNoop(location), kUseTransforms));
+  FloatPoint local_pos(
+      box->AbsoluteToLocalPoint(PhysicalOffsetToBeNoop(location)));
   if (box->StyleRef().HasBorder() || box->StyleRef().MayHavePadding())
     local_pos.Move(FloatSize(-box->PhysicalContentBoxOffset()));
   float scaleWidth = box->ContentWidth().ToFloat() == 0.0f

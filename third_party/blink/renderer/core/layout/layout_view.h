@@ -275,7 +275,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
  private:
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
-                          MapCoordinatesFlags = 0) const override;
+                          MapCoordinatesFlags) const override;
 
   const LayoutObject* PushMappingToContainer(
       const LayoutBoxModelObject* ancestor_to_stop_at,

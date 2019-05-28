@@ -34,12 +34,12 @@ bool IsContainingBlockChainDescendant(LayoutObject* descendant,
 }
 
 void MapRectUpToDocument(PhysicalRect& rect, const LayoutObject& descendant) {
-  rect = descendant.LocalToAncestorRect(rect, nullptr, kUseTransforms);
+  rect = descendant.LocalToAncestorRect(rect, nullptr);
 }
 
 void MapRectDownToDocument(PhysicalRect& rect, const Document& document) {
   rect = document.GetLayoutView()->AbsoluteToLocalRect(
-      rect, kUseTransforms | kTraverseDocumentBoundaries);
+      rect, kTraverseDocumentBoundaries);
 }
 
 LayoutUnit ComputeMargin(const Length& length, LayoutUnit reference_length) {
@@ -205,8 +205,7 @@ PhysicalRect IntersectionGeometry::InitializeTargetRect(LayoutObject* target) {
     return PhysicalRect(ToLayoutBoxModelObject(target)->BorderBoundingBox());
   if (target->IsLayoutInline()) {
     return target->AbsoluteToLocalRect(
-        PhysicalRect::EnclosingRect(target->AbsoluteBoundingBoxFloatRect()),
-        kUseTransforms);
+        PhysicalRect::EnclosingRect(target->AbsoluteBoundingBoxFloatRect()));
   }
   return ToLayoutText(target)->PhysicalLinesBoundingBox();
 }

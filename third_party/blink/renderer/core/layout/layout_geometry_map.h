@@ -49,7 +49,7 @@ class CORE_EXPORT LayoutGeometryMap {
   DISALLOW_NEW();
 
  public:
-  LayoutGeometryMap(MapCoordinatesFlags = kUseTransforms);
+  LayoutGeometryMap(MapCoordinatesFlags = 0);
   ~LayoutGeometryMap();
 
   MapCoordinatesFlags GetMapCoordinatesFlags() const {

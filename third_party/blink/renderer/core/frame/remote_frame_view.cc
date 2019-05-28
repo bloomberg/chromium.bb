@@ -128,7 +128,7 @@ IntRect RemoteFrameView::GetCompositingRect() {
       remote_frame_->OwnerLayoutObject()->AncestorToLocalRect(
           local_root_view->GetLayoutView(),
           PhysicalRect(PhysicalOffset(), PhysicalSize(viewport_size)),
-          kTraverseDocumentBoundaries | kUseTransforms);
+          kTraverseDocumentBoundaries);
   IntSize converted_viewport_size = EnclosingIntRect(viewport_rect).Size();
 
   IntSize frame_size = Size();

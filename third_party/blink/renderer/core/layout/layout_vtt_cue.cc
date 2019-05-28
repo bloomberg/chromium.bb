@@ -122,8 +122,7 @@ IntRect ContentBoxRelativeToAncestor(const LayoutBox& box,
   PhysicalRect cue_content_box = box.PhysicalContentBoxRect();
   // We pass UseTransforms here primarily because we use a transform for
   // non-snap-to-lines positioning (see VTTCue.cpp.)
-  return EnclosingIntRect(
-      box.LocalToAncestorRect(cue_content_box, &ancestor, kUseTransforms));
+  return EnclosingIntRect(box.LocalToAncestorRect(cue_content_box, &ancestor));
 }
 
 // Similar to above except uses the full bounding box instead of just the
@@ -134,8 +133,7 @@ IntRect PaddingBoxRelativeToAncestor(const LayoutBox& box,
   PhysicalRect cue_content_box = box.PhysicalPaddingBoxRect();
   // We pass UseTransforms here primarily because we use a transform for
   // non-snap-to-lines positioning (see VTTCue.cpp.)
-  return EnclosingIntRect(
-      box.LocalToAncestorRect(cue_content_box, &ancestor, kUseTransforms));
+  return EnclosingIntRect(box.LocalToAncestorRect(cue_content_box, &ancestor));
 }
 
 IntRect CueBoundingBox(const LayoutBox& cue_box) {

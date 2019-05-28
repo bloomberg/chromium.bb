@@ -73,7 +73,7 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     // geometry.IntersectionRect() is in absolute coordinates of the owning
     // document. Map it down to absolute coordinates in the child document.
     PhysicalRect intersection_rect = owner_layout_object->AncestorToLocalRect(
-        nullptr, geometry.IntersectionRect(), kUseTransforms);
+        nullptr, geometry.IntersectionRect());
     // Map from the box coordinates of the owner to the inner frame.
     intersection_rect.Move(-owner_layout_object->PhysicalContentBoxOffset());
     // Don't let EnclosingIntRect turn an empty rect into a non-empty one.

@@ -236,7 +236,7 @@ bool LinkHighlightImpl::ComputeHighlightLayerPathAndPosition(
     absolute_quad.SetP4(FloatPoint(RoundedIntPoint(absolute_quad.P4())));
     FloatQuad transformed_quad =
         paint_invalidation_container.AbsoluteToLocalQuad(
-            absolute_quad, kUseTransforms | kTraverseDocumentBoundaries);
+            absolute_quad, kTraverseDocumentBoundaries);
     PhysicalOffset offset_to_backing;
 
     PaintLayer::MapPointInPaintInvalidationContainerToBacking(

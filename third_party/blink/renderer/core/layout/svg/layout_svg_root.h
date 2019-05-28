@@ -144,7 +144,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
-                          MapCoordinatesFlags = 0) const override;
+                          MapCoordinatesFlags) const override;
   const LayoutObject* PushMappingToContainer(
       const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const override;

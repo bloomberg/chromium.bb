@@ -269,12 +269,6 @@ class LineLayoutItem {
     return LineLayoutItem(layout_object_->PreviousInPreOrder(stay_within));
   }
 
-  PhysicalOffset LocalToAbsolute(
-      const PhysicalOffset& local_point = PhysicalOffset(),
-      MapCoordinatesFlags flags = 0) const {
-    return layout_object_->LocalToAbsolutePoint(local_point, flags);
-  }
-
   bool HasOverflowClip() const { return layout_object_->HasOverflowClip(); }
 
   // TODO(dgrogan/eae): Can we instead add a TearDown method to the API

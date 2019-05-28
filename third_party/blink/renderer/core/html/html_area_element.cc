@@ -97,7 +97,8 @@ LayoutRect HTMLAreaElement::ComputeAbsoluteRect(
     return LayoutRect();
 
   // FIXME: This doesn't work correctly with transforms.
-  PhysicalOffset abs_pos = container_object->LocalToAbsolutePoint();
+  PhysicalOffset abs_pos = container_object->LocalToAbsolutePoint(
+      PhysicalOffset(), kIgnoreTransforms);
 
   Path path = GetPath(container_object);
   path.Translate(FloatSize(abs_pos));

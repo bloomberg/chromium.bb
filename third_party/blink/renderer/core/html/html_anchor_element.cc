@@ -127,7 +127,7 @@ static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
   // The coordinates sent in the query string are relative to the height and
   // width of the image element, ignoring CSS transform/zoom.
   FloatPoint map_point = layout_object->AbsoluteToLocalFloatPoint(
-      FloatPoint(ToMouseEvent(event)->AbsoluteLocation()), kUseTransforms);
+      FloatPoint(ToMouseEvent(event)->AbsoluteLocation()));
 
   // The origin (0,0) is at the upper left of the content area, inside the
   // padding and border.

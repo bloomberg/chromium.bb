@@ -113,13 +113,11 @@ static const int kDefaultMinimumHeightForResizing = 15;
 }  // namespace
 
 static LayoutRect LocalToAbsolute(const LayoutBox& box, LayoutRect rect) {
-  return box.LocalToAbsoluteRect(PhysicalRectToBeNoop(rect), kUseTransforms)
-      .ToLayoutRect();
+  return box.LocalToAbsoluteRect(PhysicalRectToBeNoop(rect)).ToLayoutRect();
 }
 
 static LayoutRect AbsoluteToLocal(const LayoutBox& box, LayoutRect rect) {
-  return box.AbsoluteToLocalRect(PhysicalRectToBeNoop(rect), kUseTransforms)
-      .ToLayoutRect();
+  return box.AbsoluteToLocalRect(PhysicalRectToBeNoop(rect)).ToLayoutRect();
 }
 
 PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData() = default;
@@ -1798,8 +1796,8 @@ bool PaintLayerScrollableArea::IsPointInResizeControl(
   if (!GetLayoutBox()->CanResize())
     return false;
 
-  IntPoint local_point = RoundedIntPoint(GetLayoutBox()->AbsoluteToLocalPoint(
-      PhysicalOffset(absolute_point), kUseTransforms));
+  IntPoint local_point = RoundedIntPoint(
+      GetLayoutBox()->AbsoluteToLocalPoint(PhysicalOffset(absolute_point)));
   IntRect local_bounds(IntPoint(), Layer()->PixelSnappedSize());
   return ResizerCornerRect(local_bounds, resizer_hit_test_type)
       .Contains(local_point);
@@ -1929,8 +1927,8 @@ IntSize PaintLayerScrollableArea::OffsetFromResizeCorner(
   if (GetLayoutBox()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     element_size.SetWidth(0);
   IntPoint resizer_point = IntPoint(element_size);
-  IntPoint local_point = RoundedIntPoint(GetLayoutBox()->AbsoluteToLocalPoint(
-      PhysicalOffset(absolute_point), kUseTransforms));
+  IntPoint local_point = RoundedIntPoint(
+      GetLayoutBox()->AbsoluteToLocalPoint(PhysicalOffset(absolute_point)));
   return local_point - resizer_point;
 }
 

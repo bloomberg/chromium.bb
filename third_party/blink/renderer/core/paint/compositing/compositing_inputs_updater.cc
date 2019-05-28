@@ -27,8 +27,7 @@ static const LayoutBoxModelObject* ClippingContainerFromClipChainParent(
 CompositingInputsUpdater::CompositingInputsUpdater(
     PaintLayer* root_layer,
     PaintLayer* compositing_inputs_root)
-    : geometry_map_(kUseTransforms),
-      root_layer_(root_layer),
+    : root_layer_(root_layer),
       compositing_inputs_root_(compositing_inputs_root) {}
 
 CompositingInputsUpdater::~CompositingInputsUpdater() = default;
