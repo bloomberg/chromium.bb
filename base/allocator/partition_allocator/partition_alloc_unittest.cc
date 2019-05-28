@@ -2184,7 +2184,14 @@ TEST_F(PartitionAllocTest, SmallReallocDoesNotMoveTrailingCookie) {
   generic_allocator.root()->Free(ptr);
 }
 
-TEST_F(PartitionAllocTest, ZeroFill) {
+// TODO(crbug.com/966169): This test is flaky on Fuchsia.
+#if defined(OS_FUCHSIA)
+#define MAYBE_ZeroFill DISABLED_ZeroFill
+#else
+#define MAYBE_ZeroFill ZeroFill
+#endif  // defined(OS_FUCHSIA)
+
+TEST_F(PartitionAllocTest, MAYBE_ZeroFill) {
   constexpr static size_t kAllZerosSentinel =
       std::numeric_limits<size_t>::max();
   for (size_t size : kTestSizes) {
