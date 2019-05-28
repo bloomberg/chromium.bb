@@ -9,9 +9,9 @@
 #include "base/values.h"
 #import "ios/web/find_in_page/find_in_page_constants.h"
 #import "ios/web/public/find_in_page/find_in_page_manager_delegate.h"
-#import "ios/web/public/web_state/web_frame.h"
-#include "ios/web/public/web_state/web_frame_util.h"
-#import "ios/web/public/web_state/web_frames_manager.h"
+#import "ios/web/public/js_messaging/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #include "ios/web/public/web_task_traits.h"
 #import "ios/web/web_state/web_state_impl.h"
 

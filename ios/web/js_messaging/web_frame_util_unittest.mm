@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/web_state/web_frame_util.h"
+#include "ios/web/public/js_messaging/web_frame_util.h"
 
 #include "base/test/gtest_util.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"

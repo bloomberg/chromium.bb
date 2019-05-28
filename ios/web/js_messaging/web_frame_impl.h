@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_WEB_FRAME_IMPL_H_
-#define IOS_WEB_WEB_STATE_WEB_FRAME_IMPL_H_
+#ifndef IOS_WEB_JS_MESSAGING_WEB_FRAME_IMPL_H_
+#define IOS_WEB_JS_MESSAGING_WEB_FRAME_IMPL_H_
 
-#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 
 #include <map>
 #include <string>
@@ -148,4 +148,4 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
 
 }  // namespace web
 
-#endif  // IOS_WEB_WEB_STATE_WEB_FRAME_IMPL_H_
+#endif  // IOS_WEB_JS_MESSAGING_WEB_FRAME_IMPL_H_

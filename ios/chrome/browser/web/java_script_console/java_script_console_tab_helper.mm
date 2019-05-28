@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "ios/chrome/browser/web/java_script_console/java_script_console_message.h"
-#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_WEB_FRAME_USER_DATA_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_WEB_FRAME_USER_DATA_H_
+#ifndef IOS_WEB_PUBLIC_JS_MESSAGING_WEB_FRAME_USER_DATA_H_
+#define IOS_WEB_PUBLIC_JS_MESSAGING_WEB_FRAME_USER_DATA_H_
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
-#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 
 namespace web {
 
@@ -64,4 +64,4 @@ class WebFrameUserData : public base::SupportsUserData::Data {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_WEB_FRAME_USER_DATA_H_
+#endif  // IOS_WEB_PUBLIC_JS_MESSAGING_WEB_FRAME_USER_DATA_H_

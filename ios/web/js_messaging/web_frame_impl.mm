@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/web_state/web_frame_impl.h"
+#include "ios/web/js_messaging/web_frame_impl.h"
 
 #import <Foundation/Foundation.h>
 

@@ -47,6 +47,7 @@ source_set("web_state_impl_header") {
     "//base",
     "//ios/web/navigation:core",
     "//ios/web/public",
+    "//ios/web/public/js_messaging",
   ]
 
   sources = [
@@ -134,26 +135,6 @@ source_set("context_menu") {
     "context_menu_params.mm",
     "context_menu_params_utils.h",
     "context_menu_params_utils.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("web_frame") {
-  deps = [
-    ":web_state_impl_header",
-    "//base",
-    "//crypto",
-    "//ios/web/public",
-    "//url",
-  ]
-
-  sources = [
-    "web_frame_impl.h",
-    "web_frame_impl.mm",
-    "web_frame_util.mm",
-    "web_frames_manager_impl.h",
-    "web_frames_manager_impl.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

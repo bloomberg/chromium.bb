@@ -58,6 +58,7 @@ source_set("autofill") {
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
+    "//ios/web/public/js_messaging",
     "//ui/base",
   ]
   public_deps = [
@@ -144,6 +145,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/autofill",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/web/public/js_messaging",
     "//ios/web/public/test/http_server",
     "//services/network:test_support",
   ]

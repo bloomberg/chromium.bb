@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 
 namespace web {
 

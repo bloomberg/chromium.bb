@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/web_state/web_frames_manager_impl.h"
+#include "ios/web/js_messaging/web_frames_manager_impl.h"
 
+#include "ios/web/js_messaging/web_frame_impl.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/web_state/web_frame_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

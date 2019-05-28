@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/web_state/web_frame_impl.h"
+#include "ios/web/js_messaging/web_frame_impl.h"
 
 #include "base/bind.h"
 #include "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
+#include "ios/web/js_messaging/web_frames_manager_impl.h"
+#include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
-#include "ios/web/public/web_state/web_frame_util.h"
-#include "ios/web/web_state/web_frames_manager_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -104,10 +104,9 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionTimeout) {
   ASSERT_TRUE(LoadHtml("<p>"));
 
   // Inject a function which will never return in order to test feature timeout.
-  ExecuteJavaScript(
-      @"__gCrWeb.testFunctionNeverReturns = function() {"
-       "  while(true) {}"
-       "};");
+  ExecuteJavaScript(@"__gCrWeb.testFunctionNeverReturns = function() {"
+                     "  while(true) {}"
+                     "};");
 
   WebFrame* main_frame = GetMainWebFrame(web_state());
   ASSERT_TRUE(main_frame);
@@ -141,33 +140,32 @@ TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
 
   // Inject function into main frame to intercept encrypted message targeted for
   // the iframe.
-  ExecuteJavaScript(
-      @"var sensitiveValue = 0;"
-       "__gCrWeb.message.incrementSensitiveValue = function() {"
-       "  sensitiveValue = sensitiveValue + 1;"
-       "  return sensitiveValue;"
-       "};"
+  ExecuteJavaScript(@"var sensitiveValue = 0;"
+                     "__gCrWeb.message.incrementSensitiveValue = function() {"
+                     "  sensitiveValue = sensitiveValue + 1;"
+                     "  return sensitiveValue;"
+                     "};"
 
-       "var originalRouteMessage = __gCrWeb.message.routeMessage;"
-       "var interceptedMessagePayload = '';"
-       "var interceptedMessageIv = '';"
-       "var interceptedMessageFrameId = '';"
+                     "var originalRouteMessage = __gCrWeb.message.routeMessage;"
+                     "var interceptedMessagePayload = '';"
+                     "var interceptedMessageIv = '';"
+                     "var interceptedMessageFrameId = '';"
 
-       "var replayInterceptedMessage = function() {"
-       "  originalRouteMessage("
-       "    interceptedMessagePayload,"
-       "    interceptedMessageIv,"
-       "    interceptedMessageFrameId"
-       "  );"
-       "};"
+                     "var replayInterceptedMessage = function() {"
+                     "  originalRouteMessage("
+                     "    interceptedMessagePayload,"
+                     "    interceptedMessageIv,"
+                     "    interceptedMessageFrameId"
+                     "  );"
+                     "};"
 
-       "__gCrWeb.message.routeMessage ="
-       "    function(payload, iv, target_frame_id) {"
-       "  interceptedMessagePayload = payload;"
-       "  interceptedMessageIv = iv;"
-       "  interceptedMessageFrameId = target_frame_id;"
-       "  replayInterceptedMessage();"
-       "};");
+                     "__gCrWeb.message.routeMessage ="
+                     "    function(payload, iv, target_frame_id) {"
+                     "  interceptedMessagePayload = payload;"
+                     "  interceptedMessageIv = iv;"
+                     "  interceptedMessageFrameId = target_frame_id;"
+                     "  replayInterceptedMessage();"
+                     "};");
 
   NSTimeInterval js_timeout = kWaitForJSCompletionTimeout;
 
@@ -221,9 +219,8 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromMainFrame) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return manager->GetAllWebFrames().size() == 1;
   }));
-  ExecuteJavaScript(
-      @"__gCrWeb.message.invokeOnHost({'command':"
-      @"'senderFrameTestCommand.mainframe'});");
+  ExecuteJavaScript(@"__gCrWeb.message.invokeOnHost({'command':"
+                    @"'senderFrameTestCommand.mainframe'});");
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return command_received;
   }));

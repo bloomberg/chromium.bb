@@ -69,6 +69,7 @@ source_set("webui") {
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common",
     "//ios/web",
+    "//ios/web/public/js_messaging",
     "//net",
     "//services/service_manager/public/cpp",
     "//third_party/brotli:dec",
