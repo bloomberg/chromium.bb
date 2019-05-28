@@ -679,11 +679,14 @@ void ChromePasswordManagerClient::DidStartNavigation(
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void ChromePasswordManagerClient::OnPaste() {
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  password_reuse_detection_manager_.OnPaste(GetTextFromClipboard());
+}
+
+base::string16 ChromePasswordManagerClient::GetTextFromClipboard() {
   base::string16 text;
-  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
-  was_on_paste_called_ = true;
-  password_reuse_detection_manager_.OnPaste(std::move(text));
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
+                                                 &text);
+  return text;
 }
 #endif
 
