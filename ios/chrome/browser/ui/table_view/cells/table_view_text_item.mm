@@ -87,6 +87,7 @@
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _textLabel.numberOfLines = 0;
     _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    _textLabel.adjustsFontForContentSizeCategory = YES;
     _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _textLabel.isAccessibilityElement = NO;
 
