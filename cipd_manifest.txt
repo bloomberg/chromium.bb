@@ -4,12 +4,18 @@
 
 # Pin resolved versions in the repo, to reduce trust in the CIPD backend.
 #
+# Most of these tools are generated via builders at
+# https://ci.chromium.org/p/infra/g/infra/console
+#
+# For these, the git revision is the one of
+# https://chromium.googlesource.com/infra/infra.git.
+#
 # To regenerate them (after modifying this file):
 #   cipd ensure-file-resolve -ensure-file cipd_manifest.txt
 $ResolvedVersions cipd_manifest.versions
 
 # Fully supported plaforms.
-$VerifiedPlatform linux-amd64 mac-amd64 windows-amd64 windows-386
+$VerifiedPlatform linux-amd64 mac-amd64 windows-amd64
 
 # Platform with best-effort support: we have some binaries cross-compiled for
 # them, but we do not test they work. They also may not have all necessary

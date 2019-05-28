@@ -45,10 +45,6 @@ infra/tools/bb/mac-amd64
 	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
 	HtWkNv0bx9OdKxETk-1JEAaTt7usHefXzSFOacMkxswC
 
-infra/tools/bb/windows-386
-	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
-	Xcvo1eebw2dhpAI9lQVMR-2BUdoUjMJXRkSgRQGwvakC
-
 infra/tools/bb/windows-amd64
 	git_revision:c29f1c1e28655bfaf385c3b11d31ddb917081d22
 	nfOD3xLmeaN0tliuhYMmlDxmUYld4dCBq5nAYtqNuYsC
@@ -96,10 +92,6 @@ infra/tools/luci-auth/linux-s390x
 infra/tools/luci-auth/mac-amd64
 	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
 	9SZu6I4X6qu0mqPhjD2U7YmLk1SkPPh4x5hUhvIHTdUC
-
-infra/tools/luci-auth/windows-386
-	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
-	l3cXhvcusi9ypW-29WeabxvkEVjQ6p1Xwc80VfLTqNwC
 
 infra/tools/luci-auth/windows-amd64
 	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
@@ -149,10 +141,6 @@ infra/tools/luci/led/mac-amd64
 	git_revision:201038605be27025b386bfa5e7c9b4945aa6027d
 	FqWvQqAPxJBKARcF-afsNyJTlmNsvO0q_0EyBlilAZUC
 
-infra/tools/luci/led/windows-386
-	git_revision:201038605be27025b386bfa5e7c9b4945aa6027d
-	apfJayXPEbugi7-gIWUH_F9BsYU30MjlDxHnikvxV6kC
-
 infra/tools/luci/led/windows-amd64
 	git_revision:201038605be27025b386bfa5e7c9b4945aa6027d
 	cbmSVvGk8oz4_2tLG-j3JOsJ89ZWfJW_tMURj4GSQGgC
@@ -201,10 +189,6 @@ infra/tools/luci/lucicfg/mac-amd64
 	git_revision:b6dff7d89b29f8ad77e01730129798e69f0ed5eb
 	KcpznxwYd7NSagSfPvsTzLqQDKCwRMj4-VPa7RYAlT0C
 
-infra/tools/luci/lucicfg/windows-386
-	git_revision:b6dff7d89b29f8ad77e01730129798e69f0ed5eb
-	K6kzWPtLsx7PwkfrUsAo8RLl0-zKTCVmR_17q5FOA8UC
-
 infra/tools/luci/lucicfg/windows-amd64
 	git_revision:b6dff7d89b29f8ad77e01730129798e69f0ed5eb
 	JwMI0da1hIOCWKKFIhKIXygciXmWnOuSjkfmxsKOK0kC
@@ -252,10 +236,6 @@ infra/tools/luci/vpython/linux-s390x
 infra/tools/luci/vpython/mac-amd64
 	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
 	Ua-1HtP3NobgI3GfEeGAGoRy45L6575VQ96M9SCV9mEC
-
-infra/tools/luci/vpython/windows-386
-	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
-	Y7XBraus3dpohfR_o-YBfRHcjL1BKttkZEHh2MWwKV4C
 
 infra/tools/luci/vpython/windows-amd64
 	git_revision:7c436dff846e5ad40ead55e392ce03b701727b29
@@ -308,10 +288,6 @@ infra/tools/prpc/linux-s390x
 infra/tools/prpc/mac-amd64
 	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
 	C1jj72eXIs6P6BqI5JKCB7aWunWNwM8-0HoioGEbAc8C
-
-infra/tools/prpc/windows-386
-	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
-	jQzFRINB55LRit23_YVllNePCZscUR9iebEKbvIKB2UC
 
 infra/tools/prpc/windows-amd64
 	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
