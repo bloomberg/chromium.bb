@@ -355,6 +355,12 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
       0, "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4"));
 }
 
+IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, ScrollbarButtonLatency) {
+  LoadURL();
+
+  RunScrollbarButtonLatencyTest();
+}
+
 class ScrollLatencyCompositedScrollbarBrowserTest
     : public ScrollLatencyBrowserTest {
  public:

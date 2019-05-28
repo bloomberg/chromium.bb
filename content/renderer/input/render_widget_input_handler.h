@@ -99,6 +99,11 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   blink::WebInputEventResult HandleTouchEvent(
       const blink::WebCoalescedInputEvent& coalesced_event);
 
+  void HandleInjectedScrollGestures(
+      std::vector<InjectScrollGestureParams> injected_scroll_params,
+      const WebInputEvent& input_event,
+      const ui::LatencyInfo& original_latency_info);
+
   RenderWidgetInputHandlerDelegate* const delegate_;
 
   RenderWidget* const widget_;
@@ -129,6 +134,11 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
 
   // Indicates if the next sequence of Char events should be suppressed or not.
   bool suppress_next_char_events_;
+
+  // Whether the last injected scroll gesture was a GestureScrollBegin. Used to
+  // determine which GestureScrollUpdate is the first in a gesture sequence for
+  // latency classification.
+  bool last_injected_gesture_was_begin_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetInputHandler);
 };
