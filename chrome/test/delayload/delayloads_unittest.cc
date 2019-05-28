@@ -114,7 +114,7 @@ TEST_F(DelayloadsTest, ChromeDllDelayloadsCheck) {
   }
 }
 
-TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTest) {
+TEST_F(DelayloadsTest, ChromeDllLoadSanityTest) {
   // As a precaution to avoid affecting other tests, we need to ensure this is
   // executed in its own test process. This "test" will re-launch with custom
   // parameters to accomplish that.
@@ -156,10 +156,9 @@ TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTestImpl) {
   ASSERT_TRUE(chrome_module_handle != nullptr);
   // Loading chrome.dll should not load user32.dll.
   EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
-  EXPECT_TRUE(!!::FreeLibrary(chrome_module_handle));
 }
 
-TEST_F(DelayloadsTest, DISABLED_ChromeChildDllDelayloadsCheck) {
+TEST_F(DelayloadsTest, ChromeChildDllDelayloadsCheck) {
   base::FilePath dll;
   ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll));
   dll = dll.Append(L"chrome_child.dll");
@@ -250,14 +249,13 @@ TEST_F(DelayloadsTest, DISABLED_ChromeChildDllLoadSanityTestImpl) {
 
   HMODULE chrome_child_module_handle = ::LoadLibrary(dll.value().c_str());
   ASSERT_TRUE(chrome_child_module_handle != nullptr);
-  // Loading chrome.dll should not load user32.dll on Win10.
+  // Loading chrome_child.dll should not load user32.dll on Win10.
   // On Win7, chains of system dlls and lack of apisets result in it loading.
   if (base::win::GetVersion() >= base::win::Version::WIN10) {
     EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
   } else {
     EXPECT_NE(nullptr, ::GetModuleHandle(L"user32.dll"));
   }
-  EXPECT_TRUE(!!::FreeLibrary(chrome_child_module_handle));
 }
 
 TEST_F(DelayloadsTest, ChromeElfDllDelayloadsCheck) {
