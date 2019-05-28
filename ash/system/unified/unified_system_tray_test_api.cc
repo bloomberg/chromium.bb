@@ -84,6 +84,12 @@ bool UnifiedSystemTrayTestApi::Is24HourClock() {
   return type == base::k24HourClock;
 }
 
+message_center::MessagePopupView*
+UnifiedSystemTrayTestApi::GetPopupViewForNotificationID(
+    const std::string& notification_id) {
+  return tray_->GetPopupViewForNotificationID(notification_id);
+}
+
 views::View* UnifiedSystemTrayTestApi::GetBubbleView(int view_id) const {
   return tray_->bubble_->bubble_view_->GetViewByID(view_id);
 }

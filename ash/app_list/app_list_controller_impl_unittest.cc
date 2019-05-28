@@ -17,6 +17,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/unified/unified_system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -25,6 +26,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/views/message_popup_view.h"
 
 namespace ash {
 
@@ -245,6 +248,47 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
                 ash::AppListViewState::kFullscreenSearch),
             GetAppListViewNativeWindow()->bounds());
+}
+
+// Verifies that closing notification by gesture should not dismiss the AppList.
+// (see https://crbug.com/948344)
+TEST_F(AppListControllerImplTest, CloseNotificationWithAppListShown) {
+  ShowAppListNow();
+
+  // Add one notification.
+  ASSERT_EQ(
+      0u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
+  const std::string notification_id("id");
+  const std::string notification_title("title");
+  message_center::MessageCenter::Get()->AddNotification(
+      std::make_unique<message_center::Notification>(
+          message_center::NOTIFICATION_TYPE_BASE_FORMAT, notification_id,
+          base::UTF8ToUTF16(notification_title),
+          base::UTF8ToUTF16("test message"), gfx::Image(),
+          base::string16() /* display_source */, GURL(),
+          message_center::NotifierId(), message_center::RichNotificationData(),
+          new message_center::NotificationDelegate()));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(
+      1u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
+
+  // Calculate the drag start point and end point.
+  UnifiedSystemTrayTestApi test_api(GetPrimaryUnifiedSystemTray());
+  message_center::MessagePopupView* popup_view =
+      test_api.GetPopupViewForNotificationID(notification_id);
+  ASSERT_TRUE(popup_view);
+  gfx::Rect bounds_in_screen = popup_view->GetBoundsInScreen();
+  const gfx::Point drag_start = bounds_in_screen.left_center();
+  const gfx::Point drag_end = bounds_in_screen.right_center();
+
+  // Swipe away notification by gesture. Verifies that AppListView still shows.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->GestureScrollSequence(
+      drag_start, drag_end, base::TimeDelta::FromMicroseconds(500), 10);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(GetAppListView());
+  EXPECT_EQ(
+      0u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
 }
 
 class AppListControllerImplMetricsTest : public AshTestBase {

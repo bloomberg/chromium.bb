@@ -18,6 +18,10 @@ namespace views {
 class View;
 }  // namespace views
 
+namespace message_center {
+class MessagePopupView;
+}  // namespace message_center
+
 namespace ash {
 
 class UnifiedSystemTray;
@@ -40,6 +44,9 @@ class UnifiedSystemTrayTestApi : public SystemTrayTestApi {
   void ClickBubbleView(int view_id) override;
   base::string16 GetBubbleViewTooltip(int view_id) override;
   bool Is24HourClock() override;
+
+  message_center::MessagePopupView* GetPopupViewForNotificationID(
+      const std::string& notification_id);
 
  private:
   // Returns a view in the bubble menu (not the tray itself). Returns null if

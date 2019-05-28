@@ -12,6 +12,10 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
+namespace message_center {
+class MessagePopupView;
+}  // namespace message_center
+
 namespace ash {
 
 namespace tray {
@@ -118,6 +122,10 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   void HideBubbleInternal();
   void UpdateNotificationInternal();
   void UpdateNotificationAfterDelay();
+
+  // Forwarded to UiDelegate.
+  message_center::MessagePopupView* GetPopupViewForNotificationID(
+      const std::string& notification_id);
 
   const std::unique_ptr<UiDelegate> ui_delegate_;
 

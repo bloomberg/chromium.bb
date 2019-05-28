@@ -57,6 +57,11 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
   void SetTrayBubbleHeight(int height) {
     popup_alignment_delegate_->SetTrayBubbleHeight(height);
   }
+  message_center::MessagePopupView* GetPopupViewForNotificationID(
+      const std::string& notification_id) {
+    return message_popup_collection_->GetPopupViewForNotificationID(
+        notification_id);
+  }
 
  private:
   std::unique_ptr<MessageCenterUiController> ui_controller_;
@@ -325,6 +330,12 @@ void UnifiedSystemTray::UpdateNotificationInternal() {
 void UnifiedSystemTray::UpdateNotificationAfterDelay() {
   notification_counter_item_->Update();
   quiet_mode_view_->Update();
+}
+
+message_center::MessagePopupView*
+UnifiedSystemTray::GetPopupViewForNotificationID(
+    const std::string& notification_id) {
+  return ui_delegate_->GetPopupViewForNotificationID(notification_id);
 }
 
 }  // namespace ash
