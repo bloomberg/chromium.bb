@@ -143,8 +143,6 @@ void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
   if (document->IsSecureContext()) {
     UseCounter::Count(document,
                       WebFeature::kApplicationCacheManifestSelectSecureOrigin);
-    UseCounter::CountCrossOriginIframe(
-        *document, WebFeature::kApplicationCacheManifestSelectSecureOrigin);
   } else {
     Deprecation::CountDeprecation(
         document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
