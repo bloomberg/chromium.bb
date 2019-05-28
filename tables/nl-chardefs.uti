@@ -1,6 +1,6 @@
 #
 #  Copyright (C) 2010, 2011 by DocArch <http://www.docarch.be>
-#  Copyright (C) 2014 by Bert Frees
+#  Copyright (C) 2014, 2019 by Bert Frees
 #  Copyright (C) 2014 by CBB <http://www.cbb.nl>
 #  Copyright (C) 2015, 2016, 2018 by Dedicon <http://www.dedicon.nl>
 #
@@ -103,6 +103,8 @@ sign        \x005E        346                 ^                   CIRCUMFLEX ACC
 sign        \x005F        456                 _                   LOW LINE
 punctuation \x0060        3                   `                   GRAVE ACCENT
 sign        \x007C        1456                |                   VERTICAL LINE
+sign        \x007B        5-12356             {                   LEFT CURLY BRACKET
+sign        \x007D        5-23456             }                   RIGHT CURLY BRACKET
 math        \x007E        5-26                ~                   TILDE
 
 

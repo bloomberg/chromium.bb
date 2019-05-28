@@ -274,6 +274,20 @@ tests:
     - 'CO₂-uitstoot: 158 g CO₂/km'
     - ⠘⠉⠕⠡⠆⠤⠥⠊⠞⠎⠞⠕⠕⠞⠒ ⠼⠁⠑⠓ ⠛ ⠘⠉⠕⠡⠆⠌⠅⠍
 
+  # Regels uit toekomstige 2019 standaard (niet officiëel goedgekeurd, maar vrijwel zeker dat dit zal gebeuren)
+  - - Klemtoon en nadruk / accenten (RFC-000367 - https://braille-autoriteit.org/changerequest/klemtoon_en_nadruk)
+    - á é í ó ú
+    - ⠷ ⠿ ⠌ ⠬ ⠾
+  - ["Dáár!", "⠨⠙⠷⠷⠗⠖"]
+  - ["Geef het hém.", "⠨⠛⠑⠑⠋ ⠓⠑⠞ ⠓⠿⠍⠲"]
+  - ["Dat is léúk.", "⠨⠙⠁⠞ ⠊⠎ ⠇⠿⠾⠅⠲"]
+  - ["Je móét komen.", "⠨⠚⠑ ⠍⠬⠿⠞ ⠅⠕⠍⠑⠝⠲"]
+  - ["Ga búíten spelen.", "⠨⠛⠁ ⠃⠾⠌⠞⠑⠝ ⠎⠏⠑⠇⠑⠝⠲"]
+  - ["Móéilijk gaat óók.", "⠨⠍⠬⠿⠊⠇⠊⠚⠅ ⠛⠁⠁⠞ ⠬⠬⠅⠲"]
+  - - Accolades (RFC-000390 - https://braille-autoriteit.org/changerequest/accolades)
+    - "{ }"
+    - ⠐⠷ ⠐⠾
+
 flags: {testmode: backward}
 tests:
   - - Digits followed by lowercase letters
