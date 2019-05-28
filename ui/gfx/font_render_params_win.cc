@@ -113,4 +113,8 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
   return CachedFontRenderParams::GetInstance()->GetParams();
 }
 
+float GetFontRenderParamsDeviceScaleFactor() {
+  return 1.;
+}
+
 }  // namespace gfx

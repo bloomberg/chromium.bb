@@ -267,7 +267,7 @@ jumbo_component("gfx") {
     "//third_party/zlib",
   ]
 
-  if (is_linux || is_android || is_fuchsia) {
+  if (!is_mac && !is_ios) {
     sources += [
       "platform_font_skia.cc",
       "platform_font_skia.h",
