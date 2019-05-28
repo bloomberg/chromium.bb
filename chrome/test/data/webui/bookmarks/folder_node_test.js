@@ -46,12 +46,12 @@ suite('<bookmarks-folder-node>', function() {
         firstGen[0].$['descendants'].querySelectorAll('bookmarks-folder-node');
 
     // Select nested folder.
-    MockInteractions.tap(secondGen[0].$['folder-label']);
+    MockInteractions.tap(secondGen[0].$['container']);
     assertEquals('select-folder', store.lastAction.name);
     assertEquals(secondGen[0].itemId, store.lastAction.id);
 
     // Select folder in a separate subtree.
-    MockInteractions.tap(rootFolders[1].$['folder-label']);
+    MockInteractions.tap(rootFolders[1].$['container']);
     assertEquals('select-folder', store.lastAction.name);
     assertEquals(rootFolders[1].itemId, store.lastAction.id);
 
@@ -60,7 +60,7 @@ suite('<bookmarks-folder-node>', function() {
     store.notifyObservers();
     store.resetLastAction();
 
-    MockInteractions.tap(rootFolders[1].$['folder-label']);
+    MockInteractions.tap(rootFolders[1].$['container']);
     assertEquals(null, store.lastAction);
   });
 
