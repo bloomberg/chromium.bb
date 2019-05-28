@@ -32,9 +32,8 @@ class OpenTabsUIDelegateImpl : public OpenTabsUIDelegate {
   ~OpenTabsUIDelegateImpl() override;
 
   // OpenTabsUIDelegate implementation.
-  bool GetSyncedFaviconForPageURL(
-      const std::string& pageurl,
-      scoped_refptr<base::RefCountedMemory>* favicon_png) const override;
+  scoped_refptr<base::RefCountedMemory> GetSyncedFaviconForPageURL(
+      const std::string& page_url) const override;
   bool GetAllForeignSessions(
       std::vector<const SyncedSession*>* sessions) override;
   bool GetForeignSession(

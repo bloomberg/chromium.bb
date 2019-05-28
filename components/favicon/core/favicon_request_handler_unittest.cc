@@ -54,13 +54,6 @@ favicon_base::FaviconImageResult CreateTestImageResult() {
   return result;
 }
 
-ACTION_P(ReturnFaviconFromSync, should_return_valid) {
-  if (should_return_valid) {
-    *arg1 = CreateTestBitmapBytes();
-  }
-  return should_return_valid;
-}
-
 void StoreBitmap(favicon_base::FaviconRawBitmapResult* destination,
                  const favicon_base::FaviconRawBitmapResult& result) {
   *destination = result;
@@ -138,8 +131,8 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyBitmap) {
         std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
         return kDummyTaskId;
       });
-  EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl), _))
-      .WillOnce(ReturnFaviconFromSync(/*should_return_valid=*/false));
+  EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
+      .WillOnce([](auto) { return nullptr; });
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
@@ -163,8 +156,8 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetSyncBitmap) {
         std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
         return kDummyTaskId;
       });
-  EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl), _))
-      .WillOnce(ReturnFaviconFromSync(/*should_return_valid=*/true));
+  EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
+      .WillOnce([](auto) { return CreateTestBitmapBytes(); });
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
@@ -188,7 +181,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetLocalBitmap) {
         std::move(callback).Run(CreateTestBitmapResult());
         return kDummyTaskId;
       });
-  EXPECT_CALL(synced_favicon_getter_, Run(_, _)).Times(0);
+  EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
@@ -226,7 +219,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerBitmapForFullUrl) {
         std::move(server_callback)
             .Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS);
       });
-  EXPECT_CALL(synced_favicon_getter_, Run(_, _)).Times(0);
+  EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
@@ -262,7 +255,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerBitmapForTrimmedUrl) {
         std::move(server_callback)
             .Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS);
       });
-  EXPECT_CALL(synced_favicon_getter_, Run(_, _)).Times(0);
+  EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconRawBitmapResult result;
   favicon_request_handler_.GetRawFaviconForPageURL(
       GURL(kDummyPageUrl), kDesiredSizeInPixel,
@@ -286,8 +279,8 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetEmptyImage) {
         std::move(callback).Run(favicon_base::FaviconImageResult());
         return kDummyTaskId;
       });
-  EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl), _))
-      .WillOnce(ReturnFaviconFromSync(/*should_return_valid=*/false));
+  EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
+      .WillOnce([](auto) { return nullptr; });
   favicon_base::FaviconImageResult result;
   favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
@@ -308,8 +301,8 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetSyncImage) {
         std::move(callback).Run(favicon_base::FaviconImageResult());
         return kDummyTaskId;
       });
-  EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl), _))
-      .WillOnce(ReturnFaviconFromSync(/*should_return_valid=*/true));
+  EXPECT_CALL(synced_favicon_getter_, Run(GURL(kDummyPageUrl)))
+      .WillOnce([](auto) { return CreateTestBitmapBytes(); });
   favicon_base::FaviconImageResult result;
   favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
@@ -330,7 +323,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetLocalImage) {
         std::move(callback).Run(CreateTestImageResult());
         return kDummyTaskId;
       });
-  EXPECT_CALL(synced_favicon_getter_, Run(_, _)).Times(0);
+  EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconImageResult result;
   favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
@@ -364,7 +357,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerImageForFullUrl) {
         std::move(server_callback)
             .Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS);
       });
-  EXPECT_CALL(synced_favicon_getter_, Run(_, _)).Times(0);
+  EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconImageResult result;
   favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),
@@ -401,7 +394,7 @@ TEST_F(FaviconRequestHandlerTest, ShouldGetGoogleServerImageForTrimmedUrl) {
         std::move(server_callback)
             .Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS);
       });
-  EXPECT_CALL(synced_favicon_getter_, Run(_, _)).Times(0);
+  EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconImageResult result;
   favicon_request_handler_.GetFaviconImageForPageURL(
       GURL(kDummyPageUrl), base::BindOnce(&StoreImage, &result),

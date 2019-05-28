@@ -135,15 +135,14 @@ gfx::Image CreateFavicon(const gfx::VectorIcon& icon) {
                                 ui::NativeTheme::kColorId_DefaultIconColor)));
 }
 
-bool RecentTabsGetSyncedFaviconForPageURL(
+scoped_refptr<base::RefCountedMemory> RecentTabsGetSyncedFaviconForPageURL(
     sync_sessions::SessionSyncService* session_sync_service,
-    const GURL& page_url,
-    scoped_refptr<base::RefCountedMemory>* sync_bitmap) {
+    const GURL& page_url) {
   DCHECK(session_sync_service);
   sync_sessions::OpenTabsUIDelegate* open_tabs =
       session_sync_service->GetOpenTabsUIDelegate();
-  return open_tabs &&
-         open_tabs->GetSyncedFaviconForPageURL(page_url.spec(), sync_bitmap);
+  return open_tabs ? open_tabs->GetSyncedFaviconForPageURL(page_url.spec())
+                   : nullptr;
 }
 
 // Check if user settings allow querying a Google server using history

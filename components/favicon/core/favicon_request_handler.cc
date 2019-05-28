@@ -174,8 +174,9 @@ void FaviconRequestHandler::OnBitmapLocalDataAvailable(
     return;
   }
 
-  scoped_refptr<base::RefCountedMemory> sync_bitmap;
-  if (std::move(synced_favicon_getter).Run(page_url, &sync_bitmap)) {
+  scoped_refptr<base::RefCountedMemory> sync_bitmap =
+      std::move(synced_favicon_getter).Run(page_url);
+  if (sync_bitmap) {
     // If request to sync succeeds, send the retrieved bitmap.
     RecordFaviconAvailabilityMetric(origin, FaviconAvailability::kSync);
     favicon_base::FaviconRawBitmapResult sync_bitmap_result;
@@ -227,8 +228,9 @@ void FaviconRequestHandler::OnImageLocalDataAvailable(
     return;
   }
 
-  scoped_refptr<base::RefCountedMemory> sync_bitmap;
-  if (std::move(synced_favicon_getter).Run(page_url, &sync_bitmap)) {
+  scoped_refptr<base::RefCountedMemory> sync_bitmap =
+      std::move(synced_favicon_getter).Run(page_url);
+  if (sync_bitmap) {
     // If request to sync succeeds, convert the retrieved bitmap to image and
     // send.
     RecordFaviconAvailabilityMetric(origin, FaviconAvailability::kSync);

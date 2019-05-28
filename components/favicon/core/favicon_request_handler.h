@@ -32,10 +32,8 @@ class FaviconRequestHandler {
   // Callback that requests the synced bitmap for the page url given in the
   // the first argument, storing the result in the second argument. Returns
   // whether the request succeeded.
-  // TODO(victorvianna): Make this return a pointer instead of a bool.
   using SyncedFaviconGetter =
-      base::OnceCallback<bool(const GURL&,
-                              scoped_refptr<base::RefCountedMemory>*)>;
+      base::OnceCallback<scoped_refptr<base::RefCountedMemory>(const GURL&)>;
 
   FaviconRequestHandler();
 

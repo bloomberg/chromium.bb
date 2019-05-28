@@ -49,13 +49,12 @@ sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate(Profile* profile) {
   return session_sync_service->GetOpenTabsUIDelegate();
 }
 
-bool GetSyncedFaviconForPageURL(
+scoped_refptr<base::RefCountedMemory> GetSyncedFaviconForPageURL(
     Profile* profile,
-    const GURL& page_url,
-    scoped_refptr<base::RefCountedMemory>* sync_bitmap) {
+    const GURL& page_url) {
   sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile);
-  return open_tabs &&
-         open_tabs->GetSyncedFaviconForPageURL(page_url.spec(), sync_bitmap);
+  return open_tabs ? open_tabs->GetSyncedFaviconForPageURL(page_url.spec())
+                   : nullptr;
 }
 
 // Check if user settings allow querying a Google server using history

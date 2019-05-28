@@ -41,11 +41,10 @@ OpenTabsUIDelegateImpl::OpenTabsUIDelegateImpl(
 
 OpenTabsUIDelegateImpl::~OpenTabsUIDelegateImpl() {}
 
-bool OpenTabsUIDelegateImpl::GetSyncedFaviconForPageURL(
-    const std::string& page_url,
-    scoped_refptr<base::RefCountedMemory>* favicon_png) const {
-  return favicon_cache_->GetSyncedFaviconForPageURL(GURL(page_url),
-                                                    favicon_png);
+scoped_refptr<base::RefCountedMemory>
+OpenTabsUIDelegateImpl::GetSyncedFaviconForPageURL(
+    const std::string& page_url) const {
+  return favicon_cache_->GetSyncedFaviconForPageURL(GURL(page_url));
 }
 
 bool OpenTabsUIDelegateImpl::GetAllForeignSessions(

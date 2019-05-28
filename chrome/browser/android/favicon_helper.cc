@@ -146,12 +146,13 @@ ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
       SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
   DCHECK(session_sync_service);
 
-  scoped_refptr<base::RefCountedMemory> favicon_png;
   sync_sessions::OpenTabsUIDelegate* open_tabs =
       session_sync_service->GetOpenTabsUIDelegate();
   DCHECK(open_tabs);
 
-  if (!open_tabs->GetSyncedFaviconForPageURL(page_url, &favicon_png))
+  scoped_refptr<base::RefCountedMemory> favicon_png =
+      open_tabs->GetSyncedFaviconForPageURL(page_url);
+  if (!favicon_png)
     return ScopedJavaLocalRef<jobject>();
 
   // Convert favicon_image_result to java objects.

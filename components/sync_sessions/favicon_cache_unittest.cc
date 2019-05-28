@@ -347,8 +347,9 @@ testing::AssertionResult SyncFaviconCacheTest::ExpectFaviconEquals(
     const std::string& page_url,
     const std::string& bytes) const {
   GURL gurl(page_url);
-  scoped_refptr<base::RefCountedMemory> favicon;
-  if (!cache_.GetSyncedFaviconForPageURL(gurl, &favicon))
+  scoped_refptr<base::RefCountedMemory> favicon =
+      cache_.GetSyncedFaviconForPageURL(gurl);
+  if (!favicon)
     return testing::AssertionFailure() << "Favicon is missing.";
   if (favicon->size() != bytes.size())
     return testing::AssertionFailure() << "Favicon sizes don't match.";
