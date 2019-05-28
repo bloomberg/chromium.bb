@@ -28,6 +28,7 @@ target(link_target_type, "renderer") {
     "//content/app:*",
     "//content/public/renderer:renderer_sources",
     "//content/renderer:audio_decoder_fuzzer",
+    "//chromecast/media/audio:*",
   ]
 
   sources = [

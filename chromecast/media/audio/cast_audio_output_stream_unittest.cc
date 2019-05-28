@@ -617,6 +617,10 @@ TEST_F(CastAudioOutputStreamTest, DeviceState) {
 
   stream->Stop();
   RunThreadsUntilIdle();
+  EXPECT_EQ(FakeCmaBackend::kStatePaused, cma_backend_->state());
+
+  stream->Flush();
+  RunThreadsUntilIdle();
   EXPECT_EQ(FakeCmaBackend::kStateStopped, cma_backend_->state());
 
   stream->Close();

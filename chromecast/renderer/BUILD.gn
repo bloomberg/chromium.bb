@@ -84,6 +84,8 @@ cast_source_set("renderer") {
       "//chromecast/common/mojom",
       "//mojo/public/cpp/bindings",
     ]
+  } else {
+    deps += [ "//chromecast/media/audio:cast_audio_device_factory" ]
   }
 
   if (enable_chromecast_extensions) {

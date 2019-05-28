@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/bitstream_audio_codecs.h"
 #include "chromecast/base/chromecast_switches.h"
@@ -35,6 +36,7 @@
 #include "third_party/blink/public/web/web_view.h"
 
 #if defined(OS_ANDROID)
+#include "chromecast/media/audio/cast_audio_device_factory.h"
 #include "media/base/android/media_codec_util.h"
 #else
 #include "chromecast/renderer/memory_pressure_observer_impl.h"
@@ -59,6 +61,18 @@
 namespace chromecast {
 namespace shell {
 
+#if defined(OS_ANDROID)
+// Audio renderer algorithm maximum capacity.
+constexpr base::TimeDelta kAudioRendererMaxCapacity =
+    base::TimeDelta::FromSeconds(10);
+// Audio renderer algorithm starting capacity.  Configure large enough to
+// prevent underrun.
+constexpr base::TimeDelta kAudioRendererStartingCapacity =
+    base::TimeDelta::FromMilliseconds(5000);
+constexpr base::TimeDelta kAudioRendererStartingCapacityEncrypted =
+    base::TimeDelta::FromMilliseconds(5500);
+#endif  // defined(OS_ANDROID)
+
 CastContentRendererClient::CastContentRendererClient()
     : supported_profiles_(new media::SupportedCodecProfileLevelsMemo()),
       app_media_capabilities_observer_binding_(this),
@@ -71,6 +85,10 @@ CastContentRendererClient::CastContentRendererClient()
   // instance, which caches the platform decoder supported state when it is
   // constructed.
   ::media::EnablePlatformDecoderSupport();
+
+  // Registers a custom content::AudioDeviceFactory
+  cast_audio_device_factory_ =
+      std::make_unique<media::CastAudioDeviceFactory>();
 #endif  // OS_ANDROID
 }
 
@@ -310,7 +328,16 @@ CastContentRendererClient::CreateURLLoaderThrottleProvider(
 base::Optional<::media::AudioRendererAlgorithmParameters>
 CastContentRendererClient::GetAudioRendererAlgorithmParameters(
     ::media::AudioParameters audio_parameters) {
+#if defined(OS_ANDROID)
+  ::media::AudioRendererAlgorithmParameters parameters;
+  parameters.max_capacity = kAudioRendererMaxCapacity;
+  parameters.starting_capacity = kAudioRendererStartingCapacity;
+  parameters.starting_capacity_for_encrypted =
+      kAudioRendererStartingCapacityEncrypted;
+  return base::Optional<::media::AudioRendererAlgorithmParameters>(parameters);
+#else
   return base::nullopt;
+#endif
 }
 
 }  // namespace shell

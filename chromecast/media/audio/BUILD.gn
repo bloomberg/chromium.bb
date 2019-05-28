@@ -49,6 +49,21 @@ cast_source_set("audio") {
   configs += [ "//media/audio:platform_config" ]
 }
 
+if (is_android) {
+  cast_source_set("cast_audio_device_factory") {
+    sources = [
+      "cast_audio_device_factory.cc",
+      "cast_audio_device_factory.h",
+    ]
+
+    deps = [
+      "//base",
+      "//content/renderer:renderer",
+      "//media",
+    ]
+  }
+}
+
 cast_shared_library("libcast_external_audio_pipeline_1.0") {
   sources = [
     "external_audio_pipeline_dummy.cc",
