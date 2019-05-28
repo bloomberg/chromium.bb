@@ -85,7 +85,7 @@ ACMatchClassifications AutocompleteProvider::ClassifyAllMatchesInString(
   if (text.empty())
     return original_class;
 
-  TermMatches term_matches = FindTermMatches(find_text, text, true, false);
+  TermMatches term_matches = FindTermMatches(find_text, text);
 
   ACMatchClassifications classifications;
   if (text_is_search_query) {

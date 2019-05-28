@@ -251,37 +251,33 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
     return;
   }
 
-  // First look for the user's input inside the formatted url as it would be
-  // without trimming the scheme, so we can find matches at the beginning of the
-  // scheme.
-  const URLPrefix* prefix =
-      URLPrefix::BestURLPrefix(formatted_url_, input_text);
-  size_t match_start = (prefix == nullptr) ? formatted_url_.find(input_text)
-                                           : prefix->prefix.length();
-
+  // Set contents to the formatted URL while ensuring the scheme and subdomain
+  // are kept if the user text seems to include them. E.g., for the user text
+  // 'http google.com', the contents should not trim 'http'.
   bool match_in_scheme = false;
   bool match_in_subdomain = false;
-  AutocompleteMatch::GetMatchComponents(
-      GURL(formatted_url_), {{match_start, match_start + input_text.length()}},
-      &match_in_scheme, &match_in_subdomain);
+  TermMatches term_matches_in_url = FindTermMatches(input_text, formatted_url_);
+  // Convert TermMatches (offset, length) to MatchPosition (start, end).
+  std::vector<AutocompleteMatch::MatchPosition> match_positions;
+  for (auto match : term_matches_in_url)
+    match_positions.emplace_back(match.offset, match.offset + match.length);
+  AutocompleteMatch::GetMatchComponents(GURL(formatted_url_), match_positions,
+                                        &match_in_scheme, &match_in_subdomain);
   auto format_types = AutocompleteMatch::GetFormatTypes(
-      GURL(input_text).has_scheme() || match_in_scheme, match_in_subdomain);
+      GURL(input_text).has_scheme(), match_in_subdomain);
 
-  base::string16 match_contents =
-      url_formatter::FormatUrl(url_, format_types, net::UnescapeRule::SPACES,
-                               nullptr, nullptr, &match_start);
-  // If the first match in the untrimmed string was inside a scheme that we
-  // trimmed, look for a subsequent match.
-  if (match_start == base::string16::npos)
-    match_start = match_contents.find(input_text);
+  // Find matches in the potentially new match_contents
+  base::string16 match_contents = url_formatter::FormatUrl(
+      url_, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
+  TermMatches term_matches = FindTermMatches(input_text, match_contents);
+
   // Update |match_contents_| and |match_contents_class_| if it's allowed.
-  if (allow_bolding_nothing || (match_start != base::string16::npos)) {
+  if (allow_bolding_nothing || !term_matches.empty()) {
     match_contents_ = match_contents;
-    // Safe if |match_start| is npos; also safe if the input is longer than the
-    // remaining contents after |match_start|.
-    AutocompleteMatch::ClassifyLocationInString(match_start,
-        input_text.length(), match_contents_.length(),
-        ACMatchClassification::URL, &match_contents_class_);
+    match_contents_class_ = ClassifyTermMatches(
+        term_matches, match_contents.size(),
+        ACMatchClassification::MATCH | ACMatchClassification::URL,
+        ACMatchClassification::URL);
   }
 }
 

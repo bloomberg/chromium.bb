@@ -57,7 +57,7 @@ struct IDNConversionResult {
   std::string matching_top_domain;
 };
 
-// Nothing is ommitted.
+// Nothing is omitted.
 extern const FormatUrlType kFormatUrlOmitNothing;
 
 // If set, any username and password are removed.
@@ -87,7 +87,7 @@ extern const FormatUrlType kFormatUrlOmitFileScheme;
 // If the scheme is 'mailto:', it's removed. Not in kFormatUrlOmitDefaults.
 extern const FormatUrlType kFormatUrlOmitMailToScheme;
 
-// Convenience for omitting all unecessary types. Does not include HTTPS scheme
+// Convenience for omitting all unnecessary types. Does not include HTTPS scheme
 // removal, or experimental flags.
 extern const FormatUrlType kFormatUrlOmitDefaults;
 

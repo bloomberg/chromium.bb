@@ -532,7 +532,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
 ACMatchClassifications DocumentProvider::Classify(
     const base::string16& text,
     const base::string16& input_text) {
-  TermMatches term_matches = FindTermMatches(input_text, text, true, false);
+  TermMatches term_matches = FindTermMatches(input_text, text);
   return ClassifyTermMatches(term_matches, text.size(),
                              ACMatchClassification::MATCH,
                              ACMatchClassification::NONE);

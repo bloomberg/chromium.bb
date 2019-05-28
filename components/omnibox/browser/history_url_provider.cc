@@ -731,8 +731,7 @@ int HistoryURLProvider::CalculateRelevance(MatchType match_type,
 ACMatchClassifications HistoryURLProvider::ClassifyDescription(
     const base::string16& input_text,
     const base::string16& description) {
-  TermMatches term_matches =
-      FindTermMatches(input_text, description, true, false);
+  TermMatches term_matches = FindTermMatches(input_text, description);
   return ClassifyTermMatches(term_matches, description.size(),
                              ACMatchClassification::MATCH,
                              ACMatchClassification::NONE);

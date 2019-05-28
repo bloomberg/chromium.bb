@@ -88,6 +88,9 @@ class SearchProvider : public BaseSearchProvider,
                            DontInlineAutocompleteAsynchronously);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInline);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineDomainClassify);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationPrefixClassify);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationMidWordClassify);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationWordBreakClassify);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineSchemeSubstring);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestRelevanceExperiment);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, TestDeleteMatch);
