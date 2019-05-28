@@ -40,6 +40,8 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
   auto pixmap =
       factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, VK_NULL_HANDLE,
                                   coded_size, buffer_format, buffer_usage);
+  if (!pixmap)
+    return nullptr;
 
   const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
   std::vector<VideoFrameLayout::Plane> planes(num_planes);
