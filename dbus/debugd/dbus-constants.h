@@ -47,6 +47,8 @@ const char kStopVmConcierge[] = "StopVmConcierge";
 const char kStartVmPluginDispatcher[] = "StartVmPluginDispatcher";
 const char kStopVmPluginDispatcher[] = "StopVmPluginDispatcher";
 const char kSetRlzPingSent[] = "SetRlzPingSent";
+const char kSetU2fFlags[] = "SetU2fFlags";
+const char kGetU2fFlags[] = "GetU2fFlags";
 const char kSetSchedulerConfiguration[] = "SetSchedulerConfiguration";
 
 // Values.
@@ -80,6 +82,13 @@ constexpr char kConservativeScheduler[] = "conservative";
 constexpr char kPerformanceScheduler[] = "performance";
 
 }  // namespace scheduler_configuration
+
+namespace u2f_flags {
+constexpr char kU2f[] = "u2f";
+constexpr char kG2f[] = "g2f";
+constexpr char kVerbose[] = "verbose";
+constexpr char kUserKeys[] = "user_keys";
+}  // namespace u2f_flags
 
 }  // namespace debugd
 
