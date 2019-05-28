@@ -41,6 +41,7 @@ class MicrosoftFirefliesPage(ToughCanvasPage):
 class GeoAPIsPage(ToughCanvasPage):
   BASE_NAME = 'geo_apis'
   URL = 'http://geoapis.appspot.com/agdnZW9hcGlzchMLEgtFeGFtcGxlQ29kZRjh1wIM'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class RunwayPage(ToughCanvasPage):
@@ -64,6 +65,7 @@ class MicrosoftSpeedReadingPage(ToughCanvasPage):
 class Kevs3DPage(ToughCanvasPage):
   BASE_NAME = 'kevs_3d'
   URL = 'http://www.kevs3d.co.uk/dev/canvask3d/k3d_test.html'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class MegiDishPage(ToughCanvasPage):
@@ -144,13 +146,15 @@ class MicrosoftAsteroidBeltPage(ToughCanvasPage):
 class SmashCatPage(ToughCanvasPage):
   BASE_NAME = 'smash_cat'
   URL = 'http://www.smashcat.org/av/canvas_test/'
-  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP,
+    story_tags.REPRESENTATIVE_MOBILE]
 
 
 class BouncingBallsShadowPage(ToughCanvasPage):
   BASE_NAME = 'bouncing_balls_shadow'
   # pylint: disable=line-too-long
   URL = 'file://../tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=image_with_shadow&back=image'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class BouncingBalls15Page(ToughCanvasPage):
@@ -167,8 +171,7 @@ class CanvasFontCyclerPage(ToughCanvasPage):
 class CanvasAnimationNoClearPage(ToughCanvasPage):
   BASE_NAME = 'canvas_animation_no_clear'
   URL = 'file://../tough_canvas_cases/canvas-animation-no-clear.html'
-  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP,
-    story_tags.REPRESENTATIVE_MOBILE]
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class CanvasToBlobPage(ToughCanvasPage):
@@ -189,8 +192,7 @@ class CanvasArcPage(ToughCanvasPage):
 class CanvasLinesPage(ToughCanvasPage):
   BASE_NAME = 'canvas_lines'
   URL = 'file://../tough_canvas_cases/rendering_throughput/canvas_lines.html'
-  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP,
-    story_tags.REPRESENTATIVE_MOBILE]
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class PutGetImageDataPage(ToughCanvasPage):

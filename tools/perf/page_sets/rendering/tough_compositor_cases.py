@@ -235,8 +235,6 @@ class InfiniteScrollElementNLayers75(InfiniteScrollElementNLayersPage):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   URL = ('file://../../../../chrome/test/data/perf/tough_compositor_cases/'
          'infinite_scroll_element_n_layers.html?layer_count=53')
-  TAGS = InfiniteScrollElementNLayersPage.TAGS + [
-    story_tags.REPRESENTATIVE_MOBILE]
 
 
 # Why: Infinite non-root scroller with 95%-ile layer count"""
@@ -309,8 +307,6 @@ class InfiniteScrollRootFixedNLayers0(InfiniteScrollRootNLayersPage):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   URL = ('file://../../../../chrome/test/data/perf/tough_compositor_cases/'
          'infinite_scroll_root_fixed_n_layers.html?layer_count=1')
-  TAGS = InfiniteScrollRootNLayersPage.TAGS + [
-    story_tags.REPRESENTATIVE_MOBILE]
 
 
 # Why: Infinite root scroller + fixed element, with 50%-ile layer count"""

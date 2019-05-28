@@ -85,7 +85,6 @@ class GooglePlus2018Page(TopRealWorldDesktopPage):
   BASE_NAME = 'google_plus'
   YEAR = '2018'
   URL = 'https://plus.google.com/110031535020051778989/posts'
-  TAGS = TopRealWorldDesktopPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
   def __init__(self,
                page_set,
@@ -180,7 +179,6 @@ class Facebook2018Page(TopRealWorldDesktopPage):
   BASE_NAME = 'facebook'
   YEAR = '2018'
   URL = 'https://www.facebook.com/barackobama'
-  TAGS = TopRealWorldDesktopPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
   def __init__(self,
                page_set,
@@ -430,6 +428,7 @@ class YahooNews2018Page(TopRealWorldDesktopPage):
   BASE_NAME = 'yahoo_news'
   YEAR = '2018'
   URL = 'http://news.yahoo.com'
+  TAGS = TopRealWorldDesktopPage.TAGS + [story_tags.REPRESENTATIVE_MOBILE]
 
 
 class CNNNews2018Page(TopRealWorldDesktopPage):
