@@ -147,12 +147,17 @@ scoped_refptr<base::RefCountedMemory> RecentTabsGetSyncedFaviconForPageURL(
 
 // Check if user settings allow querying a Google server using history
 // information.
-bool CanSendHistoryDataToServer(Browser* browser) {
-  return syncer::GetUploadToGoogleState(
+bool CanSendHistoryDataToServer(bool is_local_tab, Browser* browser) {
+  // If |is_local_tab|, the local lookup done inside |favicon_request_handler_|
+  // will usually succeed. However, it will fail if the website has no favicon,
+  // and we shouldn't share the url with the favicon server in such case, for
+  // privacy. So we don't allow server queries for any local tabs.
+  return !is_local_tab &&
+         syncer::GetUploadToGoogleState(
              ProfileSyncServiceFactory::GetInstance()->GetForProfile(
                  browser->profile()),
              syncer::ModelType::HISTORY_DELETE_DIRECTIVES) ==
-         syncer::UploadState::ACTIVE;
+             syncer::UploadState::ACTIVE;
 }
 
 }  // namespace
@@ -604,7 +609,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
       open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
       base::BindOnce(&RecentTabsGetSyncedFaviconForPageURL,
                      base::Unretained(session_sync_service_)),
-      CanSendHistoryDataToServer(browser_),
+      CanSendHistoryDataToServer(is_local_tab, browser_),
       is_local_tab ? &local_tab_cancelable_task_tracker_
                    : &other_devices_tab_cancelable_task_tracker_);
 }
