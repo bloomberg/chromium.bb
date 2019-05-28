@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/public/browser/browser_thread.h"
+
 #include <memory>
 
 #include "base/bind.h"
@@ -14,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -30,6 +33,11 @@
 namespace content {
 
 namespace {
+
+using ::testing::Invoke;
+
+using StrictMockTask =
+    testing::StrictMock<base::MockCallback<base::Callback<void()>>>;
 
 class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
  public:
@@ -286,6 +294,70 @@ TEST_F(BrowserThreadTest, RunsTasksInCurrentSequencedDuringShutdown) {
   loop.Run();
 
   EXPECT_TRUE(did_shutdown);
+}
+
+class BrowserThreadWithCustomSchedulerTest : public testing::Test {
+ private:
+  class ScopedTaskEnvironmentWithCustomScheduler
+      : public base::test::ScopedTaskEnvironment {
+   public:
+    ScopedTaskEnvironmentWithCustomScheduler()
+        : base::test::ScopedTaskEnvironment(
+              SubclassCreatesDefaultTaskRunner{}) {
+      std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
+          BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
+                                                     GetTimeDomain());
+      DeferredInitFromSubclass(
+          browser_ui_thread_scheduler->GetHandle().GetBrowserTaskRunner(
+              QueueType::kDefault));
+      BrowserTaskExecutor::CreateForTesting(
+          std::move(browser_ui_thread_scheduler),
+          std::make_unique<BrowserIOTaskEnvironment>());
+
+      ui_thread_ = BrowserTaskExecutor::CreateIOThread();
+      BrowserTaskExecutor::InitializeIOThread();
+      ui_thread_->RegisterAsBrowserThread();
+    }
+
+    ~ScopedTaskEnvironmentWithCustomScheduler() override {
+      ui_thread_.reset();
+      BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::IO);
+      BrowserTaskExecutor::ResetForTesting();
+    }
+
+   private:
+    std::unique_ptr<BrowserProcessSubThread> ui_thread_;
+  };
+
+ public:
+  using QueueType = BrowserTaskQueues::QueueType;
+
+ protected:
+  ScopedTaskEnvironmentWithCustomScheduler scoped_task_environment_;
+};
+
+TEST_F(BrowserThreadWithCustomSchedulerTest, PostBestEffortTask) {
+  StrictMockTask best_effort_task;
+  StrictMockTask regular_task;
+
+  auto task_runner = base::CreateTaskRunnerWithTraits(
+      {BrowserThread::UI, base::TaskPriority::HIGHEST});
+
+  task_runner->PostTask(FROM_HERE, regular_task.Get());
+  BrowserThread::PostBestEffortTask(FROM_HERE, task_runner,
+                                    best_effort_task.Get());
+
+  EXPECT_CALL(regular_task, Run);
+  scoped_task_environment_.RunUntilIdle();
+
+  testing::Mock::VerifyAndClearExpectations(&regular_task);
+
+  BrowserTaskExecutor::EnableAllQueues();
+  base::RunLoop run_loop;
+  EXPECT_CALL(best_effort_task, Run).WillOnce(Invoke([&]() {
+    run_loop.Quit();
+  }));
+  run_loop.Run();
 }
 
 }  // namespace content

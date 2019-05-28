@@ -109,10 +109,23 @@ class CONTENT_EXPORT BrowserThread {
   // base::PostTaskWithTraits(
   //   FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
   //   base::BindOnce(...));
+  // Or if you need to run in a special TaskRunner by using the
+  // PostBestEffortTask function below
   static void PostAfterStartupTask(
       const base::Location& from_here,
       const scoped_refptr<base::TaskRunner>& task_runner,
       base::OnceClosure task);
+
+  // Posts a |task| to run at BEST_EFFORT priority using an arbitrary
+  // |task_runner| for which we do not control the priority
+  //
+  // This is useful when a task needs to run on |task_runner| (for thread-safety
+  // reasons) but should be delayed until after critical phases (e.g. startup).
+  // TODO(crbug.com/793069): Add support for sequence-funneling and remove this
+  // method.
+  static void PostBestEffortTask(const base::Location& from_here,
+                                 scoped_refptr<base::TaskRunner> task_runner,
+                                 base::OnceClosure task);
 
   // Callable on any thread.  Returns whether the given well-known thread is
   // initialized.
