@@ -402,14 +402,18 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   UpdateContainerPolicy();
 
   KURL url_to_request = url.IsNull() ? BlankURL() : url;
+  ResourceRequest request(url_to_request);
+  request.SetReferrerPolicy(ReferrerPolicyAttribute());
+
   if (ContentFrame()) {
     // TODO(sclittle): Support lazily loading frame navigations.
-    FrameLoadRequest request(&GetDocument(), ResourceRequest(url_to_request));
-    request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
+    FrameLoadRequest frame_load_request(&GetDocument(), request);
+    frame_load_request.SetClientRedirectReason(
+        ClientNavigationReason::kFrameNavigation);
     WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
     if (replace_current_item)
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-    ContentFrame()->Navigate(request, frame_load_type);
+    ContentFrame()->Navigate(frame_load_request, frame_load_type);
     return true;
   }
 
@@ -425,10 +429,6 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   DCHECK_EQ(ContentFrame(), child_frame);
   if (!child_frame)
     return false;
-
-  ResourceRequest request(url_to_request);
-  network::mojom::ReferrerPolicy policy = ReferrerPolicyAttribute();
-  request.SetReferrerPolicy(policy);
 
   WebFrameLoadType child_load_type = WebFrameLoadType::kReplaceCurrentItem;
   if (!GetDocument().LoadEventFinished() &&
