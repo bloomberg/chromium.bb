@@ -2771,7 +2771,6 @@ crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09F
 # needs implementation of test_driver_internal.action_sequence
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.html [ Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
-crbug.com/893480 external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Failure Timeout ]
 
 # Hit a DCHECK
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
@@ -2782,6 +2781,16 @@ crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/
 crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/preload/download-resources.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/preload/download-resources.html [ Failure Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/preload/download-resources.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.10 ] external/wpt/preload/download-resources.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.10 ] external/wpt/preload/onerror-event.html [ Failure Timeout ]
+crbug.com/626703 [ Win ] external/wpt/preload/onerror-event.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/preload/onerror-event.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/preload/onerror-event.html [ Failure Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/preload/onerror-event.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/service-workers/service-worker/fetch-event-async-respond-with.https.html [ Timeout ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-layout-button-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-button-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-001-manual.html [ Skip ]
