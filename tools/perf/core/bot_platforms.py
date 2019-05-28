@@ -174,14 +174,14 @@ ANDROID_NEXUS_6_WEBVIEW = PerfPlatform(
     'Android Nexus6 WebView Perf', 'Android AOSP MOB30K',
     _ANDROID_NEXUS_6_WEBVIEW_BENCHMARK_NAMES,
     num_shards=12)  # Reduced from 16 per crbug.com/891848.
-
-# FYI bots
 ANDROID_PIXEL2 = PerfPlatform(
     'android-pixel2-perf', 'Android OPM1.171019.021',
-    _ANDROID_PIXEL2_BENCHMARK_NAMES, num_shards=7, is_fyi=True)
+    _ANDROID_PIXEL2_BENCHMARK_NAMES, num_shards=35)
 ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
     'android-pixel2_webview-perf', 'Android OPM1.171019.021',
-    _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_NAMES, num_shards=7, is_fyi=True)
+    _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_NAMES, num_shards=28)
+
+# FYI bots
 ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
     'android-nexus5x-perf-fyi', 'Android MMB29Q',
     _ANDROID_NEXUS5X_FYI_BENCHMARK_NAMES,

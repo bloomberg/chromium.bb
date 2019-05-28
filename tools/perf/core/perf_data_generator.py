@@ -107,49 +107,6 @@ FYI_BUILDERS = {
       'device_os_flavor': 'google',
     },
   },
-  'android-pixel2_webview-perf': {
-    'tests': [
-      {
-        'isolate': 'performance_webview_test_suite',
-        'extra_args': [
-          '--test-shard-map-filename=android-pixel2_webview-perf_map.json',
-        ],
-        'num_shards': 7
-      }
-    ],
-    'platform': 'android-webview-google',
-    'dimension': {
-      'pool': 'chrome.tests.perf-webview-fyi',
-      'os': 'Android',
-      'device_type': 'walleye',
-      'device_os': 'O',
-      'device_os_flavor': 'google',
-    },
-  },
-  'android-pixel2-perf': {
-    'tests': [
-      {
-        'isolate': 'performance_test_suite',
-        'extra_args': [
-          # TODO(crbug.com/612455): Enable ref builds once can pass both
-          # --browser=exact (used by this bot to have it run Monochrome6432)
-          # and --browser=reference together.
-          #'--run-ref-build',
-          '--test-shard-map-filename=android-pixel2-perf_map.json',
-        ],
-        'num_shards': 7
-      }
-    ],
-    'platform': 'android-chrome',
-      'browser': 'bin/monochrome_64_32_bundle',
-    'dimension': {
-      'pool': 'chrome.tests.perf-fyi',
-      'os': 'Android',
-      'device_type': 'walleye',
-      'device_os': 'O',
-      'device_os_flavor': 'google',
-    },
-  },
   'linux-perf-fyi': {
     'tests': [
       {
@@ -430,6 +387,49 @@ BUILDERS = {
       'device_type': 'shamu',
       'device_os': 'MOB30K',
       'device_os_flavor': 'aosp',
+    },
+  },
+  'android-pixel2_webview-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_webview_test_suite',
+        'extra_args': [
+          '--test-shard-map-filename=android-pixel2_webview-perf_map.json',
+        ],
+        'num_shards': 28
+      }
+    ],
+    'platform': 'android-webview-google',
+    'dimension': {
+      'pool': 'chrome.tests.perf-webview',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'O',
+      'device_os_flavor': 'google',
+    },
+  },
+  'android-pixel2-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+          # TODO(crbug.com/612455): Enable ref builds once can pass both
+          # --browser=exact (used by this bot to have it run Monochrome6432)
+          # and --browser=reference together.
+          #'--run-ref-build',
+          '--test-shard-map-filename=android-pixel2-perf_map.json',
+        ],
+        'num_shards': 35
+      }
+    ],
+    'platform': 'android-chrome',
+      'browser': 'bin/monochrome_64_32_bundle',
+    'dimension': {
+      'pool': 'chrome.tests.perf',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'O',
+      'device_os_flavor': 'google',
     },
   },
   'win-10-perf': {
