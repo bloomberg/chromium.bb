@@ -17,6 +17,7 @@ class HTMLRTElement final : public HTMLElement {
 
  private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
+  bool TypeShouldForceLegacyLayout() const final { return true; }
 };
 
 }  // namespace blink
