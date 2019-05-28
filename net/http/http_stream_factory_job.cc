@@ -1084,11 +1084,9 @@ int HttpStreamFactory::Job::DoCreateStream() {
 
   if (!using_spdy_) {
     DCHECK(!expect_spdy_);
-    // We may get ftp scheme when fetching ftp resources through proxy.
     bool using_proxy = (proxy_info_.is_http() || proxy_info_.is_https() ||
                         proxy_info_.is_quic()) &&
-                       (request_info_.url.SchemeIs(url::kHttpScheme) ||
-                        request_info_.url.SchemeIs(url::kFtpScheme));
+                       request_info_.url.SchemeIs(url::kHttpScheme);
     if (is_websocket_) {
       DCHECK_NE(job_type_, PRECONNECT);
       DCHECK(delegate_->websocket_handshake_stream_create_helper());

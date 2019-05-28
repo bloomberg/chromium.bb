@@ -83,9 +83,8 @@ std::string GetBaseLanguageCode(const std::string& language_code) {
 
 // static
 std::string HttpUtil::SpecForRequest(const GURL& url) {
-  // We may get ftp scheme when fetching ftp resources through proxy.
-  DCHECK(url.is_valid() && (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs("ftp") ||
-                            url.SchemeIsWSOrWSS()));
+  DCHECK(url.is_valid() &&
+         (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS()));
   return SimplifyUrlForRequest(url).spec();
 }
 

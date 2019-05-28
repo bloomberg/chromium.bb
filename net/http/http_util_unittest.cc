@@ -734,13 +734,6 @@ TEST(HttpUtilTest, RequestUrlSanitize) {
   }
 }
 
-// Test SpecForRequest() for "ftp" scheme.
-TEST(HttpUtilTest, SpecForRequestForUrlWithFtpScheme) {
-  GURL ftp_url("ftp://user:pass@google.com/pub/chromium/");
-  EXPECT_EQ("ftp://google.com/pub/chromium/",
-            HttpUtil::SpecForRequest(ftp_url));
-}
-
 TEST(HttpUtilTest, GenerateAcceptLanguageHeader) {
   std::string header = HttpUtil::GenerateAcceptLanguageHeader("");
   EXPECT_TRUE(header.empty());
