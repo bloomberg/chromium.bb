@@ -118,7 +118,7 @@ void EnrollmentCertificateUploaderImpl::GetCertificate() {
       PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
       EmptyAccountId(),  // Not used.
       std::string(),     // Not used.
-      true,              // Force a new key to be generated.
+      false,             // Do not force a new key to be generated.
       base::BindRepeating(
           [](const base::RepeatingCallback<void(const std::string&)> on_success,
              const base::RepeatingCallback<void(AttestationStatus)> on_failure,
