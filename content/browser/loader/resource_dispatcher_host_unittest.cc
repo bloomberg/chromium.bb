@@ -2122,6 +2122,12 @@ TEST_P(ResourceDispatcherHostTest, MimeSniffEmpty) {
 
 // Tests for crbug.com/31266 (Non-2xx + application/octet-stream).
 TEST_P(ResourceDispatcherHostTest, ForbiddenDownload) {
+  // This is a regression test for code in ResourceDispatcherHost, but it's
+  // written in a way that uses code from network service if that feature is
+  // enabled. This will fail because not everything is setup.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   std::string raw_headers("HTTP/1.1 403 Forbidden\n"
                           "Content-disposition: attachment; filename=blah\n"
                           "Content-type: application/octet-stream\n\n");
