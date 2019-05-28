@@ -14,6 +14,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -99,6 +100,27 @@ bool TabModalConfirmDialogViews::Accept() {
 bool TabModalConfirmDialogViews::Close() {
   delegate_->Close();
   return true;
+}
+
+int TabModalConfirmDialogViews::GetDefaultDialogButton() const {
+  base::Optional<int> default_button = delegate_->GetDefaultDialogButton();
+  return default_button.value_or(DialogDelegate::GetDefaultDialogButton());
+}
+
+views::View* TabModalConfirmDialogViews::GetInitiallyFocusedView() {
+  base::Optional<int> focused_button = delegate_->GetInitiallyFocusedButton();
+  if (!focused_button) {
+    return DialogDelegate::GetInitiallyFocusedView();
+  }
+
+  const views::DialogClientView* dialog_client_view = GetDialogClientView();
+  if (!dialog_client_view)
+    return nullptr;
+  if (*focused_button == ui::DIALOG_BUTTON_OK)
+    return dialog_client_view->ok_button();
+  if (*focused_button == ui::DIALOG_BUTTON_CANCEL)
+    return dialog_client_view->cancel_button();
+  return nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

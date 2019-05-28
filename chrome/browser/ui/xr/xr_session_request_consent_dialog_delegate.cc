@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_types.h"
 
 namespace vr {
 
@@ -82,6 +83,16 @@ void XrSessionRequestConsentDialogDelegate::
     LogConsentFlowDurationWhenUserAborted() {
   UMA_HISTOGRAM_MEDIUM_TIMES("XR.WebXR.ConsentFlowDuration.ConsentFlowAborted",
                              base::TimeTicks::Now() - dialog_presented_at_);
+}
+
+base::Optional<int>
+XrSessionRequestConsentDialogDelegate::GetDefaultDialogButton() {
+  return ui::DIALOG_BUTTON_OK;
+}
+
+base::Optional<int>
+XrSessionRequestConsentDialogDelegate::GetInitiallyFocusedButton() {
+  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 }  // namespace vr
