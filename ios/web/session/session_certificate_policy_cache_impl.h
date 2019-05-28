@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_SESSION_CERTIFICATE_POLICY_CACHE_IMPL_H_
-#define IOS_WEB_WEB_STATE_SESSION_CERTIFICATE_POLICY_CACHE_IMPL_H_
+#ifndef IOS_WEB_SESSION_SESSION_CERTIFICATE_POLICY_CACHE_IMPL_H_
+#define IOS_WEB_SESSION_SESSION_CERTIFICATE_POLICY_CACHE_IMPL_H_
 
 #import <Foundation/Foundation.h>
 
-#include "ios/web/public/web_state/session_certificate_policy_cache.h"
+#include "ios/web/public/session/session_certificate_policy_cache.h"
 
 namespace net {
 class X509Certificate;
@@ -45,4 +45,4 @@ class SessionCertificatePolicyCacheImpl : public SessionCertificatePolicyCache {
 
 }  // namespace web
 
-#endif  // IOS_WEB_WEB_STATE_SESSION_CERTIFICATE_POLICY_CACHE_IMPL_H_
+#endif  // IOS_WEB_SESSION_SESSION_CERTIFICATE_POLICY_CACHE_IMPL_H_

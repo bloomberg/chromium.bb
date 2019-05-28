@@ -65,6 +65,7 @@ source_set("tab_id_tab_helper") {
   deps = [
     "//base",
     "//ios/web/public",
+    "//ios/web/public/session",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

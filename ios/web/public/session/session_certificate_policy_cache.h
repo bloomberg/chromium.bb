@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_SESSION_CERTIFICATE_POLICY_CACHE_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_SESSION_CERTIFICATE_POLICY_CACHE_H_
+#ifndef IOS_WEB_PUBLIC_SESSION_SESSION_CERTIFICATE_POLICY_CACHE_H_
+#define IOS_WEB_PUBLIC_SESSION_SESSION_CERTIFICATE_POLICY_CACHE_H_
 
 #include "base/memory/ref_counted.h"
 #include "net/cert/cert_status_flags.h"
@@ -28,4 +28,4 @@ class SessionCertificatePolicyCache {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_SESSION_CERTIFICATE_POLICY_CACHE_H_
+#endif  // IOS_WEB_PUBLIC_SESSION_SESSION_CERTIFICATE_POLICY_CACHE_H_

@@ -15,6 +15,7 @@ source_set("fakes") {
     "//ios/web/public/find_in_page",
     "//ios/web/public/js_messaging",
     "//ios/web/public/security",
+    "//ios/web/public/session",
     "//ios/web/test:test_constants",
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
     "//ios/web/web_state/ui:web_view_js_utils",

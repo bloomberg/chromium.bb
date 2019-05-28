@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/web_state/session_certificate_policy_cache_storage_builder.h"
+#include "ios/web/session/session_certificate_policy_cache_storage_builder.h"
 
 #import <Foundation/Foundation.h>
 
-#import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
-#import "ios/web/web_state/session_certificate_policy_cache_impl.h"
+#import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
+#import "ios/web/session/session_certificate_policy_cache_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

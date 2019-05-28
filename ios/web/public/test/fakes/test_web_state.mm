@@ -13,10 +13,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #import "ios/web/common/crw_content_view.h"
 #include "ios/web/js_messaging/web_frames_manager_impl.h"
-#import "ios/web/public/crw_navigation_item_storage.h"
-#import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/js_messaging/web_frame.h"
-#import "ios/web/public/serializable_user_data_manager.h"
+#import "ios/web/public/session/crw_navigation_item_storage.h"
+#import "ios/web/public/session/crw_session_storage.h"
+#import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ui/gfx/image/image.h"
 

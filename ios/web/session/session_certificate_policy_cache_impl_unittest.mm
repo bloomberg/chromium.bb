@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/session_certificate_policy_cache_impl.h"
+#import "ios/web/session/session_certificate_policy_cache_impl.h"
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
 #include "ios/web/public/security/certificate_policy_cache.h"
+#import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_task_traits.h"

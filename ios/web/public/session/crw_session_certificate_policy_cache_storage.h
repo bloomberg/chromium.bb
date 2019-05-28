@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_CRW_SESSION_CERTIFICATE_POLICY_CACHE_STORAGE_H_
-#define IOS_WEB_PUBLIC_CRW_SESSION_CERTIFICATE_POLICY_CACHE_STORAGE_H_
+#ifndef IOS_WEB_PUBLIC_SESSION_CRW_SESSION_CERTIFICATE_POLICY_CACHE_STORAGE_H_
+#define IOS_WEB_PUBLIC_SESSION_CRW_SESSION_CERTIFICATE_POLICY_CACHE_STORAGE_H_
 
 #import <Foundation/Foundation.h>
 
@@ -25,7 +25,7 @@ extern NSString* const kStatusSerializationKey;
 }  // namespace web
 
 // A serializable representation of a certificate.
-@interface CRWSessionCertificateStorage : NSObject<NSCoding>
+@interface CRWSessionCertificateStorage : NSObject <NSCoding>
 
 // Designated initializer.
 - (instancetype)initWithCertificate:(scoped_refptr<net::X509Certificate>)cert
@@ -52,11 +52,11 @@ extern NSString* const kCertificateStoragesKey;
 }  // namespace web
 
 // A serializable representation of a list of allowed certificates.
-@interface CRWSessionCertificatePolicyCacheStorage : NSObject<NSCoding>
+@interface CRWSessionCertificatePolicyCacheStorage : NSObject <NSCoding>
 
 // The certificate policy storages for this session.
 @property(nonatomic, strong) NSSet* certificateStorages;
 
 @end
 
-#endif  // IOS_WEB_PUBLIC_CRW_SESSION_CERTIFICATE_POLICY_CACHE_STORAGE_H_
+#endif  // IOS_WEB_PUBLIC_SESSION_CRW_SESSION_CERTIFICATE_POLICY_CACHE_STORAGE_H_

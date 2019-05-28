@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
+#import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 
 #import "base/strings/sys_string_conversions.h"
 #include "net/base/hash_value.h"
@@ -104,8 +104,9 @@ scoped_refptr<net::X509Certificate> NSDataToCertificate(NSData* data) {
   NSString* hostName = [aDecoder decodeObjectForKey:web::kHostSerializationKey];
   NSNumber* certStatus =
       [aDecoder decodeObjectForKey:web::kStatusSerializationKey];
-  return
-      [self initWithCertData:certData hostName:hostName certStatus:certStatus];
+  return [self initWithCertData:certData
+                       hostName:hostName
+                     certStatus:certStatus];
 }
 
 - (void)encodeWithCoder:(NSCoder*)aCoder {

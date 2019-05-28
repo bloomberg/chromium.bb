@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/session_certificate_policy_cache_storage_builder.h"
+#import "ios/web/session/session_certificate_policy_cache_storage_builder.h"
 
-#import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
+#import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/web_state/session_certificate_policy_cache_impl.h"
+#import "ios/web/session/session_certificate_policy_cache_impl.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -63,5 +63,5 @@ TEST_F(SessionCertificatePolicyCacheStorageBuilderTest,
   web::SessionCertificatePolicyCacheStorageBuilder builder;
   std::unique_ptr<web::SessionCertificatePolicyCacheImpl> cache =
       builder.BuildSessionCertificatePolicyCache(cache_storage);
-  EXPECT_NSEQ([cache_storage certificateStorages], cache->GetAllowedCerts());
+  EXPECT_NSEQ([cache_storage certificateStorages], cache -> GetAllowedCerts());
 }

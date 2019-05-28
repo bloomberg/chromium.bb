@@ -74,7 +74,7 @@
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/security/ssl_status.h"
 #include "ios/web/public/security/web_interstitial.h"
-#import "ios/web/public/serializable_user_data_manager.h"
+#import "ios/web/public/session/serializable_user_data_manager.h"
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"

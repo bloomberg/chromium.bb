@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_CRW_SESSION_STORAGE_H_
-#define IOS_WEB_PUBLIC_CRW_SESSION_STORAGE_H_
+#ifndef IOS_WEB_PUBLIC_SESSION_CRW_SESSION_STORAGE_H_
+#define IOS_WEB_PUBLIC_SESSION_CRW_SESSION_STORAGE_H_
 
 #import <Foundation/Foundation.h>
 #include <memory>
@@ -16,7 +16,7 @@ class SerializableUserData;
 
 // NSCoding-compliant class used to serialize session state.
 // TODO(crbug.com/685388): Investigate using code from the sessions component.
-@interface CRWSessionStorage : NSObject<NSCoding>
+@interface CRWSessionStorage : NSObject <NSCoding>
 
 @property(nonatomic, assign) BOOL hasOpener;
 @property(nonatomic, assign) NSInteger lastCommittedItemIndex;
@@ -32,4 +32,4 @@ class SerializableUserData;
 
 @end
 
-#endif  // IOS_WEB_PUBLIC_CRW_SESSION_STORAGE_H_
+#endif  // IOS_WEB_PUBLIC_SESSION_CRW_SESSION_STORAGE_H_

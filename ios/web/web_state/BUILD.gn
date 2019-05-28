@@ -7,7 +7,6 @@ import("//ios/build/config.gni")
 source_set("web_state") {
   deps = [
     ":context_menu",
-    ":session_certificate_policy_cache",
     ":web_state_impl_header",
     "//base",
     "//ios/web/common",
@@ -15,8 +14,10 @@ source_set("web_state") {
     "//ios/web/navigation:core",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
+    "//ios/web/public/session",
     "//ios/web/security",
     "//ios/web/security",
+    "//ios/web/session",
     "//ios/web/web_state/ui",
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
     "//ios/web/webui",
@@ -52,23 +53,6 @@ source_set("web_state_impl_header") {
 
   sources = [
     "web_state_impl.h",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("session_certificate_policy_cache") {
-  deps = [
-    "//base",
-    "//ios/web/public",
-    "//ios/web/public/security",
-  ]
-
-  sources = [
-    "session_certificate_policy_cache_impl.h",
-    "session_certificate_policy_cache_impl.mm",
-    "session_certificate_policy_cache_storage_builder.h",
-    "session_certificate_policy_cache_storage_builder.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

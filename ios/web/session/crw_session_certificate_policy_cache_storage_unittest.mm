@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
+#import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"

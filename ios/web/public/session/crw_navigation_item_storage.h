@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_CRW_NAVIGATION_ITEM_STORAGE_H_
-#define IOS_WEB_PUBLIC_CRW_NAVIGATION_ITEM_STORAGE_H_
+#ifndef IOS_WEB_PUBLIC_SESSION_CRW_NAVIGATION_ITEM_STORAGE_H_
+#define IOS_WEB_PUBLIC_SESSION_CRW_NAVIGATION_ITEM_STORAGE_H_
 
 #import <Foundation/Foundation.h>
 #include <stddef.h>
@@ -48,7 +48,7 @@ extern NSString* const kNavigationItemStorageUserAgentTypeKey;
 
 // NSCoding-compliant class used to serialize NavigationItem's persisted
 // properties.
-@interface CRWNavigationItemStorage : NSObject<NSCoding>
+@interface CRWNavigationItemStorage : NSObject <NSCoding>
 
 @property(nonatomic, assign) GURL virtualURL;
 @property(nonatomic, assign) web::Referrer referrer;
@@ -62,4 +62,4 @@ extern NSString* const kNavigationItemStorageUserAgentTypeKey;
 
 @end
 
-#endif  // IOS_WEB_PUBLIC_CRW_NAVIGATION_ITEM_STORAGE_H_
+#endif  // IOS_WEB_PUBLIC_SESSION_CRW_NAVIGATION_ITEM_STORAGE_H_

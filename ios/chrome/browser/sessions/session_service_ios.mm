@@ -19,9 +19,9 @@
 #include "base/threading/scoped_blocking_call.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
-#import "ios/web/public/crw_navigation_item_storage.h"
-#import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
-#import "ios/web/public/crw_session_storage.h"
+#import "ios/web/public/session/crw_navigation_item_storage.h"
+#import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
+#import "ios/web/public/session/crw_session_storage.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
