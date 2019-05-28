@@ -214,6 +214,8 @@ TEST_F(ScriptExecutorTest, RunOneActionReportAndReturn) {
 
   ASSERT_EQ(1u, processed_actions_capture.size());
   EXPECT_EQ(OTHER_ACTION_STATUS, processed_actions_capture[0].status());
+  EXPECT_TRUE(processed_actions_capture[0].has_run_time_ms());
+  EXPECT_GE(processed_actions_capture[0].run_time_ms(), 0);
 }
 
 TEST_F(ScriptExecutorTest, RunMultipleActions) {

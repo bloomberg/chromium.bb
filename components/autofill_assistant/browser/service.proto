@@ -409,6 +409,10 @@ message ProcessedActionProto {
   // Reports information about navigation that happened while
   // processing the action. This is meant for debugging.
   optional NavigationInfoProto navigation_info = 20;
+
+  // Reports how long it took for the client to run the action. This does not
+  // include the delay specified in action.delay_ms.
+  optional int64 run_time_ms = 23;
 }
 
 // Extended information about the action status, which provides more details

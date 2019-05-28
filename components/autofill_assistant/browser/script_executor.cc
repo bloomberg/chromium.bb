@@ -589,7 +589,8 @@ void ScriptExecutor::ProcessAction(Action* action) {
   navigation_info_.set_has_error(delegate_->HasNavigationError());
 
   action->ProcessAction(this, base::BindOnce(&ScriptExecutor::OnProcessedAction,
-                                             weak_ptr_factory_.GetWeakPtr()));
+                                             weak_ptr_factory_.GetWeakPtr(),
+                                             base::TimeTicks::Now()));
 }
 
 void ScriptExecutor::GetNextActions() {
@@ -601,11 +602,14 @@ void ScriptExecutor::GetNextActions() {
 }
 
 void ScriptExecutor::OnProcessedAction(
+    base::TimeTicks start_time,
     std::unique_ptr<ProcessedActionProto> processed_action_proto) {
+  base::TimeDelta run_time = base::TimeTicks::Now() - start_time;
   previous_action_type_ = processed_action_proto->action().action_info_case();
   processed_actions_.emplace_back(*processed_action_proto);
 
   auto& processed_action = processed_actions_.back();
+  processed_action.set_run_time_ms(run_time.InMilliseconds());
   *processed_action.mutable_navigation_info() = navigation_info_;
   if (processed_action.status() != ProcessedActionStatusProto::ACTION_APPLIED) {
     if (delegate_->HasNavigationError()) {

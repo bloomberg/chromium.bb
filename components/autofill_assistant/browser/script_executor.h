@@ -298,7 +298,8 @@ class ScriptExecutor : public ActionDelegate,
   void ProcessNextAction();
   void ProcessAction(Action* action);
   void GetNextActions();
-  void OnProcessedAction(std::unique_ptr<ProcessedActionProto> action);
+  void OnProcessedAction(base::TimeTicks start_time,
+                         std::unique_ptr<ProcessedActionProto> action);
   void CheckElementMatches(const Selector& selector,
                            BatchElementChecker* checker,
                            base::OnceCallback<void(bool)> callback);
