@@ -1359,6 +1359,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/searchwidget/SearchActivityLocationBarLayout.java",
   "java/src/org/chromium/chrome/browser/searchwidget/SearchBoxDataProvider.java",
   "java/src/org/chromium/chrome/browser/searchwidget/SearchWidgetProvider.java",
+  "java/src/org/chromium/chrome/browser/send_tab_to_self/DevicePickerBottomSheetAdapter.java",
+  "java/src/org/chromium/chrome/browser/send_tab_to_self/DevicePickerBottomSheetContent.java",
   "java/src/org/chromium/chrome/browser/send_tab_to_self/NotificationManager.java",
   "java/src/org/chromium/chrome/browser/send_tab_to_self/NotificationSharedPrefManager.java",
   "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfAndroidBridge.java",

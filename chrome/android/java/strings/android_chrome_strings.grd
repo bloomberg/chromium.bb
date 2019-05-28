@@ -3951,6 +3951,21 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE_URL" desc="Clickable text displayed as part of a URL in the inforbar displayed when a user receives a shared tab from another device.">
         Open
       </message>
+      <message name="IDS_SEND_TAB_TO_SELF_CONTENT_DESCRIPTION" desc="Content description for the target device picker.">
+        Device picker to share a tab with.
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_SHEET_HALF_HEIGHT" desc="Accessibility string read when the target device picker sheet is opened at half height. The sheet will occupy the bottom half the screen.">
+        Device picker to share a tab with is opened at half height.
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_SHEET_FULL_HEIGHT" desc="Accessibility string read when the target device picker sheet is opened at full height. The sheet will occupy the entire screen.">
+        Device picker to share a tab with is opened at full height.
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_SHEET_CLOSED" desc="Accessibility string read when the target device picker sheet is closed.">
+        Device picker to share a tab with is closed.
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_SHEET_TOOLBAR" desc="Header for device picker sheet where users can pick a device to send a tab to.">
+        Send to
+      </message>
 
       <!-- Chrome Duet -->
       <message name="IDS_IPH_DUET_TITLE" desc="This string appears in an overlay that explains a new UI to users. 'Search' refers to searching the web, and 'explore' refers to Chrome's suggested content.">
