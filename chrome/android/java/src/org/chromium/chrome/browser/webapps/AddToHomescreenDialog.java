@@ -26,6 +26,7 @@ import android.widget.TextView;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.AppBannerManager;
+import org.chromium.ui.UiUtils;
 
 /**
  * Displays the "Add to Homescreen" dialog, which contains a (possibly editable) title, icon, and
@@ -94,7 +95,8 @@ public class AddToHomescreenDialog implements View.OnClickListener {
     public void show() {
         View view = LayoutInflater.from(mContext).inflate(R.layout.add_to_homescreen_dialog, null);
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(mContext, R.style.Theme_Chromium_AlertDialog)
+                new UiUtils
+                        .CompatibleAlertDialogBuilder(mContext, R.style.Theme_Chromium_AlertDialog)
                         .setTitle(AppBannerManager.getHomescreenLanguageOption())
                         .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override

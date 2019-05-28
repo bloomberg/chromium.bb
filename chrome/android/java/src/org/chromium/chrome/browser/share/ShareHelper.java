@@ -445,8 +445,8 @@ public class ShareHelper {
 
         final ShareDialogAdapter adapter =
                 new ShareDialogAdapter(activity, manager, resolveInfoList);
-        AlertDialog.Builder builder =
-                new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog);
+        AlertDialog.Builder builder = new UiUtils.CompatibleAlertDialogBuilder(
+                activity, R.style.Theme_Chromium_AlertDialog);
         builder.setTitle(activity.getString(R.string.share_link_chooser_title));
         builder.setAdapter(adapter, null);
 
