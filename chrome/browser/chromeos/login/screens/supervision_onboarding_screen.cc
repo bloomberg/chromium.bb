@@ -32,6 +32,7 @@ SupervisionOnboardingScreen::~SupervisionOnboardingScreen() {
 }
 
 void SupervisionOnboardingScreen::Show() {
+#if defined(KIOSK_NEXT)
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
   DCHECK(user_manager->IsUserLoggedIn());
@@ -43,6 +44,7 @@ void SupervisionOnboardingScreen::Show() {
     view_->Show();
     return;
   }
+#endif
 
   Exit();
 }
