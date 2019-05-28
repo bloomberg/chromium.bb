@@ -5,8 +5,9 @@
 // This file contains an implementation of a VP8 raw stream parser,
 // as defined in RFC 6386.
 
+#include "media/parsers/vp8_parser.h"
+
 #include "base/logging.h"
-#include "media/filters/vp8_parser.h"
 
 namespace media {
 

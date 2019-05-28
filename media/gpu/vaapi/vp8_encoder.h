@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "media/base/video_bitrate_allocation.h"
-#include "media/filters/vp8_parser.h"
 #include "media/gpu/vaapi/accelerated_video_encoder.h"
 #include "media/gpu/vp8_picture.h"
 #include "media/gpu/vp8_reference_frame_vector.h"
+#include "media/parsers/vp8_parser.h"
 
 namespace media {
 

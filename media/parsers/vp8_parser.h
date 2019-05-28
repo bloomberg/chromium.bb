@@ -5,15 +5,15 @@
 // This file contains an implementation of a VP8 raw stream parser,
 // as defined in RFC 6386.
 
-#ifndef MEDIA_FILTERS_VP8_PARSER_H_
-#define MEDIA_FILTERS_VP8_PARSER_H_
+#ifndef MEDIA_PARSERS_VP8_PARSER_H_
+#define MEDIA_PARSERS_VP8_PARSER_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "media/base/media_export.h"
-#include "media/filters/vp8_bool_decoder.h"
+#include "media/parsers/media_parsers_export.h"
+#include "media/parsers/vp8_bool_decoder.h"
 
 namespace media {
 
@@ -23,7 +23,7 @@ const size_t kNumMBFeatureTreeProbs = 3;
 
 // Member of Vp8FrameHeader and will be 0-initialized
 // in Vp8FrameHeader's constructor.
-struct MEDIA_EXPORT Vp8SegmentationHeader {
+struct Vp8SegmentationHeader {
   enum SegmentFeatureMode { FEATURE_MODE_DELTA = 0, FEATURE_MODE_ABSOLUTE = 1 };
 
   bool segmentation_enabled;
@@ -41,7 +41,7 @@ const size_t kNumBlockContexts = 4;
 
 // Member of Vp8FrameHeader and will be 0-initialized
 // in Vp8FrameHeader's constructor.
-struct MEDIA_EXPORT Vp8LoopFilterHeader {
+struct Vp8LoopFilterHeader {
   enum Type { LOOP_FILTER_TYPE_NORMAL = 0, LOOP_FILTER_TYPE_SIMPLE = 1 };
   Type type;
   uint8_t level;
@@ -55,7 +55,7 @@ struct MEDIA_EXPORT Vp8LoopFilterHeader {
 
 // Member of Vp8FrameHeader and will be 0-initialized
 // in Vp8FrameHeader's constructor.
-struct MEDIA_EXPORT Vp8QuantizationHeader {
+struct Vp8QuantizationHeader {
   uint8_t y_ac_qi;
   int8_t y_dc_delta;
   int8_t y2_dc_delta;
@@ -96,7 +96,7 @@ enum Vp8RefType : size_t {
   VP8_FRAME_ALTREF = 2,
 };
 
-struct MEDIA_EXPORT Vp8FrameHeader {
+struct MEDIA_PARSERS_EXPORT Vp8FrameHeader {
   Vp8FrameHeader();
 
   enum FrameType { KEYFRAME = 0, INTERFRAME = 1 };
@@ -164,7 +164,7 @@ struct MEDIA_EXPORT Vp8FrameHeader {
 };
 
 // A parser for raw VP8 streams as specified in RFC 6386.
-class MEDIA_EXPORT Vp8Parser {
+class MEDIA_PARSERS_EXPORT Vp8Parser {
  public:
   Vp8Parser();
   ~Vp8Parser();
@@ -205,4 +205,4 @@ class MEDIA_EXPORT Vp8Parser {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_VP8_PARSER_H_
+#endif  // MEDIA_PARSERS_VP8_PARSER_H_

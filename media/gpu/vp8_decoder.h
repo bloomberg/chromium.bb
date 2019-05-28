@@ -12,10 +12,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "media/filters/vp8_parser.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/vp8_picture.h"
 #include "media/gpu/vp8_reference_frame_vector.h"
+#include "media/parsers/vp8_parser.h"
 
 namespace media {
 

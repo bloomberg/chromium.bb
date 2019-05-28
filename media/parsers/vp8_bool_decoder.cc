@@ -40,12 +40,13 @@
 // project. (http://www.webmproject.org/code)
 // It is used to decode bits from a vp8 stream.
 
+#include "media/parsers/vp8_bool_decoder.h"
+
 #include <limits.h>
 
 #include <algorithm>
 
 #include "base/numerics/safe_conversions.h"
-#include "media/filters/vp8_bool_decoder.h"
 
 namespace media {
 

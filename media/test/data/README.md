@@ -817,6 +817,17 @@ ffmpeg -i green.webm -i a300hz.webm -map 0 -map 1 green-a300hz.webm
 ffmpeg -i red.webm -i a500hz.webm -map 0 -map 1 red-a500hz.webm
 ```
 
+### WebP Test Files
+
+#### bouncy_ball.webp
+An animated (extended) WebP encoded image of 450x450. Created by gildekel@ using Gimp.
+
+#### red_green_gradient_lossy.webp
+A lossy WebP encoded image of 3000x3000. Created by gildekel@ using Gimp.
+
+#### yellow_pink_gradient_lossless.webp
+A lossless WebP encoded image of 3000x3000. Created by gildekel@ using Gimp.
+
 ### JPEG Test Files
 
 #### pixel-1280x720.jpg

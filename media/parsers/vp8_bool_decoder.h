@@ -40,8 +40,8 @@
 // project. (http://www.webmproject.org/code)
 // It is used to decode bits from a vp8 stream.
 
-#ifndef MEDIA_FILTERS_VP8_BOOL_DECODER_H_
-#define MEDIA_FILTERS_VP8_BOOL_DECODER_H_
+#ifndef MEDIA_PARSERS_VP8_BOOL_DECODER_H_
+#define MEDIA_PARSERS_VP8_BOOL_DECODER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -49,13 +49,13 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "media/base/media_export.h"
+#include "media/parsers/media_parsers_export.h"
 
 namespace media {
 
 // A class to decode the VP8's boolean entropy coded stream. It's a variant of
 // arithmetic coding. See RFC 6386 - Chapter 7. Boolean Entropy Decoder.
-class MEDIA_EXPORT Vp8BoolDecoder {
+class MEDIA_PARSERS_EXPORT Vp8BoolDecoder {
  public:
   Vp8BoolDecoder();
 
@@ -132,4 +132,4 @@ class MEDIA_EXPORT Vp8BoolDecoder {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_VP8_BOOL_DECODER_H_
+#endif  // MEDIA_PARSERS_VP8_BOOL_DECODER_H_

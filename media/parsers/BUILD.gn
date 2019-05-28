@@ -9,6 +9,12 @@ component("parsers") {
     "jpeg_parser.cc",
     "jpeg_parser.h",
     "media_parsers_export.h",
+    "vp8_bool_decoder.cc",
+    "vp8_bool_decoder.h",
+    "vp8_parser.cc",
+    "vp8_parser.h",
+    "webp_parser.cc",
+    "webp_parser.h",
   ]
   defines = [ "IS_MEDIA_PARSER_IMPL" ]
   deps = [
@@ -26,6 +32,9 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "jpeg_parser_unittest.cc",
+    "vp8_bool_decoder_unittest.cc",
+    "vp8_parser_unittest.cc",
+    "webp_parser_unittest.cc",
   ]
   deps = [
     ":parsers",
@@ -45,4 +54,17 @@ fuzzer_test("media_jpeg_parser_picture_fuzzer") {
   ]
   seed_corpus = "//media/test/data"
   dict = "//media/test/jpeg.dict"
+}
+
+fuzzer_test("media_vp8_parser_fuzzer") {
+  sources = [
+    "vp8_parser_fuzzertest.cc",
+  ]
+  deps = [
+    ":parsers",
+    "//base",
+    "//media:test_support",
+  ]
+  libfuzzer_options = [ "max_len = 400000" ]
+  dict = "//media/test/vp8.dict"
 }
