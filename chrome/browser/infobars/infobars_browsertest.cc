@@ -402,7 +402,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
 
     case IBD::FLASH_DEPRECATION_INFOBAR_DELEGATE:
-      FlashDeprecationInfoBarDelegate::Create(GetInfoBarService());
+      FlashDeprecationInfoBarDelegate::Create(GetInfoBarService(), nullptr);
       break;
     case IBD::TAB_SHARING_INFOBAR_DELEGATE:
       TabSharingInfoBarDelegate::Create(GetInfoBarService(),

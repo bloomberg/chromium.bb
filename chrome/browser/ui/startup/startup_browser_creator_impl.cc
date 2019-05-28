@@ -26,6 +26,7 @@
 #include "chrome/browser/apps/apps_launch.h"
 #include "chrome/browser/apps/platform_apps/install_chrome_app.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/defaults.h"
@@ -875,9 +876,12 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
+    auto* host_content_settings_map =
+        HostContentSettingsMapFactory::GetForProfile(profile_);
     if (FlashDeprecationInfoBarDelegate::ShouldDisplayFlashDeprecation(
-            profile_)) {
-      FlashDeprecationInfoBarDelegate::Create(infobar_service);
+            host_content_settings_map)) {
+      FlashDeprecationInfoBarDelegate::Create(infobar_service,
+                                              host_content_settings_map);
     }
 #endif
   }

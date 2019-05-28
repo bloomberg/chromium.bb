@@ -7,17 +7,21 @@
 
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
+class HostContentSettingsMap;
 class InfoBarService;
-class Profile;
 
 class FlashDeprecationInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  static void Create(InfoBarService* infobar_service);
+  static void Create(InfoBarService* infobar_service,
+                     HostContentSettingsMap* host_content_settings_map);
 
-  // Returns true if we should display a deprecation warning for |profile|.
-  static bool ShouldDisplayFlashDeprecation(Profile* profile);
+  // Returns true if we should display a deprecation warning for
+  // |host_content_settings_map|.
+  static bool ShouldDisplayFlashDeprecation(
+      HostContentSettingsMap* host_content_settings_map);
 
-  FlashDeprecationInfoBarDelegate() = default;
+  explicit FlashDeprecationInfoBarDelegate(
+      HostContentSettingsMap* host_content_settings_map);
   ~FlashDeprecationInfoBarDelegate() override = default;
 
   // ConfirmInfobarDelegate:
@@ -25,8 +29,13 @@ class FlashDeprecationInfoBarDelegate : public ConfirmInfoBarDelegate {
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
   base::string16 GetLinkText() const override;
   GURL GetLinkURL() const override;
+
+ private:
+  HostContentSettingsMap* const host_content_settings_map_;
 };
 
 #endif  // CHROME_BROWSER_PLUGINS_FLASH_DEPRECATION_INFOBAR_DELEGATE_H_

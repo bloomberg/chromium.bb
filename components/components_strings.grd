@@ -287,6 +287,16 @@
           Not Now
         </message>
       </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_TURN_OFF" desc="Used on a button that turns off a function.">
+          Turn off
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_TURN_OFF" desc="In Title Case: Used on a button that turns off a function.">
+          Turn Off
+        </message>
+      </if>
 
       <message name="IDS_PLUGIN_NOT_SUPPORTED" desc="The placeholder text for an unsupported plugin.">
         This plugin is not supported
