@@ -39,7 +39,7 @@ void SupervisionOnboardingScreen::Show() {
 
   if (view_ &&
       base::FeatureList::IsEnabled(
-          features::kEnableSupervisionOnboardingScreens) &&
+          features::kSupervisionOnboardingEligibility) &&
       user_manager->IsLoggedInAsChildUser()) {
     view_->Show();
     return;

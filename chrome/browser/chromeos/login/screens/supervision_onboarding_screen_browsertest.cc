@@ -131,8 +131,10 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
 
   void SetUp() override {
     if (IsFeatureOn()) {
-      feature_list_.InitAndEnableFeature(
-          features::kEnableSupervisionOnboardingScreens);
+      feature_list_.InitWithFeatures(
+          {features::kSupervisionOnboardingEligibility,
+           features::kSupervisionOnboardingScreens},
+          {});
     }
 
     MixinBasedInProcessBrowserTest::SetUp();

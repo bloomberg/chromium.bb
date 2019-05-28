@@ -8,10 +8,12 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "chrome/browser/chromeos/supervision/onboarding_constants.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -171,13 +173,26 @@ TEST_F(OnboardingControllerTest, OverridePageUrlsByCommandLine) {
             "https://example.com/*");
 }
 
-TEST_F(OnboardingControllerTest, StayInFlowWhenHeaderValueIsCorrect) {
+TEST_F(OnboardingControllerTest,
+       StayInFlowWhenHeaderValueIsCorrectAndFlagIsSet) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kSupervisionOnboardingScreens);
   BindWebviewHost();
 
   webview_host()->set_custom_header_value(kDeviceOnboardingExperimentName);
   WaitForAuthRequestAndReturnToken("fake_access_token");
 
   EXPECT_FALSE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest, ExitFlowWhenFlagIsNotSet) {
+  BindWebviewHost();
+
+  webview_host()->set_custom_header_value(kDeviceOnboardingExperimentName);
+  WaitForAuthRequestAndReturnToken("fake_access_token");
+
+  EXPECT_TRUE(webview_host()->exited_flow());
 }
 
 TEST_F(OnboardingControllerTest, ExitFlowWhenHeaderValueIsMissing) {

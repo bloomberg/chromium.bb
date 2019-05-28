@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/supervision/onboarding_constants.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
@@ -106,14 +107,17 @@ void OnboardingControllerImpl::LoadPageCallback(
     const base::Optional<std::string>& custom_header_value) {
   DCHECK(webview_host_);
 
-  if (!custom_header_value.has_value() ||
-      !base::EqualsCaseInsensitiveASCII(custom_header_value.value(),
-                                        kDeviceOnboardingExperimentName)) {
+  bool eligible =
+      custom_header_value.has_value() &&
+      base::EqualsCaseInsensitiveASCII(custom_header_value.value(),
+                                       kDeviceOnboardingExperimentName);
+  if (!eligible ||
+      !base::FeatureList::IsEnabled(features::kSupervisionOnboardingScreens)) {
     webview_host_->ExitFlow();
-    return;
   }
 
-  profile_->GetPrefs()->SetBoolean(ash::prefs::kKioskNextShellEligible, true);
+  profile_->GetPrefs()->SetBoolean(ash::prefs::kKioskNextShellEligible,
+                                   eligible);
 }
 
 }  // namespace supervision
