@@ -13,6 +13,7 @@ NotificationBackgroundTaskSchedulerImpl::
     ~NotificationBackgroundTaskSchedulerImpl() = default;
 
 void NotificationBackgroundTaskSchedulerImpl::Schedule(
+    notifications::SchedulerTaskTime scheduler_task_time,
     base::TimeDelta window_start,
     base::TimeDelta window_end) {
   // TODO(xingliu): Implements this for non-Android platform.

@@ -90,7 +90,7 @@ class BackgroundTaskCoordinatorHelper {
       }
     }
 
-    ScheduleBackgroundTaskInternal();
+    ScheduleBackgroundTaskInternal(task_start_time);
   }
 
  private:
@@ -118,7 +118,7 @@ class BackgroundTaskCoordinatorHelper {
       background_task_time_ = time;
   }
 
-  void ScheduleBackgroundTaskInternal() {
+  void ScheduleBackgroundTaskInternal(SchedulerTaskTime task_start_time) {
     if (!background_task_time_.has_value())
       return;
 
@@ -127,10 +127,8 @@ class BackgroundTaskCoordinatorHelper {
     window_start_time = base::ClampToRange(window_start_time, base::TimeDelta(),
                                            base::TimeDelta::Max());
 
-    // TODO(xingliu): Pass the SchedulerTaskTime tag to background task to
-    // support arbitrary time background task.
     background_task_->Schedule(
-        window_start_time,
+        task_start_time, window_start_time,
         window_start_time + config_->background_task_window_duration);
   }
 

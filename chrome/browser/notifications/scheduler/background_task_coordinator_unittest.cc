@@ -48,7 +48,10 @@ class MockNotificationBackgroundTaskScheduler
  public:
   MockNotificationBackgroundTaskScheduler() = default;
   ~MockNotificationBackgroundTaskScheduler() override = default;
-  MOCK_METHOD2(Schedule, void(base::TimeDelta, base::TimeDelta));
+  MOCK_METHOD3(Schedule,
+               void(notifications::SchedulerTaskTime,
+                    base::TimeDelta,
+                    base::TimeDelta));
   MOCK_METHOD0(Cancel, void());
 
  private:
@@ -155,7 +158,7 @@ class BackgroundTaskCoordinatorTest : public testing::Test {
 // And current task should be canceled.
 TEST_F(BackgroundTaskCoordinatorTest, NoNotification) {
   EXPECT_CALL(*background_task(), Cancel());
-  EXPECT_CALL(*background_task(), Schedule(_, _)).Times(0);
+  EXPECT_CALL(*background_task(), Schedule(_, _, _)).Times(0);
   TestData test_data;
   test_data.impression_test_data = kSingleClientImpressionTestData;
   ScheduleTask(test_data);
@@ -169,7 +172,7 @@ TEST_F(BackgroundTaskCoordinatorTest, InMorningScheduleEvening) {
   // Expected to run task this evening.
   auto expected_window_start = GetTime("04/25/20 18:00:00 PM") - GetTime(kNow);
   EXPECT_CALL(*background_task(),
-              Schedule(expected_window_start,
+              Schedule(_, expected_window_start,
                        expected_window_start +
                            config()->background_task_window_duration));
 
@@ -188,7 +191,7 @@ TEST_F(BackgroundTaskCoordinatorTest, InMorningScheduleEveningThrottled) {
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   // Expected to run task next morning.
   EXPECT_CALL(*background_task(),
-              Schedule(GetTime("04/26/20 06:00:00 AM") - GetTime(kNow), _));
+              Schedule(_, GetTime("04/26/20 06:00:00 AM") - GetTime(kNow), _));
 
   auto impression_data = kSingleClientImpressionTestData;
   Impression impression;
@@ -207,7 +210,7 @@ TEST_F(BackgroundTaskCoordinatorTest, InEveningScheduleNextMorning) {
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   // Expected to run task next morning.
   auto expected_window_start = GetTime("04/26/20 06:00:00 AM") - GetTime(kNow);
-  EXPECT_CALL(*background_task(), Schedule(expected_window_start, _));
+  EXPECT_CALL(*background_task(), Schedule(_, expected_window_start, _));
 
   NotificationEntry entry(SchedulerClientType::kTest1, kGuid);
   TestData test_data{
@@ -223,7 +226,7 @@ TEST_F(BackgroundTaskCoordinatorTest, InEveningScheduleNextMorningThrottled) {
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   // Expected to run task next morning.
   auto expected_window_start = GetTime("04/26/20 06:00:00 AM") - GetTime(kNow);
-  EXPECT_CALL(*background_task(), Schedule(expected_window_start, _));
+  EXPECT_CALL(*background_task(), Schedule(_, expected_window_start, _));
 
   // We have reached daily max.
   auto impression_data = kSingleClientImpressionTestData;
@@ -245,7 +248,7 @@ TEST_F(BackgroundTaskCoordinatorTest, Suppression) {
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   // Expected to run task in the morning after suppression expired.
   auto expected_window_start = GetTime("04/28/20 06:00:00 AM") - GetTime(kNow);
-  EXPECT_CALL(*background_task(), Schedule(expected_window_start, _));
+  EXPECT_CALL(*background_task(), Schedule(_, expected_window_start, _));
 
   auto impression_data = kSingleClientImpressionTestData;
   impression_data.back().suppression_info = SuppressionInfo(
@@ -265,7 +268,7 @@ TEST_F(BackgroundTaskCoordinatorTest, ScheduleEarlierTime) {
   // kTest1 type will run this evening, kTest2 will run task 3 days later.
   // Expected to run the earilier task.
   auto expected_window_start = GetTime("04/25/20 18:00:00 PM") - GetTime(kNow);
-  EXPECT_CALL(*background_task(), Schedule(expected_window_start, _));
+  EXPECT_CALL(*background_task(), Schedule(_, expected_window_start, _));
 
   NotificationEntry entry1(SchedulerClientType::kTest1, kGuid);
   NotificationEntry entry2(SchedulerClientType::kTest2, "guid_entry2");
@@ -284,7 +287,7 @@ TEST_F(BackgroundTaskCoordinatorTest, InMorningThrottledAllTypes) {
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   // Expected to run task next morning.
   auto expected_window_start = GetTime("04/26/20 06:00:00 AM") - GetTime(kNow);
-  EXPECT_CALL(*background_task(), Schedule(expected_window_start, _));
+  EXPECT_CALL(*background_task(), Schedule(_, expected_window_start, _));
 
   auto impression_data = kClientsImpressionTestData;
   Impression impression;
@@ -307,7 +310,7 @@ TEST_F(BackgroundTaskCoordinatorTest, ThrottledAllTypesAndSuppression) {
   EXPECT_CALL(*background_task(), Cancel()).Times(0);
   // Expected to run after 3 days suppression ends.
   auto expected_window_start = GetTime("04/28/20 06:00:00 AM") - GetTime(kNow);
-  EXPECT_CALL(*background_task(), Schedule(expected_window_start, _));
+  EXPECT_CALL(*background_task(), Schedule(_, expected_window_start, _));
 
   auto impression_data = kClientsImpressionTestData;
   Impression impression;
