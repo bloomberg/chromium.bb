@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -41,6 +42,29 @@ public class TabGroupModelFilter extends TabModelFilter {
     private static final String PREFS_FILE = "tab_group_pref";
     private static final String SESSIONS_COUNT_FOR_GROUP = "SessionsCountForGroup-";
     private static SharedPreferences sPref;
+
+    /**
+     * An interface to be notified about changes to a {@link TabGroupModelFilter}.
+     */
+    public interface Observer {
+        /**
+         * This method is called after a group is moved.
+         *
+         * @param movedTab The tab which has been moved. This is the last tab within the group.
+         * @param tabModelOldIndex The old index of the {@code movedTab} in the {@link TabModel}.
+         * @param tabModelNewIndex The new index of the {@code movedTab} in the {@link TabModel}.
+         */
+        void didMoveTabGroup(Tab movedTab, int tabModelOldIndex, int tabModelNewIndex);
+
+        /**
+         * This method is called after a tab within a group is moved.
+         *
+         * @param movedTab The tab which has been moved.
+         * @param tabModelOldIndex The old index of the {@code movedTab} in the {@link TabModel}.
+         * @param tabModelNewIndex The new index of the {@code movedTab} in the {@link TabModel}.
+         */
+        void didMoveWithinGroup(Tab movedTab, int tabModelOldIndex, int tabModelNewIndex);
+    }
 
     /**
      * This class is a representation of a group of tabs. It knows the last selected tab within the
@@ -108,6 +132,7 @@ public class TabGroupModelFilter extends TabModelFilter {
             return ids.get(position - 1);
         }
     }
+    private ObserverList<Observer> mGroupFilterObserver = new ObserverList<>();
     private Map<Integer, Integer> mGroupIdToGroupIndexMap = new HashMap<>();
     private Map<Integer, TabGroup> mGroupIdToGroupMap = new HashMap<>();
     private int mCurrentGroupIndex = TabList.INVALID_TAB_INDEX;
@@ -129,6 +154,22 @@ public class TabGroupModelFilter extends TabModelFilter {
                 removeObserver(this);
             }
         });
+    }
+
+    /**
+     * This method adds a {@link Observer} to be notified on {@link TabGroupModelFilter} changes.
+     * @param observer The {@link Observer} to add.
+     */
+    public void addTabGroupObserver(Observer observer) {
+        mGroupFilterObserver.addObserver(observer);
+    }
+
+    /**
+     * This method removes a {@link Observer}.
+     * @param observer The {@link Observer} to remove.
+     */
+    public void removeTabGroupObserver(Observer observer) {
+        mGroupFilterObserver.removeObserver(observer);
     }
 
     /**
@@ -338,6 +379,38 @@ public class TabGroupModelFilter extends TabModelFilter {
     @Override
     protected boolean shouldNotifyObserversOnSetIndex() {
         return mAbsentSelectedTab == null;
+    }
+
+    @Override
+    public void didMoveTab(Tab tab, int newIndex, int curIndex) {
+        super.didMoveTab(tab, newIndex, curIndex);
+
+        if (isMoveWithinGroup(tab, curIndex, newIndex)) {
+            for (Observer observer : mGroupFilterObserver) {
+                observer.didMoveWithinGroup(tab, curIndex, newIndex);
+            }
+        } else {
+            if (!hasFinishedMovingGroup(tab, newIndex)) return;
+            for (Observer observer : mGroupFilterObserver) {
+                observer.didMoveTabGroup(tab, curIndex, newIndex);
+            }
+        }
+    }
+
+    private boolean isMoveWithinGroup(
+            Tab movedTab, int oldIndexInTabModel, int newIndexInTabModel) {
+        int startIndex = Math.min(oldIndexInTabModel, newIndexInTabModel);
+        int endIndex = Math.max(oldIndexInTabModel, newIndexInTabModel);
+        for (int i = startIndex; i <= endIndex; i++) {
+            if (getTabModel().getTabAt(i).getRootId() != movedTab.getRootId()) return false;
+        }
+        return true;
+    }
+
+    private boolean hasFinishedMovingGroup(Tab movedTab, int newIndexInTabModel) {
+        TabGroup tabGroup = mGroupIdToGroupMap.get(movedTab.getRootId());
+        int offsetIndex = Math.abs(newIndexInTabModel - tabGroup.size() + 1);
+        return tabGroup.contains(getTabModel().getTabAt(offsetIndex).getId());
     }
 
     // TabList implementation.

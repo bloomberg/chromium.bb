@@ -233,6 +233,8 @@ class TabListMediator {
 
     private final TabModelObserver mTabModelObserver;
 
+    private TabGroupModelFilter.Observer mTabGroupObserver;
+
     /**
      * Interface for implementing a {@link Runnable} that takes a tabId for a generic action.
      */
@@ -324,11 +326,68 @@ class TabListMediator {
 
             @Override
             public void didMoveTab(Tab tab, int newIndex, int curIndex) {
+                if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
+                                instanceof TabGroupModelFilter) {
+                    return;
+                }
                 onTabMoved(tab, newIndex, curIndex);
             }
         };
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
+
+        if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
+                        instanceof TabGroupModelFilter) {
+            mTabGroupObserver = new TabGroupModelFilter.Observer() {
+                @Override
+                public void didMoveWithinGroup(
+                        Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {
+                    int curPosition = mModel.indexFromId(movedTab.getId());
+                    TabModel tabModel = mTabModelSelector.getCurrentModel();
+
+                    if (!isValidMovePosition(curPosition)) return;
+
+                    Tab destinationTab = tabModel.getTabAt(tabModelNewIndex > tabModelOldIndex
+                                    ? tabModelNewIndex - 1
+                                    : tabModelNewIndex + 1);
+
+                    int newPosition = mModel.indexFromId(destinationTab.getId());
+                    if (!isValidMovePosition(newPosition)) return;
+                    mModel.move(curPosition, newPosition);
+                }
+
+                @Override
+                public void didMoveTabGroup(
+                        Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {
+                    List<Tab> relatedTabs = getRelatedTabsForId(movedTab.getId());
+                    Tab currentGroupSelectedTab =
+                            TabGroupUtils.getSelectedTabInGroupForTab(mTabModelSelector, movedTab);
+                    TabModel tabModel = mTabModelSelector.getCurrentModel();
+                    int curPosition = mModel.indexFromId(currentGroupSelectedTab.getId());
+                    if (!isValidMovePosition(curPosition)) return;
+
+                    // Find the tab which was in the destination index before this move. Use that
+                    // tab to figure out the new position.
+                    int destinationTabIndex = tabModelNewIndex > tabModelOldIndex
+                            ? tabModelNewIndex - relatedTabs.size()
+                            : tabModelNewIndex + 1;
+                    Tab destinationTab = tabModel.getTabAt(destinationTabIndex);
+                    Tab destinationGroupSelectedTab = TabGroupUtils.getSelectedTabInGroupForTab(
+                            mTabModelSelector, destinationTab);
+                    int newPosition = mModel.indexFromId(destinationGroupSelectedTab.getId());
+                    if (!isValidMovePosition(newPosition)) return;
+
+                    mModel.move(curPosition, newPosition);
+                }
+            };
+
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                     false))
+                    .addTabGroupObserver(mTabGroupObserver);
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                     true))
+                    .addTabGroupObserver(mTabGroupObserver);
+        }
 
         // TODO(meiliang): follow up with unit tests to test the close signal is sent correctly with
         // the recommendedNextTab.
@@ -424,54 +483,12 @@ class TabListMediator {
     }
 
     private void onTabMoved(Tab tab, int newIndex, int curIndex) {
-        List<Tab> relatedTabs = getRelatedTabsForId(tab.getId());
-        TabModel tabModel = mTabModelSelector.getCurrentModel();
-
         // Handle move without groups enabled.
         if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof EmptyTabModelFilter) {
             if (!isValidMovePosition(curIndex) || !isValidMovePosition(newIndex)) return;
             mModel.move(curIndex, newIndex);
-            return;
         }
-
-        // Handle move with groups enabled.
-        // When move within one group.
-        if (TabGroupUtils.isMoveInSameGroup(tabModel, curIndex, newIndex)) {
-            int curPosition = mModel.indexFromId(tab.getId());
-            if (!isValidMovePosition(curPosition)) return;
-            Tab destinationTab =
-                    tabModel.getTabAt(newIndex > curIndex ? newIndex - 1 : newIndex + 1);
-            int newPosition = mModel.indexFromId(destinationTab.getId());
-            if (!isValidMovePosition(newPosition)) return;
-            mModel.move(curPosition, newPosition);
-            return;
-        }
-
-        // When move between groups.
-        // Only proceed when all members of the group are moved to target index in TabModel.
-        // Regardless of the size of tab group, one tab(group) only proceeds once here per
-        // move.
-        int lastTabInGroupIndex = newIndex - relatedTabs.size() + 1;
-        if (!relatedTabs.contains(tabModel.getTabAt(lastTabInGroupIndex))) return;
-
-        // Locate current position of the moving tab in TabListModel.
-        Tab currentGroupSelectedTab =
-                TabGroupUtils.getSelectedTabInGroupForTab(mTabModelSelector, tab);
-        int curPosition = mModel.indexFromId(currentGroupSelectedTab.getId());
-        if (!isValidMovePosition(curPosition)) return;
-
-        // Find the tab which was in the destination index before this move. Use that tab to
-        // figure out the new position.
-        int destinationTabIndex =
-                newIndex > curIndex ? newIndex - relatedTabs.size() : newIndex + 1;
-        Tab destinationTab = tabModel.getTabAt(destinationTabIndex);
-        Tab destinationGroupSelectedTab =
-                TabGroupUtils.getSelectedTabInGroupForTab(mTabModelSelector, destinationTab);
-        int newPosition = mModel.indexFromId(destinationGroupSelectedTab.getId());
-        if (!isValidMovePosition(newPosition)) return;
-
-        mModel.move(curPosition, newPosition);
     }
 
     private boolean isValidMovePosition(int position) {
@@ -612,6 +629,14 @@ class TabListMediator {
         if (mTabModelObserver != null) {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelObserver);
+        }
+        if (mTabGroupObserver != null) {
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                     false))
+                    .removeTabGroupObserver(mTabGroupObserver);
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                     true))
+                    .removeTabGroupObserver(mTabGroupObserver);
         }
         if (mComponentCallbacks != null) {
             ContextUtils.getApplicationContext().unregisterComponentCallbacks(mComponentCallbacks);

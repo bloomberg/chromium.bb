@@ -12,7 +12,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
@@ -131,21 +130,5 @@ public class TabGroupUtils {
         assert tabs != null && tabs.size() != 0;
 
         return selector.getCurrentModel().indexOf(tabs.get(tabs.size() - 1));
-    }
-
-    /**
-     * This method judges whether the current move from {@code curIndex} to {@code newIndex} in
-     * {@code tabModel} is a move within one TabGroup or not.
-     * @param tabModel   The TabModel that owns the moving tab.
-     * @param curIndex   The current index of the moving tab.
-     * @param newIndex   The new index of the moving tab.
-     * @return Whether is move happens within one TabGroup or not.
-     */
-    public static boolean isMoveInSameGroup(TabModel tabModel, int curIndex, int newIndex) {
-        int rootId = tabModel.getTabAt(curIndex).getRootId();
-        for (int i = Math.min(newIndex, curIndex); i <= Math.max(newIndex, curIndex); i++) {
-            if (tabModel.getTabAt(i).getRootId() != rootId) return false;
-        }
-        return true;
     }
 }
