@@ -24,6 +24,7 @@ source_set("ui") {
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/net:net",
     "//ios/web/public",
+    "//ios/web/public/deprecated",
     "//ios/web/public/download",
     "//ios/web/public/js_messaging",
     "//ios/web/public/security",
@@ -101,6 +102,7 @@ source_set("crw_context_menu_controller") {
   deps = [
     "//base",
     "//ios/web/public",
+    "//ios/web/public/deprecated",
     "//ios/web/web_state:context_menu",
     "//ios/web/web_state/ui:crw_wk_script_message_router",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",

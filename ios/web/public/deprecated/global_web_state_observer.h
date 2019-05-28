@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_GLOBAL_WEB_STATE_OBSERVER_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_GLOBAL_WEB_STATE_OBSERVER_H_
+#ifndef IOS_WEB_PUBLIC_DEPRECATED_GLOBAL_WEB_STATE_OBSERVER_H_
+#define IOS_WEB_PUBLIC_DEPRECATED_GLOBAL_WEB_STATE_OBSERVER_H_
 
 #include <stddef.h>
 
@@ -64,4 +64,4 @@ class GlobalWebStateObserver {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_GLOBAL_WEB_STATE_OBSERVER_H_
+#endif  // IOS_WEB_PUBLIC_DEPRECATED_GLOBAL_WEB_STATE_OBSERVER_H_

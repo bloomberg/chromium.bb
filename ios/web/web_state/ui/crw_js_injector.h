@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
+#import "ios/web/public/deprecated/crw_js_injection_evaluator.h"
 #include "url/gurl.h"
 
 @class CRWJSInjectionReceiver;

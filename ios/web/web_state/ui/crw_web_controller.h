@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/web/navigation/crw_session_controller.h"
-#include "ios/web/public/web_state/url_verification_constants.h"
+#include "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/web_state/ui/crw_touch_tracking_recognizer.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"

@@ -83,7 +83,7 @@ source_set("metrics") {
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/user",
-    "//ios/web",
+    "//ios/web/public/deprecated",
     "//url",
   ]
 }

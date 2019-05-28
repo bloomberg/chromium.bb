@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_NATIVE_CONTENT_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_NATIVE_CONTENT_H_
+#ifndef IOS_WEB_PUBLIC_DEPRECATED_CRW_NATIVE_CONTENT_H_
+#define IOS_WEB_PUBLIC_DEPRECATED_CRW_NATIVE_CONTENT_H_
 
 #import <UIKit/UIKit.h>
 
@@ -17,7 +17,7 @@ struct ContextMenuParams;
 
 // Abstract methods needed for manipulating native content in the web content
 // area.
-@protocol CRWNativeContent<NSObject>
+@protocol CRWNativeContent <NSObject>
 
 // The page title, meant for display to the user. Will return nil if not
 // available.
@@ -86,7 +86,7 @@ struct ContextMenuParams;
 @end
 
 // CRWNativeContent delegate protocol.
-@protocol CRWNativeContentDelegate<NSObject>
+@protocol CRWNativeContentDelegate <NSObject>
 
 @optional
 // Called when the content supplies a new title.
@@ -98,4 +98,4 @@ struct ContextMenuParams;
 
 @end
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_NATIVE_CONTENT_H_
+#endif  // IOS_WEB_PUBLIC_DEPRECATED_CRW_NATIVE_CONTENT_H_

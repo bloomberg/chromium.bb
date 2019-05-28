@@ -4,7 +4,7 @@
 
 #import "ios/web/public/test/native_controller_test_util.h"
 
-#import "ios/web/public/web_state/ui/crw_native_content_holder.h"
+#import "ios/web/public/deprecated/crw_native_content_holder.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 

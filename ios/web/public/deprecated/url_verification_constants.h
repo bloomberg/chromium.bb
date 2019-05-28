@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_URL_VERIFICATION_CONSTANTS_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_URL_VERIFICATION_CONSTANTS_H_
+#ifndef IOS_WEB_PUBLIC_DEPRECATED_URL_VERIFICATION_CONSTANTS_H_
+#define IOS_WEB_PUBLIC_DEPRECATED_URL_VERIFICATION_CONSTANTS_H_
 
 namespace web {
 enum URLVerificationTrustLevel {
@@ -17,4 +17,4 @@ enum URLVerificationTrustLevel {
 };
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_URL_VERIFICATION_CONSTANTS_H_
+#endif  // IOS_WEB_PUBLIC_DEPRECATED_URL_VERIFICATION_CONSTANTS_H_

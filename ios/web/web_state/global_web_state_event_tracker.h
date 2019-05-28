@@ -11,7 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "ios/web/public/web_state/global_web_state_observer.h"
+#include "ios/web/public/deprecated/global_web_state_observer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
 namespace web {

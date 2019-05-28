@@ -27,10 +27,10 @@
 #import "ios/chrome/test/app/static_html_view_test_util.h"         // nogncheck
 #import "ios/chrome/test/app/sync_test_util.h"                     // nogncheck
 #import "ios/chrome/test/app/tab_test_util.h"                      // nogncheck
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"    // nogncheck
 #import "ios/web/public/test/earl_grey/js_test_util.h"             // nogncheck
 #import "ios/web/public/test/web_view_content_test_util.h"         // nogncheck
 #import "ios/web/public/test/web_view_interaction_test_util.h"     // nogncheck
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"  // nogncheck
 #import "ios/web/public/web_state/web_state.h"                     // nogncheck
 #include "ui/base/l10n/l10n_util.h"                                // nogncheck
 #endif

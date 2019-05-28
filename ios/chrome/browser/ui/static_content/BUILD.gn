@@ -14,7 +14,7 @@ source_set("static_content") {
     "//base",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/url_loading",
-    "//ios/web",
+    "//ios/web/public/deprecated",
     "//net",
     "//ui/base",
   ]
@@ -35,7 +35,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/url_loading",
     "//ios/testing:ocmock_support",
-    "//ios/web",
+    "//ios/web/public/deprecated",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net",

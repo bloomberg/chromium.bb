@@ -8,7 +8,7 @@
 
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "testing/gtest_mac.h"
 

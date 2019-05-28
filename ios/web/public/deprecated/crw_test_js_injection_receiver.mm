@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
+#import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
 
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-#import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
+#import "ios/web/public/deprecated/crw_js_injection_evaluator.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface CRWTestWKWebViewEvaluator : NSObject<CRWJSInjectionEvaluator> {
+@interface CRWTestWKWebViewEvaluator : NSObject <CRWJSInjectionEvaluator> {
   // Web view for JavaScript evaluation.
   WKWebView* _webView;
   // Set to track injected script managers.

@@ -13,6 +13,7 @@ source_set("controller") {
     "//ios/web/navigation:core",
     "//ios/web/net",
     "//ios/web/public",
+    "//ios/web/public/deprecated",
     "//ios/web/web_state:web_state_impl_header",
     "//ui/base",
     "//url",

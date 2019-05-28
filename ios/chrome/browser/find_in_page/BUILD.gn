@@ -23,8 +23,8 @@ source_set("find_in_page") {
     "//base",
     "//ios/chrome/browser/metrics:ukm_url_recorder",
     "//ios/chrome/browser/web",
-    "//ios/web",
     "//ios/web/public",
+    "//ios/web/public/deprecated",
     "//ios/web/public/find_in_page",
     "//services/metrics/public/cpp:ukm_builders",
   ]
@@ -69,7 +69,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/metrics:ukm_url_recorder",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/browser/web:web_internal",
-    "//ios/web",
+    "//ios/web/public/deprecated",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//testing/gtest",

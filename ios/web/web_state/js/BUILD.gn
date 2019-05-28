@@ -9,6 +9,7 @@ source_set("js") {
     ":script_util",
     "//base",
     "//ios/web/public",
+    "//ios/web/public/deprecated",
   ]
 
   sources = [

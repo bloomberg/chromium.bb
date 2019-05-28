@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_CONTEXT_MENU_DELEGATE_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_CONTEXT_MENU_DELEGATE_H_
+#ifndef IOS_WEB_PUBLIC_DEPRECATED_CRW_CONTEXT_MENU_DELEGATE_H_
+#define IOS_WEB_PUBLIC_DEPRECATED_CRW_CONTEXT_MENU_DELEGATE_H_
 
 #import <WebKit/WebKit.h>
 
@@ -11,7 +11,7 @@
 
 // Implement this protocol to listen to the custom context menu trigger from
 // WKWebView.
-@protocol CRWContextMenuDelegate<NSObject>
+@protocol CRWContextMenuDelegate <NSObject>
 
 // Called when the custom Context menu recognizer triggers on |webView| by a
 // long press gesture. The system context menu will be suppressed.
@@ -27,4 +27,4 @@
     completionHandler:(void (^)(id, NSError*))completionHandler;
 @end
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_CONTEXT_MENU_DELEGATE_H_
+#endif  // IOS_WEB_PUBLIC_DEPRECATED_CRW_CONTEXT_MENU_DELEGATE_H_

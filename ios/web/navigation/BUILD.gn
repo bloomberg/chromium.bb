@@ -22,6 +22,7 @@ source_set("navigation") {
     "//ios/web/common",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
+    "//ios/web/public/deprecated",
     "//ios/web/public/download",
     "//ios/web/public/security",
     "//ios/web/public/session",
@@ -81,6 +82,7 @@ source_set("core") {
     "//components/url_formatter:url_formatter",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
+    "//ios/web/public/deprecated",
     "//ios/web/public/security",
     "//ui/base",
   ]

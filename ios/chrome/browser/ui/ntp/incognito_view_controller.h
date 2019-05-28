@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web/public/web_state/ui/crw_native_content.h"
+#import "ios/web/public/deprecated/crw_native_content.h"
 
 class UrlLoadingService;
 

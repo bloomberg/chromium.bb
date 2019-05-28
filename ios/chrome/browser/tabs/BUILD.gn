@@ -133,6 +133,7 @@ source_set("tabs_internal") {
     "//ios/public/provider/chrome/browser",
     "//ios/web",
     "//ios/web/public",
+    "//ios/web/public/deprecated",
     "//ios/web/public/security",
     "//ios/web/public/session",
     "//net",

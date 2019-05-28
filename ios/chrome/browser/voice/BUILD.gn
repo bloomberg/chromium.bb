@@ -59,6 +59,7 @@ source_set("tts") {
     "//ios/chrome/browser/browser_state",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/web",
+    "//ios/web/public/deprecated",
     "//net",
     "//third_party/google_toolbox_for_mac",
     "//url",

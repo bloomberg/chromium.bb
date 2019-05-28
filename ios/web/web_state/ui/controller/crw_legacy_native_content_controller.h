@@ -7,7 +7,7 @@
 
 #include <UIKit/UIKit.h>
 
-#import "ios/web/public/web_state/ui/crw_native_content_holder.h"
+#import "ios/web/public/deprecated/crw_native_content_holder.h"
 
 namespace web {
 class NavigationContextImpl;

@@ -123,6 +123,7 @@ source_set("ntp_internal") {
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
+    "//ios/web/public/deprecated",
     "//net",
     "//skia",
     "//ui/base",

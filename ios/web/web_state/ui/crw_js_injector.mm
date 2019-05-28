@@ -7,9 +7,9 @@
 #import <WebKit/WebKit.h>
 
 #include "base/logging.h"
+#import "ios/web/public/deprecated/crw_js_injection_manager.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/js/crw_js_injection_manager.h"
-#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 
