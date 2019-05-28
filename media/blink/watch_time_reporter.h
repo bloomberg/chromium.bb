@@ -213,6 +213,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   bool is_visible_ = true;
   bool is_seeking_ = false;
   bool in_shutdown_ = false;
+  bool has_valid_start_timestamp_ = false;
   double volume_ = 1.0;
 
   // Updated by UpdateSecondaryProperties(); controls timer state when

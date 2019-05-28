@@ -350,13 +350,19 @@ bool WatchTimeReporter::ShouldReportingTimerRun() const {
   // TODO(dalecurtis): We should only consider |volume_| when there is actually
   // an audio track; requires updating lots of tests to fix.
   return ShouldReportWatchTime() && is_playing_ && volume_ && is_visible_ &&
-         !in_shutdown_ && !is_seeking_;
+         !in_shutdown_ && !is_seeking_ && has_valid_start_timestamp_;
 }
 
 void WatchTimeReporter::MaybeStartReportingTimer(
     base::TimeDelta start_timestamp) {
-  DCHECK_NE(start_timestamp, kInfiniteDuration);
   DCHECK_GE(start_timestamp, base::TimeDelta());
+
+  // It's possible for |current_time| to be kInfiniteDuration here if the page
+  // seeks to kInfiniteDuration (2**64 - 1) when Duration() is infinite. There
+  // is no possible elapsed watch time when this occurs, so don't start the
+  // WatchTimeReporter at this time. If a later seek puts us earlier in the
+  // stream this method will be called again after OnSeeking().
+  has_valid_start_timestamp_ = start_timestamp != kInfiniteDuration;
 
   // Don't start the timer if our state indicates we shouldn't; this check is
   // important since the various event handlers do not have to care about the

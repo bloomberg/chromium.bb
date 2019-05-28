@@ -659,6 +659,14 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporter) {
   wtr_.reset();
 }
 
+TEST_P(WatchTimeReporterTest, WatchTimeReporterInfiniteStartTime) {
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillRepeatedly(testing::Return(kInfiniteDuration));
+  Initialize(false, false, kSizeJustRight);
+  wtr_->OnPlaying();
+  EXPECT_FALSE(IsMonitoring());
+}
+
 TEST_P(WatchTimeReporterTest, WatchTimeReporterBasic) {
   constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(5);
   constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(10);
