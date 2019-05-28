@@ -72,9 +72,4 @@ bool CompositorOverlayCandidateValidatorAndroid::
   return false;
 }
 
-// Overlays will still be allowed when software mirroring is enabled, even
-// though they won't appear in the mirror.
-void CompositorOverlayCandidateValidatorAndroid::SetSoftwareMirrorMode(
-    bool enabled) {}
-
 }  // namespace viz

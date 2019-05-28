@@ -33,8 +33,8 @@
 #include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/display_embedder/compositing_mode_reporter_impl.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/vsync_parameter_listener.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
@@ -77,7 +77,7 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(USE_OZONE)
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_ozone.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_ozone.h"
 #include "components/viz/service/display_embedder/software_output_device_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
@@ -154,7 +154,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
   // |display_output_surface|.
   // TODO(weiliangc): Remove this once software mirroring code path does not
   // have to go though validator.
-  viz::CompositorOverlayCandidateValidator* overlay_validator = nullptr;
+  viz::OverlayCandidateValidator* overlay_validator = nullptr;
   // Exactly one of |synthetic_begin_frame_source| and
   // |external_begin_frame_source| is valid at the same time.
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
@@ -243,9 +243,9 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 #endif
 }
 
-std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
-  std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
+std::unique_ptr<viz::OverlayCandidateValidator> CreateOverlayCandidateValidator(
+    gfx::AcceleratedWidget widget) {
+  std::unique_ptr<viz::OverlayCandidateValidator> validator;
 #if defined(USE_OZONE)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -262,7 +262,7 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
   if (!enable_overlay_flag.empty()) {
     std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
         ozone_platform->GetOverlayManager()->CreateOverlayCandidates(widget);
-    validator.reset(new viz::CompositorOverlayCandidateValidatorOzone(
+    validator.reset(new viz::OverlayCandidateValidatorOzone(
         std::move(overlay_candidates),
         viz::ParseOverlayStategies(enable_overlay_flag)));
   }
@@ -408,7 +408,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   }
 
   std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
-  viz::CompositorOverlayCandidateValidator* overlay_validator = nullptr;
+  viz::OverlayCandidateValidator* overlay_validator = nullptr;
   if (!use_gpu_compositing) {
     if (!is_gpu_compositing_disabled_ &&
         !compositor->force_software_compositor()) {
@@ -430,7 +430,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       display_output_surface =
           std::make_unique<OffscreenBrowserCompositorOutputSurface>(
               context_provider,
-              std::unique_ptr<viz::CompositorOverlayCandidateValidator>());
+              std::unique_ptr<viz::OverlayCandidateValidator>());
     } else if (capabilities.surfaceless) {
       DCHECK(capabilities.texture_format_bgra8888);
       auto validator = CreateOverlayCandidateValidator(compositor->widget());
@@ -442,7 +442,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
               GetGpuMemoryBufferManager());
       display_output_surface = std::move(gpu_output_surface);
     } else {
-      std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator =
+      std::unique_ptr<viz::OverlayCandidateValidator> validator =
           CreateOverlayCandidateValidator(compositor->widget());
       overlay_validator = validator.get();
       auto gpu_output_surface =

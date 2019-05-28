@@ -24,7 +24,7 @@ class Layer;
 }
 
 namespace viz {
-class CompositorOverlayCandidateValidator;
+class OverlayCandidateValidator;
 }
 
 namespace content {
@@ -61,9 +61,8 @@ class CONTENT_EXPORT ReflectorImpl : public ui::Reflector {
                              const gfx::Size& surface_size);
 
   // Called when the source surface is bound and available.
-  void OnSourceSurfaceReady(
-      BrowserCompositorOutputSurface* surface,
-      viz::CompositorOverlayCandidateValidator* overlay_validator);
+  void OnSourceSurfaceReady(BrowserCompositorOutputSurface* surface,
+                            viz::OverlayCandidateValidator* overlay_validator);
 
   // Called when the mailbox which has the source surface's texture
   // is updated.
@@ -83,7 +82,7 @@ class CONTENT_EXPORT ReflectorImpl : public ui::Reflector {
 
   scoped_refptr<OwnedMailbox> mailbox_;
   bool flip_texture_;
-  viz::CompositorOverlayCandidateValidator* overlay_validator_;
+  viz::OverlayCandidateValidator* overlay_validator_;
   BrowserCompositorOutputSurface* output_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(ReflectorImpl);

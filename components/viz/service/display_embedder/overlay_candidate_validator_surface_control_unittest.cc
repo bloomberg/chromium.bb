@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_surface_control.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/test/gfx_util.h"
 
 namespace viz {
 
-TEST(OverlayCandidateValidatorAndroidTest, NoClipOrNegativeOffset) {
+TEST(OverlayCandidateValidatorSurfaceControlTest, NoClipOrNegativeOffset) {
   OverlayCandidate candidate;
   candidate.display_rect = gfx::RectF(10.f, 10.f);
   candidate.uv_rect = gfx::RectF(1.f, 1.f);
@@ -20,13 +20,13 @@ TEST(OverlayCandidateValidatorAndroidTest, NoClipOrNegativeOffset) {
   OverlayCandidateList candidates;
   candidates.push_back(candidate);
 
-  OverlayCandidateValidatorAndroid validator;
+  OverlayCandidateValidatorSurfaceControl validator;
   validator.CheckOverlaySupport(&candidates);
   EXPECT_TRUE(candidates.at(0).overlay_handled);
   EXPECT_RECTF_EQ(candidates.at(0).display_rect, gfx::RectF(10.f, 10.f));
 }
 
-TEST(OverlayCandidateValidatorAndroidTest, Clipped) {
+TEST(OverlayCandidateValidatorSurfaceControlTest, Clipped) {
   OverlayCandidate candidate;
   candidate.display_rect = gfx::RectF(10.f, 10.f);
   candidate.uv_rect = gfx::RectF(1.f, 1.f);
@@ -37,7 +37,7 @@ TEST(OverlayCandidateValidatorAndroidTest, Clipped) {
   OverlayCandidateList candidates;
   candidates.push_back(candidate);
 
-  OverlayCandidateValidatorAndroid validator;
+  OverlayCandidateValidatorSurfaceControl validator;
   validator.CheckOverlaySupport(&candidates);
   EXPECT_TRUE(candidates.at(0).overlay_handled);
   EXPECT_RECTF_EQ(candidates.at(0).display_rect,
@@ -45,7 +45,7 @@ TEST(OverlayCandidateValidatorAndroidTest, Clipped) {
   EXPECT_RECTF_EQ(candidates.at(0).uv_rect, gfx::RectF(0.2f, 0.2f, 0.5f, 0.5f));
 }
 
-TEST(OverlayCandidateValidatorAndroidTest, NegativeOffset) {
+TEST(OverlayCandidateValidatorSurfaceControlTest, NegativeOffset) {
   OverlayCandidate candidate;
   candidate.display_rect = gfx::RectF(-2.f, -4.f, 10.f, 10.f);
   candidate.uv_rect = gfx::RectF(0.5f, 0.5f);
@@ -56,7 +56,7 @@ TEST(OverlayCandidateValidatorAndroidTest, NegativeOffset) {
   OverlayCandidateList candidates;
   candidates.push_back(candidate);
 
-  OverlayCandidateValidatorAndroid validator;
+  OverlayCandidateValidatorSurfaceControl validator;
   validator.CheckOverlaySupport(&candidates);
   EXPECT_TRUE(candidates.at(0).overlay_handled);
   EXPECT_RECTF_EQ(candidates.at(0).display_rect,
@@ -64,7 +64,7 @@ TEST(OverlayCandidateValidatorAndroidTest, NegativeOffset) {
   EXPECT_RECTF_EQ(candidates.at(0).uv_rect, gfx::RectF(0.1f, 0.2f, 0.4f, 0.3f));
 }
 
-TEST(OverlayCandidateValidatorAndroidTest, ClipAndNegativeOffset) {
+TEST(OverlayCandidateValidatorSurfaceControlTest, ClipAndNegativeOffset) {
   OverlayCandidate candidate;
   candidate.display_rect = gfx::RectF(-5.0f, -5.0f, 10.0f, 10.0f);
   candidate.uv_rect = gfx::RectF(0.5f, 0.5f, 0.5f, 0.5f);
@@ -75,7 +75,7 @@ TEST(OverlayCandidateValidatorAndroidTest, ClipAndNegativeOffset) {
   OverlayCandidateList candidates;
   candidates.push_back(candidate);
 
-  OverlayCandidateValidatorAndroid validator;
+  OverlayCandidateValidatorSurfaceControl validator;
   validator.CheckOverlaySupport(&candidates);
   EXPECT_TRUE(candidates.at(0).overlay_handled);
   EXPECT_RECTF_EQ(candidates.at(0).display_rect,
@@ -84,7 +84,7 @@ TEST(OverlayCandidateValidatorAndroidTest, ClipAndNegativeOffset) {
                   gfx::RectF(0.75f, 0.75f, 0.25f, 0.25f));
 }
 
-TEST(OverlayCandidateValidatorAndroidTest, DisplayTransformOverlay) {
+TEST(OverlayCandidateValidatorSurfaceControlTest, DisplayTransformOverlay) {
   OverlayCandidate candidate;
   candidate.display_rect = gfx::RectF(10, 10, 50, 100);
   candidate.use_output_surface_for_resource = false;
@@ -93,7 +93,7 @@ TEST(OverlayCandidateValidatorAndroidTest, DisplayTransformOverlay) {
   OverlayCandidateList candidates;
   candidates.push_back(candidate);
 
-  OverlayCandidateValidatorAndroid validator;
+  OverlayCandidateValidatorSurfaceControl validator;
   validator.SetViewportSize(gfx::Size(100, 200));
   validator.SetDisplayTransform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
 
@@ -110,7 +110,7 @@ TEST(OverlayCandidateValidatorAndroidTest, DisplayTransformOverlay) {
   EXPECT_RECTF_EQ(candidates.back().display_rect, gfx::RectF(10, 40, 100, 50));
 }
 
-TEST(OverlayCandidateValidatorAndroidTest,
+TEST(OverlayCandidateValidatorSurfaceControlTest,
      DisplayTransformOutputSurfaceOverlay) {
   OverlayCandidate candidate;
   candidate.display_rect = gfx::RectF(100, 200);
@@ -118,7 +118,7 @@ TEST(OverlayCandidateValidatorAndroidTest,
   candidate.overlay_handled = false;
   candidate.transform = gfx::OVERLAY_TRANSFORM_NONE;
 
-  OverlayCandidateValidatorAndroid validator;
+  OverlayCandidateValidatorSurfaceControl validator;
   validator.SetViewportSize(gfx::Size(100, 200));
   validator.SetDisplayTransform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
   validator.AdjustOutputSurfaceOverlay(&candidate);

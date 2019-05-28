@@ -21,7 +21,7 @@ GLOutputSurfaceBufferQueueAndroid::GLOutputSurfaceBufferQueueAndroid(
                                  gpu_memory_buffer_manager,
                                  buffer_format) {
   overlay_candidate_validator_ =
-      std::make_unique<OverlayCandidateValidatorAndroid>();
+      std::make_unique<OverlayCandidateValidatorSurfaceControl>();
 }
 
 GLOutputSurfaceBufferQueueAndroid::~GLOutputSurfaceBufferQueueAndroid() =

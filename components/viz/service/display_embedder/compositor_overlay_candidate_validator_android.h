@@ -6,7 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
 
 #include "base/macros.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -20,18 +20,17 @@ namespace viz {
 // nothing will cause the overlay to be rejected, because there's no fallback to
 // gl compositing.
 class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorAndroid
-    : public CompositorOverlayCandidateValidator {
+    : public OverlayCandidateValidator {
  public:
   CompositorOverlayCandidateValidatorAndroid();
   ~CompositorOverlayCandidateValidatorAndroid() override;
 
+  // OverlayCandidateValidator implementation.
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
   bool AllowCALayerOverlays() const override;
   bool AllowDCLayerOverlays() const override;
   bool NeedsSurfaceOccludingDamageRect() const override;
-
-  void SetSoftwareMirrorMode(bool enabled) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompositorOverlayCandidateValidatorAndroid);

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
 
 #include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "components/viz/common/display/overlay_strategy.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -20,13 +20,13 @@ class OverlayCandidatesOzone;
 
 namespace viz {
 
-class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorOzone
-    : public CompositorOverlayCandidateValidator {
+class VIZ_SERVICE_EXPORT OverlayCandidateValidatorOzone
+    : public OverlayCandidateValidator {
  public:
-  CompositorOverlayCandidateValidatorOzone(
+  OverlayCandidateValidatorOzone(
       std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
       std::vector<OverlayStrategy> strategies);
-  ~CompositorOverlayCandidateValidatorOzone() override;
+  ~OverlayCandidateValidatorOzone() override;
 
   // OverlayCandidateValidator implementation.
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
@@ -34,8 +34,6 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorOzone
   bool AllowDCLayerOverlays() const override;
   bool NeedsSurfaceOccludingDamageRect() const override;
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
-
-  // CompositorOverlayCandidateValidator implementation.
   void SetSoftwareMirrorMode(bool enabled) override;
 
  private:
@@ -43,9 +41,9 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorOzone
   const std::vector<OverlayStrategy> strategies_;
   bool software_mirror_active_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(CompositorOverlayCandidateValidatorOzone);
+  DISALLOW_COPY_AND_ASSIGN(OverlayCandidateValidatorOzone);
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OVERLAY_CANDIDATE_VALIDATOR_OZONE_H_

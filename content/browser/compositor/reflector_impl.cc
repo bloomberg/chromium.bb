@@ -6,7 +6,7 @@
 
 #include "base/location.h"
 #include "components/viz/common/resources/transferable_resource.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -55,7 +55,7 @@ void ReflectorImpl::DetachFromOutputSurface() {
 
 void ReflectorImpl::OnSourceSurfaceReady(
     BrowserCompositorOutputSurface* output_surface,
-    viz::CompositorOverlayCandidateValidator* overlay_validator) {
+    viz::OverlayCandidateValidator* overlay_validator) {
   if (mirroring_layers_.empty())
     return;  // Was already Shutdown().
   if (output_surface == output_surface_)

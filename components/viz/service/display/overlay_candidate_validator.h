@@ -48,6 +48,11 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   // Android Surface Control.
   virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
   virtual void SetViewportSize(const gfx::Size& size) {}
+
+  // Disables overlays when software mirroring display. This only needs to be
+  // implemented for Chrome OS.
+  virtual void SetSoftwareMirrorMode(bool enabled) {}
+
   virtual ~OverlayCandidateValidator() {}
 };
 

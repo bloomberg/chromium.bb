@@ -17,8 +17,7 @@ GLOutputSurfaceMac::GLOutputSurfaceMac(
                                  surface_handle,
                                  gpu_memory_buffer_manager,
                                  gfx::BufferFormat::RGBA_8888),
-      overlay_validator_(
-          new CompositorOverlayCandidateValidatorMac(!allow_overlays)) {}
+      overlay_validator_(new OverlayCandidateValidatorMac(!allow_overlays)) {}
 
 GLOutputSurfaceMac::~GLOutputSurfaceMac() {}
 

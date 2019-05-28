@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/output_surface_client.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 
@@ -20,8 +20,7 @@ namespace content {
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     scoped_refptr<viz::ContextProvider> context_provider,
-    std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-        overlay_candidate_validator)
+    std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator)
     : OutputSurface(std::move(context_provider)) {
   overlay_candidate_validator_ = std::move(overlay_candidate_validator);
 }

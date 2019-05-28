@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_ozone.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_ozone.h"
 
 #include <stddef.h>
 
@@ -20,17 +20,15 @@ namespace viz {
 // overlays configurations.
 // |strategies_string| is a list of overlay strategies that should be returned
 // by GetStrategies.
-CompositorOverlayCandidateValidatorOzone::
-    CompositorOverlayCandidateValidatorOzone(
-        std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
-        std::vector<OverlayStrategy> strategies)
+OverlayCandidateValidatorOzone::OverlayCandidateValidatorOzone(
+    std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
+    std::vector<OverlayStrategy> strategies)
     : overlay_candidates_(std::move(overlay_candidates)),
       strategies_(std::move(strategies)) {}
 
-CompositorOverlayCandidateValidatorOzone::
-    ~CompositorOverlayCandidateValidatorOzone() {}
+OverlayCandidateValidatorOzone::~OverlayCandidateValidatorOzone() {}
 
-void CompositorOverlayCandidateValidatorOzone::GetStrategies(
+void OverlayCandidateValidatorOzone::GetStrategies(
     OverlayProcessor::StrategyList* strategies) {
   for (OverlayStrategy strategy : strategies_) {
     switch (strategy) {
@@ -55,20 +53,19 @@ void CompositorOverlayCandidateValidatorOzone::GetStrategies(
   }
 }
 
-bool CompositorOverlayCandidateValidatorOzone::AllowCALayerOverlays() const {
+bool OverlayCandidateValidatorOzone::AllowCALayerOverlays() const {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorOzone::AllowDCLayerOverlays() const {
+bool OverlayCandidateValidatorOzone::AllowDCLayerOverlays() const {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorOzone::NeedsSurfaceOccludingDamageRect()
-    const {
+bool OverlayCandidateValidatorOzone::NeedsSurfaceOccludingDamageRect() const {
   return true;
 }
 
-void CompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
+void OverlayCandidateValidatorOzone::CheckOverlaySupport(
     OverlayCandidateList* surfaces) {
   // SW mirroring copies out of the framebuffer, so we can't remove any
   // quads for overlaying, otherwise the output is incorrect.
@@ -104,8 +101,7 @@ void CompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
   }
 }
 
-void CompositorOverlayCandidateValidatorOzone::SetSoftwareMirrorMode(
-    bool enabled) {
+void OverlayCandidateValidatorOzone::SetSoftwareMirrorMode(bool enabled) {
   software_mirror_active_ = enabled;
 }
 

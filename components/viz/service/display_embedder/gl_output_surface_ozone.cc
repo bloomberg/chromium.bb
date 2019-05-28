@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_ozone.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_ozone.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
@@ -29,7 +29,7 @@ GLOutputSurfaceOzone::GLOutputSurfaceOzone(
     std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
         overlay_manager->CreateOverlayCandidates(surface_handle);
     overlay_candidate_validator_ =
-        std::make_unique<CompositorOverlayCandidateValidatorOzone>(
+        std::make_unique<OverlayCandidateValidatorOzone>(
             std::move(overlay_candidates), std::move(strategies));
   }
 }

@@ -4,7 +4,7 @@
 
 #include "components/viz/service/display_embedder/gl_output_surface_win.h"
 
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_win.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_win.h"
 
 namespace viz {
 
@@ -13,8 +13,7 @@ GLOutputSurfaceWin::GLOutputSurfaceWin(
     bool use_overlays)
     : GLOutputSurface(context_provider) {
   if (use_overlays) {
-    overlay_validator_ =
-        std::make_unique<CompositorOverlayCandidateValidatorWin>();
+    overlay_validator_ = std::make_unique<OverlayCandidateValidatorWin>();
   }
 }
 

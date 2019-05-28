@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_surface_control.h"
 
 #include "cc/base/math_util.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
@@ -32,28 +32,31 @@ gfx::RectF ClipFromOrigin(gfx::RectF input) {
 
 }  // namespace
 
-OverlayCandidateValidatorAndroid::OverlayCandidateValidatorAndroid() = default;
-OverlayCandidateValidatorAndroid::~OverlayCandidateValidatorAndroid() = default;
+OverlayCandidateValidatorSurfaceControl::
+    OverlayCandidateValidatorSurfaceControl() = default;
+OverlayCandidateValidatorSurfaceControl::
+    ~OverlayCandidateValidatorSurfaceControl() = default;
 
-void OverlayCandidateValidatorAndroid::GetStrategies(
+void OverlayCandidateValidatorSurfaceControl::GetStrategies(
     OverlayProcessor::StrategyList* strategies) {
   strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(
       this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
 }
 
-bool OverlayCandidateValidatorAndroid::AllowCALayerOverlays() const {
+bool OverlayCandidateValidatorSurfaceControl::AllowCALayerOverlays() const {
   return false;
 }
 
-bool OverlayCandidateValidatorAndroid::AllowDCLayerOverlays() const {
+bool OverlayCandidateValidatorSurfaceControl::AllowDCLayerOverlays() const {
   return false;
 }
 
-bool OverlayCandidateValidatorAndroid::NeedsSurfaceOccludingDamageRect() const {
+bool OverlayCandidateValidatorSurfaceControl::NeedsSurfaceOccludingDamageRect()
+    const {
   return true;
 }
 
-void OverlayCandidateValidatorAndroid::CheckOverlaySupport(
+void OverlayCandidateValidatorSurfaceControl::CheckOverlaySupport(
     OverlayCandidateList* surfaces) {
   DCHECK(!surfaces->empty());
 
@@ -103,7 +106,7 @@ void OverlayCandidateValidatorAndroid::CheckOverlaySupport(
   }
 }
 
-void OverlayCandidateValidatorAndroid::AdjustOutputSurfaceOverlay(
+void OverlayCandidateValidatorSurfaceControl::AdjustOutputSurfaceOverlay(
     OverlayCandidate* candidate) {
   DCHECK_EQ(candidate->transform, gfx::OVERLAY_TRANSFORM_NONE);
   DCHECK(!candidate->is_clipped);
@@ -118,12 +121,14 @@ void OverlayCandidateValidatorAndroid::AdjustOutputSurfaceOverlay(
   candidate->overlay_handled = true;
 }
 
-void OverlayCandidateValidatorAndroid::SetDisplayTransform(
+void OverlayCandidateValidatorSurfaceControl::SetDisplayTransform(
     gfx::OverlayTransform transform) {
   display_transform_ = transform;
 }
-void OverlayCandidateValidatorAndroid::SetViewportSize(
+
+void OverlayCandidateValidatorSurfaceControl::SetViewportSize(
     const gfx::Size& viewport_size) {
   viewport_size_ = viewport_size;
 }
+
 }  // namespace viz

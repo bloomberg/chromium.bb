@@ -14,7 +14,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/test/test_context_provider.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_texture.h"
@@ -26,7 +26,7 @@
 
 #if defined(USE_OZONE)
 #include "components/viz/service/display/overlay_candidate.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_ozone.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #endif  // defined(USE_OZONE)
 
@@ -64,12 +64,11 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
 };
 #endif  // defined(USE_OZONE)
 
-std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-CreateTestValidatorOzone() {
+std::unique_ptr<viz::OverlayCandidateValidator> CreateTestValidatorOzone() {
 #if defined(USE_OZONE)
   std::vector<viz::OverlayStrategy> strategies = {
       viz::OverlayStrategy::kSingleOnTop, viz::OverlayStrategy::kUnderlay};
-  return std::make_unique<viz::CompositorOverlayCandidateValidatorOzone>(
+  return std::make_unique<viz::OverlayCandidateValidatorOzone>(
       std::make_unique<TestOverlayCandidatesOzone>(), std::move(strategies));
 #else
   return nullptr;
@@ -200,7 +199,7 @@ class ReflectorImplTest : public testing::Test {
   std::unique_ptr<ui::Layer> mirroring_layer_;
   std::unique_ptr<ReflectorImpl> reflector_;
   std::unique_ptr<TestOutputSurface> output_surface_;
-  std::unique_ptr<viz::CompositorOverlayCandidateValidator> overlay_validator_;
+  std::unique_ptr<viz::OverlayCandidateValidator> overlay_validator_;
 };
 
 namespace {

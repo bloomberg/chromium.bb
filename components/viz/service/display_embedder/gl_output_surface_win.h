@@ -12,7 +12,7 @@
 
 namespace viz {
 
-class CompositorOverlayCandidateValidatorWin;
+class OverlayCandidateValidatorWin;
 
 class GLOutputSurfaceWin : public GLOutputSurface {
  public:
@@ -25,7 +25,7 @@ class GLOutputSurfaceWin : public GLOutputSurface {
       override;
 
  private:
-  std::unique_ptr<CompositorOverlayCandidateValidatorWin> overlay_validator_;
+  std::unique_ptr<OverlayCandidateValidatorWin> overlay_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(GLOutputSurfaceWin);
 };

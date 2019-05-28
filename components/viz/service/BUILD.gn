@@ -101,7 +101,6 @@ viz_component("service") {
     "display_embedder/buffer_queue.h",
     "display_embedder/compositing_mode_reporter_impl.cc",
     "display_embedder/compositing_mode_reporter_impl.h",
-    "display_embedder/compositor_overlay_candidate_validator.h",
     "display_embedder/direct_context_provider.cc",
     "display_embedder/direct_context_provider.h",
     "display_embedder/gl_output_surface.cc",
@@ -237,10 +236,10 @@ viz_component("service") {
 
   if (is_mac) {
     sources += [
-      "display_embedder/compositor_overlay_candidate_validator_mac.cc",
-      "display_embedder/compositor_overlay_candidate_validator_mac.h",
       "display_embedder/gl_output_surface_mac.cc",
       "display_embedder/gl_output_surface_mac.h",
+      "display_embedder/overlay_candidate_validator_mac.cc",
+      "display_embedder/overlay_candidate_validator_mac.h",
       "display_embedder/software_output_device_mac.cc",
       "display_embedder/software_output_device_mac.h",
     ]
@@ -253,6 +252,12 @@ viz_component("service") {
     sources += [
       "display_embedder/compositor_overlay_candidate_validator_android.cc",
       "display_embedder/compositor_overlay_candidate_validator_android.h",
+      "display_embedder/gl_output_surface_android.cc",
+      "display_embedder/gl_output_surface_android.h",
+      "display_embedder/gl_output_surface_buffer_queue_android.cc",
+      "display_embedder/gl_output_surface_buffer_queue_android.h",
+      "display_embedder/overlay_candidate_validator_surface_control.cc",
+      "display_embedder/overlay_candidate_validator_surface_control.h",
       "frame_sinks/external_begin_frame_source_android.cc",
       "frame_sinks/external_begin_frame_source_android.h",
       "gl/throw_uncaught_exception.cc",
@@ -264,10 +269,10 @@ viz_component("service") {
 
   if (use_ozone) {
     sources += [
-      "display_embedder/compositor_overlay_candidate_validator_ozone.cc",
-      "display_embedder/compositor_overlay_candidate_validator_ozone.h",
       "display_embedder/gl_output_surface_ozone.cc",
       "display_embedder/gl_output_surface_ozone.h",
+      "display_embedder/overlay_candidate_validator_ozone.cc",
+      "display_embedder/overlay_candidate_validator_ozone.h",
       "display_embedder/software_output_device_ozone.cc",
       "display_embedder/software_output_device_ozone.h",
     ]
@@ -277,25 +282,14 @@ viz_component("service") {
 
   if (is_win) {
     sources += [
-      "display_embedder/compositor_overlay_candidate_validator_win.cc",
-      "display_embedder/compositor_overlay_candidate_validator_win.h",
       "display_embedder/gl_output_surface_win.cc",
       "display_embedder/gl_output_surface_win.h",
       "display_embedder/output_device_backing.cc",
       "display_embedder/output_device_backing.h",
+      "display_embedder/overlay_candidate_validator_win.cc",
+      "display_embedder/overlay_candidate_validator_win.h",
       "display_embedder/software_output_device_win.cc",
       "display_embedder/software_output_device_win.h",
-    ]
-  }
-
-  if (is_android) {
-    sources += [
-      "display_embedder/gl_output_surface_android.cc",
-      "display_embedder/gl_output_surface_android.h",
-      "display_embedder/gl_output_surface_buffer_queue_android.cc",
-      "display_embedder/gl_output_surface_buffer_queue_android.h",
-      "display_embedder/overlay_candidate_validator_android.cc",
-      "display_embedder/overlay_candidate_validator_android.h",
     ]
   }
 
@@ -481,7 +475,7 @@ viz_source_set("unit_tests") {
 
   if (is_android) {
     sources += [
-      "display_embedder/overlay_candidate_validator_android_unittest.cc",
+      "display_embedder/overlay_candidate_validator_surface_control_unittest.cc",
       "frame_sinks/external_begin_frame_source_android_unittest.cc",
     ]
   }

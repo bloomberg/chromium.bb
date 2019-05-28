@@ -12,7 +12,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -32,7 +32,7 @@ static viz::ResourceFormat kFboTextureFormat = viz::RGBA_8888;
 OffscreenBrowserCompositorOutputSurface::
     OffscreenBrowserCompositorOutputSurface(
         scoped_refptr<ws::ContextProviderCommandBuffer> context,
-        std::unique_ptr<viz::CompositorOverlayCandidateValidator>
+        std::unique_ptr<viz::OverlayCandidateValidator>
             overlay_candidate_validator)
     : BrowserCompositorOutputSurface(std::move(context),
                                      std::move(overlay_candidate_validator)),

@@ -16,7 +16,7 @@ class SoftwareOutputDevice;
 }
 
 namespace viz {
-class CompositorOverlayCandidateValidator;
+class OverlayCandidateValidator;
 }
 
 namespace gfx {
@@ -48,10 +48,9 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
  protected:
   // Constructor used by the accelerated implementation.
-  BrowserCompositorOutputSurface(
-      scoped_refptr<viz::ContextProvider> context,
-      std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-          overlay_candidate_validator);
+  BrowserCompositorOutputSurface(scoped_refptr<viz::ContextProvider> context,
+                                 std::unique_ptr<viz::OverlayCandidateValidator>
+                                     overlay_candidate_validator);
 
   // Constructor used by the software implementation.
   explicit BrowserCompositorOutputSurface(
@@ -61,8 +60,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   ReflectorImpl* reflector_ = nullptr;
 
  private:
-  std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-      overlay_candidate_validator_;
+  std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurface);
 };
