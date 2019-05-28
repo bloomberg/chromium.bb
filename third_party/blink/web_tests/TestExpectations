@@ -3123,8 +3123,6 @@ crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-001.html
 crbug.com/626703 external/wpt/css/css-conditional/at-supports-040.html [ Failure ]
 ### See crbug.com/891427 comment near the top of this file:
 ###crbug.com/626703 [ Win7 ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
-crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
-crbug.com/626703 external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-001.html [ Failure ]
