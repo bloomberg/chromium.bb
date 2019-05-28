@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
-<translation id="1001338328714563407">உங்கள் சாதனம் மற்றும் கணக்கின் நிர்வாகியாக, <ph name="ENROLLMENT_DOMAIN" /> இவற்றைச் செய்யலாம்:</translation>
+<translation id="1001338328714563407">உங்கள் சாதனம் மற்றும் கணக்கின் நிர்வாகியாக <ph name="ENROLLMENT_DOMAIN" /> இவற்றைச் செய்யலாம்:</translation>
 <translation id="1008557486741366299">இப்போது இல்லை </translation>
 <translation id="1010200102790553230">பக்கத்தைப் பின்னர் ஏற்று</translation>
 <translation id="1015730422737071372">கூடுதல் விவரங்களை வழங்கவும்</translation>
@@ -222,6 +222,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">கார்டு</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> ஆல் கொள்கை மேலெழுதப்பட்டுள்ளதால் புறக்கணிக்கப்பட்டது.</translation>
+<translation id="2129079103035905234">மோஷன் சென்சார்கள்</translation>
 <translation id="213826338245044447">மொபைல் புக்மார்க்குகள்</translation>
 <translation id="214556005048008348">பேமண்ட்டை ரத்துசெய்</translation>
 <translation id="2147827593068025794">பின்புல ஒத்திசைவு</translation>
@@ -345,7 +346,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">இணைப்பு மீட்டமைக்கப்பட்டது.</translation>
 <translation id="2788784517760473862">ஏற்கப்படும் கிரெடிட் கார்டுகள்</translation>
-<translation id="2792012897584536778">இந்தச் சாதனத்தின் நிர்வாகிகளிடம் அமைவுப் பாதுகாப்புச் சான்றிதழ்கள் உள்ளன. இவற்றின் மூலம் நீங்கள் சென்ற இணையதளங்களின் உள்ளடக்கத்தை அவர்கள் பார்க்கக்கூடும்.</translation>
+<translation id="2792012897584536778">இந்தச் சாதனத்தின் நிர்வாகிகள் பாதுகாப்புச் சான்றிதழ்களை அமைத்துள்ளனர். இவற்றின் மூலம் நீங்கள் சென்ற இணையதளங்களின் உள்ளடக்கத்தை அவர்கள் பார்க்கக்கூடும்.</translation>
 <translation id="2794233252405721443">தளம் தடுக்கப்பட்டது</translation>
 <translation id="2799020568854403057">தளத்தில் தீங்கிழைக்கும் பயன்பாடுகள் உள்ளன</translation>
 <translation id="2799223571221894425">மீண்டும் தொடங்கு</translation>
@@ -362,7 +363,7 @@
 <translation id="2903493209154104877">முகவரிகள்</translation>
 <translation id="290376772003165898"><ph name="LANGUAGE" /> மொழியில் பக்கம் இல்லையா?</translation>
 <translation id="2909946352844186028">நெட்வொர்க் மாற்றம் கண்டறியப்பட்டது.</translation>
-<translation id="2910133103376701357">உங்கள் சாதனமும் கணக்கும் <ph name="ENROLLMENT_DOMAIN" /> மூலம் நிர்வகிக்கப்படுகின்றன.</translation>
+<translation id="2910133103376701357">உங்கள் சாதனத்தையும் கணக்கையும் நிர்வகிப்பது: <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2916038427272391327">பிற நிரல்களை மூடவும்</translation>
 <translation id="2922350208395188000">சேவையகச் சான்றிதழை சோதிக்க முடியவில்லை.</translation>
 <translation id="2925673989565098301">டெலிவரி முறை</translation>
@@ -373,7 +374,7 @@
 <translation id="2948083400971632585">இணைப்பிற்காக உள்ளமைத்த எந்த பிராக்சிகளையும் நீங்கள் அமைப்புகள் பக்கத்திலிருந்து முடக்கலாம்.</translation>
 <translation id="2955913368246107853">தேடல் பெட்டியை மூடுக</translation>
 <translation id="2969319727213777354">பாதுகாப்பான இணைப்பை ஏற்படுத்த, கடிகாரம் சரியாக அமைக்கப்பட வேண்டும். இணையதளங்கள் தங்களைத் தாமே அடையாளப்படுத்தப் பயன்படுத்தப்படும் சான்றிதழ்கள் குறிப்பிட்ட காலத்திற்கு மட்டும் செல்லுபடியாவதால், இது செய்யப்பட வேண்டும். உங்கள் சாதனத்தின் கடிகாரம் தவறாக இருப்பதால், இந்தச் சான்றிதழ்களை Google Chrome ஆல் சரிபார்க்க முடியவில்லை.</translation>
-<translation id="2970515157925768593">இதனால் உங்கள் சாதன மற்றும் கணக்கின் அமைவை தொலைநிலையிலிருந்து மாற்ற இயலும்.</translation>
+<translation id="2970515157925768593">சாதன அமைவையும் கணக்கு அமைவையும் தொலைநிலையிலிருந்து மாற்ற முடியும்.</translation>
 <translation id="2972581237482394796">&amp;மீண்டும் செய்</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, தற்போது தேர்ந்தெடுக்கப்பட்டது. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">தரவை அழி</translation>
@@ -385,7 +386,7 @@
 <translation id="3005723025932146533">சேமித்த நகலைக் காட்டு</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> இன் CVC எண்ணை உள்ளிடவும். உறுதிசெய்த பின்னர், உங்கள் கார்டு விவரங்கள் இந்தத் தளத்திற்குப் பகிரப்படும்.</translation>
 <translation id="3010559122411665027">பட்டியல் உள்ளீடு "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3014389611820813634">இந்தச் சாதனத்தின் நிர்வாகியாக, <ph name="ENROLLMENT_DOMAIN" /> இவற்றைச் செய்யலாம்:</translation>
+<translation id="3014389611820813634">இந்தச் சாதனத்தின் நிர்வாகியாக <ph name="ENROLLMENT_DOMAIN" /> இவற்றைச் செய்யலாம்:</translation>
 <translation id="301521992641321250">தானாகத் தடுக்கப்பட்டது</translation>
 <translation id="3023071826883856138">You4 (என்வலப்)</translation>
 <translation id="3024663005179499861">தவறான கொள்கை வகை</translation>
@@ -428,7 +429,7 @@
 <translation id="3287510313208355388">ஆன்லைனில் இருக்கும் போது பதிவிறக்கு</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> கொள்கை குறித்து மேலும் அறிக</translation>
 <translation id="3303855915957856445">தேடல் முடிவுகள் எதுவுமில்லை</translation>
-<translation id="3311730110465560799">தொலைநிலையில் உங்கள் சாதன அமைவை மாற்றலாம்.</translation>
+<translation id="3311730110465560799">சாதன அமைவைத் தொலைநிலையிலிருந்து மாற்ற முடியும்.</translation>
 <translation id="3320021301628644560">பில்லிங் முகவரியைச் சேர்க்கவும்</translation>
 <translation id="3324983252691184275">அடர்சிவப்பு</translation>
 <translation id="3338095232262050444">பாதுகாப்பானது</translation>
@@ -615,7 +616,7 @@
 <translation id="4265872034478892965">உங்கள் நிர்வாகி அனுமதித்தார்</translation>
 <translation id="4275830172053184480">உங்கள் சாதனத்தை மீண்டும் தொடங்கவும்</translation>
 <translation id="4277028893293644418">கடவுச்சொல்லை மீட்டமை</translation>
-<translation id="4279811152705618813"><ph name="ENROLLMENT_DOMAIN" /> டொமைனால் உங்கள் <ph name="DEVICE_TYPE" /> நிர்வகிக்கப்படுகிறது</translation>
+<translation id="4279811152705618813"><ph name="DEVICE_TYPE" />ஐ நிர்வகிப்பது: <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="4280429058323657511">, காலாவதித் தேதி: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{இந்தக் கார்டு உங்கள் Google கணக்கில் சேமிக்கப்பட்டது}other{இந்தக் கார்டுகள் உங்கள் Google கணக்கில் சேமிக்கப்பட்டன}}</translation>
 <translation id="42981349822642051">விரி</translation>
@@ -697,7 +698,7 @@
 <translation id="4759118997339041434">கட்டணத்தைத் தானாக நிரப்புவது முடக்கப்பட்டுள்ளது</translation>
 <translation id="4764776831041365478"><ph name="URL" /> இல் உள்ள வலைப்பக்கமானது தற்காலிகமாக இயங்காமல் இருக்கலாம் அல்லது அது ஒரு புதிய வலை முகவரிக்கு நிரந்தரமாக நகர்த்தப்பட்டிருக்கலாம்.</translation>
 <translation id="4771973620359291008">அறியப்படாத பிழை ஏற்பட்டுள்ளது.</translation>
-<translation id="4780900888022378816">உங்கள் சாதனம் <ph name="ENROLLMENT_DOMAIN" /> மூலமும் உங்கள் கணக்கு <ph name="ACCOUNT_DOMAIN" /> மூலமும் நிர்வகிக்கப்படுகிறது.</translation>
+<translation id="4780900888022378816">உங்கள் சாதனத்தை நிர்வகிப்பது: <ph name="ENROLLMENT_DOMAIN" />, கணக்கை நிர்வகிப்பது: <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">இந்தத் தாவலுக்கு மாற்றும்</translation>
 <translation id="4798078619018708837">கார்டு விவரங்களைப் புதுப்பிக்க, <ph name="CREDIT_CARD" /> இன் காலாவதித் தேதியையும் CVC எண்ணையும் உள்ளிடவும். நீங்கள் உறுதிப்படுத்திய பின்னர், உங்கள் Google கணக்கிலிருக்கும் கார்டு விவரங்கள் இந்தத் தளத்துடன் பகிரப்படும்.</translation>
 <translation id="4800132727771399293">காலாவதியாகும் நேரத்தையும், CVCஐயும் சரிபார்த்து, மீண்டும் முயற்சிக்கவும்</translation>
@@ -722,7 +723,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> தெரிவிப்பது:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">முடிவுகள் இல்லை</translation>
-<translation id="4945672369594656571">உங்கள் சாதன மற்றும் கணக்குத் தரவு எவ்வாறு கையாளப்படுகிறது என்பதைக் கட்டுப்படுத்தும். Google உங்கள் சாதன மற்றும் கணக்குத் தரவைப் பிரத்தியேகமாக உங்கள் சாதன மற்றும் கணக்கு நிர்வாகியின் வழிகாட்டுதலின் கீழ், அவர் குறிப்பிடும் நோக்கங்களுக்காக மட்டுமே செயலாக்கும்.</translation>
+<translation id="4945672369594656571">சாதனத் தரவும் கணக்குத் தரவும் எவ்வாறு கையாளப்பட வேண்டும் என்பதை நிர்வகிக்கும். சாதனத் தரவையும் கணக்குத் தரவையும் அதன் நிர்வாகி குறிப்பிட்டுள்ள நோக்கங்களின் அடிப்படையில் அவரது பிரத்தியேக வழிகாட்டுதலின்படி மட்டும் Google செயல்படுத்தும்.</translation>
 <translation id="4950898438188848926"><ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /> தாவலைத் திறக்க, ‘தாவல்’ மாற்ற பட்டனைத் தட்டி, ‘எண்டர்’ பட்டனை அழுத்தவும்</translation>
 <translation id="495170559598752135">செயல்கள்</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -736,7 +737,7 @@
 <translation id="5017554619425969104">நீங்கள் நகலெடுத்த உரை</translation>
 <translation id="5018422839182700155">பக்கத்தைத் திறக்க முடியவில்லை</translation>
 <translation id="5019198164206649151">தவறான நிலையில் மீட்பு சேமிப்பு உள்ளது</translation>
-<translation id="5020154601324912079">உங்கள் சாதனத் தரவு எவ்வாறு கையாளப்படுகிறது என்பதைக் கட்டுப்படுத்தும். Google உங்கள் சாதனத் தரவை பிரத்தியேகமாக உங்கள் சாதன நிர்வாகியின் வழிகாட்டுதலின் கீழ், அவர் குறிப்பிடும் நோக்கங்களுக்காக மட்டுமே செயலாக்கும்.</translation>
+<translation id="5020154601324912079">உங்கள் சாதனத் தரவு எவ்வாறு கையாளப்படுகிறது என்பதை நிர்வகிக்கும். சாதனத் தரவை அதன் நிர்வாகி குறிப்பிட்டுள்ள நோக்கங்களின் அடிப்படையில் அவரது பிரத்தியேக வழிகாட்டுதலின்படி மட்டும் Google செயல்படுத்தும்.</translation>
 <translation id="5023310440958281426">உங்கள் நிர்வாகியின் கொள்கைகளைச் சரிபார்க்கவும்</translation>
 <translation id="5029568752722684782">நகலை அழி</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" மென்பொருளுக்கு மூலச் சான்றிதழ் தேவை, ஆனால் நிறுவப்படவில்லை. இந்தச் சிக்கலைச் சரிசெய்ய, "<ph name="SOFTWARE_NAME" />" மென்பொருளின் உள்ளமைவு வழிமுறைகளை ஐடி நிர்வாகி பின்பற்ற வேண்டும். <ph name="FURTHER_EXPLANATION" /></translation>
@@ -894,7 +895,7 @@
 <translation id="5838278095973806738">தீங்கிழைப்பவர்கள் திருடிவிடலாம் என்பதால், இந்தத் தளத்தில் முக்கியத் தகவலை (எடுத்துக்காட்டு: கடவுச்சொற்கள் அல்லது கிரெடிட் கார்டுகள்) உள்ளிட வேண்டாம்.</translation>
 <translation id="5860033963881614850">ஆஃப்</translation>
 <translation id="5863847714970149516">அடுத்த பக்கத்தில் உங்களிடமிருந்து கட்டணம் வசூலிக்கப்படலாம்</translation>
-<translation id="5865951947699094510">இதனால் உங்கள் கணக்கின் அமைவை தொலைநிலையிலிருந்து மாற்ற இயலும்.</translation>
+<translation id="5865951947699094510">உங்கள் கணக்கின் அமைவைத் தொலைநிலையிலிருந்து மாற்ற முடியும்.</translation>
 <translation id="5866257070973731571">மொபைல் எண்ணைச் சேர்க்கவும்</translation>
 <translation id="5869405914158311789">இந்தத் தளத்தை அணுக முடியவில்லை</translation>
 <translation id="5869522115854928033">சேமிக்கப்பட்ட கடவுச்சொற்கள்</translation>
@@ -915,7 +916,7 @@
 <translation id="5977976211062815271">இந்தச் சாதனத்தில்</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">பேமெண்ட் பயன்பாட்டைத் திறக்க முடியவில்லை</translation>
-<translation id="5988826871883769516">உங்கள் சாதனம் <ph name="ENROLLMENT_DOMAIN" /> மூலம் நிர்வகிக்கப்படுகிறது.</translation>
+<translation id="5988826871883769516">உங்கள் சாதனத்தை நிர்வகிப்பது: <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">ப்ராக்ஸி சேவையகம் சரிசெய்யப்படவும் இல்லை .pac ஸ்கிரிப்ட் URL குறிப்பிடப்படவுமில்லை.</translation>
 <translation id="5990559369517809815">சேவையகத்திற்கான கோரிக்கைகள் நீட்டிப்பினால் தடுக்கப்பட்டது.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1002,7 +1003,7 @@
 <translation id="6508722015517270189">Chromeஐ மீண்டும் தொடங்கவும்</translation>
 <translation id="6529602333819889595">&amp;நீக்குதலை மீண்டும் செய்</translation>
 <translation id="6534179046333460208">இயல்நிலை இணையப் பரிந்துரைகள்</translation>
-<translation id="6554795675067793129">உங்கள் கணக்கு <ph name="ENROLLMENT_DOMAIN" /> மூலம் நிர்வகிக்கப்படுகிறது.</translation>
+<translation id="6554795675067793129">உங்கள் கணக்கை நிர்வகிப்பது: <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">மீண்டும் செய்</translation>
 <translation id="6563469144985748109">இன்னும் உங்கள் நிர்வாகி அனுமதிக்கவில்லை</translation>
 <translation id="6569060085658103619">நீட்டிப்புப் பக்கத்தைப் பார்க்கிறீர்கள்</translation>
@@ -1087,7 +1088,7 @@
 <translation id="7062635574500127092">பசும் நீலம்</translation>
 <translation id="7064851114919012435">தொடர்புத் தகவல்</translation>
 <translation id="7079718277001814089">இந்தத் தளத்தில் தீம்பொருள் உள்ளது</translation>
-<translation id="7081564429925484109">எச்சரிக்கை: இந்தக் கொள்கையில் பட்டியல் மதிப்பு இல்லை என்பதால் PolicyListMultipleSourceMergeList கொள்கையில் குறிப்பிட்டுள்ளபடி ஒன்றிணைக்கப்படவில்லை.</translation>
+<translation id="7081564429925484109">எச்சரிக்கை: இது ஒரு பட்டியல் இல்லை என்பதால் PolicyListMultipleSourceMergeList கொள்கையில் குறிப்பிட்டுள்ளபடி இக்கொள்கை ஒன்றிணைக்கப்படவில்லை.</translation>
 <translation id="7087282848513945231">மாகாணம்</translation>
 <translation id="7090678807593890770">Googleளில் <ph name="LINK" />ஐத் தேடவும்</translation>
 <translation id="7108338896283013870">மறை</translation>
@@ -1164,7 +1165,7 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">கடவுச்சொற்களை நிர்வகி…</translation>
 <translation id="7419106976560586862">சுயவிவரப் பாதை</translation>
-<translation id="7424427397225027541">உங்கள் கணக்குத் தரவு எவ்வாறு கையாளப்படுகிறது என்பதைக் கட்டுப்படுத்தும். Google உங்கள் கணக்குத் தரவைப் பிரத்தியேகமாக உங்கள் கணக்கு நிர்வாகியின் வழிகாட்டுதலின் கீழ், அவர் குறிப்பிடும் நோக்கங்களுக்காக மட்டுமே செயலாக்கும்.</translation>
+<translation id="7424427397225027541">உங்கள் கணக்குத் தரவு கையாளப்படுவதை நிர்வகிக்கும். கணக்குத் தரவை அதன் நிர்வாகி குறிப்பிட்டுள்ள நோக்கங்களின் அடிப்படையில் அவரது பிரத்தியேக வழிகாட்டுதலின்படி மட்டும் Google செயல்படுத்தும்.</translation>
 <translation id="7437289804838430631">தொடர்புத் தகவலைச் சேர்</translation>
 <translation id="7440140511386898319">ஆஃப்லைன் உள்ளடக்கப் பட்டியல்</translation>
 <translation id="7441627299479586546">தவறான கொள்கைத் தலைப்பு</translation>
@@ -1250,7 +1251,7 @@
 <translation id="780301667611848630">தேவையில்லை</translation>
 <translation id="7805768142964895445">நிலை</translation>
 <translation id="7806344367022510803">Chromeமில் தேடல் இன்ஜின் அமைப்புகளை மாற்றவும்</translation>
-<translation id="7810209002420871817">உங்கள் கணக்கின் நிர்வாகியாக, <ph name="ACCOUNT_DOMAIN" /> இவற்றைச் செய்யலாம்:</translation>
+<translation id="7810209002420871817">உங்கள் கணக்கின் நிர்வாகியாக <ph name="ACCOUNT_DOMAIN" /> இவற்றைச் செய்யலாம்:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome இலிருந்து படிவப் பரிந்துரையை அகற்றவா?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />'க்கு <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> உள்ளன</translation>
