@@ -5,6 +5,7 @@
 package org.chromium.base.test;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -15,6 +16,7 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
+import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.base.test.util.InMemorySharedPreferencesContext;
 
 import java.io.File;
@@ -72,13 +74,25 @@ class BaseJUnit4TestRule implements TestRule {
             }
         }
         if (!badFiles.isEmpty()) {
-            throw new AssertionError("Found shared prefs file(s).\n"
-                    + "Code should use ContextUtils.getApplicationContext() when accessing "
+            String errorMsg = "Found unexpected shared preferences file(s) after test ran.\n"
+                    + "All code should use ContextUtils.getApplicationContext() when accessing "
                     + "SharedPreferences so that tests are hooked to use InMemorySharedPreferences."
                     + " This could also mean needing to override getSharedPreferences() on custom "
-                    + " Context subclasses (e.g. ChromeBaseAppCompatActivity does this to make "
-                    + "Preferences screens work).\n"
-                    + "Files:\n * " + TextUtils.join("\n * ", badFiles));
+                    + "Context subclasses (e.g. ChromeBaseAppCompatActivity does this to make "
+                    + "Preferences screens work).\n\n";
+
+            SharedPreferences testPrefs = ContextUtils.getApplicationContext().getSharedPreferences(
+                    "test", Context.MODE_PRIVATE);
+            if (!(testPrefs instanceof InMemorySharedPreferences)) {
+                errorMsg += String.format(
+                        "ContextUtils.getApplicationContext() was set to type \"%s\", which does "
+                                + "not delegate to InMemorySharedPreferencesContext (this is "
+                                + "likely the issues).\n\n",
+                        ContextUtils.getApplicationContext().getClass().getName());
+            }
+
+            errorMsg += "Files:\n * " + TextUtils.join("\n * ", badFiles);
+            throw new AssertionError(errorMsg);
         }
     }
 

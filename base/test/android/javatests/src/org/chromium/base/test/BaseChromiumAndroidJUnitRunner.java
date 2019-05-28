@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -100,12 +101,24 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
             }
         }
 
-        // We would ideally be able to wrap |context| here, and pass that to newApplication.
-        // However, there is framework code that assumes Application.getBaseContext() can be
-        // casted to ContextImpl (on KitKat for broadcast receivers. Refer to ActivityThread.java).
-        Application ret = super.newApplication(cl, className, context);
-        sInMemorySharedPreferencesContext = new InMemorySharedPreferencesContext(ret);
-        // Set this as early as possible since Application start-up could access prefs.
+        // Wrap |context| here so that calls to getSharedPreferences() from within
+        // attachBaseContext() will hit our InMemorySharedPreferencesContext.
+        sInMemorySharedPreferencesContext = new InMemorySharedPreferencesContext(context);
+        Application ret = super.newApplication(cl, className, sInMemorySharedPreferencesContext);
+        try {
+            // There is framework code that assumes Application.getBaseContext() can be casted to
+            // ContextImpl (on KitKat for broadcast receivers, refer to ActivityThread.java), so
+            // invert the wrapping relationship.
+            Field baseField = ContextWrapper.class.getDeclaredField("mBase");
+            baseField.setAccessible(true);
+            baseField.set(ret, context);
+            baseField.set(sInMemorySharedPreferencesContext, ret);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Replace the application with our wrapper here for any code that runs between
+        // Application.attachBaseContext() and our BaseJUnit4TestRule (e.g. Application.onCreate()).
         ContextUtils.initApplicationContextForTests(sInMemorySharedPreferencesContext);
         return ret;
     }
