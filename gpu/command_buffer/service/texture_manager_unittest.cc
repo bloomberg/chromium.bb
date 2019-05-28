@@ -756,12 +756,12 @@ TEST_F(TextureTest, SetTargetTextureExternalOES) {
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_TRUE(TextureTestHelper::IsNPOT(texture));
-  EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
+  EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   EXPECT_TRUE(texture->SafeToRenderFrom());
   EXPECT_TRUE(texture->IsImmutable());
 }
 
-TEST_F(TextureTest, ZeroSizeCanNotRender) {
+TEST_F(TextureTest, ZeroSizeCanNotRender2D) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1,
@@ -769,6 +769,19 @@ TEST_F(TextureTest, ZeroSizeCanNotRender) {
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
   manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 1,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
+  EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
+}
+
+TEST_F(TextureTest, ZeroSizeCanNotRenderExternalOES) {
+  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES);
+  EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
+                         GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(1, 1));
+  EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES, 0,
+                         GL_RGBA, 0, 0, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect());
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
 }
 

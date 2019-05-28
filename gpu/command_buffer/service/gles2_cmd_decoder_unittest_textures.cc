@@ -3870,8 +3870,8 @@ TEST_P(GLES2DecoderManualInitTest, DrawWithGLImageExternal) {
   scoped_refptr<MockGLImage> image(new MockGLImage);
   group().texture_manager()->SetTarget(texture_ref, GL_TEXTURE_EXTERNAL_OES);
   group().texture_manager()->SetLevelInfo(texture_ref, GL_TEXTURE_EXTERNAL_OES,
-                                          0, GL_RGBA, 0, 0, 1, 0, GL_RGBA,
-                                          GL_UNSIGNED_BYTE, gfx::Rect());
+                                          0, GL_RGBA, 1, 1, 1, 0, GL_RGBA,
+                                          GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
   group().texture_manager()->SetLevelImage(texture_ref, GL_TEXTURE_EXTERNAL_OES,
                                            0, image.get(), Texture::BOUND);
 

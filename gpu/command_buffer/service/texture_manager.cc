@@ -690,18 +690,15 @@ Texture::CanRenderCondition Texture::GetCanRenderCondition() const {
   if (target_ == 0)
     return CAN_RENDER_ALWAYS;
 
-  if (target_ != GL_TEXTURE_EXTERNAL_OES) {
-    if (face_infos_.empty() ||
-        static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size()) {
-      return CAN_RENDER_NEVER;
-    }
-    const Texture::LevelInfo& first_face =
-        face_infos_[0].level_infos[base_level_];
-    if (first_face.width == 0 ||
-        first_face.height == 0 ||
-        first_face.depth == 0) {
-      return CAN_RENDER_NEVER;
-    }
+  if (face_infos_.empty() ||
+      static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size()) {
+    return CAN_RENDER_NEVER;
+  }
+  const Texture::LevelInfo& first_face =
+      face_infos_[0].level_infos[base_level_];
+  if (first_face.width == 0 || first_face.height == 0 ||
+      first_face.depth == 0) {
+    return CAN_RENDER_NEVER;
   }
 
   if (target_ == GL_TEXTURE_CUBE_MAP && !cube_complete())
