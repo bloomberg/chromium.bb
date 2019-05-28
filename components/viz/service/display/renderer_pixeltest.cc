@@ -887,6 +887,19 @@ using RendererTypes = ::testing::Types<GLRenderer,
                                        >;
 TYPED_TEST_SUITE(RendererPixelTest, RendererTypes);
 
+// TODO(samans): Make these tests pass with Vulkan. https://crbug.com/960795
+template <typename RendererType>
+class NonVulkanRendererPixelTest : public cc::RendererPixelTest<RendererType> {
+};
+
+using NonVulkanRendererTypes =
+    ::testing::Types<GLRenderer,
+                     SoftwareRenderer,
+                     SkiaRenderer,
+                     cc::GLRendererWithExpandedViewport,
+                     cc::SoftwareRendererWithExpandedViewport>;
+TYPED_TEST_SUITE(NonVulkanRendererPixelTest, NonVulkanRendererTypes);
+
 template <typename RendererType>
 class SoftwareRendererPixelTest : public cc::RendererPixelTest<RendererType> {};
 
@@ -1014,7 +1027,7 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect_NonRootRenderPass) {
       cc::ExactPixelComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, PremultipliedTextureWithoutBackground) {
+TYPED_TEST(NonVulkanRendererPixelTest, PremultipliedTextureWithoutBackground) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -1043,7 +1056,7 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithoutBackground) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
+TYPED_TEST(NonVulkanRendererPixelTest, PremultipliedTextureWithBackground) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -2405,7 +2418,7 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
 
 // This tests the case where we have a RenderPass with a mask, but the quad
 // for the masked surface does not include the full surface texture.
-TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
+TYPED_TEST(NonVulkanRendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2502,7 +2515,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
 
 // This tests the case where we have a RenderPass with a mask, but the quad
 // for the masked surface does not include the full surface texture.
-TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
+TYPED_TEST(NonVulkanRendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2597,7 +2610,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
       cc::ExactPixelComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCorner) {
+TYPED_TEST(NonVulkanRendererPixelTest, RenderPassAndMaskForRoundedCorner) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   constexpr int kCornerRadius = 20;
@@ -2686,7 +2699,8 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCorner) {
       cc::FuzzyPixelComparator(true, 0.6f, 0.f, 255.f, 255, 0)));
 }
 
-TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCornerMultiRadii) {
+TYPED_TEST(NonVulkanRendererPixelTest,
+           RenderPassAndMaskForRoundedCornerMultiRadii) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   const SkVector kCornerRadii[4] = {
@@ -3665,7 +3679,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
 
 // This disables filtering by setting |nearest_neighbor| on the
 // TileDrawQuad.
-TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
+TYPED_TEST(NonVulkanRendererPixelTest, TileDrawQuadNearestNeighbor) {
   constexpr bool contents_premultiplied = true;
   constexpr bool needs_blending = true;
   constexpr bool nearest_neighbor = true;
