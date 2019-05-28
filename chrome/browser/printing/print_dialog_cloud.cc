@@ -4,7 +4,6 @@
 
 #include "chrome/browser/printing/print_dialog_cloud.h"
 
-#include "base/bind.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -28,12 +27,8 @@ namespace {
 
 class SignInObserver : public content::WebContentsObserver {
  public:
-  SignInObserver(content::WebContents* web_contents,
-                 const base::Closure& callback)
-      : WebContentsObserver(web_contents),
-        callback_(callback),
-        weak_ptr_factory_(this) {
-  }
+  explicit SignInObserver(content::WebContents* web_contents)
+      : WebContentsObserver(web_contents), weak_ptr_factory_(this) {}
 
  private:
   // Overridden from content::WebContentsObserver:
@@ -54,13 +49,10 @@ class SignInObserver : public content::WebContentsObserver {
   void WebContentsDestroyed() override { delete this; }
 
   void OnSignIn() {
-    callback_.Run();
     if (web_contents())
       web_contents()->Close();
   }
 
-  GURL cloud_print_url_;
-  base::Closure callback_;
   base::WeakPtrFactory<SignInObserver> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SignInObserver);
@@ -68,9 +60,7 @@ class SignInObserver : public content::WebContentsObserver {
 
 }  // namespace
 
-void CreateCloudPrintSigninTab(Browser* browser,
-                               bool add_account,
-                               const base::Closure& callback) {
+void CreateCloudPrintSigninTab(Browser* browser, bool add_account) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(
           browser->profile())) {
@@ -88,7 +78,8 @@ void CreateCloudPrintSigninTab(Browser* browser,
                 url, g_browser_process->GetApplicationLocale()),
             content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
             ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
-    new SignInObserver(web_contents, callback);
+    // This observer will delete itself after destroying the WebContents.
+    new SignInObserver(web_contents);
   }
 }
 

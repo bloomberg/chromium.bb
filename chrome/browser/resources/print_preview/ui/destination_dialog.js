@@ -288,9 +288,7 @@ Polymer({
   onSignInClick_: function() {
     this.metrics_.record(
         print_preview.Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
-    print_preview.NativeLayer.getInstance().signIn(false).then(() => {
-      this.destinationStore.onDestinationsReload();
-    });
+    print_preview.NativeLayer.getInstance().signIn(false);
   },
 
   /** @private */
@@ -380,9 +378,7 @@ Polymer({
       this.metrics_.record(
           print_preview.Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
     } else {
-      print_preview.NativeLayer.getInstance().signIn(true).then(
-          this.destinationStore.onDestinationsReload.bind(
-              this.destinationStore));
+      print_preview.NativeLayer.getInstance().signIn(true);
       const options = select.querySelectorAll('option');
       for (let i = 0; i < options.length; i++) {
         if (options[i].value == this.activeUser) {

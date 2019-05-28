@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -855,22 +856,13 @@ void PrintPreviewHandler::HandlePrinterSetup(const base::ListValue* args) {
                                        printer_name));
 }
 
-void PrintPreviewHandler::OnSigninComplete(const std::string& callback_id) {
-  ResolveJavascriptCallback(base::Value(callback_id), base::Value());
-}
-
 void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
-  std::string callback_id;
   bool add_account = false;
-  CHECK(args->GetString(0, &callback_id));
-  CHECK(!callback_id.empty());
-  CHECK(args->GetBoolean(1, &add_account));
+  CHECK(args->GetBoolean(0, &add_account));
 
   chrome::ScopedTabbedBrowserDisplayer displayer(Profile::FromWebUI(web_ui()));
-  print_dialog_cloud::CreateCloudPrintSigninTab(
-      displayer.browser(), add_account,
-      base::Bind(&PrintPreviewHandler::OnSigninComplete,
-                 weak_factory_.GetWeakPtr(), callback_id));
+  print_dialog_cloud::CreateCloudPrintSigninTab(displayer.browser(),
+                                                add_account);
 }
 
 #if defined(OS_CHROMEOS)
@@ -1001,7 +993,7 @@ void PrintPreviewHandler::SendInitialSettings(
     initial_settings.SetBoolKey(kHeaderFooter,
                                 prefs->GetBoolean(prefs::kPrintHeaderFooter));
   }
-  if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled) &&
+  if (IsCloudPrintEnabled() &&
       !base::FeatureList::IsEnabled(features::kCloudPrinterHandler)) {
     initial_settings.SetStringKey(
         kCloudPrintURL, GURL(cloud_devices::GetCloudPrintURL()).spec());
@@ -1024,7 +1016,7 @@ void PrintPreviewHandler::SendInitialSettings(
   }
 
   GetNumberFormatAndMeasurementSystem(&initial_settings);
-  if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled)) {
+  if (IsCloudPrintEnabled()) {
     GetUserAccountList(&initial_settings);
   }
 
@@ -1113,8 +1105,6 @@ WebContents* PrintPreviewHandler::GetInitiator() const {
   return dialog_controller->GetInitiator(preview_web_contents());
 }
 
-// TODO(crbug.com/932692): Investigate the replacement or removal of
-// this override altogether.
 void PrintPreviewHandler::OnAccountsInCookieUpdated(
     const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
@@ -1330,22 +1320,28 @@ void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
 
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
   DCHECK(!identity_manager_);
+  cloud_print_enabled_ =
+      GetPrefs()->GetBoolean(prefs::kCloudPrintSubmitEnabled);
+
+  if (!cloud_print_enabled_)
+    return;
+
   Profile* profile = Profile::FromWebUI(web_ui());
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
-  if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
-    identity_manager_->AddObserver(this);
-  }
+  identity_manager_->AddObserver(this);
 }
 
 void PrintPreviewHandler::UnregisterForGaiaCookieChanges() {
   if (!identity_manager_)
     return;
 
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
-    identity_manager_->RemoveObserver(this);
-  }
+  identity_manager_->RemoveObserver(this);
   identity_manager_ = nullptr;
+  cloud_print_enabled_ = false;
+}
+
+bool PrintPreviewHandler::IsCloudPrintEnabled() {
+  return cloud_print_enabled_;
 }
 
 void PrintPreviewHandler::BadMessageReceived() {

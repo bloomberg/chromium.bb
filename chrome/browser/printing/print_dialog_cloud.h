@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "base/callback.h"
-
 class Browser;
 class Profile;
 
@@ -20,10 +18,7 @@ namespace print_dialog_cloud {
 
 // Creates a tab with Google 'sign in' or 'add account' page, based on
 // passed |add_account| value.
-// Calls |callback| when complete.
-void CreateCloudPrintSigninTab(Browser* browser,
-                               bool add_account,
-                               const base::Closure& callback);
+void CreateCloudPrintSigninTab(Browser* browser, bool add_account);
 
 // Parse switches from command_line and display the print dialog as appropriate.
 bool CreatePrintDialogFromCommandLine(Profile* profile,

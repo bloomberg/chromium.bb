@@ -124,6 +124,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
  protected:
   // Protected so unit tests can override.
   virtual PrinterHandler* GetPrinterHandler(PrinterType printer_type);
+  virtual bool IsCloudPrintEnabled();
 
   // Shuts down the initiator renderer. Called when a bad IPC message is
   // received.
@@ -220,11 +221,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void HandleShowSystemDialog(const base::ListValue* args);
 #endif
 
-  // Callback for the signin dialog to call once signin is complete.
-  void OnSigninComplete(const std::string& callback_id);
-
-  // Brings up a dialog to allow the user to sign into cloud print.
-  // |args| is unused.
+  // Opens a new tab to allow the user to sign into cloud print. |args| holds
+  // a boolean indicating whether the user is adding an account.
   void HandleSignin(const base::ListValue* args);
 
 #if defined(OS_CHROMEOS)
@@ -321,6 +319,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // Whether we have already logged the number of printers this session.
   bool has_logged_printers_count_;
+
+  // Whether Google Cloud Print is enabled for the active profile.
+  bool cloud_print_enabled_ = false;
 
   // The settings used for the most recent preview request.
   base::Value last_preview_settings_;

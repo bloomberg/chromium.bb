@@ -198,7 +198,7 @@ cr.define('print_preview', function() {
     /** @override */
     signIn(addAccount) {
       this.methodCalled('signIn', addAccount);
-      return Promise.resolve();
+      cr.webUIListenerCallback('reload-printer-list');
     }
 
     /**

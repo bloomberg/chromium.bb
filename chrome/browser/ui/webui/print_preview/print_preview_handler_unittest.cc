@@ -209,6 +209,8 @@ class TestPrintPreviewHandler : public PrintPreviewHandler {
     return test_printer_handler_.get();
   }
 
+  bool IsCloudPrintEnabled() override { return true; }
+
   void RegisterForGaiaCookieChanges() override {}
   void UnregisterForGaiaCookieChanges() override {}
 
