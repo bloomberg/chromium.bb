@@ -518,6 +518,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   auto* resource_timing_notifier =
       MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
 
+  FetchClientSettingsObjectSnapshot* fetch_client_setting_object =
+      CreateFetchClientSettingsObject();
+
   // If this is a new (not installed) service worker, we are in the Update
   // algorithm here:
   // > Switching on job's worker type, run these substeps with the following
@@ -530,7 +533,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
     case mojom::ScriptType::kClassic:
       worker_thread_->FetchAndRunClassicScript(
-          worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
+          worker_start_data_.script_url, *fetch_client_setting_object,
           *resource_timing_notifier, v8_inspector::V8StackTraceId());
       return;
     // > "module": Fetch a module worker script graph given job’s serialized
@@ -538,7 +541,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // > to-be-created environment settings object for this service worker.
     case mojom::ScriptType::kModule:
       worker_thread_->FetchAndRunModuleScript(
-          worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
+          worker_start_data_.script_url, *fetch_client_setting_object,
           *resource_timing_notifier,
           network::mojom::FetchCredentialsMode::kOmit);
       return;
@@ -549,17 +552,28 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 FetchClientSettingsObjectSnapshot*
 WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject() {
   DCHECK(shadow_page_->WasInitialized());
-  // TODO(crbug.com/967265): Currently, we use the shadow page's Document as an
-  // outside_settings_object as a workaround. For new worker case, this should
-  // be the Document that called navigator.serviceWorker.register(). For
+  // TODO(crbug.com/967265): Currently we create an incomplete outside settings
+  // object from |worker_start_data_| but we should create a proper outside
+  // settings objects depending on the situation. For new worker case, this
+  // should be the Document that called navigator.serviceWorker.register(). For
   // ServiceWorkerRegistration#update() case, it should be the Document that
   // called update(). For soft update case, it seems to be 'null' document.
   //
   // To get a correct settings, we need to make a way to pass the settings
   // object over mojo IPCs.
-  Document* document = shadow_page_->GetDocument();
+
+  const KURL& script_url = worker_start_data_.script_url;
+  scoped_refptr<const SecurityOrigin> security_origin =
+      SecurityOrigin::Create(script_url);
   return MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-      document->Fetcher()->GetProperties().GetFetchClientSettingsObject());
+      script_url /* global_object_url */, script_url /* base_url */,
+      security_origin, network::mojom::ReferrerPolicy::kDefault,
+      script_url.GetString() /* outgoing_referrer */,
+      CalculateHttpsState(security_origin.get()),
+      AllowedByNosniff::MimeTypeCheck::kLax, worker_start_data_.address_space,
+      kBlockAllMixedContent /* insecure_requests_policy */,
+      FetchClientSettingsObject::InsecureNavigationsSet(),
+      false /* mixed_autoupgrade_opt_out */);
 }
 
 void WebEmbeddedWorkerImpl::WaitForShutdownForTesting() {
