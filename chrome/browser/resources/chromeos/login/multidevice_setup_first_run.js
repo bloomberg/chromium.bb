@@ -60,12 +60,11 @@ cr.define('multidevice_setup', function() {
       delegate_: Object,
 
       /**
-       * Text to be shown on the forward navigation button.
+       * ID of loadTimeData string to be shown on the forward navigation button.
        * @private {string|undefined}
        */
-      forwardButtonText_: {
+      forwardButtonTextId_: {
         type: String,
-        value: '',
       },
 
       /**
@@ -78,12 +77,11 @@ cr.define('multidevice_setup', function() {
       },
 
       /**
-       * Text to be shown on the cancel button.
+       * ID of loadTimeData string to be shown on the cancel button.
        * @private {string|undefined}
        */
-      cancelButtonText_: {
+      cancelButtonTextId_: {
         type: String,
-        value: '',
       },
 
       /** Whether the webview overlay should be hidden. */
@@ -111,8 +109,18 @@ cr.define('multidevice_setup', function() {
       this.delegate_ = new MultiDeviceSetupFirstRunDelegate();
     },
 
+    /** @override */
+    ready: function() {
+      this.updateLocalizedContent();
+    },
+
+    updateLocalizedContent: function() {
+      this.i18nUpdateLocale();
+      this.$.multideviceSetup.updateLocalizedContent();
+    },
+
     onForwardButtonFocusRequested_: function() {
-      this.$$('#next-button').focus();
+      this.$.nextButton.focus();
     },
 
     /**

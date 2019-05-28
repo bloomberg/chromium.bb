@@ -84,18 +84,19 @@
         min-height: 0;
       }
     </style>
-    <multidevice-setup delegate="[[delegate_]]"
+    <multidevice-setup id="multideviceSetup"
+        delegate="[[delegate_]]"
         on-setup-exited="onExitRequested_"
         on-forward-button-focus-requested="onForwardButtonFocusRequested_"
-        forward-button-text="{{forwardButtonText_}}"
+        forward-button-text-id="{{forwardButtonTextId_}}"
         forward-button-disabled="{{forwardButtonDisabled_}}"
-        cancel-button-text="{{cancelButtonText_}}">
+        cancel-button-text-id="{{cancelButtonTextId_}}">
       <oobe-text-button slot="cancel-button">
-        <div>[[cancelButtonText_]]</div>
+        <div>[[i18nDynamic(locale, cancelButtonTextId_)]]</div>
       </oobe-text-button>
-      <oobe-next-button id="next-button" slot="forward-button"
+      <oobe-next-button id="nextButton" slot="forward-button"
           disabled$="[[forwardButtonDisabled_]]">
-        <div>[[forwardButtonText_]]</div>
+        <div>[[i18nDynamic(locale, forwardButtonTextId_)]]</div>
       </oobe-next-button>
     </multidevice-setup>
 
