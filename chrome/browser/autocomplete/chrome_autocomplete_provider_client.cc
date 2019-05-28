@@ -313,6 +313,9 @@ void ChromeAutocompleteProviderClient::DeleteMatchingURLsForKeywordFromHistory(
 }
 
 void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
+  // Note: Android uses different image fetching mechanism to avoid
+  // penalty of copying byte buffers from C++ to Java.
+#if !defined(OS_ANDROID)
   BitmapFetcherService* image_service =
       BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
   DCHECK(image_service);
@@ -358,6 +361,7 @@ void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
         })");
 
   image_service->Prefetch(url, traffic_annotation);
+#endif  // !defined(OS_ANDROID)
 }
 
 void ChromeAutocompleteProviderClient::StartServiceWorker(
