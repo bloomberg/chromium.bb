@@ -103,8 +103,10 @@ void CreditCardSaveManager::AttemptToOfferCardLocalSave(
 
   // Query the Autofill StrikeDatabase on if we should pop up the
   // offer-to-save prompt for this card.
-  OnDidGetStrikesForLocalSave(GetCreditCardSaveStrikeDatabase()->GetStrikes(
-      base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits())));
+  show_save_prompt_ =
+      !GetCreditCardSaveStrikeDatabase()->IsMaxStrikesLimitReached(
+          base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits()));
+  OfferCardLocalSave();
 }
 
 void CreditCardSaveManager::AttemptToOfferCardUploadSave(
@@ -236,6 +238,12 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   // All required data is available, start the upload process.
   if (observer_for_testing_)
     observer_for_testing_->OnDecideToRequestUploadSave();
+
+  // Query the Autofill StrikeDatabase on if we should pop up the
+  // offer-to-save prompt for this card.
+  show_save_prompt_ =
+      !GetCreditCardSaveStrikeDatabase()->IsMaxStrikesLimitReached(
+          base::UTF16ToUTF8(upload_request_.card.LastFourDigits()));
   payments_client_->GetUploadDetails(
       send_only_country_in_addresses ? country_only_profiles
                                      : upload_request_.profiles,
@@ -245,10 +253,6 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
                      weak_ptr_factory_.GetWeakPtr()),
       payments::kUploadCardBillableServiceNumber,
       payments::PaymentsClient::UploadCardSource::UPSTREAM_CHECKOUT_FLOW);
-  // Query the Autofill StrikeDatabase on if we should pop up the
-  // offer-to-save prompt for this card.
-  OnDidGetStrikesForUploadSave(GetCreditCardSaveStrikeDatabase()->GetStrikes(
-      base::UTF16ToUTF8(upload_request_.card.LastFourDigits())));
 }
 
 bool CreditCardSaveManager::IsCreditCardUploadEnabled() {
@@ -345,26 +349,6 @@ CreditCardSaveManager::GetLocalCardMigrationStrikeDatabase() {
   return local_card_migration_strike_database_.get();
 }
 
-void CreditCardSaveManager::OnDidGetStrikesForLocalSave(const int num_strikes) {
-  show_save_prompt_ =
-      num_strikes < kMaxStrikesToPreventPoppingUpOfferToSavePrompt;
-
-  OfferCardLocalSave();
-}
-
-void CreditCardSaveManager::OnDidGetStrikesForUploadSave(
-    const int num_strikes) {
-  show_save_prompt_ =
-      num_strikes < kMaxStrikesToPreventPoppingUpOfferToSavePrompt;
-
-  // Only offer upload once both Payments and the Autofill
-  // StrikeDatabase have returned their decisions. Use population of
-  // |upload_request_.context_token| as an indicator of the Payments call
-  // returning successfully.
-  if (!upload_request_.context_token.empty())
-    OfferCardUploadSave();
-}
-
 void CreditCardSaveManager::OnDidGetUploadDetails(
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
@@ -393,13 +377,7 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     }
     upload_request_.context_token = context_token;
     legal_message_ = base::DictionaryValue::From(std::move(legal_message));
-
-    // Only offer upload once both Payments and the Autofill
-    // StrikeDatabase have returned their decisions. Use presence of
-    // |show_save_prompt_| as an indicator of StrikeDatabase retrieving
-    // its data.
-    if (show_save_prompt_.has_value())
-      OfferCardUploadSave();
+    OfferCardUploadSave();
   } else {
     // If the upload details request failed and we *know* we have all possible
     // information (card number, expiration, cvc, name, and address), fall back

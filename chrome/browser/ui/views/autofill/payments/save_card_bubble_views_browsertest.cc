@@ -40,6 +40,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
+#include "components/autofill/core/browser/payments/credit_card_save_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_event_waiter.h"
@@ -181,14 +182,13 @@ class SaveCardBubbleViewsFullFormBrowserTest
         ->set_url_loader_factory_for_testing(test_shared_loader_factory_);
 
     // Set up this class as the ObserverForTest implementation.
-    CreditCardSaveManager* credit_card_save_manager =
-        ContentAutofillDriver::GetForRenderFrameHost(
-            GetActiveWebContents()->GetMainFrame())
-            ->autofill_manager()
-            ->client()
-            ->GetFormDataImporter()
-            ->credit_card_save_manager_.get();
-    credit_card_save_manager->SetEventObserverForTesting(this);
+    credit_card_save_manager_ = ContentAutofillDriver::GetForRenderFrameHost(
+                                    GetActiveWebContents()->GetMainFrame())
+                                    ->autofill_manager()
+                                    ->client()
+                                    ->GetFormDataImporter()
+                                    ->credit_card_save_manager_.get();
+    credit_card_save_manager_->SetEventObserverForTesting(this);
 
     // Set up this class as the ObserverForTest implementation.
     AutofillHandler* autofill_handler =
@@ -730,6 +730,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<ProfileSyncServiceHarness> harness_;
+
+  CreditCardSaveManager* credit_card_save_manager_ = nullptr;
 
  private:
   std::unique_ptr<autofill::EventWaiter<DialogEvent>> event_waiter_;
@@ -2587,9 +2589,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
   bool controller_observer_set = false;
 
-  // Show and ignore the bubble kMaxStrikesToPreventPoppingUpOfferToSavePrompt
-  // times in order to accrue maximum strikes.
-  for (int i = 0; i < kMaxStrikesToPreventPoppingUpOfferToSavePrompt; i++) {
+  // Show and ignore the bubble enough times in order to accrue maximum strikes.
+  for (int i = 0;
+       i < credit_card_save_manager_->GetCreditCardSaveStrikeDatabase()
+               ->GetMaxStrikesLimit();
+       ++i) {
     // Submitting the form and having Payments decline offering to save should
     // show the local save bubble.
     // (Must wait for response from Payments before accessing the controller.)
@@ -2675,9 +2679,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
-  // Show and ignore the bubble kMaxStrikesToPreventPoppingUpOfferToSavePrompt
-  // times in order to accrue maximum strikes.
-  for (int i = 0; i < kMaxStrikesToPreventPoppingUpOfferToSavePrompt; i++) {
+  // Show and ignore the bubble enough times in order to accrue maximum strikes.
+  for (int i = 0;
+       i < credit_card_save_manager_->GetCreditCardSaveStrikeDatabase()
+               ->GetMaxStrikesLimit();
+       ++i) {
     // Submitting the form should show the upload save bubble and legal footer.
     // (Must wait for response from Payments before accessing the controller.)
     ResetEventWaiterForSequence(

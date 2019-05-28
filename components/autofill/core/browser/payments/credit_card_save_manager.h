@@ -143,20 +143,16 @@ class CreditCardSaveManager {
   friend class TestCreditCardSaveManager;
   friend class SaveCardBubbleViewsFullFormBrowserTest;
   friend class SaveCardInfobarEGTestHelper;
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
+                           StrikeDatabase_Local_FullFlowTest);
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
+                           StrikeDatabase_Upload_FullFlowTest);
 
   // Returns the CreditCardSaveStrikeDatabase for |client_|.
   CreditCardSaveStrikeDatabase* GetCreditCardSaveStrikeDatabase();
 
   // Returns the GetLocalCardMigrationStrikeDatabase for |client_|.
   LocalCardMigrationStrikeDatabase* GetLocalCardMigrationStrikeDatabase();
-
-  // Sets |show_save_prompt| and moves forward with offering credit card local
-  // save.
-  void OnDidGetStrikesForLocalSave(const int num_strikes);
-
-  // Sets |show_save_prompt| and moves forward with offering credit card upload
-  // if Payments has also returned a success response.
-  void OnDidGetStrikesForUploadSave(const int num_strikes);
 
   // Returns the legal message retrieved from Payments. On failure or not
   // meeting Payments's conditions for upload, |legal_message| will contain
