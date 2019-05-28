@@ -162,13 +162,14 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
     // Set font sizes using dynamic type.
     _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _titleLabel.adjustsFontForContentSizeCategory = YES;
-    _URLLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    _URLLabel.font =
+        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _URLLabel.adjustsFontForContentSizeCategory = YES;
     _URLLabel.textColor =
         UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
     _URLLabel.hidden = YES;
     _metadataLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _metadataLabel.textColor =
         UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
     _metadataLabel.adjustsFontForContentSizeCategory = YES;

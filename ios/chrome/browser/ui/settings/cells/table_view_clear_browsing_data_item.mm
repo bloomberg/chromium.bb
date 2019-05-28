@@ -116,7 +116,7 @@ const int kUnselectedImageViewTintColor = 0x9AA0A6;
     _detailTextLabel.numberOfLines = 0;
     _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _detailTextLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _detailTextLabel.adjustsFontForContentSizeCategory = YES;
     [self.contentView addSubview:_detailTextLabel];
 
@@ -126,7 +126,7 @@ const int kUnselectedImageViewTintColor = 0x9AA0A6;
         UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
     _optionalTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _optionalTextLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _optionalTextLabel.adjustsFontForContentSizeCategory = YES;
     [self.contentView addSubview:_optionalTextLabel];
 

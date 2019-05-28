@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/string_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -20,7 +21,7 @@ const CGFloat kHorizontalPadding = 24;
 const CGFloat kVerticalPadding = 8;
 
 // Text color.
-const int kTextColor = 0x8A8A8F;
+const int kTextColor = kTableViewSecondaryLabelLightGrayTextColor;
 }  // namespace
 
 @implementation TableViewLinkHeaderFooterItem
@@ -66,7 +67,8 @@ const int kTextColor = 0x8A8A8F;
     _textView.editable = NO;
     _textView.delegate = self;
     _textView.backgroundColor = [UIColor clearColor];
-    _textView.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    _textView.font =
+        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _textView.adjustsFontForContentSizeCategory = YES;
     _textView.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -102,7 +104,8 @@ const int kTextColor = 0x8A8A8F;
 
   [attributedText
       addAttribute:NSFontAttributeName
-             value:[UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
+             value:[UIFont
+                       preferredFontForTextStyle:kTableViewSublabelFontStyle]
              range:fullRange];
 
   if (range.location != NSNotFound && range.length != 0) {

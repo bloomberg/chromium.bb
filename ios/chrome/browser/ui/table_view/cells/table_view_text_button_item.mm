@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -12,8 +13,6 @@
 #endif
 
 namespace {
-// Text label gray color.
-const CGFloat kGrayHexColor = 0x6d6d72;
 // Action button blue background color.
 const CGFloat kBlueHexColor = 0x1A73E8;
 // Default Button title Color.
@@ -111,8 +110,9 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
     self.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.textLabel.textAlignment = NSTextAlignmentCenter;
     self.textLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-    self.textLabel.textColor = UIColorFromRGB(kGrayHexColor);
+        [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
+    self.textLabel.textColor =
+        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
 
     // Create button.
     self.button = [UIButton buttonWithType:UIButtonTypeSystem];
