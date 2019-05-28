@@ -46,10 +46,6 @@ void TestLoginScreen::ShowErrorMessage(int32_t login_attempts,
                                        const std::string& help_link_text,
                                        int32_t help_topic_id) {}
 
-void TestLoginScreen::ShowWarningBanner(const base::string16& message) {}
-
-void TestLoginScreen::HideWarningBanner() {}
-
 void TestLoginScreen::ClearErrors() {}
 
 void TestLoginScreen::SetAuthType(const AccountId& account_id,

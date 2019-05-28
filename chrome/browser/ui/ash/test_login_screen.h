@@ -35,8 +35,6 @@ class TestLoginScreen : public ash::mojom::LoginScreen,
                         const std::string& error_text,
                         const std::string& help_link_text,
                         int32_t help_topic_id) override;
-  void ShowWarningBanner(const base::string16& message) override;
-  void HideWarningBanner() override;
   void ClearErrors() override;
   void SetAuthType(const AccountId& account_id,
                    ::proximity_auth::mojom::AuthType auth_type,

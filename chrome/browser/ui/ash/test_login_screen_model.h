@@ -21,6 +21,7 @@ class TestLoginScreenModel : public ash::LoginScreenModel {
                            ash::FingerprintState state) override;
   void ShowEasyUnlockIcon(const AccountId& user,
                           const ash::EasyUnlockIconOptions& icon) override;
+  void UpdateWarningMessage(const base::string16& message) override;
   void SetPublicSessionLocales(const AccountId& account_id,
                                const std::vector<ash::LocaleItem>& locales,
                                const std::string& default_locale,

@@ -2167,15 +2167,15 @@ TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
   EXPECT_FALSE(test_api.warning_banner_bubble()->GetVisible());
 
   // Verifies that a warning banner is shown by giving a non-empty message.
-  DataDispatcher()->ShowWarningBanner(base::ASCIIToUTF16("foo"));
+  DataDispatcher()->UpdateWarningMessage(base::ASCIIToUTF16("foo"));
   EXPECT_TRUE(test_api.warning_banner_bubble()->GetVisible());
 
   // Verifies that a warning banner is hidden by HideWarningBanner().
-  DataDispatcher()->HideWarningBanner();
+  DataDispatcher()->UpdateWarningMessage({});
   EXPECT_FALSE(test_api.warning_banner_bubble()->GetVisible());
 
   // Shows a warning banner again.
-  DataDispatcher()->ShowWarningBanner(base::ASCIIToUTF16("foo"));
+  DataDispatcher()->UpdateWarningMessage(base::ASCIIToUTF16("foo"));
   EXPECT_TRUE(test_api.warning_banner_bubble()->GetVisible());
 
   // Attempt and fail user auth - an auth error is expected to be shown.

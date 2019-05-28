@@ -86,11 +86,9 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
     virtual void OnShowEasyUnlockIcon(const AccountId& user,
                                       const EasyUnlockIconOptions& icon);
 
-    // Called when a warning banner message should be displayed.
-    virtual void OnShowWarningBanner(const base::string16& message);
-
-    // Called when a warning banner message should be hidden.
-    virtual void OnHideWarningBanner();
+    // Called when a warning message should be displayed, or hidden if |message|
+    // is empty.
+    virtual void OnWarningMessageUpdated(const base::string16& message);
 
     // Called when the system info has changed.
     virtual void OnSystemInfoChanged(bool show,
@@ -168,8 +166,7 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   void SetLockScreenNoteState(mojom::TrayActionState state);
   void ShowEasyUnlockIcon(const AccountId& user,
                           const EasyUnlockIconOptions& icon) override;
-  void ShowWarningBanner(const base::string16& message);
-  void HideWarningBanner();
+  void UpdateWarningMessage(const base::string16& message) override;
   void SetSystemInfo(bool show_if_hidden,
                      const std::string& os_version_label_text,
                      const std::string& enterprise_info_text,

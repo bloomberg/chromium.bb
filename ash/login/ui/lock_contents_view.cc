@@ -874,13 +874,19 @@ void LockContentsView::OnShowEasyUnlockIcon(const AccountId& user,
   }
 }
 
-void LockContentsView::OnShowWarningBanner(const base::string16& message) {
-  DCHECK(!message.empty());
+void LockContentsView::OnWarningMessageUpdated(const base::string16& message) {
+  if (message.empty()) {
+    if (warning_banner_bubble_->GetVisible())
+      warning_banner_bubble_->Hide();
+    return;
+  }
+
   if (!CurrentBigUserView() || !CurrentBigUserView()->auth_user()) {
     LOG(ERROR) << "Unable to find the current active big user to show a "
                   "warning banner.";
     return;
   }
+
   if (warning_banner_bubble_->GetVisible())
     warning_banner_bubble_->Hide();
   // Shows warning banner as a persistent error bubble.
@@ -896,11 +902,6 @@ void LockContentsView::OnShowWarningBanner(const base::string16& message) {
       CurrentBigUserView()->auth_user()->password_view());
   warning_banner_bubble_->SetContent(label);
   warning_banner_bubble_->Show();
-}
-
-void LockContentsView::OnHideWarningBanner() {
-  if (warning_banner_bubble_->GetVisible())
-    warning_banner_bubble_->Hide();
 }
 
 void LockContentsView::OnLockScreenNoteStateChanged(

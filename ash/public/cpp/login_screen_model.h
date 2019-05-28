@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/strings/string16.h"
 
 class AccountId;
 
@@ -30,6 +31,12 @@ class ASH_PUBLIC_EXPORT LoginScreenModel {
   // |icon|:        Information regarding the icon.
   virtual void ShowEasyUnlockIcon(const AccountId& account_id,
                                   const EasyUnlockIconOptions& icon) = 0;
+
+  // Shows a warning banner message on the login screen. A warning banner is
+  // used to notify users of important messages before they log in to their
+  // session. (e.g. Tell the user that an update of the user data will start
+  // on login.) If |message| is empty, the banner will be hidden.
+  virtual void UpdateWarningMessage(const base::string16& message) = 0;
 
   // Set the users who are displayed on the login UI. |users| is filtered
   // and does not correspond to every user on the device.

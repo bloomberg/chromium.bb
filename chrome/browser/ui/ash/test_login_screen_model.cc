@@ -14,6 +14,8 @@ void TestLoginScreenModel::SetAvatarForUser(const AccountId& account_id,
 void TestLoginScreenModel::ShowEasyUnlockIcon(
     const AccountId& account_id,
     const ash::EasyUnlockIconOptions& icon) {}
+void TestLoginScreenModel::UpdateWarningMessage(const base::string16& message) {
+}
 void TestLoginScreenModel::SetFingerprintState(const AccountId& account_id,
                                                ash::FingerprintState state) {}
 void TestLoginScreenModel::SetPublicSessionLocales(

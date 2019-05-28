@@ -334,14 +334,6 @@ void LoginScreenController::ShowErrorMessage(int32_t login_attempts,
   NOTIMPLEMENTED();
 }
 
-void LoginScreenController::ShowWarningBanner(const base::string16& message) {
-  login_data_dispatcher_.ShowWarningBanner(message);
-}
-
-void LoginScreenController::HideWarningBanner() {
-  login_data_dispatcher_.HideWarningBanner();
-}
-
 void LoginScreenController::ClearErrors() {
   NOTIMPLEMENTED();
 }

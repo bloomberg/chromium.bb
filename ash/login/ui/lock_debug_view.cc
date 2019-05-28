@@ -436,11 +436,9 @@ class LockDebugView::DebugDataDispatcherTransformer
                                     enterprise_info, bluetooth_name);
   }
 
-  void ShowWarningBanner(const base::string16& message) {
-    debug_dispatcher_.ShowWarningBanner(message);
+  void UpdateWarningMessage(const base::string16& message) {
+    debug_dispatcher_.UpdateWarningMessage(message);
   }
-
-  void HideWarningBanner() { debug_dispatcher_.HideWarningBanner(); }
 
   // LoginDataDispatcher::Observer:
   void OnUsersChanged(const std::vector<LoginUserInfo>& users) override {
@@ -975,9 +973,9 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   // Show or hide warning banner.
   if (sender->GetID() == ButtonId::kGlobalToggleWarningBanner) {
     if (is_warning_banner_shown_) {
-      debug_data_dispatcher_->HideWarningBanner();
+      debug_data_dispatcher_->UpdateWarningMessage({});
     } else {
-      debug_data_dispatcher_->ShowWarningBanner(base::ASCIIToUTF16(
+      debug_data_dispatcher_->UpdateWarningMessage(base::ASCIIToUTF16(
           "A critical update is ready to install. Sign in to get started."));
     }
     is_warning_banner_shown_ = !is_warning_banner_shown_;

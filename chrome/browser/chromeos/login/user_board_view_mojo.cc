@@ -104,11 +104,7 @@ void UserBoardViewMojo::ShowBannerMessage(const base::string16& message,
   // warning banner message.
   // TODO(fukino): Remove ShowWarningMessage and related implementation along
   // with the migration screen once the transition to ext4 is compilete.
-  if (!message.empty()) {
-    LoginScreenClient::Get()->login_screen()->ShowWarningBanner(message);
-  } else {
-    LoginScreenClient::Get()->login_screen()->HideWarningBanner();
-  }
+  ash::LoginScreen::Get()->GetModel()->UpdateWarningMessage(message);
 }
 
 void UserBoardViewMojo::ShowUserPodCustomIcon(

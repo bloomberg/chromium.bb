@@ -48,10 +48,8 @@ void LoginDataDispatcher::Observer::OnShowEasyUnlockIcon(
     const AccountId& user,
     const EasyUnlockIconOptions& icon) {}
 
-void LoginDataDispatcher::Observer::OnShowWarningBanner(
+void LoginDataDispatcher::Observer::OnWarningMessageUpdated(
     const base::string16& message) {}
-
-void LoginDataDispatcher::Observer::OnHideWarningBanner() {}
 
 void LoginDataDispatcher::Observer::OnSystemInfoChanged(
     bool show,
@@ -167,14 +165,9 @@ void LoginDataDispatcher::ShowEasyUnlockIcon(
     observer.OnShowEasyUnlockIcon(user, icon);
 }
 
-void LoginDataDispatcher::ShowWarningBanner(const base::string16& message) {
+void LoginDataDispatcher::UpdateWarningMessage(const base::string16& message) {
   for (auto& observer : observers_)
-    observer.OnShowWarningBanner(message);
-}
-
-void LoginDataDispatcher::HideWarningBanner() {
-  for (auto& observer : observers_)
-    observer.OnHideWarningBanner();
+    observer.OnWarningMessageUpdated(message);
 }
 
 void LoginDataDispatcher::SetSystemInfo(

@@ -152,8 +152,7 @@ class ASH_EXPORT LockContentsView
   void OnForceOnlineSignInForUser(const AccountId& user) override;
   void OnShowEasyUnlockIcon(const AccountId& user,
                             const EasyUnlockIconOptions& icon) override;
-  void OnShowWarningBanner(const base::string16& message) override;
-  void OnHideWarningBanner() override;
+  void OnWarningMessageUpdated(const base::string16& message) override;
   void OnSystemInfoChanged(bool show,
                            const std::string& os_version_label_text,
                            const std::string& enterprise_info_text,
