@@ -868,7 +868,7 @@ class BidirectionalStreamQuicImplTest
 INSTANTIATE_TEST_SUITE_P(
     Version,
     BidirectionalStreamQuicImplTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
+    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
                        ::testing::Bool()));
 
 TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {

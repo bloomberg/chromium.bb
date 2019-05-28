@@ -1807,7 +1807,7 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
 INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     QuicProxyClientSocketTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
+    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
                        ::testing::Bool()));
 
 }  // namespace test

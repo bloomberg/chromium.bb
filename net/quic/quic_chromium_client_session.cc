@@ -1439,11 +1439,9 @@ void QuicChromiumClientSession::SendRstStream(
     quic::QuicStreamOffset bytes_written) {
   if (quic::QuicUtils::IsServerInitiatedStreamId(
           connection()->transport_version(), id)) {
-    StreamHandler handler = GetOrCreateStreamImpl(id);
-    if (handler.is_pending) {
-      bytes_pushed_count_ += handler.pending->stream_bytes_read();
-    } else if (handler.stream) {
-      bytes_pushed_count_ += handler.stream->stream_bytes_read();
+    quic::QuicStream* stream = GetOrCreateStream(id);
+    if (stream) {
+      bytes_pushed_count_ += stream->stream_bytes_read();
     }
   }
 

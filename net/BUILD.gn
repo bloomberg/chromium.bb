@@ -3180,6 +3180,8 @@ if (is_linux) {
 
   executable("epoll_quic_server") {
     sources = [
+      "third_party/quiche/src/quic/tools/quic_epoll_server_factory.cc",
+      "third_party/quiche/src/quic/tools/quic_epoll_server_factory.h",
       "third_party/quiche/src/quic/tools/quic_server_bin.cc",
       "third_party/quiche/src/quic/tools/quic_toy_server.cc",
       "third_party/quiche/src/quic/tools/quic_toy_server.h",

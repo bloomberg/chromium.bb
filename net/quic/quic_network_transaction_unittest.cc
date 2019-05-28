@@ -157,7 +157,7 @@ std::string GenerateQuicVersionsListForAltSvcHeader(
 std::vector<PoolingTestParams> GetPoolingTestParams() {
   std::vector<PoolingTestParams> params;
   quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllSupportedVersions();
+      quic::AllVersionsExcept99();
   for (const quic::ParsedQuicVersion version : all_supported_versions) {
     params.push_back(PoolingTestParams{version, SAME_AS_FIRST, false});
     params.push_back(PoolingTestParams{version, SAME_AS_FIRST, true});
@@ -1008,7 +1008,7 @@ class QuicNetworkTransactionTest
 INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     QuicNetworkTransactionTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
+    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
                        ::testing::Bool()));
 
 TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmed) {

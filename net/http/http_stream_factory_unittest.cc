@@ -2293,7 +2293,7 @@ class HttpStreamFactoryBidirectionalQuicTest
 INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     HttpStreamFactoryBidirectionalQuicTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
+    ::testing::Combine(::testing::ValuesIn(quic::AllVersionsExcept99()),
                        ::testing::Bool()));
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
