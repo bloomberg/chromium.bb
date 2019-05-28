@@ -195,6 +195,8 @@ If a native method is called without setting a mock in a unit test, an
 ### Calling Native -> Java
 
  * Methods annotated with `@CalledByNative` will have stubs generated for them.
+   * Inner class methods must provide the inner class name explicitly
+     (ex. `@CalledByNative("InnerClassName")`)
  * Just call the generated stubs defined in generated `.h` files.
 
 ### Java Objects and Garbage Collection
@@ -244,3 +246,9 @@ for more about the GN templates.
 
  * Python unit tests live in `jni_generator_tests.py`
  * A working demo app exists as `//base/android/jni_generator:sample_jni_apk`
+
+## Known Issues
+
+The `jni_generator` can cause build issues when source files that are used by
+JNI are moved due to how `include_dirs` are handled. This is tracked in
+[issue 964169](http://crbug.com/964169).
