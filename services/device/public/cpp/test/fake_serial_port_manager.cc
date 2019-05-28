@@ -88,6 +88,11 @@ FakeSerialPortManager::FakeSerialPortManager() = default;
 
 FakeSerialPortManager::~FakeSerialPortManager() = default;
 
+void FakeSerialPortManager::AddBinding(
+    mojom::SerialPortManagerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
 void FakeSerialPortManager::AddPort(mojom::SerialPortInfoPtr port) {
   base::UnguessableToken token = port->token;
   ports_[token] = std::move(port);
