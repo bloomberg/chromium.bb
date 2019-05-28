@@ -442,11 +442,18 @@ message GetCurrentSpaceForArcUidReply {
   int64 cur_space = 1;
 }
 
+// Input parameters to GetCurrentSpaceForArcGid().
 message GetCurrentSpaceForArcGidRequest {
+  // The Android GID for whom we are going to query the disk usage.
+  // Note that Android GID is a shifted GID.
   uint32 gid = 1;
 }
 
+// Output parameters for GetCurrentSpaceForArcGid().
 message GetCurrentSpaceForArcGidReply {
+  // The current disk space usage for the given Android GID.
+  // Will be a negative number if the request fails. See
+  // cryptohome/arc_disk_quota.h for more details.
   int64 cur_space = 1;
 }
 
