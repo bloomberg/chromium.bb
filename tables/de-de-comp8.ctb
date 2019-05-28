@@ -22,6 +22,17 @@
 # A part of these mappings do not correspond to a standard as not all of German 8-dot 
 # braille is properly standardized
 
+# -----------
+#-name: Eurobraille
+#-display-name: German 8 dot computer braille
+#
+#+locale: de
+#+type: computer
+#+contraction: no
+#+grade: 0
+#+direction: both
+# ------------
+
 include braille-patterns.cti
 
 sign \x0020 0
@@ -472,3 +483,9 @@ sign \x25cf 35
 sign \x2610 124578	# not active
 sign \x2612 12345678 	# active
 sign \x8722 36
+
+# musical unicode characters
+
+sign \x266d 12		# ♭
+sign \x266e 2356 	# ♮
+sign \x266f 3456 	# ♯
