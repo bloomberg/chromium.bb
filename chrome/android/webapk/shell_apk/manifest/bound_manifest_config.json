@@ -22,19 +22,18 @@
   },
   "share_template": [{
 	  "index": "0",
-	  "title": "Share All",
+	  "title": "Share Text and Images",
 	  "action": "https://pwa.rocks/share.html",
+          "method": "POST",
+          "enctype": "multipart/form-data",
 	  "param_title": "title",
 	  "param_text": "text",
-	  "param_url": "url"
-  },
-  {
-	  "index": "1",
-	  "title": "Share Title",
-	  "action": "https://pwa.rocks/share_title.html",
-	  "param_title": "title",
-	  "param_text": "text",
-	  "param_url": "url"
+	  "param_url": "url",
+          "is_file_upload": true,
+          "param_names": "[&quot;param_name&quot;]",
+          "param_accepts": "[[&quot;image/*&quot;]]",
+          "mime_types": [{
+            "mime_type": "image/*"
+          }]
   }]
-
 }
