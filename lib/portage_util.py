@@ -226,6 +226,27 @@ def FindOverlays(overlay_type, board=None, buildroot=constants.SOURCE_ROOT):
     return []
 
 
+def FindOverlaysForBoards(overlay_type, boards):
+  """Convenience function to find the overlays for multiple boards.
+
+  Unlike FindOverlays, there is no guarantee about the overlay ordering.
+  Produces a unique list of overlays.
+
+  Args:
+    overlay_type (str): Type of overlays to search. See FindOverlays.
+    boards (list[str]): The list of boards to compile a the overlays for.
+
+  Returns:
+    list[str] - The list of unique overlays from all boards.
+  """
+  overlays = set()
+  for board in boards:
+    board_overlays = FindOverlays(overlay_type, board=board)
+    overlays |= set(board_overlays)
+
+  return list(overlays)
+
+
 def FindOverlayFile(filename, overlay_type='both', board=None,
                     buildroot=constants.SOURCE_ROOT):
   """Attempt to find a file in the overlay directories.
