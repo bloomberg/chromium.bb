@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
 #include "ui/display/display.h"
@@ -1175,6 +1176,15 @@ void DisplayConfigurator::OnConfigured(
     if (!configure_timer_.IsRunning())
       CallAndClearQueuedCallbacks(success);
   }
+
+  // Filter out content protection requests for removed displays.
+  for (auto& requests : content_protection_requests_) {
+    base::EraseIf(requests.second,
+                  [this](const auto& pair) { return !GetDisplay(pair.first); });
+  }
+
+  // Kill tasks to fire failure callbacks.
+  content_protection_tasks_ = {};
 }
 
 void DisplayConfigurator::UpdatePowerState(

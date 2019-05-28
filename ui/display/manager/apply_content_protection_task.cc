@@ -15,25 +15,6 @@
 
 namespace display {
 
-namespace {
-
-bool GetHDCPCapableDisplays(
-    const DisplayLayoutManager& layout_manager,
-    std::vector<DisplaySnapshot*>* hdcp_capable_displays) {
-  for (DisplaySnapshot* display : layout_manager.GetDisplayStates()) {
-    uint32_t protection_mask;
-    if (!GetContentProtectionMethods(display->type(), &protection_mask))
-      return false;
-
-    if (protection_mask & CONTENT_PROTECTION_METHOD_HDCP)
-      hdcp_capable_displays->push_back(display);
-  }
-
-  return true;
-}
-
-}  // namespace
-
 ApplyContentProtectionTask::ApplyContentProtectionTask(
     DisplayLayoutManager* layout_manager,
     NativeDisplayDelegate* native_display_delegate,
@@ -51,9 +32,15 @@ ApplyContentProtectionTask::~ApplyContentProtectionTask() {
 
 void ApplyContentProtectionTask::Run() {
   std::vector<DisplaySnapshot*> hdcp_capable_displays;
-  if (!GetHDCPCapableDisplays(*layout_manager_, &hdcp_capable_displays)) {
-    std::move(callback_).Run(Status::FAILURE);
-    return;
+  for (DisplaySnapshot* display : layout_manager_->GetDisplayStates()) {
+    uint32_t protection_mask;
+    if (!GetContentProtectionMethods(display->type(), &protection_mask)) {
+      std::move(callback_).Run(Status::FAILURE);
+      return;
+    }
+
+    if (protection_mask & CONTENT_PROTECTION_METHOD_HDCP)
+      hdcp_capable_displays.push_back(display);
   }
 
   pending_requests_ = hdcp_capable_displays.size();
@@ -66,17 +53,25 @@ void ApplyContentProtectionTask::Run() {
   // updated the state.
   for (DisplaySnapshot* display : hdcp_capable_displays) {
     native_display_delegate_->GetHDCPState(
-        *display,
-        base::BindOnce(&ApplyContentProtectionTask::OnGetHDCPState,
-                       weak_ptr_factory_.GetWeakPtr(), display->display_id()));
+        *display, base::BindOnce(&ApplyContentProtectionTask::OnGetHDCPState,
+                                 weak_ptr_factory_.GetWeakPtr(), display));
   }
 }
 
-void ApplyContentProtectionTask::OnGetHDCPState(int64_t display_id,
+void ApplyContentProtectionTask::OnGetHDCPState(DisplaySnapshot* display,
                                                 bool success,
                                                 HDCPState state) {
   success_ &= success;
-  hdcp_states_[display_id] = state;
+
+  bool hdcp_enabled = state != HDCP_STATE_UNDESIRED;
+  bool hdcp_requested = GetDesiredProtectionMask(display->display_id()) &
+                        CONTENT_PROTECTION_METHOD_HDCP;
+
+  if (hdcp_enabled != hdcp_requested) {
+    hdcp_requests_.emplace_back(
+        display, hdcp_requested ? HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED);
+  }
+
   pending_requests_--;
 
   // Wait for all the requests before continuing.
@@ -88,37 +83,7 @@ void ApplyContentProtectionTask::OnGetHDCPState(int64_t display_id,
     return;
   }
 
-  ApplyProtections();
-}
-
-void ApplyContentProtectionTask::ApplyProtections() {
-  std::vector<DisplaySnapshot*> hdcp_capable_displays;
-  if (!GetHDCPCapableDisplays(*layout_manager_, &hdcp_capable_displays)) {
-    std::move(callback_).Run(Status::FAILURE);
-    return;
-  }
-
-  std::vector<std::pair<DisplaySnapshot*, HDCPState>> hdcp_requests;
-  // Figure out which displays need to have their HDCP state changed.
-  for (DisplaySnapshot* display : hdcp_capable_displays) {
-    uint32_t desired_mask = GetDesiredProtectionMask(display->display_id());
-
-    auto it = hdcp_states_.find(display->display_id());
-    // If the display can't be found, the display configuration changed.
-    if (it == hdcp_states_.end()) {
-      std::move(callback_).Run(Status::FAILURE);
-      return;
-    }
-
-    bool hdcp_enabled = it->second != HDCP_STATE_UNDESIRED;
-    bool hdcp_requested = desired_mask & CONTENT_PROTECTION_METHOD_HDCP;
-    if (hdcp_enabled != hdcp_requested) {
-      hdcp_requests.emplace_back(
-          display, hdcp_requested ? HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED);
-    }
-  }
-
-  pending_requests_ = hdcp_requests.size();
+  pending_requests_ = hdcp_requests_.size();
   // All the requested changes are the same as the current HDCP state. Nothing
   // to do anymore, just ack the content protection change.
   if (pending_requests_ == 0) {
@@ -126,7 +91,7 @@ void ApplyContentProtectionTask::ApplyProtections() {
     return;
   }
 
-  for (const auto& pair : hdcp_requests) {
+  for (const auto& pair : hdcp_requests_) {
     native_display_delegate_->SetHDCPState(
         *pair.first, pair.second,
         base::BindOnce(&ApplyContentProtectionTask::OnSetHDCPState,

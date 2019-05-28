@@ -1083,6 +1083,45 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionClientRegistration) {
   EXPECT_EQ(HDCP_STATE_UNDESIRED, native_display_delegate_->hdcp_state());
 }
 
+TEST_F(DisplayConfiguratorTest, ContentProtectionTasksKilledOnConfigure) {
+  InitWithOutputs(&small_mode_, &big_mode_);
+
+  auto id = configurator_.RegisterContentProtectionClient();
+  EXPECT_TRUE(id);
+
+  native_display_delegate_->set_run_async(true);
+
+  configurator_.ApplyContentProtection(
+      id, outputs_[1]->display_id(), CONTENT_PROTECTION_METHOD_HDCP,
+      base::BindOnce(&DisplayConfiguratorTest::ApplyContentProtectionCallback,
+                     base::Unretained(this)));
+
+  configurator_.QueryContentProtection(
+      id, outputs_[1]->display_id(),
+      base::BindOnce(&DisplayConfiguratorTest::QueryContentProtectionCallback,
+                     base::Unretained(this)));
+
+  native_display_delegate_->set_run_async(false);
+  configurator_.OnConfigurationChanged();
+  EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
+  log_->GetActionsAndClear();
+
+  base::RunLoop().RunUntilIdle();
+
+  // Configuration change should kill tasks and trigger failure callbacks.
+  EXPECT_EQ(1, apply_content_protection_call_count_);
+  EXPECT_FALSE(apply_content_protection_success_);
+
+  EXPECT_EQ(1, query_content_protection_call_count_);
+  EXPECT_FALSE(query_content_protection_success_);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_NONE, connection_mask_);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_NONE, protection_mask_);
+
+  // Pending task to enable protection should have been killed.
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_UNDESIRED, native_display_delegate_->hdcp_state());
+}
+
 TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   InitWithOutputs(&small_mode_);
 
