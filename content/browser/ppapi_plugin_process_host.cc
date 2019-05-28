@@ -32,6 +32,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_names.mojom.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -57,9 +58,15 @@ namespace content {
 class PpapiPluginSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
-  explicit PpapiPluginSandboxedProcessLauncherDelegate(bool is_broker)
+  PpapiPluginSandboxedProcessLauncherDelegate(
+      bool is_broker,
+      const ppapi::PpapiPermissions& permissions)
 #if BUILDFLAG(USE_ZYGOTE_HANDLE) || defined(OS_WIN)
       : is_broker_(is_broker)
+#endif
+#if defined(OS_WIN)
+        ,
+        permissions_(permissions)
 #endif
   {
   }
@@ -98,6 +105,14 @@ class PpapiPluginSandboxedProcessLauncherDelegate
     if (!sid.empty())
       service_manager::SandboxWin::AddAppContainerPolicy(policy, sid.c_str());
 
+    // Only Flash needs to be able to execute dynamic code.
+    if (!permissions_.HasPermission(ppapi::PERMISSION_FLASH)) {
+      sandbox::MitigationFlags flags = policy->GetDelayedProcessMitigations();
+      flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
+      if (sandbox::SBOX_ALL_OK != policy->SetDelayedProcessMitigations(flags))
+        return false;
+    }
+
     return true;
   }
 #endif  // OS_WIN
@@ -124,7 +139,10 @@ class PpapiPluginSandboxedProcessLauncherDelegate
 
  private:
 #if BUILDFLAG(USE_ZYGOTE_HANDLE) || defined(OS_WIN)
-  bool is_broker_;
+  const bool is_broker_;
+#endif
+#if defined(OS_WIN)
+  const ppapi::PpapiPermissions permissions_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PpapiPluginSandboxedProcessLauncherDelegate);
@@ -421,7 +439,8 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   // we are not using a plugin launcher - having a plugin launcher means we need
   // to use another process instead of just forking the zygote.
   process_->Launch(
-      std::make_unique<PpapiPluginSandboxedProcessLauncherDelegate>(is_broker_),
+      std::make_unique<PpapiPluginSandboxedProcessLauncherDelegate>(
+          is_broker_, permissions_),
       std::move(cmd_line), true);
   return true;
 }
