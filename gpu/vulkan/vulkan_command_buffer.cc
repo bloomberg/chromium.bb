@@ -95,12 +95,14 @@ bool VulkanCommandBuffer::Initialize() {
   VkResult result = VK_SUCCESS;
   VkDevice device = device_queue_->GetVulkanDevice();
 
-  VkCommandBufferAllocateInfo command_buffer_info = {};
-  command_buffer_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-  command_buffer_info.commandPool = command_pool_->handle();
-  command_buffer_info.level = primary_ ? VK_COMMAND_BUFFER_LEVEL_PRIMARY
-                                       : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-  command_buffer_info.commandBufferCount = 1;
+  VkCommandBufferAllocateInfo command_buffer_info = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .pNext = nullptr,
+      .commandPool = command_pool_->handle(),
+      .level = primary_ ? VK_COMMAND_BUFFER_LEVEL_PRIMARY
+                        : VK_COMMAND_BUFFER_LEVEL_SECONDARY,
+      .commandBufferCount = 1,
+  };
 
   result =
       vkAllocateCommandBuffers(device, &command_buffer_info, &command_buffer_);
@@ -130,19 +132,22 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
                                  VkSemaphore* wait_semaphores,
                                  uint32_t num_signal_semaphores,
                                  VkSemaphore* signal_semaphores) {
-  VkPipelineStageFlags wait_dst_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-
   DCHECK(primary_);
 
-  VkSubmitInfo submit_info = {};
-  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &command_buffer_;
-  submit_info.waitSemaphoreCount = num_wait_semaphores;
-  submit_info.pWaitSemaphores = wait_semaphores;
-  submit_info.pWaitDstStageMask = &wait_dst_stage_mask;
-  submit_info.signalSemaphoreCount = num_signal_semaphores;
-  submit_info.pSignalSemaphores = signal_semaphores;
+  std::vector<VkPipelineStageFlags> wait_dst_stage_mask(
+      num_wait_semaphores, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+
+  VkSubmitInfo submit_info = {
+      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      .pNext = nullptr,
+      .waitSemaphoreCount = num_wait_semaphores,
+      .pWaitSemaphores = wait_semaphores,
+      .pWaitDstStageMask = wait_dst_stage_mask.data(),
+      .commandBufferCount = 1,
+      .pCommandBuffers = &command_buffer_,
+      .signalSemaphoreCount = num_signal_semaphores,
+      .pSignalSemaphores = signal_semaphores,
+  };
 
   VkResult result = VK_SUCCESS;
 
