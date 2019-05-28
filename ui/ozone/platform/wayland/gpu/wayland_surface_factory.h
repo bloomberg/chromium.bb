@@ -18,11 +18,12 @@
 namespace ui {
 
 class GbmSurfacelessWayland;
+class WaylandConnection;
 class WaylandConnectionProxy;
 
 class WaylandSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  WaylandSurfaceFactory();
+  explicit WaylandSurfaceFactory(WaylandConnection* connection);
   ~WaylandSurfaceFactory() override;
 
   void SetProxy(WaylandConnectionProxy* proxy);
@@ -51,7 +52,8 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
       gfx::NativePixmapHandle handle) override;
 
  private:
-  WaylandConnectionProxy* connection_ = nullptr;
+  WaylandConnection* const connection_;
+  WaylandConnectionProxy* connection_proxy_ = nullptr;
   std::unique_ptr<GLOzone> egl_implementation_;
 
   std::map<gfx::AcceleratedWidget, GbmSurfacelessWayland*>

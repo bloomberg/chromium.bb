@@ -13,9 +13,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gl/gl_surface.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
-#include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"
 
 #if defined(WAYLAND_GBM)
@@ -33,17 +31,14 @@ class WaylandConnection;
 class WaylandSurfaceFactory;
 class WaylandWindow;
 
-// Provides a proxy connection to a WaylandConnection object on
-// browser process side. When in multi-process mode, this is used to create
-// Wayland dmabufs and ask it to do commits. When in single process mode,
-// this class just forwards calls directly to WaylandConnection.
+// Forwards calls through an associated mojo connection to WaylandBufferManager
+// on the browser process side.
 //
 // It's guaranteed that WaylandConnectionProxy makes mojo calls on the right
 // sequence.
 class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
  public:
-  WaylandConnectionProxy(WaylandConnection* connection,
-                         WaylandSurfaceFactory* factory);
+  explicit WaylandConnectionProxy(WaylandSurfaceFactory* factory);
   ~WaylandConnectionProxy() override;
 
   // WaylandConnectionProxy overrides:
@@ -107,26 +102,9 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   }
 #endif
 
-  // Methods, which must be used when a single process mode is used (GPU is
-  // hosted in the browser process).
-  //
-  // Return a WaylandWindow based on the |widget|.
-  WaylandWindow* GetWindow(gfx::AcceleratedWidget widget) const;
-  // Schedule flush in the Wayland message loop.
-  void ScheduleFlush();
-
-  // Methods, which can be used with both single- and multi-process modes.
-  //
-  // Returns a pointer to native display. When used in single process mode,
-  // a wl_display pointer is returned. For the the mode, when there are GPU
-  // and browser processes, EGL_DEFAULT_DISPLAY is returned.
-  intptr_t Display() const;
-
   // Adds a WaylandConnectionClient binding.
   void AddBindingWaylandConnectionClient(
       ozone::mojom::WaylandConnectionClientRequest request);
-
-  WaylandConnection* connection() const { return connection_; }
 
  private:
   void CreateDmabufBasedBufferInternal(gfx::AcceleratedWidget widget,
@@ -149,10 +127,6 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   void DestroyBufferInternal(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
   void BindHostInterface();
-
-  // Non-owned pointer to a WaylandConnection. It is only used in a single
-  // process mode, when a shared dmabuf approach is not used.
-  WaylandConnection* const connection_;
 
   // Non-owned. Only used to get registered surfaces and notify them about
   // submission and presentation of buffers.

@@ -32,9 +32,9 @@ WaylandTest::WaylandTest()
       std::make_unique<StubKeyboardLayoutEngine>());
 #endif
   connection_ = std::make_unique<WaylandConnection>();
-  surface_factory_ = std::make_unique<WaylandSurfaceFactory>();
-  connection_proxy_ = std::make_unique<WaylandConnectionProxy>(
-      connection_.get(), surface_factory_.get());
+  surface_factory_ = std::make_unique<WaylandSurfaceFactory>(connection_.get());
+  connection_proxy_ =
+      std::make_unique<WaylandConnectionProxy>(surface_factory_.get());
   surface_factory_->SetProxy(connection_proxy_.get());
   window_ = std::make_unique<WaylandWindow>(&delegate_, connection_.get());
 }

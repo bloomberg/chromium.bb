@@ -14,6 +14,7 @@
 #include "ui/ozone/platform/wayland/gpu/gl_surface_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_canvas_surface.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 #if defined(WAYLAND_GBM)
@@ -28,9 +29,12 @@ namespace {
 
 class GLOzoneEGLWayland : public GLOzoneEGL {
  public:
-  GLOzoneEGLWayland(WaylandConnectionProxy* connection,
+  GLOzoneEGLWayland(WaylandConnection* connection,
+                    WaylandConnectionProxy* connection_proxy,
                     WaylandSurfaceFactory* factory)
-      : connection_(connection), factory_(factory) {}
+      : connection_(connection),
+        connection_proxy_(connection_proxy),
+        factory_(factory) {}
   ~GLOzoneEGLWayland() override {}
 
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
@@ -47,7 +51,8 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
   bool LoadGLES2Bindings(gl::GLImplementation impl) override;
 
  private:
-  WaylandConnectionProxy* const connection_;
+  WaylandConnection* const connection_;
+  WaylandConnectionProxy* const connection_proxy_;
   WaylandSurfaceFactory* const factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLWayland);
@@ -56,10 +61,10 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
     gfx::AcceleratedWidget widget) {
   // Only EGLGLES2 is supported with surfaceless view gl.
-  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2)
+  if ((gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) ||
+      !connection_)
     return nullptr;
 
-  DCHECK(connection_);
   WaylandWindow* window = connection_->GetWindow(widget);
   if (!window)
     return nullptr;
@@ -82,10 +87,10 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
 
 #if defined(WAYLAND_GBM)
   // If there is a gbm device available, use surfaceless gl surface.
-  if (!connection_->gbm_device())
+  if (!connection_proxy_->gbm_device())
     return nullptr;
   return gl::InitializeGLSurface(
-      new GbmSurfacelessWayland(factory_, connection_, window));
+      new GbmSurfacelessWayland(factory_, connection_proxy_, window));
 #else
   return nullptr;
 #endif
@@ -102,7 +107,9 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(
 }
 
 intptr_t GLOzoneEGLWayland::GetNativeDisplay() {
-  return connection_->Display();
+  if (connection_)
+    return reinterpret_cast<intptr_t>(connection_->display());
+  return EGL_DEFAULT_DISPLAY;
 }
 
 bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
@@ -114,15 +121,17 @@ bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
 
 }  // namespace
 
-WaylandSurfaceFactory::WaylandSurfaceFactory() = default;
+WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnection* connection)
+    : connection_(connection) {}
 
 WaylandSurfaceFactory::~WaylandSurfaceFactory() = default;
 
 void WaylandSurfaceFactory::SetProxy(WaylandConnectionProxy* proxy) {
-  DCHECK(!connection_ && proxy);
-  connection_ = proxy;
+  DCHECK(!connection_proxy_ && proxy);
+  connection_proxy_ = proxy;
 
-  egl_implementation_ = std::make_unique<GLOzoneEGLWayland>(connection_, this);
+  egl_implementation_ =
+      std::make_unique<GLOzoneEGLWayland>(connection_, connection_proxy_, this);
 }
 
 void WaylandSurfaceFactory::RegisterSurface(gfx::AcceleratedWidget widget,
@@ -146,7 +155,7 @@ GbmSurfacelessWayland* WaylandSurfaceFactory::GetSurface(
 
 std::unique_ptr<SurfaceOzoneCanvas>
 WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
-  return std::make_unique<WaylandCanvasSurface>(connection_, widget);
+  return std::make_unique<WaylandCanvasSurface>(connection_proxy_, widget);
 }
 
 std::vector<gl::GLImplementation>
@@ -178,7 +187,7 @@ scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
     gfx::BufferUsage usage) {
 #if defined(WAYLAND_GBM)
   scoped_refptr<GbmPixmapWayland> pixmap =
-      base::MakeRefCounted<GbmPixmapWayland>(this, connection_, widget);
+      base::MakeRefCounted<GbmPixmapWayland>(this, connection_proxy_, widget);
   if (!pixmap->InitializeBuffer(size, format, usage))
     return nullptr;
   return pixmap;

@@ -10,18 +10,14 @@
 #include "base/process/process.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
-#include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
 namespace ui {
 
-WaylandConnectionProxy::WaylandConnectionProxy(WaylandConnection* connection,
-                                               WaylandSurfaceFactory* factory)
-    : connection_(connection),
-      factory_(factory),
+WaylandConnectionProxy::WaylandConnectionProxy(WaylandSurfaceFactory* factory)
+    : factory_(factory),
       associated_binding_(this),
       gpu_thread_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
@@ -128,32 +124,6 @@ void WaylandConnectionProxy::DestroyBuffer(gfx::AcceleratedWidget widget,
   gpu_thread_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WaylandConnectionProxy::DestroyBufferInternal,
                                 base::Unretained(this), widget, buffer_id));
-}
-
-WaylandWindow* WaylandConnectionProxy::GetWindow(
-    gfx::AcceleratedWidget widget) const {
-  if (connection_)
-    return connection_->GetWindow(widget);
-  return nullptr;
-}
-
-void WaylandConnectionProxy::ScheduleFlush() {
-  if (connection_)
-    return connection_->ScheduleFlush();
-
-  LOG(FATAL) << "Flush mustn't be called directly on the WaylandConnection, "
-                "when multi-process moe is used";
-}
-
-intptr_t WaylandConnectionProxy::Display() const {
-  if (connection_)
-    return reinterpret_cast<intptr_t>(connection_->display());
-
-#if defined(WAYLAND_GBM)
-  return EGL_DEFAULT_DISPLAY;
-#else
-  return 0;
-#endif
 }
 
 void WaylandConnectionProxy::AddBindingWaylandConnectionClient(
