@@ -30,17 +30,49 @@ class WaylandBufferManagerTest : public WaylandTest {
   ~WaylandBufferManagerTest() override = default;
 
  protected:
-  base::File MakeTempFile() {
+  base::ScopedFD MakeFD() {
     base::FilePath temp_path;
     EXPECT_TRUE(base::CreateTemporaryFile(&temp_path));
-    return base::File(temp_path, base::File::FLAG_READ |
-                                     base::File::FLAG_WRITE |
-                                     base::File::FLAG_CREATE_ALWAYS);
+    auto file =
+        base::File(temp_path, base::File::FLAG_READ | base::File::FLAG_WRITE |
+                                  base::File::FLAG_CREATE_ALWAYS);
+    return base::ScopedFD(file.TakePlatformFile());
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerTest);
 };
+
+TEST_P(WaylandBufferManagerTest, CreateDmabufBasedBuffers) {
+  WaylandBufferManager* manager = connection_->buffer_manager();
+  ASSERT_TRUE(manager);
+
+  constexpr uint32_t kDmabufBufferId = 1;
+
+  EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(1);
+  const gfx::AcceleratedWidget widget = window_->GetWidget();
+  EXPECT_TRUE(manager->CreateDmabufBasedBuffer(widget, MakeFD(), kDefaultSize,
+                                               {1}, {2}, {3}, DRM_FORMAT_R8, 1,
+                                               kDmabufBufferId));
+  EXPECT_TRUE(manager->error_message().empty());
+  EXPECT_TRUE(manager->DestroyBuffer(widget, kDmabufBufferId));
+  EXPECT_TRUE(manager->error_message().empty());
+}
+
+TEST_P(WaylandBufferManagerTest, CreateShmBasedBuffers) {
+  WaylandBufferManager* manager = connection_->buffer_manager();
+  ASSERT_TRUE(manager);
+
+  constexpr uint32_t kShmBufferId = 1;
+
+  const gfx::AcceleratedWidget widget = window_->GetWidget();
+  size_t length = kDefaultSize.width() * kDefaultSize.height() * 4;
+  EXPECT_TRUE(manager->CreateShmBasedBuffer(widget, MakeFD(), length,
+                                            kDefaultSize, kShmBufferId));
+  EXPECT_TRUE(manager->error_message().empty());
+  EXPECT_TRUE(manager->DestroyBuffer(widget, kShmBufferId));
+  EXPECT_TRUE(manager->error_message().empty());
+}
 
 TEST_P(WaylandBufferManagerTest, ValidateDataFromGpu) {
   struct InputData {
@@ -64,8 +96,8 @@ TEST_P(WaylandBufferManagerTest, ValidateDataFromGpu) {
   // This must be the only buffer that is asked to be created.
   EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(1);
   const gfx::AcceleratedWidget widget = window_->GetWidget();
-  manager->CreateBuffer(widget, MakeTempFile(), kDefaultSize, {1}, {2}, {3},
-                        DRM_FORMAT_R8, 1, kExistingBufferId);
+  manager->CreateDmabufBasedBuffer(widget, MakeFD(), kDefaultSize, {1}, {2},
+                                   {3}, DRM_FORMAT_R8, 1, kExistingBufferId);
   Sync();
 
   const InputData kBadInputs[] = {
@@ -92,21 +124,24 @@ TEST_P(WaylandBufferManagerTest, ValidateDataFromGpu) {
 
   for (const auto& bad : kBadInputs) {
     EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(0);
-    base::File dummy;
-    EXPECT_FALSE(manager->CreateBuffer(
-        widget, bad.has_file ? MakeTempFile() : std::move(dummy), bad.size,
+    base::ScopedFD dummy;
+    EXPECT_FALSE(manager->CreateDmabufBasedBuffer(
+        widget, bad.has_file ? MakeFD() : std::move(dummy), bad.size,
         bad.strides, bad.offsets, bad.modifiers, bad.format, bad.planes_count,
         bad.buffer_id));
     EXPECT_FALSE(manager->error_message().empty());
   }
 
   EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(1);
-  EXPECT_TRUE(manager->CreateBuffer(widget, MakeTempFile(), kDefaultSize, {1},
-                                    {2}, {3}, DRM_FORMAT_R8, 1,
-                                    kNonExistingBufferId));
+  EXPECT_TRUE(manager->CreateDmabufBasedBuffer(widget, MakeFD(), kDefaultSize,
+                                               {1}, {2}, {3}, DRM_FORMAT_R8, 1,
+                                               kNonExistingBufferId));
+  EXPECT_TRUE(manager->error_message().empty());
 
   EXPECT_TRUE(manager->DestroyBuffer(widget, kNonExistingBufferId));
+  EXPECT_TRUE(manager->error_message().empty());
   EXPECT_TRUE(manager->DestroyBuffer(widget, kExistingBufferId));
+  EXPECT_TRUE(manager->error_message().empty());
 }
 
 TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
@@ -120,18 +155,35 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
 
-  EXPECT_TRUE(manager->CreateBuffer(widget, MakeTempFile(), kDefaultSize, {1},
-                                    {2}, {3}, DRM_FORMAT_R8, 1, kBufferId1));
-  EXPECT_FALSE(manager->CreateBuffer(widget, MakeTempFile(), kDefaultSize, {1},
-                                     {2}, {3}, DRM_FORMAT_R8, 1, kBufferId1));
+  EXPECT_TRUE(manager->CreateDmabufBasedBuffer(widget, MakeFD(), kDefaultSize,
+                                               {1}, {2}, {3}, DRM_FORMAT_R8, 1,
+                                               kBufferId1));
+  EXPECT_TRUE(manager->error_message().empty());
+
+  EXPECT_FALSE(manager->CreateDmabufBasedBuffer(widget, MakeFD(), kDefaultSize,
+                                                {1}, {2}, {3}, DRM_FORMAT_R8, 1,
+                                                kBufferId1));
+  EXPECT_FALSE(manager->error_message().empty());
+
   EXPECT_FALSE(manager->DestroyBuffer(widget, kBufferId2));
-  EXPECT_TRUE(manager->CreateBuffer(widget, MakeTempFile(), kDefaultSize, {1},
-                                    {2}, {3}, DRM_FORMAT_R8, 1, kBufferId2));
+  EXPECT_FALSE(manager->error_message().empty());
+
+  EXPECT_TRUE(manager->CreateDmabufBasedBuffer(widget, MakeFD(), kDefaultSize,
+                                               {1}, {2}, {3}, DRM_FORMAT_R8, 1,
+                                               kBufferId2));
+  EXPECT_TRUE(manager->error_message().empty());
 
   EXPECT_TRUE(manager->DestroyBuffer(widget, kBufferId1));
+  EXPECT_TRUE(manager->error_message().empty());
+
   EXPECT_FALSE(manager->DestroyBuffer(widget, kBufferId1));
+  EXPECT_FALSE(manager->error_message().empty());
+
   EXPECT_TRUE(manager->DestroyBuffer(widget, kBufferId2));
+  EXPECT_TRUE(manager->error_message().empty());
+
   EXPECT_FALSE(manager->DestroyBuffer(widget, kBufferId2));
+  EXPECT_FALSE(manager->error_message().empty());
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,

@@ -34,7 +34,7 @@ WaylandZwpLinuxDmabuf::WaylandZwpLinuxDmabuf(
 
 WaylandZwpLinuxDmabuf::~WaylandZwpLinuxDmabuf() = default;
 
-void WaylandZwpLinuxDmabuf::CreateBuffer(base::File file,
+void WaylandZwpLinuxDmabuf::CreateBuffer(base::ScopedFD fd,
                                          const gfx::Size& size,
                                          const std::vector<uint32_t>& strides,
                                          const std::vector<uint32_t>& offsets,
@@ -48,8 +48,6 @@ void WaylandZwpLinuxDmabuf::CreateBuffer(base::File file,
 
   struct zwp_linux_buffer_params_v1* params =
       zwp_linux_dmabuf_v1_create_params(zwp_linux_dmabuf_.get());
-
-  base::ScopedFD fd(file.TakePlatformFile());
 
   for (size_t i = 0; i < planes_count; i++) {
     uint32_t modifier_lo = 0;

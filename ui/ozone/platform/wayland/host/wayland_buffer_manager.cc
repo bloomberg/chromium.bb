@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_shm.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
 
@@ -447,41 +448,56 @@ void WaylandBufferManager::OnWindowRemoved(WaylandWindow* window) {
   DCHECK(surfaces_.erase(window->GetWidget()));
 }
 
-bool WaylandBufferManager::CreateBuffer(gfx::AcceleratedWidget widget,
-                                        base::File file,
-                                        const gfx::Size& size,
-                                        const std::vector<uint32_t>& strides,
-                                        const std::vector<uint32_t>& offsets,
-                                        const std::vector<uint64_t>& modifiers,
-                                        uint32_t format,
-                                        uint32_t planes_count,
-                                        uint32_t buffer_id) {
-  TRACE_EVENT2("wayland", "WaylandBufferManager::CreateZwpLinuxDmabuf",
+bool WaylandBufferManager::CreateDmabufBasedBuffer(
+    gfx::AcceleratedWidget widget,
+    base::ScopedFD dmabuf_fd,
+    const gfx::Size& size,
+    const std::vector<uint32_t>& strides,
+    const std::vector<uint32_t>& offsets,
+    const std::vector<uint64_t>& modifiers,
+    uint32_t format,
+    uint32_t planes_count,
+    uint32_t buffer_id) {
+  TRACE_EVENT2("wayland", "WaylandBufferManager::CreateDmabufBasedBuffer",
                "Format", format, "Buffer id", buffer_id);
 
-  if (!ValidateDataFromGpu(widget, file, size, strides, offsets, modifiers,
-                           format, planes_count, buffer_id)) {
-    // base::File::Close() has an assertion that checks if blocking operations
-    // are allowed. Thus, manually close the fd here.
-    base::ScopedFD deleter(file.TakePlatformFile());
+  DCHECK(error_message_.empty());
+  // Validate data and ask surface to create a buffer associated with the
+  // |buffer_id|.
+  if (!ValidateDataFromGpu(widget, dmabuf_fd, size, strides, offsets, modifiers,
+                           format, planes_count, buffer_id) ||
+      !CreateBuffer(widget, size, buffer_id))
     return false;
-  }
-
-  WaylandBufferManager::Surface* surface = GetSurface(widget);
-  DCHECK(surface);
-
-  if (!surface->CreateBuffer(size, buffer_id)) {
-    error_message_ =
-        "A buffer with id= " + NumberToString(buffer_id) + " already exists";
-    return false;
-  }
 
   // Create wl_buffer associated with the internal Buffer.
   auto callback = base::BindOnce(&WaylandBufferManager::OnCreateBufferComplete,
                                  weak_factory_.GetWeakPtr(), widget, buffer_id);
-  connection_->zwp_dmabuf()->CreateBuffer(std::move(file), size, strides,
+  connection_->zwp_dmabuf()->CreateBuffer(std::move(dmabuf_fd), size, strides,
                                           offsets, modifiers, format,
                                           planes_count, std::move(callback));
+  return true;
+}
+
+bool WaylandBufferManager::CreateShmBasedBuffer(gfx::AcceleratedWidget widget,
+                                                base::ScopedFD shm_fd,
+                                                size_t length,
+                                                const gfx::Size& size,
+                                                uint32_t buffer_id) {
+  TRACE_EVENT1("wayland", "WaylandBufferManager::CreateShmBasedBuffer",
+               "Buffer id", buffer_id);
+
+  DCHECK(error_message_.empty());
+  // Validate data and create a buffer associated with the |buffer_id|.
+  if (!ValidateDataFromGpu(widget, shm_fd, length, size, buffer_id) ||
+      !CreateBuffer(widget, size, buffer_id))
+    return false;
+
+  // Create a shm based wl_buffer and attach it to the created buffer.
+  auto buffer =
+      connection_->shm()->CreateBuffer(std::move(shm_fd), length, size);
+  OnCreateBufferComplete(widget, buffer_id, std::move(buffer));
+
+  connection_->ScheduleFlush();
   return true;
 }
 
@@ -490,6 +506,8 @@ bool WaylandBufferManager::CommitBuffer(gfx::AcceleratedWidget widget,
                                         const gfx::Rect& damage_region) {
   TRACE_EVENT1("wayland", "WaylandBufferManager::ScheduleSwapBuffer",
                "Buffer id", buffer_id);
+
+  DCHECK(error_message_.empty());
 
   if (ValidateDataFromGpu(widget, buffer_id)) {
     Surface* surface = GetSurface(widget);
@@ -507,6 +525,8 @@ bool WaylandBufferManager::DestroyBuffer(gfx::AcceleratedWidget widget,
                                          uint32_t buffer_id) {
   TRACE_EVENT1("wayland", "WaylandBufferManager::DestroyZwpLinuxDmabuf",
                "Buffer id", buffer_id);
+
+  DCHECK(error_message_.empty());
 
   Surface* surface = GetSurface(widget);
   // On browser shutdown, the surface might have already been destroyed.
@@ -528,6 +548,19 @@ void WaylandBufferManager::ClearState() {
     surface_pair.second->ClearState();
 }
 
+bool WaylandBufferManager::CreateBuffer(gfx::AcceleratedWidget& widget,
+                                        const gfx::Size& size,
+                                        uint32_t buffer_id) {
+  WaylandBufferManager::Surface* surface = GetSurface(widget);
+  DCHECK(surface);
+
+  if (!surface->CreateBuffer(size, buffer_id)) {
+    error_message_ =
+        "A buffer with id= " + NumberToString(buffer_id) + " already exists";
+  }
+  return error_message_.empty();
+}
+
 WaylandBufferManager::Surface* WaylandBufferManager::GetSurface(
     gfx::AcceleratedWidget widget) const {
   auto it = surfaces_.find(widget);
@@ -536,7 +569,7 @@ WaylandBufferManager::Surface* WaylandBufferManager::GetSurface(
 
 bool WaylandBufferManager::ValidateDataFromGpu(
     const gfx::AcceleratedWidget& widget,
-    const base::File& file,
+    const base::ScopedFD& fd,
     const gfx::Size& size,
     const std::vector<uint32_t>& strides,
     const std::vector<uint32_t>& offsets,
@@ -548,7 +581,7 @@ bool WaylandBufferManager::ValidateDataFromGpu(
     return false;
 
   std::string reason;
-  if (!file.IsValid())
+  if (!fd.is_valid())
     reason = "Buffer fd is invalid";
 
   if (size.IsEmpty())
@@ -590,6 +623,33 @@ bool WaylandBufferManager::ValidateDataFromGpu(
 
   if (buffer_id < 1)
     reason = "Invalid buffer id: " + NumberToString(buffer_id);
+
+  if (!reason.empty()) {
+    error_message_ = std::move(reason);
+    return false;
+  }
+
+  return true;
+}
+
+bool WaylandBufferManager::ValidateDataFromGpu(
+    const gfx::AcceleratedWidget& widget,
+    const base::ScopedFD& fd,
+    size_t length,
+    const gfx::Size& size,
+    uint32_t buffer_id) {
+  if (!ValidateDataFromGpu(widget, buffer_id))
+    return false;
+
+  std::string reason;
+  if (!fd.is_valid())
+    reason = "Buffer fd is invalid";
+
+  if (length == 0)
+    reason = "The shm pool length cannot be less than 1";
+
+  if (size.IsEmpty())
+    reason = "Buffer size is invalid";
 
   if (!reason.empty()) {
     error_message_ = std::move(reason);

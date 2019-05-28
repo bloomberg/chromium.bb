@@ -53,7 +53,7 @@ class GbmPixmapWayland : public gfx::NativePixmap {
   ~GbmPixmapWayland() override;
 
   // Asks Wayland to create a dmabuf based wl_buffer.
-  void CreateZwpLinuxDmabuf();
+  void CreateDmabufBasedBuffer();
 
   // gbm_bo wrapper for struct gbm_bo.
   std::unique_ptr<GbmBuffer> gbm_bo_;

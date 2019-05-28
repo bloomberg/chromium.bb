@@ -36,7 +36,7 @@ GbmPixmapWayland::GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
 
 GbmPixmapWayland::~GbmPixmapWayland() {
   if (gbm_bo_ && widget_ != gfx::kNullAcceleratedWidget)
-    connection_->DestroyZwpLinuxDmabuf(widget_, GetUniqueId());
+    connection_->DestroyBuffer(widget_, GetUniqueId());
 }
 
 bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
@@ -83,7 +83,7 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
   // The pixmap can be created as a staging buffer and not be mapped to any of
   // the existing widgets.
   if (widget_ != gfx::kNullAcceleratedWidget)
-    CreateZwpLinuxDmabuf();
+    CreateDmabufBasedBuffer();
   return true;
 }
 
@@ -160,7 +160,7 @@ gfx::NativePixmapHandle GbmPixmapWayland::ExportHandle() {
   return handle;
 }
 
-void GbmPixmapWayland::CreateZwpLinuxDmabuf() {
+void GbmPixmapWayland::CreateDmabufBasedBuffer() {
   uint64_t modifier = gbm_bo_->GetFormatModifier();
 
   std::vector<uint32_t> strides;
@@ -179,11 +179,9 @@ void GbmPixmapWayland::CreateZwpLinuxDmabuf() {
     PLOG(FATAL) << "dup";
     return;
   }
-  base::File file(fd.release());
-
   // Asks Wayland to create a wl_buffer based on the |file| fd.
-  connection_->CreateZwpLinuxDmabuf(
-      widget_, std::move(file), GetBufferSize(), strides, offsets, modifiers,
+  connection_->CreateDmabufBasedBuffer(
+      widget_, std::move(fd), GetBufferSize(), strides, offsets, modifiers,
       gbm_bo_->GetFormat(), plane_count, GetUniqueId());
 }
 

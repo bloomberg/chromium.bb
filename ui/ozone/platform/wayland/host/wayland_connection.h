@@ -31,7 +31,6 @@
 namespace ui {
 
 class WaylandBufferManager;
-class WaylandShmBufferManager;
 class WaylandOutputManager;
 class WaylandWindow;
 class WaylandZwpLinuxDmabuf;
@@ -55,19 +54,28 @@ class WaylandConnection : public PlatformEventSource,
       ozone::mojom::WaylandConnectionClientAssociatedPtrInfo client) override;
   //
   // Called by the GPU and asks to import a wl_buffer based on a gbm file
-  // descriptor.
-  void CreateZwpLinuxDmabuf(gfx::AcceleratedWidget widget,
-                            base::File file,
+  // descriptor using zwp_linux_dmabuf protocol. Check comments in the
+  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
+  void CreateDmabufBasedBuffer(gfx::AcceleratedWidget widget,
+                               mojo::ScopedHandle dmabuf_fd,
+                               const gfx::Size& size,
+                               const std::vector<uint32_t>& strides,
+                               const std::vector<uint32_t>& offsets,
+                               const std::vector<uint64_t>& modifiers,
+                               uint32_t format,
+                               uint32_t planes_count,
+                               uint32_t buffer_id) override;
+  // Called by the GPU and asks to import a wl_buffer based on a shared memory
+  // file descriptor using wl_shm protocol. Check comments in the
+  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
+  void CreateShmBasedBuffer(gfx::AcceleratedWidget widget,
+                            mojo::ScopedHandle shm_fd,
+                            uint64_t length,
                             const gfx::Size& size,
-                            const std::vector<uint32_t>& strides,
-                            const std::vector<uint32_t>& offsets,
-                            const std::vector<uint64_t>& modifiers,
-                            uint32_t format,
-                            uint32_t planes_count,
                             uint32_t buffer_id) override;
   // Called by the GPU to destroy the imported wl_buffer with a |buffer_id|.
-  void DestroyZwpLinuxDmabuf(gfx::AcceleratedWidget widget,
-                             uint32_t buffer_id) override;
+  void DestroyBuffer(gfx::AcceleratedWidget widget,
+                     uint32_t buffer_id) override;
   // Called by the GPU and asks to attach a wl_buffer with a |buffer_id| to a
   // WaylandWindow with the specified |widget|.
   // Calls OnSubmission and OnPresentation on successful swap and pixels
@@ -75,19 +83,6 @@ class WaylandConnection : public PlatformEventSource,
   void CommitBuffer(gfx::AcceleratedWidget widget,
                     uint32_t buffer_id,
                     const gfx::Rect& damage_region) override;
-  // These overridden methods below are invoked by the GPU when hardware
-  // accelerated rendering is not used. Check comments in the
-  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
-  void CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
-                                base::File file,
-                                uint64_t length,
-                                const gfx::Size& size,
-                                uint32_t buffer_id) override;
-  void PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
-                                 const gfx::Rect& damage,
-                                 uint32_t buffer_id) override;
-  void DestroyShmBuffer(gfx::AcceleratedWidget widget,
-                        uint32_t buffer_id) override;
 
   // These methods are exclusively used by the WaylandBufferManager to notify
   // the |client_associated_ptr_| about buffer swaps' results.
@@ -256,7 +251,6 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandPointer> pointer_;
   std::unique_ptr<WaylandTouch> touch_;
   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
-  std::unique_ptr<WaylandShmBufferManager> shm_buffer_manager_;
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
   std::unique_ptr<WaylandShm> shm_;
 

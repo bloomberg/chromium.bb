@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -30,9 +31,11 @@ WaylandTest::WaylandTest()
   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
       std::make_unique<StubKeyboardLayoutEngine>());
 #endif
-  connection_.reset(new WaylandConnection);
-  connection_proxy_.reset(
-      new WaylandConnectionProxy(connection_.get(), nullptr));
+  connection_ = std::make_unique<WaylandConnection>();
+  surface_factory_ = std::make_unique<WaylandSurfaceFactory>();
+  connection_proxy_ = std::make_unique<WaylandConnectionProxy>(
+      connection_.get(), surface_factory_.get());
+  surface_factory_->SetProxy(connection_proxy_.get());
   window_ = std::make_unique<WaylandWindow>(&delegate_, connection_.get());
 }
 

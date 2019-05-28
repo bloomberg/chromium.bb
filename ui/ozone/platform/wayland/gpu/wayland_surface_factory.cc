@@ -114,9 +114,9 @@ bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
 
 }  // namespace
 
-WaylandSurfaceFactory::WaylandSurfaceFactory() {}
+WaylandSurfaceFactory::WaylandSurfaceFactory() = default;
 
-WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
+WaylandSurfaceFactory::~WaylandSurfaceFactory() = default;
 
 void WaylandSurfaceFactory::SetProxy(WaylandConnectionProxy* proxy) {
   DCHECK(!connection_ && proxy);

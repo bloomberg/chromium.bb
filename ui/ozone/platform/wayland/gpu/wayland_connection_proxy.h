@@ -59,23 +59,28 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
                       uint32_t buffer_id,
                       const gfx::PresentationFeedback& feedback) override;
 
-  // Methods, which must be used when GPU is hosted on a different process
-  // aka gpu process.
+  // Methods, which can be used when in both in-process-gpu and out of process
+  // modes. These calls are forwarded to the browser process through the
+  // WaylandConnection mojo interface. See more in
+  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
   //
-  // Asks Wayland to create a wl_buffer based on a shared buffer file
-  // descriptor backed (gbm_bo).
-  void CreateZwpLinuxDmabuf(gfx::AcceleratedWidget widget,
-                            base::File file,
-                            gfx::Size size,
-                            const std::vector<uint32_t>& strides,
-                            const std::vector<uint32_t>& offsets,
-                            const std::vector<uint64_t>& modifiers,
-                            uint32_t current_format,
-                            uint32_t planes_count,
-                            uint32_t buffer_id);
+  // Asks Wayland to create generic dmabuf-based wl_buffer.
+  void CreateDmabufBasedBuffer(gfx::AcceleratedWidget widget,
+                               base::ScopedFD dmabuf_fd,
+                               gfx::Size size,
+                               const std::vector<uint32_t>& strides,
+                               const std::vector<uint32_t>& offsets,
+                               const std::vector<uint64_t>& modifiers,
+                               uint32_t current_format,
+                               uint32_t planes_count,
+                               uint32_t buffer_id);
 
-  // Asks Wayland to destroy a wl_buffer.
-  void DestroyZwpLinuxDmabuf(gfx::AcceleratedWidget widget, uint32_t buffer_id);
+  // Asks Wayland to create a shared memory based wl_buffer.
+  void CreateShmBasedBuffer(gfx::AcceleratedWidget widget,
+                            base::ScopedFD shm_fd,
+                            size_t length,
+                            const gfx::Size size,
+                            uint32_t buffer_id);
 
   // Asks Wayland to find a wl_buffer with the |buffer_id| and attach the
   // buffer to the WaylandWindow's surface, which backs the following |widget|.
@@ -91,6 +96,9 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
                     uint32_t buffer_id,
                     const gfx::Rect& damage_region);
 
+  // Asks Wayland to destroy a wl_buffer.
+  void DestroyBuffer(gfx::AcceleratedWidget widget, uint32_t buffer_id);
+
 #if defined(WAYLAND_GBM)
   // Returns a gbm_device based on a DRM render node.
   GbmDevice* gbm_device() const { return gbm_device_.get(); }
@@ -98,25 +106,6 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
     gbm_device_ = std::move(gbm_device);
   }
 #endif
-
-  // Methods that are used to manage shared buffers when software rendering is
-  // used:
-  //
-  // Asks Wayland to create a buffer based on shared memory |file| handle for
-  // specific |widget|. There can be only one buffer per widget.
-  void CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
-                                base::File file,
-                                size_t length,
-                                const gfx::Size size,
-                                uint32_t buffer_id);
-
-  // Asks to damage and commit previously created buffer for the |widget|.
-  void PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
-                                 const gfx::Rect& damage,
-                                 uint32_t buffer_id);
-
-  // Asks to destroy shared memory based buffer for the |widget|.
-  void DestroyShmBuffer(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
   // Methods, which must be used when a single process mode is used (GPU is
   // hosted in the browser process).
@@ -140,28 +129,24 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   WaylandConnection* connection() const { return connection_; }
 
  private:
-  void CreateZwpLinuxDmabufInternal(gfx::AcceleratedWidget widget,
-                                    base::File file,
-                                    gfx::Size size,
-                                    const std::vector<uint32_t>& strides,
-                                    const std::vector<uint32_t>& offsets,
-                                    const std::vector<uint64_t>& modifiers,
-                                    uint32_t current_format,
-                                    uint32_t planes_count,
+  void CreateDmabufBasedBufferInternal(gfx::AcceleratedWidget widget,
+                                       base::ScopedFD dmabuf_fd,
+                                       gfx::Size size,
+                                       const std::vector<uint32_t>& strides,
+                                       const std::vector<uint32_t>& offsets,
+                                       const std::vector<uint64_t>& modifiers,
+                                       uint32_t current_format,
+                                       uint32_t planes_count,
+                                       uint32_t buffer_id);
+  void CreateShmBasedBufferInternal(gfx::AcceleratedWidget widget,
+                                    base::ScopedFD shm_fd,
+                                    size_t length,
+                                    const gfx::Size size,
                                     uint32_t buffer_id);
-  void DestroyZwpLinuxDmabufInternal(gfx::AcceleratedWidget widget,
-                                     uint32_t buffer_id);
-
-  void CreateShmBufferInternal(gfx::AcceleratedWidget widget,
-                               base::File file,
-                               size_t length,
-                               const gfx::Size size,
-                               uint32_t buffer_id);
-  void PresentShmBufferForWidgetInternal(gfx::AcceleratedWidget widget,
-                                         const gfx::Rect& damage,
-                                         uint32_t buffer_id);
-  void DestroyShmBufferInternal(gfx::AcceleratedWidget widget,
-                                uint32_t buffer_id);
+  void CommitBufferInternal(gfx::AcceleratedWidget widget,
+                            uint32_t buffer_id,
+                            const gfx::Rect& damage_region);
+  void DestroyBufferInternal(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
   void BindHostInterface();
 

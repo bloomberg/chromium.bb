@@ -4,7 +4,6 @@
 
 module ui.ozone.mojom;
 
-import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/accelerated_widget.mojom";
@@ -17,9 +16,11 @@ interface WaylandConnection {
   // Sets up an associated pipe between the Client and Host.
   SetWaylandConnectionClient(associated WaylandConnectionClient client);
 
-  // Methods used for hardware accelerated rendering:
+  // The following two methods are used either for hardware accelerated
+  // rendering or for the software rendering.
   //
-  // Asks Wayland to create a wl_buffer based on the dmabuf |file| descriptor
+  // If hardware accelerated rendering path is taken, this methnod can be used
+  // to ask Wayland to create a wl_buffer based on the |dmabuf_fd| descriptor
   // for the WaylandWindow, which has the following |widget|. The |size|
   // is the size of the buffer, the |strides|, |offsets| and |modifiers|
   // are the descriptions of the drm buffer object. The |format| describes
@@ -28,21 +29,33 @@ interface WaylandConnection {
   // descriptor has. And the |buffer_id| is a unique id for the buffer, which
   // is used to identify imported wl_buffers on the browser process side and
   // map them with the buffer objects on the gpu process side.
-  CreateZwpLinuxDmabuf(gfx.mojom.AcceleratedWidget widget,
-                       mojo_base.mojom.File file,
+  CreateDmabufBasedBuffer(gfx.mojom.AcceleratedWidget widget,
+                          handle dmabuf_fd,
+                          gfx.mojom.Size size,
+                          array<uint32> strides,
+                          array<uint32> offsets,
+                          array<uint64> modifiers,
+                          uint32 format,
+                          uint32 planes_count,
+                          uint32 buffer_id);
+
+  // If software rendering path is used, this method can be used to ask
+  // Wayland to create a wl_buffer based on the |shm_fd| descriptor.
+  // The |length| is the length of the shared memory, |size|
+  // is the size of buffer and |buffer_id| is the id of the buffer.
+  CreateShmBasedBuffer(gfx.mojom.AcceleratedWidget widget,
+                       handle shm_fd,
+                       uint64 length,
                        gfx.mojom.Size size,
-                       array<uint32> strides,
-                       array<uint32> offsets,
-                       array<uint64> modifiers,
-                       uint32 format,
-                       uint32 planes_count,
                        uint32 buffer_id);
 
+  // These two methods are independent from the type of rendering.
+  //
   // Destroys a wl_buffer created by WaylandConnection based on the |buffer_id|
   // for the WaylandWindow, which has the following |widget|. The |buffer_id|
   // is the unique id of the buffer objects being destroyed on the browser
   // process side.
-  DestroyZwpLinuxDmabuf(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id);
+  DestroyBuffer(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id);
 
   // Attaches a wl_buffer to a WaylandWindow's surface with the following
   // |widget|. The |damage_region| describes changed the region of the buffer.
@@ -51,29 +64,6 @@ interface WaylandConnection {
   // the ones on the gpu process.
   CommitBuffer(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id,
                gfx.mojom.Rect damage_region);
-
-  // Methods used for software rendering:
-  //
-  // Asks Wayland to create a wl_buffer based on the shared memory |file|
-  // descriptor. The |length| is the length of the shared memory, |size|
-  // is the size of buffer in bytes and |buffer_id| is the id of the buffer.
-  CreateShmBufferForWidget(gfx.mojom.AcceleratedWidget widget,
-                           mojo_base.mojom.File file,
-                           uint64 length,
-                           gfx.mojom.Size size,
-                           uint32 buffer_id);
-
-  // Attaches a wl_buffer to a WaylandWindow's surface with the following
-  // |widget|. The |damage| describes changed the region of the buffer.
-  // The |buffer_id| is a unique id for the buffer, which is used to
-  // identify imported wl_buffers on the browser process side mapped with
-  // the ones on the gpu process.
-  PresentShmBufferForWidget(gfx.mojom.AcceleratedWidget widget,
-                            gfx.mojom.Rect damage,
-                            uint32 buffer_id);
-
-  // Destroys the buffer with |buffer_id| for the |widget|.
-  DestroyShmBuffer(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id);
 };
 
 

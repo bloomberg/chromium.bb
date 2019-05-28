@@ -18,13 +18,13 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
-#include "ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
@@ -198,9 +198,9 @@ void WaylandConnection::SetWaylandConnectionClient(
   client_associated_ptr_.Bind(std::move(client));
 }
 
-void WaylandConnection::CreateZwpLinuxDmabuf(
+void WaylandConnection::CreateDmabufBasedBuffer(
     gfx::AcceleratedWidget widget,
-    base::File file,
+    mojo::ScopedHandle dmabuf_fd,
     const gfx::Size& size,
     const std::vector<uint32_t>& strides,
     const std::vector<uint32_t>& offsets,
@@ -211,15 +211,27 @@ void WaylandConnection::CreateZwpLinuxDmabuf(
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   DCHECK(buffer_manager_);
-  if (!buffer_manager_->CreateBuffer(widget, std::move(file), size, strides,
-                                     offsets, modifiers, format, planes_count,
-                                     buffer_id)) {
+  if (!buffer_manager_->CreateDmabufBasedBuffer(
+          widget, mojo::UnwrapPlatformHandle(std::move(dmabuf_fd)).TakeFD(),
+          size, strides, offsets, modifiers, format, planes_count, buffer_id)) {
     TerminateGpuProcess(buffer_manager_->error_message());
   }
 }
 
-void WaylandConnection::DestroyZwpLinuxDmabuf(gfx::AcceleratedWidget widget,
-                                              uint32_t buffer_id) {
+void WaylandConnection::CreateShmBasedBuffer(gfx::AcceleratedWidget widget,
+                                             mojo::ScopedHandle shm_fd,
+                                             uint64_t length,
+                                             const gfx::Size& size,
+                                             uint32_t buffer_id) {
+  DCHECK(buffer_manager_);
+  if (!buffer_manager_->CreateShmBasedBuffer(
+          widget, mojo::UnwrapPlatformHandle(std::move(shm_fd)).TakeFD(),
+          length, size, buffer_id))
+    TerminateGpuProcess(buffer_manager_->error_message());
+}
+
+void WaylandConnection::DestroyBuffer(gfx::AcceleratedWidget widget,
+                                      uint32_t buffer_id) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   DCHECK(buffer_manager_);
@@ -236,32 +248,6 @@ void WaylandConnection::CommitBuffer(gfx::AcceleratedWidget widget,
   CHECK(buffer_manager_);
   if (!buffer_manager_->CommitBuffer(widget, buffer_id, damage_region))
     TerminateGpuProcess(buffer_manager_->error_message());
-}
-
-void WaylandConnection::CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
-                                                 base::File file,
-                                                 uint64_t length,
-                                                 const gfx::Size& size,
-                                                 uint32_t buffer_id) {
-  DCHECK(shm_buffer_manager_);
-  if (!shm_buffer_manager_->CreateBufferForWidget(widget, std::move(file),
-                                                  length, size, buffer_id))
-    TerminateGpuProcess("Failed to create SHM buffer.");
-}
-
-void WaylandConnection::PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
-                                                  const gfx::Rect& damage,
-                                                  uint32_t buffer_id) {
-  DCHECK(shm_buffer_manager_);
-  if (!shm_buffer_manager_->PresentBufferForWidget(widget, damage, buffer_id))
-    TerminateGpuProcess("Failed to present SHM buffer.");
-}
-
-void WaylandConnection::DestroyShmBuffer(gfx::AcceleratedWidget widget,
-                                         uint32_t buffer_id) {
-  DCHECK(shm_buffer_manager_);
-  if (!shm_buffer_manager_->DestroyBuffer(widget, buffer_id))
-    TerminateGpuProcess("Failed to destroy SHM buffer.");
 }
 
 void WaylandConnection::OnSubmission(gfx::AcceleratedWidget widget,
@@ -412,8 +398,10 @@ void WaylandConnection::Global(void* data,
     connection->shm_ = std::make_unique<WaylandShm>(shm.release(), connection);
     if (!connection->shm_)
       LOG(ERROR) << "Failed to bind to wl_shm global";
-    connection->shm_buffer_manager_ =
-        std::make_unique<WaylandShmBufferManager>(connection);
+    if (!connection->buffer_manager_) {
+      connection->buffer_manager_ =
+          std::make_unique<WaylandBufferManager>(connection);
+    }
   } else if (!connection->seat_ && strcmp(interface, "wl_seat") == 0) {
     connection->seat_ =
         wl::Bind<wl_seat>(registry, name, std::min(version, kMaxSeatVersion));
@@ -486,8 +474,10 @@ void WaylandConnection::Global(void* data,
             registry, name, std::min(version, kMaxLinuxDmabufVersion));
     connection->zwp_dmabuf_ = std::make_unique<WaylandZwpLinuxDmabuf>(
         zwp_linux_dmabuf.release(), connection);
-    connection->buffer_manager_ =
-        std::make_unique<WaylandBufferManager>(connection);
+    if (!connection->buffer_manager_) {
+      connection->buffer_manager_ =
+          std::make_unique<WaylandBufferManager>(connection);
+    }
   } else if (!connection->presentation_ &&
              (strcmp(interface, "wp_presentation") == 0)) {
     connection->presentation_ =
