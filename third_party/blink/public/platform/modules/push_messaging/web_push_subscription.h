@@ -5,12 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_SUBSCRIPTION_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_SUBSCRIPTION_H_
 
+#include <memory>
+
 #include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
+
 namespace blink {
 
 struct WebPushSubscription;
