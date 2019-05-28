@@ -137,8 +137,8 @@ typedef enum {
 	CTC_EmpMatch = 0x20000000,	// only used in TranslationTableRule->before and
 								  // TranslationTableRule->after
 	CTC_MidEndNumericMode = 0x40000000,
-	// one more bit available in a unsigned int of width 32
-	// currently used for class 13
+	// 33 more bits available in a unsigned long long (at least 64 bits)
+	// currently used for classes 13 to 45
 	CTC_Class13 = 0x80000000,
 } TranslationTableCharacterAttribute;
 
@@ -209,7 +209,7 @@ typedef enum {
 	pass_all = 255
 } pass_Codes;
 
-typedef unsigned int TranslationTableCharacterAttributes;
+typedef unsigned long long TranslationTableCharacterAttributes;
 
 typedef struct {
 	TranslationTableOffset next;
