@@ -60,6 +60,8 @@ source_set("navigation") {
     "session_storage_builder.mm",
     "time_smoother.cc",
     "time_smoother.h",
+    "web_kit_constants.cc",
+    "web_kit_constants.h",
     "wk_back_forward_list_item_holder.h",
     "wk_back_forward_list_item_holder.mm",
     "wk_based_navigation_manager_impl.h",

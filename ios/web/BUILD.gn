@@ -586,6 +586,7 @@ test("ios_web_inttests") {
     "//ios/web/common",
     "//ios/web/download:download_inttests",
     "//ios/web/js_messaging:inttests",
+    "//ios/web/navigation",
     "//ios/web/navigation:core",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public/find_in_page",

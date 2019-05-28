@@ -60,8 +60,6 @@ source_set("ui") {
     "crw_wk_ui_handler.h",
     "crw_wk_ui_handler.mm",
     "crw_wk_ui_handler_delegate.h",
-    "web_kit_constants.cc",
-    "web_kit_constants.h",
     "wk_security_origin_util.h",
     "wk_security_origin_util.mm",
   ]
