@@ -33033,6 +33033,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1999892428" label="force-ui-direction"/>
   <int value="-1999617045" label="PDFAnnotations:disabled"/>
   <int value="-1998927516" label="enable-md-settings"/>
+  <int value="-1996233283"
+      label="OmniboxGroupSuggestionsBySearchVsUrl:enabled"/>
   <int value="-1992319691" label="AvoidFlashBetweenNavigation:enabled"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1985452239" label="SmartDim20190221:disabled"/>
@@ -34068,6 +34070,8 @@ from previous Chrome versions.
   <int value="-506366023" label="VizHitTest:enabled"/>
   <int value="-505679399" label="FontCacheScaling:enabled"/>
   <int value="-503430431" label="XRSandbox:enabled"/>
+  <int value="-499186481"
+      label="OmniboxGroupSuggestionsBySearchVsUrl:disabled"/>
   <int value="-498740735" label="ArcUsbHost:disabled"/>
   <int value="-498463128" label="MacSystemShareMenu:enabled"/>
   <int value="-496119023" label="WebXR:enabled"/>
