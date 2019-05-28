@@ -24,17 +24,21 @@ if (arguments.length != 6) {
   quit(-1);
 }
 
-/**
- * Full path to the test input file, relative to the current working directory.
- * @type {string}
- */
-var fullTestFilePath = arguments[1];
+[
+  _,
+  // Full path to the test input file, relative to the current working
+  // directory.
+  fullTestFilePath,
+  // Path to source-root, relative to the current working directory.
+  srcRootPath,
+  // Path to Closure library style deps.js file.
+  depsFile,
+  // Path to C++ file generation is outputting to.
+  outputFile,
+  // Type of this test. One of 'extension', 'unit', 'webui', 'mojo_lite_webui'.
+  testType
+] = arguments;
 
-/**
- * Path to source-root, relative to the current working directory.
- * @type {string}
- */
-var srcRootPath = arguments[2];
 
 if (!fullTestFilePath.startsWith(srcRootPath)) {
   print('Test file must be a descendant of source root directory');
@@ -47,27 +51,9 @@ if (!fullTestFilePath.startsWith(srcRootPath)) {
  */
 var testFile = fullTestFilePath.substr(srcRootPath.length);
 
-/**
- * Path to Closure library style deps.js file.
- * @type {string?}
- */
-var depsFile = arguments[3];
+const TEST_TYPES = new Set(['extension', 'unit', 'webui', 'mojo_lite_webui']);
 
-/**
- * Path to C++ file generation is outputting to.
- * @type {string}
- */
-var outputFile = arguments[4];
-
-/**
- * Type of this test.
- * @type {string} ('extension' | 'unit' | 'webui' | 'mojo_lite_webui')
- */
-var testType = arguments[5];
-if (testType != 'extension' &&
-    testType != 'unit' &&
-    testType != 'webui' &&
-    testType != 'mojo_lite_webui') {
+if (!TEST_TYPES.has(testType)) {
   print('Invalid test type: ' + testType);
   quit(-1);
 }
@@ -81,9 +67,9 @@ var testF;
 /**
  * Keeps track of whether a typedef has been generated for each test
  * fixture.
- * @type {Object<string>}
+ * @type {!Map<string, string>}
  */
-var typedeffedCppFixtures = {};
+var typedeffedCppFixtures = new Map();
 
 /**
  * Maintains a list of file paths (relative to source-root directory) to add
@@ -110,12 +96,12 @@ var needGenHeader = true;
  * Helpful hint pointing back to the source js.
  * @type {string}
  */
-var argHint = '// ' + this['arguments'].join(' ');
+var argHint = '// ' + arguments.join(' ');
 
 /**
  * @type {Array<string>}
  */
-var pendingOutput = '';
+var pendingOutput = [];
 
 /**
  * Adds a string followed by a newline to the pending output.
@@ -126,16 +112,7 @@ function output(opt_string) {
   opt_string = opt_string || '';
   if (opt_string[0] == '\n')
     opt_string = opt_string.substring(1);
-    pendingOutput += opt_string;
-  pendingOutput += '\n';
-}
-
-/**
- * Returns number of lines in pending output.
- * @returns {number}
- */
-function countOutputLines() {
-  return pendingOutput.split('\n').length;
+  pendingOutput.push(opt_string);
 }
 
 /**
@@ -415,7 +392,7 @@ function TEST_F(testFixture, testFunction, testBody, opt_preamble) {
       [testFile]);
   var testFLine = getTestDeclarationLineNumber();
 
-  if (typedefCppFixture && !(testFixture in typedeffedCppFixtures)) {
+  if (typedefCppFixture && !typedeffedCppFixtures.has(testFixture)) {
     var switches = this[testFixture].prototype.commandLineSwitches;
     var hasSwitches = switches && switches.length;
     var featureList = this[testFixture].prototype.featureList;
@@ -520,14 +497,14 @@ class ${testFixture} : public ${typedefCppFixture} {
 };
 `);
     }
-    typedeffedCppFixtures[testFixture] = typedefCppFixture;
+    typedeffedCppFixtures.set(testFixture, typedefCppFixture);
   }
 
   if (opt_preamble) {
     GEN(opt_preamble);
   }
 
-  var outputLine = countOutputLines() + 3;
+  var outputLine = pendingOutput.length + 3;
   output(`
 #line ${testFLine} "${testFile}"
 ${testF}(${testFixture}, ${testFunction}) {
@@ -588,4 +565,4 @@ var js = readSourceAbsoluteJsFile(testFile);
 pathStack.push(testFile);
 eval(js);
 pathStack.pop();
-print(pendingOutput);
+print(pendingOutput.join('\n'));
