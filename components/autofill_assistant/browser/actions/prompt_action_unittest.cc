@@ -73,8 +73,9 @@ TEST_F(PromptActionTest, ChoicesMissing) {
 
 TEST_F(PromptActionTest, SelectButtons) {
   auto* ok_proto = prompt_proto_->add_choices();
-  ok_proto->set_name("Ok");
-  ok_proto->set_chip_type(HIGHLIGHTED_ACTION);
+  auto* chip = ok_proto->mutable_chip();
+  chip->set_text("Ok");
+  chip->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
 
   auto* cancel_proto = prompt_proto_->add_choices();

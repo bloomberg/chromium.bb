@@ -189,7 +189,7 @@ TEST_F(ScriptTrackerTest, ReportInterruptToAutostart) {
 TEST_F(ScriptTrackerTest, OrderScriptsByPriority) {
   SupportedScriptProto* a = AddScript();
   a->set_path("a");
-  a->mutable_presentation()->set_name("a");
+  a->mutable_presentation()->mutable_chip()->set_text("a");
   a->mutable_presentation()->set_priority(2);
 
   SupportedScriptProto* b = AddScript();

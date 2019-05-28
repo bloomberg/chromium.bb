@@ -83,7 +83,8 @@ message SupportedScriptProto {
 
   message PresentationProto {
     // Script name.
-    optional string name = 1;
+    // Deprecated, use chip.text instead.
+    optional string name = 1 [deprecated = true];
 
     // Precondition contains a set of conditions that must hold for a script to
     // be executed. No precondition means that a script can run in any case.
@@ -101,10 +102,16 @@ message SupportedScriptProto {
 
     // Describes the chip to be shown. The name of the chip is set by the
     // name field.
-    optional ChipType chip_type = 10;
+    // Deprecated, use chip.type instead.
+    optional ChipType chip_type = 10 [deprecated = true];
 
     // An icon the should be shown next to the chip text.
-    optional ChipIcon chip_icon = 11;
+    // Deprecated, use chip.icon instead.
+    optional ChipIcon chip_icon = 11 [deprecated = true];
+
+    // The chip to display. This chip has precedence over name, chip_type and
+    // chip_icon. Not required if autostart is true.
+    optional ChipProto chip = 12;
 
     // When set to true this script can be run in 'autostart mode'. Chip won't
     // be shown; name and chip_type are ignored.
@@ -122,10 +129,10 @@ message ChipProto {
   // The type of the chip.
   optional ChipType type = 1;
 
-  // The icon shown next to the text.
+  // The icon shown on the chip. Not required if text is set.
   optional ChipIcon icon = 2;
 
-  // The text shown on the chip.
+  // The text shown on the chip. Not required if icon is set.
   optional string text = 3;
 }
 
@@ -881,14 +888,21 @@ message PromptProto {
   message Choice {
     // Localized text message to display. Not required if
     // auto_select_if_element_exists is set.
-    optional string name = 2;
+    // Deprecated, use chip.text instead.
+    optional string name = 2 [deprecated = true];
 
     // Describes the chip to be shown. The name of the chip is set by the
     // name field.
-    optional ChipType chip_type = 7;
+    // Deprecated, use chip.type instead.
+    optional ChipType chip_type = 7 [deprecated = true];
 
     // An icon the should be shown next to the chip text.
-    optional ChipIcon chip_icon = 10;
+    // Deprecated, use chip.icon instead.
+    optional ChipIcon chip_icon = 10 [deprecated = true];
+
+    // The chip to display. This chip has precedence over name, chip_type and
+    // chip_icon. Not required if auto_select_if_element_exists is set.
+    optional ChipProto chip = 11;
 
     // Auto-select this choice if the given element exist.
     optional ElementReferenceProto auto_select_if_element_exists = 4;

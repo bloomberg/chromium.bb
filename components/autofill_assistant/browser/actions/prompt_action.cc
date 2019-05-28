@@ -113,7 +113,8 @@ void PromptAction::UpdateChips() {
     auto& choice_proto = proto_.prompt().choices(i);
     // Don't show choices with no names, icon or types; they're likely just
     // there for auto_select_if_element_exists.
-    if (choice_proto.name().empty() && choice_proto.chip_icon() == NO_ICON &&
+    if (!choice_proto.has_chip() && choice_proto.name().empty() &&
+        choice_proto.chip_icon() == NO_ICON &&
         choice_proto.chip_type() == UNKNOWN_CHIP_TYPE)
       continue;
 
@@ -121,12 +122,16 @@ void PromptAction::UpdateChips() {
     if (!precondition_results_[i] && !choice_proto.allow_disabling())
       continue;
 
-    chips->emplace_back();
-    Chip& chip = chips->back();
-    chip.text = choice_proto.name();
-    chip.type = choice_proto.chip_type();
-    chip.icon = choice_proto.chip_icon();
-    chip.disabled = !precondition_results_[i];
+    if (choice_proto.has_chip()) {
+      chips->emplace_back(choice_proto.chip());
+    } else {
+      chips->emplace_back();
+      chips->back().text = choice_proto.name();
+      chips->back().type = choice_proto.chip_type();
+      chips->back().icon = choice_proto.chip_icon();
+    }
+
+    chips->back().disabled = !precondition_results_[i];
     chips->back().callback = base::BindOnce(&PromptAction::OnSuggestionChosen,
                                             weak_ptr_factory_.GetWeakPtr(), i);
   }

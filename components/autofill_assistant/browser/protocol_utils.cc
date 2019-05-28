@@ -87,12 +87,21 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
   script->handle.path = script_proto.path();
 
   const auto& presentation = script_proto.presentation();
-  script->handle.name = presentation.name();
   script->handle.autostart = presentation.autostart();
   script->handle.interrupt = presentation.interrupt();
   script->handle.initial_prompt = presentation.initial_prompt();
-  script->handle.chip_type = presentation.chip_type();
-  script->handle.chip_icon = presentation.chip_icon();
+
+  if (presentation.has_chip()) {
+    const ChipProto& chip = presentation.chip();
+    script->handle.name = chip.text();
+    script->handle.chip_type = chip.type();
+    script->handle.chip_icon = chip.icon();
+  } else {
+    script->handle.name = presentation.name();
+    script->handle.chip_type = presentation.chip_type();
+    script->handle.chip_icon = presentation.chip_icon();
+  }
+
   script->precondition = ScriptPrecondition::FromProto(
       script_proto.path(), presentation.precondition());
   script->priority = presentation.priority();
