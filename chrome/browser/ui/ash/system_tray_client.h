@@ -6,13 +6,15 @@
 #define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_CLIENT_H_
 
 #include "ash/public/cpp/system_tray_client.h"
-#include "ash/public/interfaces/system_tray.mojom.h"
+#include "ash/public/interfaces/locale.mojom-forward.h"
+#include "ash/public/interfaces/update.mojom-forward.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/system/system_clock_observer.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 namespace ash {
+class SystemTray;
 enum class LoginStatus;
 }
 
@@ -99,15 +101,14 @@ class SystemTrayClient : public ash::SystemTrayClient,
 
   void UpdateEnterpriseDisplayDomain();
 
-  // System tray mojo service in ash.
-  ash::mojom::SystemTrayPtr system_tray_;
+  // The system tray model in ash.
+  ash::SystemTray* const system_tray_;
 
   // Whether an Adobe Flash component update is available.
   bool flash_update_available_ = false;
 
   // Tells update notification style, for example required by administrator.
-  ash::mojom::NotificationStyle update_notification_style_ =
-      ash::mojom::NotificationStyle::DEFAULT;
+  ash::mojom::NotificationStyle update_notification_style_;
 
   // Update notification title to be overwritten.
   base::string16 update_notification_title_;

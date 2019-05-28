@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/public/interfaces/locale.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/unified/feature_pod_button.h"

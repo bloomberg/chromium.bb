@@ -8,9 +8,7 @@
 #include <memory>
 
 #include "ash/public/cpp/system_tray.h"
-#include "ash/public/interfaces/system_tray.mojom.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace service_manager {
 class Connector;
@@ -30,19 +28,13 @@ class UpdateModel;
 class VirtualKeyboardModel;
 
 // Top level model of SystemTray.
-// TODO(jamescook): Eliminate mojo interface.
-class SystemTrayModel : public SystemTray, public mojom::SystemTray {
+class SystemTrayModel : public SystemTray {
  public:
   explicit SystemTrayModel(service_manager::Connector* connector);
   ~SystemTrayModel() override;
 
-  // Binds the mojom::SystemTray interface to this object.
-  void BindRequest(mojom::SystemTrayRequest request);
-
   // SystemTray:
   void SetClient(SystemTrayClient* client) override;
-
-  // mojom::SystemTray:
   void SetPrimaryTrayEnabled(bool enabled) override;
   void SetPrimaryTrayVisible(bool visible) override;
   void SetUse24HourClock(bool use_24_hour) override;
@@ -94,9 +86,6 @@ class SystemTrayModel : public SystemTray, public mojom::SystemTray {
 
   // TODO(tetsui): Add following as a sub-model of SystemTrayModel:
   // * BluetoothModel
-
-  // Bindings for users of the mojo interface.
-  mojo::BindingSet<mojom::SystemTray> bindings_;
 
   // Client interface in chrome browser. May be null in tests.
   SystemTrayClient* client_ = nullptr;

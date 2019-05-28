@@ -23,7 +23,6 @@
 #include "ash/public/interfaces/note_taking_controller.mojom.h"
 #include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
-#include "ash/public/interfaces/system_tray.mojom.h"
 #include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
@@ -76,9 +75,9 @@ const service_manager::Manifest& GetManifest() {
                   mojom::LocaleUpdateController, mojom::LoginScreen,
                   mojom::MediaController, mojom::NightLightController,
                   mojom::NoteTakingController, mojom::ShutdownController,
-                  mojom::SystemTray, mojom::TabletModeController,
-                  mojom::TrayAction, mojom::VoiceInteractionController,
-                  mojom::VpnList, mojom::WallpaperController>())
+                  mojom::TabletModeController, mojom::TrayAction,
+                  mojom::VoiceInteractionController, mojom::VpnList,
+                  mojom::WallpaperController>())
           .ExposeCapability("test", service_manager::Manifest::InterfaceList<
                                         mojom::ShelfIntegrationTestApi>())
           .RequireCapability("*", "accessibility")

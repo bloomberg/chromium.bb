@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller_platform_impl_chromeos.h"
 
+#include "ash/public/interfaces/update.mojom.h"
 #include "base/bind.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_metrics.h"

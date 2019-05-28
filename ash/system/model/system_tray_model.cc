@@ -4,6 +4,7 @@
 
 #include "ash/system/model/system_tray_model.h"
 
+#include "ash/public/interfaces/locale.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/model/clock_model.h"
@@ -35,10 +36,6 @@ SystemTrayModel::SystemTrayModel(service_manager::Connector* connector)
                                               network_state_model_.get())) {}
 
 SystemTrayModel::~SystemTrayModel() = default;
-
-void SystemTrayModel::BindRequest(mojom::SystemTrayRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
 
 void SystemTrayModel::SetClient(SystemTrayClient* client) {
   client_ = client;
