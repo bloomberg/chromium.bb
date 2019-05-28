@@ -617,12 +617,10 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
 
   scoped_refptr<IndexedDBContext> indexed_db_context =
       storage_partition->GetIndexedDBContext();
-  // No task runner in unit tests.
-  if (indexed_db_context->TaskRunner()) {
-    indexed_db_context->TaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&SaveSessionStateOnIndexedDBThread,
-                                  std::move(indexed_db_context)));
-  }
+  IndexedDBContext* const indexed_db_context_ptr = indexed_db_context.get();
+  indexed_db_context_ptr->TaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&SaveSessionStateOnIndexedDBThread,
+                                std::move(indexed_db_context)));
 }
 
 void BrowserContext::SetDownloadManagerForTesting(
