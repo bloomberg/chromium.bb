@@ -5,25 +5,19 @@
 package org.chromium.chrome.browser.explore_sites;
 
 import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
 
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.UiController;
-import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -33,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -61,34 +56,6 @@ import java.util.ArrayList;
 @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
 public class ExploreSitesPageTest {
     // clang-format on
-
-    private static final class ScrollToPositionWithOffsetViewAction implements ViewAction {
-        private final int mPosition;
-        private final int mOffset;
-
-        private ScrollToPositionWithOffsetViewAction(int position, int offset) {
-            this.mPosition = position;
-            mOffset = offset;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public Matcher<View> getConstraints() {
-            return allOf(isAssignableFrom(RecyclerView.class), isDisplayed());
-        }
-
-        @Override
-        public String getDescription() {
-            return "scroll RecyclerView to mPosition: " + mPosition;
-        }
-
-        @Override
-        public void perform(UiController uiController, View view) {
-            RecyclerView recyclerView = (RecyclerView) view;
-            ((LinearLayoutManager) recyclerView.getLayoutManager())
-                    .scrollToPositionWithOffset(mPosition, mOffset);
-        }
-    }
 
     ArrayList<ExploreSitesCategory> getTestingCatalog() {
         final ArrayList<ExploreSitesCategory> categoryList = new ArrayList<>();
@@ -145,19 +112,16 @@ public class ExploreSitesPageTest {
                 .findFirstCompletelyVisibleItemPosition();
     }
 
-    private void scrollToPosition(int scrollPosition) {
-        onView(instanceOf(RecyclerView.class))
-                .perform(new ScrollToPositionWithOffsetViewAction(scrollPosition, 0));
-    }
-
     @Test
     @SmallTest
+    @DisabledTest
     @Feature({"ExploreSites", "RenderTest"})
     public void testScrolledLayout_withBack() throws Exception {
-        scrollToPosition(2);
-
+        final int scrollPosition = 2;
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(scrollPosition));
         mRenderTestRule.render(mRecyclerView, "recycler_layout");
-        final int scrollPosition = getFirstVisiblePosition();
+        Assert.assertEquals(scrollPosition, getFirstVisiblePosition());
         // TODO(https://crbug.com/938519): Remove this sleep in favor of actually waiting for the
         // scroll bar to disappear.
         SystemClock.sleep(3000);
