@@ -144,8 +144,16 @@
     "cmd": [],
     "name": "set_output_gitiles_commit",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@$recipe_engine/buildbucket/output_gitiles_commit@{\"host\": \"fake.org\", \"id\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", \"position\": 170242, \"project\": \"src\", \"ref\": \"refs/heads/master\"}@@@",
-      "@@@SET_BUILD_PROPERTY@failure_type@\"PATCH_FAILURE\"@@@"
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/buildbucket/output_gitiles_commit@{\"host\": \"fake.org\", \"id\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", \"position\": 170242, \"project\": \"src\", \"ref\": \"refs/heads/master\"}@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "TRYJOB FAILURE",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@PATCH_FAILURE@@@",
+      "@@@SET_BUILD_PROPERTY@failure_type@\"PATCH_FAILURE\"@@@",
+      "@@@STEP_FAILURE@@@"
     ]
   },
   {
