@@ -375,7 +375,7 @@
     },
     {
       name: "CSSPictureInPicture",
-      status: "stable",
+      status: "experimental",
       depends_on: ["PictureInPictureAPI"],
     },
     {
