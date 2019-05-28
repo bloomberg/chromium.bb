@@ -82,7 +82,7 @@
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
-#include "chrome/browser/component_updater/sth_set_component_installer.h"
+#include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -1852,8 +1852,8 @@ void UserSessionManager::InitializeCRLSetFetcher(
     const user_manager::User* user) {
   const std::string username_hash = user->username_hash();
   if (!username_hash.empty()) {
-    base::FilePath path;
-    path = ProfileHelper::GetProfilePathByUserIdHash(username_hash);
+    base::FilePath path =
+        ProfileHelper::GetProfilePathByUserIdHash(username_hash);
     component_updater::ComponentUpdateService* cus =
         g_browser_process->component_updater();
     if (cus)
@@ -1864,13 +1864,10 @@ void UserSessionManager::InitializeCRLSetFetcher(
 void UserSessionManager::InitializeCertificateTransparencyComponents(
     const user_manager::User* user) {
   const std::string username_hash = user->username_hash();
-  component_updater::ComponentUpdateService* cus =
-      g_browser_process->component_updater();
-  if (!username_hash.empty() && cus) {
-    const base::FilePath path =
+  if (!username_hash.empty()) {
+    base::FilePath path =
         ProfileHelper::GetProfilePathByUserIdHash(username_hash);
-    // STH set fetcher.
-    RegisterSTHSetComponent(cus, path);
+    component_updater::DeleteLegacySTHSet(path);
   }
 }
 

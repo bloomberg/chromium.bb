@@ -54,10 +54,6 @@
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_builder_mojo.h"
 
-#if BUILDFLAG(IS_CT_SUPPORTED)
-#include "components/certificate_transparency/sth_distributor.h"
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
-
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
 #include "crypto/openssl_util.h"
 #include "third_party/boringssl/src/include/openssl/cpu.h"
@@ -326,10 +322,6 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
 
   http_auth_cache_copier_ = std::make_unique<HttpAuthCacheCopier>();
 
-#if BUILDFLAG(IS_CT_SUPPORTED)
-  sth_distributor_ =
-      std::make_unique<certificate_transparency::STHDistributor>();
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
   crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
 }
 
@@ -598,12 +590,6 @@ void NetworkService::GetNetworkList(
                      std::move(callback)));
 }
 
-#if BUILDFLAG(IS_CT_SUPPORTED)
-void NetworkService::UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) {
-  sth_distributor_->NewSTHObserved(sth);
-}
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
-
 void NetworkService::UpdateCRLSet(base::span<const uint8_t> crl_set) {
   crl_set_distributor_->OnNewCRLSet(crl_set);
 }
@@ -686,12 +672,6 @@ void NetworkService::OnBeforeURLRequest() {
   if (base::FeatureList::IsEnabled(features::kNetworkService))
     MaybeStartUpdateLoadInfoTimer();
 }
-
-#if BUILDFLAG(IS_CT_SUPPORTED)
-certificate_transparency::STHReporter* NetworkService::sth_reporter() {
-  return sth_distributor_.get();
-}
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 void NetworkService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,

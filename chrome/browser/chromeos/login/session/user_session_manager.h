@@ -209,8 +209,7 @@ class UserSessionManager
   // Starts loading CRL set.
   void InitializeCRLSetFetcher(const user_manager::User* user);
 
-  // Starts loading CT-related components, which are the EV Certificates
-  // whitelist and the STHSet.
+  // Initializes Certificate Transparency-related components.
   void InitializeCertificateTransparencyComponents(
       const user_manager::User* user);
 

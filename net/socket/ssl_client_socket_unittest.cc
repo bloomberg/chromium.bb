@@ -766,8 +766,6 @@ class MockCTVerifier : public CTVerifier {
                     base::StringPiece,
                     SignedCertificateTimestampAndStatusList*,
                     const NetLogWithSource&));
-  MOCK_METHOD1(SetObserver, void(CTVerifier::Observer*));
-  MOCK_CONST_METHOD0(GetObserver, CTVerifier::Observer*());
 };
 
 // A mock CTPolicyEnforcer that returns a custom verification result.

@@ -60,7 +60,7 @@
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
-#include "chrome/browser/component_updater/sth_set_component_installer.h"
+#include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/defaults.h"
@@ -496,6 +496,15 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
     // The CRLSet component previously resided in a different location: delete
     // the old file.
     component_updater::DeleteLegacyCRLSet(path);
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+    // Clean up previous STH sets that may have been installed. This is not
+    // done for:
+    // Android: Because STH sets were never used
+    // Chrome OS: On Chrome OS, this cleanup is delayed until user login.
+    component_updater::DeleteLegacySTHSet(path);
+#endif
+
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
     // CRLSetFetcher attempts to load a CRL set from either the local disk or
     // network.
@@ -504,12 +513,6 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
     component_updater::RegisterCRLSetComponent(cus, path);
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-    // Registration of the STH set fetcher here is not done for:
-    // Android: Because the story around CT on Mobile is not finalized yet.
-    // Chrome OS: On Chrome OS this registration is delayed until user login.
-    RegisterSTHSetComponent(cus, path);
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
     RegisterOriginTrialsComponent(cus, path);
 
     RegisterFileTypePoliciesComponent(cus, path);

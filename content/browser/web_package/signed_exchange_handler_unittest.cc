@@ -152,8 +152,6 @@ class MockCTVerifier : public net::CTVerifier {
                     base::StringPiece sct_list_from_tls_extension,
                     net::SignedCertificateTimestampAndStatusList* output_scts,
                     const net::NetLogWithSource& net_log));
-  MOCK_METHOD1(SetObserver, void(CTVerifier::Observer*));
-  MOCK_CONST_METHOD0(GetObserver, CTVerifier::Observer*());
 };
 
 class MockCTPolicyEnforcer : public net::CTPolicyEnforcer {

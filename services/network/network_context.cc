@@ -93,10 +93,6 @@
 #include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
 #include "components/certificate_transparency/chrome_require_ct_delegate.h"
 #include "components/certificate_transparency/ct_known_logs.h"
-#include "components/certificate_transparency/features.h"
-#include "components/certificate_transparency/sth_distributor.h"
-#include "components/certificate_transparency/sth_reporter.h"
-#include "components/certificate_transparency/tree_state_tracker.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "services/network/expect_ct_reporter.h"
@@ -648,19 +644,6 @@ NetworkContext::~NetworkContext() {
     }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
   }
-
-#if BUILDFLAG(IS_CT_SUPPORTED)
-  if (url_request_context_ &&
-      url_request_context_->cert_transparency_verifier()) {
-    url_request_context_->cert_transparency_verifier()->SetObserver(nullptr);
-  }
-
-  if (network_service_ && network_service_->sth_reporter() &&
-      ct_tree_tracker_) {
-    network_service_->sth_reporter()->UnregisterObserver(
-        ct_tree_tracker_.get());
-  }
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 }
 
 void NetworkContext::SetCertVerifierForTesting(
@@ -1930,8 +1913,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   if (!params_->ct_logs.empty()) {
     for (const auto& log : params_->ct_logs) {
       scoped_refptr<const net::CTLogVerifier> log_verifier =
-          net::CTLogVerifier::Create(log->public_key, log->name,
-                                     log->dns_api_endpoint);
+          net::CTLogVerifier::Create(log->public_key, log->name);
       if (!log_verifier) {
         // TODO: Signal bad configuration (such as bad key).
         continue;
@@ -2012,16 +1994,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     LazyCreateExpectCTReporter(result.url_request_context.get());
     result.url_request_context->transport_security_state()->SetExpectCTReporter(
         expect_ct_reporter_.get());
-  }
-
-  if (base::FeatureList::IsEnabled(certificate_transparency::kCTLogAuditing) &&
-      network_service_ && !ct_logs.empty()) {
-    net::URLRequestContext* context = result.url_request_context.get();
-    ct_tree_tracker_ =
-        std::make_unique<certificate_transparency::TreeStateTracker>(
-            ct_logs, context->host_resolver(), context, net_log);
-    context->cert_transparency_verifier()->SetObserver(ct_tree_tracker_.get());
-    network_service_->sth_reporter()->RegisterObserver(ct_tree_tracker_.get());
   }
 
   if (params_->enforce_chrome_ct_policy) {

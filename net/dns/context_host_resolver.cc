@@ -135,20 +135,6 @@ HostCache* ContextHostResolver::GetHostCache() {
   return host_cache_.get();
 }
 
-bool ContextHostResolver::HasCached(base::StringPiece hostname,
-                                    HostCache::Entry::Source* source_out,
-                                    HostCache::EntryStaleness* stale_out,
-                                    bool* secure_out) const {
-  if (!host_cache_)
-    return false;
-
-  const HostCache::Key* key =
-      host_cache_->GetMatchingKey(hostname, source_out, stale_out);
-  if (key && secure_out != nullptr)
-    *secure_out = key->secure;
-  return !!key;
-}
-
 std::unique_ptr<base::Value> ContextHostResolver::GetDnsConfigAsValue() const {
   return manager_->GetDnsConfigAsValue();
 }

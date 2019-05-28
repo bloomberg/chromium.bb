@@ -201,10 +201,6 @@ source_set("tests") {
     "url_request_mojom_traits_unittest.cc",
   ]
 
-  if (is_ct_supported) {
-    sources += [ "signed_tree_head_mojom_traits_unittest.cc" ]
-  }
-
   if (!is_ios) {
     sources += [ "server/http_server_unittest.cc" ]
   }

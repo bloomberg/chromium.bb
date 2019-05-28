@@ -41,19 +41,11 @@ namespace {
 const char kHostname[] = "example.com";
 const char kLogDescription[] = "somelog";
 
-class MockSCTObserver : public CTVerifier::Observer {
- public:
-  MOCK_METHOD3(OnSCTVerified,
-               void(base::StringPiece hostname,
-                    X509Certificate* cert,
-                    const ct::SignedCertificateTimestamp* sct));
-};
-
 class MultiLogCTVerifierTest : public ::testing::Test {
  public:
   void SetUp() override {
-    scoped_refptr<const CTLogVerifier> log(CTLogVerifier::Create(
-        ct::GetTestPublicKey(), kLogDescription, "dns.example.com"));
+    scoped_refptr<const CTLogVerifier> log(
+        CTLogVerifier::Create(ct::GetTestPublicKey(), kLogDescription));
     ASSERT_TRUE(log);
     log_verifiers_.push_back(log);
 
@@ -249,32 +241,6 @@ TEST_F(MultiLogCTVerifierTest, CountsSingleEmbeddedSCTInOriginsHistogram) {
   int old_embedded_count = NumEmbeddedSCTsInHistogram();
   ASSERT_TRUE(CheckPrecertificateVerification(embedded_sct_chain_));
   EXPECT_EQ(old_embedded_count + 1, NumEmbeddedSCTsInHistogram());
-}
-
-TEST_F(MultiLogCTVerifierTest, NotifiesOfValidSCT) {
-  MockSCTObserver observer;
-  verifier_->SetObserver(&observer);
-
-  EXPECT_CALL(observer, OnSCTVerified(base::StringPiece(kHostname),
-                                      embedded_sct_chain_.get(), _));
-  ASSERT_TRUE(VerifySinglePrecertificateChain(embedded_sct_chain_));
-}
-
-TEST_F(MultiLogCTVerifierTest, StopsNotifyingCorrectly) {
-  MockSCTObserver observer;
-  verifier_->SetObserver(&observer);
-
-  EXPECT_CALL(observer, OnSCTVerified(base::StringPiece(kHostname),
-                                      embedded_sct_chain_.get(), _))
-      .Times(1);
-  ASSERT_TRUE(VerifySinglePrecertificateChain(embedded_sct_chain_));
-  Mock::VerifyAndClearExpectations(&observer);
-
-  EXPECT_CALL(observer, OnSCTVerified(base::StringPiece(kHostname),
-                                      embedded_sct_chain_.get(), _))
-      .Times(0);
-  verifier_->SetObserver(nullptr);
-  ASSERT_TRUE(VerifySinglePrecertificateChain(embedded_sct_chain_));
 }
 
 }  // namespace

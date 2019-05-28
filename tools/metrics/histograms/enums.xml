@@ -50749,6 +50749,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SCTCanBeChecked">
+  <obsolete>
+    Deprecated after 2019-04.
+  </obsolete>
   <int value="0" label="No valid STH"/>
   <int value="1" label="Requires newer STH"/>
   <int value="2" label="Can be checked for inclusion"/>

@@ -392,10 +392,7 @@ source_set("tests") {
   ]
 
   if (is_ct_supported) {
-    sources += [
-      "expect_ct_reporter_unittest.cc",
-      "network_context_cert_transparency_unittest.cc",
-    ]
+    sources += [ "expect_ct_reporter_unittest.cc" ]
     deps += [ "//components/certificate_transparency" ]
   }
 }

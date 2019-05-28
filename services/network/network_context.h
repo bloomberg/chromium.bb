@@ -66,7 +66,6 @@ class URLRequestContext;
 
 namespace certificate_transparency {
 class ChromeRequireCTDelegate;
-class TreeStateTracker;
 }  // namespace certificate_transparency
 
 namespace domain_reliability {
@@ -550,7 +549,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::queue<SetExpectCTTestReportCallback>
       outstanding_set_expect_ct_callbacks_;
-  std::unique_ptr<certificate_transparency::TreeStateTracker> ct_tree_tracker_;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if defined(OS_CHROMEOS)

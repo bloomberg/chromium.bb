@@ -24,9 +24,6 @@ import "services/network/public/mojom/url_loader_factory.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-[EnableIf=is_ct_supported]
-import "services/network/public/mojom/signed_tree_head.mojom";
-
 [EnableIf=is_android]
 import "mojo/public/mojom/base/application_state.mojom";
 
@@ -337,12 +334,6 @@ interface NetworkService {
   // The |policy| parameter is a flag that specifies whether to include/exclude
   // network interfaces. Corresponds to enum net::HostAddressSelectionPolicy.
   GetNetworkList(uint32 policy) => (array<NetworkInterface>? networks);
-
-  // Updates Signed Tree Heads (STH) used in the handling of Certificate
-  // Transparency. Broadcast to each NetworkContext using the NetworkService.
-  // NetworkContextes ignore STHs from unrecognized logs.
-  [EnableIf=is_ct_supported]
-  UpdateSignedTreeHead(SignedTreeHead signed_tree_head);
 
   // Updates the CRLSet used in the verification of certificates. CRLSets that
   // cannot be parsed using net::CRLSet::Parse will be ignored, as will older

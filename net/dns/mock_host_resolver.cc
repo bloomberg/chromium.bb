@@ -290,20 +290,6 @@ HostCache* MockHostResolverBase::GetHostCache() {
   return cache_.get();
 }
 
-bool MockHostResolverBase::HasCached(base::StringPiece hostname,
-                                     HostCache::Entry::Source* source_out,
-                                     HostCache::EntryStaleness* stale_out,
-                                     bool* secure_out) const {
-  if (!cache_)
-    return false;
-
-  const HostCache::Key* key =
-      cache_->GetMatchingKey(hostname, source_out, stale_out);
-  if (key && secure_out != nullptr)
-    *secure_out = key->secure;
-  return !!key;
-}
-
 int MockHostResolverBase::LoadIntoCache(
     const HostPortPair& host,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
@@ -954,13 +940,6 @@ HangingHostResolver::CreateRequest(
           : false;
   return std::make_unique<RequestImpl>(weak_ptr_factory_.GetWeakPtr(),
                                        is_local_only);
-}
-
-bool HangingHostResolver::HasCached(base::StringPiece hostname,
-                                    HostCache::Entry::Source* source_out,
-                                    HostCache::EntryStaleness* stale_out,
-                                    bool* secure_out) const {
-  return false;
 }
 
 //-----------------------------------------------------------------------------
