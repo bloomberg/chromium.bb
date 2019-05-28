@@ -126,17 +126,6 @@ const char kEnableCrashReporterForTesting[] =
 // Enables the reached code profiler that samples all threads in all processes
 // to determine which functions are almost never executed.
 const char kEnableReachedCodeProfiler[] = "enable-reached-code-profiler";
-
-// Specifies optimization of memory layout of the native library using the
-// orderfile symbols given in base/android/library_loader/anchor_functions.h,
-// via madvise and changing the library prefetch behavior.
-//
-// If this switch is not specified, an optimization may be done depending on a
-// synthetic trial. If specified, its values may be 'on' or 'off'. These
-// override the synthetic trial.
-//
-// This flag is only used on architectures with SUPPORTS_CODE_ORDERING defined.
-const char kOrderfileMemoryOptimization[] = "orderfile-memory-optimization";
 #endif
 
 #if defined(OS_LINUX)

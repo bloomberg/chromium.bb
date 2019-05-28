@@ -404,7 +404,6 @@ bool UtilityProcessHost::StartProcess() {
       switches::kVModule,
 #if defined(OS_ANDROID)
       switches::kEnableReachedCodeProfiler,
-      switches::kOrderfileMemoryOptimization,
 #endif
       // These flags are used by the audio service:
       switches::kAudioBufferSize,

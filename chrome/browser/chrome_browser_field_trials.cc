@@ -27,7 +27,6 @@
 #include "components/version_info/version_info.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/reached_code_profiler.h"
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
 #else
@@ -103,16 +102,6 @@ void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
 #if defined(OS_ANDROID)
   static constexpr char kEnabledGroup[] = "Enabled";
   static constexpr char kDisabledGroup[] = "Disabled";
-
-  static constexpr char kOrderfileOptimizationTrial[] =
-      "AndroidOrderfileOptimization";
-  if (base::android::IsUsingOrderfileOptimization()) {
-    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-        kOrderfileOptimizationTrial, kEnabledGroup);
-  } else {
-    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-        kOrderfileOptimizationTrial, kDisabledGroup);
-  }
 
   static constexpr char kReachedCodeProfilerTrial[] =
       "ReachedCodeProfilerSynthetic";

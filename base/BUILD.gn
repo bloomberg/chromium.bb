@@ -2425,7 +2425,6 @@ test("base_unittests") {
     "android/jni_android_unittest.cc",
     "android/jni_array_unittest.cc",
     "android/jni_string_unittest.cc",
-    "android/library_loader/library_loader_hooks_unittest.cc",
     "android/library_loader/library_prefetcher_unittest.cc",
     "android/path_utils_unittest.cc",
     "android/reached_addresses_bitset_unittest.cc",
