@@ -69,16 +69,15 @@ class EnrollmentCertificateUploaderTest : public ::testing::Test {
 
  protected:
   void SetupMocks() {
-    // Setup expected key uploads.  Use WillOnce() so StrictMock will trigger an
-    // error if our expectations are not met exactly.  We want to verify that
+    // Setup expected cert uploads. Use WillOnce() so StrictMock will trigger an
+    // error if our expectations are not met exactly. We want to verify that
     // during a single run through the uploader only one upload operation occurs
-    // (because it is costly) and similarly, that the writing of the uploaded
-    // status in the key payload matches the upload operation.
+    // (because it is costly).
     EXPECT_CALL(policy_client_,
                 UploadEnterpriseEnrollmentCertificate("fake_cert", _))
         .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
 
-    // Setup expected cert generations.  Again use WillOnce().  Cert generation
+    // Setup expected cert generations. Again use WillOnce(). Cert generation
     // is another costly operation and if it gets triggered more than once
     // during a single pass this indicates a logical problem in the uploader.
     EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))

@@ -35,7 +35,7 @@ class EnrollmentCertificateUploaderImpl : public EnrollmentCertificateUploader {
       policy::CloudPolicyClient* policy_client);
 
   // A constructor which allows custom CryptohomeClient and AttestationFlow
-  // implementations.  Useful for testing.
+  // implementations. Useful for testing.
   EnrollmentCertificateUploaderImpl(policy::CloudPolicyClient* policy_client,
                                     CryptohomeClient* cryptohome_client,
                                     AttestationFlow* attestation_flow);
