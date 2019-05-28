@@ -9,12 +9,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/test/launcher/test_launcher.h"
 #include "build/build_config.h"
 
 namespace base {
 class CommandLine;
 class FilePath;
+struct TestResult;
 }
 
 namespace content {
@@ -33,17 +33,6 @@ extern const char kWarmupFlag[];
 // Flag used by WebUI test runners to wait for debugger to be attached.
 extern const char kWaitForDebuggerWebUI[];
 
-// See details in PreRunTest().
-class TestState {
- public:
-  virtual ~TestState() {}
-
-  // Called once test process has launched (and is still running).
-  // NOTE: this is called on a background thread.
-  virtual void ChildProcessLaunched(base::ProcessHandle handle,
-                                    base::ProcessId pid) = 0;
-};
-
 class TestLauncherDelegate {
  public:
   virtual int RunTestSuite(int argc, char** argv) = 0;
@@ -56,15 +45,10 @@ class TestLauncherDelegate {
   virtual ContentMainDelegate* CreateContentMainDelegate() = 0;
 #endif
 
-  // Called prior to running each test. The delegate may alter the CommandLine
-  // and options used to launch the subprocess. Additionally the client may
-  // return a TestState that is destroyed once the test completes as well as
-  // once the test process is launched.
+  // Called prior to running each test.
   //
   // NOTE: this is not called if --single_process is supplied.
-  virtual std::unique_ptr<TestState> PreRunTest(
-      base::CommandLine* command_line,
-      base::TestLauncher::LaunchOptions* test_launch_options);
+  virtual void PreRunTest() {}
 
   // Called after running each test. Can modify test result.
   //

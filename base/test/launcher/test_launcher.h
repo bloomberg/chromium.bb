@@ -88,12 +88,6 @@ class ProcessLifetimeObserver {
  public:
   virtual ~ProcessLifetimeObserver() = default;
 
-  // Invoked once the child process is started. |handle| is a handle to the
-  // child process and |id| is its pid. NOTE: this method is invoked on the
-  // thread the process is launched on immediately after it is launched. The
-  // caller owns the ProcessHandle.
-  virtual void OnLaunched(ProcessHandle handle, ProcessId id) {}
-
   // Invoked when a test process exceeds its runtime, immediately before it is
   // terminated. |command_line| is the command line used to launch the process.
   // NOTE: this method is invoked on the thread the process is launched on.

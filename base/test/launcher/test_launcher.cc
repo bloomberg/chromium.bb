@@ -401,9 +401,6 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     GetLiveProcesses()->insert(std::make_pair(process.Handle(), command_line));
   }
 
-  if (observer)
-    observer->OnLaunched(process.Handle(), process.Pid());
-
   int exit_code = 0;
   bool did_exit = false;
 
