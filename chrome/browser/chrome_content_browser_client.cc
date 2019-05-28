@@ -349,6 +349,7 @@
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/strings/grit/services_strings.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/blink/public/common/features.h"
@@ -3972,7 +3973,7 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 
   (*services)[proxy_resolver::mojom::kProxyResolverServiceName] =
       base::BindRepeating(&l10n_util::GetStringUTF16,
-                          IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME);
+                          IDS_PROXY_RESOLVER_DISPLAY_NAME);
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)

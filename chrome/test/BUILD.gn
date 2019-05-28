@@ -488,6 +488,7 @@ if (!is_android) {
       "//ppapi/buildflags",
       "//printing/buildflags",
       "//rlz/buildflags",
+      "//services/strings",
       "//third_party/blink/public:buildflags",
     ]
 

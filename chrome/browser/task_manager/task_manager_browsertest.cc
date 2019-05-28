@@ -51,6 +51,7 @@
 #include "extensions/common/extension.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/strings/grit/services_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -801,7 +802,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
   model()->ToggleColumnVisibility(ColumnSpecifier::V8_MEMORY);
 
   auto proxy_resolver_name =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME);
+      l10n_util::GetStringUTF16(IDS_PROXY_RESOLVER_DISPLAY_NAME);
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   // The PAC script is trivial, so don't expect a large heap.
   size_t minimal_heap_size = 1024;

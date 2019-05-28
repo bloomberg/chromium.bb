@@ -132,6 +132,7 @@ def main():
     chrome_app_dir = os.path.join(chrome_dir, 'app')
     chrome_app_res_dir = os.path.join(chrome_app_dir, 'resources')
     device_base_dir = os.path.join(src_dir, 'device')
+    services_dir = os.path.join(src_dir, 'services')
     ui_dir = os.path.join(src_dir, 'ui')
     ui_strings_dir = os.path.join(ui_dir, 'strings')
     ui_chromeos_dir = os.path.join(ui_dir, 'chromeos')
@@ -156,6 +157,7 @@ def main():
                    'renderer_resources.grd'),
       os.path.join(device_base_dir, 'bluetooth', 'bluetooth_strings.grd'),
       os.path.join(device_base_dir, 'fido', 'fido_strings.grd'),
+      os.path.join(services_dir, 'services_strings.grd')
       os.path.join(src_dir, 'chromeos', 'chromeos_strings.grd'),
       os.path.join(src_dir, 'extensions', 'strings', 'extensions_strings.grd'),
       os.path.join(src_dir, 'ui', 'resources', 'ui_resources.grd'),
