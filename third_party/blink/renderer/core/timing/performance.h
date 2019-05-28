@@ -64,8 +64,10 @@ class PerformanceMeasure;
 class PerformanceNavigation;
 class PerformanceObserver;
 class PerformanceTiming;
+class ProfilerInitOptions;
 class ResourceResponse;
 class ResourceTimingInfo;
+class ScriptPromise;
 class ScriptState;
 class ScriptValue;
 class SecurityOrigin;
@@ -249,6 +251,10 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       ExceptionState&);
 
   void clearMeasures(const AtomicString& measure_name);
+
+  ScriptPromise profile(ScriptState*,
+                        const ProfilerInitOptions*,
+                        ExceptionState&);
 
   void UnregisterPerformanceObserver(PerformanceObserver&);
   void RegisterPerformanceObserver(PerformanceObserver&);

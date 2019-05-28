@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include "base/metrics/histogram_macros.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -55,6 +56,9 @@
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_resource_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
+#include "third_party/blink/renderer/core/timing/profiler.h"
+#include "third_party/blink/renderer/core/timing/profiler_group.h"
+#include "third_party/blink/renderer/core/timing/profiler_init_options.h"
 #include "third_party/blink/renderer/core/timing/time_clamper.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -890,6 +894,23 @@ PerformanceMeasure* Performance::MeasureWithDetail(
 
 void Performance::clearMeasures(const AtomicString& measure_name) {
   GetUserTiming().ClearMeasures(measure_name);
+}
+
+ScriptPromise Performance::profile(ScriptState* script_state,
+                                   const ProfilerInitOptions* options,
+                                   ExceptionState& exception_state) {
+  DCHECK(RuntimeEnabledFeatures::ExperimentalJSProfilerEnabled(
+      ExecutionContext::From(script_state)));
+
+  auto* profiler_group = ProfilerGroup::From(script_state->GetIsolate());
+  DCHECK(profiler_group);
+
+  auto* profiler = profiler_group->CreateProfiler(
+      script_state, *options, time_origin_, exception_state);
+  if (exception_state.HadException())
+    return ScriptPromise::Reject(script_state, exception_state);
+
+  return ScriptPromise::Cast(script_state, ToV8(profiler, script_state));
 }
 
 void Performance::RegisterPerformanceObserver(PerformanceObserver& observer) {

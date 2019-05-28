@@ -929,6 +929,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method mark
 [Worker]     method measure
 [Worker]     method now
+[Worker]     method profile
 [Worker]     method setElementTimingBufferMaxSize
 [Worker]     method setEventTimingBufferMaxSize
 [Worker]     method setResourceTimingBufferSize

@@ -5361,6 +5361,7 @@ interface Performance : EventTarget
     method mark
     method measure
     method now
+    method profile
     method setElementTimingBufferMaxSize
     method setEventTimingBufferMaxSize
     method setResourceTimingBufferSize
