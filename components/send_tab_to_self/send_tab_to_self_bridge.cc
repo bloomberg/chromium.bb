@@ -460,6 +460,11 @@ bool SendTabToSelfBridge::ShouldUpdateTargetDeviceNameToCacheInfoMapForTest() {
   return ShouldUpdateTargetDeviceNameToCacheInfoMap();
 }
 
+void SendTabToSelfBridge::SetLocalDeviceNameForTest(
+    const std::string& local_device_name) {
+  local_device_name_ = local_device_name;
+}
+
 void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryAdded(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
   std::vector<const SendTabToSelfEntry*> new_local_entries;
@@ -633,9 +638,12 @@ void SendTabToSelfBridge::SetTargetDeviceNameToCacheInfoMap() {
       break;
     }
 
-    // TODO(crbug.com/957716): Dedupe older versions of this device as well.
-    // Don't include this device.
-    if (device->guid() == change_processor()->TrackedCacheGuid()) {
+    // TODO(crbug.com/966413): Implement a better way to dedupe local devices in
+    // case the user has other devices with the same name.
+    // Don't include this device. Also compare the name as the device can have
+    // different cache guids (e.g. after stopping and re-starting sync).
+    if (device->guid() == change_processor()->TrackedCacheGuid() ||
+        device->client_name() == local_device_name_) {
       continue;
     }
 

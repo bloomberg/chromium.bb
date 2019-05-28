@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/send_tab_to_self/features.h"
+#include "components/send_tab_to_self/send_tab_to_self_bridge.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/target_device_info.h"
@@ -205,6 +206,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
                   DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(1))
                       ->GetDeviceInfoTracker())
                   .Wait());
+
+  // Explicitly set the two profiles to have different client names to simulate
+  // them being on different devices. Otherwise their device infos will get
+  // deduped.
+  static_cast<send_tab_to_self::SendTabToSelfBridge*>(
+      SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0))
+          ->GetSendTabToSelfModel())
+      ->SetLocalDeviceNameForTest("device1");
+  static_cast<send_tab_to_self::SendTabToSelfBridge*>(
+      SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1))
+          ->GetSendTabToSelfModel())
+      ->SetLocalDeviceNameForTest("device2");
 
   std::map<std::string, send_tab_to_self::TargetDeviceInfo>
       profile1_target_device_map =

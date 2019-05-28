@@ -48,6 +48,7 @@ const char kURLFormat[] = "https://www.url%d.com/";
 const char kTitleFormat[] = "title %d";
 const char kDeviceFormat[] = "device %d";
 const char kLocalDeviceCacheGuid[] = "local_device_guid";
+const char kLocalDeviceName[] = "local_device_name";
 
 sync_pb::SendTabToSelfSpecifics CreateSpecifics(
     int suffix,
@@ -775,9 +776,17 @@ TEST_F(SendTabToSelfBridgeTest,
 TEST_F(SendTabToSelfBridgeTest,
        GetTargetDeviceNameToCacheInfoMap_NoLocalDevice) {
   InitializeBridge();
+  bridge()->SetLocalDeviceNameForTest(kLocalDeviceName);
 
   syncer::DeviceInfo local_device(
-      kLocalDeviceCacheGuid, "local_device_name", "72", "agent",
+      kLocalDeviceCacheGuid, kLocalDeviceName, "72", "agent",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+      /*last_updated_timestamp=*/clock()->Now(),
+      /*send_tab_to_self_receiving_enabled=*/true);
+  AddTestDevice(&local_device);
+
+  syncer::DeviceInfo other_local_device(
+      "other_local_guid", kLocalDeviceName, "72", "agent",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
       /*last_updated_timestamp=*/clock()->Now(),
       /*send_tab_to_self_receiving_enabled=*/true);

@@ -93,6 +93,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   static std::unique_ptr<syncer::ModelTypeStore> DestroyAndStealStoreForTest(
       std::unique_ptr<SendTabToSelfBridge> bridge);
   bool ShouldUpdateTargetDeviceNameToCacheInfoMapForTest();
+  void SetLocalDeviceNameForTest(const std::string& local_device_name);
 
  private:
   using SendTabToSelfEntries =
