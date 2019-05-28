@@ -21,7 +21,11 @@ constexpr LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"cancel", IDS_CANCEL},
     {"back", IDS_CELLULAR_SETUP_BACK_LABEL},
     {"finish", IDS_CELLULAR_SETUP_FINISH_LABEL},
-    {"tryAgain", IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL}};
+    {"tryAgain", IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL},
+    {"simDetectPageTitle", IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE},
+    {"provisioningPageTitle", IDS_CELLULAR_SETUP_PROVISIONING_PAGE_TITLE},
+    {"successPageTitle", IDS_CELLULAR_SETUP_SUCCESS_PAGE_TITLE},
+    {"successPageMessage", IDS_CELLULAR_SETUP_SUCCESS_PAGE_MESSAGE}};
 
 }  //  namespace
 

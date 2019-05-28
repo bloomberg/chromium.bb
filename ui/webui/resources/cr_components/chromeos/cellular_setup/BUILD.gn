@@ -8,9 +8,13 @@ assert(is_chromeos, "CellularSetup UI is Chrome OS only.")
 
 js_type_check("closure_compile") {
   deps = [
+    ":base_page",
     ":button_bar",
     ":cellular_setup",
     ":mojo_interface_provider",
+    ":provisioning_page",
+    ":sim_detect_page",
+    ":success_page",
   ]
 }
 
@@ -20,10 +24,34 @@ js_library("button_bar") {
   ]
 }
 
+js_library("base_page") {
+}
+
+js_library("sim_detect_page") {
+  deps = [
+    ":base_page",
+  ]
+}
+
+js_library("provisioning_page") {
+  deps = [
+    ":base_page",
+  ]
+}
+
+js_library("success_page") {
+  deps = [
+    ":base_page",
+  ]
+}
+
 js_library("cellular_setup") {
   deps = [
     ":button_bar",
     ":mojo_interface_provider",
+    ":provisioning_page",
+    ":sim_detect_page",
+    ":success_page",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }
