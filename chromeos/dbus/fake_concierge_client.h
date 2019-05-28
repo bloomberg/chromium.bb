@@ -96,6 +96,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
               DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback)
       override;
 
+  // Fake version of the method that gets VM info. Sets get_vm_info_called_.
+  // |callback| is called after the method call finishes.
+  void GetVmInfo(const vm_tools::concierge::GetVmInfoRequest& request,
+                 DBusMethodCallback<vm_tools::concierge::GetVmInfoResponse>
+                     callback) override;
+
   // Fake version of the method that waits for the Concierge service to be
   // availble.  |callback| is called after the method call finishes.
   void WaitForServiceToBeAvailable(
@@ -143,6 +149,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool start_termina_vm_called() const { return start_termina_vm_called_; }
   // Indicates whether StopVm has been called
   bool stop_vm_called() const { return stop_vm_called_; }
+  // Indicates whether GetVmInfo has been called
+  bool get_vm_info_called() const { return get_vm_info_called_; }
   // Indicates whether GetContainerSshKeys has been called
   bool get_container_ssh_keys_called() const {
     return get_container_ssh_keys_called_;
@@ -198,6 +206,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       const vm_tools::concierge::StopVmResponse& stop_vm_response) {
     stop_vm_response_ = stop_vm_response;
   }
+  void set_get_vm_info_response(
+      const vm_tools::concierge::GetVmInfoResponse& get_vm_info_response) {
+    get_vm_info_response_ = get_vm_info_response;
+  }
   void set_container_ssh_keys_response(
       const vm_tools::concierge::ContainerSshKeysResponse&
           container_ssh_keys_response) {
@@ -249,6 +261,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool list_vm_disks_called_ = false;
   bool start_termina_vm_called_ = false;
   bool stop_vm_called_ = false;
+  bool get_vm_info_called_ = false;
   bool get_container_ssh_keys_called_ = false;
   bool attach_usb_device_called_ = false;
   bool detach_usb_device_called_ = false;
@@ -264,6 +277,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   vm_tools::concierge::ListVmDisksResponse list_vm_disks_response_;
   vm_tools::concierge::StartVmResponse start_vm_response_;
   vm_tools::concierge::StopVmResponse stop_vm_response_;
+  vm_tools::concierge::GetVmInfoResponse get_vm_info_response_;
   vm_tools::concierge::ContainerSshKeysResponse container_ssh_keys_response_;
   vm_tools::concierge::AttachUsbDeviceResponse attach_usb_device_response_;
   vm_tools::concierge::DetachUsbDeviceResponse detach_usb_device_response_;

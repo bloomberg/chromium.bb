@@ -122,6 +122,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
       const vm_tools::concierge::StopVmRequest& request,
       DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback) = 0;
 
+  // Get VM Info.
+  // |callback| is called after the method call finishes.
+  virtual void GetVmInfo(
+      const vm_tools::concierge::GetVmInfoRequest& request,
+      DBusMethodCallback<vm_tools::concierge::GetVmInfoResponse> callback) = 0;
+
   // Registers |callback| to run when the Concierge service becomes available.
   // If the service is already available, or if connecting to the name-owner-
   // changed signal fails, |callback| will be run once asynchronously.

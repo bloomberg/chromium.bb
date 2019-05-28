@@ -152,6 +152,14 @@ void FakeConciergeClient::StopVm(
       FROM_HERE, base::BindOnce(std::move(callback), stop_vm_response_));
 }
 
+void FakeConciergeClient::GetVmInfo(
+    const vm_tools::concierge::GetVmInfoRequest& request,
+    DBusMethodCallback<vm_tools::concierge::GetVmInfoResponse> callback) {
+  get_vm_info_called_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), get_vm_info_response_));
+}
+
 void FakeConciergeClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -217,6 +225,10 @@ void FakeConciergeClient::InitializeProtoResponses() {
 
   stop_vm_response_.Clear();
   stop_vm_response_.set_success(true);
+
+  get_vm_info_response_.Clear();
+  get_vm_info_response_.set_success(true);
+  get_vm_info_response_.mutable_vm_info()->set_seneschal_server_handle(1);
 
   container_ssh_keys_response_.Clear();
   container_ssh_keys_response_.set_container_public_key("pubkey");
