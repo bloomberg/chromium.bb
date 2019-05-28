@@ -91,8 +91,10 @@ emulators, then running test suites becomes much faster. Refer to the
 https://androidstudio.googleblog.com/2018/11/emulator-28016-stable.html)
 for more about how this works.
 ```shell
-$ # Start 12 emulators. Press Ctrl-C to stop them all.
-$ ( for i in $(seq 12); do ~/Android/Sdk/emulator/emulator @EMULATOR_ID -read-only & done; wait )
+$ # Start 8 emulators. Press Ctrl-C to stop them all.
+$ ( for i in $(seq 8); do ~/Android/Sdk/emulator/emulator @EMULATOR_ID -read-only & done; wait )
+$ # Start 12 emulators. More than 10 requires disabling audio on some OS's. Reducing cores increases paralellism.
+$ ( for i in $(seq 12); do ~/Android/Sdk/emulator/emulator @EMULATOR_ID -read-only -no-audio -cores 2 & done; wait )
 ```
 
 ### Writable system partition
