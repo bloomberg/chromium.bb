@@ -65,12 +65,34 @@ class PiexReader {
   static emscripten::val GetProperties(const piex::PreviewImageData& image) {
     auto result = emscripten::val::object();
 
-    result.set("maker", emscripten::val(image.maker));
-    result.set("model", emscripten::val(image.model));
+    result.set("details", GetDetails(image));
     result.set("preview", GetPreview(image));
     result.set("thumbnail", GetThumbnail(image));
 
     return result;
+  }
+
+  static emscripten::val GetDetails(const piex::PreviewImageData& image) {
+    auto object = emscripten::val::object();
+
+    object.set("cameraMaker", emscripten::val(image.maker));
+    object.set("cameraModel", emscripten::val(image.model));
+
+    object.set("aperture", GetRational(image.fnumber));
+    object.set("focalLength", GetRational(image.focal_length));
+    object.set("exposureTime", GetRational(image.exposure_time));
+    object.set("isoSpeed", emscripten::val(image.iso));
+
+    object.set("width", emscripten::val(image.full_width));
+    object.set("height", emscripten::val(image.full_height));
+    object.set("orientation", emscripten::val(image.exif_orientation));
+    object.set("colorSpace", emscripten::val("sRGB"));
+    const auto space = static_cast<uint32_t>(image.color_space);
+    if (space == piex::PreviewImageData::kAdobeRgb)
+      object.set("colorSpace", emscripten::val("AdobeRGB1998"));
+    object.set("date", emscripten::val(image.date_time));
+
+    return object;
   }
 
   static emscripten::val GetPreview(const piex::PreviewImageData& image) {
@@ -120,6 +142,12 @@ class PiexReader {
     if (space == piex::PreviewImageData::kAdobeRgb)
       return emscripten::val("adobeRgb");
     return emscripten::val("sRgb");
+  }
+
+  static float GetRational(const piex::PreviewImageData::Rational& number) {
+    if (number.denominator != 0)
+      return float(number.numerator) / number.denominator;
+    return 0.0f;
   }
 };
 

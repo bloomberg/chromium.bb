@@ -214,10 +214,6 @@ found in the LICENSE file.
       return renderRGB(name, image);
   }
 
-  function removeNullBytes(string) {
-    return (string || '').replace(/\0/g, '');
-  }
-
   window.Module = {
     onRuntimeInitialized: () => document.title = 'READY',
   };
@@ -256,9 +252,6 @@ found in the LICENSE file.
       let thumb = imageBuffer.thumbnail();
       imageBuffer.close();
       time = window.performance.now() - time;
-      const maker = removeNullBytes(result.maker);
-      const model = removeNullBytes(result.model);
-      console.log('test:', image, maker, model);
       window.images_ = 0;
       renderResult(image, preview);
       renderResult(image, thumb);
