@@ -410,8 +410,13 @@ void ExternalVkImageBacking::Destroy() {
   image_ = VK_NULL_HANDLE;
   memory_ = VK_NULL_HANDLE;
 
-  if (texture_)
+  if (texture_) {
+    // Ensure that a context is current before removing the ref and calling
+    // glDeleteTextures.
+    if (!context_state()->context()->IsCurrent(nullptr))
+      context_state()->context()->MakeCurrent(context_state()->surface());
     texture_->RemoveLightweightRef(have_context());
+  }
 }
 
 bool ExternalVkImageBacking::ProduceLegacyMailbox(
