@@ -1189,8 +1189,6 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
                                           type.GetStorableType(), 1,
                                           app_locale_, &labels);
   }
-  suggestion_selection::PrepareSuggestions(formatter != nullptr, labels,
-                                           &unique_suggestions);
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   if (use_improved_label_disambiguation && !unique_suggestions.empty()) {
@@ -1198,6 +1196,9 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
                                                             nullptr);
   }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+
+  suggestion_selection::PrepareSuggestions(formatter != nullptr, labels,
+                                           &unique_suggestions, comparator);
 
   return unique_suggestions;
 }

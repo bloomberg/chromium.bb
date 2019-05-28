@@ -4,6 +4,7 @@
 #include "components/autofill/core/browser/ui/suggestion_selection.h"
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/strings/string_util.h"
@@ -247,18 +248,56 @@ void RemoveProfilesNotUsedSinceTimestamp(
 
 void PrepareSuggestions(bool add_profile_icon,
                         const std::vector<base::string16>& labels,
-                        std::vector<Suggestion>* suggestions) {
+                        std::vector<Suggestion>* suggestions,
+                        const AutofillProfileComparator& comparator) {
   DCHECK_EQ(suggestions->size(), labels.size());
 
+  // This set is used to determine whether duplicate Suggestions exist. For
+  // example, a Suggestion with the value "John" and the label "400 Oak Rd" has
+  // the normalized text "john400oakrd". This text can only be added to the set
+  // once.
+  std::unordered_set<base::string16> suggestion_text;
+  size_t index_to_add_suggestion = 0;
+
+  // Dedupes Suggestions to show in the dropdown once values and labels have
+  // been created. This is useful when LabelFormatters make Suggestions' labels.
+  //
+  // Suppose profile A has the data John, 400 Oak Rd, and (617) 544-7411 and
+  // profile B has the data John, 400 Oak Rd, (508) 957-5009. If a formatter
+  // puts only 400 Oak Rd in the label, then there will be two Suggestions with
+  // the normalized text "john400oakrd", and the Suggestion with the lower
+  // ranking should be discarded.
   for (size_t i = 0; i < labels.size(); ++i) {
-    (*suggestions)[i].additional_label = labels[i];
-    (*suggestions)[i].label = labels[i];
+    base::string16 label = labels[i];
+
+    bool text_inserted =
+        suggestion_text
+            .insert(comparator.NormalizeForComparison(
+                (*suggestions)[i].value + label,
+                autofill::AutofillProfileComparator::DISCARD_WHITESPACE))
+            .second;
+
+    if (text_inserted) {
+      if (index_to_add_suggestion != i) {
+        (*suggestions)[index_to_add_suggestion] = (*suggestions)[i];
+      }
+      // The given |suggestions| are already sorted from highest to lowest
+      // ranking. Suggestions with lower indices have a higher ranking and
+      // should be kept.
+      (*suggestions)[index_to_add_suggestion].additional_label = labels[i];
+      (*suggestions)[index_to_add_suggestion].label = labels[i];
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-    if (add_profile_icon) {
-      (*suggestions)[i].icon = "accountBoxIcon";
-    }
+      if (add_profile_icon) {
+        (*suggestions)[index_to_add_suggestion].icon = "accountBoxIcon";
+      }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+      ++index_to_add_suggestion;
+    }
+  }
+
+  if (index_to_add_suggestion < suggestions->size()) {
+    suggestions->resize(index_to_add_suggestion);
   }
 }
 

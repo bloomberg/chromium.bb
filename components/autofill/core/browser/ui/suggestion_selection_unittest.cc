@@ -519,5 +519,62 @@ TEST_F(SuggestionSelectionTest, RemoveProfilesNotUsedSinceTimestamp) {
   }
 }
 
+TEST_F(SuggestionSelectionTest,
+       PrepareSuggestions_DiscardDuplicateSuggestions) {
+  std::vector<Suggestion> suggestions{
+      Suggestion(base::ASCIIToUTF16("Jon Snow")),
+      Suggestion(base::ASCIIToUTF16("Jon Snow")),
+      Suggestion(base::ASCIIToUTF16("Jon Snow")),
+      Suggestion(base::ASCIIToUTF16("Jon Snow"))};
+
+  const std::vector<base::string16> labels{
+      base::ASCIIToUTF16("2 Beyond-the-Wall Rd"),
+      base::ASCIIToUTF16("1 Winterfell Ln"),
+      base::ASCIIToUTF16("2 Beyond-the-Wall Rd"),
+      base::ASCIIToUTF16("2 Beyond-the-Wall Rd.")};
+
+  PrepareSuggestions(/*add_profile_icon=*/false, labels, &suggestions,
+                     comparator_);
+
+  // Suggestions are sorted from highest to lowest rank, so check that
+  // duplicates with a lower rank are removed.
+  EXPECT_THAT(
+      suggestions,
+      ElementsAre(
+          AllOf(Field(&Suggestion::value, base::ASCIIToUTF16("Jon Snow")),
+                Field(&Suggestion::label,
+                      base::ASCIIToUTF16("2 Beyond-the-Wall Rd"))),
+          AllOf(Field(&Suggestion::value, base::ASCIIToUTF16("Jon Snow")),
+                Field(&Suggestion::label,
+                      base::ASCIIToUTF16("1 Winterfell Ln")))));
+}
+
+TEST_F(SuggestionSelectionTest,
+       PrepareSuggestions_KeepNonDuplicateSuggestions) {
+  std::vector<Suggestion> suggestions{
+      Suggestion(base::ASCIIToUTF16("Sansa")),
+      Suggestion(base::ASCIIToUTF16("Sansa")),
+      Suggestion(base::ASCIIToUTF16("Brienne"))};
+
+  const std::vector<base::string16> labels{
+      base::ASCIIToUTF16("1 Winterfell Ln"), base::ASCIIToUTF16(""),
+      base::ASCIIToUTF16("1 Winterfell Ln")};
+
+  PrepareSuggestions(/*add_profile_icon=*/false, labels, &suggestions,
+                     comparator_);
+
+  EXPECT_THAT(
+      suggestions,
+      ElementsAre(
+          AllOf(
+              Field(&Suggestion::value, base::ASCIIToUTF16("Sansa")),
+              Field(&Suggestion::label, base::ASCIIToUTF16("1 Winterfell Ln"))),
+          AllOf(Field(&Suggestion::value, base::ASCIIToUTF16("Sansa")),
+                Field(&Suggestion::label, base::ASCIIToUTF16(""))),
+          AllOf(Field(&Suggestion::value, base::ASCIIToUTF16("Brienne")),
+                Field(&Suggestion::label,
+                      base::ASCIIToUTF16("1 Winterfell Ln")))));
+}
+
 }  // namespace suggestion_selection
 }  // namespace autofill
