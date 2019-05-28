@@ -24,14 +24,10 @@ aura::Window* X11TopmostWindowFinder::FindLocalProcessWindowAt(
 
   std::vector<aura::Window*> local_process_windows =
       DesktopWindowTreeHostX11::GetAllOpenWindows();
-  bool found_local_process_window = false;
-  for (size_t i = 0; i < local_process_windows.size(); ++i) {
-    if (ShouldStopIteratingAtLocalProcessWindow(local_process_windows[i])) {
-      found_local_process_window = true;
-      break;
-    }
-  }
-  if (!found_local_process_window)
+  if (std::none_of(local_process_windows.cbegin(), local_process_windows.cend(),
+                   [this](auto* window) {
+                     return ShouldStopIteratingAtLocalProcessWindow(window);
+                   }))
     return nullptr;
 
   ui::EnumerateTopLevelWindows(this);

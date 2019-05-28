@@ -695,7 +695,7 @@ class MenuControllerTest : public ViewsTestBase {
     menu_item()->SetBounds(0, 0, 200, 300);
     MenuItemView* item_view =
         menu_item()->AppendMenuItemWithLabel(5, base::ASCIIToUTF16("Five"));
-    for (int i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < 3; ++i) {
       LabelButton* button =
           new LabelButton(nullptr, base::ASCIIToUTF16("Label"));
       // This is an in-menu button. Hence it must be always focusable.

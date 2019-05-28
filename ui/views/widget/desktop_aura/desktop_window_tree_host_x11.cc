@@ -494,10 +494,8 @@ void DesktopWindowTreeHostX11::CloseNow() {
   // If we have children, close them. Use a copy for iteration because they'll
   // remove themselves.
   std::set<DesktopWindowTreeHostX11*> window_children_copy = window_children_;
-  for (auto it = window_children_copy.begin(); it != window_children_copy.end();
-       ++it) {
-    (*it)->CloseNow();
-  }
+  for (auto* child : window_children_copy)
+    child->CloseNow();
   DCHECK(window_children_.empty());
 
   // If we have a parent, remove ourselves from its children list.
@@ -1692,8 +1690,8 @@ gfx::Size DesktopWindowTreeHostX11::AdjustSize(
       display::Screen::GetScreen()->GetAllDisplays();
   // Compare against all monitor sizes. The window manager can move the window
   // to whichever monitor it wants.
-  for (size_t i = 0; i < displays.size(); ++i) {
-    if (requested_size_in_pixels == displays[i].GetSizeInPixel()) {
+  for (const auto& display : displays) {
+    if (requested_size_in_pixels == display.GetSizeInPixel()) {
       return gfx::Size(requested_size_in_pixels.width() - 1,
                        requested_size_in_pixels.height() - 1);
     }

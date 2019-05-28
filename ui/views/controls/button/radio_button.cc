@@ -38,16 +38,12 @@ void RadioButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 View* RadioButton::GetSelectedViewForGroup(int group) {
   Views views;
   GetViewsInGroupFromParent(group, &views);
-  if (views.empty())
-    return nullptr;
-
-  for (Views::const_iterator i(views.begin()); i != views.end(); ++i) {
-    // REVIEW: why don't we check the runtime type like is done above?
-    RadioButton* radio_button = static_cast<RadioButton*>(*i);
-    if (radio_button->GetChecked())
-      return radio_button;
-  }
-  return nullptr;
+  const auto i =
+      std::find_if(views.cbegin(), views.cend(), [](const auto* view) {
+        // Why don't we check the runtime type like is done in SetChecked()?
+        return static_cast<const RadioButton*>(view)->GetChecked();
+      });
+  return (i == views.cend()) ? nullptr : *i;
 }
 
 bool RadioButton::IsGroupFocusTraversable() const {
@@ -66,11 +62,9 @@ void RadioButton::RequestFocusFromEvent() {
   // Take focus only if another radio button in the group has focus.
   Views views;
   GetViewsInGroupFromParent(GetGroup(), &views);
-  if (std::find_if(views.begin(), views.end(), [](View* v) -> bool {
-        return v->HasFocus();
-      }) != views.end()) {
+  if (std::any_of(views.begin(), views.end(),
+                  [](View* v) { return v->HasFocus(); }))
     RequestFocus();
-  }
 }
 
 void RadioButton::NotifyClick(const ui::Event& event) {
@@ -116,9 +110,8 @@ SkPath RadioButton::GetFocusRingPath() const {
 }
 
 void RadioButton::GetViewsInGroupFromParent(int group, Views* views) {
-  if (!parent())
-    return;
-  parent()->GetViewsInGroup(group, views);
+  if (parent())
+    parent()->GetViewsInGroup(group, views);
 }
 
 }  // namespace views

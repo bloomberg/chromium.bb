@@ -1599,14 +1599,12 @@ void HWNDMessageHandler::OnDestroy() {
   delegate_->HandleDestroying();
   // If the window going away is a fullscreen window then remove its references
   // from the full screen window map.
-  for (auto iter = fullscreen_monitor_map_.Get().begin();
-       iter != fullscreen_monitor_map_.Get().end();
-       iter++) {
-    if (iter->second == this) {
-      fullscreen_monitor_map_.Get().erase(iter);
-      break;
-    }
-  }
+  auto& map = fullscreen_monitor_map_.Get();
+  const auto i = std::find_if(map.begin(), map.end(), [this](const auto& elem) {
+    return elem.second == this;
+  });
+  if (i != map.end())
+    map.erase(i);
 
   if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
     // Signal to UIA that all objects associated with this HWND can be
@@ -2520,7 +2518,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
   }
 
   // Handle touch events only on Aura for now.
-  int num_points = LOWORD(w_param);
+  size_t num_points = LOWORD(w_param);
   std::unique_ptr<TOUCHINPUT[]> input(new TOUCHINPUT[num_points]);
   if (ui::GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(l_param),
                                    num_points, input.get(),
@@ -2531,7 +2529,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
     TouchEvents touch_events;
     TouchIDs stale_touches(touch_ids_);
 
-    for (int i = 0; i < num_points; ++i) {
+    for (size_t i = 0; i < num_points; ++i) {
       stale_touches.erase(input[i].dwID);
       POINT point;
       point.x = TOUCH_COORD_TO_PIXEL(input[i].x);
@@ -2788,10 +2786,8 @@ void HWNDMessageHandler::OnSessionChange(WPARAM status_code) {
 
 void HWNDMessageHandler::HandleTouchEvents(const TouchEvents& touch_events) {
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
-  for (size_t i = 0; i < touch_events.size() && ref; ++i) {
-    ui::TouchEvent* touch_event = const_cast<ui::TouchEvent*>(&touch_events[i]);
-    delegate_->HandleTouchEvent(touch_event);
-  }
+  for (size_t i = 0; i < touch_events.size() && ref; ++i)
+    delegate_->HandleTouchEvent(const_cast<ui::TouchEvent*>(&touch_events[i]));
 }
 
 void HWNDMessageHandler::ResetTouchDownContext() {

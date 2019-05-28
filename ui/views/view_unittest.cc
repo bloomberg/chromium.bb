@@ -71,9 +71,9 @@ bool LayerIsAncestor(const ui::Layer* ancestor, const ui::Layer* layer) {
 
 // Convenience functions for walking a View tree.
 const views::View* FirstView(const views::View* view) {
-  const views::View* v;
-  for (v = view; !v->children().empty(); v = v->children().front()) {
-  }
+  const views::View* v = view;
+  while (!v->children().empty())
+    v = v->children().front();
   return v;
 }
 
@@ -89,8 +89,8 @@ const views::View* NextView(const views::View* view) {
 // Convenience functions for walking a Layer tree.
 const ui::Layer* FirstLayer(const ui::Layer* layer) {
   const ui::Layer* l = layer;
-  while (l->children().size() > 0)
-    l = l->children()[0];
+  while (!l->children().empty())
+    l = l->children().front();
   return l;
 }
 
@@ -99,15 +99,8 @@ const ui::Layer* NextLayer(const ui::Layer* layer) {
   if (!parent)
     return nullptr;
   const std::vector<ui::Layer*> children = parent->children();
-  size_t index;
-  for (index = 0; index < children.size(); index++) {
-    if (children[index] == layer)
-      break;
-  }
-  size_t next = index + 1;
-  if (next < children.size())
-    return FirstLayer(children[next]);
-  return parent;
+  const auto i = std::find(children.cbegin(), children.cend(), layer) + 1;
+  return (i == children.cend()) ? parent : FirstLayer(*i);
 }
 
 // Given the root nodes of a View tree and a Layer tree, makes sure the two
@@ -3478,14 +3471,14 @@ TEST_F(ViewTest, RemoveAllChildViews) {
   View* child1 = new View;
   root.AddChildView(child1);
 
-  for (int i = 0; i < 2; ++i)
+  for (size_t i = 0; i < 2; ++i)
     root.AddChildView(new View);
 
   View* foo = new View;
   child1->AddChildView(foo);
 
   // Add some nodes to |foo|.
-  for (int i = 0; i < 3; ++i)
+  for (size_t i = 0; i < 3; ++i)
     foo->AddChildView(new View);
 
   EXPECT_EQ(3u, root.children().size());

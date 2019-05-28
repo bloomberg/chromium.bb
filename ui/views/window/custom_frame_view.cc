@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/containers/adapters.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -501,13 +502,13 @@ void CustomFrameView::LayoutWindowControls() {
       button_order->trailing_buttons();
 
   ImageButton* button = nullptr;
-  for (auto it = leading_buttons.begin(); it != leading_buttons.end(); ++it) {
-    button = GetImageButton(*it);
+  for (auto frame_button : leading_buttons) {
+    button = GetImageButton(frame_button);
     if (!button)
       continue;
     gfx::Rect target_bounds(gfx::Point(next_button_x, caption_y),
                             button->GetPreferredSize());
-    if (it == leading_buttons.begin())
+    if (frame_button == leading_buttons.front())
       target_bounds.set_width(target_bounds.width() + extra_width);
     LayoutButton(button, target_bounds);
     next_button_x += button->width();
@@ -516,14 +517,13 @@ void CustomFrameView::LayoutWindowControls() {
 
   // Trailing buttions are laid out in a RTL fashion
   next_button_x = width() - FrameBorderThickness();
-  for (auto it = trailing_buttons.rbegin(); it != trailing_buttons.rend();
-       ++it) {
-    button = GetImageButton(*it);
+  for (auto frame_button : base::Reversed(trailing_buttons)) {
+    button = GetImageButton(frame_button);
     if (!button)
       continue;
     gfx::Rect target_bounds(gfx::Point(next_button_x, caption_y),
                             button->GetPreferredSize());
-    if (it == trailing_buttons.rbegin())
+    if (frame_button == trailing_buttons.back())
       target_bounds.set_width(target_bounds.width() + extra_width);
     target_bounds.Offset(-target_bounds.width(), 0);
     LayoutButton(button, target_bounds);

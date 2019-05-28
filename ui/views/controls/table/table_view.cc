@@ -62,8 +62,8 @@ void GetModelIndexToRangeStart(TableGrouper* grouper,
     GroupRange range;
     grouper->GetGroupRange(model_index, &range);
     DCHECK_GT(range.length, 0);
-    for (int range_counter = 0; range_counter < range.length; range_counter++)
-      (*model_index_to_range_start)[range_counter + model_index] = model_index;
+    for (int i = model_index; i < model_index + range.length; ++i)
+      (*model_index_to_range_start)[i] = model_index;
     model_index += range.length;
   }
 }
@@ -220,16 +220,13 @@ void TableView::SetColumnVisibility(int id, bool is_visible) {
     visible_column.column = FindColumnByID(id);
     visible_columns_.push_back(visible_column);
   } else {
-    for (size_t i = 0; i < visible_columns_.size(); ++i) {
-      if (visible_columns_[i].column.id == id) {
-        visible_columns_.erase(visible_columns_.begin() + i);
-        if (active_visible_column_index_ >=
-            static_cast<int>(visible_columns_.size())) {
-          SetActiveVisibleColumnIndex(
-              static_cast<int>(visible_columns_.size()) - 1);
-        }
-        break;
-      }
+    const auto i = std::find_if(
+        visible_columns_.begin(), visible_columns_.end(),
+        [id](const auto& column) { return column.column.id == id; });
+    if (i != visible_columns_.end()) {
+      visible_columns_.erase(i);
+      if (active_visible_column_index_ >= int{visible_columns_.size()})
+        SetActiveVisibleColumnIndex(int{visible_columns_.size()} - 1);
     }
   }
   UpdateVisibleColumnSizes();

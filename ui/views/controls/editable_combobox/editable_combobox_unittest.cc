@@ -120,9 +120,8 @@ void EditableComboboxTest::InitEditableCombobox(const int item_count,
                                                 const bool filter_on_edit,
                                                 const bool show_on_empty) {
   std::vector<base::string16> items;
-  for (int i = 0; i < item_count; ++i) {
+  for (int i = 0; i < item_count; ++i)
     items.push_back(ASCIIToUTF16(base::StringPrintf("item[%i]", i)));
-  }
   InitEditableCombobox(items, filter_on_edit, show_on_empty);
 }
 

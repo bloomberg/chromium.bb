@@ -1168,10 +1168,10 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
 
   // Test the delete and backspace keys.
   textfield_->SelectRange(gfx::Range(5));
-  for (int i = 0; i < 3; i++)
+  for (size_t i = 0; i < 3; i++)
     SendKeyEvent(ui::VKEY_BACK);
   EXPECT_STR_EQ("abfghij", textfield_->text());
-  for (int i = 0; i < 3; i++)
+  for (size_t i = 0; i < 3; i++)
     SendKeyEvent(ui::VKEY_DELETE);
   EXPECT_STR_EQ("abij", textfield_->text());
 
@@ -2584,7 +2584,7 @@ TEST_F(TextfieldTest, HitInsideTextAreaTest) {
   size_t cursor_pos_expected[] = {0, 1, 1, 2, 4, 3, 3, 2};
 
   int index = 0;
-  for (int i = 0; i < static_cast<int>(cursor_bounds.size() - 1); ++i) {
+  for (size_t i = 0; i < cursor_bounds.size() - 1; ++i) {
     int half_width = (cursor_bounds[i + 1].x() - cursor_bounds[i].x()) / 2;
     MouseClick(cursor_bounds[i], half_width / 2);
     EXPECT_EQ(cursor_pos_expected[index++], textfield_->GetCursorPosition());
@@ -2593,7 +2593,7 @@ TEST_F(TextfieldTest, HitInsideTextAreaTest) {
     // for the test to run if using sleep().
     NonClientMouseClick();
 
-    MouseClick(cursor_bounds[i + 1], - (half_width / 2));
+    MouseClick(cursor_bounds[i + 1], -(half_width / 2));
     EXPECT_EQ(cursor_pos_expected[index++], textfield_->GetCursorPosition());
 
     NonClientMouseClick();
@@ -2674,7 +2674,7 @@ TEST_F(TextfieldTest, OverflowTest) {
   InitTextfield();
 
   base::string16 str;
-  for (int i = 0; i < 500; ++i)
+  for (size_t i = 0; i < 500; ++i)
     SendKeyEvent('a');
   SendKeyEvent(kHebrewLetterSamekh);
   EXPECT_TRUE(GetDisplayRect().Contains(GetCursorBounds()));
@@ -2687,7 +2687,7 @@ TEST_F(TextfieldTest, OverflowTest) {
   SendKeyEvent(ui::VKEY_A, false, true);
   SendKeyEvent(ui::VKEY_DELETE);
 
-  for (int i = 0; i < 500; ++i)
+  for (size_t i = 0; i < 500; ++i)
     SendKeyEvent(kHebrewLetterSamekh);
   SendKeyEvent('a');
   EXPECT_TRUE(GetDisplayRect().Contains(GetCursorBounds()));
@@ -2703,7 +2703,7 @@ TEST_F(TextfieldTest, OverflowInRTLTest) {
   InitTextfield();
 
   base::string16 str;
-  for (int i = 0; i < 500; ++i)
+  for (size_t i = 0; i < 500; ++i)
     SendKeyEvent('a');
   SendKeyEvent(kHebrewLetterSamekh);
   EXPECT_TRUE(GetDisplayRect().Contains(GetCursorBounds()));
@@ -2715,7 +2715,7 @@ TEST_F(TextfieldTest, OverflowInRTLTest) {
   SendKeyEvent(ui::VKEY_A, false, true);
   SendKeyEvent(ui::VKEY_DELETE);
 
-  for (int i = 0; i < 500; ++i)
+  for (size_t i = 0; i < 500; ++i)
     SendKeyEvent(kHebrewLetterSamekh);
   SendKeyEvent('a');
   EXPECT_TRUE(GetDisplayRect().Contains(GetCursorBounds()));

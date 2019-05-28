@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 
+#include "base/containers/adapters.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
@@ -166,9 +167,7 @@ void WindowReorderer::ReorderChildWindows() {
   // |view_with_layer_order| backwards and stack windows at the bottom so that
   // windows not associated to a view are stacked above windows with an
   // associated view.
-  for (auto it = view_with_layer_order.rbegin();
-       it != view_with_layer_order.rend(); ++it) {
-    View* view = *it;
+  for (View* view : base::Reversed(view_with_layer_order)) {
     ui::Layer* layer = view->layer();
     aura::Window* window = nullptr;
 

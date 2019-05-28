@@ -37,14 +37,12 @@ void ViewModelBase::Move(int index, int target_index) {
 }
 
 void ViewModelBase::MoveViewOnly(int index, int target_index) {
-  if (index == target_index)
-    return;
   if (target_index < index) {
     View* view = entries_[index].view;
     for (int i = index; i > target_index; --i)
       entries_[i].view = entries_[i - 1].view;
     entries_[target_index].view = view;
-  } else {
+  } else if (target_index > index) {
     View* view = entries_[index].view;
     for (int i = index; i < target_index; ++i)
       entries_[i].view = entries_[i + 1].view;
@@ -60,11 +58,10 @@ void ViewModelBase::Clear() {
 }
 
 int ViewModelBase::GetIndexOfView(const View* view) const {
-  for (size_t i = 0; i < entries_.size(); ++i) {
-    if (entries_[i].view == view)
-      return static_cast<int>(i);
-  }
-  return -1;
+  const auto i =
+      std::find_if(entries_.cbegin(), entries_.cend(),
+                   [view](const auto& entry) { return entry.view == view; });
+  return (i == entries_.cend()) ? -1 : (i - entries_.cbegin());
 }
 
 ViewModelBase::ViewModelBase() = default;

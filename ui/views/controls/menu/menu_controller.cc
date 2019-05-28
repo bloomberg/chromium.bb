@@ -931,7 +931,7 @@ void MenuController::ViewHierarchyChanged(
     // removed while a menu is up.
     if (details.child == hot_button_) {
       hot_button_ = nullptr;
-      for (auto&& nested_state : menu_stack_) {
+      for (auto& nested_state : menu_stack_) {
         State& state = nested_state.first;
         if (details.child == state.hot_button)
           state.hot_button = nullptr;
@@ -1736,7 +1736,7 @@ bool MenuController::ShowContextMenu(MenuItemView* menu_item,
 }
 
 void MenuController::CloseAllNestedMenus() {
-  for (auto&& nested_menu : menu_stack_) {
+  for (auto& nested_menu : menu_stack_) {
     State& state = nested_menu.first;
     MenuItemView* last_item = state.item;
     for (MenuItemView* item = last_item; item;
@@ -1942,9 +1942,8 @@ void MenuController::CommitPendingSelection() {
   // Open all the submenus preceeding the last menu item (last menu item is
   // handled next).
   if (new_path.size() > 1) {
-    for (auto i = new_path.begin(); i != new_path.end() - 1; ++i) {
+    for (auto i = new_path.begin(); i != new_path.end() - 1; ++i)
       OpenMenu(*i);
-    }
   }
 
   if (state_.submenu_open) {
@@ -2088,18 +2087,10 @@ void MenuController::BuildPathsAndCalculateDiff(
   BuildMenuItemPath(old_item, old_path);
   BuildMenuItemPath(new_item, new_path);
 
-  size_t common_size = std::min(old_path->size(), new_path->size());
-
-  // Find the first difference between the two paths, when the loop
-  // returns, diff_i is the first index where the two paths differ.
-  for (size_t i = 0; i < common_size; ++i) {
-    if ((*old_path)[i] != (*new_path)[i]) {
-      *first_diff_at = i;
-      return;
-    }
-  }
-
-  *first_diff_at = common_size;
+  *first_diff_at = std::distance(
+      old_path->cbegin(), std::mismatch(old_path->cbegin(), old_path->cend(),
+                                        new_path->cbegin(), new_path->cend())
+                              .first);
 }
 
 void MenuController::BuildMenuItemPath(MenuItemView* item,
@@ -2506,10 +2497,8 @@ void MenuController::SetSelectionIndices(MenuItemView* parent) {
     return;
 
   const int set_size = ordering.size();
-  for (int i = 0; i < set_size; ++i) {
-    const int set_pos = i + 1;  // 1-indexed
-    ordering[i]->GetViewAccessibility().OverridePosInSet(set_pos, set_size);
-  }
+  for (int i = 0; i < set_size; ++i)
+    ordering[i]->GetViewAccessibility().OverridePosInSet(i + 1, set_size);
 }
 
 void MenuController::MoveSelectionToFirstOrLastItem(

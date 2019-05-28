@@ -584,7 +584,7 @@ TEST_F(TouchSelectionControllerImplTest,
     // Make sure that the visible handle is being dragged.
     EXPECT_NE(visible_handle_position, textfield_->GetSelectedRange().end());
     visible_handle_position = textfield_->GetSelectedRange().end();
-    EXPECT_EQ((size_t) 10, textfield_->GetSelectedRange().start());
+    EXPECT_EQ(10u, textfield_->GetSelectedRange().start());
   }
 }
 

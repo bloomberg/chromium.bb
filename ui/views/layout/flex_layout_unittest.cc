@@ -1745,7 +1745,7 @@ class FlexLayoutCrossAxisFitTest : public FlexLayoutTest {
     FlexLayoutTest::SetUp();
     DCHECK(child_views_.empty());
 
-    for (int i = 0; i < kNumChildren; ++i) {
+    for (size_t i = 0; i < kNumChildren; ++i) {
       View* const child = AddChild(kChildSizes[i]);
       child->SetProperty(kMarginsKey, new gfx::Insets(kChildMargins[i]));
       child_views_.push_back(child);
@@ -1760,7 +1760,7 @@ class FlexLayoutCrossAxisFitTest : public FlexLayoutTest {
   void TearDown() override { child_views_.clear(); }
 
  protected:
-  static constexpr int kNumChildren = 3;
+  static constexpr size_t kNumChildren = 3;
   static const gfx::Size kHostSize;
   static const gfx::Size kChildSizes[kNumChildren];
   static const gfx::Insets kChildMargins[kNumChildren];
@@ -1784,7 +1784,7 @@ TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossStretch) {
 
   // Expect child views to respect their leading margin and to occupy all
   // available space (other than margins), with a minimum size of zero.
-  for (int i = 0; i < kNumChildren; ++i) {
+  for (size_t i = 0; i < kNumChildren; ++i) {
     EXPECT_EQ(kChildMargins[i].top(), child_views_[i]->origin().y());
     const int expected_height =
         std::max(0, kHostSize.height() - kChildMargins[i].height());
@@ -1797,7 +1797,7 @@ TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossStart) {
   host_->Layout();
 
   // These should all justify to the leading edge and keep their original size.
-  for (int i = 0; i < kNumChildren; ++i) {
+  for (size_t i = 0; i < kNumChildren; ++i) {
     EXPECT_EQ(kChildMargins[i].top(), child_views_[i]->origin().y());
     EXPECT_EQ(kChildSizes[i].height(), child_views_[i]->size().height());
   }
@@ -1827,9 +1827,8 @@ TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossCenter) {
   EXPECT_EQ(expected, child_views_[2]->origin().y());
 
   // Expect child views to retain their preferred sizes.
-  for (int i = 0; i < kNumChildren; ++i) {
+  for (size_t i = 0; i < kNumChildren; ++i)
     EXPECT_EQ(kChildSizes[i].height(), child_views_[i]->size().height());
-  }
 }
 
 TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossEnd) {
@@ -1837,7 +1836,7 @@ TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossEnd) {
   host_->Layout();
 
   // These should all justify to the trailing edge and keep their original size.
-  for (int i = 0; i < kNumChildren; ++i) {
+  for (size_t i = 0; i < kNumChildren; ++i) {
     EXPECT_EQ(kHostSize.height() - kChildMargins[i].bottom(),
               child_views_[i]->bounds().bottom());
     EXPECT_EQ(kChildSizes[i].height(), child_views_[i]->size().height());

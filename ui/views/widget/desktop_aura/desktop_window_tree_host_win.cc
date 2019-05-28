@@ -1049,15 +1049,12 @@ bool DesktopWindowTreeHostWin::IsModalWindowActive() const {
   if (!dispatcher())
     return false;
 
-  aura::Window::Windows::const_iterator index;
-  for (index = window()->children().begin();
-       index != window()->children().end();
-       ++index) {
-    if ((*index)->GetProperty(aura::client::kModalKey) !=
-        ui:: MODAL_TYPE_NONE && (*index)->TargetVisibility())
-      return true;
-  }
-  return false;
+  const auto is_active = [](const auto* child) {
+    return child->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE &&
+           child->TargetVisibility();
+  };
+  return std::any_of(window()->children().cbegin(), window()->children().cend(),
+                     is_active);
 }
 
 void DesktopWindowTreeHostWin::CheckForMonitorChange() {

@@ -726,9 +726,9 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
       ui::GetTextEditKeyBindingsDelegate();
   std::vector<ui::TextEditCommandAuraLinux> commands;
   if (!handled && delegate && delegate->MatchEvent(event, &commands)) {
-    for (size_t i = 0; i < commands.size(); ++i) {
-      if (IsTextEditCommandEnabled(commands[i].command())) {
-        ExecuteTextEditCommand(commands[i].command());
+    for (const auto& command : commands) {
+      if (IsTextEditCommandEnabled(command.command())) {
+        ExecuteTextEditCommand(command.command());
         handled = true;
       }
     }
@@ -896,9 +896,11 @@ bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
       ui::GetTextEditKeyBindingsDelegate();
   std::vector<ui::TextEditCommandAuraLinux> commands;
   if (delegate && delegate->MatchEvent(event, &commands)) {
-    for (size_t i = 0; i < commands.size(); ++i)
-      if (IsTextEditCommandEnabled(commands[i].command()))
-        return true;
+    const auto is_enabled = [this](const auto& command) {
+      return IsTextEditCommandEnabled(command.command());
+    };
+    if (std::any_of(commands.cbegin(), commands.cend(), is_enabled))
+      return true;
   }
 #endif
 
@@ -1369,7 +1371,7 @@ bool Textfield::IsCommandIdEnabled(int command_id) const {
     return text_services_context_menu_->IsCommandIdEnabled(command_id);
   }
 
-  return Textfield::IsTextEditCommandEnabled(
+  return IsTextEditCommandEnabled(
       GetTextEditCommandFromMenuCommand(command_id, HasSelection()));
 }
 
@@ -1838,7 +1840,7 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
 
   // We only execute the commands enabled in Textfield::IsTextEditCommandEnabled
   // below. Hence don't do a virtual IsTextEditCommandEnabled call.
-  if (!Textfield::IsTextEditCommandEnabled(command))
+  if (!IsTextEditCommandEnabled(command))
     return;
 
   bool text_changed = false;

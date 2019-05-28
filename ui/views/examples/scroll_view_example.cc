@@ -97,7 +97,7 @@ void ScrollViewExample::CreateExampleView(View* container) {
 
   // Add control buttons.
   column_set = layout->AddColumnSet(1);
-  for (int i = 0; i < 5; i++) {
+  for (size_t i = 0; i < 5; i++) {
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                           GridLayout::USE_PREF, 0, 0);
   }

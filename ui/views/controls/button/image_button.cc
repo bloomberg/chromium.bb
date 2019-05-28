@@ -242,11 +242,8 @@ void ToggleImageButton::SetToggled(bool toggled) {
   if (toggled == toggled_)
     return;
 
-  for (int i = 0; i < STATE_COUNT; ++i) {
-    gfx::ImageSkia temp = images_[i];
-    images_[i] = alternate_images_[i];
-    alternate_images_[i] = temp;
-  }
+  for (int i = 0; i < STATE_COUNT; ++i)
+    std::swap(images_[i], alternate_images_[i]);
   toggled_ = toggled;
   SchedulePaint();
 

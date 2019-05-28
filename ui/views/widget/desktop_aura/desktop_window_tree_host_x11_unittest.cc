@@ -153,11 +153,9 @@ bool ShapeRectContainsPoint(const std::vector<gfx::Rect>& shape_rects,
                             int x,
                             int y) {
   gfx::Point point(x, y);
-  for (size_t i = 0; i < shape_rects.size(); ++i) {
-    if (shape_rects[i].Contains(point))
-      return true;
-  }
-  return false;
+  return std::any_of(
+      shape_rects.cbegin(), shape_rects.cend(),
+      [&point](const auto& rect) { return rect.Contains(point); });
 }
 
 }  // namespace

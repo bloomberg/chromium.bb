@@ -77,11 +77,9 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
   bool ShouldKeepOnWaiting(const ui::PlatformEvent& event) override {
     std::vector<XID> stack;
     ui::GetXWindowStack(ui::GetX11RootWindow(), &stack);
-    for (size_t i = 0; i < expected_windows_.size(); ++i) {
-      if (!base::ContainsValue(stack, expected_windows_[i]))
-        return true;
-    }
-    return false;
+    return !std::all_of(
+        expected_windows_.cbegin(), expected_windows_.cend(),
+        [&stack](XID window) { return base::ContainsValue(stack, window); });
   }
 
   std::vector<XID> expected_windows_;

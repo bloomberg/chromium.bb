@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1422,9 +1423,8 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
   if (child_layer_iter == root_layer->children().end())
     return true;
 
-  for (auto iter = views_with_layers.rbegin(); iter != views_with_layers.rend();
-       ++iter) {
-    ui::Layer* layer = (*iter)->layer();
+  for (View* view : base::Reversed(views_with_layers)) {
+    ui::Layer* layer = view->layer();
     DCHECK(layer);
     if (layer->visible() && layer->bounds().Contains(location)) {
       auto root_layer_iter = std::find(root_layer->children().begin(),
@@ -1438,7 +1438,6 @@ bool Widget::ShouldDescendIntoChildForEventHandling(
       // from the bounds of the layer. Verify the view hosting the layer
       // actually contains |location|. Use GetVisibleBounds(), which is
       // effectively what event targetting uses.
-      View* view = *iter;
       gfx::Rect vis_bounds = view->GetVisibleBounds();
       gfx::Point point_in_view = location;
       View::ConvertPointToTarget(GetRootView(), view, &point_in_view);

@@ -801,7 +801,7 @@ TEST_F(WidgetTestInteractive, ChildStackedRelativeToParent) {
 TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
   Widget* widget = CreateTopLevelFramelessPlatformWidget();
   widget->SetContentsView(new View);
-  for (int i = 0; i < 2; ++i) {
+  for (size_t i = 0; i < 2; ++i) {
     auto child = std::make_unique<View>();
     child->SetFocusBehavior(View::FocusBehavior::ALWAYS);
     widget->GetContentsView()->AddChildView(std::move(child));
