@@ -99,7 +99,7 @@
 #include "chromecast/graphics/cast_window_manager_aura.h"
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"  // nogncheck
 #include "ui/display/screen.h"
-#include "ui/views/views_delegate.h"
+#include "ui/views/views_delegate.h"  // nogncheck
 #else
 #include "chromecast/graphics/cast_window_manager_default.h"
 #endif

@@ -126,7 +126,6 @@ class WMHelperCastShell : public WMHelper, public VSyncTimingManager::Delegate {
   };
 
   chromecast::CastWindowManagerAura* cast_window_manager_aura_;
-  aura::Env* const env_;
   chromecast::CastScreen* cast_screen_;
   CastDisplayObserver display_observer_;
   LifetimeManager lifetime_manager_;
