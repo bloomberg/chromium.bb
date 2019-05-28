@@ -83,6 +83,14 @@ void SurfaceLayerImpl::SetHasPointerEventsNone(bool has_pointer_events_none) {
   NoteLayerPropertyChanged();
 }
 
+void SurfaceLayerImpl::SetIsReflection(bool is_reflection) {
+  if (is_reflection_ == is_reflection)
+    return;
+
+  is_reflection_ = is_reflection;
+  NoteLayerPropertyChanged();
+}
+
 void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
@@ -93,6 +101,7 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
   layer_impl->SetSurfaceHitTestable(surface_hit_testable_);
   layer_impl->SetHasPointerEventsNone(has_pointer_events_none_);
+  layer_impl->SetIsReflection(is_reflection_);
 }
 
 bool SurfaceLayerImpl::WillDraw(
@@ -141,6 +150,7 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                  surface_range_, background_color(),
                  stretch_content_to_fill_bounds_, has_pointer_events_none_);
+    quad->is_reflection = is_reflection_;
     // Add the primary surface ID as a dependency.
     append_quads_data->activation_dependencies.push_back(surface_range_.end());
     if (deadline_in_frames_) {

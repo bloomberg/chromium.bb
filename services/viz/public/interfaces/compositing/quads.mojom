@@ -67,6 +67,7 @@ struct SurfaceQuadState {
   SurfaceRange surface_range;
   uint32 default_background_color;
   bool stretch_content_to_fill_bounds;
+  bool is_reflection;
 };
 
 struct TextureQuadState {

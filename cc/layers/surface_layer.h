@@ -44,7 +44,9 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
   void SetHasPointerEventsNone(bool has_pointer_events_none);
 
-  void SetMayContainVideo(bool);
+  void SetIsReflection(bool is_reflection);
+
+  void SetMayContainVideo(bool may_contain_video);
 
   // Layer overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -90,6 +92,9 @@ class CC_EXPORT SurfaceLayer : public Layer {
   // TODO(sunxd): consider renaming it to oopif_has_pointer_events_none_ for
   // disambiguation.
   bool has_pointer_events_none_ = false;
+
+  // This surface layer is reflecting the root surface of another display.
+  bool is_reflection_ = false;
 };
 
 }  // namespace cc

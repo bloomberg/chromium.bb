@@ -1432,6 +1432,169 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillSquashedBounds) {
   EXPECT_EQ(gfx::RectF(25.f, 12.5f), output_rect);
 }
 
+// Verify that a reflected SurfaceDrawQuad with scaling won't have the surfaces
+// root RenderPass merged with the RenderPass that embeds it. This ensures the
+// reflected pixels can be scaled with AA enabled.
+TEST_F(SurfaceAggregatorValidSurfaceTest, ReflectedSurfaceDrawQuadScaled) {
+  const SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                                  root_local_surface_id_);
+
+  // Submit a CompositorFrame for the primary display. This will get mirrored
+  // by the second display through surface embedding.
+  const gfx::Rect display_rect(0, 0, 100, 100);
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, display_rect, display_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->opacity = 1.f;
+
+    auto* solid_color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    solid_color_quad->SetNew(sqs, display_rect, display_rect, SK_ColorRED,
+                             false);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    root_sink_->SubmitCompositorFrame(root_surface_id.local_surface_id(),
+                                      std::move(frame));
+  }
+
+  auto mirror_display_sink = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId1, true, kNeedsSyncPoints);
+
+  ParentLocalSurfaceIdAllocator lsi_allocator;
+  lsi_allocator.GenerateId();
+  LocalSurfaceId mirror_display_local_surface_id =
+      lsi_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+
+  // The mirroring display size is smaller than the primary display. The
+  // mirrored content would be scaled to fit.
+  const gfx::Rect mirror_display_rect(80, 80);
+  gfx::Transform scale_transform;
+  scale_transform.Scale(0.8, 0.8);
+
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, mirror_display_rect, mirror_display_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->quad_to_target_transform = scale_transform;
+    sqs->opacity = 1.f;
+
+    auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    surface_quad->SetAll(sqs, display_rect, display_rect,
+                         /*needs_blending=*/false,
+                         SurfaceRange(base::nullopt, root_surface_id),
+                         SK_ColorBLACK,
+                         /*stretch_content_to_fill_bounds=*/true,
+                         /*ignores_input_event=*/false, /*is_reflection=*/true);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    mirror_display_sink->SubmitCompositorFrame(mirror_display_local_surface_id,
+                                               std::move(frame));
+  }
+
+  const SurfaceId mirror_display_surface_id(
+      mirror_display_sink->frame_sink_id(), mirror_display_local_surface_id);
+  CompositorFrame frame = AggregateFrame(mirror_display_surface_id);
+
+  // The reflected surface should be a separate RenderPass as it's scaled. The
+  // root RenderPass should have a single RenderPassDrawQuad.
+  EXPECT_EQ(2u, frame.render_pass_list.size());
+
+  auto* root_render_pass = frame.render_pass_list.back().get();
+  EXPECT_EQ(1u, root_render_pass->quad_list.size());
+
+  auto* output_quad = root_render_pass->quad_list.back();
+  EXPECT_EQ(DrawQuad::Material::kRenderPass, output_quad->material);
+
+  // The RenderPassDrawQuad should have the same scale transform that was
+  // applied to the SurfaceDrawQuad.
+  EXPECT_EQ(output_quad->shared_quad_state->quad_to_target_transform,
+            scale_transform);
+}
+
+// Verify that a reflected SurfaceDrawQuad with no scaling has the surfaces root
+// RenderPass merged with the RenderPass that embeds it.
+TEST_F(SurfaceAggregatorValidSurfaceTest, ReflectedSurfaceDrawQuadNotScaled) {
+  const SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                                  root_local_surface_id_);
+
+  // Submit a CompositorFrame for the primary display. This will get mirrored
+  // by the second display through surface embedding.
+  const gfx::Rect display_rect(0, 0, 100, 100);
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, display_rect, display_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->opacity = 1.f;
+
+    auto* solid_color_quad =
+        pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    solid_color_quad->SetNew(sqs, display_rect, display_rect, SK_ColorRED,
+                             false);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    root_sink_->SubmitCompositorFrame(root_surface_id.local_surface_id(),
+                                      std::move(frame));
+  }
+
+  auto mirror_display_sink = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId1, true, kNeedsSyncPoints);
+
+  ParentLocalSurfaceIdAllocator lsi_allocator;
+  lsi_allocator.GenerateId();
+  LocalSurfaceId mirror_display_local_surface_id =
+      lsi_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+
+  // The mirroring display is the same width but different height. The mirrored
+  // content would be letterboxed by translating it.
+  const gfx::Rect mirror_display_rect(120, 100);
+  gfx::Transform translate_transform;
+  translate_transform.Translate(10, 0);
+
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, mirror_display_rect, mirror_display_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->quad_to_target_transform = translate_transform;
+    sqs->opacity = 1.f;
+
+    auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    surface_quad->SetAll(sqs, display_rect, display_rect,
+                         /*needs_blending=*/false,
+                         SurfaceRange(base::nullopt, root_surface_id),
+                         SK_ColorBLACK,
+                         /*stretch_content_to_fill_bounds=*/true,
+                         /*ignores_input_event=*/false, /*is_reflection=*/true);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    mirror_display_sink->SubmitCompositorFrame(mirror_display_local_surface_id,
+                                               std::move(frame));
+  }
+
+  const SurfaceId mirror_display_surface_id(
+      mirror_display_sink->frame_sink_id(), mirror_display_local_surface_id);
+  CompositorFrame frame = AggregateFrame(mirror_display_surface_id);
+
+  // The reflected surfaces RenderPass should be merged into the root RenderPass
+  // since it's not being scaled.
+  EXPECT_EQ(1u, frame.render_pass_list.size());
+
+  auto* root_render_pass = frame.render_pass_list.back().get();
+  EXPECT_EQ(1u, root_render_pass->quad_list.size());
+
+  auto* output_quad = root_render_pass->quad_list.back();
+  EXPECT_EQ(DrawQuad::Material::kSolidColor, output_quad->material);
+
+  // The quad from the embedded surface merged into the root RenderPass should
+  // have the same translate transform that was applied to the SurfaceDrawQuad.
+  EXPECT_EQ(output_quad->shared_quad_state->quad_to_target_transform,
+            translate_transform);
+}
+
 // This test verifies that in the presence of both primary Surface and fallback
 // Surface, the fallback will not be used.
 TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReferenceWithPrimary) {

@@ -43,13 +43,15 @@ void SurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              const SurfaceRange& surface_range,
                              SkColor default_background_color,
                              bool stretch_content_to_fill_bounds,
-                             bool ignores_input_event) {
+                             bool ignores_input_event,
+                             bool is_reflection) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::Material::kSurfaceContent, rect,
                    visible_rect, needs_blending);
   this->surface_range = surface_range;
   this->default_background_color = default_background_color;
   this->stretch_content_to_fill_bounds = stretch_content_to_fill_bounds;
   this->ignores_input_event = ignores_input_event;
+  this->is_reflection = is_reflection;
 }
 
 const SurfaceDrawQuad* SurfaceDrawQuad::MaterialCast(const DrawQuad* quad) {

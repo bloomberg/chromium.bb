@@ -340,7 +340,8 @@ void SurfaceAggregator::HandleSurfaceQuad(
                      surface_quad->visible_rect, target_transform, clip_rect,
                      surface_quad->stretch_content_to_fill_bounds, dest_pass,
                      ignore_undamaged, damage_rect_in_quad_space,
-                     damage_rect_in_quad_space_valid, rounded_corner_info);
+                     damage_rect_in_quad_space_valid, rounded_corner_info,
+                     surface_quad->is_reflection);
 }
 
 void SurfaceAggregator::EmitSurfaceContent(
@@ -356,7 +357,8 @@ void SurfaceAggregator::EmitSurfaceContent(
     bool ignore_undamaged,
     gfx::Rect* damage_rect_in_quad_space,
     bool* damage_rect_in_quad_space_valid,
-    const RoundedCornerInfo& rounded_corner_info) {
+    const RoundedCornerInfo& rounded_corner_info,
+    bool is_reflection) {
   // If this surface's id is already in our referenced set then it creates
   // a cycle in the graph and should be dropped.
   SurfaceId surface_id = surface->surface_id();
@@ -424,7 +426,17 @@ void SurfaceAggregator::EmitSurfaceContent(
                 : empty_map;
   gfx::Transform combined_transform = scaled_quad_to_target_transform;
   combined_transform.ConcatTransform(target_transform);
+
+  // If the SurfaceDrawQuad is marked as being reflected and surface contents
+  // are going to be scaled then keep the RenderPass. This allows the reflected
+  // surface to be drawn with AA enabled for smooth scaling and preserves the
+  // original reflector scaling behaviour which scaled a TextureLayer.
+  bool reflected_and_scaled =
+      is_reflection &&
+      !scaled_quad_to_target_transform.IsIdentityOrTranslation();
+
   bool merge_pass =
+      !reflected_and_scaled &&
       base::IsApproximatelyEqual(source_sqs->opacity, 1.f, kOpacityEpsilon) &&
       copy_requests.empty() && combined_transform.Preserves2dAxisAlignment() &&
       CanMergeRoundedCorner(rounded_corner_info, *render_pass_list.back());

@@ -895,10 +895,10 @@ void Layer::SetShowReflectedSurface(const viz::SurfaceId& surface_id,
                                cc::DeadlinePolicy::UseInfiniteDeadline());
   surface_layer_->SetBackgroundColor(SK_ColorBLACK);
   surface_layer_->SetSafeOpaqueBackgroundColor(SK_ColorBLACK);
-  // TODO(kylechar): Include UV transform and don't stretch to fill bounds.
   surface_layer_->SetStretchContentToFillBounds(true);
+  surface_layer_->SetIsReflection(true);
 
-  // The reflecting surface uses the native size of the display.
+  // The reflecting surface uses the native size of the reflected display.
   frame_size_in_dip_ = frame_size_in_pixels;
   RecomputeDrawsContentAndUVRect();
 }

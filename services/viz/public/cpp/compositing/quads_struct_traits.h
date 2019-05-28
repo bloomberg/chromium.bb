@@ -324,6 +324,12 @@ struct StructTraits<viz::mojom::SurfaceQuadStateDataView, viz::DrawQuad> {
     return quad->stretch_content_to_fill_bounds;
   }
 
+  static bool is_reflection(const viz::DrawQuad& input) {
+    const viz::SurfaceDrawQuad* quad =
+        viz::SurfaceDrawQuad::MaterialCast(&input);
+    return quad->is_reflection;
+  }
+
   static bool Read(viz::mojom::SurfaceQuadStateDataView data,
                    viz::DrawQuad* out);
 };
