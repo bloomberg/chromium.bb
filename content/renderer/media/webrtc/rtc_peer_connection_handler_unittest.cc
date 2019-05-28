@@ -316,8 +316,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                 media::CHANNEL_LAYOUT_STEREO,
                 media::AudioParameters::kAudioCDSampleRate / 100),
             false /* disable_local_echo */, blink::AudioProcessingProperties(),
-            base::Bind(&RTCPeerConnectionHandlerTest::OnAudioSourceStarted),
-            mock_dependency_factory_.get(),
+            base::DoNothing(), mock_dependency_factory_.get(),
             blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     audio_source->SetAllowInvalidRenderFrameIdForTesting(true);
     blink_audio_source.SetPlatformSource(
@@ -380,10 +379,6 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     for (const auto& track : stream.VideoTracks())
       blink::MediaStreamVideoTrack::GetVideoTrack(track)->Stop();
   }
-
-  static void OnAudioSourceStarted(blink::WebPlatformMediaStreamSource* source,
-                                   blink::MediaStreamRequestResult result,
-                                   const blink::WebString& result_name) {}
 
   bool AddStream(const blink::WebMediaStream& web_stream) {
     size_t senders_size_before_add = senders_.size();

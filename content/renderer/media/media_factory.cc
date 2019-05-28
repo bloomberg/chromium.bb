@@ -434,10 +434,10 @@ MediaFactory::CreateRendererFactorySelector(
       std::make_unique<MediaPlayerRendererClientFactory>(
           render_thread->compositor_task_runner(),
           std::move(mojo_media_player_renderer_factory),
-          base::Bind(&StreamTextureWrapperImpl::Create,
-                     render_thread->EnableStreamTextureCopy(),
-                     render_thread->GetStreamTexureFactory(),
-                     base::ThreadTaskRunnerHandle::Get())));
+          base::BindRepeating(&StreamTextureWrapperImpl::Create,
+                              render_thread->EnableStreamTextureCopy(),
+                              render_thread->GetStreamTexureFactory(),
+                              base::ThreadTaskRunnerHandle::Get())));
 
   factory_selector->SetUseMediaPlayer(use_media_player);
 

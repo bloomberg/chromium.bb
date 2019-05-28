@@ -358,8 +358,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
   std::unique_ptr<blink::MediaStreamAudioSource> CreateAudioSource(
       const blink::MediaStreamDevice& device,
-      const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
-          source_ready) override {
+      blink::WebPlatformMediaStreamSource::ConstraintsOnceCallback source_ready)
+      override {
     std::unique_ptr<blink::MediaStreamAudioSource> source;
     if (create_source_that_fails_) {
       class FailedAtLifeAudioSource : public blink::MediaStreamAudioSource {
@@ -389,7 +389,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
       blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
           FROM_HERE,
           base::BindOnce(&UserMediaProcessorUnderTest::SignalSourceReady,
-                         source_ready, source.get()));
+                         std::move(source_ready), source.get()));
     }
 
     return source;
@@ -413,10 +413,9 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
  private:
   static void SignalSourceReady(
-      const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
-          source_ready,
+      blink::WebPlatformMediaStreamSource::ConstraintsOnceCallback source_ready,
       blink::WebPlatformMediaStreamSource* source) {
-    source_ready.Run(source, blink::MEDIA_DEVICE_OK, "");
+    std::move(source_ready).Run(source, blink::MEDIA_DEVICE_OK, "");
   }
 
   PeerConnectionDependencyFactory* factory_;

@@ -223,9 +223,9 @@ class UserMediaProcessor::RequestInfo
     : public base::SupportsWeakPtr<RequestInfo> {
  public:
   using ResourcesReady =
-      base::Callback<void(RequestInfo* request_info,
-                          MediaStreamRequestResult result,
-                          const blink::WebString& result_name)>;
+      base::OnceCallback<void(RequestInfo* request_info,
+                              MediaStreamRequestResult result,
+                              const blink::WebString& result_name)>;
   enum class State {
     NOT_SENT_FOR_GENERATION,
     SENT_FOR_GENERATION,
@@ -241,7 +241,7 @@ class UserMediaProcessor::RequestInfo
 
   // Triggers |callback| when all sources used in this request have either
   // successfully started, or a source has failed to start.
-  void CallbackOnTracksStarted(const ResourcesReady& callback);
+  void CallbackOnTracksStarted(ResourcesReady callback);
 
   // Called when a local audio source has finished (or failed) initializing.
   void OnAudioSourceStarted(blink::WebPlatformMediaStreamSource* source,
@@ -324,7 +324,7 @@ class UserMediaProcessor::RequestInfo
                       MediaStreamRequestResult result,
                       const blink::WebString& result_name);
 
-  // Cheks if the sources for all tracks have been started and if so,
+  // Checks if the sources for all tracks have been started and if so,
   // invoke the |ready_callback_|.  Note that the caller should expect
   // that |this| might be deleted when the function returns.
   void CheckAllTracksStarted();
@@ -401,9 +401,9 @@ UserMediaProcessor::RequestInfo::CreateAndStartVideoTrack(
 }
 
 void UserMediaProcessor::RequestInfo::CallbackOnTracksStarted(
-    const ResourcesReady& callback) {
+    ResourcesReady callback) {
   DCHECK(ready_callback_.is_null());
-  ready_callback_ = callback;
+  ready_callback_ = std::move(callback);
   CheckAllTracksStarted();
 }
 
@@ -427,8 +427,8 @@ void UserMediaProcessor::RequestInfo::OnTrackStarted(
 }
 
 void UserMediaProcessor::RequestInfo::CheckAllTracksStarted() {
-  if (!ready_callback_.is_null() && sources_waiting_for_callback_.empty()) {
-    ready_callback_.Run(this, request_result_, request_result_name_);
+  if (ready_callback_ && sources_waiting_for_callback_.empty()) {
+    std::move(ready_callback_).Run(this, request_result_, request_result_name_);
     // NOTE: |this| might now be deleted.
   }
 }
@@ -975,10 +975,9 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
   // See OnAudioSourceStarted for more details.
   pending_local_sources_.push_back(source);
 
-  blink::WebPlatformMediaStreamSource::ConstraintsCallback source_ready =
-      base::BindRepeating(
-          &UserMediaProcessor::OnAudioSourceStartedOnAudioThread, task_runner_,
-          weak_factory_.GetWeakPtr());
+  blink::WebPlatformMediaStreamSource::ConstraintsOnceCallback source_ready =
+      base::BindOnce(&UserMediaProcessor::OnAudioSourceStartedOnAudioThread,
+                     task_runner_, weak_factory_.GetWeakPtr());
 
   std::unique_ptr<blink::MediaStreamAudioSource> audio_source =
       CreateAudioSource(device, std::move(source_ready));
@@ -1032,8 +1031,7 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
 std::unique_ptr<blink::MediaStreamAudioSource>
 UserMediaProcessor::CreateAudioSource(
     const MediaStreamDevice& device,
-    const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
-        source_ready) {
+    blink::WebPlatformMediaStreamSource::ConstraintsOnceCallback source_ready) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
 
@@ -1051,7 +1049,8 @@ UserMediaProcessor::CreateAudioSource(
         render_frame_->GetRoutingID(), device,
         base::OptionalOrNullptr(current_request_info_->audio_capture_settings()
                                     .requested_buffer_size()),
-        stream_controls->disable_local_echo, source_ready, task_runner_);
+        stream_controls->disable_local_echo, std::move(source_ready),
+        task_runner_);
   }
 
   // The audio device is not associated with screen capture and also requires
@@ -1059,7 +1058,7 @@ UserMediaProcessor::CreateAudioSource(
   return std::make_unique<ProcessedLocalAudioSource>(
       render_frame_->GetRoutingID(), device,
       stream_controls->disable_local_echo, audio_processing_properties,
-      source_ready, dependency_factory_, task_runner_);
+      std::move(source_ready), dependency_factory_, task_runner_);
 }
 
 std::unique_ptr<blink::MediaStreamVideoSource>
@@ -1099,8 +1098,8 @@ void UserMediaProcessor::StartTracks(const std::string& label) {
 
   // Wait for the tracks to be started successfully or to fail.
   current_request_info_->CallbackOnTracksStarted(
-      base::BindRepeating(&UserMediaProcessor::OnCreateNativeTracksCompleted,
-                          weak_factory_.GetWeakPtr(), label));
+      base::BindOnce(&UserMediaProcessor::OnCreateNativeTracksCompleted,
+                     weak_factory_.GetWeakPtr(), label));
 }
 
 void UserMediaProcessor::CreateVideoTracks(

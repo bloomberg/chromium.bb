@@ -116,8 +116,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
     device.input.set_effects(effects);
 
     return std::make_unique<ProcessedLocalAudioSource>(
-        -1, device, disable_local_echo, properties,
-        blink::WebPlatformMediaStreamSource::ConstraintsCallback(),
+        -1, device, disable_local_echo, properties, base::NullCallback(),
         &pc_factory_, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 

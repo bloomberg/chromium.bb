@@ -26,8 +26,8 @@ WebRtcAudioSink::WebRtcAudioSink(
                                              std::move(track_source),
                                              std::move(signaling_task_runner),
                                              std::move(main_task_runner))),
-      fifo_(base::Bind(&WebRtcAudioSink::DeliverRebufferedAudio,
-                       base::Unretained(this))) {
+      fifo_(base::BindRepeating(&WebRtcAudioSink::DeliverRebufferedAudio,
+                                base::Unretained(this))) {
   DVLOG(1) << "WebRtcAudioSink::WebRtcAudioSink()";
 }
 

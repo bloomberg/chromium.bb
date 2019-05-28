@@ -106,9 +106,7 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
                                      "mock_audio_device_id",
                                      "Mock audio device", kSampleRate,
                                      kChannelLayout, kRequestedBufferSize),
-            false /* disable_local_echo */, properties,
-            base::Bind(&ProcessedLocalAudioSourceTest::OnAudioSourceStarted,
-                       base::Unretained(this)),
+            false /* disable_local_echo */, properties, base::DoNothing(),
             &mock_dependency_factory_,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     source->SetAllowInvalidRenderFrameIdForTesting(true);
@@ -144,10 +142,6 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
   const blink::WebMediaStreamTrack& blink_audio_track() {
     return blink_audio_track_;
   }
-
-  void OnAudioSourceStarted(blink::WebPlatformMediaStreamSource* source,
-                            blink::MediaStreamRequestResult result,
-                            const blink::WebString& result_name) {}
 
  private:
   base::test::ScopedTaskEnvironment

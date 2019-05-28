@@ -67,20 +67,20 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
  protected:
   // Callback to get output device params (for tests).
   using OutputDeviceParamsCallback =
-      base::Callback<media::AudioParameters(int frame_id,
-                                            int session_id,
-                                            const std::string& device_id)>;
+      base::OnceCallback<media::AudioParameters(int frame_id,
+                                                int session_id,
+                                                const std::string& device_id)>;
 
   // Callback get render frame ID for current context (for tests).
-  using RenderFrameIdCallback = base::Callback<int()>;
+  using RenderFrameIdCallback = base::OnceCallback<int()>;
 
   RendererWebAudioDeviceImpl(media::ChannelLayout layout,
                              int channels,
                              const blink::WebAudioLatencyHint& latency_hint,
                              blink::WebAudioDevice::RenderCallback* callback,
                              int session_id,
-                             const OutputDeviceParamsCallback& device_params_cb,
-                             const RenderFrameIdCallback& render_frame_id_cb);
+                             OutputDeviceParamsCallback device_params_cb,
+                             RenderFrameIdCallback render_frame_id_cb);
 
  private:
   const scoped_refptr<base::SingleThreadTaskRunner>& GetMediaTaskRunner();

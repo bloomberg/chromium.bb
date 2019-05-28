@@ -39,19 +39,20 @@ const unsigned short kStartBitrate = 100;
 
 class EncodedImageCallbackWrapper : public webrtc::EncodedImageCallback {
  public:
-  using EncodedCallback =
-      base::Callback<void(const webrtc::EncodedImage& encoded_image,
-                          const webrtc::CodecSpecificInfo* codec_specific_info,
-                          const webrtc::RTPFragmentationHeader* fragmentation)>;
+  using EncodedCallback = base::OnceCallback<void(
+      const webrtc::EncodedImage& encoded_image,
+      const webrtc::CodecSpecificInfo* codec_specific_info,
+      const webrtc::RTPFragmentationHeader* fragmentation)>;
 
-  EncodedImageCallbackWrapper(const EncodedCallback& encoded_callback)
-      : encoded_callback_(encoded_callback) {}
+  EncodedImageCallbackWrapper(EncodedCallback encoded_callback)
+      : encoded_callback_(std::move(encoded_callback)) {}
 
   Result OnEncodedImage(
       const webrtc::EncodedImage& encoded_image,
       const webrtc::CodecSpecificInfo* codec_specific_info,
       const webrtc::RTPFragmentationHeader* fragmentation) override {
-    encoded_callback_.Run(encoded_image, codec_specific_info, fragmentation);
+    std::move(encoded_callback_)
+        .Run(encoded_image, codec_specific_info, fragmentation);
     return Result(Result::OK);
   }
 
@@ -140,8 +141,9 @@ class RTCVideoEncoderTest
   }
 
   void RegisterEncodeCompleteCallback(
-      const EncodedImageCallbackWrapper::EncodedCallback& callback) {
-    callback_wrapper_.reset(new EncodedImageCallbackWrapper(callback));
+      EncodedImageCallbackWrapper::EncodedCallback callback) {
+    callback_wrapper_ =
+        std::make_unique<EncodedImageCallbackWrapper>(std::move(callback));
     rtc_encoder_->RegisterEncodeCompleteCallback(callback_wrapper_.get());
   }
 
@@ -319,8 +321,8 @@ TEST_F(RTCVideoEncoderTest, PreserveTimestamps) {
   const uint32_t rtp_timestamp = 1234567;
   const uint32_t capture_time_ms = 3456789;
   RegisterEncodeCompleteCallback(
-      base::Bind(&RTCVideoEncoderTest::VerifyTimestamp, base::Unretained(this),
-                 rtp_timestamp, capture_time_ms));
+      base::BindOnce(&RTCVideoEncoderTest::VerifyTimestamp,
+                     base::Unretained(this), rtp_timestamp, capture_time_ms));
 
   EXPECT_CALL(*mock_vea_, Encode(_, _))
       .WillOnce(Invoke(this, &RTCVideoEncoderTest::ReturnFrameWithTimeStamp));

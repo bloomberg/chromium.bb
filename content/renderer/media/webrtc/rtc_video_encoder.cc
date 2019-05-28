@@ -696,8 +696,8 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
       return;
     }
   }
-  frame->AddDestructionObserver(media::BindToCurrentLoop(
-      base::Bind(&RTCVideoEncoder::Impl::EncodeFrameFinished, this, index)));
+  frame->AddDestructionObserver(media::BindToCurrentLoop(base::BindOnce(
+      &RTCVideoEncoder::Impl::EncodeFrameFinished, this, index)));
   if (!failed_timestamp_match_) {
     DCHECK(std::find_if(pending_timestamps_.begin(), pending_timestamps_.end(),
                         [&frame](const RTCTimestamps& entry) {

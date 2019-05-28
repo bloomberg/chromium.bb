@@ -51,8 +51,8 @@ class SharedAudioRenderer : public blink::WebMediaStreamAudioRenderer {
   // Callback definition for a callback that is called when when Play(), Pause()
   // or SetVolume are called (whenever the internal |playing_state_| changes).
   using OnPlayStateChanged =
-      base::Callback<void(const blink::WebMediaStream&,
-                          WebRtcAudioRenderer::PlayingState*)>;
+      base::RepeatingCallback<void(const blink::WebMediaStream&,
+                                   WebRtcAudioRenderer::PlayingState*)>;
 
   // Signals that the PlayingState* is about to become invalid, see comment in
   // OnPlayStateRemoved.
@@ -222,7 +222,7 @@ scoped_refptr<blink::WebMediaStreamAudioRenderer>
 WebRtcAudioRenderer::CreateSharedAudioRendererProxy(
     const blink::WebMediaStream& media_stream) {
   SharedAudioRenderer::OnPlayStateChanged on_play_state_changed =
-      base::Bind(&WebRtcAudioRenderer::OnPlayStateChanged, this);
+      base::BindRepeating(&WebRtcAudioRenderer::OnPlayStateChanged, this);
   SharedAudioRenderer::OnPlayStateRemoved on_play_state_removed =
       base::BindOnce(&WebRtcAudioRenderer::OnPlayStateRemoved, this);
   return new SharedAudioRenderer(this, media_stream,
@@ -430,10 +430,10 @@ int WebRtcAudioRenderer::Render(base::TimeDelta delay,
   if (prior_frames_skipped > 0) {
     const int source_frames_per_buffer = sink_params_.sample_rate() / 100;
     if (!audio_fifo_ && prior_frames_skipped != source_frames_per_buffer) {
-      audio_fifo_.reset(new media::AudioPullFifo(
+      audio_fifo_ = std::make_unique<media::AudioPullFifo>(
           kChannels, source_frames_per_buffer,
-          base::Bind(&WebRtcAudioRenderer::SourceCallback,
-                     base::Unretained(this))));
+          base::BindRepeating(&WebRtcAudioRenderer::SourceCallback,
+                              base::Unretained(this)));
     }
 
     std::unique_ptr<media::AudioBus> drop_bus =
@@ -683,10 +683,10 @@ void WebRtcAudioRenderer::PrepareSink() {
     if ((!audio_fifo_ && different_source_sink_frames) ||
         (audio_fifo_ &&
          audio_fifo_->SizeInFrames() != source_frames_per_buffer)) {
-      audio_fifo_.reset(new media::AudioPullFifo(
+      audio_fifo_ = std::make_unique<media::AudioPullFifo>(
           kChannels, source_frames_per_buffer,
-          base::Bind(&WebRtcAudioRenderer::SourceCallback,
-                     base::Unretained(this))));
+          base::BindRepeating(&WebRtcAudioRenderer::SourceCallback,
+                              base::Unretained(this)));
     }
     sink_params_ = new_sink_params;
   }

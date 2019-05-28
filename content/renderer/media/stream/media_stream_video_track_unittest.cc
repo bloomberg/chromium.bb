@@ -170,18 +170,16 @@ TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
 
 class CheckThreadHelper {
  public:
-  CheckThreadHelper(base::Closure callback, bool* correct)
-      : callback_(callback),
-        correct_(correct) {
-  }
+  CheckThreadHelper(base::OnceClosure callback, bool* correct)
+      : callback_(std::move(callback)), correct_(correct) {}
 
   ~CheckThreadHelper() {
     *correct_ = thread_checker_.CalledOnValidThread();
-    callback_.Run();
+    std::move(callback_).Run();
   }
 
  private:
-  base::Closure callback_;
+  base::OnceClosure callback_;
   bool* correct_;
   base::ThreadCheckerImpl thread_checker_;
 };
