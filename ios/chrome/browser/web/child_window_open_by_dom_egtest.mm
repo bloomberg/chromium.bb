@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-
 #include "base/strings/sys_string_conversions.h"
 #include "components/content_settings/core/common/content_settings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 
@@ -39,8 +38,21 @@ const char kWindow2Closed[] = "window2.closed: true";
 
 @implementation ChildWindowOpenByDOMTestCase
 
+#if defined(CHROME_EARL_GREY_2)
++ (void)setUpForTestCase {
+  [super setUpForTestCase];
+  [self setUpHelper];
+}
+#elif defined(CHROME_EARL_GREY_1)
 + (void)setUp {
   [super setUp];
+  [self setUpHelper];
+}
+#else
+#error Not an EarlGrey Test
+#endif
+
++ (void)setUpHelper {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW]);
   web::test::SetUpFileBasedHttpServer();

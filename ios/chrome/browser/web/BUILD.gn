@@ -317,6 +317,7 @@ source_set("unit_tests_internal") {
 
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
   sources = [
     "browsing_egtest.mm",
