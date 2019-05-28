@@ -26,6 +26,8 @@ blink_core_sources("script") {
     "ignore_destructive_write_count_incrementer.h",
     "import_map.cc",
     "import_map.h",
+    "js_module_script.cc",
+    "js_module_script.h",
     "layered_api.cc",
     "layered_api.h",
     "layered_api_module.h",

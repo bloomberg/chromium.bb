@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
+#include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
-#include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -87,7 +87,8 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
         script_state_->GetIsolate(), source_text.ToString(), url, url,
         ScriptFetchOptions(), TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
-    auto* module_script = ModuleScript::CreateForTest(this, module_record, url);
+    auto* module_script =
+        JSModuleScript::CreateForTest(this, module_record, url);
     auto result_request = dependency_module_requests_map_.insert(
         module_record, dependency_module_requests);
     EXPECT_TRUE(result_request.is_new_entry);

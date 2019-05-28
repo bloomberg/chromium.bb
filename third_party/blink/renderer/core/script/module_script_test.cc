@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
@@ -70,11 +71,11 @@ class ModuleScriptTest : public ::testing::Test {
     return builder.ToString();
   }
 
-  static ModuleScript* CreateModuleScript(
+  static JSModuleScript* CreateJSModuleScript(
       Modulator* modulator,
       const String& source_text,
       SingleCachedMetadataHandler* cache_handler) {
-    return ModuleScript::Create(
+    return JSModuleScript::Create(
         ParkableString(source_text.IsolatedCopy().ReleaseImpl()), cache_handler,
         ScriptSourceLocationType::kExternalFile, modulator,
         KURL("https://fox.url/script.js"), KURL("https://fox.url/"),
@@ -102,7 +103,7 @@ class ModuleScriptTest : public ::testing::Test {
 
   // Accessors for ModuleScript private members.
   static V8CodeCache::ProduceCacheOptions GetProduceCacheOptions(
-      const ModuleScript* module_script) {
+      const JSModuleScript* module_script) {
     return module_script->produce_cache_data_->GetProduceCacheOptions();
   }
 };
@@ -126,8 +127,8 @@ TEST_F(ModuleScriptTest, V8CodeCache) {
   // Tests the main code path: simply produce and consume code cache.
   for (int nth_load = 0; nth_load < 3; ++nth_load) {
     // Compile a module script.
-    ModuleScript* module_script =
-        CreateModuleScript(modulator, LargeSourceText(), cache_handler);
+    JSModuleScript* module_script =
+        CreateJSModuleScript(modulator, LargeSourceText(), cache_handler);
     ASSERT_TRUE(module_script);
 
     // Check that the module script is instantiated/evaluated correctly.

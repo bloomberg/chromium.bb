@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/script/import_map.h"
+#include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_pending_script.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -657,7 +658,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         const KURL& source_url = element_document.Url();
         Modulator* modulator = Modulator::From(
             ToScriptStateForMainWorld(context_document->GetFrame()));
-        ModuleScript* module_script = ModuleScript::Create(
+        ModuleScript* module_script = JSModuleScript::Create(
             ParkableString(element_->TextFromChildren().Impl()), nullptr,
             ScriptSourceLocationType::kInline, modulator, source_url, base_url,
             options, position);
