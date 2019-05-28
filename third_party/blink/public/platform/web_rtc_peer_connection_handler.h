@@ -65,6 +65,17 @@ struct WebRTCDataChannelInit;
 
 class WebRTCPeerConnectionHandler {
  public:
+  enum class IceConnectionStateVersion {
+    // Only applicable in Unified Plan when the JavaScript-exposed
+    // iceConnectionState is calculated in blink. In this case, kLegacy is used
+    // to report the webrtc::PeerConnectionInterface implementation which is not
+    // visible in JavaScript, but still useful to track for debugging purposes.
+    kLegacy,
+    // The JavaScript-visible iceConnectionState. In Plan B, this is the same as
+    // the webrtc::PeerConnectionInterface implementation.
+    kDefault,
+  };
+
   virtual ~WebRTCPeerConnectionHandler() = default;
 
   virtual bool Initialize(
@@ -149,6 +160,11 @@ class WebRTCPeerConnectionHandler {
   virtual void RunSynchronousRepeatingClosureOnSignalingThread(
       const base::RepeatingClosure& closure,
       const char* trace_event_name) = 0;
+
+  // Inform chrome://webrtc-internals/ that the iceConnectionState has changed.
+  virtual void TrackIceConnectionStateChange(
+      IceConnectionStateVersion version,
+      webrtc::PeerConnectionInterface::IceConnectionState state) = 0;
 };
 
 }  // namespace blink

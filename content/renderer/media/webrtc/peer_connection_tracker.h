@@ -169,8 +169,20 @@ class CONTENT_EXPORT PeerConnectionTracker
       RTCPeerConnectionHandler* pc_handler,
       webrtc::PeerConnectionInterface::SignalingState state);
 
-  // Sends an update when the Ice connection state
-  // of a PeerConnection has changed.
+  // Sends an update when the ICE connection state of a PeerConnection has
+  // changed. There's a legacy and non-legacy version. The non-legacy version
+  // reflects the blink::RTCPeerConnection::iceConnectionState.
+  //
+  // "Legacy" usage: In Unifed Plan, TrackLegacyIceConnectionStateChange() is
+  // used to report the webrtc::PeerConnection layer implementation of the
+  // state, which might not always be the same as the
+  // blink::RTCPeerConnection::iceConnectionState reported with
+  // TrackIceConnectionStateChange(). In Plan B, the webrtc::PeerConnection
+  // layer implementation is the only iceConnectionState version, and
+  // TrackLegacyIceConnectionStateChange() is not applicable.
+  virtual void TrackLegacyIceConnectionStateChange(
+      RTCPeerConnectionHandler* pc_handler,
+      webrtc::PeerConnectionInterface::IceConnectionState state);
   virtual void TrackIceConnectionStateChange(
       RTCPeerConnectionHandler* pc_handler,
       webrtc::PeerConnectionInterface::IceConnectionState state);

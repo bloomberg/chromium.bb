@@ -180,6 +180,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const base::RepeatingClosure& closure,
       const char* trace_event_name) override;
 
+  void TrackIceConnectionStateChange(
+      WebRTCPeerConnectionHandler::IceConnectionStateVersion version,
+      webrtc::PeerConnectionInterface::IceConnectionState state) override;
+
   // Delegate functions to allow for mocking of WebKit interfaces.
   // getStats takes ownership of request parameter.
   virtual void getStats(const scoped_refptr<LocalRTCStatsRequest>& request);

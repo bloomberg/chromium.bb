@@ -1193,7 +1193,13 @@ bool RTCPeerConnection::HasDocumentMedia() const {
 
 void RTCPeerConnection::UpdateIceConnectionState() {
   DCHECK_EQ(webrtc::SdpSemantics::kUnifiedPlan, sdp_semantics_);
-  ChangeIceConnectionState(ComputeIceConnectionState());
+  auto new_state = ComputeIceConnectionState();
+  if (ice_connection_state_ != new_state) {
+    peer_handler_->TrackIceConnectionStateChange(
+        WebRTCPeerConnectionHandler::IceConnectionStateVersion::kDefault,
+        new_state);
+  }
+  ChangeIceConnectionState(new_state);
 }
 
 void RTCPeerConnection::ReportSetSdpUsage(
@@ -2657,8 +2663,15 @@ void RTCPeerConnection::DidChangeIceConnectionState(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
-  // Unified plan relies on UpdateIceConnectionState instead.
-  if (sdp_semantics_ != webrtc::SdpSemantics::kUnifiedPlan) {
+  if (sdp_semantics_ == webrtc::SdpSemantics::kUnifiedPlan) {
+    // Unified plan relies on UpdateIceConnectionState() instead.
+    peer_handler_->TrackIceConnectionStateChange(
+        WebRTCPeerConnectionHandler::IceConnectionStateVersion::kLegacy,
+        new_state);
+  } else {
+    peer_handler_->TrackIceConnectionStateChange(
+        WebRTCPeerConnectionHandler::IceConnectionStateVersion::kDefault,
+        new_state);
     ChangeIceConnectionState(new_state);
   }
 }

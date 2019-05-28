@@ -393,6 +393,11 @@ void MockWebRTCPeerConnectionHandler::
     RunSynchronousRepeatingClosureOnSignalingThread(
         const base::RepeatingClosure& closure,
         const char* trace_event_name) {}
+
+void MockWebRTCPeerConnectionHandler::TrackIceConnectionStateChange(
+    WebRTCPeerConnectionHandler::IceConnectionStateVersion version,
+    webrtc::PeerConnectionInterface::IceConnectionState state) {}
+
 std::unique_ptr<WebRTCPeerConnectionHandler>
 TestingPlatformSupportWithWebRTC::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient*,
