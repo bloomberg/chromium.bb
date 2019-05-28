@@ -31,19 +31,10 @@ circumstances.
         currentImmersiveSession().addEventListener('select', onSelect, false);
       }
 
-      // TODO(https://crbug.com/961774): On some Windows machines, a phantom
-      // gamepad shows up in the navigator.getGamepads() array once a WebXR
-      // gamepad sends any input. Until that's fixed, filter out such devices
-      // when checking if the number of gamepads on the navigator array matches
-      // expectations.
-      function isPhantomGamepad(gamepad) {
-        return gamepad.id == "Unknown Gamepad (Vendor: 0000 Product: 0000)";
-      }
-
       function navigatorGamepadCount() {
         let numGamepads = 0;
         for (gamepad of navigator.getGamepads()) {
-          if ((gamepad !== null) && !isPhantomGamepad(gamepad)) {
+          if (gamepad !== null) {
             numGamepads++;
           }
         }
