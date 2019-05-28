@@ -468,10 +468,20 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
 
   // We need to force an online signin if the user is marked as requiring it or
   // if there's an invalid OAUTH token that needs to be refreshed.
-  return user->force_online_signin() ||
-         (has_gaia_account &&
-          (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID ||
-           token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN));
+  if (user->force_online_signin()) {
+    VLOG(1) << "Online login forced by user flag";
+    return true;
+  }
+
+  if (has_gaia_account &&
+      (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID ||
+       token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN)) {
+    VLOG(1) << "Online login forced due to invalid OAuth2 token status: "
+            << token_status;
+    return true;
+  }
+
+  return false;
 }
 
 // static
