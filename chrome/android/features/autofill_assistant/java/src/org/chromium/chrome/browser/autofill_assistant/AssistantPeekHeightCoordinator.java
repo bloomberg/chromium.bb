@@ -172,16 +172,12 @@ class AssistantPeekHeightCoordinator {
                 break;
             case PeekMode.HANDLE_HEADER_CAROUSELS:
                 mToolbarPaddingBottom = mHeaderHeight + mProgressBarHeight;
-                if (mActionsHeight > 0 || mSuggestionsHeight > 0) {
-                    mToolbarPaddingBottom += mChildrenVerticalSpacing;
-                }
-
                 if (mSuggestionsHeight > 0) {
                     mToolbarPaddingBottom += mSuggestionsHeight + mChildrenVerticalSpacing;
                 }
 
                 if (mActionsHeight > 0) {
-                    mToolbarPaddingBottom += mActionsHeight + mChildrenVerticalSpacing;
+                    mToolbarPaddingBottom += mActionsHeight;
                 }
 
                 // We decrease the artificial padding we add to the toolbar by 1 pixel to make sure
