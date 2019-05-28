@@ -59,7 +59,7 @@ class TestWindowTreeHostObserver : public aura::WindowTreeHostObserver {
     should_change_bounds_in_on_resized_ = false;
     gfx::Rect bounds = platform_window_->GetBounds();
     bounds.set_x(bounds.x() + 1);
-    host_->SetBoundsInPixels(bounds, viz::LocalSurfaceIdAllocation());
+    host_->SetBoundsInPixels(bounds);
   }
   void OnHostWillProcessBoundsChange(WindowTreeHost* host) override {
     ++on_host_will_process_bounds_change_count_;
@@ -87,8 +87,7 @@ TEST_F(WindowTreeHostPlatformTest, HostWillProcessBoundsChangeRecursion) {
   // WindowTreePlatform::OnBoundsChanged(). In such a scenario the observer
   // should be notified only once (see comment in
   // WindowTreeHostPlatform::OnBoundsChanged() for details).
-  host.SetBoundsInPixels(gfx::Rect(1, 2, 3, 4),
-                         viz::LocalSurfaceIdAllocation());
+  host.SetBoundsInPixels(gfx::Rect(1, 2, 3, 4));
   EXPECT_EQ(1, observer.on_host_did_process_bounds_change_count());
   EXPECT_EQ(1, observer.on_host_will_process_bounds_change_count());
 }

@@ -55,9 +55,7 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   gfx::Rect GetTransformedRootWindowBoundsInPixels(
       const gfx::Size& host_size_in_pixels) const override;
   void OnCursorVisibilityChangedNative(bool show) override;
-  void SetBoundsInPixels(const gfx::Rect& bounds,
-                         const viz::LocalSurfaceIdAllocation&
-                             local_surface_id_allocation) override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
   void DispatchEvent(ui::Event* event) override;
 
  private:

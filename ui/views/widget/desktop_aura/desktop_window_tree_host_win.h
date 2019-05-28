@@ -132,10 +132,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void ShowImpl() override;
   void HideImpl() override;
   gfx::Rect GetBoundsInPixels() const override;
-  void SetBoundsInPixels(
-      const gfx::Rect& bounds,
-      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
-          viz::LocalSurfaceIdAllocation()) override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Point GetLocationOnScreenInPixels() const override;
   void SetCapture() override;
   void ReleaseCapture() override;

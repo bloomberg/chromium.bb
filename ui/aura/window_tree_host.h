@@ -18,7 +18,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "components/viz/common/surfaces/local_surface_id.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
@@ -201,12 +200,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // the old bounds, because SetBoundsInPixels() can take effect asynchronously,
   // depending on the platform. The |local_surface_id| takes effect when (and
   // if) the new size is confirmed (potentially asynchronously) by the platform.
-  // If |local_surface_id| is invalid, then a new LocalSurfaceId is allocated
-  // when the size change takes effect.
-  virtual void SetBoundsInPixels(
-      const gfx::Rect& bounds_in_pixels,
-      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
-          viz::LocalSurfaceIdAllocation()) = 0;
+  virtual void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) = 0;
   virtual gfx::Rect GetBoundsInPixels() const = 0;
 
   // Sets the OS capture to the root window.
@@ -278,10 +272,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual gfx::Point GetLocationOnScreenInPixels() const = 0;
 
   void OnHostMovedInPixels(const gfx::Point& new_location_in_pixels);
-  void OnHostResizedInPixels(
-      const gfx::Size& new_size_in_pixels,
-      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
-          viz::LocalSurfaceIdAllocation());
+  void OnHostResizedInPixels(const gfx::Size& new_size_in_pixels);
   void OnHostWorkspaceChanged();
   void OnHostDisplayChanged();
   void OnHostCloseRequested();

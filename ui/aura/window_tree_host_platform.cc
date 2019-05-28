@@ -119,11 +119,8 @@ gfx::Rect WindowTreeHostPlatform::GetBoundsInPixels() const {
   return platform_window_ ? platform_window_->GetBounds() : gfx::Rect();
 }
 
-void WindowTreeHostPlatform::SetBoundsInPixels(
-    const gfx::Rect& bounds,
-    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+void WindowTreeHostPlatform::SetBoundsInPixels(const gfx::Rect& bounds) {
   pending_size_ = bounds.size();
-  pending_local_surface_id_allocation_ = local_surface_id_allocation;
   platform_window_->SetBounds(bounds);
 }
 
@@ -211,16 +208,10 @@ void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
   bounds_in_pixels_ = new_bounds;
   if (bounds_in_pixels_.origin() != old_bounds.origin())
     OnHostMovedInPixels(bounds_in_pixels_.origin());
-  if (pending_local_surface_id_allocation_.IsValid() ||
-      bounds_in_pixels_.size() != old_bounds.size() ||
+  if (bounds_in_pixels_.size() != old_bounds.size() ||
       current_scale != new_scale) {
-    viz::LocalSurfaceIdAllocation local_surface_id_allocation;
-    if (bounds_in_pixels_.size() == pending_size_)
-      local_surface_id_allocation = pending_local_surface_id_allocation_;
-    pending_local_surface_id_allocation_ = viz::LocalSurfaceIdAllocation();
     pending_size_ = gfx::Size();
-    OnHostResizedInPixels(bounds_in_pixels_.size(),
-                          local_surface_id_allocation);
+    OnHostResizedInPixels(bounds_in_pixels_.size());
   }
   DCHECK_GT(on_bounds_changed_recursion_depth_, 0);
   if (--on_bounds_changed_recursion_depth_ == 0) {

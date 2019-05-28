@@ -441,25 +441,17 @@ void WindowTreeHost::OnHostMovedInPixels(
 }
 
 void WindowTreeHost::OnHostResizedInPixels(
-    const gfx::Size& new_size_in_pixels,
-    const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation) {
-  // TODO(jonross) Unify all OnHostResizedInPixels to have both
-  // viz::LocalSurfaceId and allocation time as optional parameters.
+    const gfx::Size& new_size_in_pixels) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   device_scale_factor_ = display.device_scale_factor();
   UpdateRootWindowSizeInPixels();
 
   // Allocate a new LocalSurfaceId for the new state.
-  viz::LocalSurfaceIdAllocation local_surface_id_allocation(
-      new_local_surface_id_allocation);
-  if (!new_local_surface_id_allocation.IsValid()) {
-    window_->AllocateLocalSurfaceId();
-    local_surface_id_allocation = window_->GetLocalSurfaceIdAllocation();
-  }
+  window_->AllocateLocalSurfaceId();
   ScopedLocalSurfaceIdValidator lsi_validator(window());
   compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
-                               local_surface_id_allocation);
+                               window_->GetLocalSurfaceIdAllocation());
 
   for (WindowTreeHostObserver& observer : observers_)
     observer.OnHostResized(this);

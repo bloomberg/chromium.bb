@@ -63,8 +63,7 @@ void HeadlessBrowserImpl::PlatformSetWebContentsBounds(
   gfx::Rect new_host_bounds(
       0, 0, std::max(old_host_bounds.width(), bounds.x() + bounds.width()),
       std::max(old_host_bounds.height(), bounds.y() + bounds.height()));
-  web_contents->window_tree_host()->SetBoundsInPixels(
-      new_host_bounds, viz::LocalSurfaceIdAllocation());
+  web_contents->window_tree_host()->SetBoundsInPixels(new_host_bounds);
   web_contents->window_tree_host()->window()->SetBounds(new_host_bounds);
 
   gfx::NativeView native_view = web_contents->web_contents()->GetNativeView();

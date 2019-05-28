@@ -1240,13 +1240,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetBoundsInPixels() const {
 }
 
 void DesktopWindowTreeHostX11::SetBoundsInPixels(
-    const gfx::Rect& requested_bounds_in_pixel,
-    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
-  // On desktop-x11, the callers of SetBoundsInPixels() shouldn't need to (or be
-  // able to) allocate LocalSurfaceId for the compositor. Aura itself should
-  // allocate the new ids as needed, instead.
-  DCHECK(!local_surface_id_allocation.IsValid());
-
+    const gfx::Rect& requested_bounds_in_pixel) {
   gfx::Rect bounds_in_pixels(requested_bounds_in_pixel.origin(),
                              AdjustSize(requested_bounds_in_pixel.size()));
   bool origin_changed = bounds_in_pixels_.origin() != bounds_in_pixels.origin();
@@ -1298,7 +1292,7 @@ void DesktopWindowTreeHostX11::SetBoundsInPixels(
   if (origin_changed)
     native_widget_delegate_->AsWidget()->OnNativeWidgetMove();
   if (size_changed) {
-    OnHostResizedInPixels(bounds_in_pixels.size(), local_surface_id_allocation);
+    OnHostResizedInPixels(bounds_in_pixels.size());
     ResetWindowRegion();
   }
 }
