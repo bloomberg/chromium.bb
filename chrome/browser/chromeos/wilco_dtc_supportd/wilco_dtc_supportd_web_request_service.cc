@@ -14,6 +14,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -203,6 +204,13 @@ void WilcoDtcSupportdWebRequestService::MaybeStartNextRequest() {
   active_request_ = std::move(request_queue_.front());
   request_queue_.pop();
 
+  // Do not override a Content-Type header if |request_body| is not empty.
+  std::string content_type;
+  if (!active_request_->request_body.empty() &&
+      !active_request_->request->headers.GetHeader(
+          net::HttpRequestHeaders::kContentType, &content_type)) {
+    content_type = "text/plain";
+  }
   url_loader_ = network::SimpleURLLoader::Create(
       std::move(active_request_->request), traffic_annotation);
   // Allows non-empty response body in case of HTTP errors.
@@ -210,7 +218,7 @@ void WilcoDtcSupportdWebRequestService::MaybeStartNextRequest() {
 
   if (!active_request_->request_body.empty()) {
     url_loader_->AttachStringForUpload(active_request_->request_body,
-                                       "text/plain");
+                                       content_type);
   }
   // Do not retry.
   url_loader_->SetRetryOptions(0, network::SimpleURLLoader::RETRY_NEVER);
