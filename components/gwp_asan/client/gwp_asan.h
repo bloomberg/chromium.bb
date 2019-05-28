@@ -24,10 +24,14 @@ struct AllocatorSettings {
 // Enable GWP-ASan for the current process for the given allocator. This should
 // only be called once per process. This can not be disabled once it has been
 // enabled. The |boost_sampling| parameter is used to indicate if the caller
-// wants to increase the sampling for this process.
+// wants to increase the sampling for this process. The |process_type| parameter
+// should be equal to the string passed to --type=, it is used for reporting
+// metrics broken out per-process.
 
-GWP_ASAN_EXPORT void EnableForMalloc(bool boost_sampling);
-GWP_ASAN_EXPORT void EnableForPartitionAlloc(bool boost_sampling);
+GWP_ASAN_EXPORT void EnableForMalloc(bool boost_sampling,
+                                     const char* process_type);
+GWP_ASAN_EXPORT void EnableForPartitionAlloc(bool boost_sampling,
+                                             const char* process_type);
 
 }  // namespace gwp_asan
 

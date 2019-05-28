@@ -5,9 +5,9 @@
 #include "components/gwp_asan/client/sampling_malloc_shims.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/allocator/allocator_shim.h"
-#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -252,10 +252,11 @@ GWP_ASAN_EXPORT GuardedPageAllocator& GetMallocGpaForTesting() {
 void InstallMallocHooks(size_t max_allocated_pages,
                         size_t num_metadata,
                         size_t total_pages,
-                        size_t sampling_frequency) {
+                        size_t sampling_frequency,
+                        GuardedPageAllocator::OutOfMemoryCallback callback) {
   static crash_reporter::CrashKeyString<24> malloc_crash_key(kMallocCrashKey);
   gpa = new GuardedPageAllocator();
-  gpa->Init(max_allocated_pages, num_metadata, total_pages, base::DoNothing(),
+  gpa->Init(max_allocated_pages, num_metadata, total_pages, std::move(callback),
             false);
   malloc_crash_key.Set(gpa->GetCrashKey());
   sampling_state.Init(sampling_frequency);

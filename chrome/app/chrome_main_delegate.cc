@@ -574,7 +574,8 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
     bool is_browser_process = process_type.empty();
-    gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process);
+    gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,
+                              process_type.c_str());
   }
 #endif
 
@@ -583,7 +584,11 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
     version_info::Channel channel = chrome::GetChannel();
     bool is_canary_dev = (channel == version_info::Channel::CANARY ||
                           channel == version_info::Channel::DEV);
-    gwp_asan::EnableForPartitionAlloc(is_canary_dev);
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+    std::string process_type =
+        command_line.GetSwitchValueASCII(switches::kProcessType);
+    gwp_asan::EnableForPartitionAlloc(is_canary_dev, process_type.c_str());
   }
 #endif
 }

@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
+#include "components/gwp_asan/client/sampling_helpers.h"
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include "components/gwp_asan/client/sampling_malloc_shims.h"
@@ -178,7 +179,7 @@ GWP_ASAN_EXPORT base::Optional<AllocatorSettings> GetAllocatorSettings(
 
 }  // namespace internal
 
-void EnableForMalloc(bool boost_sampling) {
+void EnableForMalloc(bool boost_sampling, const char* process_type) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   static bool init_once = [&]() -> bool {
     auto settings = internal::GetAllocatorSettings(internal::kGwpAsanMalloc,
@@ -186,9 +187,11 @@ void EnableForMalloc(bool boost_sampling) {
     if (!settings)
       return false;
 
-    internal::InstallMallocHooks(settings->max_allocated_pages,
-                                 settings->num_metadata, settings->total_pages,
-                                 settings->sampling_frequency);
+    internal::InstallMallocHooks(
+        settings->max_allocated_pages, settings->num_metadata,
+        settings->total_pages, settings->sampling_frequency,
+        internal::CreateOomCallback("Malloc", process_type,
+                                    settings->sampling_frequency));
     return true;
   }();
   ignore_result(init_once);
@@ -198,7 +201,7 @@ void EnableForMalloc(bool boost_sampling) {
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 }
 
-void EnableForPartitionAlloc(bool boost_sampling) {
+void EnableForPartitionAlloc(bool boost_sampling, const char* process_type) {
 #if BUILDFLAG(USE_PARTITION_ALLOC)
   static bool init_once = [&]() -> bool {
     auto settings = internal::GetAllocatorSettings(
@@ -208,7 +211,9 @@ void EnableForPartitionAlloc(bool boost_sampling) {
 
     internal::InstallPartitionAllocHooks(
         settings->max_allocated_pages, settings->num_metadata,
-        settings->total_pages, settings->sampling_frequency);
+        settings->total_pages, settings->sampling_frequency,
+        internal::CreateOomCallback("PartitionAlloc", process_type,
+                                    settings->sampling_frequency));
     return true;
   }();
   ignore_result(init_once);

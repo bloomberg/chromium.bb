@@ -5,9 +5,9 @@
 #include "components/gwp_asan/client/sampling_partitionalloc_shims.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/partition_alloc_buildflags.h"
 #include "components/crash/core/common/crash_key.h"
@@ -67,14 +67,16 @@ GWP_ASAN_EXPORT GuardedPageAllocator& GetPartitionAllocGpaForTesting() {
   return *gpa;
 }
 
-void InstallPartitionAllocHooks(size_t max_allocated_pages,
-                                size_t num_metadata,
-                                size_t total_pages,
-                                size_t sampling_frequency) {
+void InstallPartitionAllocHooks(
+    size_t max_allocated_pages,
+    size_t num_metadata,
+    size_t total_pages,
+    size_t sampling_frequency,
+    GuardedPageAllocator::OutOfMemoryCallback callback) {
   static crash_reporter::CrashKeyString<24> pa_crash_key(
       kPartitionAllocCrashKey);
   gpa = new GuardedPageAllocator();
-  gpa->Init(max_allocated_pages, num_metadata, total_pages, base::DoNothing(),
+  gpa->Init(max_allocated_pages, num_metadata, total_pages, std::move(callback),
             true);
   pa_crash_key.Set(gpa->GetCrashKey());
   sampling_state.Init(sampling_frequency);

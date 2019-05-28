@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/bind_helpers.h"
 #include "base/partition_alloc_buildflags.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
@@ -53,9 +54,9 @@ class SamplingPartitionAllocShimsTest : public base::MultiProcessTest {
  public:
   static void multiprocessTestSetup() {
     crash_reporter::InitializeCrashKeys();
-    InstallPartitionAllocHooks(AllocatorState::kMaxMetadata,
-                               AllocatorState::kMaxMetadata,
-                               AllocatorState::kMaxSlots, kSamplingFrequency);
+    InstallPartitionAllocHooks(
+        AllocatorState::kMaxMetadata, AllocatorState::kMaxMetadata,
+        AllocatorState::kMaxSlots, kSamplingFrequency, base::DoNothing());
   }
 
  protected:
