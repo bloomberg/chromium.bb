@@ -60,7 +60,7 @@ class XRFrameProvider final
   void ScheduleNonImmersiveFrame(
       device::mojom::blink::XRFrameDataRequestOptionsPtr options);
 
-  void OnPresentationProviderConnectionError();
+  void OnProviderConnectionError();
   void ProcessScheduledFrame(device::mojom::blink::XRFrameDataPtr frame_data,
                              double high_res_now_ms);
 

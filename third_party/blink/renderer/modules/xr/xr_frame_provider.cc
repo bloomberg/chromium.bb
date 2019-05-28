@@ -106,12 +106,13 @@ void XRFrameProvider::BeginImmersiveSession(
   immersive_session_ = session;
 
   immersive_data_provider_.Bind(std::move(session_ptr->data_provider));
+  immersive_data_provider_.set_connection_error_handler(WTF::Bind(
+      &XRFrameProvider::OnProviderConnectionError, WrapWeakPersistent(this)));
 
   presentation_provider_.Bind(
       std::move(session_ptr->submit_frame_sink->provider));
-  presentation_provider_.set_connection_error_handler(
-      WTF::Bind(&XRFrameProvider::OnPresentationProviderConnectionError,
-                WrapWeakPersistent(this)));
+  presentation_provider_.set_connection_error_handler(WTF::Bind(
+      &XRFrameProvider::OnProviderConnectionError, WrapWeakPersistent(this)));
 
   frame_transport_->BindSubmitFrameClient(
       std::move(session_ptr->submit_frame_sink->client_request));
@@ -135,7 +136,9 @@ void XRFrameProvider::OnFocusChanged() {
   last_has_focus_ = focus;
 }
 
-void XRFrameProvider::OnPresentationProviderConnectionError() {
+// Ends the immersive session when the presentation or immersive data provider
+// got disconnected.
+void XRFrameProvider::OnProviderConnectionError() {
   presentation_provider_.reset();
   immersive_data_provider_.reset();
   if (vsync_connection_failed_)
@@ -235,8 +238,8 @@ void XRFrameProvider::ScheduleNonImmersiveFrame(
   // If we have a Magic Window provider, request frame data and flag that
   // we're waiting for it.  If not, clear any pose data, so that
   // ProcessScheduledFrame handles it appropriately.
-  if (xr_->xrMagicWindowProviderPtr()) {
-    xr_->xrMagicWindowProviderPtr()->GetFrameData(
+  if (xr_->CanRequestNonImmersiveFrameData()) {
+    xr_->GetNonImmersiveFrameData(
         std::move(options), WTF::Bind(&XRFrameProvider::OnNonImmersiveFrameData,
                                       WrapWeakPersistent(this)));
   } else {

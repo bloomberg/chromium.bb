@@ -42,10 +42,11 @@ class XR final : public EventTargetWithInlineData,
 
   XRFrameProvider* frameProvider();
 
-  const device::mojom::blink::XRFrameDataProviderPtr& xrMagicWindowProviderPtr()
-      const {
-    return magic_window_provider_;
-  }
+  bool CanRequestNonImmersiveFrameData() const;
+  void GetNonImmersiveFrameData(
+      device::mojom::blink::XRFrameDataRequestOptionsPtr,
+      device::mojom::blink::XRFrameDataProvider::GetFrameDataCallback);
+
   const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
   xrEnvironmentProviderPtr();
 
@@ -118,6 +119,7 @@ class XR final : public EventTargetWithInlineData,
 
   void OnDeviceDisconnect();
   void OnEnvironmentProviderDisconnect();
+  void OnMagicWindowProviderDisconnect();
 
   bool pending_device_ = false;
 

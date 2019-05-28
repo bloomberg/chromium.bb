@@ -138,6 +138,17 @@ XRFrameProvider* XR::frameProvider() {
   return frame_provider_;
 }
 
+bool XR::CanRequestNonImmersiveFrameData() const {
+  return !!magic_window_provider_;
+}
+
+void XR::GetNonImmersiveFrameData(
+    device::mojom::blink::XRFrameDataRequestOptionsPtr options,
+    device::mojom::blink::XRFrameDataProvider::GetFrameDataCallback callback) {
+  DCHECK(CanRequestNonImmersiveFrameData());
+  magic_window_provider_->GetFrameData(std::move(options), std::move(callback));
+}
+
 const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
 XR::xrEnvironmentProviderPtr() {
   return environment_provider_;
@@ -492,6 +503,8 @@ void XR::OnRequestSessionReturned(
     }
   } else {
     magic_window_provider_.Bind(std::move(session_ptr->data_provider));
+    magic_window_provider_.set_connection_error_handler(WTF::Bind(
+        &XR::OnMagicWindowProviderDisconnect, WrapWeakPersistent(this)));
   }
 
   query->resolver->Resolve(session);
@@ -607,6 +620,17 @@ void XR::OnEnvironmentProviderDisconnect() {
 
   environment_provider_error_callbacks_.clear();
   environment_provider_.reset();
+}
+
+// Ends all non-immersive sessions when the magic window provider got
+// disconnected.
+void XR::OnMagicWindowProviderDisconnect() {
+  for (auto& session : sessions_) {
+    if (!session->immersive() && !session->ended()) {
+      session->ForceEnd();
+    }
+  }
+  magic_window_provider_.reset();
 }
 
 void XR::Trace(blink::Visitor* visitor) {
