@@ -26,10 +26,14 @@
 #include "chrome/common/pref_names.h"
 
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -122,6 +126,7 @@ const char kOverview[] = "overview";
 const char kAccountManagedInfo[] = "accountManagedInfo";
 const char kSetup[] = "setup";
 const char kData[] = "data";
+const char kCustomerLogo[] = "customerLogo";
 
 namespace {
 
@@ -483,7 +488,7 @@ void ManagementUIHandler::AddExtensionReportingInfo(
 }
 
 base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
-    Profile* profile) const {
+    Profile* profile) {
   base::DictionaryValue response;
 #if defined(OS_CHROMEOS)
   std::string management_domain = GetDeviceDomain();
@@ -549,6 +554,9 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
   }
   response.SetBoolean("managed", managed_());
   GetManagementStatus(profile, &response);
+  AsyncUpdateLogo();
+  if (!fetched_image_.empty())
+    response.SetKey(kCustomerLogo, base::Value(fetched_image_));
   return response;
 }
 
@@ -565,6 +573,57 @@ const extensions::Extension* ManagementUIHandler::GetEnabledExtension(
                          extensions::ExtensionRegistry::ENABLED);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+void ManagementUIHandler::AsyncUpdateLogo() {
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  const auto url = connector->GetCustomerLogoURL();
+  if (!url.empty() && GURL(url) != logo_url_) {
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("management_ui_customer_logo", R"(
+          semantics {
+            sender: "Management UI Handler"
+            description:
+              "Download organization logo for visualization on the "
+              "chrome://management page."
+            trigger:
+              "The user managed by organization that provides a company logo "
+              "in their GSuites account loads the chrome://management page."
+            data:
+              "Organization uploaded image URL."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: NO
+            setting:
+              "This feature cannot be disabled by settings, but it is only "
+              "triggered by a user action."
+            policy_exception_justification: "Not implemented."
+          })");
+    icon_fetcher_ =
+        std::make_unique<BitmapFetcher>(GURL(url), this, traffic_annotation);
+    icon_fetcher_->Init(
+        std::string(), net::URLRequest::NEVER_CLEAR_REFERRER,
+        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
+    auto* profile = Profile::FromWebUI(web_ui());
+    icon_fetcher_->Start(
+        content::BrowserContext::GetDefaultStoragePartition(profile)
+            ->GetURLLoaderFactoryForBrowserProcess()
+            .get());
+  }
+#endif  // defined(OS_CHROMEOS)
+}
+
+void ManagementUIHandler::OnFetchComplete(const GURL& url,
+                                          const SkBitmap* bitmap) {
+  if (!bitmap)
+    return;
+  fetched_image_ = webui::GetBitmapDataUrl(*bitmap);
+  logo_url_ = url;
+  // Fire listener to reload managed data.
+  FireWebUIListener("managed_data_changed");
+}
 
 void AddStatusAccountManagedInfo(base::Value* status,
                                  const std::string& account_domain) {
@@ -668,7 +727,6 @@ void ManagementUIHandler::GetManagementStatus(Profile* profile,
                                   IDS_MANAGEMENT_DEVICE_NOT_MANAGED)));
     return;
   }
-
   std::string account_domain = GetAccountDomain(profile);
   auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
   auto* primary_profile =
@@ -799,7 +857,7 @@ void ManagementUIHandler::UpdateManagedState() {
 #endif  // defined(OS_CHROMEOS)
 
   if (managed_state_changed)
-    FireWebUIListener("managed_state_changed");
+    FireWebUIListener("managed_data_changed");
 }
 
 void ManagementUIHandler::OnPolicyUpdated(

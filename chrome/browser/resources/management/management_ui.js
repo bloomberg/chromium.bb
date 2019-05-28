@@ -46,6 +46,9 @@ Polymer({
     localTrustRoots_: String,
 
     /** @private */
+    customerLogo_: String,
+
+    /** @private */
     managementOverview_: String,
 
     /** @private {?management.ManagedInfo} */
@@ -84,7 +87,7 @@ Polymer({
         'browser-reporting-info-updated',
         reportingInfo => this.onBrowserReportingInfoReceived_(reportingInfo));
 
-    this.addWebUIListener('managed_state_changed', () => {
+    this.addWebUIListener('managed_data_changed', () => {
       this.updateManagedFields_();
     });
 
@@ -255,6 +258,7 @@ Polymer({
       this.subtitle_ = data.pageSubtitle;
       this.accountManagedInfo_ = data.accountManagedInfo;
       // <if expr="chromeos">
+      this.customerLogo_ = data.customerLogo;
       this.managementOverview_ = data.overview;
       this.deviceManagedInfo_ = data.deviceManagedInfo;
       // </if>

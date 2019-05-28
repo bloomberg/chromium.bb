@@ -46,6 +46,7 @@ management.ManagedInfo;
  *   pageSubtitle: string,
  *   managed: boolean,
  *   overview: string,
+ *   customerLogo: string,
  * }}
  */
 management.ManagedDataResponse;

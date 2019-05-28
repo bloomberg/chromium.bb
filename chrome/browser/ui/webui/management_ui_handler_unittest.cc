@@ -60,8 +60,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
     cloud_reporting_extension_exists_ = enable;
   }
 
-  base::DictionaryValue GetContextualManagedDataForTesting(
-      Profile* profile) const {
+  base::DictionaryValue GetContextualManagedDataForTesting(Profile* profile) {
     return GetContextualManagedData(profile);
   }
 
