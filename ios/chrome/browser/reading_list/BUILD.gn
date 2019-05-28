@@ -48,6 +48,7 @@ source_set("reading_list") {
     "//ios/chrome/common",
     "//ios/web",
     "//ios/web/public",
+    "//ios/web/public/security",
     "//net",
     "//ui/base",
     "//url",
