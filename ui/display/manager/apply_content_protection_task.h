@@ -36,6 +36,7 @@ class DISPLAY_MANAGER_EXPORT ApplyContentProtectionTask
  public:
   using ResponseCallback = base::OnceCallback<void(Status)>;
 
+  // The task disables protection on displays omitted from |requests|.
   ApplyContentProtectionTask(DisplayLayoutManager* layout_manager,
                              NativeDisplayDelegate* native_display_delegate,
                              DisplayConfigurator::ContentProtections requests,

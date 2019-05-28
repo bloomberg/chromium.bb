@@ -1004,12 +1004,83 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionAsync) {
   EXPECT_EQ(kTaskCount + 1, query_content_protection_call_count_);
   EXPECT_TRUE(query_content_protection_success_);
   EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, connection_mask_);
-  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, protection_mask_);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_NONE, protection_mask_);
 
   // Disabling protection should fail.
   EXPECT_EQ(GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_UNDESIRED),
             log_->GetActionsAndClear());
   EXPECT_EQ(HDCP_STATE_ENABLED, native_display_delegate_->hdcp_state());
+}
+
+TEST_F(DisplayConfiguratorTest, ContentProtectionRequestRetention) {
+  InitWithOutputs(&small_mode_, &big_mode_);
+
+  auto id = configurator_.RegisterContentProtectionClient();
+  EXPECT_TRUE(id);
+
+  native_display_delegate_->set_run_async(true);
+
+  // Enable protection on external display.
+  configurator_.ApplyContentProtection(
+      id, outputs_[1]->display_id(), CONTENT_PROTECTION_METHOD_HDCP,
+      base::BindOnce(&DisplayConfiguratorTest::ApplyContentProtectionCallback,
+                     base::Unretained(this)));
+
+  // Disable protection on internal display.
+  configurator_.ApplyContentProtection(
+      id, outputs_[0]->display_id(), CONTENT_PROTECTION_METHOD_NONE,
+      base::BindOnce(&DisplayConfiguratorTest::ApplyContentProtectionCallback,
+                     base::Unretained(this)));
+
+  EXPECT_EQ(0, apply_content_protection_call_count_);
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_UNDESIRED, native_display_delegate_->hdcp_state());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2, apply_content_protection_call_count_);
+  EXPECT_TRUE(apply_content_protection_success_);
+
+  // Protection on external display should be retained.
+  EXPECT_EQ(GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_DESIRED).c_str(),
+            log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_ENABLED, native_display_delegate_->hdcp_state());
+}
+
+TEST_F(DisplayConfiguratorTest, ContentProtectionClientRegistration) {
+  InitWithOutputs(&small_mode_, &big_mode_);
+
+  auto id = configurator_.RegisterContentProtectionClient();
+  EXPECT_TRUE(id);
+
+  native_display_delegate_->set_run_async(true);
+
+  configurator_.ApplyContentProtection(
+      id, outputs_[1]->display_id(), CONTENT_PROTECTION_METHOD_HDCP,
+      base::BindOnce(&DisplayConfiguratorTest::ApplyContentProtectionCallback,
+                     base::Unretained(this)));
+
+  configurator_.QueryContentProtection(
+      id, outputs_[1]->display_id(),
+      base::BindOnce(&DisplayConfiguratorTest::QueryContentProtectionCallback,
+                     base::Unretained(this)));
+
+  configurator_.UnregisterContentProtectionClient(id);
+
+  base::RunLoop().RunUntilIdle();
+
+  // Pending callbacks should not run if client was unregistered.
+  EXPECT_EQ(0, apply_content_protection_call_count_);
+  EXPECT_EQ(0, query_content_protection_call_count_);
+
+  // Unregistration should disable protection.
+  EXPECT_EQ(
+      JoinActions(
+          GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_DESIRED).c_str(),
+          GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_UNDESIRED).c_str(),
+          nullptr),
+      log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_UNDESIRED, native_display_delegate_->hdcp_state());
 }
 
 TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
