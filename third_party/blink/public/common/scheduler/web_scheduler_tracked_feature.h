@@ -44,7 +44,20 @@ enum class WebSchedulerTrackedFeature {
   // Recorded only for the main frame.
   kHasScriptableFramesInMultipleTabs = 18,
 
-  kMaxValue = kHasScriptableFramesInMultipleTabs
+  // Whether the page tried to request a permission regardless of the outcome.
+  // TODO(altimin): Track this more accurately depending on the data.
+  // See permission.mojom for more details.
+  kRequestedGeolocationPermission = 19,
+  kRequestedNotificationsPermission = 20,
+  kRequestedMIDIPermission = 21,
+  kRequestedAudioCapturePermission = 22,
+  kRequestedVideoCapturePermission = 23,
+  kRequestedSensorsPermission = 24,
+  // This covers all background-related permissions, including background sync,
+  // background fetch and others.
+  kRequestedBackgroundWorkPermission = 26,
+
+  kMaxValue = kRequestedBackgroundWorkPermission
 };
 
 }  // namespace scheduler
