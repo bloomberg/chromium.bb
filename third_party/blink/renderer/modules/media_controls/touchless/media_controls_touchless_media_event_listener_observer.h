@@ -17,6 +17,7 @@ class MediaControlsTouchlessMediaEventListenerObserver
   virtual void OnFocusIn() = 0;
   virtual void OnTimeUpdate() = 0;
   virtual void OnDurationChange() = 0;
+  virtual void OnSeeking() = 0;
   virtual void OnLoadingProgress() = 0;
   virtual void OnPlay() = 0;
   virtual void OnPause() = 0;

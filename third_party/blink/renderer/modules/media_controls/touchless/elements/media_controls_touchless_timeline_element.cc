@@ -34,6 +34,11 @@ void MediaControlsTouchlessTimelineElement::OnTimeUpdate() {
   UpdateBars();
 }
 
+void MediaControlsTouchlessTimelineElement::OnSeeking() {
+  current_time_ = MediaElement().currentTime();
+  UpdateBars();
+}
+
 void MediaControlsTouchlessTimelineElement::OnDurationChange() {
   duration_ = MediaElement().duration();
   UpdateBars();
