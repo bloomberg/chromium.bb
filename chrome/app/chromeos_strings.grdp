@@ -2168,14 +2168,11 @@
   </message>
 
   <!-- EOL Notification Strings -->
-  <message name="IDS_EOL_NOTIFICATION_DISPLAY_SOURCE" desc="Notification header title shown to inform the user that this device is no longer supported.">
-    End of support
-  </message>
   <message name="IDS_EOL_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that this device is no longer supported.">
-    This device is no longer supported
+    Final software update
   </message>
   <message name="IDS_EOL_NOTIFICATION_EOL" desc="Notification shown to inform the user that this device will no longer receive latest software updates.">
-    This device will no longer receive the latest software updates. Please consider upgrading.
+    This is the last automatic software and security update for this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. To get future updates, upgrade to a newer model.
   </message>
   <message name="IDS_EOL_DISMISS_BUTTON" desc="A button label shown in the notification for eol status change to dismiss the notification.">
     Don't remind me again

@@ -21,6 +21,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -148,15 +149,15 @@ void EolNotification::Update() {
       ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
           GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
-          GetStringUTF16(IDS_EOL_NOTIFICATION_EOL),
-          GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE),
-          GURL(kEolNotificationId),
+          l10n_util::GetStringFUTF16(IDS_EOL_NOTIFICATION_EOL,
+                                     ui::GetChromeOSDeviceName()),
+          base::string16() /* display_source */, GURL(kEolNotificationId),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
               kEolNotificationId),
           data, new EolNotificationDelegate(profile_),
           ash::kNotificationEndOfSupportIcon,
-          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
+          message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::TRANSIENT, *notification,
