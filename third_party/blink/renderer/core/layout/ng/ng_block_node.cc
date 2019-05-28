@@ -981,8 +981,24 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
         // The sizes should be in the containing block writing mode.
         std::swap(input.containing_block_content_block_size,
                   input.containing_block_content_inline_size);
+
+        // We cannot lay out without a definite containing block inline-size. We
+        // end up here if we're performing a measure pass (as part of resolving
+        // the intrinsic min/max inline-size of some ancestor, for instance).
+        // Legacy layout has a tendency of clamping negative sizes to 0 anyway,
+        // but this is missing when it comes to resolving percentage-based
+        // padding, for instance.
+        if (input.containing_block_content_inline_size == kIndefiniteSize) {
+          DCHECK(constraint_space.IsIntermediateLayout());
+          input.containing_block_content_inline_size = LayoutUnit();
+        }
       }
     }
+
+    // We need a definite containing block inline-size, or we'd be unable to
+    // resolve percentages.
+    DCHECK_GE(input.containing_block_content_inline_size, LayoutUnit());
+
     input.available_inline_size = constraint_space.AvailableSize().inline_size;
 
     if (constraint_space.IsFixedSizeInline())
