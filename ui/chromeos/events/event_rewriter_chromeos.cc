@@ -1513,13 +1513,13 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
     }
   }
 
-  ui::EventRewriterChromeOS::MutableKeyState incoming_without_command = *state;
-  incoming_without_command.flags &= ~ui::EF_COMMAND_DOWN;
-
   // Map certain action keys to the right VKey and modifier.
   RewriteWithKeyboardRemappings(kActionToActionKeys,
                                 base::size(kActionToActionKeys),
-                                incoming_without_command, state);
+                                *state, state);
+
+  ui::EventRewriterChromeOS::MutableKeyState incoming_without_command = *state;
+  incoming_without_command.flags &= ~ui::EF_COMMAND_DOWN;
 
   if ((state->key_code >= ui::VKEY_F1) && (state->key_code <= ui::VKEY_F12)) {
     // Incoming key code is a Fn key. Check if it needs to be mapped back to its
@@ -1539,6 +1539,12 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
                                            base::size(kActionToFnKeys),
                                            incoming_without_command, state);
     }
+
+    // At this point we know search_is_pressed == ForceTopRowAsFunctionKeys().
+    // If they're both true, they cancel each other. Thus we can clear the
+    // search-key modifier flag.
+    state->flags &= ~ui::EF_COMMAND_DOWN;
+
     return true;
   }
 

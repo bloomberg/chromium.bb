@@ -2337,13 +2337,13 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysLayout3) {
        {ui::VKEY_F2, ui::DomCode::F2, ui::EF_NONE, ui::DomKey::F2}},
       // Full Screen -> Full Screen, Search + Full Screen -> F3
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
         ui::DomKey::ZOOM_TOGGLE},
        {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
         ui::DomKey::ZOOM_TOGGLE}},
       {ui::ET_KEY_PRESSED,
-       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE,
-        ui::EF_COMMAND_DOWN, ui::DomKey::ZOOM_TOGGLE},
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_COMMAND_DOWN,
+        ui::DomKey::ZOOM_TOGGLE},
        {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3}},
       // Launch App 1 -> Launch App 1, Search + Launch App 1 -> F4
       {ui::ET_KEY_PRESSED,
@@ -2430,6 +2430,140 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysLayout3) {
        {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12,
         ui::EF_COMMAND_DOWN + ui::EF_CONTROL_DOWN, ui::DomKey::F12},
        {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}}};
+
+  for (const auto& test : tests)
+    CheckKeyTestCase(rewriter_, test);
+}
+
+TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardLayout3) {
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  rewriter_->KeyboardDeviceAddedForTesting(
+      kKeyboardDeviceId, "PC Keyboard",
+      ui::EventRewriterChromeOS::kKbdTopRowLayoutWilco);
+
+  // Enable preference treat-top-row-as-function-keys.
+  // That causes action keys to be mapped back to Fn keys, unless the search
+  // key is pressed.
+  BooleanPrefMember top_row_as_fn_key;
+  top_row_as_fn_key.Init(prefs::kLanguageSendFunctionKeys, prefs());
+  top_row_as_fn_key.SetValue(true);
+
+  KeyTestCase tests[] = {
+      // Back -> F1, Search + Back -> Back
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_BROWSER_BACK, ui::DomCode::BROWSER_BACK, ui::EF_NONE,
+        ui::DomKey::BROWSER_BACK},
+       {ui::VKEY_F1, ui::DomCode::F1, ui::EF_NONE, ui::DomKey::F1}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_BROWSER_BACK, ui::DomCode::BROWSER_BACK, ui::EF_COMMAND_DOWN,
+        ui::DomKey::BROWSER_BACK},
+       {ui::VKEY_BROWSER_BACK, ui::DomCode::BROWSER_BACK, ui::EF_NONE,
+        ui::DomKey::BROWSER_BACK}},
+      // Refresh -> F2, Search + Refresh -> Refresh
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_BROWSER_REFRESH, ui::DomCode::BROWSER_REFRESH, ui::EF_NONE,
+        ui::DomKey::BROWSER_REFRESH},
+       {ui::VKEY_F2, ui::DomCode::F2, ui::EF_NONE, ui::DomKey::F2}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_BROWSER_REFRESH, ui::DomCode::BROWSER_REFRESH,
+        ui::EF_COMMAND_DOWN, ui::DomKey::BROWSER_REFRESH},
+       {ui::VKEY_BROWSER_REFRESH, ui::DomCode::BROWSER_REFRESH, ui::EF_NONE,
+        ui::DomKey::BROWSER_REFRESH}},
+      // Full Screen -> F3, Search + Full Screen -> Full Screen
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+        ui::DomKey::ZOOM_TOGGLE},
+       {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_ZOOM, ui::DomCode::ZOOM_TOGGLE, ui::EF_COMMAND_DOWN,
+        ui::DomKey::ZOOM_TOGGLE},
+       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+        ui::DomKey::ZOOM_TOGGLE}},
+      // Launch App 1 -> F4, Search + Launch App 1 -> Launch App 1
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_MEDIA_LAUNCH_APP1, ui::DomCode::F4, ui::EF_NONE,
+        ui::DomKey::F4},
+       {ui::VKEY_F4, ui::DomCode::F4, ui::EF_NONE, ui::DomKey::F4}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_MEDIA_LAUNCH_APP1, ui::DomCode::F4, ui::EF_COMMAND_DOWN,
+        ui::DomKey::F4},
+       {ui::VKEY_MEDIA_LAUNCH_APP1, ui::DomCode::F4, ui::EF_NONE,
+        ui::DomKey::F4}},
+      // Brightness down -> F5, Search Brightness Down -> Brightness Down
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_BRIGHTNESS_DOWN, ui::DomCode::BRIGHTNESS_DOWN, ui::EF_NONE,
+        ui::DomKey::BRIGHTNESS_DOWN},
+       {ui::VKEY_F5, ui::DomCode::F5, ui::EF_NONE, ui::DomKey::F5}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_BRIGHTNESS_DOWN, ui::DomCode::BRIGHTNESS_DOWN,
+        ui::EF_COMMAND_DOWN, ui::DomKey::BRIGHTNESS_DOWN},
+       {ui::VKEY_BRIGHTNESS_DOWN, ui::DomCode::BRIGHTNESS_DOWN, ui::EF_NONE,
+        ui::DomKey::BRIGHTNESS_DOWN}},
+      // Brightness up -> F6, Search + Brightness Up -> Brightness Up
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_BRIGHTNESS_UP, ui::DomCode::BRIGHTNESS_UP, ui::EF_NONE,
+        ui::DomKey::BRIGHTNESS_UP},
+       {ui::VKEY_F6, ui::DomCode::F6, ui::EF_NONE, ui::DomKey::F6}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_BRIGHTNESS_UP, ui::DomCode::BRIGHTNESS_UP, ui::EF_COMMAND_DOWN,
+        ui::DomKey::BRIGHTNESS_UP},
+       {ui::VKEY_BRIGHTNESS_UP, ui::DomCode::BRIGHTNESS_UP, ui::EF_NONE,
+        ui::DomKey::BRIGHTNESS_UP}},
+      // Volume mute -> F7, Search + Volume Mute -> Volume Mute
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_VOLUME_MUTE, ui::DomCode::VOLUME_MUTE, ui::EF_NONE,
+        ui::DomKey::AUDIO_VOLUME_MUTE},
+       {ui::VKEY_F7, ui::DomCode::F7, ui::EF_NONE, ui::DomKey::F7}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_VOLUME_MUTE, ui::DomCode::VOLUME_MUTE, ui::EF_COMMAND_DOWN,
+        ui::DomKey::AUDIO_VOLUME_MUTE},
+       {ui::VKEY_VOLUME_MUTE, ui::DomCode::VOLUME_MUTE, ui::EF_NONE,
+        ui::DomKey::AUDIO_VOLUME_MUTE}},
+      // Volume Down -> F8, Search + Volume Down -> Volume Down
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_VOLUME_DOWN, ui::DomCode::VOLUME_DOWN, ui::EF_NONE,
+        ui::DomKey::AUDIO_VOLUME_DOWN},
+       {ui::VKEY_F8, ui::DomCode::F8, ui::EF_NONE, ui::DomKey::F8}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_VOLUME_DOWN, ui::DomCode::VOLUME_DOWN, ui::EF_COMMAND_DOWN,
+        ui::DomKey::AUDIO_VOLUME_DOWN},
+       {ui::VKEY_VOLUME_DOWN, ui::DomCode::VOLUME_DOWN, ui::EF_NONE,
+        ui::DomKey::AUDIO_VOLUME_DOWN}},
+      // Volume Up -> F9, Search + Volume Up -> Volume Up
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_VOLUME_UP, ui::DomCode::VOLUME_UP, ui::EF_NONE,
+        ui::DomKey::AUDIO_VOLUME_UP},
+       {ui::VKEY_F9, ui::DomCode::F9, ui::EF_NONE, ui::DomKey::F9}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_VOLUME_UP, ui::DomCode::VOLUME_UP, ui::EF_COMMAND_DOWN,
+        ui::DomKey::AUDIO_VOLUME_UP},
+       {ui::VKEY_VOLUME_UP, ui::DomCode::VOLUME_UP, ui::EF_NONE,
+        ui::DomKey::AUDIO_VOLUME_UP}},
+      // F10 -> F10
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F10, ui::DomCode::F10, ui::EF_NONE, ui::DomKey::F10},
+       {ui::VKEY_F10, ui::DomCode::F10, ui::EF_NONE, ui::DomKey::F10}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F10, ui::DomCode::F10, ui::EF_COMMAND_DOWN, ui::DomKey::F10},
+       {ui::VKEY_F10, ui::DomCode::F10, ui::EF_NONE, ui::DomKey::F10}},
+      // F11 -> F11
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F11, ui::DomCode::F11, ui::EF_COMMAND_DOWN, ui::DomKey::F11},
+       {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11},
+       {ui::VKEY_F11, ui::DomCode::F11, ui::EF_NONE, ui::DomKey::F11}},
+      // Ctrl + Launch App 1 (Display toggle) -> F12
+      // Search + Ctrl + Launch App 1 (Display toggle) -> Unchanged
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12, ui::EF_CONTROL_DOWN,
+        ui::DomKey::F12},
+       {ui::VKEY_F12, ui::DomCode::F12, ui::EF_NONE, ui::DomKey::F12}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12,
+        ui::EF_COMMAND_DOWN + ui::EF_CONTROL_DOWN, ui::DomKey::F12},
+       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::F12, ui::EF_CONTROL_DOWN,
+        ui::DomKey::F12}}};
 
   for (const auto& test : tests)
     CheckKeyTestCase(rewriter_, test);
