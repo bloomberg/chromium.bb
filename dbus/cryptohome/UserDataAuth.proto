@@ -427,11 +427,18 @@ message GetArcDiskFeaturesReply {
   bool quota_supported = 1;
 }
 
+// Input parameters to GetCurrentSpaceForArcUid().
 message GetCurrentSpaceForArcUidRequest {
+  // The Android UID for whom we are going to query the disk usage.
+  // Note that Android UID is a shifted UID.
   uint32 uid = 1;
 }
 
+// Output parameters for GetCurrentSpaceForArcUid().
 message GetCurrentSpaceForArcUidReply {
+  // The current disk space usage for the given Android UID.
+  // Will be a negative number if the request fails. See
+  // cryptohome/arc_disk_quota.h for more details.
   int64 cur_space = 1;
 }
 
