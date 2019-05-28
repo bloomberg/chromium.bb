@@ -1863,11 +1863,12 @@ void WebMediaPlayerImpl::OnMetadata(const PipelineMetadata& metadata) {
   CreateWatchTimeReporter();
   CreateVideoDecodeStatsReporter();
 
-  UpdatePlayState();
-
-  // This may trigger all sorts of calls into this class (e.g., Play(), Pause())
-  // so do it last to avoid unexpected states during the calls.
+  // SetReadyState() may trigger all sorts of calls into this class (e.g.,
+  // Play(), Pause(), etc) so do it last to avoid unexpected states during the
+  // calls. An exception to this is UpdatePlayState(), which is safe to call and
+  // needs to use the new ReadyState in its calculations.
   SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::ActivateSurfaceLayerForVideo() {
