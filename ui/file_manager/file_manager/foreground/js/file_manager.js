@@ -501,13 +501,14 @@ class FileManager extends cr.EventTarget {
 
   /**
    * One time initialization for the file system and related things.
+   * @return {!Promise<void>}
    * @private
    */
-  initFileSystemUI_() {
+  async initFileSystemUI_() {
     this.ui_.listContainer.startBatchUpdates();
 
-    this.initFileList_();
-    this.setupCurrentDirectory_();
+    const fileListPromise = this.initFileList_();
+    const currentDirectoryPromise = this.setupCurrentDirectory_();
 
     const self = this;
 
@@ -622,12 +623,12 @@ class FileManager extends cr.EventTarget {
         this.dialogType === DialogType.FULL_PAGE));
 
     this.ui_.attachFilesTooltip();
-
     this.ui_.decorateFilesMenuItems();
-
     this.ui_.selectionMenuButton.hidden = false;
 
-    console.warn('Files app sync startup finished');
+    console.warn('Files app sync started');
+    await Promise.all([fileListPromise, currentDirectoryPromise]);
+    console.warn('Files app sync finished');
   }
 
   /**
@@ -762,9 +763,10 @@ class FileManager extends cr.EventTarget {
     this.initEssentialUI_();
     this.initAdditionalUI_();
     await this.initSettingsPromise_;
-    this.initFileSystemUI_();
+    const fileSystemUIPromise = this.initFileSystemUI_();
     this.initUIFocus_();
     metrics.recordInterval('Load.InitUI');
+    return fileSystemUIPromise;
   }
 
   /**
@@ -994,9 +996,10 @@ class FileManager extends cr.EventTarget {
 
   /**
    * Constructs table and grid (heavy operation).
+   * @return {!Promise<void>}
    * @private
    */
-  initFileList_() {
+  async initFileList_() {
     const singleSelection = this.dialogType == DialogType.SELECT_OPEN_FILE ||
         this.dialogType == DialogType.SELECT_FOLDER ||
         this.dialogType == DialogType.SELECT_UPLOAD_FOLDER ||
@@ -1029,7 +1032,7 @@ class FileManager extends cr.EventTarget {
 
     // TODO(mtomasz, yoshiki): Create navigation list earlier, and here just
     // attach the directory model.
-    this.initDirectoryTree_();
+    const directoryTreePromise = this.initDirectoryTree_();
 
     this.ui_.listContainer.listThumbnailLoader = new ListThumbnailLoader(
         this.directoryModel_, assert(this.thumbnailModel_),
@@ -1085,12 +1088,15 @@ class FileManager extends cr.EventTarget {
         this.dialogType, this.ui_.dialogFooter, this.directoryModel_,
         this.metadataModel_, this.volumeManager_, this.fileFilter_,
         this.namingController_, this.selectionHandler_, this.launchParams_);
+
+    return directoryTreePromise;
   }
 
   /**
+   * @return {!Promise<void>}
    * @private
    */
-  initDirectoryTree_() {
+  async initDirectoryTree_() {
     const directoryTree = /** @type {DirectoryTree} */
         (this.dialogDom_.querySelector('#directory-tree'));
     const fakeEntriesVisible =
@@ -1119,7 +1125,7 @@ class FileManager extends cr.EventTarget {
         loadTimeData.getBoolean('CROSTINI_ENABLED'));
     this.crostini_.setEnabled(
         constants.PLUGIN_VM, loadTimeData.getBoolean('PLUGIN_VM_ENABLED'));
-    this.setupCrostini_();
+    const crostiniPromise = this.setupCrostini_();
     chrome.fileManagerPrivate.onCrostiniChanged.addListener(
         this.onCrostiniChanged_.bind(this));
 
@@ -1127,6 +1133,7 @@ class FileManager extends cr.EventTarget {
       this.onPreferencesChanged_();
     });
     this.onPreferencesChanged_();
+    return crostiniPromise;
   }
 
   /**
@@ -1222,6 +1229,7 @@ class FileManager extends cr.EventTarget {
 
   /**
    * Sets up the current directory during initialization.
+   * @return {!Promise<void>}
    * @private
    */
   async setupCurrentDirectory_() {
@@ -1370,7 +1378,7 @@ class FileManager extends cr.EventTarget {
     tracker.stop();
     if (!tracker.hasChanged) {
       // Finish setup current directory.
-      this.finishSetupCurrentDirectory_(
+      await this.finishSetupCurrentDirectory_(
           nextCurrentDirEntry, selectionEntry, this.launchParams_.targetName);
     }
   }
@@ -1380,32 +1388,38 @@ class FileManager extends cr.EventTarget {
    * @param {Entry=} opt_selectionEntry Entry to be selected.
    * @param {string=} opt_suggestedName Suggested name for a non-existing
    *     selection.
+   * @return {!Promise<void> }
    * @private
    */
-  finishSetupCurrentDirectory_(
+  async finishSetupCurrentDirectory_(
       directoryEntry, opt_selectionEntry, opt_suggestedName) {
     // Open the directory, and select the selection (if passed).
-    if (directoryEntry) {
-      const entryDescription = util.entryDebugString(directoryEntry);
-      console.warn(
-          `Files app start up: Changing to directory: ${entryDescription}`);
-      this.directoryModel_.changeDirectoryEntry(directoryEntry, () => {
+    const promise = (async () => {
+      if (directoryEntry) {
+        const entryDescription = util.entryDebugString(directoryEntry);
+        console.warn(
+            `Files app start up: Changing to directory: ${entryDescription}`);
+        await new Promise(resolve => {
+          this.directoryModel_.changeDirectoryEntry(
+              assert(directoryEntry), resolve);
+        });
         if (opt_selectionEntry) {
           this.directoryModel_.selectEntry(opt_selectionEntry);
         }
         console.warn(
             `Files app start up: Changed to directory: ${entryDescription}`);
-        this.ui_.addLoadedAttribute();
-      });
-    } else {
-      console.warn('No entry for finishSetupCurrentDirectory_');
+      } else {
+        console.warn('No entry for finishSetupCurrentDirectory_');
+      }
       this.ui_.addLoadedAttribute();
-    }
+    })();
 
     if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
       this.ui_.dialogFooter.filenameInput.value = opt_suggestedName || '';
       this.ui_.dialogFooter.selectTargetNameInFilenameInput();
     }
+
+    return promise;
   }
 
   /**
