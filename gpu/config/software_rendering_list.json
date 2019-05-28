@@ -287,7 +287,6 @@
       },
       "vendor_id": "0x10de",
       "gl_vendor": "(?i)nouveau.*",
-      "driver_vendor": "Mesa",
       "features": [
         "all"
       ]
