@@ -1122,13 +1122,17 @@ class FileTransferController {
   }
 
   /**
-   * @return {boolean} Returns false if {@code <input type="text">} element is
-   *     currently active. Otherwise, returns true.
+   * @return {boolean} Returns false if {@code <input type="text"> or
+   *     <cr-input>} element is currently active. Otherwise, returns true.
    * @private
    */
   isDocumentWideEvent_() {
-    return this.document_.activeElement.nodeName.toLowerCase() !== 'input' ||
-        this.document_.activeElement.type.toLowerCase() !== 'text';
+    const element = this.document_.activeElement;
+    const tagName = this.document_.activeElement.nodeName.toLowerCase();
+
+    return !(
+        (tagName === 'input' && element.type === 'text') ||
+        tagName === 'cr-input');
   }
 
   /**

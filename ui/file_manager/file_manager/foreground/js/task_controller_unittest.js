@@ -107,35 +107,6 @@ function createTaskController(fileSelectionHandler) {
 }
 
 /**
- * Mock FileSelectionHandler.
- * @extends {FileSelectionHandler}
- */
-class FakeFileSelectionHandler {
-  constructor() {
-    this.selection = /** @type {!FileSelection} */ ({});
-    this.updateSelection([], []);
-    this.eventTarget_ = new cr.EventTarget();
-  }
-  computeAdditionalCallback() {}
-  updateSelection(entries, mimeTypes) {
-    this.selection = /** @type {!FileSelection} */ ({
-      entries: entries,
-      mimeTypes: mimeTypes,
-      computeAdditional: (metadataModel) => {
-        this.computeAdditionalCallback();
-        return new Promise((resolve) => {
-          resolve();
-        });
-      },
-    });
-  }
-
-  addEventListener(...args) {
-    return this.eventTarget_.addEventListener(...args);
-  }
-}
-
-/**
  * Setup test case fileManagerPrivate.
  */
 function setupFileManagerPrivate() {

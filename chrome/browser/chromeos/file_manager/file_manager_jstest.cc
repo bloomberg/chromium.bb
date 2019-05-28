@@ -210,3 +210,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ListContainer) {
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTableList) {
   RunGeneratedTest("/foreground/js/ui/file_table_list_unittest.html");
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTransferController) {
+  RunGeneratedTest("/foreground/js/file_transfer_controller_unittest.html");
+}
