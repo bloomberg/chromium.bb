@@ -233,7 +233,7 @@ class IndexedDBDatabase::OpenRequest
     // Requested version is higher than current version - upgrade needed.
     DCHECK_GT(new_version, old_version);
 
-    if (db_->connections_.empty()) {
+    if (db_->HasNoConnections()) {
       std::vector<ScopesLockManager::ScopeLockRequest> lock_requests = {
           {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
            ScopesLockManager::LockType::kExclusive}};
@@ -251,8 +251,7 @@ class IndexedDBDatabase::OpenRequest
     // "versionchange" event was ignored.
     DCHECK_NE(pending_->data_loss_info.status,
               blink::mojom::IDBDataLoss::Total);
-    for (const auto* connection : db_->connections_)
-      connection->callbacks()->OnVersionChange(old_version, new_version);
+    db_->SendVersionChangeToAllConnections(old_version, new_version);
 
     // When all connections have closed the upgrade can proceed.
   }
@@ -278,7 +277,7 @@ class IndexedDBDatabase::OpenRequest
       return;
     }
 
-    if (!db_->connections_.empty())
+    if (!db_->HasNoConnections())
       return;
 
     std::vector<ScopesLockManager::ScopeLockRequest> lock_requests = {
@@ -375,7 +374,7 @@ class IndexedDBDatabase::DeleteRequest
         weak_factory_(this) {}
 
   void Perform() override {
-    if (db_->connections_.empty()) {
+    if (db_->HasNoConnections()) {
       // No connections, so delete immediately.
       DoDelete();
       return;
@@ -385,8 +384,7 @@ class IndexedDBDatabase::DeleteRequest
     // close_pending set.
     const int64_t old_version = db_->metadata_.version;
     const int64_t new_version = IndexedDBDatabaseMetadata::NO_VERSION;
-    for (const auto* connection : db_->connections_)
-      connection->callbacks()->OnVersionChange(old_version, new_version);
+    db_->SendVersionChangeToAllConnections(old_version, new_version);
   }
 
   void OnVersionChangeIgnored() const override {
@@ -394,7 +392,7 @@ class IndexedDBDatabase::DeleteRequest
   }
 
   void OnConnectionClosed(IndexedDBConnection* connection) override {
-    if (!db_->connections_.empty())
+    if (!db_->HasNoConnections())
       return;
 
     DoDelete();
@@ -597,6 +595,18 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
 void IndexedDBDatabase::VersionChangeIgnored() {
   if (active_request_)
     active_request_->OnVersionChangeIgnored();
+}
+
+bool IndexedDBDatabase::HasNoConnections() const {
+  return force_closing_ || connections_.empty();
+}
+
+void IndexedDBDatabase::SendVersionChangeToAllConnections(int64_t old_version,
+                                                          int64_t new_version) {
+  if (force_closing_)
+    return;
+  for (const auto* connection : connections_)
+    connection->callbacks()->OnVersionChange(old_version, new_version);
 }
 
 void IndexedDBDatabase::ConnectionClosed(IndexedDBConnection* connection) {
@@ -1991,7 +2001,8 @@ void IndexedDBDatabase::TransactionFinished(
   // connections to close, or the actual upgrade transaction from an active
   // request. Notify the active request if it's the latter.
   if (active_request_ &&
-      mode == blink::mojom::IDBTransactionMode::VersionChange) {
+      mode == blink::mojom::IDBTransactionMode::VersionChange &&
+      !force_closing_) {
     active_request_->UpgradeTransactionFinished(committed);
   }
 }

@@ -366,6 +366,11 @@ class CONTENT_EXPORT IndexedDBDatabase {
   // pending connection.
   void VersionChangeIgnored();
 
+  bool HasNoConnections() const;
+
+  void SendVersionChangeToAllConnections(int64_t old_version,
+                                         int64_t new_version);
+
   // This can only be called when the given connection is closed and no longer
   // has any transaction objects.
   void ConnectionClosed(IndexedDBConnection* connection);
