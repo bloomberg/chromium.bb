@@ -789,7 +789,12 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
   controller_info->client_id = client_uuid();
-  if (fetch_request_window_id_) {
+  // Set fetch_request_window_id only when |controller_| is available.  Setting
+  // |fetch_request_window_id| should not affect correctness, however, we have
+  // the extensions bug, https://crbug.com/963748, which we don't yet
+  // understand.  That is why we don't set |fetch_request_window_id| if there
+  // is no controller, at least, until we can fix the extension bug.
+  if (controller_ && fetch_request_window_id_) {
     controller_info->fetch_request_window_id =
         base::make_optional(fetch_request_window_id_);
   }
