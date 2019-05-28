@@ -74,11 +74,15 @@ void AutofillWalletModelTypeController::Stop(
 
 bool AutofillWalletModelTypeController::ReadyForStart() const {
   DCHECK(CalledOnValidThread());
+  // Not being in a persistent error state implies not being in a web signout
+  // state.
+  // TODO(https://crbug.com/819729): Add integration tests for web signout and
+  // other persistent auth errors.
   return pref_service_->GetBoolean(
              autofill::prefs::kAutofillWalletImportEnabled) &&
          pref_service_->GetBoolean(
              autofill::prefs::kAutofillCreditCardEnabled) &&
-         !syncer::IsWebSignout(sync_service_->GetAuthError());
+         !sync_service_->GetAuthError().IsPersistentError();
 }
 
 void AutofillWalletModelTypeController::OnUserPrefChanged() {
