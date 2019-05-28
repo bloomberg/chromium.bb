@@ -692,9 +692,9 @@
     zork-release
 
 == toolchain ==
-  amd64-llvm-pgo-generate-toolchain
-  arm-llvm-pgo-generate-toolchain
-  arm64-llvm-pgo-generate-toolchain
+  amd64-pgo-generate-llvm-next-toolchain
+  arm-pgo-generate-llvm-next-toolchain
+  arm64-pgo-generate-llvm-next-toolchain
   llvm-clang-tidy-toolchain
   master-toolchain
     amd64-llvm-next-toolchain
@@ -761,7 +761,7 @@
   amd64-generic-v4_19-pre-cq
   amd64-generic-v4_4-pre-cq
   amd64-llvm-next-toolchain-tryjob
-  amd64-llvm-pgo-generate-toolchain-tryjob
+  amd64-pgo-generate-llvm-next-toolchain-tryjob
   arkham-compile-only-pre-cq
   arkham-full-tryjob
   arkham-llvm-next-toolchain-tryjob
@@ -790,7 +790,7 @@
   arm-generic-v4_19-pre-cq
   arm-generic-v4_4-pre-cq
   arm-llvm-next-toolchain-tryjob
-  arm-llvm-pgo-generate-toolchain-tryjob
+  arm-pgo-generate-llvm-next-toolchain-tryjob
   arm64-generic-chromium-pfq-tryjob
   arm64-generic-compile-only-pre-cq
   arm64-generic-full-tryjob
@@ -807,7 +807,6 @@
   arm64-generic-v4_19-pre-cq
   arm64-generic-v4_4-pre-cq
   arm64-llvm-next-toolchain-tryjob
-  arm64-llvm-pgo-generate-toolchain-tryjob
   arm64-llvmpipe-chromium-pfq-tryjob
   arm64-llvmpipe-compile-only-pre-cq
   arm64-llvmpipe-full-tryjob
@@ -819,6 +818,7 @@
   arm64-llvmpipe-pre-cq
   arm64-llvmpipe-tot-chromium-pfq-informational-tryjob
   arm64-llvmpipe-unittest-stress
+  arm64-pgo-generate-llvm-next-toolchain-tryjob
   asuka-chrome-pfq-tryjob
   asuka-chromium-pfq-tryjob
   asuka-compile-only-pre-cq

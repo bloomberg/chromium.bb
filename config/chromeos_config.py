@@ -1201,8 +1201,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
 
   def PGOBuilders(name, board):
     site_config.Add(
-        name + '-llvm-pgo-generate-toolchain',
-        site_config.templates.toolchain,
+        name + '-pgo-generate-llvm-next-toolchain',
+        site_config.templates.llvm_next_toolchain,
         site_config.templates.no_hwtest_builder,
         description='Full release build with PGO instrumented LLVM toolchain)',
         chrome_sdk=False,
