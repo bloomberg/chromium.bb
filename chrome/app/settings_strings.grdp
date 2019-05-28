@@ -3147,6 +3147,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_BLOCK" desc="The 'block' label for Flash in site settings.">
     Block sites from running Flash
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_BLOCK_RECOMMENDED" desc="The 'block' label for Flash in site settings -- the recommended setting due to impending deprecation.">
+    Block sites from running Flash (recommended)
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH_PERMISSIONS_ARE_EPHEMERAL" desc="The notice that Flash permissions are ephemeral, at the top of the Flash settings page.">
     Your Flash settings will be kept until you quit Chrome.
   </message>
