@@ -2139,7 +2139,7 @@ CrSettingsSmbPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     'test_util.js',
     '../test_browser_proxy.js',
-    'smb_shares_page_tests.js',
+    'chromeos/smb_shares_page_tests.js',
   ]),
 };
 

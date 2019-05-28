@@ -192,5 +192,4 @@ suite('AddSmbShareDialogTests', function() {
     expectEquals(expectedSmbUrl, addDialog.mountUrl_);
     expectEquals(expectedSmbUrl, addDialog.mountUrl_);
   });
-
 });

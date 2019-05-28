@@ -108,6 +108,7 @@ js2gtest("browser_tests_js_webui") {
       "settings/a11y/multidevice_a11y_test.js",
       "settings/a11y/multidevice_features_a11y_test.js",
       "settings/a11y/tts_subpage_a11y_test.js",
+      "settings/chromeos/os_settings_browsertest.js",
       "sys_internals/sys_internals_browsertest.js",
     ]
   } else {
