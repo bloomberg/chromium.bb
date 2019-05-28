@@ -48,7 +48,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "read revision",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>checked out 'deadbeef'<br/>@@@"
     ]
@@ -98,7 +97,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "count-objects",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_EXCEPTION@@@"
     ]
@@ -113,7 +111,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "git config remote.origin.url",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_TEXT@foo@@@"
     ]
@@ -128,8 +125,7 @@
     ],
     "cwd": "[START_DIR]/src",
     "infra_step": true,
-    "name": "git show",
-    "stdout": "/path/to/tmp/"
+    "name": "git show"
   },
   {
     "cmd": [

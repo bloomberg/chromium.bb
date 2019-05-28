@@ -11,7 +11,6 @@
     "cwd": "[START_DIR]/v8",
     "infra_step": true,
     "name": "git diff to analyze patch",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@files@v8/foo.cc@@@",
       "@@@STEP_LOG_END@files@@@"

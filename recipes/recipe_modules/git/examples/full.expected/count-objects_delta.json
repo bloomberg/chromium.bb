@@ -20,7 +20,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "count-objects before git fetch",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@result@  count: 1000@@@",
       "@@@STEP_LOG_LINE@result@  garbage: 1000@@@",
@@ -59,7 +58,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "count-objects after git fetch",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_TEXT@size delta: +1.95 MiB@@@",
       "@@@STEP_LOG_LINE@result@  count: 2000@@@",
@@ -123,7 +121,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "read revision",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>checked out 'deadbeef'<br/>@@@"
     ]
@@ -172,8 +169,7 @@
     ],
     "cwd": "[START_DIR]/src",
     "infra_step": true,
-    "name": "count-objects",
-    "stdout": "/path/to/tmp/"
+    "name": "count-objects"
   },
   {
     "cmd": [
@@ -185,7 +181,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "git config remote.origin.url",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_TEXT@foo@@@"
     ]
@@ -200,8 +195,7 @@
     ],
     "cwd": "[START_DIR]/src",
     "infra_step": true,
-    "name": "git show",
-    "stdout": "/path/to/tmp/"
+    "name": "git show"
   },
   {
     "cmd": [

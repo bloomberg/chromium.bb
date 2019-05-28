@@ -27,8 +27,7 @@
       "PATH": "RECIPE_REPO[depot_tools]:<PATH>"
     },
     "infra_step": true,
-    "name": "git fetch",
-    "stderr": "[START_DIR]/curl_trace.log"
+    "name": "git fetch"
   },
   {
     "cmd": [
@@ -50,7 +49,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "read revision",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>checked out 'deadbeef'<br/>@@@"
     ]
@@ -99,8 +97,7 @@
     ],
     "cwd": "[START_DIR]/src",
     "infra_step": true,
-    "name": "count-objects",
-    "stdout": "/path/to/tmp/"
+    "name": "count-objects"
   },
   {
     "cmd": [
@@ -112,7 +109,6 @@
     "cwd": "[START_DIR]/src",
     "infra_step": true,
     "name": "git config remote.origin.url",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_TEXT@foo@@@"
     ]
@@ -127,8 +123,7 @@
     ],
     "cwd": "[START_DIR]/src",
     "infra_step": true,
-    "name": "git show",
-    "stdout": "/path/to/tmp/"
+    "name": "git show"
   },
   {
     "cmd": [
