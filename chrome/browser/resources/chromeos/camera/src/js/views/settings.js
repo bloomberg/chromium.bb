@@ -259,8 +259,8 @@ cca.views.ResolutionSettings = function(resolBroker) {
       s.splice(3, 1, s[3].filter(([w, h]) => w * h >= 100000));
       return s;
     };
-    this.frontPhotoSetting_ = zeroMPFilter(front);
-    this.backPhotoSetting_ = zeroMPFilter(back);
+    this.frontPhotoSetting_ = front && zeroMPFilter(front);
+    this.backPhotoSetting_ = back && zeroMPFilter(back);
     this.externalPhotoSettings_ = externals.map(zeroMPFilter);
     this.updateResolutions_();
   });
@@ -341,7 +341,7 @@ cca.views.ResolutionSettings.prototype.updateResolutions_ = function() {
   const compareId = (setting, setting2) =>
       (setting && setting[0]) === (setting2 && setting2[0]);
   if (!compareId(this.frontPhotoSetting_, this.frontVideoSetting_) ||
-      !compareId(this.backPhotoItem_, this.backVideoItem_) ||
+      !compareId(this.backPhotoSetting_, this.backVideoSetting_) ||
       this.externalPhotoSettings_.length !=
           this.externalVideoSettings_.length ||
       this.externalPhotoSettings_.some(
