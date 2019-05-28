@@ -123,7 +123,6 @@ class MockExecutive(object):
                     error_handler=None,
                     return_exit_code=False,
                     return_stderr=True,
-                    ignore_stderr=False,
                     decode_output=True,
                     debug_logging=True):
         self._append_call(args, cwd=cwd, input=input, env=env)
@@ -157,7 +156,7 @@ class MockExecutive(object):
         output = self._output
         if return_stderr:
             output += self._stderr
-        if decode_output and not isinstance(output, unicode):
+        if decode_output and type(output) is not unicode:
             output = output.decode('utf-8')
 
         return output
