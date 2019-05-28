@@ -12,6 +12,8 @@ source_set("cups_proxy") {
   sources = [
     "cups_proxy_service.cpp",
     "cups_proxy_service.h",
+    "cups_proxy_service_delegate.cc",
+    "cups_proxy_service_delegate.h",
   ]
 
   deps = [
@@ -30,5 +32,17 @@ source_set("cups_proxy") {
 
   public_deps = [
     "//printing",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "fake_cups_proxy_service_delegate.cc",
+    "fake_cups_proxy_service_delegate.h",
+  ]
+
+  public_deps = [
+    ":cups_proxy",
   ]
 }
