@@ -11,6 +11,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "base/bind.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -62,7 +63,8 @@ void UpdateNotificationController::OnUpdateAvailable() {
           base::BindRepeating(
               &UpdateNotificationController::HandleNotificationClick,
               weak_ptr_factory_.GetWeakPtr())),
-      model_->rollback() ? kSystemMenuRollbackIcon : kSystemMenuUpdateIcon,
+      model_->rollback() ? kSystemMenuRollbackIcon
+                         : vector_icons::kBusinessIcon,
       warning_level);
   notification->set_pinned(true);
 
