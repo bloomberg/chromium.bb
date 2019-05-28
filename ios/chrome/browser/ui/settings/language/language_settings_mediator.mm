@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
@@ -24,6 +25,7 @@
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #import "ios/chrome/browser/ui/settings/language/cells/language_item.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_consumer.h"
+#import "ios/chrome/browser/ui/settings/language/language_settings_histograms.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -210,6 +212,11 @@
 
 - (void)setTranslateEnabled:(BOOL)enabled {
   [self.translateEnabledPref setValue:enabled];
+
+  UMA_HISTOGRAM_ENUMERATION(
+      kLanguageSettingsActionsHistogram,
+      enabled ? LanguageSettingsActions::ENABLE_TRANSLATE_GLOBALLY
+              : LanguageSettingsActions::DISABLE_TRANSLATE_GLOBALLY);
 }
 
 - (void)moveLanguage:(const std::string&)languageCode
@@ -222,22 +229,39 @@
   _translatePrefs->GetLanguageList(&languageCodes);
   _translatePrefs->RearrangeLanguage(languageCode, where, offset,
                                      languageCodes);
+
+  UMA_HISTOGRAM_ENUMERATION(kLanguageSettingsActionsHistogram,
+                            LanguageSettingsActions::LANGUAGE_LIST_REORDERED);
 }
 
 - (void)addLanguage:(const std::string&)languageCode {
   _translatePrefs->AddToLanguageList(languageCode, /*force_blocked=*/false);
+
+  UMA_HISTOGRAM_ENUMERATION(kLanguageSettingsActionsHistogram,
+                            LanguageSettingsActions::LANGUAGE_ADDED);
 }
 
 - (void)removeLanguage:(const std::string&)languageCode {
   _translatePrefs->RemoveFromLanguageList(languageCode);
+
+  UMA_HISTOGRAM_ENUMERATION(kLanguageSettingsActionsHistogram,
+                            LanguageSettingsActions::LANGUAGE_REMOVED);
 }
 
 - (void)blockLanguage:(const std::string&)languageCode {
   _translatePrefs->BlockLanguage(languageCode);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      kLanguageSettingsActionsHistogram,
+      LanguageSettingsActions::DISABLE_TRANSLATE_FOR_SINGLE_LANGUAGE);
 }
 
 - (void)unblockLanguage:(const std::string&)languageCode {
   _translatePrefs->UnblockLanguage(languageCode);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      kLanguageSettingsActionsHistogram,
+      LanguageSettingsActions::ENABLE_TRANSLATE_FOR_SINGLE_LANGUAGE);
 }
 
 #pragma mark - Private methods

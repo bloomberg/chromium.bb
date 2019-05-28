@@ -32131,6 +32131,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="LanguageSettingsPageType">
   <int value="0" label="Main"/>
   <int value="1" label="Add Language"/>
+  <int value="2" label="Language Details">iOS only.</int>
 </enum>
 
 <enum name="LargestContentType">

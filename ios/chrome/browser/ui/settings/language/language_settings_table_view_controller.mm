@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/ui/settings/language/language_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_commands.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_data_source.h"
+#import "ios/chrome/browser/ui/settings/language/language_settings_histograms.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -87,6 +89,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (self) {
     _dataSource = dataSource;
     _commandHandler = commandHandler;
+
+    UMA_HISTOGRAM_ENUMERATION(kLanguageSettingsPageImpressionHistogram,
+                              LanguageSettingsPages::PAGE_MAIN);
   }
   return self;
 }
@@ -199,6 +204,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeAddLanguage: {
+      UMA_HISTOGRAM_ENUMERATION(kLanguageSettingsActionsHistogram,
+                                LanguageSettingsActions::CLICK_ON_ADD_LANGUAGE);
+
       AddLanguageTableViewController* viewController =
           [[AddLanguageTableViewController alloc]
               initWithDataSource:self.dataSource

@@ -36,6 +36,7 @@ source_set("language_ui") {
     "language_settings_commands.h",
     "language_settings_consumer.h",
     "language_settings_data_source.h",
+    "language_settings_histograms.h",
     "language_settings_table_view_controller.h",
     "language_settings_table_view_controller.mm",
   ]

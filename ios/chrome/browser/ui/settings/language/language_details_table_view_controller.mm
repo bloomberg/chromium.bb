@@ -5,9 +5,11 @@
 #import "ios/chrome/browser/ui/settings/language/language_details_table_view_controller.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/language/cells/language_item.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_data_source.h"
+#import "ios/chrome/browser/ui/settings/language/language_settings_histograms.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -62,6 +64,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (self) {
     _languageItem = languageItem;
     _delegate = delegate;
+
+    UMA_HISTOGRAM_ENUMERATION(kLanguageSettingsPageImpressionHistogram,
+                              LanguageSettingsPages::PAGE_LANGUAGE_DETAILS);
   }
   return self;
 }
