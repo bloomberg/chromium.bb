@@ -412,6 +412,16 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         self.assertEqual(updater.simplify_specifiers(['mac10.10', 'mac10.11'], macros), ['Mac'])
         self.assertEqual(updater.simplify_specifiers(['Mac10.10', 'Mac10.11', 'Trusty', 'Win7', 'Win10'], macros), [])
 
+    def test_simplify_specifiers_port_not_tested_by_trybots(self):
+        host = self.mock_host()
+        updater = WPTExpectationsUpdater(host)
+        macros = {
+            'mac': ['Mac10.10', 'mac10.11'],
+            'win': ['win10'],
+            'foo': ['bar'],
+        }
+        self.assertEqual(updater.simplify_specifiers(['mac10.10', 'mac10.11'], macros), ['Mac'])
+
     def test_normalized_specifiers_with_skipped_test(self):
         host = self.mock_host()
         expectations_path = '/test.checkout/wtests/NeverFixTests'

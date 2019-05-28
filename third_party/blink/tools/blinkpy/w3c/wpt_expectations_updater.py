@@ -433,6 +433,8 @@ class WPTExpectationsUpdater(object):
 
             # Only consider version specifiers that have corresponding try bots.
             versions = {s.lower() for s in versions if s.lower() in covered_by_try_bots}
+            if len(versions) == 0:
+                continue
             if versions <= specifiers:
                 specifiers -= versions
                 specifiers.add(macro)
