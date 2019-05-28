@@ -60,18 +60,11 @@ cr.define('downloads', function() {
       'itemsChanged_(items_.*)',
     ],
 
-    listeners: {
-      'restore-focus-after-remove': 'onRestoreFocusAfterRemove_',
-    },
-
     /** @private {downloads.mojom.PageCallbackRouter} */
     mojoEventTarget_: null,
 
     /** @private {downloads.mojom.PageHandlerInterface} */
     mojoHandler_: null,
-
-    /** @private {boolean} */
-    restoreFocusAfterRemove_: false,
 
     /** @private {?downloads.SearchService} */
     searchService_: null,
@@ -265,25 +258,7 @@ cr.define('downloads', function() {
                            type: 'splice',
                            removed: removed,
                          }]);
-      if (this.restoreFocusAfterRemove_) {
-        this.restoreFocusAfterRemove_ = false;
-        const focusIndex = Math.min(this.items_.length - 1, index);
-        if (focusIndex >= 0) {
-          setTimeout(() => {
-            this.$.downloadsList.focusItem(focusIndex);
-            const item = getDeepActiveElement();
-            if (item) {
-              item.focusOnRemoveButton();
-            }
-          });
-        }
-      }
       this.onScroll_();
-    },
-
-    /** @private */
-    onRestoreFocusAfterRemove_: function() {
-      this.restoreFocusAfterRemove_ = true;
     },
 
     /** @private */

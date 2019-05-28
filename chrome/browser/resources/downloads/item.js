@@ -475,7 +475,6 @@ cr.define('downloads', function() {
       });
       cr.toastManager.getInstance().showForStringPieces(pieces, true);
       this.mojoHandler_.remove(this.data.id);
-      this.fire('restore-focus-after-remove');
     },
 
     /** @private */
