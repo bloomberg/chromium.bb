@@ -21,8 +21,10 @@ class NET_EXPORT AuthChallengeInfo {
   AuthChallengeInfo(const AuthChallengeInfo& other);
   ~AuthChallengeInfo();
 
-  bool operator==(const AuthChallengeInfo& other) const;
-  bool operator!=(const AuthChallengeInfo& other) const;
+  // Returns true if this AuthChallengeInfo is equal to |other| except for
+  // |path|. Can be used to determine if the same credentials can be provided
+  // for two different requests.
+  bool MatchesExceptPath(const AuthChallengeInfo& other) const;
 
   // Whether this came from a server or a proxy.
   bool is_proxy;
@@ -36,6 +38,12 @@ class NET_EXPORT AuthChallengeInfo {
 
   // The realm of the challenge. May be empty. The encoding is UTF-8.
   std::string realm;
+
+  // The authentication challenge.
+  std::string challenge;
+
+  // The path on which authentication was requested.
+  std::string path;
 };
 
 // Authentication Credentials for an authentication credentials.

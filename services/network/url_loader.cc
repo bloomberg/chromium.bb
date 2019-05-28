@@ -107,6 +107,7 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->head.request_start = request->creation_time();
   response->head.response_start = base::TimeTicks::Now();
   response->head.encoded_data_length = request->GetTotalReceivedBytes();
+  response->head.auth_challenge_info = request->auth_challenge_info();
 }
 
 // A subclass of net::UploadBytesElementReader which owns
@@ -761,6 +762,7 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
   ResourceResponseHead head;
   if (url_request->response_headers())
     head.headers = url_request->response_headers();
+  head.auth_challenge_info = auth_info;
   network_service_client_->OnAuthRequired(
       factory_params_->process_id, render_frame_id_, request_id_,
       url_request_->url(), first_auth_attempt_, auth_info, head,

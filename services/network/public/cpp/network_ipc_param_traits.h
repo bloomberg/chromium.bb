@@ -176,6 +176,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(is_signed_exchange_inner_response)
   IPC_STRUCT_TRAITS_MEMBER(was_in_prefetch_cache)
   IPC_STRUCT_TRAITS_MEMBER(is_legacy_tls_version)
+  IPC_STRUCT_TRAITS_MEMBER(auth_challenge_info)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchResponseType,

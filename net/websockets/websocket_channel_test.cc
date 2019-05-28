@@ -2973,9 +2973,8 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnAuthRequiredCalled) {
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
   IPEndPoint remote_endpoint(net::IPAddress(127, 0, 0, 1), 80);
 
-  EXPECT_CALL(
-      *event_interface_,
-      OnAuthRequiredCalled(auth_info, response_headers, _, &credentials))
+  EXPECT_CALL(*event_interface_,
+              OnAuthRequiredCalled(_, response_headers, _, &credentials))
       .WillOnce(Return(OK));
 
   CreateChannelAndConnect();

@@ -398,6 +398,11 @@ HttpResponseHeaders* URLRequest::response_headers() const {
   return response_info_.headers.get();
 }
 
+const base::Optional<AuthChallengeInfo>& URLRequest::auth_challenge_info()
+    const {
+  return response_info_.auth_challenge;
+}
+
 void URLRequest::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   *load_timing_info = load_timing_info_;
 }

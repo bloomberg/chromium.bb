@@ -135,6 +135,7 @@ void PopulateResourceResponse(
     DCHECK_EQ(request->ssl_info().peer_signature_algorithm, 0);
     DCHECK_EQ(request->ssl_info().connection_status, 0);
   }
+  response->head.auth_challenge_info = request->auth_challenge_info();
 }
 
 }  // namespace

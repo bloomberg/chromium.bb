@@ -214,9 +214,11 @@ std::unique_ptr<AuthChallengeInfo> URLRequestFtpJob::GetAuthChallengeInfo() {
       std::make_unique<AuthChallengeInfo>();
   result->is_proxy = false;
   result->challenger = url::Origin::Create(request_->url());
-  // scheme and realm are kept empty.
+  // scheme, realm, path, and challenge are kept empty.
   DCHECK(result->scheme.empty());
   DCHECK(result->realm.empty());
+  DCHECK(result->challenge.empty());
+  DCHECK(result->path.empty());
   return result;
 }
 

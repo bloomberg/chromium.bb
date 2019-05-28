@@ -561,6 +561,8 @@ void HttpAuthController::PopulateAuthChallenge() {
   auth_info_->challenger = url::Origin::Create(auth_origin_);
   auth_info_->scheme = HttpAuth::SchemeToString(handler_->auth_scheme());
   auth_info_->realm = handler_->realm();
+  auth_info_->path = auth_path_;
+  auth_info_->challenge = handler_->challenge();
 }
 
 int HttpAuthController::HandleGenerateTokenResult(int result) {

@@ -239,8 +239,10 @@ void LoginHandler::Observe(int type,
   // AUTH_SUPPLIED or AUTH_CANCELLED notifications.
   DCHECK(login_details->handler() != this);
 
-  // Only handle notification for the identical auth info.
-  if (login_details->handler()->auth_info() != auth_info())
+  // Only handle notification for the identical auth info. When comparing
+  // AuthChallengeInfos, ignore path because the same credentials can be used
+  // for different paths.
+  if (!auth_info().MatchesExceptPath(login_details->handler()->auth_info()))
     return;
 
   // Ignore login notification events from other profiles.

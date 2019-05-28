@@ -13219,4 +13219,25 @@ TEST_F(HTTPSEarlyDataTest, TLSEarlyDataTLS12RejectTest) {
   }
 }
 
+// Tests that AuthChallengeInfo is available on the request.
+TEST_F(URLRequestTestHTTP, AuthChallengeInfo) {
+  ASSERT_TRUE(http_test_server()->Start());
+  GURL url(http_test_server()->GetURL("/auth-basic"));
+
+  TestURLRequestContext context;
+  TestDelegate delegate;
+
+  std::unique_ptr<URLRequest> r(context.CreateRequest(
+      url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->Start();
+  delegate.RunUntilComplete();
+  ASSERT_TRUE(r->auth_challenge_info().has_value());
+  EXPECT_FALSE(r->auth_challenge_info()->is_proxy);
+  EXPECT_EQ(url::Origin::Create(url), r->auth_challenge_info()->challenger);
+  EXPECT_EQ("basic", r->auth_challenge_info()->scheme);
+  EXPECT_EQ("testrealm", r->auth_challenge_info()->realm);
+  EXPECT_EQ("Basic realm=\"testrealm\"", r->auth_challenge_info()->challenge);
+  EXPECT_EQ("/auth-basic", r->auth_challenge_info()->path);
+}
+
 }  // namespace net

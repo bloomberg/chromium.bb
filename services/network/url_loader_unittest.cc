@@ -758,6 +758,30 @@ TEST_F(URLLoaderTest, SSLSentOnlyWhenRequested) {
   ASSERT_FALSE(!!ssl_info());
 }
 
+// Tests that auth challenge info is present on the response when a request
+// receives an authentication challenge.
+TEST_F(URLLoaderTest, AuthChallengeInfo) {
+  GURL url = test_server()->GetURL("/auth-basic");
+  EXPECT_EQ(net::OK, Load(url));
+  ASSERT_TRUE(client()->response_head().auth_challenge_info.has_value());
+  EXPECT_FALSE(client()->response_head().auth_challenge_info->is_proxy);
+  EXPECT_EQ(url::Origin::Create(url),
+            client()->response_head().auth_challenge_info->challenger);
+  EXPECT_EQ("basic", client()->response_head().auth_challenge_info->scheme);
+  EXPECT_EQ("testrealm", client()->response_head().auth_challenge_info->realm);
+  EXPECT_EQ("Basic realm=\"testrealm\"",
+            client()->response_head().auth_challenge_info->challenge);
+  EXPECT_EQ("/auth-basic", client()->response_head().auth_challenge_info->path);
+}
+
+// Tests that no auth challenge info is present on the response when a request
+// does not receive an authentication challenge.
+TEST_F(URLLoaderTest, NoAuthChallengeInfo) {
+  GURL url = test_server()->GetURL("/");
+  EXPECT_EQ(net::OK, Load(url));
+  EXPECT_FALSE(client()->response_head().auth_challenge_info.has_value());
+}
+
 // Test decoded_body_length / encoded_body_length when they're different.
 TEST_F(URLLoaderTest, GzipTest) {
   std::string body;
@@ -2119,6 +2143,8 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
       const net::AuthChallengeInfo& auth_info,
       const base::Optional<network::ResourceResponseHead>& head,
       mojom::AuthChallengeResponderPtr auth_challenge_responder) override {
+    if (head)
+      EXPECT_TRUE(head->auth_challenge_info.has_value());
     switch (credentials_response_) {
       case CredentialsResponse::NO_CREDENTIALS:
         auth_credentials_ = base::nullopt;
@@ -2267,6 +2293,7 @@ TEST_F(URLLoaderTest, SetAuth) {
   EXPECT_EQ(200, headers->response_code());
   EXPECT_EQ(1, network_service_client.on_auth_required_call_counter());
   ASSERT_FALSE(url_loader);
+  EXPECT_FALSE(client()->response_head().auth_challenge_info.has_value());
 }
 
 TEST_F(URLLoaderTest, CancelAuth) {

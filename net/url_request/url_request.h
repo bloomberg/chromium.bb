@@ -528,6 +528,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Get the SSL connection info.
   const SSLInfo& ssl_info() const { return response_info_.ssl_info; }
 
+  const base::Optional<AuthChallengeInfo>& auth_challenge_info() const;
+
   // Gets timing information related to the request.  Events that have not yet
   // occurred are left uninitialized.  After a second request starts, due to
   // a redirect or authentication, values will be reset.
