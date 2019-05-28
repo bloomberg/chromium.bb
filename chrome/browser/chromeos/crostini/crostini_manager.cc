@@ -225,31 +225,15 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
 
-    crostini_manager_->ListVmDisks(
-        base::BindOnce(&CrostiniRestarter::ListVmDisksFinished, this));
-  }
-
-  void ListVmDisksFinished(CrostiniResult result, int64_t disk_space_taken) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (is_aborted_) {
-      std::move(abort_callback_).Run();
-      return;
-    }
-    if (result != CrostiniResult::SUCCESS) {
-      LOG(ERROR) << "Failed to list disk images.";
-      FinishRestart(result);
-      return;
-    }
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
         base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                        base::FilePath(kHomeDirectory)),
-        base::BindOnce(&CrostiniRestarter::CreateDiskImageAfterSizeCheck, this,
-                       disk_space_taken));
+        base::BindOnce(&CrostiniRestarter::CreateDiskImageAfterSizeCheck,
+                       this));
   }
 
-  void CreateDiskImageAfterSizeCheck(int64_t disk_space_taken,
-                                     int64_t free_disk_bytes) {
+  void CreateDiskImageAfterSizeCheck(int64_t free_disk_bytes) {
     // Unlike other functions, this isn't called from a crostini_manager_
     // function, so crostini_manager_ could have been deleted.
     if (!crostini_manager_) {
