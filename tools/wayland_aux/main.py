@@ -12,6 +12,7 @@ import argparse
 import sys
 import xml.etree.ElementTree as xml
 import gv_diagram
+import proto_gen
 
 
 def strip_protocol(protocol):
@@ -41,7 +42,8 @@ def main(argv):
                       nargs='+', required=True)
   parser.add_argument('-t', '--type',
                       help='Output different types of graph',
-                      choices=['interfaces', 'deps'], required=True)
+                      choices=['interfaces', 'deps',
+                               'harness', 'proto'], required=True)
   parser.add_argument('-x', '--extra',
                       help='add extra detail to the normal printout',
                       action='store_true')
@@ -50,11 +52,15 @@ def main(argv):
   protocols = [strip_protocol(read_protocol(path)) for path in parsed.spec]
   extra = parsed.extra
   if parsed.type == 'deps':
-    drawer = gv_diagram.DepsPrinter(extra)
+    gv_diagram.DepsPrinter(extra).draw(protocols)
+  elif parsed.type == 'interfaces':
+    gv_diagram.InterfacesPrinter(extra).draw(protocols)
+  elif parsed.type == 'harness':
+    pass
+  elif parsed.type == 'proto':
+    proto_gen.generate(protocols)
   else:
-    drawer = gv_diagram.InterfacesPrinter(extra)
-
-  drawer.draw(protocols)
+    raise Exception('%s not implemented' % parsed.type)
 
 
 if __name__ == '__main__':
