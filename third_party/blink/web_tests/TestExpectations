@@ -2620,7 +2620,6 @@ crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass F
 crbug.com/626703 crbug.com/946710 http/tests/devtools/extensions/extensions-sidebar.js [ Crash Failure Pass Timeout ]
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 [ Win ] editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
-crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
 
 crbug.com/800898 external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass Failure ]
 crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]

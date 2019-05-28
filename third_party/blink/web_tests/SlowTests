@@ -628,3 +628,5 @@ crbug.com/874695 virtual/streams-native/http/tests/fetch/workers/stream-reader.h
 crbug.com/874695 virtual/streams-native/http/tests/fetch/workers/thorough/ [ Slow ]
 
 crbug.com/962831 [ Release ] http/tests/devtools/network/preview-searchable.js [ Slow ]
+
+crbug.com/967526 http/tests/devtools/console/console-uncaught-promise.js [ Slow ]
