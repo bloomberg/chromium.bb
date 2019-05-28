@@ -411,20 +411,8 @@ bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
     const GURL& effective_site_url) {
   const Extension* extension = GetEnabledExtensions(browser_or_resource_context)
                                    ->GetExtensionOrAppByURL(effective_site_url);
-  if (!extension)
-    return false;
-
-  // Always isolate Chrome Web Store.
-  if (extension->id() == kWebStoreAppId)
-    return true;
-
-  // Extensions should be isolated, except for hosted apps. Isolating hosted
-  // apps is a good idea, but ought to be a separate knob.
-  if (extension->is_hosted_app())
-    return false;
-
   // Isolate all extensions.
-  return true;
+  return extension != nullptr;
 }
 
 // static
