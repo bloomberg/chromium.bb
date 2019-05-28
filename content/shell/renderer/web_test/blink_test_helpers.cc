@@ -144,9 +144,6 @@ void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
   prefs->mock_scrollbars_enabled = false;
   prefs->smart_insert_delete_enabled = true;
   prefs->minimum_accelerated_2d_canvas_size = 0;
-#if defined(OS_ANDROID)
-  prefs->text_autosizing_enabled = false;
-#endif
   prefs->viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
   prefs->default_minimum_page_scale_factor = 1.f;
   prefs->default_maximum_page_scale_factor = 4.f;

@@ -9,17 +9,6 @@ namespace switches {
 // Allow access to external pages during web tests.
 const char kAllowExternalPages[] = "allow-external-pages";
 
-#if defined(OS_ANDROID)
-// Redirect stderr to the given port. Only supported on Android.
-const char kAndroidStderrPort[] = "android-stderr-port";
-
-// Redirect stdin to the given port. Only supported on Android.
-const char kAndroidStdinPort[] = "android-stdin-port";
-
-// Redirect stdout to the given port. Only supported on Android.
-const char kAndroidStdoutPort[] = "android-stdout-port";
-#endif  // defined(OS_ANDROID)
-
 // When specified to "enable-leak-detection" command-line option,
 // causes the leak detector to cause immediate crash when found leak.
 const char kCrashOnFailure[] = "crash-on-failure";

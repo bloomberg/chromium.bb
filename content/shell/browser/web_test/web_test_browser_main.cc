@@ -33,11 +33,6 @@
 #include "gpu/config/gpu_switches.h"
 #include "net/base/filename_util.h"
 
-#if defined(OS_ANDROID)
-#include "base/run_loop.h"
-#include "content/shell/browser/web_test/scoped_android_configuration.h"
-#endif
-
 namespace {
 
 bool RunOneTest(const content::TestInfo& test_info,
@@ -48,26 +43,9 @@ bool RunOneTest(const content::TestInfo& test_info,
   if (!blink_test_controller->PrepareForWebTest(test_info))
     return false;
 
-#if defined(OS_ANDROID)
-  // The message loop on Android is provided by the system, and does not
-  // offer a blocking Run() method. For web tests, use a nested loop
-  // together with a base::RunLoop so it can block until a QuitClosure.
-  base::RunLoop run_loop;
-  content::Shell::SetMainMessageLoopQuitClosure(run_loop.QuitClosure());
-  run_loop.Run();
-#else
   main_runner->Run();
-#endif
 
-  if (!blink_test_controller->ResetAfterWebTest())
-    return false;
-
-#if defined(OS_ANDROID)
-  // There will be left-over tasks in the queue for Android because the
-  // main window is being destroyed. Run them before starting the next test.
-  base::RunLoop().RunUntilIdle();
-#endif
-  return true;
+  return blink_test_controller->ResetAfterWebTest();
 }
 
 void RunTests(content::BrowserMainRunner* main_runner) {
@@ -98,13 +76,6 @@ void RunTests(content::BrowserMainRunner* main_runner) {
         FROM_HERE, base::BindOnce(&content::Shell::CloseAllWindows));
     main_runner->Run();
   }
-
-#if defined(OS_ANDROID)
-  // We need to execute 'main_runner->Shutdown()' before the test_controller
-  // destructs when running on Android, and after it destructs when running
-  // anywhere else.
-  main_runner->Shutdown();
-#endif
 }
 
 }  // namespace
@@ -130,27 +101,14 @@ void WebTestBrowserMain(const content::MainFunctionParams& parameters) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableGpuProcessForDX12VulkanInfoCollection);
 
-#if defined(OS_ANDROID)
-  content::ScopedAndroidConfiguration android_configuration;
-#endif
-
   int initialize_exit_code = main_runner->Initialize(parameters);
   DCHECK_LT(initialize_exit_code, 0)
       << "BrowserMainRunner::Initialize failed in WebTestBrowserMain";
-
-#if defined(OS_ANDROID)
-  main_runner->SynchronouslyFlushStartupTasks();
-  android_configuration.RedirectStreams();
-#endif
 
   RunTests(main_runner.get());
   base::RunLoop().RunUntilIdle();
 
   content::Shell::CloseAllWindows();
 
-#if !defined(OS_ANDROID)
-  // This Shutdown() is done earlier on Android. Generally BrowserMainRunner
-  // shutdown does not work on Android but it does for the WebTest harness.
   main_runner->Shutdown();
-#endif
 }

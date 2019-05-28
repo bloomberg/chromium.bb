@@ -85,10 +85,6 @@
 #include "base/mac/foundation_util.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "ui/android/view_android.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -545,12 +541,6 @@ bool BlinkTestController::ResetAfterWebTest() {
   composite_all_frames_node_storage_.clear();
   weak_factory_.InvalidateWeakPtrs();
 
-#if defined(OS_ANDROID)
-  // Re-using the shell's main window on Android causes issues with networking
-  // requests never succeeding. See http://crbug.com/277652.
-  DiscardMainWindow();
-#endif
-
   return true;
 }
 
@@ -978,17 +968,6 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
   if (main_window &&
       !base::ContainsKey(main_window_render_process_hosts_, process_host)) {
     main_window_render_process_hosts_.insert(process_host);
-
-#if defined(OS_ANDROID)
-    // On Android the native view doesn't automatically know its size. This
-    // causes problems with Viz, where the view/renderer synchronize sizes
-    // frequently. Make sure the view hosting the renderer has the same size
-    // that we're about to send.
-    main_window_->web_contents()->GetNativeView()->OnSizeChanged(
-        initial_size_.width(), initial_size_.height());
-    main_window_->web_contents()->GetNativeView()->OnPhysicalBackingSizeChanged(
-        initial_size_);
-#endif
 
     // Make sure the new renderer process_host has a test configuration shared
     // with other renderers.

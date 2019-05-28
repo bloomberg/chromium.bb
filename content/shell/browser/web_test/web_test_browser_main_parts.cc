@@ -34,11 +34,6 @@
 #include "content/shell/browser/shell_plugin_service_filter.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "net/android/network_change_notifier_factory_android.h"
-#include "net/base/network_change_notifier.h"
-#endif
-
 #if defined(USE_AURA) && defined(USE_X11)
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
 #endif
