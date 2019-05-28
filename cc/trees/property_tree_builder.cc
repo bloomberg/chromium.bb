@@ -30,7 +30,6 @@ namespace cc {
 
 namespace {
 
-template <typename LayerType>
 struct DataForRecursion {
   int transform_tree_parent;
   int transform_tree_parent_fixed;
@@ -90,35 +89,30 @@ class PropertyTreeBuilderContext {
  private:
   void BuildPropertyTreesInternal(
       LayerType* layer,
-      const DataForRecursion<LayerType>& data_from_parent) const;
+      const DataForRecursion& data_from_parent) const;
 
-  bool AddTransformNodeIfNeeded(
-      const DataForRecursion<LayerType>& data_from_ancestor,
-      LayerType* layer,
-      bool created_render_surface,
-      DataForRecursion<LayerType>* data_for_children) const;
+  bool AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
+                                LayerType* layer,
+                                bool created_render_surface,
+                                DataForRecursion* data_for_children) const;
 
-  void AddClipNodeIfNeeded(
-      const DataForRecursion<LayerType>& data_from_ancestor,
-      LayerType* layer,
-      bool created_transform_node,
-      DataForRecursion<LayerType>* data_for_children) const;
+  void AddClipNodeIfNeeded(const DataForRecursion& data_from_ancestor,
+                           LayerType* layer,
+                           bool created_transform_node,
+                           DataForRecursion* data_for_children) const;
 
-  bool AddEffectNodeIfNeeded(
-      const DataForRecursion<LayerType>& data_from_ancestor,
-      LayerType* layer,
-      DataForRecursion<LayerType>* data_for_children) const;
+  bool AddEffectNodeIfNeeded(const DataForRecursion& data_from_ancestor,
+                             LayerType* layer,
+                             DataForRecursion* data_for_children) const;
 
-  void AddScrollNodeIfNeeded(
-      const DataForRecursion<LayerType>& data_from_ancestor,
-      LayerType* layer,
-      DataForRecursion<LayerType>* data_for_children) const;
+  void AddScrollNodeIfNeeded(const DataForRecursion& data_from_ancestor,
+                             LayerType* layer,
+                             DataForRecursion* data_for_children) const;
 
-  bool UpdateRenderSurfaceIfNeeded(
-      int parent_effect_tree_id,
-      DataForRecursion<LayerType>* data_for_children,
-      bool subtree_has_rounded_corner,
-      bool created_transform_node) const;
+  bool UpdateRenderSurfaceIfNeeded(int parent_effect_tree_id,
+                                   DataForRecursion* data_for_children,
+                                   bool subtree_has_rounded_corner,
+                                   bool created_transform_node) const;
 
   LayerType* root_layer_;
   const LayerType* page_scale_layer_;
@@ -309,8 +303,7 @@ bool HasAnyAnimationTargetingProperty(const MutatorHost& host,
 // -------------------------------------------------------------------
 
 template <typename LayerType>
-static int GetTransformParent(const DataForRecursion<LayerType>& data,
-                              LayerType* layer) {
+static int GetTransformParent(const DataForRecursion& data, LayerType* layer) {
   return PositionConstraint(layer).is_fixed_position()
              ? data.transform_tree_parent_fixed
              : data.transform_tree_parent;
@@ -323,8 +316,7 @@ static bool LayerClipsSubtree(LayerType* layer) {
 }
 
 template <typename LayerType>
-static int GetScrollParentId(const DataForRecursion<LayerType>& data,
-                             LayerType* layer) {
+static int GetScrollParentId(const DataForRecursion& data, LayerType* layer) {
   const bool inherits_scroll = !ScrollParent(layer);
   const int id = inherits_scroll ? data.scroll_tree_parent
                                  : ScrollParent(layer)->scroll_tree_index();
@@ -365,10 +357,10 @@ static inline bool HasLatestSequenceNumber(const LayerImpl*, int) {
 
 template <typename LayerType>
 void PropertyTreeBuilderContext<LayerType>::AddClipNodeIfNeeded(
-    const DataForRecursion<LayerType>& data_from_ancestor,
+    const DataForRecursion& data_from_ancestor,
     LayerType* layer,
     bool created_transform_node,
-    DataForRecursion<LayerType>* data_for_children) const {
+    DataForRecursion* data_for_children) const {
   const bool inherits_clip = !ClipParent(layer);
   // Sanity check the clip parent already built clip node before us.
   DCHECK(inherits_clip ||
@@ -435,10 +427,10 @@ static inline bool ShouldFlattenTransform(LayerImpl* layer) {
 
 template <typename LayerType>
 bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
-    const DataForRecursion<LayerType>& data_from_ancestor,
+    const DataForRecursion& data_from_ancestor,
     LayerType* layer,
     bool created_render_surface,
-    DataForRecursion<LayerType>* data_for_children) const {
+    DataForRecursion* data_for_children) const {
   const bool is_root = !LayerParent(layer);
   const bool is_page_scale_layer = layer == page_scale_layer_;
   const bool is_overscroll_elasticity_layer =
@@ -992,9 +984,9 @@ bool UpdateSubtreeHasCopyRequestRecursive(LayerType* layer) {
 
 template <typename LayerType>
 bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
-    const DataForRecursion<LayerType>& data_from_ancestor,
+    const DataForRecursion& data_from_ancestor,
     LayerType* layer,
-    DataForRecursion<LayerType>* data_for_children) const {
+    DataForRecursion* data_for_children) const {
   const bool is_root = !LayerParent(layer);
   const bool has_transparency = EffectiveOpacity(layer) != 1.f;
   const bool has_potential_opacity_animation =
@@ -1136,7 +1128,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
 template <typename LayerType>
 bool PropertyTreeBuilderContext<LayerType>::UpdateRenderSurfaceIfNeeded(
     int parent_effect_tree_id,
-    DataForRecursion<LayerType>* data_for_children,
+    DataForRecursion* data_for_children,
     bool subtree_has_rounded_corner,
     bool created_transform_node) const {
   // No effect node was generated for this layer.
@@ -1224,9 +1216,9 @@ void SetHasTransformNode(LayerType* layer, bool val) {
 
 template <typename LayerType>
 void PropertyTreeBuilderContext<LayerType>::AddScrollNodeIfNeeded(
-    const DataForRecursion<LayerType>& data_from_ancestor,
+    const DataForRecursion& data_from_ancestor,
     LayerType* layer,
-    DataForRecursion<LayerType>* data_for_children) const {
+    DataForRecursion* data_for_children) const {
   int parent_id = GetScrollParentId(data_from_ancestor, layer);
 
   bool is_root = !LayerParent(layer);
@@ -1318,10 +1310,9 @@ void SetBackfaceVisibilityTransform(LayerType* layer,
 }
 
 template <typename LayerType>
-void SetSafeOpaqueBackgroundColor(
-    const DataForRecursion<LayerType>& data_from_ancestor,
-    LayerType* layer,
-    DataForRecursion<LayerType>* data_for_children) {
+void SetSafeOpaqueBackgroundColor(const DataForRecursion& data_from_ancestor,
+                                  LayerType* layer,
+                                  DataForRecursion* data_for_children) {
   SkColor background_color = layer->background_color();
   data_for_children->safe_opaque_background_color =
       SkColorGetA(background_color) == 255
@@ -1342,10 +1333,10 @@ static void SetLayerPropertyChangedForChild(LayerImpl* parent,
 template <typename LayerType>
 void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
     LayerType* layer,
-    const DataForRecursion<LayerType>& data_from_parent) const {
+    const DataForRecursion& data_from_parent) const {
   layer->set_property_tree_sequence_number(property_trees_.sequence_number);
 
-  DataForRecursion<LayerType> data_for_children(data_from_parent);
+  DataForRecursion data_for_children(data_from_parent);
   *data_for_children.subtree_has_rounded_corner = false;
 
   bool created_render_surface =
@@ -1477,7 +1468,7 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
     return;
   }
 
-  DataForRecursion<LayerType> data_for_recursion;
+  DataForRecursion data_for_recursion;
   data_for_recursion.transform_tree_parent = TransformTree::kInvalidNodeId;
   data_for_recursion.transform_tree_parent_fixed =
       TransformTree::kInvalidNodeId;
