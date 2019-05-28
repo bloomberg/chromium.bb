@@ -102,9 +102,11 @@ const wchar_t* const kTroublesomeDlls[] = {
     L"mdnsnsp.dll",                // Bonjour.
     L"moonsysh.dll",               // Moon Secure Antivirus.
     L"mpk.dll",                    // KGB Spy.
+    L"n64hooks.dll",               // Neilsen//NetRatings NetSight.
     L"npdivx32.dll",               // DivX.
     L"npggNT.des",                 // GameGuard 2008.
     L"npggNT.dll",                 // GameGuard (older).
+    L"nphooks.dll",                // Neilsen//NetRatings NetSight.
     L"oawatch.dll",                // Online Armor.
     L"pastali32.dll",              // PastaLeads.
     L"pavhook.dll",                // Panda Internet Security.
