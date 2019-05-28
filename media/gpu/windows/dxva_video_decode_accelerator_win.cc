@@ -1437,8 +1437,9 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
   // 1920 x 1088. We use 1088 to account for 16x16 macroblocks.
   ResolutionPair max_h264_resolutions(gfx::Size(1920, 1088), gfx::Size());
 
-  // VPX has no default resolutions since it may not even be supported.
-  ResolutionPair max_vpx_resolutions;
+  // VP9 has no default resolutions since it may not even be supported.
+  ResolutionPair max_vp9_profile0_resolutions;
+  ResolutionPair max_vp9_profile2_resolutions;
 
   if (base::win::GetVersion() > base::win::Version::WIN7) {
     // To detect if a driver supports the desired resolutions, we try and create
@@ -1458,12 +1459,17 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
             {gfx::Size(2560, 1440), gfx::Size(3840, 2160),
              gfx::Size(4096, 2160), gfx::Size(4096, 2304)});
 
-        // Despite the name this is the GUID for VP9.
         if (preferences.enable_accelerated_vpx_decode &&
             !workarounds.disable_accelerated_vpx_decode) {
-          max_vpx_resolutions = GetMaxResolutionsForGUIDs(
-              max_vpx_resolutions.first, video_device.Get(),
+          max_vp9_profile0_resolutions = GetMaxResolutionsForGUIDs(
+              max_vp9_profile0_resolutions.first, video_device.Get(),
               {D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0},
+              {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
+               gfx::Size(7680, 4320), gfx::Size(8192, 4320),
+               gfx::Size(8192, 8192)});
+          max_vp9_profile2_resolutions = GetMaxResolutionsForGUIDs(
+              max_vp9_profile2_resolutions.first, video_device.Get(),
+              {D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2},
               {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
                gfx::Size(7680, 4320), gfx::Size(8192, 4320),
                gfx::Size(8192, 8192)});
@@ -1473,16 +1479,24 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
   }
 
   for (const auto& supported_profile : kSupportedProfiles) {
-    const bool kIsVPX = supported_profile >= VP9PROFILE_MIN &&
-                        supported_profile <= VP9PROFILE_MAX;
-
-    // Skip adding VPX profiles if it's not supported or disabled.
-    if (kIsVPX && max_vpx_resolutions.first.IsEmpty())
-      continue;
-
-    const bool kIsH264 = supported_profile >= H264PROFILE_MIN &&
+    const bool is_h264 = supported_profile >= H264PROFILE_MIN &&
                          supported_profile <= H264PROFILE_MAX;
-    DCHECK(kIsH264 || kIsVPX);
+    const bool is_vp9 = supported_profile >= VP9PROFILE_MIN &&
+                        supported_profile <= VP9PROFILE_MAX;
+    DCHECK(is_h264 || is_vp9);
+
+    ResolutionPair max_resolutions;
+    if (is_h264) {
+      max_resolutions = max_h264_resolutions;
+    } else if (supported_profile == VP9PROFILE_PROFILE0) {
+      max_resolutions = max_vp9_profile0_resolutions;
+    } else if (supported_profile == VP9PROFILE_PROFILE2) {
+      max_resolutions = max_vp9_profile2_resolutions;
+    }
+
+    // Skip adding VP9 profiles if it's not supported or disabled.
+    if (is_vp9 && max_resolutions.first.IsEmpty())
+      continue;
 
     // Windows Media Foundation H.264 decoding does not support decoding videos
     // with any dimension smaller than 48 pixels:
@@ -1490,25 +1504,23 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
     //
     // TODO(dalecurtis): These values are too low. We should only be using
     // hardware decode for videos above ~360p, see http://crbug.com/684792.
-    const gfx::Size kMinResolution =
-        kIsH264 ? gfx::Size(48, 48) : gfx::Size(16, 16);
+    const gfx::Size min_resolution =
+        is_h264 ? gfx::Size(48, 48) : gfx::Size(16, 16);
 
     {
       SupportedProfile profile;
       profile.profile = supported_profile;
-      profile.min_resolution = kMinResolution;
-      profile.max_resolution =
-          kIsH264 ? max_h264_resolutions.first : max_vpx_resolutions.first;
+      profile.min_resolution = min_resolution;
+      profile.max_resolution = max_resolutions.first;
       profiles.push_back(profile);
     }
 
-    const gfx::Size kPortraitMax =
-        kIsH264 ? max_h264_resolutions.second : max_vpx_resolutions.second;
-    if (!kPortraitMax.IsEmpty()) {
+    const gfx::Size portrait_max_resolution = max_resolutions.second;
+    if (!portrait_max_resolution.IsEmpty()) {
       SupportedProfile profile;
       profile.profile = supported_profile;
-      profile.min_resolution = kMinResolution;
-      profile.max_resolution = kPortraitMax;
+      profile.min_resolution = min_resolution;
+      profile.max_resolution = portrait_max_resolution;
       profiles.push_back(profile);
     }
   }
