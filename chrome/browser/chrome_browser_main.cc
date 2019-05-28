@@ -1813,15 +1813,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   PostBrowserStart();
 
-#if defined(OS_ANDROID)
-  DCHECK(!parameters().ui_task);
-#else
+  // The ui_task can be injected by tests to replace the main message loop.
+  // In that case we Run() it here, and set a flag to avoid running the main
+  // message loop later, as the test will do so as needed from the |ui_task|.
   if (parameters().ui_task) {
     parameters().ui_task->Run();
     delete parameters().ui_task;
     run_message_loop_ = false;
   }
-#endif
 
 #if defined(OS_WIN)
   // Clean up old user data directory and disk cache directory.
