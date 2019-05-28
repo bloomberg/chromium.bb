@@ -41,10 +41,15 @@ class SharedWorkerHostTest : public testing::Test {
   }
 
   SharedWorkerHostTest()
-      : mock_render_process_host_(&browser_context_),
+      : default_mock_url_loader_factory_(
+            std::make_unique<NotImplementedNetworkURLLoaderFactory>()),
+        mock_render_process_host_(&browser_context_),
         service_(nullptr /* storage_partition */,
                  nullptr /* service_worker_context */,
-                 nullptr /* appcache_service */) {}
+                 nullptr /* appcache_service */) {
+    mock_render_process_host_.OverrideURLLoaderFactory(
+        default_mock_url_loader_factory_.get());
+  }
 
   base::WeakPtr<SharedWorkerHost> CreateHost() {
     GURL url("http://www.example.com/w.js");
@@ -140,6 +145,8 @@ class SharedWorkerHostTest : public testing::Test {
  protected:
   TestBrowserThreadBundle test_browser_thread_bundle_;
   TestBrowserContext browser_context_;
+  std::unique_ptr<network::mojom::URLLoaderFactory>
+      default_mock_url_loader_factory_;
   MockRenderProcessHost mock_render_process_host_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 

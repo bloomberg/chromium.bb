@@ -23,10 +23,6 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -40,30 +36,6 @@ namespace {
 const char kTestData[] = "Hello World";
 const char kEntryKey[] = "FooEntry";
 const int kCacheEntryIndex = 1;
-
-class NullURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  NullURLRequestContextGetter() : null_task_runner_(new base::NullTaskRunner) {}
-
-  net::URLRequestContext* GetURLRequestContext() override { return nullptr; }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return null_task_runner_;
-  }
-
- private:
-  ~NullURLRequestContextGetter() override {}
-
-  scoped_refptr<base::SingleThreadTaskRunner> null_task_runner_;
-};
-
-// Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
-// the memory.
-std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
-    storage::BlobStorageContext* blob_storage_context) {
-  return std::make_unique<storage::BlobProtocolHandler>(blob_storage_context);
-}
 
 // A CacheStorageBlobToDiskCache that can delay reading from blobs.
 class TestCacheStorageBlobToDiskCache : public CacheStorageBlobToDiskCache {
@@ -93,9 +65,6 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
   CacheStorageBlobToDiskCacheTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()),
-        url_request_context_getter_(
-            BrowserContext::GetDefaultStoragePartition(browser_context_.get())->
-                GetURLRequestContext()),
         cache_storage_blob_to_disk_cache_(
             new TestCacheStorageBlobToDiskCache()),
         data_(kTestData),
@@ -104,7 +73,6 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
 
   void SetUp() override {
     InitBlobStorage();
-    InitURLRequestJobFactory();
     InitBlob();
     InitCache();
   }
@@ -115,17 +83,6 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     blob_storage_context_ = blob_storage_context->context();
-  }
-
-  void InitURLRequestJobFactory() {
-    url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
-    url_request_job_factory_->SetProtocolHandler(
-        "blob", CreateMockBlobProtocolHandler(blob_storage_context_));
-
-    net::URLRequestContext* url_request_context =
-        url_request_context_getter_->GetURLRequestContext();
-
-    url_request_context->set_job_factory(url_request_job_factory_.get());
   }
 
   void InitBlob() {
@@ -190,9 +147,7 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
 
   TestBrowserThreadBundle browser_thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
-  std::unique_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
   storage::BlobStorageContext* blob_storage_context_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   std::unique_ptr<storage::BlobDataHandle> blob_handle_;
   std::unique_ptr<disk_cache::Backend> cache_backend_;
   ScopedWritableEntry disk_cache_entry_;

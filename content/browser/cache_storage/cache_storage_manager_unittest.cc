@@ -43,9 +43,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -212,14 +209,6 @@ class TestCacheStorageObserver : public CacheStorageContextImpl::Observer {
   int notify_content_changed_count = 0;
 };
 
-// Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
-// the memory.
-std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
-    storage::BlobStorageContext* blob_storage_context) {
-  return base::WrapUnique(
-      new storage::BlobProtocolHandler(blob_storage_context));
-}
-
 class CacheStorageManagerTest : public testing::Test {
  public:
   CacheStorageManagerTest()
@@ -318,16 +307,6 @@ class CacheStorageManagerTest : public testing::Test {
 
     blob_storage_context_ = blob_storage_context->context();
 
-    url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
-    url_request_job_factory_->SetProtocolHandler(
-        "blob", CreateMockBlobProtocolHandler(blob_storage_context->context()));
-
-    net::URLRequestContext* url_request_context =
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)->
-              GetURLRequestContext()->GetURLRequestContext();
-
-    url_request_context->set_job_factory(url_request_job_factory_.get());
-
     base::FilePath temp_dir_path;
     if (!MemoryOnly())
       temp_dir_path = temp_dir_.GetPath();
@@ -377,7 +356,6 @@ class CacheStorageManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     quota_manager_proxy_ = nullptr;
 
-    url_request_job_factory_.reset();
     blob_storage_context_ = nullptr;
 
     quota_policy_ = nullptr;
@@ -750,7 +728,6 @@ class CacheStorageManagerTest : public testing::Test {
 
   TestBrowserThreadBundle browser_thread_bundle_;
   TestBrowserContext browser_context_;
-  std::unique_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
   storage::BlobStorageContext* blob_storage_context_;
 
   scoped_refptr<MockSpecialStoragePolicy> quota_policy_;

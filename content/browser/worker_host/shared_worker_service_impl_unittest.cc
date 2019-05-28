@@ -44,13 +44,15 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
     return connector;
   }
 
-  static bool CheckReceivedFactoryRequest(
-      blink::mojom::SharedWorkerFactoryRequest* request) {
-    if (s_factory_request_received_.empty())
-      return false;
-    *request = std::move(s_factory_request_received_.front());
+  static blink::mojom::SharedWorkerFactoryRequest WaitForFactoryRequest() {
+    if (s_factory_request_received_.empty()) {
+      base::RunLoop run_loop;
+      s_factory_request_callback_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+    auto rv = std::move(s_factory_request_received_.front());
     s_factory_request_received_.pop();
-    return true;
+    return rv;
   }
 
   static bool CheckNotReceivedFactoryRequest() {
@@ -58,6 +60,8 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
   }
 
   static void BindSharedWorkerFactory(mojo::ScopedMessagePipeHandle handle) {
+    if (s_factory_request_callback_)
+      std::move(s_factory_request_callback_).Run();
     s_factory_request_received_.push(
         blink::mojom::SharedWorkerFactoryRequest(std::move(handle)));
   }
@@ -91,6 +95,7 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
   std::unique_ptr<TestBrowserContext> browser_context_;
   static std::queue<blink::mojom::SharedWorkerFactoryRequest>
       s_factory_request_received_;
+  static base::OnceClosure s_factory_request_callback_;
   std::unique_ptr<MockRenderProcessHostFactory> render_process_host_factory_;
   std::unique_ptr<NotImplementedNetworkURLLoaderFactory> url_loader_factory_;
 
@@ -101,6 +106,9 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
 // static
 std::queue<blink::mojom::SharedWorkerFactoryRequest>
     SharedWorkerServiceImplTest::s_factory_request_received_;
+
+// static
+base::OnceClosure SharedWorkerServiceImplTest::s_factory_request_callback_;
 
 namespace {
 
@@ -144,10 +152,8 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
                             renderer_host, render_frame_host->GetRoutingID()),
                         kUrl, "name", &client, &local_port);
 
-  base::RunLoop().RunUntilIdle();
-
-  blink::mojom::SharedWorkerFactoryRequest factory_request;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request));
+  blink::mojom::SharedWorkerFactoryRequest factory_request =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory(std::move(factory_request));
   base::RunLoop().RunUntilIdle();
 
@@ -222,8 +228,8 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
 
   base::RunLoop().RunUntilIdle();
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request));
+  blink::mojom::SharedWorkerFactoryRequest factory_request =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory(std::move(factory_request));
   base::RunLoop().RunUntilIdle();
 
@@ -362,8 +368,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase) {
                         kUrl, kName, &client0, &local_port0);
   base::RunLoop().RunUntilIdle();
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request));
+  blink::mojom::SharedWorkerFactoryRequest factory_request =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory(std::move(factory_request));
   base::RunLoop().RunUntilIdle();
 
@@ -435,8 +441,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
                         kUrl0, kName, &client0, &local_port0);
   base::RunLoop().RunUntilIdle();
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request0;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request0));
+  blink::mojom::SharedWorkerFactoryRequest factory_request0 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory0(std::move(factory_request0));
   base::RunLoop().RunUntilIdle();
 
@@ -460,8 +466,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
                         kUrl1, kName, &client1, &local_port1);
   base::RunLoop().RunUntilIdle();
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request1;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request1));
+  blink::mojom::SharedWorkerFactoryRequest factory_request1 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory1(std::move(factory_request1));
   base::RunLoop().RunUntilIdle();
 
@@ -520,8 +526,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
                         kUrl, kName0, &client0, &local_port0);
   base::RunLoop().RunUntilIdle();
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request0;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request0));
+  blink::mojom::SharedWorkerFactoryRequest factory_request0 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory0(std::move(factory_request0));
   base::RunLoop().RunUntilIdle();
 
@@ -545,8 +551,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
                         kUrl, kName1, &client1, &local_port1);
   base::RunLoop().RunUntilIdle();
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request1;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request1));
+  blink::mojom::SharedWorkerFactoryRequest factory_request1 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory1(std::move(factory_request1));
   base::RunLoop().RunUntilIdle();
 
@@ -613,8 +619,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
 
   // Check that the worker was created.
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request));
+  blink::mojom::SharedWorkerFactoryRequest factory_request =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory(std::move(factory_request));
 
   base::RunLoop().RunUntilIdle();
@@ -688,12 +694,12 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
 
   // Check that both workers were created.
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request0;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request0));
+  blink::mojom::SharedWorkerFactoryRequest factory_request0 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory0(std::move(factory_request0));
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request1;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request1));
+  blink::mojom::SharedWorkerFactoryRequest factory_request1 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory1(std::move(factory_request1));
 
   base::RunLoop().RunUntilIdle();
@@ -777,12 +783,12 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
 
   // Check that both workers were created.
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request0;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request0));
+  blink::mojom::SharedWorkerFactoryRequest factory_request0 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory0(std::move(factory_request0));
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request1;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request1));
+  blink::mojom::SharedWorkerFactoryRequest factory_request1 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory1(std::move(factory_request1));
 
   base::RunLoop().RunUntilIdle();
@@ -866,8 +872,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
 
   // Starts a worker.
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request0;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request0));
+  blink::mojom::SharedWorkerFactoryRequest factory_request0 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory0(std::move(factory_request0));
 
   base::RunLoop().RunUntilIdle();
@@ -900,8 +906,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
 
   // The previous worker is unavailable, so a new worker is created.
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request1;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request1));
+  blink::mojom::SharedWorkerFactoryRequest factory_request1 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory1(std::move(factory_request1));
 
   base::RunLoop().RunUntilIdle();
@@ -987,8 +993,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
 
   // The previous worker is unavailable, so a new worker is created.
 
-  blink::mojom::SharedWorkerFactoryRequest factory_request1;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request1));
+  blink::mojom::SharedWorkerFactoryRequest factory_request1 =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory1(std::move(factory_request1));
 
   EXPECT_TRUE(CheckNotReceivedFactoryRequest());
@@ -1064,8 +1070,8 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest3) {
   base::RunLoop().RunUntilIdle();
 
   // Expect a factory request.
-  blink::mojom::SharedWorkerFactoryRequest factory_request;
-  EXPECT_TRUE(CheckReceivedFactoryRequest(&factory_request));
+  blink::mojom::SharedWorkerFactoryRequest factory_request =
+      WaitForFactoryRequest();
   MockSharedWorkerFactory factory(std::move(factory_request));
   base::RunLoop().RunUntilIdle();
 
