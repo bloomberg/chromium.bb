@@ -33,6 +33,10 @@ issues]].
   - Add more known pattern exceptions of Chinese characters.
   - Apply "word" opcode to 倔 and 据.
   - Change dot pattern of ＆ to 456-12346.
+- Update Dutch Braille thanks to Bert Frees
+  - Hyphen cancels the effect of emphasis indicator
+  - Left/right curly brackets
+  - Write currency symbols in full if they come after the number
 
 ** Other changes
 - Remove some code duplication in pattern.c thanks to Bert Frees
