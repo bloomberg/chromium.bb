@@ -299,6 +299,7 @@ void QuickUnlockPrivateGetAuthTokenFunction::OnAuthSuccess(
   Profile* profile = GetActiveProfile(browser_context());
   QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
+  quick_unlock_storage->MarkStrongAuth();
   result->token = quick_unlock_storage->CreateAuthToken(user_context);
   result->lifetime_seconds = AuthToken::kTokenExpirationSeconds;
 

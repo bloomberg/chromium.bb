@@ -341,6 +341,36 @@ TEST_F('CrSettingsPasswordsSectionTest', 'All', function() {
   mocha.run();
 });
 
+GEN('#if defined(OS_CHROMEOS)');
+/**
+ * Test fixture for CrOS specific behavior in
+ * chrome/browser/resources/settings/autofill_page/passwords_section.html.
+ * See http://crbug.com/917178 for details.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPasswordsSectionTest_Cros() {}
+
+CrSettingsPasswordsSectionTest_Cros.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/autofill_page/passwords_section.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'passwords_and_autofill_fake_data.js',
+    'passwords_section_test_cros.js',
+    'test_password_manager_proxy.js',
+  ]),
+};
+
+TEST_F('CrSettingsPasswordsSectionTest_Cros', 'All', function() {
+  mocha.run();
+});
+GEN('#endif  // defined(OS_CHROMEOS)');
+
 /**
  * Test fixture for
  * chrome/browser/resources/settings/autofill_page/payments_section.html.
