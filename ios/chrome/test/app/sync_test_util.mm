@@ -297,9 +297,8 @@ BOOL IsTypedUrlPresentOnClient(const GURL& url,
 
   __block bool history_service_callback_called = false;
   __block int count = 0;
-  using history::OriginCountAndLastVisitMap;
   history_service->GetCountsAndLastVisitForOriginsForTesting(
-      origins, base::BindRepeating(^(const OriginCountAndLastVisitMap& result) {
+      origins, base::BindOnce(^(history::OriginCountAndLastVisitMap result) {
         auto iter = result.find(block_safe_url);
         if (iter != result.end())
           count = iter->second.first;

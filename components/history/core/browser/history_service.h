@@ -138,14 +138,14 @@ class HistoryService : public KeyedService {
 
   // Callback for value asynchronously returned by
   // GetCountsAndLastVisitForOrigins().
-  typedef base::Callback<void(const OriginCountAndLastVisitMap&)>
-      GetCountsAndLastVisitForOriginsCallback;
+  using GetCountsAndLastVisitForOriginsCallback =
+      base::OnceCallback<void(OriginCountAndLastVisitMap)>;
 
   // Gets the counts and most recent visit date of URLs that belong to |origins|
   // in the history database.
   void GetCountsAndLastVisitForOriginsForTesting(
       const std::set<GURL>& origins,
-      const GetCountsAndLastVisitForOriginsCallback& callback) const;
+      GetCountsAndLastVisitForOriginsCallback callback) const;
 
   // Navigation ----------------------------------------------------------------
 

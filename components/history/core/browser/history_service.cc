@@ -334,14 +334,14 @@ void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
 
 void HistoryService::GetCountsAndLastVisitForOriginsForTesting(
     const std::set<GURL>& origins,
-    const GetCountsAndLastVisitForOriginsCallback& callback) const {
+    GetCountsAndLastVisitForOriginsCallback callback) const {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
-      base::Bind(&HistoryBackend::GetCountsAndLastVisitForOrigins,
-                 history_backend_, origins),
-      callback);
+      base::BindOnce(&HistoryBackend::GetCountsAndLastVisitForOrigins,
+                     history_backend_, origins),
+      std::move(callback));
 }
 
 void HistoryService::AddPage(const GURL& url,
