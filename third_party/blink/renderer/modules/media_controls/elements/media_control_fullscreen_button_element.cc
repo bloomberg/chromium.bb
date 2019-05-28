@@ -68,7 +68,9 @@ void MediaControlFullscreenButtonElement::DefaultEventHandler(Event& event) {
       GetMediaControls().ExitFullscreen();
     else
       GetMediaControls().EnterFullscreen();
-    event.SetDefaultHandled();
+
+    if (!IsOverflowElement())
+      event.SetDefaultHandled();
   }
   MediaControlInputElement::DefaultEventHandler(event);
 }
