@@ -313,25 +313,6 @@ def ConstructViceroyBuildDetailsUri(build_id):
   return _link % {'build_id': build_id}
 
 
-def ConstructGoldenEyeSuiteDetailsUri(job_id=None, build_id=None):
-  """Return the dashboard (goldeneye) URL of suite details for job or build.
-
-  Args:
-    job_id: AFE job id.
-    build_id: CIDB id for the master build.
-
-  Returns:
-    The fully formed URI.
-  """
-  if job_id is None and build_id is None:
-    return None
-  _link = 'http://cros-goldeneye/healthmonitoring/suiteDetails?'
-  if job_id:
-    return _link + 'suiteId=%d' % int(job_id)
-  else:
-    return _link + 'cidbBuildId=%d' % int(build_id)
-
-
 def ConstructGoldenEyeBuildDetailsUri(build_id):
   """Return the dashboard (goldeneye) URL for this run.
 

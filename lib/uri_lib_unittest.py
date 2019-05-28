@@ -162,19 +162,6 @@ class ConstructUrlTests(cros_test_lib.TestCase):
         'https://viceroy.corp.google.com/chromeos/build_details?build_id=123')
     self.assertEqual(actual, expected)
 
-  def testConstructGoldenEyeSuiteDetailsUriWithJobId(self):
-    """Test generating GoldenEye suite details URIs with job ID."""
-    actual = uri_lib.ConstructGoldenEyeSuiteDetailsUri(job_id=123)
-    expected = 'http://cros-goldeneye/healthmonitoring/suiteDetails?suiteId=123'
-    self.assertEqual(actual, expected)
-
-  def testConstructGoldenEyeSuiteDetailsUriWithBuildId(self):
-    """Test generating GoldenEye suite details URIs with CIDB build ID."""
-    actual = uri_lib.ConstructGoldenEyeSuiteDetailsUri(build_id=123)
-    expected = (
-        'http://cros-goldeneye/healthmonitoring/suiteDetails?cidbBuildId=123')
-    self.assertEqual(actual, expected)
-
   def testConstructGoldenEyeBuildDetailsUri(self):
     """Test generating GoldenEye suite details URIs with suite ID."""
     actual = uri_lib.ConstructGoldenEyeBuildDetailsUri(123)

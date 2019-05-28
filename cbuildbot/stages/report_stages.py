@@ -883,10 +883,6 @@ class ReportStage(generic_stages.BuilderStage,
       if build_id is not None:
         details_link = uri_lib.ConstructViceroyBuildDetailsUri(build_id)
         logging.PrintBuildbotLink('Build details', details_link)
-        suite_details_link = uri_lib.ConstructGoldenEyeSuiteDetailsUri(
-            build_id=build_id)
-        logging.PrintBuildbotLink('Build details', details_link)
-        logging.PrintBuildbotLink('Suite details', suite_details_link)
 
       # Generate links to archived artifacts if there are any.  All the
       # archived artifacts for one run/config are in one location, so the link
