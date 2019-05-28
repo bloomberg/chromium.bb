@@ -192,9 +192,8 @@ emphletter underline 456
 # . (FULL STOP), ' (APOSTROPHE), ‘ (LEFT SINGLE QUOTATION MARK)
 # and ’ (RIGHT SINGLE QUOTATION MARK).
 capsmodechars +&.'‘’
-# The same goes for the emphasis "state". This is not yet supported.
-# See: https://github.com/liblouis/liblouis/issues/116
-#emphmodechars +&.'
+# The same goes for the emphasis "state".
+emphmodechars +&.'
 
 lencapsphrase 4
 begcapsword 45

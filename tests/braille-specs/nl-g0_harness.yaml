@@ -238,24 +238,21 @@ tests:
     - ⠸⠺⠁⠞⠑⠗⠠⠏⠇⠁⠝⠞
     - typeform:
         underline: '+++++     '
-  - - Emphasis and hyphens (not implemented)
+  - - Koppelteken heft werking op van zowel drukwijzigingsteken als permanent hoofdletterteken
     - ZUID-AFRIKA was zijn droom.
     - ⠸⠘⠵⠥⠊⠙⠤⠸⠘⠁⠋⠗⠊⠅⠁ ⠺⠁⠎ ⠵⠊⠚⠝ ⠙⠗⠕⠕⠍⠲
     - typeform:
         {bold: '+++++++++++                '}
-      xfail: true
-  - - Emphasis and hyphens (not implemented)
+  - - Koppelteken heft werking op van zowel drukwijzigingsteken dus geen herstelteken nodig
     - BTW-tarieven
     - ⠸⠘⠃⠞⠺⠤⠞⠁⠗⠊⠑⠧⠑⠝
     - typeform:
         {italic: '+++         '}
-      xfail: true
-  - - Emphasis and hyphens (not implemented)
+  - - Koppelteken heft werking op van drukwijzigingsteken
     - Zuid-Afrika
     - ⠸⠨⠵⠥⠊⠙⠤⠸⠨⠁⠋⠗⠊⠅⠁
     - typeform:
         {bold: '+++++++++++'}
-      xfail: true
   - - 3de
     - ⠼⠉⠸⠙⠑
     - typeform:
