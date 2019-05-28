@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "skia/ext/skia_utils_base.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
@@ -39,6 +40,12 @@ uint64_t TestClipboard::GetSequenceNumber(ClipboardType type) const {
 
 bool TestClipboard::IsFormatAvailable(const ClipboardFormatType& format,
                                       ClipboardType type) const {
+#if defined(OS_LINUX)
+  // The linux clipboard treats the presence of text on the clipboard
+  // as the url format being available.
+  if (format.Equals(ClipboardFormatType::GetUrlType()))
+    return IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), type);
+#endif  // OS_LINUX
   const DataStore& store = GetStore(type);
   return store.data.find(format) != store.data.end();
 }

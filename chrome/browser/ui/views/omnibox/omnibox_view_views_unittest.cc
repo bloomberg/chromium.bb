@@ -615,13 +615,6 @@ class OmniboxViewViewsClipboardTest
 };
 
 TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
-  // TODO(crbug.com/396477) Make this an interactive ui test so there isn't
-  // contention for the system clipboard.
-  // Force use of the system clipboard because this test checks for URL format
-  // on Linux, which is not supported by test clipboard.
-  ui::Clipboard::DestroyClipboardForCurrentThread();
-  ui::Clipboard::GetForCurrentThread();
-
   omnibox_view()->SelectAll(false);
   ASSERT_TRUE(omnibox_view()->IsSelectAll());
 
