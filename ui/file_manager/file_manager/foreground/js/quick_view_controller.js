@@ -443,11 +443,12 @@ QuickViewController.LOCAL_VOLUME_TYPES_ = [
 ];
 
 /**
- * List of unsupported image subtypes
+ * List of unsupported image subtypes excluded from being displayed in
+ * QuickView. An "unsupported type" message is shown instead.
  * @private @const {!Array<string>}
  */
 QuickViewController.UNSUPPORTED_IMAGE_SUBTYPES_ = [
-  'TIFF',
+  'TIFF',  // crbug.com/624109
 ];
 
 /**
