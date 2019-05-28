@@ -275,9 +275,12 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
       {"application/xml+blah", MimeType::kOthers},
 
       // Types protected without sniffing.
+      {"application/gzip", MimeType::kNeverSniffed},
       {"application/x-protobuf", MimeType::kNeverSniffed},
       {"application/x-gzip", MimeType::kNeverSniffed},
+      {"application/x-www-form-urlencoded", MimeType::kNeverSniffed},
       {"application/zip", MimeType::kNeverSniffed},
+      {"text/event-stream", MimeType::kNeverSniffed},
       // TODO(lukasza): https://crbug.com/944162: Add application/pdf and
       // text/csv to the list of content types tested here (after
       // kMimeHandlerViewInCrossProcessFrame gets enabled by default).

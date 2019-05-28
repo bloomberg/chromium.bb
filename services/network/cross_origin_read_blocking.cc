@@ -220,9 +220,12 @@ base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
       //
       // TODO(lukasza): https://crbug.com/802836#c11: Add
       // application/signed-exchange.
+      "application/gzip",
       "application/x-gzip",
       "application/x-protobuf",
+      "application/x-www-form-urlencoded",
       "application/zip",
+      "text/event-stream",
   });
 
   // All items need to be lower-case, to support case-insensitive comparisons
