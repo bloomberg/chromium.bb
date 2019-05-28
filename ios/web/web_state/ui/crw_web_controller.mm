@@ -186,19 +186,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   return net::GURLWithNSURL(net::NSURLWithGURL(url));
 }
 
-// Returns true if workaround for loading restricted URLs should be applied.
-// TODO(crbug.com/954332): Remove this workaround when
-// https://bugs.webkit.org/show_bug.cgi?id=196930 is fixed.
-bool RequiresContentFilterBlockingWorkaround() {
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
-    return false;
-
-  if (@available(iOS 12.2, *))
-    return true;
-
-  return false;
-}
-
 }  // namespace
 
 @interface CRWWebController () <BrowsingDataRemoverObserver,
@@ -1854,7 +1841,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   WKNavigation* navigation = [self.webView loadRequest:request];
 
   NSError* error = originalContext ? originalContext->GetError() : nil;
-  if (RequiresContentFilterBlockingWorkaround() &&
+  if (web::RequiresContentFilterBlockingWorkaround() &&
       [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
       error.code == web::kWebKitErrorUrlBlockedByContentFilter) {
     GURL currentWKItemURL =
@@ -4186,7 +4173,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
         // If URL is blocked due to Restriction, do not take any further
         // action as WKWebView will show a built-in error.
-        if (!RequiresContentFilterBlockingWorkaround()) {
+        if (!web::RequiresContentFilterBlockingWorkaround()) {
           return;
         } else if (!PageTransitionIsNewNavigation(transition)) {
           if (transition & ui::PAGE_TRANSITION_RELOAD) {

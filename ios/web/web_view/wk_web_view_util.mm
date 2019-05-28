@@ -4,6 +4,8 @@
 
 #import "ios/web/web_view/wk_web_view_util.h"
 
+#import "ios/web/public/web_client.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -31,4 +33,14 @@ bool IsSafeBrowsingWarningDisplayedInWebView(WKWebView* web_view) {
              isKindOfClass:[UIButton class]];
 }
 
+bool RequiresContentFilterBlockingWorkaround() {
+  if (!GetWebClient()->IsSlimNavigationManagerEnabled())
+    return false;
+
+  if (@available(iOS 12.2, *))
+    return true;
+
+  return false;
 }
+
+}  // namespace web
