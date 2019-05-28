@@ -1132,8 +1132,9 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 				}
 				in++;
 			}
-			if (out >= MAXSTRING) {
-				result->length = out;
+			if (out >= MAXSTRING - 1) {
+				compileError(nested, "Token too long");
+				result->length = MAXSTRING - 1;
 				return 1;
 			}
 			result->chars[out++] = (widechar)ch;
@@ -1145,8 +1146,9 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 			if (ch >= first0Bit[numBytes]) break;
 		utf32 = ch & (0XFF - first0Bit[numBytes]);
 		for (k = 0; k < numBytes; k++) {
-			if (in >= MAXSTRING) break;
-			if (out >= MAXSTRING) {
+			if (in >= MAXSTRING - 1) break;
+			if (out >= MAXSTRING - 1) {
+				compileError(nested, "Token too long");
 				result->length = lastOutSize;
 				return 1;
 			}
@@ -1158,7 +1160,8 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 			}
 			utf32 = (utf32 << 6) + (token->chars[in++] & 0x3f);
 		}
-		if (out >= MAXSTRING) {
+		if (out >= MAXSTRING - 1) {
+			compileError(nested, "Token too long");
 			result->length = lastOutSize;
 			return 1;
 		}
