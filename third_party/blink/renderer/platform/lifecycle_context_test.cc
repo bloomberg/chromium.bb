@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/lifecycle_observer.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -140,8 +140,7 @@ TEST(LifecycleContextTest, ObserverRemovedDuringNotifyDestroyed) {
 
 // This is a regression test for http://crbug.com/854639.
 TEST(LifecycleContextTest, ShouldNotHitCFICheckOnIncrementalMarking) {
-  bool was_enabled = RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled();
-  RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(true);
+  ScopedHeapIncrementalMarkingForTest scoped_feature(true);
   ThreadState* thread_state = ThreadState::Current();
   thread_state->IncrementalMarkingStart(BlinkGC::GCReason::kForcedGCForTesting);
 
@@ -160,8 +159,6 @@ TEST(LifecycleContextTest, ShouldNotHitCFICheckOnIncrementalMarking) {
          ThreadState::kIncrementalMarkingStepScheduled)
     thread_state->IncrementalMarkingStep(BlinkGC::kNoHeapPointersOnStack);
   thread_state->IncrementalMarkingFinalize();
-
-  RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(was_enabled);
 }
 
 TEST(LifecycleContextTest, ForEachObserver) {
