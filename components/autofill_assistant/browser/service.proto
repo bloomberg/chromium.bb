@@ -134,6 +134,12 @@ message ChipProto {
 
   // The text shown on the chip. Not required if icon is set.
   optional string text = 3;
+
+  // Whether the chip is sticky. When the bottom sheet is configured with the
+  // ConfigureBottomSheetProto::PeekMode::HANDLE_HEADER peek mode and the
+  // sheet is minimized, the first sticky action will be displayed instead of
+  // the profile icon.
+  optional bool sticky = 4;
 }
 
 enum ChipType {

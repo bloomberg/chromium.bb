@@ -96,6 +96,7 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
     script->handle.name = chip.text();
     script->handle.chip_type = chip.type();
     script->handle.chip_icon = chip.icon();
+    script->handle.chip_sticky = chip.sticky();
   } else {
     script->handle.name = presentation.name();
     script->handle.chip_type = presentation.chip_type();

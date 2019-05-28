@@ -28,6 +28,7 @@ struct ScriptHandle {
   bool autostart;
   ChipType chip_type;
   ChipIcon chip_icon;
+  bool chip_sticky = false;
 
   // If set, the script might be run during WaitForDom actions with
   // allow_interrupt=true.

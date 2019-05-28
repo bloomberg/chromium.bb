@@ -15,15 +15,19 @@ import org.chromium.chrome.autofill_assistant.R;
  * The {@link ViewHolder} responsible for reflecting an {@link AssistantChip} to a {@link
  * ButtonView}.
  */
-class AssistantChipViewHolder extends ViewHolder {
-    final ButtonView mView;
+public class AssistantChipViewHolder extends ViewHolder {
+    private final ButtonView mView;
 
-    private AssistantChipViewHolder(ButtonView view) {
+    /** The type of this ViewHolder, as returned by {@link #getViewType(AssistantChip)}. */
+    private final int mType;
+
+    private AssistantChipViewHolder(ButtonView view, int type) {
         super(view);
         mView = view;
+        mType = type;
     }
 
-    static AssistantChipViewHolder create(ViewGroup parent, int viewType) {
+    public static AssistantChipViewHolder create(ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         ButtonView view = null;
         switch (viewType % AssistantChip.Type.NUM_ENTRIES) {
@@ -49,10 +53,10 @@ class AssistantChipViewHolder extends ViewHolder {
             view.setEnabled(false);
         }
 
-        return new AssistantChipViewHolder(view);
+        return new AssistantChipViewHolder(view, viewType);
     }
 
-    static int getViewType(AssistantChip chip) {
+    public static int getViewType(AssistantChip chip) {
         // We add AssistantChip.Type.CHIP_TYPE_NUMBER to differentiate between enabled and disabled
         // chips of the same type. Ideally, we should return a (type, disabled) tuple but
         // RecyclerView does not allow that.
@@ -61,6 +65,14 @@ class AssistantChipViewHolder extends ViewHolder {
         }
 
         return chip.getType();
+    }
+
+    public ButtonView getView() {
+        return mView;
+    }
+
+    public int getType() {
+        return mType;
     }
 
     public void bind(AssistantChip chip) {

@@ -44,19 +44,37 @@ public class AssistantChip {
         int REFRESH = 3;
     }
 
+    /**
+     * The type of the chip. This will impact the background, border and text colors of the chip.
+     */
     private final @Type int mType;
+
+    /** The icon, shown next to the text.*/
     private final @Icon int mIcon;
+
+    /** The text displayed on the chip. */
     private final String mText;
+
+    /** Whether this chip is enabled or not. */
     private final boolean mDisabled;
+
+    /**
+     * Whether this chip is sticky. A sticky chip will be a candidate to be displayed in the header
+     * if the peek mode of the sheet is HANDLE_HEADER.
+     */
+    private final boolean mSticky;
+
+    /** The callback that will be triggered when this chip is clicked. */
     private final Runnable mSelectedListener;
 
     public AssistantChip(@Type int type, @Icon int icon, String text, boolean disabled,
-            Runnable selectedListener) {
+            boolean sticky, Runnable selectedListener) {
         mType = type;
         mIcon = icon;
         mText = text;
-        mSelectedListener = selectedListener;
         mDisabled = disabled;
+        mSticky = sticky;
+        mSelectedListener = selectedListener;
     }
 
     public int getType() {
@@ -73,6 +91,10 @@ public class AssistantChip {
 
     public boolean isDisabled() {
         return mDisabled;
+    }
+
+    public boolean isSticky() {
+        return mSticky;
     }
 
     public Runnable getSelectedListener() {

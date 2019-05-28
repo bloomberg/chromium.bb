@@ -14,7 +14,8 @@ Chip& Chip::operator=(Chip&&) = default;
 Chip::Chip(const ChipProto& chip_proto)
     : type(chip_proto.type()),
       icon(chip_proto.icon()),
-      text(chip_proto.text()) {}
+      text(chip_proto.text()),
+      sticky(chip_proto.sticky()) {}
 
 void SetDefaultChipType(std::vector<Chip>* chips) {
   ChipType default_type = SUGGESTION;

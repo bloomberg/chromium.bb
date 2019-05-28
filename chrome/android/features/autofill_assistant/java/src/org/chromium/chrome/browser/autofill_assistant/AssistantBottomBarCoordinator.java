@@ -134,6 +134,8 @@ class AssistantBottomBarCoordinator
                     // to show parts of the content view.
                     bottomSheetContainer.setVisibility(View.VISIBLE);
                 }
+
+                maybeShowHeaderChip();
             }
 
             @Override
@@ -167,6 +169,14 @@ class AssistantBottomBarCoordinator
                     mContent.mScrollableContent.setClipChildren(canScroll);
                     mContent.mBottomBarView.setClipChildren(canScroll);
                 });
+    }
+
+    private void maybeShowHeaderChip() {
+        boolean showChip = mBottomSheetController.getBottomSheet().getSheetState()
+                        == BottomSheet.SheetState.PEEK
+                && mPeekHeightCoordinator.getPeekMode()
+                        == AssistantPeekHeightCoordinator.PeekMode.HANDLE_HEADER;
+        mModel.getHeaderModel().set(AssistantHeaderModel.CHIP_VISIBLE, showChip);
     }
 
     /**
@@ -229,6 +239,7 @@ class AssistantBottomBarCoordinator
     /** Set the peek mode. */
     void setPeekMode(@AssistantPeekHeightCoordinator.PeekMode int peekMode) {
         mPeekHeightCoordinator.setPeekMode(peekMode);
+        maybeShowHeaderChip();
     }
 
     @Override

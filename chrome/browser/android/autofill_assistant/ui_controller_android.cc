@@ -404,31 +404,36 @@ void UiControllerAndroid::UpdateActions() {
     switch (action.type) {
       case HIGHLIGHTED_ACTION:
         Java_AutofillAssistantUiController_addHighlightedActionButton(
-            env, java_object_, chips, icon, text, i, action.disabled);
+            env, java_object_, chips, icon, text, i, action.disabled,
+            action.sticky);
         break;
 
       case NORMAL_ACTION:
         Java_AutofillAssistantUiController_addActionButton(
-            env, java_object_, chips, icon, text, i, action.disabled);
+            env, java_object_, chips, icon, text, i, action.disabled,
+            action.sticky);
         break;
 
       case CANCEL_ACTION:
         // A Cancel button sneaks in an UNDO snackbar before executing the
         // action, while a close button behaves like a normal button.
         Java_AutofillAssistantUiController_addCancelButton(
-            env, java_object_, chips, icon, text, i, action.disabled);
+            env, java_object_, chips, icon, text, i, action.disabled,
+            action.sticky);
         has_close_or_cancel = true;
         break;
 
       case CLOSE_ACTION:
         Java_AutofillAssistantUiController_addActionButton(
-            env, java_object_, chips, icon, text, i, action.disabled);
+            env, java_object_, chips, icon, text, i, action.disabled,
+            action.sticky);
         has_close_or_cancel = true;
         break;
 
       case DONE_ACTION:
         Java_AutofillAssistantUiController_addHighlightedActionButton(
-            env, java_object_, chips, icon, text, i, action.disabled);
+            env, java_object_, chips, icon, text, i, action.disabled,
+            action.sticky);
         has_close_or_cancel = true;
         break;
 
@@ -446,12 +451,12 @@ void UiControllerAndroid::UpdateActions() {
       Java_AutofillAssistantUiController_addCloseButton(
           env, java_object_, chips, ICON_CLEAR,
           base::android::ConvertUTF8ToJavaString(env, ""),
-          /* disabled= */ false);
+          /* disabled= */ false, /* sticky= */ true);
     } else if (ui_delegate_->GetState() != AutofillAssistantState::INACTIVE) {
       Java_AutofillAssistantUiController_addCancelButton(
           env, java_object_, chips, ICON_CLEAR,
           base::android::ConvertUTF8ToJavaString(env, ""), -1,
-          /* disabled= */ false);
+          /* disabled= */ false, /* sticky= */ true);
     }
   }
 

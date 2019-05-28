@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Type;
+import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -229,7 +230,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         for (int i = 0; i < texts.length; i++) {
             final int suggestionIndex = i;
             chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, icons[i], texts[i],
-                    disabled[i], () -> safeNativeOnSuggestionSelected(suggestionIndex)));
+                    disabled[i], /* sticky= */ false,
+                    () -> safeNativeOnSuggestionSelected(suggestionIndex)));
         }
         AssistantCarouselModel model = getModel().getSuggestionsModel();
         setChips(model, chips);
@@ -245,10 +247,10 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      * Adds an action button to the chip list, which executes the action {@code actionIndex}.
      */
     @CalledByNative
-    private void addActionButton(
-            List<AssistantChip> chips, int icon, String text, int actionIndex, boolean disabled) {
+    private void addActionButton(List<AssistantChip> chips, int icon, String text, int actionIndex,
+            boolean disabled, boolean sticky) {
         chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
-                () -> safeNativeOnActionSelected(actionIndex)));
+                sticky, () -> safeNativeOnActionSelected(actionIndex)));
     }
 
     /**
@@ -256,9 +258,9 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      * actionIndex}.
      */
     @CalledByNative
-    private void addHighlightedActionButton(
-            List<AssistantChip> chips, int icon, String text, int actionIndex, boolean disabled) {
-        chips.add(new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled,
+    private void addHighlightedActionButton(List<AssistantChip> chips, int icon, String text,
+            int actionIndex, boolean disabled, boolean sticky) {
+        chips.add(new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled, sticky,
                 () -> safeNativeOnActionSelected(actionIndex)));
     }
 
@@ -267,10 +269,10 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      * {@code actionIndex}, or shuts down Autofill Assistant if {@code actionIndex} is {@code -1}.
      */
     @CalledByNative
-    private void addCancelButton(
-            List<AssistantChip> chips, int icon, String text, int actionIndex, boolean disabled) {
+    private void addCancelButton(List<AssistantChip> chips, int icon, String text, int actionIndex,
+            boolean disabled, boolean sticky) {
         chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
-                () -> safeNativeOnCancelButtonClicked(actionIndex)));
+                sticky, () -> safeNativeOnCancelButtonClicked(actionIndex)));
     }
 
     /**
@@ -278,15 +280,29 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      */
     @CalledByNative
     private void addCloseButton(
-            List<AssistantChip> chips, int icon, String text, boolean disabled) {
+            List<AssistantChip> chips, int icon, String text, boolean disabled, boolean sticky) {
         chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
-                this::safeNativeOnCloseButtonClicked));
+                sticky, this::safeNativeOnCloseButtonClicked));
     }
 
     @CalledByNative
     private void setActions(List<AssistantChip> chips) {
         AssistantCarouselModel model = getModel().getActionsModel();
         setChips(model, chips);
+        setHeaderChip(chips);
+    }
+
+    private void setHeaderChip(List<AssistantChip> chips) {
+        // The header chip is the first sticky chip found in the actions.
+        AssistantChip headerChip = null;
+        for (AssistantChip chip : chips) {
+            if (chip.isSticky()) {
+                headerChip = chip;
+                break;
+            }
+        }
+
+        getModel().getHeaderModel().set(AssistantHeaderModel.CHIP, headerChip);
     }
 
     private void setChips(AssistantCarouselModel model, List<AssistantChip> chips) {

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant.header;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -31,9 +32,14 @@ public class AssistantHeaderModel extends PropertyModel {
     static final WritableObjectPropertyKey<Runnable> FEEDBACK_BUTTON_CALLBACK =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<AssistantChip> CHIP =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableBooleanPropertyKey CHIP_VISIBLE = new WritableBooleanPropertyKey();
+
     public AssistantHeaderModel() {
         super(VISIBLE, STATUS_MESSAGE, PROGRESS, PROGRESS_VISIBLE, SPIN_POODLE,
-                FEEDBACK_BUTTON_CALLBACK);
+                FEEDBACK_BUTTON_CALLBACK, CHIP, CHIP_VISIBLE);
     }
 
     @CalledByNative

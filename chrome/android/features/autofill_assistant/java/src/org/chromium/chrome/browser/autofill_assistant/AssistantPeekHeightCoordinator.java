@@ -159,6 +159,11 @@ class AssistantPeekHeightCoordinator {
         return mPeekHeight;
     }
 
+    /** Return the current peek mode. */
+    int getPeekMode() {
+        return mPeekMode;
+    }
+
     /**
      * Adapt the padding top of the toolbar such that header and carousel are visible if desired.
      */
