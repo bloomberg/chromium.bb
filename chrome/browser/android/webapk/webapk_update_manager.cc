@@ -65,6 +65,10 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     const JavaParamRef<jstring>& java_share_target_param_title,
     const JavaParamRef<jstring>& java_share_target_param_text,
     const JavaParamRef<jstring>& java_share_target_param_url,
+    const jboolean java_share_target_param_is_method_post,
+    const jboolean java_share_target_param_is_enctype_multipart,
+    const JavaParamRef<jobjectArray>& java_share_target_param_file_names,
+    const JavaParamRef<jobjectArray>& java_share_target_param_accepts,
     const JavaParamRef<jstring>& java_web_manifest_url,
     const JavaParamRef<jstring>& java_webapk_package,
     jint java_webapk_version,
@@ -103,6 +107,31 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
         ConvertJavaStringToUTF16(java_share_target_param_text);
     info.share_target->params.url =
         ConvertJavaStringToUTF16(java_share_target_param_url);
+    info.share_target->method =
+        java_share_target_param_is_method_post == JNI_TRUE ? ShareTarget::kPost
+                                                           : ShareTarget::kGet;
+
+    info.share_target->enctype =
+        java_share_target_param_is_enctype_multipart == JNI_TRUE
+            ? ShareTarget::kMultipart
+            : ShareTarget::kApplication;
+
+    std::vector<base::string16> fileNames;
+    base::android::AppendJavaStringArrayToStringVector(
+        env, java_share_target_param_file_names, &fileNames);
+
+    std::vector<std::vector<base::string16>> accepts;
+    base::android::Java2dStringArrayTo2dStringVector(
+        env, java_share_target_param_accepts, &accepts);
+
+    // The length of fileNames and accepts should always be the same, but here
+    // we just want to be safe.
+    for (size_t i = 0; i < std::min(fileNames.size(), accepts.size()); ++i) {
+      ShareTargetParamsFile file;
+      file.name = fileNames[i];
+      file.accept.swap(accepts[i]);
+      info.share_target->params.files.push_back(file);
+    }
   }
 
   base::android::AppendJavaStringArrayToStringVector(env, java_icon_urls,

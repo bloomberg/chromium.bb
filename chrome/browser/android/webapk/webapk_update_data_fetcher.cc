@@ -227,7 +227,11 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
   ScopedJavaLocalRef<jstring> java_share_params_title;
   ScopedJavaLocalRef<jstring> java_share_params_text;
   ScopedJavaLocalRef<jstring> java_share_params_url;
-  if (info_.share_target.has_value()) {
+  jboolean java_share_params_is_method_post = false;
+  jboolean java_share_params_is_enctype_multipart = false;
+  ScopedJavaLocalRef<jobjectArray> java_share_params_file_names;
+  ScopedJavaLocalRef<jobjectArray> java_share_params_accepts;
+  if (info_.share_target.has_value() && info_.share_target->action.is_valid()) {
     java_share_action = base::android::ConvertUTF8ToJavaString(
         env, info_.share_target->action.spec());
     java_share_params_title = base::android::ConvertUTF16ToJavaString(
@@ -236,6 +240,22 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
         env, info_.share_target->params.text);
     java_share_params_url = base::android::ConvertUTF16ToJavaString(
         env, info_.share_target->params.url);
+
+    java_share_params_is_method_post =
+        (info_.share_target->method == ShareTarget::kPost);
+    java_share_params_is_enctype_multipart =
+        (info_.share_target->enctype == ShareTarget::kMultipart);
+
+    std::vector<base::string16> file_names;
+    std::vector<std::vector<base::string16>> accepts;
+    for (auto& f : info_.share_target->params.files) {
+      file_names.push_back(f.name);
+      accepts.push_back(f.accept);
+    }
+    java_share_params_file_names =
+        base::android::ToJavaArrayOfStrings(env, file_names);
+    java_share_params_accepts =
+        base::android::ToJavaArrayOfStringArray(env, accepts);
   }
 
   Java_WebApkUpdateDataFetcher_onDataAvailable(
@@ -245,5 +265,7 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
       java_icon_urls, info_.display, info_.orientation,
       OptionalSkColorToJavaColor(info_.theme_color),
       OptionalSkColorToJavaColor(info_.background_color), java_share_action,
-      java_share_params_title, java_share_params_text, java_share_params_url);
+      java_share_params_title, java_share_params_text, java_share_params_url,
+      java_share_params_is_method_post, java_share_params_is_enctype_multipart,
+      java_share_params_file_names, java_share_params_accepts);
 }

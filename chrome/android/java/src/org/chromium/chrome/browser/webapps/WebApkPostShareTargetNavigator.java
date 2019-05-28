@@ -12,8 +12,9 @@ import org.chromium.content_public.browser.WebContents;
 public class WebApkPostShareTargetNavigator {
     public static boolean navigateIfPostShareTarget(
             WebApkInfo webApkInfo, WebContents webContents) {
-        WebApkShareTargetUtil.PostData postData = WebApkShareTargetUtil.computePostData(
-                webApkInfo.webApkPackageName(), webApkInfo.shareData());
+        WebApkShareTargetUtil.PostData postData =
+                WebApkShareTargetUtil.computePostData(webApkInfo.shareTargetActivityName(),
+                        webApkInfo.shareTarget(), webApkInfo.shareData());
         if (postData == null) {
             return false;
         }

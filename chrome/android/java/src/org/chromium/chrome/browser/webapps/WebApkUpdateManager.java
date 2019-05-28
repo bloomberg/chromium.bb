@@ -378,8 +378,10 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
                 info.displayMode(), info.orientation(), info.themeColor(), info.backgroundColor(),
                 info.shareTarget().getAction(), info.shareTarget().getParamTitle(),
                 info.shareTarget().getParamText(), info.shareTarget().getParamUrl(),
-                info.manifestUrl(), info.webApkPackageName(), versionCode, isManifestStale,
-                updateReason, callback);
+                info.shareTarget().isShareMethodPost(),
+                info.shareTarget().isShareEncTypeMultipart(), info.shareTarget().getFileNames(),
+                info.shareTarget().getFileAccepts(), info.manifestUrl(), info.webApkPackageName(),
+                versionCode, isManifestStale, updateReason, callback);
     }
 
     @NativeMethods
@@ -390,7 +392,9 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
                 String[] iconHashes, @WebDisplayMode int displayMode, int orientation,
                 long themeColor, long backgroundColor, String shareTargetAction,
                 String shareTargetParamTitle, String shareTargetParamText,
-                String shareTargetParamUrl, String manifestUrl, String webApkPackage,
+                String shareTargetParamUrl, boolean shareTargetParamIsMethodPost,
+                boolean shareTargetParamIsEncTypeMultipart, String[] shareTargetParamFileNames,
+                Object[] shareTargetParamAccepts, String manifestUrl, String webApkPackage,
                 int webApkVersion, boolean isManifestStale, @WebApkUpdateReason int updateReason,
                 Callback<Boolean> callback);
         public void updateWebApkFromFile(String updateRequestPath, WebApkUpdateCallback callback);

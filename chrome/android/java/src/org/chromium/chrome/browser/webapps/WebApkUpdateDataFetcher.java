@@ -100,7 +100,9 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
             Bitmap primaryIconBitmap, String badgeIconUrl, String badgeIconMurmur2Hash,
             Bitmap badgeIconBitmap, String[] iconUrls, @WebDisplayMode int displayMode,
             int orientation, long themeColor, long backgroundColor, String shareAction,
-            String shareParamsTitle, String shareParamsText, String shareParamsUrl) {
+            String shareParamsTitle, String shareParamsText, String shareParamsUrl,
+            boolean isShareMethodPost, boolean isShareEncTypeMultipart,
+            String[] shareParamsFileNames, String[][] shareParamsAccepts) {
         HashMap<String, String> iconUrlToMurmur2HashMap = new HashMap<String, String>();
         for (String iconUrl : iconUrls) {
             String murmur2Hash = null;
@@ -112,15 +114,19 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
             iconUrlToMurmur2HashMap.put(iconUrl, murmur2Hash);
         }
 
-        WebApkInfo.ShareTarget shareTarget = new WebApkInfo.ShareTarget(
-                shareAction, shareParamsTitle, shareParamsText, shareParamsUrl);
+        // When share action is empty, we use a default empty share target
+        WebApkInfo.ShareTarget shareTarget = TextUtils.isEmpty(shareAction)
+                ? new WebApkInfo.ShareTarget()
+                : new WebApkInfo.ShareTarget(shareAction, shareParamsTitle, shareParamsText,
+                        shareParamsUrl, isShareMethodPost, isShareEncTypeMultipart,
+                        shareParamsFileNames, shareParamsAccepts);
 
         WebApkInfo info = WebApkInfo.create(mOldInfo.id(), mOldInfo.uri().toString(), scopeUrl,
                 new WebApkInfo.Icon(primaryIconBitmap), new WebApkInfo.Icon(badgeIconBitmap), null,
                 name, shortName, displayMode, orientation, mOldInfo.source(), themeColor,
                 backgroundColor, mOldInfo.webApkPackageName(), mOldInfo.shellApkVersion(),
                 mOldInfo.manifestUrl(), manifestStartUrl, WebApkInfo.WebApkDistributor.BROWSER,
-                iconUrlToMurmur2HashMap, shareTarget, mOldInfo.shouldForceNavigation(),
+                iconUrlToMurmur2HashMap, shareTarget, null, mOldInfo.shouldForceNavigation(),
                 mOldInfo.isSplashProvidedByWebApk(), null);
         mObserver.onGotManifestData(info, primaryIconUrl, badgeIconUrl);
     }

@@ -17,6 +17,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import org.json.JSONArray;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,6 +47,7 @@ import org.chromium.webapk.test.WebApkTestHelper;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,6 +86,13 @@ public class WebApkUpdateManagerUnitTest {
     private static final long BACKGROUND_COLOR = 2L;
     private static final String SHARE_TARGET_ACTION = "/share_action.html";
     private static final String SHARE_TARGET_PARAM_TITLE = "share_params_title";
+    private static final String SHARE_TARGET_METHOD_GET = "GET";
+    private static final String SHARE_TARGET_METHOD_POST = "POST";
+    private static final String SHARE_TARGET_ENC_TYPE_MULTIPART = "multipart/form-data";
+    private static final String[] SHARE_TARGET_FILE_NAMES = new String[] {"file_1", "file_2"};
+    private static final String[][] SHARE_TARGET_ACCEPTS =
+            new String[][] {new String[] {"file_1_accept_1", "file_1_accept_2"},
+                    new String[] {"file_2_accept_2", "file_2_accept_2"}};
 
     /** Different name than the one used in {@link defaultManifestData()}. */
     private static final String DIFFERENT_NAME = "Different Name";
@@ -117,7 +126,9 @@ public class WebApkUpdateManagerUnitTest {
                 String[] iconHashes, @WebDisplayMode int displayMode, int orientation,
                 long themeColor, long backgroundColor, String shareTargetAction,
                 String shareTargetParamTitle, String shareTargetParamText,
-                String shareTargetParamUrl, String manifestUrl, String webApkPackage,
+                String shareTargetParamUrl, boolean shareTargetParamIsMethodPost,
+                boolean shareTargetParamIsEncTypeMultipart, String[] shareTargetParamFileNames,
+                Object[] shareTargetParamAccepts, String manifestUrl, String webApkPackage,
                 int webApkVersion, boolean isManifestStale, @WebApkUpdateReason int updateReason,
                 Callback<Boolean> callback) {}
 
@@ -205,6 +216,10 @@ public class WebApkUpdateManagerUnitTest {
         public long backgroundColor;
         public String shareTargetAction;
         public String shareTargetParamTitle;
+        public String shareTargetMethod;
+        public String shareTargetEncType;
+        public String[] shareTargetFileNames;
+        public String[][] shareTargetFileAccepts;
     }
 
     private static String getWebApkId(String packageName) {
@@ -251,6 +266,30 @@ public class WebApkUpdateManagerUnitTest {
         shareTargetMetaData.putString(
                 WebApkMetaDataKeys.SHARE_PARAM_TITLE, manifestData.shareTargetParamTitle);
 
+        shareTargetMetaData.putString(
+                WebApkMetaDataKeys.SHARE_METHOD, manifestData.shareTargetMethod);
+        shareTargetMetaData.putString(
+                WebApkMetaDataKeys.SHARE_ENCTYPE, manifestData.shareTargetEncType);
+
+        shareTargetMetaData.remove(WebApkMetaDataKeys.SHARE_PARAM_NAMES);
+        if (manifestData.shareTargetFileNames != null) {
+            JSONArray fileNamesJson =
+                    new JSONArray(Arrays.asList(manifestData.shareTargetFileNames));
+            shareTargetMetaData.putString(
+                    WebApkMetaDataKeys.SHARE_PARAM_NAMES, fileNamesJson.toString());
+        }
+
+        shareTargetMetaData.remove(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS);
+        if (manifestData.shareTargetFileAccepts != null) {
+            JSONArray acceptJson = new JSONArray();
+
+            for (String[] acceptArr : manifestData.shareTargetFileAccepts) {
+                acceptJson.put(new JSONArray(Arrays.asList(acceptArr)));
+            }
+            shareTargetMetaData.putString(
+                    WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, acceptJson.toString());
+        }
+
         WebApkTestHelper.registerWebApkWithMetaData(
                 packageName, metaData, new Bundle[] {shareTargetMetaData});
     }
@@ -276,6 +315,12 @@ public class WebApkUpdateManagerUnitTest {
         manifestData.backgroundColor = BACKGROUND_COLOR;
         manifestData.shareTargetAction = SHARE_TARGET_ACTION;
         manifestData.shareTargetParamTitle = SHARE_TARGET_PARAM_TITLE;
+
+        manifestData.shareTargetMethod = SHARE_TARGET_METHOD_GET;
+        manifestData.shareTargetEncType = SHARE_TARGET_ENC_TYPE_MULTIPART;
+        manifestData.shareTargetFileNames = SHARE_TARGET_FILE_NAMES.clone();
+        manifestData.shareTargetFileAccepts =
+                Arrays.stream(SHARE_TARGET_ACCEPTS).map(String[] ::clone).toArray(String[][] ::new);
         return manifestData;
     }
 
@@ -291,8 +336,15 @@ public class WebApkUpdateManagerUnitTest {
                 WEB_MANIFEST_URL, manifestData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
                 manifestData.iconUrlToMurmur2HashMap,
                 new WebApkInfo.ShareTarget(manifestData.shareTargetAction,
-                        manifestData.shareTargetParamTitle, null, null),
-                false /* forceNavigation */, false /* isSplashProvidedByWebApk */, null);
+                        manifestData.shareTargetParamTitle, null, null,
+                        manifestData.shareTargetMethod != null
+                                && manifestData.shareTargetMethod.equals(SHARE_TARGET_METHOD_POST),
+                        manifestData.shareTargetEncType != null
+                                && manifestData.shareTargetEncType.equals(
+                                        SHARE_TARGET_ENC_TYPE_MULTIPART),
+                        manifestData.shareTargetFileNames, manifestData.shareTargetFileAccepts),
+                null /* shareTargetActivityName */, false /* forceNavigation */,
+                false /* isSplashProvidedByWebApk */, null /* shareData */);
     }
 
     /**
@@ -747,6 +799,68 @@ public class WebApkUpdateManagerUnitTest {
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shareTargetAction = "/action2.html";
         assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
+    @Test
+    public void testShareTargetV2ChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+
+        ManifestData fetchedData1 = defaultManifestData();
+        fetchedData1.shareTargetFileNames[0] = "changed";
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData1));
+
+        ManifestData fetchedData2 = defaultManifestData();
+        fetchedData2.shareTargetFileAccepts[1] = new String[] {};
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData2));
+
+        ManifestData fetchedData3 = defaultManifestData();
+        fetchedData3.shareTargetFileAccepts[1][1] = "changed";
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData3));
+    }
+
+    @Test
+    public void testShareTargetV2UpgradeFromV1() {
+        ManifestData oldNoShareTarget = defaultManifestData();
+        oldNoShareTarget.shareTargetAction = null;
+        oldNoShareTarget.shareTargetParamTitle = null;
+        oldNoShareTarget.shareTargetMethod = null;
+        oldNoShareTarget.shareTargetEncType = null;
+        oldNoShareTarget.shareTargetFileNames = null;
+        oldNoShareTarget.shareTargetFileAccepts = null;
+
+        ManifestData fetchedNoShareTarget2 = defaultManifestData();
+        fetchedNoShareTarget2.shareTargetAction = null;
+        fetchedNoShareTarget2.shareTargetParamTitle = null;
+        fetchedNoShareTarget2.shareTargetMethod = null;
+        fetchedNoShareTarget2.shareTargetEncType = null;
+        fetchedNoShareTarget2.shareTargetFileNames = null;
+        fetchedNoShareTarget2.shareTargetFileAccepts = null;
+
+        assertFalse(checkUpdateNeededForFetchedManifest(oldNoShareTarget, fetchedNoShareTarget2));
+
+        ManifestData oldV1ShareTarget = defaultManifestData();
+        oldV1ShareTarget.shareTargetMethod = null;
+        oldV1ShareTarget.shareTargetEncType = null;
+        oldV1ShareTarget.shareTargetFileNames = null;
+        oldV1ShareTarget.shareTargetFileAccepts = null;
+
+        ManifestData fetchedV1ShareTarget = defaultManifestData();
+        fetchedV1ShareTarget.shareTargetMethod = null;
+        fetchedV1ShareTarget.shareTargetEncType = null;
+        fetchedV1ShareTarget.shareTargetFileNames = null;
+        fetchedV1ShareTarget.shareTargetFileAccepts = null;
+        assertFalse(checkUpdateNeededForFetchedManifest(oldV1ShareTarget, fetchedV1ShareTarget));
+
+        ManifestData oldV2ShareTarget = defaultManifestData();
+        ManifestData fetchedV2ShareTarget = defaultManifestData();
+        assertFalse(checkUpdateNeededForFetchedManifest(oldV2ShareTarget, fetchedV2ShareTarget));
+
+        assertTrue(checkUpdateNeededForFetchedManifest(oldNoShareTarget, fetchedV1ShareTarget));
+        assertTrue(checkUpdateNeededForFetchedManifest(oldNoShareTarget, fetchedV2ShareTarget));
+        assertTrue(checkUpdateNeededForFetchedManifest(oldV1ShareTarget, fetchedV2ShareTarget));
+        assertTrue(checkUpdateNeededForFetchedManifest(fetchedV2ShareTarget, fetchedV1ShareTarget));
+        assertTrue(checkUpdateNeededForFetchedManifest(fetchedV2ShareTarget, oldNoShareTarget));
+        assertTrue(checkUpdateNeededForFetchedManifest(fetchedV1ShareTarget, oldNoShareTarget));
     }
 
     /**

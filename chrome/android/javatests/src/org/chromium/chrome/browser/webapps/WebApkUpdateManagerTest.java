@@ -151,14 +151,17 @@ public class WebApkUpdateManagerTest {
         final TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(waiter, storage);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            WebApkInfo info = WebApkInfo.create(WEBAPK_ID, "", creationData.scope, null, null, null,
-                    creationData.name, creationData.shortName, creationData.displayMode,
-                    creationData.orientation, 0, creationData.themeColor,
-                    creationData.backgroundColor, "",
+            WebApkInfo info = WebApkInfo.create(
+                    WEBAPK_ID, "", creationData.scope, null, null, null, creationData.name,
+                    creationData.shortName, creationData.displayMode, creationData.orientation, 0,
+                    creationData.themeColor, creationData.backgroundColor, "",
                     WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION, creationData.manifestUrl,
                     creationData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
-                    creationData.iconUrlToMurmur2HashMap, null, false /* forceNavigation */,
-                    false /* isSplashProvidedByWebApk */, null /* shareData */);
+                    creationData.iconUrlToMurmur2HashMap, null, null /*shareTargetActivityName*/,
+                    false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
+                    null /* shareData */
+
+            );
             updateManager.updateIfNeeded(mTab, info);
         });
         waiter.waitForCallback(0);
@@ -201,5 +204,18 @@ public class WebApkUpdateManagerTest {
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
         Assert.assertTrue(checkUpdateNeeded(creationData));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"WebApk"})
+    public void testNoUpdateForPagesWithoutWST() throws Exception {
+        CreationData creationData = defaultCreationData();
+        creationData.startUrl = mTestServerRule.getServer().getURL(
+                "/chrome/test/data/banners/manifest_test_page.html");
+
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
+                mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
+        Assert.assertFalse(checkUpdateNeeded(creationData));
     }
 }

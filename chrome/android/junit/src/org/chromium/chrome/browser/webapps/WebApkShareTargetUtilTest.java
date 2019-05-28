@@ -105,21 +105,31 @@ public class WebApkShareTargetUtilTest {
     @Test
     public void testGET() {
         Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "GET");
         shareActivityBundle.putString(
                 WebApkMetaDataKeys.SHARE_ENCTYPE, "application/x-www-form-urlencoded");
         registerWebApk(shareActivityBundle);
 
         Intent intent = createBasicShareIntent();
-        WebApkInfo info = WebApkInfo.create(intent);
+        WebApkInfo infoWithShareMethodGet = WebApkInfo.create(intent);
 
         Assert.assertEquals(null,
-                WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData()));
+                WebApkShareTargetUtilShadow.computePostData(
+                        WebApkTestHelper.getGeneratedShareTargetActivityClassName(0),
+                        infoWithShareMethodGet.shareTarget(), infoWithShareMethodGet.shareData()));
 
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
         registerWebApk(shareActivityBundle);
+        // recreating the WebApkInfo because the shareActivityBundle used for registerWebApk() has
+        // changed
+        WebApkInfo infoWithShareMethodPost = WebApkInfo.create(intent);
+
         Assert.assertNotEquals(null,
-                WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData()));
+                WebApkShareTargetUtilShadow.computePostData(
+                        WebApkTestHelper.getGeneratedShareTargetActivityClassName(0),
+                        infoWithShareMethodPost.shareTarget(),
+                        infoWithShareMethodPost.shareData()));
     }
 
     /**
@@ -132,6 +142,8 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "title");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "text");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
+
         shareActivityBundle.putString(
                 WebApkMetaDataKeys.SHARE_ENCTYPE, "application/x-www-form-urlencoded");
         registerWebApk(shareActivityBundle);
@@ -141,8 +153,9 @@ public class WebApkShareTargetUtilTest {
         intent.putExtra(Intent.EXTRA_TEXT, "extra_text");
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData =
-                WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
 
         assertPostData(postData, new String[] {"title", "text"},
                 new String[] {"extra_subject", "extra_text"}, new String[] {"", ""},
@@ -150,13 +163,15 @@ public class WebApkShareTargetUtilTest {
     }
 
     /**
-     * Test that multipart/form-data with no names/accepts output a null postdata.
+     * Test that
+     * multipart/form-data with no names/accepts output a null postdata.
      */
     @Test
     public void testPostMultipartWithNoNamesNoAccepts() {
         Bundle shareActivityBundle = new Bundle();
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
         // Note that names and accepts are not specified
         registerWebApk(shareActivityBundle);
 
@@ -167,8 +182,9 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData =
-                WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
 
         assertPostData(
                 postData, new String[] {}, new String[] {}, new String[] {}, new String[] {});
@@ -185,14 +201,16 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
         registerWebApk(shareActivityBundle);
 
         Intent intent = createBasicShareIntent();
         // Intent.EXTRA_STREAM is not specified.
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData =
-                WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
 
         assertPostData(
                 postData, new String[] {}, new String[] {}, new String[] {}, new String[] {});
@@ -205,6 +223,7 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
         registerWebApk(shareActivityBundle);
 
         Intent intent = createBasicShareIntent();
@@ -214,8 +233,9 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData =
-                WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
 
         assertPostData(postData, new String[] {"name"}, new String[] {"content"},
                 new String[] {"filename"}, new String[] {"image/gif"});
@@ -231,6 +251,7 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "share-title");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_URL, "share-url");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
 
         registerWebApk(shareActivityBundle);
 
@@ -240,8 +261,9 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData =
-                WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
 
         assertPostData(postData, new String[] {"share-title", "share-text"},
                 new String[] {"shared_subject_value", "shared_text_value"}, new String[] {"", ""},
@@ -258,6 +280,7 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "share-title");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_URL, "share-url");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
 
         registerWebApk(shareActivityBundle);
 
@@ -267,8 +290,9 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData =
-                WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
 
         assertPostData(postData, new String[] {"share-title", "share-text"},
                 new String[] {"shared_subject_value", "shared_text_value"}, new String[] {"", ""},
@@ -285,6 +309,7 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "share-title");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_URL, "share-url");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
 
         registerWebApk(shareActivityBundle);
 
@@ -298,8 +323,9 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData =
-                WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
 
         assertPostData(postData, new String[] {"share-title", "share-text", "name"},
                 new String[] {"shared_subject_value", "shared_text_value", "content"},
@@ -317,6 +343,7 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "share-text");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "share-title");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_URL, "share-url");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "/share.html");
 
         registerWebApk(shareActivityBundle);
 
@@ -330,8 +357,9 @@ public class WebApkShareTargetUtilTest {
 
         WebApkInfo info = WebApkInfo.create(intent);
 
-        WebApkShareTargetUtilShadow.PostData postData =
-                WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData());
+        WebApkShareTargetUtilShadow.PostData postData = WebApkShareTargetUtilShadow.computePostData(
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
+                info.shareData());
 
         // with invalid name parameter from Android manifest, we ignore the file sharing part.
         assertPostData(postData, new String[] {"share-title", "share-text"},
