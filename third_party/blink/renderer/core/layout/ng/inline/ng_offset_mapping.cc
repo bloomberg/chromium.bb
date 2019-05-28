@@ -422,7 +422,7 @@ Position NGOffsetMapping::StartOfNextNonCollapsedContent(
   const auto node_and_offset = ToNodeOffsetPair(position);
   const Node& node = node_and_offset.first;
   const unsigned offset = node_and_offset.second;
-  while (unit != units_.end() && unit->GetOwner() == node) {
+  while (unit != units_.end() && unit->AssociatedNode() == node) {
     if (unit->DOMEnd() > offset &&
         unit->GetType() != NGOffsetMappingUnitType::kCollapsed) {
       const unsigned result = std::max(offset, unit->DOMStart());
@@ -443,7 +443,7 @@ Position NGOffsetMapping::EndOfLastNonCollapsedContent(
   const auto node_and_offset = ToNodeOffsetPair(position);
   const Node& node = node_and_offset.first;
   const unsigned offset = node_and_offset.second;
-  while (unit->GetOwner() == node) {
+  while (unit->AssociatedNode() == node) {
     if (unit->DOMStart() < offset &&
         unit->GetType() != NGOffsetMappingUnitType::kCollapsed) {
       const unsigned result = std::min(offset, unit->DOMEnd());

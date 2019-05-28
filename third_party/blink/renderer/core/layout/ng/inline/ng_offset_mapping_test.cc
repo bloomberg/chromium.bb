@@ -1268,6 +1268,41 @@ TEST_F(NGOffsetMappingTest, TextOverflowEllipsis) {
   TEST_RANGE(mapping.GetRanges(), text, 0u, 1u);
 }
 
+// https://crbug.com/967106
+TEST_F(NGOffsetMappingTest, StartOfNextNonCollapsedContentWithPseudo) {
+  // The white spaces are necessary for bug repro. Do not remove them.
+  SetupHtml("t", R"HTML(
+    <style>span#quote::before { content: '"'}</style>
+    <div id=t>
+      <span>foo </span>
+      <span id=quote>bar</span>
+    </div>)HTML");
+
+  const Element* quote = GetElementById("quote");
+  const Node* text = quote->previousSibling();
+  const Position position = Position::FirstPositionInNode(*text);
+
+  EXPECT_EQ(Position(),
+            GetOffsetMapping().StartOfNextNonCollapsedContent(position));
+}
+
+// https://crbug.com/967106
+TEST_F(NGOffsetMappingTest, EndOfLastNonCollapsedContentWithPseudo) {
+  // The white spaces are necessary for bug repro. Do not remove them.
+  SetupHtml("t", R"HTML(
+    <style>span#quote::after { content: '" '}</style>
+    <div id=t>
+      <span id=quote>foo</span>
+      <span>bar</span>
+    </div>)HTML");
+
+  const Element* quote = GetElementById("quote");
+  const Node* text = quote->nextSibling();
+  const Position position = Position::LastPositionInNode(*text);
+
+  EXPECT_EQ(Position(),
+            GetOffsetMapping().EndOfLastNonCollapsedContent(position));
+}
 // Test |GetOffsetMapping| which is available both for LayoutNG and for legacy.
 class NGOffsetMappingGetterTest : public RenderingTest,
                                   public testing::WithParamInterface<bool>,
