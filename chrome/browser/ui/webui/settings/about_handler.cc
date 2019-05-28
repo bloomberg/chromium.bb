@@ -96,11 +96,19 @@ struct RegulatoryLabel {
   const std::string image_url;
 };
 
-bool ShouldShowSafetyInfo() {
+// Returns the link to the safety info for the device (if it exists).
+std::string GetSafetyInfoLink() {
   const std::vector<std::string> board =
       base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return board[0] == "nocturne";
+  if (board[0] == "nocturne") {
+    return chrome::kChromeUISafetyPixelSlateURL;
+  }
+  if (board[0] == "eve" || board[0] == "atlas") {
+    return chrome::kChromeUISafetyPixelbookURL;
+  }
+
+  return std::string();
 }
 
 // Returns message that informs user that for update it's better to
@@ -329,13 +337,14 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
 #endif
 
 #if defined(OS_CHROMEOS)
-  html_source->AddBoolean("shouldShowSafetyInfo", ShouldShowSafetyInfo());
+  std::string safetyInfoLink = GetSafetyInfoLink();
+  html_source->AddBoolean("shouldShowSafetyInfo", !safetyInfoLink.empty());
 #if defined(GOOGLE_CHROME_BUILD)
   html_source->AddString(
       "aboutProductSafety",
       l10n_util::GetStringUTF16(IDS_ABOUT_SAFETY_INFORMATION));
   html_source->AddString("aboutProductSafetyURL",
-                         base::UTF8ToUTF16(chrome::kChromeUISafetyURL));
+                         base::UTF8ToUTF16(safetyInfoLink));
 #endif
 
   base::string16 os_license = l10n_util::GetStringFUTF16(
