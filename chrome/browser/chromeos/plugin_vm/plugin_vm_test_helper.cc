@@ -65,6 +65,15 @@ void SetupConciergeForSuccessfulDiskImageImport(
       disk_image_status_response);
 }
 
+void SetupConciergeForCancelDiskImageOperation(
+    chromeos::FakeConciergeClient* fake_concierge_client_,
+    bool success) {
+  vm_tools::concierge::CancelDiskImageResponse cancel_disk_image_response;
+  cancel_disk_image_response.set_success(success);
+  fake_concierge_client_->set_cancel_disk_image_response(
+      cancel_disk_image_response);
+}
+
 PluginVmTestHelper::PluginVmTestHelper(TestingProfile* testing_profile)
     : testing_profile_(testing_profile) {
   testing_profile_->ScopedCrosSettingsTestHelper()

@@ -75,6 +75,8 @@ void FakeConciergeClient::ImportDiskImage(
 void FakeConciergeClient::CancelDiskImageOperation(
     const vm_tools::concierge::CancelDiskImageRequest& request,
     DBusMethodCallback<vm_tools::concierge::CancelDiskImageResponse> callback) {
+  // Removes signals sent during disk image import.
+  disk_image_status_signals_.clear();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), cancel_disk_image_response_));

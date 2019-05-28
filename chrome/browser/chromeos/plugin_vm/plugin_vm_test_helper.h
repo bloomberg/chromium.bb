@@ -16,6 +16,10 @@ namespace plugin_vm {
 void SetupConciergeForSuccessfulDiskImageImport(
     chromeos::FakeConciergeClient* fake_concierge_client_);
 
+void SetupConciergeForCancelDiskImageOperation(
+    chromeos::FakeConciergeClient* fake_concierge_client_,
+    bool success);
+
 // A helper class for enabling Plugin VM in unit tests.
 class PluginVmTestHelper {
  public:

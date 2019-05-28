@@ -309,6 +309,10 @@ void PluginVmLauncherView::OnImportProgressUpdated(
   time_left_message_label_->SetText(time_left_message);
 }
 
+void PluginVmLauncherView::OnImportCancelled() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
+
 void PluginVmLauncherView::OnImportFailed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

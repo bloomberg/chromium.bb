@@ -192,12 +192,16 @@ void PluginVmImageManager::OnConciergeAvailable(bool success) {
 }
 
 base::Optional<base::ScopedFD> PluginVmImageManager::PrepareFD() {
+  // In case import has been cancelled meantime.
+  if (state_ == State::IMPORT_CANCELLED || state_ == State::NOT_STARTED)
+    return base::nullopt;
+
   base::File file(downloaded_plugin_vm_image_archive_,
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
     LOG(ERROR) << "Failed to open "
                << downloaded_plugin_vm_image_archive_.value();
-    return {};
+    return base::nullopt;
   }
   base::ScopedFD fd(file.TakePlatformFile());
   return fd;
@@ -205,6 +209,10 @@ base::Optional<base::ScopedFD> PluginVmImageManager::PrepareFD() {
 
 void PluginVmImageManager::OnFDPrepared(
     base::Optional<base::ScopedFD> maybeFd) {
+  // In case import has been cancelled meantime.
+  if (state_ == State::IMPORT_CANCELLED || state_ == State::NOT_STARTED)
+    return;
+
   if (!maybeFd.has_value()) {
     LOG(ERROR) << "Could not open downloaded image archive";
     OnImported(false);
@@ -231,7 +239,7 @@ void PluginVmImageManager::OnImportDiskImage(
     base::Optional<vm_tools::concierge::ImportDiskImageResponse> reply) {
   if (!reply.has_value()) {
     LOG(ERROR) << "Could not retrieve response from ImportDiskImage call to "
-                  "concierge";
+               << "concierge";
     OnImported(false);
     return;
   }
@@ -240,10 +248,12 @@ void PluginVmImageManager::OnImportDiskImage(
 
   // TODO(https://crbug.com/966397): handle cases where this jumps straight to
   // completed?
+  // TODO(https://crbug.com/966396): Handle error case when image already
+  // exists.
   if (response.status() !=
       vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS) {
     LOG(ERROR) << "Disk image is not in progress. Status: " << response.status()
-               << "," << response.failure_reason();
+               << ", " << response.failure_reason();
     OnImported(false);
     return;
   }
@@ -300,7 +310,7 @@ void PluginVmImageManager::OnFinalDiskImageStatus(
     base::Optional<vm_tools::concierge::DiskImageStatusResponse> reply) {
   if (!reply.has_value()) {
     LOG(ERROR) << "Could not retrieve response from DiskImageStatus call to "
-                  "concierge";
+               << "concierge";
     OnImported(false);
     return;
   }
@@ -325,7 +335,7 @@ void PluginVmImageManager::OnImported(bool success) {
 
   if (!success) {
     LOG(ERROR) << "Image import failed";
-    state_ = State::IMPORTING_FAILED;
+    state_ = State::IMPORT_FAILED;
     if (observer_)
       observer_->OnImportFailed();
 
@@ -341,9 +351,42 @@ void PluginVmImageManager::OnImported(bool success) {
 }
 
 void PluginVmImageManager::CancelImport() {
-  VLOG(1) << "Cancelling import with command_uuid: "
+  state_ = State::IMPORT_CANCELLED;
+  VLOG(1) << "Cancelling disk image import with command_uuid: "
           << current_import_command_uuid_;
-  // TODO(aoldemeier,okalitova) Make D-Bus call and set/handle state.
+
+  vm_tools::concierge::CancelDiskImageRequest request;
+  request.set_command_uuid(current_import_command_uuid_);
+  GetConciergeClient()->CancelDiskImageOperation(
+      request, base::BindOnce(&PluginVmImageManager::OnImportDiskImageCancelled,
+                              weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PluginVmImageManager::OnImportDiskImageCancelled(
+    base::Optional<vm_tools::concierge::CancelDiskImageResponse> reply) {
+  DCHECK_EQ(state_, State::IMPORT_CANCELLED);
+
+  RemoveTemporaryPluginVmImageArchiveIfExists();
+
+  // TODO(https://crbug.com/966392): Handle unsuccessful PluginVm image
+  // importing cancellation.
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Could not retrieve response from CancelDiskImageOperation "
+               << "call to concierge";
+    return;
+  }
+
+  vm_tools::concierge::CancelDiskImageResponse response = reply.value();
+  if (!response.success()) {
+    LOG(ERROR) << "Import disk image request failed to be cancelled, "
+               << response.failure_reason();
+    return;
+  }
+
+  if (observer_)
+    observer_->OnImportCancelled();
+  state_ = State::NOT_STARTED;
+  VLOG(1) << "Import disk image request has been cancelled successfully";
 }
 
 void PluginVmImageManager::SetObserver(Observer* observer) {
@@ -397,14 +440,14 @@ std::string PluginVmImageManager::GetStateName(State state) {
       return "DOWNLOADED";
     case State::IMPORTING:
       return "IMPORTING";
-    case State::IMPORTING_CANCELLED:
-      return "IMPORTING_CANCELLED";
+    case State::IMPORT_CANCELLED:
+      return "IMPORT_CANCELLED";
     case State::CONFIGURED:
       return "CONFIGURED";
     case State::DOWNLOAD_FAILED:
       return "DOWNLOAD_FAILED";
-    case State::IMPORTING_FAILED:
-      return "IMPORTING_FAILED";
+    case State::IMPORT_FAILED:
+      return "IMPORT_FAILED";
   }
 }
 

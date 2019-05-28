@@ -55,6 +55,7 @@ class PluginVmImageManager
     virtual void OnImportProgressUpdated(uint64_t percent_completed,
                                          int64_t import_percent_per_sec) = 0;
     virtual void OnImported() = 0;
+    virtual void OnImportCancelled() = 0;
     virtual void OnImportFailed() = 0;
   };
 
@@ -109,10 +110,10 @@ class PluginVmImageManager
     DOWNLOAD_CANCELLED,
     DOWNLOADED,
     IMPORTING,
-    IMPORTING_CANCELLED,
+    IMPORT_CANCELLED,
     CONFIGURED,
     DOWNLOAD_FAILED,
-    IMPORTING_FAILED,
+    IMPORT_FAILED,
   };
 
   Profile* profile_ = nullptr;
@@ -172,6 +173,10 @@ class PluginVmImageManager
 
   // Finishes the processing of PluginVm image.
   void OnImported(bool success);
+
+  // Callback for the concierge CancelDiskImageOperation call.
+  void OnImportDiskImageCancelled(
+      base::Optional<vm_tools::concierge::CancelDiskImageResponse> reply);
 
   void RemoveTemporaryPluginVmImageArchiveIfExists();
   void OnTemporaryPluginVmImageArchiveRemoved(bool success);

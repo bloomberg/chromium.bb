@@ -67,6 +67,7 @@ class MockObserver : public PluginVmImageManager::Observer {
                void(uint64_t percent_completed,
                     int64_t import_percent_per_second));
   MOCK_METHOD0(OnImported, void());
+  MOCK_METHOD0(OnImportCancelled, void());
   MOCK_METHOD0(OnImportFailed, void());
 };
 
@@ -292,6 +293,24 @@ TEST_F(PluginVmImageManagerTest, ImportNonExistingImageTest) {
 
   histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 1);
+}
+
+TEST_F(PluginVmImageManagerTest, CancelledImportTest) {
+  SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
+  SetupConciergeForCancelDiskImageOperation(fake_concierge_client_,
+                                            true /* success */);
+
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnImportCancelled());
+
+  ProcessImageUntilImporting();
+
+  // Faking downloaded file for testing.
+  manager_->SetDownloadedPluginVmImageArchiveForTesting(
+      fake_downloaded_plugin_vm_image_archive_);
+  manager_->StartImport();
+  manager_->CancelImport();
+  test_browser_thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {

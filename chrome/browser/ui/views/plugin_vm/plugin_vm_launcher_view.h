@@ -45,6 +45,7 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   void OnImportProgressUpdated(uint64_t percent_completed,
                                int64_t import_percent_per_sec) override;
   void OnImported() override;
+  void OnImportCancelled() override;
   void OnImportFailed() override;
 
   // Public for testing purposes.
