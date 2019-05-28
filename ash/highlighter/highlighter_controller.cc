@@ -59,8 +59,7 @@ float GetScreenshotScale(aura::Window* window) {
 
 }  // namespace
 
-HighlighterController::HighlighterController()
-    : binding_(this), weak_factory_(this) {
+HighlighterController::HighlighterController() : weak_factory_(this) {
   Shell::Get()->AddPreTargetHandler(this);
 }
 
@@ -100,19 +99,6 @@ void HighlighterController::AbortSession() {
     UpdateEnabledState(HighlighterEnabledState::kDisabledBySessionAbort);
 }
 
-void HighlighterController::BindRequest(
-    mojom::HighlighterControllerRequest request) {
-  binding_.Bind(std::move(request));
-}
-
-void HighlighterController::SetClient(
-    mojom::HighlighterControllerClientPtr client) {
-  client_ = std::move(client);
-  client_.set_connection_error_handler(
-      base::BindOnce(&HighlighterController::OnClientConnectionLost,
-                     weak_factory_.GetWeakPtr()));
-}
-
 void HighlighterController::SetEnabled(bool enabled) {
   FastInkPointerController::SetEnabled(enabled);
   if (enabled) {
@@ -132,13 +118,6 @@ void HighlighterController::SetEnabled(bool enabled) {
     if (highlighter_view_ && !highlighter_view_->animating())
       DestroyPointerView();
   }
-
-  if (client_)
-    client_->HandleEnabledStateChange(enabled);
-}
-
-void HighlighterController::ExitHighlighterMode() {
-  CallExitCallback();
 }
 
 views::View* HighlighterController::GetPointerView() const {
@@ -241,9 +220,6 @@ void HighlighterController::RecognizeGesture() {
             ? gfx::ToEnclosingRect(box)
             : gfx::ToEnclosingRect(
                   gfx::ScaleRect(box, GetScreenshotScale(current_window)));
-    if (client_)
-      client_->HandleSelection(selection_rect);
-
     for (auto& observer : observers_)
       observer.OnHighlighterSelectionRecognized(selection_rect);
 
@@ -302,21 +278,9 @@ void HighlighterController::DestroyResultView() {
   result_view_.reset();
 }
 
-void HighlighterController::OnClientConnectionLost() {
-  client_.reset();
-  binding_.Close();
-  // The client has detached, force-exit the highlighter mode.
-  CallExitCallback();
-}
-
 void HighlighterController::CallExitCallback() {
   if (!exit_callback_.is_null())
     std::move(exit_callback_).Run();
-}
-
-void HighlighterController::FlushMojoForTesting() {
-  if (client_)
-    client_.FlushForTesting();
 }
 
 }  // namespace ash

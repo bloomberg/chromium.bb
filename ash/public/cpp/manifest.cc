@@ -12,7 +12,6 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
-#include "ash/public/interfaces/highlighter_controller.mojom.h"
 #include "ash/public/interfaces/ime_controller.mojom.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "ash/public/interfaces/kiosk_next_shell.mojom.h"
@@ -68,13 +67,12 @@ const service_manager::Manifest& GetManifest() {
                   mojom::AssistantVolumeControl,
                   mojom::KioskNextShellController,
                   mojom::CrosDisplayConfigController,
-                  mojom::EventRewriterController, mojom::HighlighterController,
-                  mojom::ImeController, mojom::KeyboardController,
-                  mojom::LocaleUpdateController, mojom::LoginScreen,
-                  mojom::MediaController, mojom::NightLightController,
-                  mojom::ShutdownController, mojom::TabletModeController,
-                  mojom::TrayAction, mojom::VoiceInteractionController,
-                  mojom::VpnList>())
+                  mojom::EventRewriterController, mojom::ImeController,
+                  mojom::KeyboardController, mojom::LocaleUpdateController,
+                  mojom::LoginScreen, mojom::MediaController,
+                  mojom::NightLightController, mojom::ShutdownController,
+                  mojom::TabletModeController, mojom::TrayAction,
+                  mojom::VoiceInteractionController, mojom::VpnList>())
           .ExposeCapability("test", service_manager::Manifest::InterfaceList<
                                         mojom::ShelfIntegrationTestApi>())
           .RequireCapability("*", "accessibility")
