@@ -150,7 +150,7 @@ base::Version GetLastVersion(const base::FilePath& user_data_dir) {
 void DeleteMovedUserDataSoon() {
   base::FilePath user_data_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  content::BrowserThread::PostAfterStartupTask(
+  content::BrowserThread::PostBestEffortTask(
       FROM_HERE,
       base::CreateTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
