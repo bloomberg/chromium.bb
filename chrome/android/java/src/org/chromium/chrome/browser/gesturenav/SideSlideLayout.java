@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
 import android.support.annotation.IntDef;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
@@ -99,7 +100,7 @@ public class SideSlideLayout extends ViewGroup {
     // True while side gesture is in progress.
     private boolean mIsBeingDragged;
 
-    private ArrowChipView mArrowView;
+    private NavigationBubble mArrowView;
     private int mArrowViewWidth;
 
     // Start position for animation moving the UI back to original offset.
@@ -158,7 +159,11 @@ public class SideSlideLayout extends ViewGroup {
         final float density = getResources().getDisplayMetrics().density;
         mCircleWidth = (int) (CIRCLE_DIAMETER_DP * density);
 
-        mArrowView = new ArrowChipView(getContext(), R.style.AssistiveChip);
+        LayoutInflater layoutInflater = LayoutInflater.from(getContext());
+        mArrowView = (NavigationBubble) layoutInflater.inflate(R.layout.navigation_bubble, null);
+        mArrowView.getTextView().setText(
+                getResources().getString(R.string.overscroll_navigation_close_chrome,
+                        getContext().getString(R.string.app_name)));
         mArrowViewWidth = mCircleWidth;
         addView(mArrowView);
 
@@ -226,8 +231,7 @@ public class SideSlideLayout extends ViewGroup {
     public void setDirection(boolean forward) {
         mIsForward = forward;
         mArrowView.setIcon(
-                forward ? R.drawable.ic_arrow_forward_blue_24dp : R.drawable.ic_arrow_back_24dp,
-                true);
+                forward ? R.drawable.ic_arrow_forward_blue_24dp : R.drawable.ic_arrow_back_24dp);
     }
 
     public void setEnableCloseIndicator(boolean enable) {
