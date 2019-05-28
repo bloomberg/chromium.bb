@@ -20,6 +20,7 @@ import org.chromium.base.Log;
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
@@ -69,6 +70,11 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
         WebContents webContents = mTab.getWebContents();
         if (webContents != null) {
             webContents.onHide();
+        }
+
+        InfoBarContainer infoBarContainer = InfoBarContainer.get(mTab);
+        if (infoBarContainer != null) {
+            infoBarContainer.setHidden(true);
         }
 
         if (isViewAttached()) {
