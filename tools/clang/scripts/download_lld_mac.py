@@ -20,7 +20,9 @@ def AlreadyUpToDate():
   if not os.path.exists(LLD_LINK_PATH):
     return False
   lld_rev = subprocess.check_output([LLD_LINK_PATH, '--version'])
-  return (re.match(r'LLD.*\(.*trunk (\d+)\)', lld_rev).group(1) ==
+  # Version output example:
+  # LLD 9.0.0 (https://github.com/llvm/llvm-project/ 342571e8d6eb1afb151ae1103431798e3d24054f)
+  return (re.match(r'LLD.*\(.*git.*llvm.* ([0-9a-f]+)\)', lld_rev).group(1) ==
              update.CLANG_REVISION)
 
 
