@@ -201,6 +201,7 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
                             int iconType) -> {
                         if (!mSuggestionHost.isActiveModel(model)) return;
                         model.set(SuggestionViewProperties.SUGGESTION_ICON_BITMAP, icon);
+                        mSuggestionHost.notifyPropertyModelsChanged();
                     });
         }
 
