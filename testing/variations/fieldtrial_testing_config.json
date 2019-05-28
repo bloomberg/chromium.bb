@@ -4045,6 +4045,21 @@
             ]
         }
     ],
+    "PrefetchSRPAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_threshold_1_holdback_20190521",
+                    "enable_features": [
+                        "GWSPrefetchHoldback"
+                    ]
+                }
+            ]
+        }
+    ],
     "PreloadMetadataLazyLoad": [
         {
             "platforms": [
