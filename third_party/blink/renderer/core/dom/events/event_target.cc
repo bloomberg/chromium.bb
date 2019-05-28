@@ -446,12 +446,13 @@ bool EventTarget::AddEventListenerInternal(
       event_type == event_type_names::kTouchend ||
       event_type == event_type_names::kTouchmove ||
       event_type == event_type_names::kTouchstart) {
-    if (options->passive()) {
-      UseCounter::Count(*(ExecutingWindow()->document()),
-                        WebFeature::kPassiveTouchEventListener);
-    } else {
-      UseCounter::Count(*(ExecutingWindow()->document()),
-                        WebFeature::kNonPassiveTouchEventListener);
+    if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
+      if (const Document* document = executing_window->document()) {
+        UseCounter::Count(*document,
+                          options->passive()
+                              ? WebFeature::kPassiveTouchEventListener
+                              : WebFeature::kNonPassiveTouchEventListener);
+      }
     }
   }
 
