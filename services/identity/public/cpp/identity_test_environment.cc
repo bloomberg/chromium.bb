@@ -198,7 +198,8 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
 #if defined(OS_CHROMEOS)
   std::unique_ptr<SigninManagerBase> signin_manager =
       std::make_unique<SigninManagerBase>(signin_client, token_service.get(),
-                                          account_tracker_service.get());
+                                          account_tracker_service.get(),
+                                          nullptr, account_consistency);
 #else
   std::unique_ptr<SigninManagerBase> signin_manager =
       std::make_unique<SigninManager>(signin_client, token_service.get(),

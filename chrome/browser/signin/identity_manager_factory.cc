@@ -85,7 +85,9 @@ std::unique_ptr<ConcreteSigninManager> BuildSigninManager(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
 #if defined(OS_CHROMEOS)
   signin_manager = std::make_unique<ConcreteSigninManager>(
-      client, token_service, account_tracker_service);
+      client, token_service, account_tracker_service,
+      gaia_cookie_manager_service,
+      AccountConsistencyModeManager::GetMethodForProfile(profile));
 #else
   signin_manager = std::make_unique<ConcreteSigninManager>(
       client, token_service, account_tracker_service,
