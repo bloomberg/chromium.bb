@@ -3328,19 +3328,6 @@ BEGIN_PARTITION_SEARCH:
 }
 #undef NUM_SIMPLE_MOTION_FEATURES
 
-#define MAX_PYR_LEVEL_FROMTOP_DELTAQ 0
-static int is_frame_tpl_eligible(AV1_COMP *const cpi) {
-  const int max_pyr_level_fromtop_deltaq = MAX_PYR_LEVEL_FROMTOP_DELTAQ;
-  const int pyr_lev_from_top =
-      cpi->twopass.gf_group.pyramid_height -
-      cpi->twopass.gf_group.pyramid_level[cpi->twopass.gf_group.index];
-  if (pyr_lev_from_top > max_pyr_level_fromtop_deltaq ||
-      cpi->twopass.gf_group.pyramid_height <= max_pyr_level_fromtop_deltaq + 1)
-    return 0;
-  else
-    return 1;
-}
-
 static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
                             int mi_row, int mi_col, int orig_rdmult) {
   assert(IMPLIES(cpi->twopass.gf_group.size > 0,
@@ -3389,10 +3376,12 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
     }
   } else if (analysis_type == 1) {
     const double mc_count_base = (mi_count * cpi->rd.mc_count_base);
-    beta = (mc_count + 10.0) / (mc_count_base + 10.0);
+    beta = (mc_count + 1.0) / (mc_count_base + 1.0);
+    beta = pow(beta, 0.5);
   } else if (analysis_type == 2) {
     const double mc_saved_base = (mi_count * cpi->rd.mc_saved_base);
-    beta = (mc_saved + 100.0) / (mc_saved_base + 100.0);
+    beta = (mc_saved + 1.0) / (mc_saved_base + 1.0);
+    beta = pow(beta, 0.5);
   }
 
   int rdmult = av1_get_adaptive_rdmult(cpi, beta);
@@ -3466,10 +3455,12 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
     }
   } else if (analysis_type == 1) {
     const double mc_count_base = (mi_count * cpi->rd.mc_count_base);
-    beta = (mc_count + 10.0) / (mc_count_base + 10.0);
+    beta = (mc_count + 1.0) / (mc_count_base + 1.0);
+    beta = pow(beta, 0.5);
   } else if (analysis_type == 2) {
     const double mc_saved_base = (mi_count * cpi->rd.mc_saved_base);
-    beta = (mc_saved + 100.0) / (mc_saved_base + 100.0);
+    beta = (mc_saved + 1.0) / (mc_saved_base + 1.0);
+    beta = pow(beta, 0.5);
   }
   offset = (7 * av1_get_deltaq_offset(cpi, cm->base_qindex, beta)) / 8;
   // printf("[%d/%d]: beta %g offset %d\n", pyr_lev_from_top,
@@ -4550,49 +4541,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   // base_qindex
   cm->delta_q_info.delta_q_present_flag &= cm->base_qindex > 0;
   cm->delta_q_info.delta_lf_present_flag &= cm->base_qindex > 0;
-
-  if (cpi->twopass.gf_group.index &&
-      cpi->twopass.gf_group.index < MAX_LAG_BUFFERS &&
-      cpi->oxcf.enable_tpl_model && cpi->tpl_model_pass == 0) {
-    assert(IMPLIES(cpi->twopass.gf_group.size > 0,
-                   cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
-    const int tpl_idx =
-        cpi->twopass.gf_group.frame_disp_idx[cpi->twopass.gf_group.index];
-    TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
-    TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
-
-    if (tpl_frame->is_valid) {
-      int tpl_stride = tpl_frame->stride;
-      int64_t intra_cost_base = 0;
-      int64_t mc_dep_cost_base = 0;
-      int64_t mc_saved_base = 0;
-      int64_t mc_count_base = 0;
-      int row, col;
-
-      for (row = 0; row < cm->mi_rows; ++row) {
-        for (col = 0; col < cm->mi_cols; ++col) {
-          TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
-          intra_cost_base += this_stats->intra_cost;
-          mc_dep_cost_base += this_stats->intra_cost + this_stats->mc_flow;
-          mc_count_base += this_stats->mc_count;
-          mc_saved_base += this_stats->mc_saved;
-        }
-      }
-
-      aom_clear_system_state();
-
-      if (mc_dep_cost_base == 0) {
-        tpl_frame->is_valid = 0;
-      } else {
-        cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
-        cpi->rd.mc_count_base =
-            (double)mc_count_base / (cm->mi_rows * cm->mi_cols);
-        cpi->rd.mc_saved_base =
-            (double)mc_saved_base / (cm->mi_rows * cm->mi_cols);
-        aom_clear_system_state();
-      }
-    }
-  }
 
   av1_frame_init_quantizer(cpi);
 

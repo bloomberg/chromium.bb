@@ -1324,6 +1324,31 @@ static const uint8_t av1_ref_frame_flag_list[REF_FRAMES] = { 0,
 // field.
 aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi);
 
+#define MAX_PYR_LEVEL_FROMTOP_DELTAQ 0
+static INLINE int is_frame_tpl_eligible(AV1_COMP *const cpi) {
+  const int max_pyr_level_fromtop_deltaq = MAX_PYR_LEVEL_FROMTOP_DELTAQ;
+  const int pyr_lev_from_top =
+      cpi->twopass.gf_group.pyramid_height -
+      cpi->twopass.gf_group.pyramid_level[cpi->twopass.gf_group.index];
+  if (pyr_lev_from_top > max_pyr_level_fromtop_deltaq ||
+      cpi->twopass.gf_group.pyramid_height <= max_pyr_level_fromtop_deltaq + 1)
+    return 0;
+  else
+    return 1;
+}
+
+static INLINE int is_frame_arf_and_tpl_eligible(AV1_COMP *const cpi) {
+  const int max_pyr_level_fromtop_deltaq = 0;
+  const int pyr_lev_from_top =
+      cpi->twopass.gf_group.pyramid_height -
+      cpi->twopass.gf_group.pyramid_level[cpi->twopass.gf_group.index];
+  if (pyr_lev_from_top > max_pyr_level_fromtop_deltaq ||
+      cpi->twopass.gf_group.pyramid_height <= max_pyr_level_fromtop_deltaq + 1)
+    return 0;
+  else
+    return 1;
+}
+
 #if CONFIG_COLLECT_PARTITION_STATS == 2
 static INLINE void av1_print_partition_stats(PartitionStats *part_stats) {
   FILE *f = fopen("partition_stats.csv", "w");

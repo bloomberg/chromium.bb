@@ -730,7 +730,7 @@ static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
 #endif  // GROUP_ADAPTIVE_MAXQ
 #define MIN_FWD_KF_INTERVAL 8
 
-static void assign_q_and_bounds_q_mode(AV1_COMP *cpi) {
+void av1_assign_q_and_bounds_q_mode(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   GF_GROUP *const gf_group = &cpi->twopass.gf_group;
   const int width = cm->width;
@@ -1186,7 +1186,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // Set up the structure of this Group-Of-Pictures (same as GF_GROUP)
   av1_gop_setup_structure(cpi, frame_params);
 
-  if (cpi->oxcf.rc_mode == AOM_Q) assign_q_and_bounds_q_mode(cpi);
+  if (cpi->oxcf.rc_mode == AOM_Q) av1_assign_q_and_bounds_q_mode(cpi);
 
   // Allocate bits to each of the frames in the GF group.
   allocate_gf_group_bits(cpi, gf_group_bits, gf_group_error_left, gf_arf_bits,

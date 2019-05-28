@@ -3551,6 +3551,63 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
   cm->switchable_motion_mode = 1;
 }
 
+static int get_gfu_boost_from_r0(double r0) {
+  int boost = (int)rint(220.0 / r0);
+  return boost;
+}
+
+static void process_tpl_stats_frame(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  if (cpi->twopass.gf_group.index &&
+      cpi->twopass.gf_group.index < MAX_LAG_BUFFERS &&
+      cpi->oxcf.enable_tpl_model && cpi->tpl_model_pass == 0) {
+    assert(IMPLIES(cpi->twopass.gf_group.size > 0,
+                   cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
+    const int tpl_idx =
+        cpi->twopass.gf_group.frame_disp_idx[cpi->twopass.gf_group.index];
+    TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
+    TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
+
+    if (tpl_frame->is_valid) {
+      int tpl_stride = tpl_frame->stride;
+      int64_t intra_cost_base = 0;
+      int64_t mc_dep_cost_base = 0;
+      int64_t mc_saved_base = 0;
+      int64_t mc_count_base = 0;
+      int row, col;
+
+      for (row = 0; row < cm->mi_rows; ++row) {
+        for (col = 0; col < cm->mi_cols; ++col) {
+          TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
+          intra_cost_base += this_stats->intra_cost;
+          mc_dep_cost_base += this_stats->intra_cost + this_stats->mc_flow;
+          mc_count_base += this_stats->mc_count;
+          mc_saved_base += this_stats->mc_saved;
+        }
+      }
+
+      if (mc_dep_cost_base == 0) {
+        tpl_frame->is_valid = 0;
+      } else {
+        aom_clear_system_state();
+        cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
+        if (is_frame_arf_and_tpl_eligible(cpi)) {
+          cpi->rd.arf_r0 = cpi->rd.r0;
+          const int gfu_boost = get_gfu_boost_from_r0(cpi->rd.arf_r0);
+          // printf("old boost %d new boost %d\n", cpi->rc.gfu_boost,
+          // gfu_boost);
+          cpi->rc.gfu_boost = (cpi->rc.gfu_boost + gfu_boost) / 2;
+        }
+        cpi->rd.mc_count_base =
+            (double)mc_count_base / (cm->mi_rows * cm->mi_cols);
+        cpi->rd.mc_saved_base =
+            (double)mc_saved_base / (cm->mi_rows * cm->mi_cols);
+        aom_clear_system_state();
+      }
+    }
+  }
+}
+
 static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
                                     int *top_index) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3558,6 +3615,8 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 
   // Setup variables that depend on the dimensions of the frame.
   av1_set_speed_features_framesize_dependent(cpi, cpi->speed);
+
+  if (is_frame_tpl_eligible(cpi)) process_tpl_stats_frame(cpi);
 
   // Decide q and q bounds.
   *q = av1_rc_pick_q_and_bounds(cpi, cm->width, cm->height, bottom_index,
