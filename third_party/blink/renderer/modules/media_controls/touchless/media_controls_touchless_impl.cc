@@ -448,9 +448,13 @@ void MediaControlsTouchlessImpl::Trace(blink::Visitor* visitor) {
   HTMLDivElement::Trace(visitor);
 }
 
-void MediaControlsTouchlessImpl::OnMediaMenuResultForTest(
-    mojom::blink::MenuResponsePtr response) {
-  OnMediaMenuResult(std::move(response));
+void MediaControlsTouchlessImpl::SetMediaControlsMenuHostForTesting(
+    mojom::blink::MediaControlsMenuHostPtr menu_host) {
+  media_controls_host_ = std::move(menu_host);
+}
+
+void MediaControlsTouchlessImpl::MenuHostFlushForTesting() {
+  media_controls_host_.FlushForTesting();
 }
 
 }  // namespace blink

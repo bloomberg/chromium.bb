@@ -71,7 +71,9 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   MediaControlsTouchlessMediaEventListener& MediaEventListener() const;
 
   // Test functions
-  void OnMediaMenuResultForTest(mojom::blink::MenuResponsePtr);
+  void SetMediaControlsMenuHostForTesting(
+      mojom::blink::MediaControlsMenuHostPtr);
+  void MenuHostFlushForTesting();
 
   void Trace(blink::Visitor*) override;
 

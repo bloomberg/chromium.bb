@@ -393,8 +393,11 @@ jumbo_source_set("unit_tests") {
   ]
 
   if (is_android && notouch_build) {
-    sources +=
-        [ "media_controls/touchless/media_controls_touchless_impl_test.cc" ]
+    sources += [
+      "media_controls/touchless/media_controls_touchless_impl_test.cc",
+      "media_controls/touchless/test_media_controls_menu_host.cc",
+      "media_controls/touchless/test_media_controls_menu_host.h",
+    ]
   }
 
   configs += [
