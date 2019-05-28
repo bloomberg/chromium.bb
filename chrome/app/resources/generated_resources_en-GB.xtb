@@ -923,6 +923,7 @@
 <translation id="2396783860772170191">Enter 4-digit pin (0000-9999)</translation>
 <translation id="2408955596600435184">Enter your PIN</translation>
 <translation id="241082044617551207">Unknown plug-in</translation>
+<translation id="2412593942846481727">Update available</translation>
 <translation id="2413749388954403953">Change the bookmarks user interface</translation>
 <translation id="241639282915300771">Restore currently in progress for <ph name="CONTAINER_ID" /></translation>
 <translation id="241727068219398187">Data was encrypted with your Google password as of
@@ -1461,7 +1462,6 @@
 <translation id="3251759466064201842">&lt;Not Part Of Certificate&gt;</translation>
 <translation id="3253448572569133955">Unknown account</translation>
 <translation id="3254516606912442756">Automatic time zone detection is disabled</translation>
-<translation id="3254751264127618663">Please sign in again to confirm that your account <ph name="USER_EMAIL" /> can be used with websites, apps and extensions in Chrome and Google Play. You may also remove this account.</translation>
 <translation id="3255355328033513170">All data stored by <ph name="SITE_GROUP_NAME" /> and any sites under it will be deleted. This includes cookies. You'll be signed out of these sites, including in open tabs.</translation>
 <translation id="3259723213051400722">Please try again.</translation>
 <translation id="3264544094376351444">Sans-serif font</translation>

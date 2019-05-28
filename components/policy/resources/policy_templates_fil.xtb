@@ -1071,6 +1071,7 @@
       Kung nakatakda ang patakarang AutoplayAllowed sa False, papayagan pa ring mag-play ang anumang mga pattern ng URL na itinakda sa patakarang ito.
 
       Tandaan na kung tumatakbo ang <ph name="PRODUCT_NAME" /> at magbago ang patakarang ito, ilalapat lang ito sa mga bagong bukas na tab. Samakatuwid, maaari pa ring sundin ng ilang tab ang nakaraang gawi.</translation>
+<translation id="284288632677954003">URL ng XML file n a naglalaman ng mga URL na hindi dapat mag-trigger ng paglipat ng browser.</translation>
 <translation id="285480231336205327">Paganahin ang mataas na contrast mode</translation>
 <translation id="2854919890879212089">Nagiging dahilan upang gamitin ng <ph name="PRODUCT_NAME" /> ang default na printer ng system bilang default na pagpipilian sa Preview ng Pag-print sa halip na ang pinakahuling ginamit na printer.
 
@@ -1243,6 +1244,15 @@
 <translation id="3096595567015595053">Listahan ng mga pinaganang plugin</translation>
 <translation id="3101501961102569744">Pumili kung paano tukuyin ang mga setting ng proxy server</translation>
 <translation id="3101709781009526431">Petsa at oras</translation>
+<translation id="3114411414586006215">Kinokontrol ng patakarang ito ang listahan ng mga website na hindi kailanman magdudulot ng paglipat ng browser.
+
+      Tandaang puwede ring magdagdag ng mga element sa listahang ito sa pamamagitan ng patakarang <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
+
+      Kapag hinayaang hindi nakatakda ang patakarang ito, walang website na idaragdag sa listahan.
+
+      Kapag nakatakda ang patakarang ito, itinuturing na panuntunan ang bawat item, gaya ng patakarang <ph name="URL_LIST_POLICY_NAME" />. Gayunpaman, baligtad ang logic: hindi magbubukas ng alternatibong browser ang mga panuntunang tutugma.
+
+      Hindi gaya ng <ph name="URL_LIST_POLICY_NAME" />, nalalapat sa magkabilang direksyon ang mga panuntunan. Ibig sabihin, kapag may add-in ng Internet Explorer at naka-enable ito, kinokontrol din nito kung dapat buksan ng <ph name="IE_PRODUCT_NAME" /> ang mga URL na ito sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Babala: Tuluyan nang maaalis ang DHE sa <ph name="PRODUCT_NAME" /> pagkatapos ng bersyon 57 (na tinatayang lalabas sa Marso 2017) at hindi na gagana ang patakarang ito.
 
       Kung hindi nakatakda ang patakaran, o kung nakatakda ito sa false, hindi mae-enable ang mga DHE na cipher suite sa TLS. Kung hindi naman ay maaari itong itakda sa true upang i-enable ang mga DHE na cipher suite at mapanatili ang compatibility sa isang lumang server. Isa itong pansamantalang solusyon at dapat na i-configure muli ang server.
@@ -1441,6 +1451,17 @@
 <translation id="3550875587920006460">Pinapayagan ang pagtatakda ng custom na iskedyul para tingnan kung may mga update. Nalalapat ito sa lahat ng user at sa lahat ng interface sa device. Kapag naitakda, titingnan ng device kung may mga update batay sa iskedyul. Dapat alisin ang patakaran para kanselahin ang anumang nakaiskedyul na pagtingin ng update.</translation>
 <translation id="355118380775352753">Mga website na bubuksan sa alternatibong browser</translation>
 <translation id="3554984410014457319">Payagan ang Google Assistant na makinig sa parirala para sa pag-activate gamit ang boses</translation>
+<translation id="3557208865710006939">Sapilitang ine-enable ang mga wika ng spellcheck. Babalewalain ang mga hindi kilalang wika sa listahan.
+
+      Kung ie-enable mo ang patakarang ito, mae-enable ang spellcheck para sa mga nakasaad na wika, bukod sa mga wika kung saan na-enable ng user ang spellcheck.
+
+      Kung hindi mo itatakda ang patakarang ito, o kung idi-disable mo ito, walang magiging pagbabago sa mga kagustuhan sa spellcheck ng user.
+
+      Kung nakatakda sa false ang patakarang <ph name="SPELLCHECK_ENABLED_POLICY_NAME" />, walang magiging epekto ang patakarang ito.
+
+      Kung may wikang kasama sa patakarang ito at sa patakarang <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, bibigyang priyoridad ang patakarang ito at mae-enable ang wika ng spellcheck.
+
+      Ang mga kasalukuyang sinusuportahang wika ay: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Puwedeng i-configure ng mga user ang channel ng release ng Chrome OS</translation>
 <translation id="3575011234198230041">Pag-authenticate ng HTTP</translation>
 <translation id="3577251398714997599">Setting ng mga ad para sa mga site na may mga nakakasagabal na ad</translation>
@@ -1794,6 +1815,9 @@
           Kung itatakda mo ang patakarang ito, hindi ito mababago o mao-override ng mga user.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable sa simula ang mga sticky key pero puwede ito i-enable ng user anumang oras.</translation>
+<translation id="4171331498167688968">Kung nakatakda sa false ang patakaran, papayagan ang third party software na magpasok ng executable code sa mga proseso ng Chrome. Kung hindi nakatakda ang patakaran o nakatakda sa true, pipigilan ang third party software sa pagpasok ng executable code sa mga proseso ng Chrome.
+
+      Anuman ang value ng patakarang ito, hindi iba-block ng broser sa kasalukuyan ang third party software sa pagpasok ng executable code sa mga proseso nito sa isang machine na kasama sa domain ng <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Default na setting ng <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para sa pagva-validate ng token ng pagpapatotoo ng client sa malayuang pag-access</translation>
 <translation id="4203389617541558220">Limitahan ang uptime ng device sa pamamagitan ng pagse-schedule ng mga awtomatikong reboot.
@@ -2162,6 +2186,7 @@
           Available lang ang patakarang ito sa mga instance ng Windows na kasama sa domain ng<ph name="MS_AD_NAME" />. O kaya, sa mga instance ng Windows 10 Pro o Enterprise na naka-enroll para sa pamamahala sa device.</translation>
 <translation id="5085647276663819155">Huwag paganahin ang Preview ng Pag-print</translation>
 <translation id="5090209345759901501">I-extend ang setting ng Flash content sa lahat ng content</translation>
+<translation id="5090791951240382356">Payagang i-merge ang mga patakaran sa diksyunaryo mula sa iba't ibang pinagmulan</translation>
 <translation id="5093540029655764852">Tinutukoy ang rate (sa bilang ng araw) kung saan pinapalitan ng client ang password ng kanilang machine account. Random na ginagawa ang password ng client at hindi nakikita ng user.
 
       Gaya lang ng mga password ng user, dapat palitan nang regular ang mga password ng machine. Ang pag-disable sa patakarang ito o ang pagtakda sa maraming bilang ng mga araw ay maaaring negatibong makaapekto sa seguridad dahil binibigyan nito ang mga potensyal na attacker ng karagdagang oras para mahanap ang password ng machine account at magamit ito.
@@ -3102,6 +3127,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6923366716660828830">Tinutukoy ang pangalan ng default na provider ng paghahanap. Kung hinayaang walang laman o hindi nakatakda, gagamitin ang pangalan ng host na tinukoy ng URL ng paghahanap.
 
           Isinasaalang-alang lamang sa ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
+<translation id="6924223708804692571">Sapilitang dini-disable ang mga wika ng spellcheck. Babalewalain ang mga hindi kilalang wika sa listahang iyon.
+
+      Kung ie-enable mo ang patakarang ito, madi-disable ang spellcheck para sa mga nakasaad na wika. Puwede pa ring i-enable o i-disable ng user ang spellcheck para sa mga wikang wala sa listahan.
+
+      Kung hindi mo itatakda ang patakarang ito, o kung idi-disable mo ito, walang magiging pagbabago sa mga kagustuhan sa spellcheck ng user.
+
+      Kung nakatakda sa false ang patakarang <ph name="SPELLCHECK_ENABLED_POLICY_NAME" />, walang magiging epekto ang patakarang ito.
+
+      Kung may wikang kasama sa patakarang ito at sa patakarang <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, bibigyang priyoridad ang mas huling patakaran at mae-enable ang wika ng spellcheck.
+
+      Ang mga kasalukuyang sinusuportahang wika ay: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">I-enable ang long edge duplex na pag-print</translation>
 <translation id="6931242315485576290">Huwag paganahin pag-synchronize ng data sa Google</translation>
 <translation id="6936894225179401731">Tinutukoy ang pinakamataas na bilang ng mga sabay-sabay na koneksyon sa proxy server.
@@ -3250,6 +3286,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung na-configure ang patakarang ito, permanente at hindi mababago ng user ang hanay ng mga application.
 
       Kung hindi naitakda ang patakarang ito, maaaring baguhin ng user ang listahan ng mga na-pin na app sa launcher.</translation>
+<translation id="713121532817834879">Ang patakarang ito ay URL na tumutukoy sa isang XML file na nasa parehong format ng patakarang <ph name="IEEM_SITELIST_POLICY" /> ng Internet Explorer. Naglo-load ito ng mga panuntunan mula sa isang XML file nang hindi ibinabahagi ang mga panuntunang iyon sa Internet Explorer.
+
+      Ang mga panuntunan sa XML file na ito ay nalalapat sa parehong paraan ng <ph name="GREYLIST_POLICY_NAME" />. Iyon ay, pinipigilan ng mga panuntunang ito ang <ph name="PRODUCT_NAME" /> na buksan ang alternatibong browser, at pinipigilan din ang alternatibong browser na buksan ang <ph name="PRODUCT_NAME" />.
+
+      Kapag hinayaang hindi nakatakda ang patakarang ito, o hindi nakatakda sa isang valid na URL, hindi ito gagamitin ng <ph name="PRODUCT_NAME" /> bilang pinagmulan ng mga panuntunang hindi nagti-trriger ng paglipat ng browser.
+
+      Kapag nakatakda sa valid na URL ang patakarang ito, ida-download ng <ph name="PRODUCT_NAME" /> ang listahan ng site mula sa URL na iyon, at ilalapat nito ang mga panuntunan na parang na-configure ang mga ito alinsunod sa patakarang <ph name="SITELIST_POLICY_NAME" />.
+
+      Para sa higit pang impormasyon tungkol sa patakarang <ph name="IEEM_SITELIST_POLICY" /> ng Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng video nang walang prompt.</translation>
 <translation id="7138678301420049075">Iba pa</translation>
 <translation id="7140629953254369759">Binibigyan ng tagubilin ang <ph name="PRODUCT_OS_NAME" /> na gamitin ang configuration ng scheduler ng gawain na tinukoy ng partikular na pangalan.
@@ -3298,6 +3343,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Pinapayagan lang ang awtomatikong pag-playback para sa mga domain na tahasang nakalista sa patakarang <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Kung gusto mong i-enable ang awtomatikong pag-playback para sa lahat ng site, pag-isipang magdagdag ng http://* at https://* sa listahang ito.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, manual na mababago ng user ang setting na ito.</translation>
+<translation id="7222749588229362483">Pinapayagan ang mga napiling patakaran na mag-merge kapag nanggaling ang mga ito sa iba't ibang pinagmulan, nang may parehong saklaw at antas.
+
+        Kasama sa pag-merge ang mga key na nasa unang antas ng diksyunaryo mula sa bawat pinagmulan. Kung may salungatan sa pagitan ng mga key, ilalapat ang key mula sa pinagmulang may pinakamataas na priyoridad.
+
+        Kung nasa listahan ang isang patakaran, at kapag may salungatan sa pagitan ng dalawang pinagmulan, basta't may parehong saklaw at antas ang mga ito, ime-merge ang mga value sa isang bagong listahan ng diksyunaryo.
+
+        Kung nasa listahan ang isang patakaran, at kapag may salungatan sa pagitan ng dalawang pinagmulan pero magkaiba rin ang saklaw at/o antas, ilalapat ang patakarang may pinakamataas na priyoridad.
+
+        Kung wala sa listahan ang isang patakaran, at kapag may anumang salungatan sa pagitan ng mga pinagmulan, saklaw, at/o antas, ilalapat ang patakarang may pinakamataas na priyoridad.</translation>
 <translation id="7229975860249300121">Naglalaman ng karaniwang expression na ginagamit para tukuyin kung aling Google account ang maaaring itakda bilang mga pangunahing account sa browser sa <ph name="PRODUCT_NAME" /> (ibig sabihin, ang account na napili sa panahon ng proseso ng pag-opt in sa Pag-sync).
 
       May ipapakitang naaangkop na error kung susubukan ng isang user na magtakda ng pangunahing account sa browser gamit ang isang username na hindi tumutugma sa pattern na ito.
@@ -3934,6 +3988,12 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
       Kung nakatakda ang patakaran sa 'Palitan,' papalitan ang patakaran ng user sa mga GPO ng user ng patakaran ng user sa mga GPO ng computer (babalewalain ang mga GPO ng user).</translation>
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
+<translation id="8465746466645315861">Kung hindi nakatakda ang patakarang ito, puwedeng i-enable o i-disable ng user ang spellcheck sa mga setting ng wika.
+
+      Kung nakatakda sa true ang patakarang ito, naka-enable ang spellcheck at hindi ito madi-disable ng user. Sa <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" />, at <ph name="LINUX_OS_NAME" />, puwedeng indibidwal na i-toggle nang on at off, para epektibo pa ring ma-disable ng user ang spellcheck sa pamamagitan ng pag-toggle off sa bawat wika ng spellcheck. Para maiwasan iyon, puwedeng gamitin ang patakarang <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> para sapilitang ma-enable ang mga partikular na wika ng spellcheck.
+
+      Kung nakatakda sa false ang patakarang ito, naka-disable ang spellcheck at hindi ito madi-disable ng user. Walang epekto ang mga patakarang <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> at <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> kapag nakatakda sa false ang patakarang ito.
+      </translation>
 <translation id="847472800012384958">Huwag payagang magpakita ng mga popup ang anumang site</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8483004350080020634">Sini-strip ang mga sensitibong bahagi ng privacy at seguridad ng mga https:// na URL bago ipasa ang mga ito sa mga script ng PAC (Proxy Auto Config) na ginagamit ng <ph name="PRODUCT_NAME" /> sa panahon ng pagresolba sa proxy.

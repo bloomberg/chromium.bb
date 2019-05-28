@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Image sans libellé</translation>
 <translation id="3706100364254443312">interrupteur</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Quitter le mode PIP (Picture-in-picture)</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> Go</translation>
 <translation id="3808586225841795776">terme</translation>
 <translation id="3822383571486410024">Veuillez allonger ce texte pour qu'il comporte au moins <ph name="MIN_CHARACTERS" /> caractères. Il en compte actuellement <ph name="CURRENT_LENGTH" />.</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">La partie précédée du symbole "<ph name="ATSIGN" />" ne doit pas contenir le caractère "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">annexe</translation>
+<translation id="4718048029184481307">Lecture en mode Picture-in-picture</translation>
 <translation id="4742539557769756338">couverture</translation>
 <translation id="4748357248530471599">activer/désactiver plein écran en encoche</translation>
 <translation id="4757246831282535685">panneau des onglets</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">télécharger des contenus multimédias</translation>
 <translation id="6981594929165378967">insertion</translation>
 <translation id="6989848892321993519">Veuillez allonger ce texte pour qu'il comporte au moins <ph name="MIN_CHARACTERS" /> caractères. Il en compte actuellement un seul.</translation>
+<translation id="7033340931668032222">haut et bas pour modifier le volume</translation>
 <translation id="709897737746224366">Veuillez respecter le format requis.</translation>
 <translation id="7118469954320184356">Aucune description disponible.</translation>
 <translation id="7139483182332611405">préface</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">symbole graphique</translation>
 <translation id="8583702881314752957">liste de définitions</translation>
 <translation id="8597182159515967513">en-tête</translation>
+<translation id="8603553056539299761">gauche et droite pour chercher</translation>
 <translation id="860475260694818407">sommaire</translation>
 <translation id="8613126697340063924">contrôler la lecture à distance</translation>
 <translation id="862370744433916922">sous-titre</translation>

@@ -157,6 +157,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിന് പിന്നീട്, തുടർന്നും സൈൻ ഇൻ ചെയ്യാനാവും.</translation>
 <translation id="3321628682574733415">രക്ഷാകർതൃ കോഡ് തെറ്റാണ്</translation>
 <translation id="332587331255250389">ബാറ്ററി മാറ്റി പുതിയത് വയ്ക്കുക</translation>
+<translation id="3335825575923019462">സ്വയമേവയുള്ള ക്ലിക്കുകൾ പ്രവർത്തനരഹിതമാക്കണമെന്ന് നിങ്ങൾക്ക് തീർച്ചയാണോ?</translation>
 <translation id="3351879221545518001">നിലവിൽ നിങ്ങൾ സ്ക്രീൻ കാസ്‌റ്റ് ചെയ്യുന്നു.</translation>
 <translation id="3364721542077212959">സ്റ്റൈലസ് ടൂളുകൾ</translation>
 <translation id="3368922792935385530">ബന്ധിപ്പിച്ചു</translation>
@@ -171,6 +172,7 @@
 <translation id="3510164367642747937">മൗസ് കഴ്‌സർ ഹൈലൈറ്റ് ചെയ്യുക</translation>
 <translation id="3513798432020909783">അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER_EMAIL" /> ആണ്</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" ഭാഷയിലേയ്‌ക്ക് തിരികെ മാറ്റുക (പുനരാരംഭിക്കേണ്ടതുണ്ട്)</translation>
+<translation id="3576141592585647168">സമയമേഖല മാറ്റുക</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
 <translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റ് ചെയ്‌തു.</translation>
 <translation id="3621202678540785336">ഇൻപുട്ട്</translation>
@@ -353,6 +355,7 @@
 <translation id="6559976592393364813">അഡ്‌മിനിസ്‌ട്രേറ്ററോട് ചോദിക്കുക</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
 <translation id="6627638273713273709">തിരയല്‍+Shift+K</translation>
+<translation id="6637729079642709226">സമയം മാറ്റുക</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ നൽകുക: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
 <translation id="6665545700722362599">ലൊക്കേഷൻ സേവനങ്ങൾ, ഉപകരണത്തിന്‍റെ മൈക്രോഫോൺ, ക്യാമറ അല്ലെങ്കിൽ മറ്റ് ഫീച്ചറുകൾ  ഉപയോഗിക്കാൻ, വെബ്സൈറ്റുകൾക്കും ആപ്പുകൾക്കും വിപുലീകരണങ്ങൾക്കും അനുമതി നൽകുക</translation>
@@ -397,6 +400,7 @@
 <translation id="7348093485538360975">ഓൺ-സ്‌ക്രീൻ കീബോർഡ്</translation>
 <translation id="735745346212279324">VPN വിച്ഛേദിച്ചു</translation>
 <translation id="7377169924702866686">Caps Lock ഓൺ ആണ്.</translation>
+<translation id="7378594059915113390">മീഡിയ നിയന്ത്രണങ്ങൾ</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> സെക്കൻഡ്</translation>
 <translation id="7398254312354928459">നെറ്റ്‌വർക്ക് കണക്ഷൻ മാറ്റി</translation>
 <translation id="7405710164030118432">ഉപകരണം അൺലോക്ക് ചെയ്യാൻ നിങ്ങളുടെ Family Link രക്ഷാകർതൃ ആക്‌സസ് കോഡ് നൽകുക</translation>
@@ -481,6 +485,7 @@
 <translation id="8649101189709089199">വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8652175077544655965">ക്രമീകരണം അടയ്ക്കുക</translation>
 <translation id="8653151467777939995">അറിയിപ്പ് ക്രമീകരണം കാണിക്കുക. അറിയിപ്പുകൾ ഓണാണ്</translation>
+<translation id="8664483332071009680">സ്വയമേവയുള്ള ക്ലിക്കുകൾ പ്രവർത്തനരഹിതമാക്കണോ?</translation>
 <translation id="8664753092453405566">നെറ്റ്‌വർക്ക് ലിസ്റ്റ് കാണിക്കുക. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ കണക്റ്റുചെയ്‌തു</translation>
@@ -506,6 +511,7 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ഉപയോഗിക്കുന്നു</translation>
 <translation id="899350903320462459">അറിയിപ്പ് പ്രവർത്തനം നിർവഹിക്കാൻ, <ph name="LOGIN_ID" /> ആയി ഉപകരണം അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> എന്നത് കൈകാര്യം ചെയ്യുന്നു</translation>
+<translation id="9017320285115481645">Family Link രക്ഷാകർതൃ ആക്‌സസ് കോഡ് നൽകുക.</translation>
 <translation id="9029474291399787231">Adobe Flash Player അപ്‌ഡേറ്റ് ലഭ്യമാണ്</translation>
 <translation id="9056839673611986238">ഉപകരണം പഴയ അവസ്ഥയിലേക്ക് പുനഃസ്ഥാപിക്കും</translation>
 <translation id="9070640332319875144">അസി‌സ്‌റ്റന്റ് ക്രമീകരണം</translation>

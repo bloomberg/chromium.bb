@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">Родителски настройки</translation>
 <translation id="5327248766486351172">Име</translation>
 <translation id="5335288049665977812">Разрешаване на сайтовете да изпълняват JavaScript (препоръчително)</translation>
+<translation id="5357811892247919462">Получихте раздел</translation>
 <translation id="5363230136052241468">Докоснете бутона „Начало“, за да се зареди нов раздел</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> отворен раздел. Докоснете за превключване между разделите}other{<ph name="OPEN_TABS_MANY" /> отворени раздела. Докоснете за превключване между тях}}</translation>
 <translation id="5391532827096253100">Връзката ви с този сайт не е защитена. Информация за сайта</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">Блокиране на рекламите от сайтове, на които се показват натрапчиви или подвеждащи реклами</translation>
 <translation id="5497272504048921382">Отворени раздели</translation>
 <translation id="5500777121964041360">Може да не се предлага за местоположението ви</translation>
-<translation id="550684401320795253">Chrome се актуализира...</translation>
 <translation id="5512137114520586844">Този профил се управлява от <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Деактивирано от администратора на това устройство</translation>
 <translation id="5515439363601853141">Отключете, за да видите паролата си</translation>

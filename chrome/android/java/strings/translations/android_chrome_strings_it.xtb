@@ -580,6 +580,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5324858694974489420">Impostazioni controllo genitori</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Consenti l'esecuzione di JavaScript nei siti (opzione consigliata)</translation>
+<translation id="5357811892247919462">Scheda ricevuta</translation>
 <translation id="5363230136052241468">Tocca il pulsante Home per caricare la pagina Nuova scheda</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> scheda aperta, tocca per cambiare scheda}other{<ph name="OPEN_TABS_MANY" /> schede aperte, tocca per cambiare scheda}}</translation>
 <translation id="5391532827096253100">La tua connessione al sito non è sicura. Informazioni sul sito</translation>
@@ -601,7 +602,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5494752089476963479">Blocca gli annunci su siti che mostrano annunci invasivi o fuorvianti</translation>
 <translation id="5497272504048921382">Schede aperte</translation>
 <translation id="5500777121964041360">Potrebbe non essere disponibile nel tuo paese</translation>
-<translation id="550684401320795253">Aggiornamento di Chrome...</translation>
 <translation id="5512137114520586844">Questo account è gestito da <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Opzione disattivata dall'amministratore del dispositivo</translation>
 <translation id="5515439363601853141">Sblocca per visualizzare la password</translation>

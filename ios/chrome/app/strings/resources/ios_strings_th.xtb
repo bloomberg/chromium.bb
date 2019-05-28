@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">เปิดทั้งหมด</translation>
 <translation id="1430915738399379752">พิมพ์</translation>
 <translation id="1436290164580597469">ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
+<translation id="1449835205994625556">ซ่อนรหัสผ่าน</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> รายการ</translation>
 <translation id="1491277525950327607">แตะ 2 ครั้งเพื่อสลับการตั้งค่า</translation>
 <translation id="152234381334907219">ไม่เคยบันทึก</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">นำออกข้อมูลที่เรียกดู</translation>
 <translation id="1820259098641718022">เพิ่มไปยังเรื่องรออ่านแล้ว</translation>
 <translation id="1828824471510190776">แนะนำรหัสผ่าน...</translation>
+<translation id="1870148520156231997">แสดงรหัสผ่าน</translation>
 <translation id="1876721852596493031">ส่งข้อมูลการใช้งาน</translation>
 <translation id="1886928167269928266">ตั้งแต่ต้น</translation>
 <translation id="1911619930368729126">อัปโหลดไปยัง Google ไดรฟ์</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">แถบความคืบหน้าการโหลดหน้าเว็บ โหลดแล้ว <ph name="EMAIL" /></translation>
 <translation id="4002066346123236978">ชื่อ</translation>
 <translation id="4004204301268239848">ระบบจะบันทึกรหัสผ่านไว้ในบัญชี Google เพื่อให้คุณใช้ในอุปกรณ์เครื่องใดก็ได้</translation>
+<translation id="4006921758705478413">ส่งไปยังอุปกรณ์</translation>
 <translation id="4038354071007134711">ไม่มีแอปพลิเคชันใดบนอุปกรณ์นี้ที่สามารถเปิดไฟล์ได้</translation>
 <translation id="4042870976416480368">ค้นหาในหน้าเว็บ</translation>
 <translation id="4049507953662678203">ตรวจสอบว่าคุณมีการเชื่อมต่อเครือข่าย และลองอีกครั้ง</translation>
@@ -267,6 +270,7 @@
 <translation id="4904877109095351937">ทำเครื่องหมายว่าอ่านแล้ว</translation>
 <translation id="4930268273022498155">ลบข้อมูลที่มีอยู่ คุณสามารถดึงข้อมูลได้ด้วยการเปลี่ยนกลับเป็น <ph name="USER_EMAIL1" /></translation>
 <translation id="4941089862236492464">ขออภัย เกิดปัญหาในการแชร์รายการของคุณ</translation>
+<translation id="4945756290001680296">เข้าถึงการตั้งค่ารหัสผ่าน</translation>
 <translation id="4979397965658815378">ลงชื่อเข้าใช้บัญชี Google เพื่อรับบุ๊กมาร์ก รหัสผ่าน ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="5005498671520578047">คัดลอกรหัสผ่าน</translation>
 <translation id="5010803260590204777">เปิดแท็บที่ไม่ระบุตัวตนเพื่อท่องเว็บในแบบส่วนตัว</translation>
@@ -520,6 +524,7 @@
 <translation id="8976382372951310360">ความช่วยเหลือ</translation>
 <translation id="8981454092730389528">ส่วนควบคุมกิจกรรมของ Google</translation>
 <translation id="8985320356172329008">ลงชื่อเข้าใช้ Google ด้วย</translation>
+<translation id="9016406938567631235">กำลังส่ง...</translation>
 <translation id="902659348151742535">Google อาจใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยนการค้นหา โฆษณา และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
 <translation id="9034759925968272072">คุณจะไม่ออกจากระบบบัญชี Google บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="9039373489628511875">แบนด์วิดท์</translation>

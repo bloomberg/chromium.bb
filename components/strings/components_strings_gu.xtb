@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">કૅમેરો</translation>
 <translation id="1623104350909869708">આ પૃષ્ઠને વધારાના સંવાદો બનાવતા અટકાવો</translation>
 <translation id="16338877384480380">સ્થાપત્ય-B</translation>
+<translation id="1638780421120290329">કાર્ડ સાચવી શકાતું નથી</translation>
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
 <translation id="1640180200866533862">વપરાશકર્તા નીતિઓ</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />સાઇટના હોમપેજની મુલાકાત લેવાનો<ph name="END_LINK" /> પ્રયાસ કરો.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ડાયગ્નોસ્ટિક્સ ઍપ્લિકેશન<ph name="END_LINK" />નો ઉપયોગ કરીને તમારું કનેક્શન ઠીક કરો</translation>
 <translation id="2239100178324503013">હમણાં મોકલો</translation>
 <translation id="225207911366869382">આ નીતિ માટે આ મૂલ્યને નાપસંદ કરેલું છે.</translation>
+<translation id="2257315177824333709">માફ કરશો, અત્યારે તમારું કાર્ડ સાચવી શકતા નથી</translation>
 <translation id="2262243747453050782">HTTP ભૂલ</translation>
 <translation id="2263079731045660823">Chrome સેટિંગમાં ક્રેડિટ કાર્ડ ઑટોમેટિક રીતે ભરવાની માહિતીને અપડેટ કરો</translation>
 <translation id="2270484714375784793">ફોન નંબર</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">કોઈ કિંમત સેટ નહીં સાથે નીતિઓ બતાવો</translation>
 <translation id="239429038616798445">આ વિતરણ પદ્ધતિ ઉપલબ્ધ નથી. કોઈ ભિન્ન પદ્ધતિ અજમાવો.</translation>
 <translation id="2396249848217231973">&amp;ડિલીટ રદ કરો</translation>
+<translation id="2409589295040002961">તમારા વ્યવસ્થાપક તમારા બ્રાઉઝરનું સેટઅપ રિમોટલી બદલી શકે છે. આ ડિવાઇસ પરની પ્રવૃત્તિ Chromeની બહારથી પણ મેનેજ કરી શકાય છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">સરકારી-કાનૂની</translation>
 <translation id="2413528052993050574">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર રદબાતલ થયું હશે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="2418081434543109369">તમે જેના પર જવાનો પ્રયાસ કરી રહ્યાં છો, તે<ph name="ORIGIN" /> સર્વર દ્વારા વિનંતી
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
 <translation id="2728127805433021124">સર્વરનું પ્રમાણપત્ર એક નબળા સહી ઍલ્ગોરિધમનો ઉપયોગ કરીને સહીિત કરેલું છે.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />કનેક્ટિવિટી ડાયગ્નોસ્ટિક્સ ચલાવી રહ્યાં છે<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">આ નીતિ માટે વિરોધાભાસ મૂલ્ય ધરાવતા એકથી વધુ સૉર્સ ઉપલબ્ધ છે!</translation>
 <translation id="2738330467931008676">પિકઅપ માટેનું સરનામું પસંદ કરો</translation>
 <translation id="2740531572673183784">બરાબર, સમજાઇ ગયું</translation>
 <translation id="2742870351467570537">પસંદ કરેલી આઇટમ્સને દૂર કરો</translation>
@@ -996,6 +1000,7 @@
 <translation id="6433490469411711332">સંપર્ક માહિતીમાં ફેરફાર કરો</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> એ કનેક્ટ કરવાનો ઇનકાર કર્યો.</translation>
 <translation id="6434309073475700221">કાઢી નાખો</translation>
+<translation id="6440503408713884761">અવગણી</translation>
 <translation id="6446163441502663861">Kahu (એન્વલપ)</translation>
 <translation id="6446608382365791566">વધુ માહિતી ઉમેરો</translation>
 <translation id="6447842834002726250">કૂકીઝ</translation>
@@ -1011,6 +1016,7 @@
 <translation id="6517596291481585650">ચેતવણી: આ નીતિને નીતિ દ્વારા ઉલ્લેખ થયા મુજબ સૂચિ તરીકે મર્જ કરવામાં આવી ન હતી, કારણ કે તે સૂચિ નથી.</translation>
 <translation id="6529602333819889595">&amp;ફરી કરો ડિલીટ કરો</translation>
 <translation id="6534179046333460208">વાસ્તવિક વેબ સૂચનો</translation>
+<translation id="6545864417968258051">બ્લૂટૂથ સ્કૅનિંગ</translation>
 <translation id="6554795675067793129"><ph name="ENROLLMENT_DOMAIN" /> દ્વારા તમારું એકાઉન્ટ મેનેજ કરવામાં આવે છે.</translation>
 <translation id="6556866813142980365">ફરી કરો</translation>
 <translation id="6563469144985748109">તમારા સંચાલકે હજી સુધી તેને મંજૂર કરેલ નથી</translation>
@@ -1027,6 +1033,7 @@
 <translation id="6626291197371920147">માન્ય કાર્ડ નંબર ઉમેરો</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> શોધ</translation>
 <translation id="6630809736994426279"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પરના હુમલાખોરો કદાચ હાલમાં તમારા Mac પર જોખમી પ્રોગ્રામ ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરે છે કે જે તમારી માહિતી (ઉદાહરણ તરીકે, ફોટો, પાસવર્ડ, સંદેશા અને ક્રેડિટ કાર્ડ) ચોરી અથવા ડિલીટ કરી શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">આ નીતિ માટે એકથી વધુ સૉર્સ ઉપલબ્ધ છે, પણ મૂલ્ય સમાન છે.</translation>
 <translation id="6643016212128521049">સાફ કરો</translation>
 <translation id="6644283850729428850">આ નીતિ દૂર કરવામાં આવેલી છે.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{કોઈ નહિ}=1{From 1 site (you won't be signed out of your Google Account)}one{From # sites (you won't be signed out of your Google Account)}other{From # sites (you won't be signed out of your Google Account)}}</translation>

@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1623104350909869708">या पृष्ठास अतिरिक्त संवाद तयार करण्यापासून प्रतिबंधित करा</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">कार्ड सेव्ह करू शकलो नाही</translation>
 <translation id="1639239467298939599">लोड करीत आहे</translation>
 <translation id="1640180200866533862">वापरकर्ता धोरणे</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />साइटच्या होमवर भेट देऊन<ph name="END_LINK" /> पहा.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />निदान ॲप<ph name="END_LINK" /> वापरून आपल्या कनेक्शनचे निराकरण करा</translation>
 <translation id="2239100178324503013">आता पाठवा</translation>
 <translation id="225207911366869382">हे मूल्य या धोरणासाठी नापसंत करण्‍यात आले आहे.</translation>
+<translation id="2257315177824333709">सॉरी, तुमचे कार्ड आता सेव्ह केले जाऊ शकत नाही</translation>
 <translation id="2262243747453050782">HTTP एरर</translation>
 <translation id="2263079731045660823">Chrome सेटिंग्जमध्ये क्रेडिट कार्ड ऑटोफिल माहिती अपडेट करा</translation>
 <translation id="2270484714375784793">फोन नंबर</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">कोणतेही मूल्य सेट केल्याशिवाय धोरणे दर्शवा</translation>
 <translation id="239429038616798445">ही शिपिंग पद्धत उपलब्ध नाही. वेगळी पद्धत वापरून पहा.</translation>
 <translation id="2396249848217231973">&amp;हटवा पूर्ववत करा</translation>
+<translation id="2409589295040002961">तुमचा अ‍ॅडमिनिस्ट्रेटर तुमच्या ब्राउझरचे सेटअप रिमोट पद्धतीने बदलू शकतो. या डिव्हाइसवरील अ‍ॅक्टिव्हिटी कदाचित Chrome च्या बाहेर व्यवस्थापित केलेली असू शकते. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता सर्टिफिकेट कदाचित रद्द केले असू शकते. हे कदाचित एका चुकीच्या कॉंफिगरेशनमुळे किंवा हल्लेखोराने तुमचे कनेक्शन इंटरसेप्ट केल्यामुळे झाले असू शकते.</translation>
 <translation id="2418081434543109369">तुम्ही जात आहात तो सर्व्हर, <ph name="ORIGIN" />, ने विनंती केली आहे की
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">विनंती यशस्वी</translation>
 <translation id="2728127805433021124">एक कमकुवत स्वाक्षरी अल्गोरिदम वापरून सर्व्हरचे सर्टिफिकेट साइन केले आहे.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />कनेक्टिव्हिटी निदान चालविणे<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">या धोरणासाठी परस्परविरोधी मूल्ये असलेले एकापेक्षा जास्त स्रोत आहेत!</translation>
 <translation id="2738330467931008676">पिकअप पत्ता निवडा</translation>
 <translation id="2740531572673183784">ठीक आहे</translation>
 <translation id="2742870351467570537">निवडलेले आयटम काढून टाका</translation>
@@ -790,7 +794,7 @@
 <translation id="5251803541071282808">क्लाउड</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
-<translation id="5273658854610202413">चेतावणी: PolicyListMultipleSourceMergeList मध्ये नमूद केल्याप्रमाणे हे धोरण विलीन केले नाही कारण ते शोब्दकोश धोरणांचा भाग नाही जो विलीन केला जाऊ शकतो.</translation>
+<translation id="5273658854610202413">चेतावणी: PolicyListMultipleSourceMergeList मध्ये नमूद केल्याप्रमाणे हे धोरण विलीन केले नाही कारण ते शब्दकोश धोरणांचा भाग नाही जो विलीन केला जाऊ शकतो.</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">बंद करा</translation>
 <translation id="5284909709419567258">नेटवर्क पत्ते</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">संपर्क माहिती संपादित करा</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> नी कनेक्ट करण्यास नकार दिला.</translation>
 <translation id="6434309073475700221">नाकारा</translation>
+<translation id="6440503408713884761">दुर्लक्ष केले</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">अधिक माहिती जोडा</translation>
 <translation id="6447842834002726250">कुकीज</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">चेतावणी: धोरणामध्ये नमूद केल्याप्रमाणे हे धोरण सूची म्हणून विलीन केले नाही कारण ती एखादी सूची नाही.</translation>
 <translation id="6529602333819889595">&amp;पुन्हा करा हटवा</translation>
 <translation id="6534179046333460208">वास्तविक वेब सूचना</translation>
+<translation id="6545864417968258051">ब्लूटूथ स्कॅन करत आहे</translation>
 <translation id="6554795675067793129">तुमचे खाते <ph name="ENROLLMENT_DOMAIN" /> ने व्यवस्थापित केले आहे.</translation>
 <translation id="6556866813142980365">पुन्हा करा</translation>
 <translation id="6563469144985748109">आपल्या व्यवस्थापकाने अद्याप ती मंजूर केली नाही</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">वैध कार्ड नंबर जोडा</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> शोध</translation>
 <translation id="6630809736994426279">सध्या <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वर असलेले हल्लेखोर कदाचित तुमच्या मॅकमधील तुमची माहिती चोरू किंवा हटवू शकणारे धोकादायक प्रोग्राम (उदाहरणार्थ, फोटो, पासवर्ड, संदेश आणि क्रेडिट कार्डे) इंस्टॉल करण्याचा प्रयत्न करू शकतील. <ph name="BEGIN_LEARN_MORE_LINK" />आणखी जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">धोरणासाठी एकापेक्षा जास्त स्रोत आहेत, परंतु मूल्ये सारखी आहेत.</translation>
 <translation id="6643016212128521049">साफ करा</translation>
 <translation id="6644283850729428850">हे धोरण नापसंत आहे.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{काहीही नाही}=1{एका साइटवरून (तुम्हाला तुमच्या Google खात्यातून साइन आउट केले जाणार नाही)}other{# साइटवरून (तुम्हाला तुमच्या Google खात्यातून साइन आउट केले जाणार नाही)}}</translation>

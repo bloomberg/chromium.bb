@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">ಮೌಸ್ ಕರ್ಸರ್ ಎದ್ದುಗಾಣಿಸಿ</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> ಮೂಲಕ ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" ಗೆ ಮರುಬದಲಾಯಿಸಿ (ಮರುಪ್ರಾರಂಭಿಸುವ ಅಗತ್ಯವಿದೆ)</translation>
+<translation id="3576141592585647168">ಸಮಯವಲಯವನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="3595596368722241419">ಬ್ಯಾಟರಿ ಭರ್ತಿಯಾಗಿದೆ</translation>
 <translation id="3606978283550408104">ಬ್ರೇಲ್ ಪ್ರದರ್ಶನವನ್ನು ಸಂಪರ್ಕಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3621202678540785336">ಇನ್‌ಪುಟ್</translation>
@@ -355,6 +356,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6559976592393364813">ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ</translation>
 <translation id="6585808820553845416">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING" /> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ.</translation>
 <translation id="6627638273713273709">ಹುಡುಕಾಟ+Shift+K</translation>
+<translation id="6637729079642709226">ಸಮಯವನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="6650933572246256093">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತಿದೆ. ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ನಮೂದಿಸಿ: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="6665545700722362599">ಸ್ಥಳ ಸೇವೆಗಳು, ಸಾಧನದ ಮೈಕ್ರೊಫೋನ್, ಕ್ಯಾಮೆರಾ, ಅಥವಾ ಇತರ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಬಳಸಲು ವೆಬ್‌ಸೈಟ್‌ಗಳು, ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳಿಗೆ ಅನುಮತಿಯನ್ನು ನೀಡುವುದು</translation>
@@ -510,6 +512,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ಬಳಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="899350903320462459">ಅಧಿಸೂಚನೆ ಕ್ರಿಯೆಯನ್ನು ನಿರ್ವಹಿಸಲು ಸಾಧನವನ್ನು <ph name="LOGIN_ID" /> ನಂತೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> ನಿಂದ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
+<translation id="9017320285115481645">Family Link ಪೋಷಕ ಪ್ರವೇಶದ ಕೋಡ್ ಅನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="9029474291399787231">Adobe Flash Player ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ</translation>
 <translation id="9056839673611986238">ಸಾಧನವನ್ನು ಮುಂಚಿನ ನಿರ್ದಿಷ್ಟ ಸ್ಥಿತಿಗೆ ಹಿಂತಿರುಗಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="9070640332319875144">ಅಸಿಸ್ಟೆಂಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>

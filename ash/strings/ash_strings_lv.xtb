@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Izcelt peles kursoru</translation>
 <translation id="3513798432020909783">Kontu pārvalda <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Mainīt atpakaļ uz <ph name="FROM_LOCALE" /> (nepieciešama restartēšana)</translation>
+<translation id="3576141592585647168">Mainīt laika joslu</translation>
 <translation id="3595596368722241419">Akumulators pilns</translation>
 <translation id="3606978283550408104">Savienojums ar Braila displeju ir izveidots.</translation>
 <translation id="3621202678540785336">Ievade</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Jautājiet administratoram</translation>
 <translation id="6585808820553845416">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Meklēšana+Shift+K</translation>
+<translation id="6637729079642709226">Laika maiņa</translation>
 <translation id="6650933572246256093">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ievadiet ierīcē šo ieejas atslēgu: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Parole</translation>
 <translation id="6665545700722362599">Piešķirt tīmekļa vietnēm, lietotnēm un paplašinājumiem atļauju izmantot atrašanās vietu pakalpojumus, ierīces mikrofonu, kameru un citas funkcijas</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">Izmantojot <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Atbloķēt ierīci kā <ph name="LOGIN_ID" />, lai veiktu paziņojuma darbību</translation>
 <translation id="8995603266996330174">Pārvalda domēnu <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Ievadiet Family Link vecāku piekļuves kodu.</translation>
 <translation id="9029474291399787231">Ir pieejams Adobe Flash Player atjauninājums</translation>
 <translation id="9056839673611986238">Ierīcē tiks veikta atrite</translation>
 <translation id="9070640332319875144">Asistenta iestatījumi</translation>

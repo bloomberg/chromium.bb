@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Ressalta el cursor del ratolí</translation>
 <translation id="3513798432020909783">Compte gestionat per <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Torna a canviar a "<ph name="FROM_LOCALE" />" (requereix reiniciar)</translation>
+<translation id="3576141592585647168">Canvia la zona horària</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
 <translation id="3606978283550408104">S'ha connectat la pantalla Braille.</translation>
 <translation id="3621202678540785336">Entrada</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Pregunta a l'administrador</translation>
 <translation id="6585808820553845416">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Cerca+Maj+K</translation>
+<translation id="6637729079642709226">Canvia l'hora</translation>
 <translation id="6650933572246256093">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Contrasenya</translation>
 <translation id="6665545700722362599">Concedir permís als llocs web, a les aplicacions i a les extensions per utilitzar els serveis d'ubicació o el micròfon, la càmera o altres funcions del dispositiu.</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">S'està utilitzant <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Desbloqueja el dispositiu com a <ph name="LOGIN_ID" /> per dur a terme l'acció que indica la notificació</translation>
 <translation id="8995603266996330174">Gestionat per <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Introdueix el codi d'accés parental de Family Link.</translation>
 <translation id="9029474291399787231">Hi ha disponible una actualització d'Adobe Flash Player</translation>
 <translation id="9056839673611986238">El dispositiu es revertirà a una versió anterior</translation>
 <translation id="9070640332319875144">Configuració de l'Assistent</translation>

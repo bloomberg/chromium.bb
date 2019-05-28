@@ -580,6 +580,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5324858694974489420">Vecāku iestatījumi</translation>
 <translation id="5327248766486351172">Nosaukums</translation>
 <translation id="5335288049665977812">Atļaut vietnēm izmantot JavaScript (ieteicams)</translation>
+<translation id="5357811892247919462">Saņemta cilne</translation>
 <translation id="5363230136052241468">Lai ielādētu jaunas cilnes lapu, pieskarieties pogai Sākums</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> atvērta cilne. Pieskarieties, lai pārslēgtu cilnes.}zero{<ph name="OPEN_TABS_MANY" /> atvērtu ciļņu. Pieskarieties, lai pārslēgtu cilnes.}one{<ph name="OPEN_TABS_MANY" /> atvērta cilne. Pieskarieties, lai pārslēgtu cilnes.}other{<ph name="OPEN_TABS_MANY" /> atvērtas cilnes. Pieskarieties, lai pārslēgtu cilnes.}}</translation>
 <translation id="5391532827096253100">Savienojums ar šo vietni nav drošs. Vietnes informācija</translation>
@@ -601,7 +602,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5494752089476963479">Bloķēt reklāmas vietnēs, kurās tiek rādītas traucējošas vai maldinošas reklāmas</translation>
 <translation id="5497272504048921382">Atvērtās cilnes</translation>
 <translation id="5500777121964041360">Tas var nebūt pieejams jūsu atrašanās vietā</translation>
-<translation id="550684401320795253">Notiek Chrome atjaunināšana...</translation>
 <translation id="5512137114520586844">Šo kontu pārvalda <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Atspējoja šīs ierīces administrators</translation>
 <translation id="5515439363601853141">Atbloķējiet, lai skatītu paroli</translation>

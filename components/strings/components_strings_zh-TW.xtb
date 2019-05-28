@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1623104350909869708">防止這個網頁產生其他對話方塊</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">無法儲存卡片</translation>
 <translation id="1639239467298939599">載入中</translation>
 <translation id="1640180200866533862">使用者政策</translation>
 <translation id="1640244768702815859">請嘗試<ph name="BEGIN_LINK" />造訪網站首頁<ph name="END_LINK" />。</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">請使用<ph name="BEGIN_LINK" />診斷應用程式<ph name="END_LINK" />修正連線問題</translation>
 <translation id="2239100178324503013">立即傳送</translation>
 <translation id="225207911366869382">這個政策值已遭汰換。</translation>
+<translation id="2257315177824333709">很抱歉，目前無法儲存你的卡片</translation>
 <translation id="2262243747453050782">HTTP 錯誤</translation>
 <translation id="2263079731045660823">在 Chrome 設定中更新信用卡自動填入資訊</translation>
 <translation id="2270484714375784793">電話號碼</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">顯示尚未設定任何值的政策</translation>
 <translation id="239429038616798445">不支援所選的運送方式，請改選其他方式。</translation>
 <translation id="2396249848217231973">復原刪除(&amp;U)</translation>
+<translation id="2409589295040002961">你的系統管理員可以遠端變更瀏覽器設定。這部裝置上的活動也可以透過 Chrome 以外的服務管理。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已遭撤銷。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="2418081434543109369">你的目標伺服器「<ph name="ORIGIN" />」要求為其收到的所有要求
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">要求成功</translation>
 <translation id="2728127805433021124">伺服器憑證是以防護力較弱的簽章演算法進行簽署。</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />執行連線診斷<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">這項政策有多個來源，且來源的值相互衝突！</translation>
 <translation id="2738330467931008676">選擇取件地址</translation>
 <translation id="2740531572673183784">確定</translation>
 <translation id="2742870351467570537">移除選取的項目</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">編輯聯絡資訊</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒絕連線。</translation>
 <translation id="6434309073475700221">捨棄</translation>
+<translation id="6440503408713884761">已略過</translation>
 <translation id="6446163441502663861">Kahu (信封)</translation>
 <translation id="6446608382365791566">新增詳細資訊</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">警告：這項政策並非清單，因此未依照政策中指定的方式合併為清單。</translation>
 <translation id="6529602333819889595">重做刪除(&amp;R)</translation>
 <translation id="6534179046333460208">實體化網路建議</translation>
+<translation id="6545864417968258051">藍牙掃描</translation>
 <translation id="6554795675067793129">你的帳戶是由 <ph name="ENROLLMENT_DOMAIN" /> 管理。</translation>
 <translation id="6556866813142980365">重做</translation>
 <translation id="6563469144985748109">你的管理員尚未核准這個網站</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">新增有效的信用卡號碼</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜尋</translation>
 <translation id="6630809736994426279">攻擊者目前可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 在你的 Mac 上安裝危險程式，藉此竊取或刪除你的資訊 (例如相片、密碼、郵件和信用卡資料)。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">這項政策有多個來源，但來源的值都相同。</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6644283850729428850">這項政策已遭取代。</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{無}=1{1 個網站 (你不會因此登出 Google 帳戶)}other{# 個網站 (你不會因此登出 Google 帳戶)}}</translation>

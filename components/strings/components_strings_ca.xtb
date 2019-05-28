@@ -135,6 +135,7 @@
 <translation id="1620510694547887537">Càmera</translation>
 <translation id="1623104350909869708">Impedeix que aquesta pàgina creï quadres de diàleg addicionals</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">No es pot desar la targeta</translation>
 <translation id="1639239467298939599">S'està carregant</translation>
 <translation id="1640180200866533862">Polítiques d'usuari</translation>
 <translation id="1640244768702815859">Prova d'<ph name="BEGIN_LINK" />anar a la pàgina d'inici del lloc<ph name="END_LINK" />.</translation>
@@ -243,6 +244,7 @@
 <translation id="2230458221926704099">Repareu la connexió amb l'<ph name="BEGIN_LINK" />aplicació de diagnòstic<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Envia ara</translation>
 <translation id="225207911366869382">El valor d'aquesta política és obsolet.</translation>
+<translation id="2257315177824333709">Ara mateix no es pot desar la targeta</translation>
 <translation id="2262243747453050782">Error d'HTTP</translation>
 <translation id="2263079731045660823">Actualitza la informació de targetes de crèdit d'Emplenament automàtic a la configuració de Chrome</translation>
 <translation id="2270484714375784793">Número de telèfon</translation>
@@ -272,6 +274,7 @@
 <translation id="2392959068659972793">Mostra les polítiques sense valors definits</translation>
 <translation id="239429038616798445">Aquest mètode d'enviament no està disponible. Prova'n un altre.</translation>
 <translation id="2396249848217231973">&amp;Desfés la supressió</translation>
+<translation id="2409589295040002961">L'administrador pot modificar la configuració del navegador de manera remota. És possible que l'activitat d'aquest dispositiu també es gestioni fora de Chrome. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè és possible que el seu certificat de seguretat s'hagi revocat. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="2418081434543109369">El servidor de destinació, <ph name="ORIGIN" />, ha sol·licitat que s'apliqui una política de seguretat a totes les sol·licituds que rebi. Però no ha proporcionat cap política, de manera que el navegador no pot completar la sol·licitud que has fet per a <ph name="SITE" />.</translation>
@@ -332,6 +335,7 @@
 <translation id="2721148159707890343">Sol·licitud realitzada correctament</translation>
 <translation id="2728127805433021124">El certificat del servidor està signat mitjançant un algoritme de signatura dèbil.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Executar el Diagnòstic de connectivitat<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Hi ha més d'un origen amb valors conflictius en aquesta política.</translation>
 <translation id="2738330467931008676">Tria l'adreça de recollida</translation>
 <translation id="2740531572673183784">D'acord</translation>
 <translation id="2742870351467570537">Suprimeix els elements seleccionats</translation>
@@ -989,6 +993,7 @@
 <translation id="6433490469411711332">Edita la informació de contacte</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> no ens ha permès establir la connexió.</translation>
 <translation id="6434309073475700221">Descarta</translation>
+<translation id="6440503408713884761">Ignorada</translation>
 <translation id="6446163441502663861">Kahu (sobre)</translation>
 <translation id="6446608382365791566">Afegeix més informació</translation>
 <translation id="6447842834002726250">Galetes</translation>
@@ -1004,6 +1009,7 @@
 <translation id="6517596291481585650">Advertiment: aquesta política no s'ha combinat com a llista segons el que s'especifica a la política perquè no és una llista.</translation>
 <translation id="6529602333819889595">&amp;Refés la supressió</translation>
 <translation id="6534179046333460208">Suggeriments del Web físic</translation>
+<translation id="6545864417968258051">Cerca de dispositius Bluetooth</translation>
 <translation id="6554795675067793129">El teu compte està gestionat per <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Refés</translation>
 <translation id="6563469144985748109">El teu gestor encara no ho ha aprovat</translation>
@@ -1020,6 +1026,7 @@
 <translation id="6626291197371920147">Afegeix un número de targeta vàlid</translation>
 <translation id="6628463337424475685">Cerca de <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">És possible que els atacants que es troben a <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> provin d'instal·lar programes perillosos a l'ordinador Mac per robar-te o suprimir-te informació (per exemple, fotos, contrasenyes, missatges i targetes de crèdit). <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Hi ha més d'un origen en aquesta política, però els valors són els mateixos.</translation>
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="6644283850729428850">Aquesta política ha quedat obsoleta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Cap}=1{D'1 lloc web (no se't tancarà la sessió del Compte de Google)}other{De # llocs web (no se't tancarà la sessió del Compte de Google)}}</translation>

@@ -157,6 +157,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> अब भी बाद में साइन इन कर सकते हैं.</translation>
 <translation id="3321628682574733415">माता-पिता वाला कोड गलत है</translation>
 <translation id="332587331255250389">कृपया बैटरी बदलें</translation>
+<translation id="3335825575923019462">क्या आप वाकई ऑटोमैटिक क्लिक की सुविधा बंद करना चाहते हैं?</translation>
 <translation id="3351879221545518001">आप इस समय स्क्रीन कास्ट कर रहे हैं.</translation>
 <translation id="3364721542077212959">स्टाइलस टूल</translation>
 <translation id="3368922792935385530">कनेक्टेड</translation>
@@ -398,6 +399,7 @@
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
 <translation id="735745346212279324">VPN डिसकनेक्ट है</translation>
 <translation id="7377169924702866686">Caps Lock चालू है.</translation>
+<translation id="7378594059915113390">मीडिया नियंत्रण</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />s</translation>
 <translation id="7398254312354928459">नेटवर्क कनेक्शन स्विच किया गया</translation>
 <translation id="7405710164030118432">यह डिवाइस अनलॉक करने के लिए, अपना Family Link का माता-पिता वाला एक्सेस कोड डालें</translation>
@@ -482,6 +484,7 @@
 <translation id="8649101189709089199">चुनें और सुनें</translation>
 <translation id="8652175077544655965">सेटिंग बंद करें</translation>
 <translation id="8653151467777939995">सूचना सेटिंग दिखाएं. सूचनाएं चालू हैं</translation>
+<translation id="8664483332071009680">ऑटोमैटिक क्लिक की सुविधा बंद करें?</translation>
 <translation id="8664753092453405566">नेटवर्क सूची दिखाएं. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">कम-शक्ति वाला चार्जर</translation>

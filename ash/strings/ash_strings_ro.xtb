@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Evidențiază cursorul mouse-ului</translation>
 <translation id="3513798432020909783">Cont gestionat de <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Modifică înapoi la „<ph name="FROM_LOCALE" />” (este necesară repornirea)</translation>
+<translation id="3576141592585647168">Modifică fusul orar</translation>
 <translation id="3595596368722241419">Baterie încărcată</translation>
 <translation id="3606978283550408104">Afișajul Braille este conectat.</translation>
 <translation id="3621202678540785336">Intrări</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Întreabă administratorul</translation>
 <translation id="6585808820553845416">Sesiunea se încheie peste <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tasta de căutare + Shift + K</translation>
+<translation id="6637729079642709226">Schimbă ora</translation>
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Parolă</translation>
 <translation id="6665545700722362599">să permită site-urilor, aplicațiilor și extensiilor să folosească serviciile de localizare, microfonul, camera foto sau alte funcții ale dispozitivului;</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">Se folosește <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Deblochează dispozitivul ca <ph name="LOGIN_ID" /> pentru efectuarea acțiunii de notificare</translation>
 <translation id="8995603266996330174">Gestionat de <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Introdu codul de acces parental pentru Family Link.</translation>
 <translation id="9029474291399787231">Este disponibilă o actualizare Adobe Flash Player</translation>
 <translation id="9056839673611986238">SO de pe dispozitiv va fi adus la o versiune anterioară</translation>
 <translation id="9070640332319875144">Setări pentru Asistent</translation>

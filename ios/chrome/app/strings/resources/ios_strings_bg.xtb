@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Отваряне на всички</translation>
 <translation id="1430915738399379752">Печат</translation>
 <translation id="1436290164580597469">Въведете пропуска, за да стартирате синхронизирането.</translation>
+<translation id="1449835205994625556">Скриване на паролата</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> елемента</translation>
 <translation id="1491277525950327607">Докоснете двукратно за превключване на настройката</translation>
 <translation id="152234381334907219">Незапазвани никога</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Изчистване на данните за сърфирането</translation>
 <translation id="1820259098641718022">Добавихте към списъка за четене</translation>
 <translation id="1828824471510190776">Предложение за парола...</translation>
+<translation id="1870148520156231997">Показване на паролата</translation>
 <translation id="1876721852596493031">Send Usage Data</translation>
 <translation id="1886928167269928266">Самото начало</translation>
 <translation id="1911619930368729126">Качване в Google Диск</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Лента за напредъка на зареждането на страницата. Заредени са <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Заглавие</translation>
 <translation id="4004204301268239848">Паролите се запазват в профила ви в Google, за да можете да ги използвате на всяко устройство.</translation>
+<translation id="4006921758705478413">Изпращане до устройствата ви</translation>
 <translation id="4038354071007134711">Няма приложение, което може да отвори файла.</translation>
 <translation id="4042870976416480368">Търсене в страницата</translation>
 <translation id="4049507953662678203">Уверете се, че сте свързани с мрежа, и опитайте отново.</translation>
@@ -267,6 +270,7 @@
 <translation id="4904877109095351937">Означаване като прочетено</translation>
 <translation id="4930268273022498155">Изтриване на съществуващите данни. Можете да ги извлечете, като превключите обратно към <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">При споделянето на елемента възникна проблем.</translation>
+<translation id="4945756290001680296">Достъп до настройките за паролите</translation>
 <translation id="4979397965658815378">Влезте с профила си в Google, за да получите своите отметки, пароли, история и други настройки на всичките си устройства</translation>
 <translation id="5005498671520578047">Копиране на паролата</translation>
 <translation id="5010803260590204777">Отворете раздел в режим „инкогнито“, за да сърфирате частно в мрежата.</translation>
@@ -520,6 +524,7 @@
 <translation id="8976382372951310360">Помощ</translation>
 <translation id="8981454092730389528">Контроли за активността в Google</translation>
 <translation id="8985320356172329008">Влезли сте в Google като</translation>
+<translation id="9016406938567631235">Изпраща се...</translation>
 <translation id="902659348151742535">Възможно е да използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google.</translation>
 <translation id="9034759925968272072">Няма да излезете от профила си в Google. Възможно е в него да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Капацитет</translation>

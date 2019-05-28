@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Akadályozza meg, hogy ez az oldal további párbeszédablakokat hozzon létre.</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Nem lehet menteni a kártyát</translation>
 <translation id="1639239467298939599">Betöltés</translation>
 <translation id="1640180200866533862">Felhasználói házirendek</translation>
 <translation id="1640244768702815859">Próbálja meg <ph name="BEGIN_LINK" />megnyitni a webhely főoldalát<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Javítsa meg kapcsolatát a <ph name="BEGIN_LINK" />diagnosztikai alkalmazás<ph name="END_LINK" /> segítségével</translation>
 <translation id="2239100178324503013">Küldés most</translation>
 <translation id="225207911366869382">Ez az érték elavult ennél a házirendnél.</translation>
+<translation id="2257315177824333709">A kártya jelenleg sajnos nem menthető</translation>
 <translation id="2262243747453050782">HTTP hiba</translation>
 <translation id="2263079731045660823">Hitelkártyával kapcsolatos automatikus kitöltési adatok frissítése a Chrome beállításaiban</translation>
 <translation id="2270484714375784793">Telefonszám</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Beállított értékkel nem rendelkező házirendek megjelenítése</translation>
 <translation id="239429038616798445">Ez a szállítási mód nem áll rendelkezésre. Próbálkozzon másik móddal.</translation>
 <translation id="2396249848217231973">&amp;Törlés visszavonása</translation>
+<translation id="2409589295040002961">A rendszergazda távolról tudja módosítani a böngészőbeállításokat. Az is lehetséges, hogy az eszközön végzett tevékenységeket a Chrome-on kívülről felügyelik. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát visszavonhatták. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="2418081434543109369">A felkeresni kívánt szerver (<ph name="ORIGIN" />) egy adott biztonsági házirend
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Sikeres kérés</translation>
 <translation id="2728127805433021124">A szerver tanúsítványa gyenge aláírási algoritmussal van aláírva.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Kapcsolódási diagnosztika futtatása<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Több, egymással ütköző értékekkel rendelkező forrás található ennél a házirendnél.</translation>
 <translation id="2738330467931008676">Átvételi cím kiválasztása</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">A kijelölt elemek eltávolítása</translation>
@@ -995,6 +999,7 @@
 <translation id="6433490469411711332">Kapcsolattartási adatok szerkesztése</translation>
 <translation id="6433595998831338502">A(z) <ph name="HOST_NAME" /> visszautasította a csatlakozást.</translation>
 <translation id="6434309073475700221">Elvetés</translation>
+<translation id="6440503408713884761">Figyelmen kívül hagyva</translation>
 <translation id="6446163441502663861">Kahu (boríték)</translation>
 <translation id="6446608382365791566">További adatok hozzáadása</translation>
 <translation id="6447842834002726250">Cookie-k</translation>
@@ -1007,9 +1012,10 @@
 <translation id="6507833130742554667">Elfogadott hitel- és bankkártyák.</translation>
 <translation id="650855688985305916">Igen, szeretném tárolni</translation>
 <translation id="6508722015517270189">Indítsa újra a Chrome-ot</translation>
-<translation id="6517596291481585650">Ezt a házirendet nem egyesítette a rendszer listaként a házirend előírásainak megfelelően, mert nem lista.</translation>
+<translation id="6517596291481585650">Figyelem: Ezt a házirendet nem egyesítette a rendszer listaként a házirend előírásainak megfelelően, mert nem lista.</translation>
 <translation id="6529602333819889595">&amp;Törlés újra</translation>
 <translation id="6534179046333460208">Fizikai web – javaslatok</translation>
+<translation id="6545864417968258051">Bluetooth-alapú keresés</translation>
 <translation id="6554795675067793129">Az Ön fiókkezelője: <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Újra</translation>
 <translation id="6563469144985748109">A kezelő még nem hagyta jóvá</translation>
@@ -1026,6 +1032,7 @@
 <translation id="6626291197371920147">Adjon meg érvényes kártyaszámot</translation>
 <translation id="6628463337424475685">Keresés: <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Előfordulhat, hogy a támadók a(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webhelyen olyan veszélyes programokat kísérelnek meg telepíteni az Ön Mac típusú számítógépére, amelyek ellopják vagy törlik adatait (például fotóit, jelszavait, üzeneteit és bankkártyájának adatait). <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="6631202559048444592">Egynél több forrás van megadva a házirendnél, de az értékeik ugyanazok.</translation>
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="6644283850729428850">Ez a házirend már elavult.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nincs}=1{1 webhelyről (a böngésző nem jelentkezteti ki Google-fiókjából)}other{# webhelyről (a böngésző nem jelentkezteti ki Google-fiókjából)}}</translation>

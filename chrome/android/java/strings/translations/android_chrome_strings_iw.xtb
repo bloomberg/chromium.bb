@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">הגדרות הורים</translation>
 <translation id="5327248766486351172">שם</translation>
 <translation id="5335288049665977812">‏אפשר לאתרים להריץ JavaScript (מומלץ)</translation>
+<translation id="5357811892247919462">התקבלה כרטיסייה</translation>
 <translation id="5363230136052241468">כדי לטעון את דף הכרטיסייה החדשה, צריך להקיש על הלחצן הראשי</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{כרטיסייה פתוחה אחת (<ph name="OPEN_TABS_ONE" />), יש להקיש כדי להחליף כרטיסיות}two{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}many{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}other{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}}</translation>
 <translation id="5391532827096253100">החיבור שלך לאתר הזה לא מאובטח. פרטי האתר</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">חסימת מודעות באתרים שמוצגות בהם מודעות מפריעות או מטעות</translation>
 <translation id="5497272504048921382">כרטיסיות שנפתחו</translation>
 <translation id="5500777121964041360">ייתכן שהאפשרות לא זמינה במיקום שלך</translation>
-<translation id="550684401320795253">‏מעדכן את Chrome...</translation>
 <translation id="5512137114520586844">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">האפשרות הזו הושבתה על-ידי מנהל המערכת של המכשיר</translation>
 <translation id="5515439363601853141">ביטול הנעילה יציג את הסיסמה</translation>

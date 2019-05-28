@@ -580,6 +580,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5324858694974489420">Foreldreinnstillinger</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5335288049665977812">Tillat nettsteder å kjøre JavaScript (anbefales)</translation>
+<translation id="5357811892247919462">Fane er mottatt</translation>
 <translation id="5363230136052241468">Trykk på hjemknappen for å laste inn en ny fane</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> åpen fane – trykk for å bytte fane}other{<ph name="OPEN_TABS_MANY" /> åpne faner – trykk for å bytte fane}}</translation>
 <translation id="5391532827096253100">Tilkoblingen din til dette nettstedet er ikke sikker. Informasjon om nettstedet</translation>
@@ -601,7 +602,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5494752089476963479">Blokkér annonser på nettsteder som ofte viser forstyrrende eller villedende annonser</translation>
 <translation id="5497272504048921382">Åpnede faner</translation>
 <translation id="5500777121964041360">Funksjonen er kanskje ikke tilgjengelig der du er</translation>
-<translation id="550684401320795253">Oppdaterer Chrome ...</translation>
 <translation id="5512137114520586844">Denne kontoen er administrert av <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Deaktivert av administratoren for denne enheten</translation>
 <translation id="5515439363601853141">Lås opp for å se passordet ditt</translation>

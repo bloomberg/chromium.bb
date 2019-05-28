@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Открыть все</translation>
 <translation id="1430915738399379752">Печать</translation>
 <translation id="1436290164580597469">Чтобы начать синхронизацию, введите кодовую фразу.</translation>
+<translation id="1449835205994625556">Скрыть пароль</translation>
 <translation id="145015347812617860">Закладок: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Для переключения нажмите дважды</translation>
 <translation id="152234381334907219">Сайты, пароли для которых не сохраняются</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Очистка истории</translation>
 <translation id="1820259098641718022">Добавлено в список чтения</translation>
 <translation id="1828824471510190776">Сгенерировать пароль</translation>
+<translation id="1870148520156231997">Показать пароль</translation>
 <translation id="1876721852596493031">Отправка статистики</translation>
 <translation id="1886928167269928266">За все время</translation>
 <translation id="1911619930368729126">Загрузить на Google Диск</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Индикатор загрузки страницы: выполнено <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Название</translation>
 <translation id="4004204301268239848">Пароли сохраняются в аккаунте Google и будут доступны на любом устройстве.</translation>
+<translation id="4006921758705478413">Отправить на свои устройства</translation>
 <translation id="4038354071007134711">Нет приложения, чтобы открыть этот файл.</translation>
 <translation id="4042870976416480368">Найти на странице</translation>
 <translation id="4049507953662678203">Проверьте подключение к Интернету и повторите попытку.</translation>
@@ -267,6 +270,7 @@
 <translation id="4904877109095351937">Отметить как прочитанное</translation>
 <translation id="4930268273022498155">Удалить сохраненные данные. Чтобы снова получить к ним доступ, переключитесь на аккаунт <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Не удалось опубликовать запись.</translation>
+<translation id="4945756290001680296">Доступ к настройкам паролей</translation>
 <translation id="4979397965658815378">Войдите в аккаунт Google, чтобы пользоваться своими закладками, паролями, историей и другими настройками на любом устройстве</translation>
 <translation id="5005498671520578047">Для копирования пароля</translation>
 <translation id="5010803260590204777">Чтобы просматривать веб-страницы, не оставляя следов, откройте вкладку инкогнито.</translation>
@@ -427,7 +431,7 @@
 <translation id="7272437679830969316">Не удалось пройти проверку. Пароль не скопирован.</translation>
 <translation id="7285236536143823449">ОК</translation>
 <translation id="7291368939935408496">Подготовка паролей…</translation>
-<translation id="7293171162284876153">Чтобы начать ее, нажмите "Синхронизировать данные Chrome".</translation>
+<translation id="7293171162284876153">Чтобы начать синхронизацию, нажмите "Синхронизировать данные Chrome".</translation>
 <translation id="7336264872878993241">Скачивается: <ph name="PERCENT" />%</translation>
 <translation id="7346909386216857016">ОК</translation>
 <translation id="7348502496356775519">Закладка</translation>
@@ -520,6 +524,7 @@
 <translation id="8976382372951310360">Справка</translation>
 <translation id="8981454092730389528">Отслеживание действий в Google</translation>
 <translation id="8985320356172329008">Вы вошли в аккаунт</translation>
+<translation id="9016406938567631235">Отправка…</translation>
 <translation id="902659348151742535">Google может использовать историю браузера для персонализации Поиска, Рекламы и других сервисов.</translation>
 <translation id="9034759925968272072">Вы не выйдете из аккаунта Google. Остальная история ваших действий в Интернете доступна на странице <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Контроль трафика</translation>

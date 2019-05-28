@@ -601,7 +601,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5494752089476963479">I-block ang mga ad sa mga site na nagpapakita ng mga nakakasagabal o nakakapanlinlang na ad</translation>
 <translation id="5497272504048921382">Mga binuksang tab</translation>
 <translation id="5500777121964041360">Maaaring hindi available sa iyong lokasyon</translation>
-<translation id="550684401320795253">Ina-update ang Chrome...</translation>
 <translation id="5512137114520586844">Pinapamahalaan ang account na ito ng <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Na-disable ng administrator ng device na ito</translation>
 <translation id="5515439363601853141">I-unlock upang tingnan ang iyong password</translation>
@@ -831,6 +830,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7062545763355031412">Tanggapin at lumipat ng account</translation>
 <translation id="7063006564040364415">Hindi makakonekta sa server ng pag-sync.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ang napili}one{# ang napili}other{# ang napili}}</translation>
+<translation id="7071521146534760487">Pamahalaan ang account</translation>
 <translation id="7077143737582773186">SD Card</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ang napili.  Available ang mga opsyon malapit sa itaas ng screen</translation>
 <translation id="7121362699166175603">Kini-clear ang history at mga autocompletion sa address bar. Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>

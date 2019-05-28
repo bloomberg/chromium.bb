@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Neoznačený obrázok</translation>
 <translation id="3706100364254443312">prepínač</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Ukončiť obraz v obraze</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">výraz</translation>
 <translation id="3822383571486410024">Predĺžte tento text aspoň na <ph name="MIN_CHARACTERS" /> alebo viac znakov (momentálny počet znakov je <ph name="CURRENT_LENGTH" />).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">strom</translation>
 <translation id="4664250907885839816">Časť za znakom <ph name="ATSIGN" /> by nemala obsahovať symbol <ph name="INVALIDCHARACTER" />.</translation>
 <translation id="4668956016107839909">príloha</translation>
+<translation id="4718048029184481307">Prehráva sa v režime obrazu v obraze</translation>
 <translation id="4742539557769756338">titulná strana</translation>
 <translation id="4748357248530471599">prepnúť výrez obrazovky na celú obrazovku</translation>
 <translation id="4757246831282535685">panel karty</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">stiahnuť médiá</translation>
 <translation id="6981594929165378967">vloženie</translation>
 <translation id="6989848892321993519">Predĺžte tento text aspoň na <ph name="MIN_CHARACTERS" /> alebo viac znakov (momentálne používate jeden znak).</translation>
+<translation id="7033340931668032222">smery nahor a nadol slúžia na zmenu hlasitosti</translation>
 <translation id="709897737746224366">Zadajte hodnotu zodpovedajúcu požadovanému formátu.</translation>
 <translation id="7118469954320184356">Nie je k dispozícii žiadny popis.</translation>
 <translation id="7139483182332611405">predslov</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">grafický symbol</translation>
 <translation id="8583702881314752957">zoznam definícií</translation>
 <translation id="8597182159515967513">nadpis</translation>
+<translation id="8603553056539299761">smery vľavo a vpravo slúžia na hľadanie</translation>
 <translation id="860475260694818407">obsah</translation>
 <translation id="8613126697340063924">ovládať vzdialené prehrávanie</translation>
 <translation id="862370744433916922">podnadpis</translation>

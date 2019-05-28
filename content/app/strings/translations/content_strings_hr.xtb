@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Neoznačena slika</translation>
 <translation id="3706100364254443312">prebaci</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Zatvori sliku u slici</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">pojam</translation>
 <translation id="3822383571486410024">Produljite broj znakova u tekstu na minimalno <ph name="MIN_CHARACTERS" />. Trenutačno imate premalo znakova (<ph name="CURRENT_LENGTH" />).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">stablo</translation>
 <translation id="4664250907885839816">Dio adrese iza znaka "<ph name="ATSIGN" />" ne smije sadržavati simbol "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">dodatak</translation>
+<translation id="4718048029184481307">Reproducira se u načinu slika u slici</translation>
 <translation id="4742539557769756338">naslovnica</translation>
 <translation id="4748357248530471599">prebacite urez na zaslonu u cijeli zaslon</translation>
 <translation id="4757246831282535685">ploča kartice</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">preuzmi medij</translation>
 <translation id="6981594929165378967">umetanje</translation>
 <translation id="6989848892321993519">Produljite broj znakova u tekstu na minimalno <ph name="MIN_CHARACTERS" /> (trenutačno imate 1 znak).</translation>
+<translation id="7033340931668032222">gore i dolje za regulaciju glasnoće</translation>
 <translation id="709897737746224366">Udovoljite zadanom formatu.</translation>
 <translation id="7118469954320184356">Opis nije dostupan.</translation>
 <translation id="7139483182332611405">predgovor</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">grafički simbol</translation>
 <translation id="8583702881314752957">popis definicija</translation>
 <translation id="8597182159515967513">naslov</translation>
+<translation id="8603553056539299761">lijevo i desno za preskakanje</translation>
 <translation id="860475260694818407">sadržaj</translation>
 <translation id="8613126697340063924">upravljaj daljinskom reprodukcijom</translation>
 <translation id="862370744433916922">titl</translation>

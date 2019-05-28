@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">माउसचा कर्सर हायलाइट करा</translation>
 <translation id="3513798432020909783">खाते <ph name="MANAGER_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
+<translation id="3576141592585647168">टाइमझोन बदला</translation>
 <translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
 <translation id="3606978283550408104">ब्रेल डिस्प्ले कनेक्ट केला.</translation>
 <translation id="3621202678540785336">इनपुट</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">अ‍ॅडमिनिस्ट्रेटरला विचारा</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> मध्ये सेशन समाप्त होते.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
+<translation id="6637729079642709226">वेळ बदला</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी प्रविष्ट करा: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6665545700722362599">वेबसाइट, अ‍ॅप्स आणि एक्स्टेंशनना स्थान सेवा, डिव्हाइसचा मायक्रोफोन, कॅमेरा किंवा इतर वैशिष्ट्ये वापरण्याची परवानगी द्या</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> वापरत आहे</translation>
 <translation id="899350903320462459">सूचनेशी संबंधित क्रिया पार पाडण्यासाठी डिव्हाइस <ph name="LOGIN_ID" /> म्हणून अनलॉक करा</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> द्वारे व्यवस्थापित</translation>
+<translation id="9017320285115481645">Family Link पालक ॲक्सेस कोड एंटर करा.</translation>
 <translation id="9029474291399787231">Adobe Flash Player अपडेट उपलब्ध आहे</translation>
 <translation id="9056839673611986238">डिव्हाइस रोल बॅक केले जाईल</translation>
 <translation id="9070640332319875144">असिस्टंट सेटिंग्ज</translation>

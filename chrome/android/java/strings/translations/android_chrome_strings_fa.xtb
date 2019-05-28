@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">تنظیمات والدین</translation>
 <translation id="5327248766486351172">نام</translation>
 <translation id="5335288049665977812">مجاز کردن همه سایت‌ها برای اجرای جاوااسکریپت (توصیه‌ می‌شود)</translation>
+<translation id="5357811892247919462">برگه دریافت شد</translation>
 <translation id="5363230136052241468">برای بارگیری صفحه برگه جدید، روی دکمه صفحه اصلی ضربه بزنید</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> برگه باز، برای جستجوی برگه ضربه بزنید}one{<ph name="OPEN_TABS_MANY" /> برگه باز، برای جستجوی برگه ضربه بزنید}other{<ph name="OPEN_TABS_MANY" /> برگه باز، برای جستجوی برگه ضربه بزنید}}</translation>
 <translation id="5391532827096253100">اتصال شما به این سایت امن نیست. اطلاعات سایت</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">آگهی سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند، مسدود می‌شود</translation>
 <translation id="5497272504048921382">برگه‌های باز</translation>
 <translation id="5500777121964041360">ممکن است در مکان شما دردسترس نباشد</translation>
-<translation id="550684401320795253">‏درحال به‌روزرسانی Chrome...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> این حساب را مدیریت می‌کند.</translation>
 <translation id="5514904542973294328">توسط سرپرست این دستگاه غیرفعال شده است</translation>
 <translation id="5515439363601853141">برای مشاهده گذرواژه‌تان، قفل صفحه را باز کنید</translation>

@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Otvoriť všetko</translation>
 <translation id="1430915738399379752">Tlačiť</translation>
 <translation id="1436290164580597469">Ak chcete spustiť synchronizáciu, zadajte prístupovú frázu.</translation>
+<translation id="1449835205994625556">Skryť heslo</translation>
 <translation id="145015347812617860">Počet položiek: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Nastavenie môžete prepnúť dvojitým klepnutím</translation>
 <translation id="152234381334907219">Nikdy neukladať</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Vymazať dáta prehliadania</translation>
 <translation id="1820259098641718022">Pridané do zoznamu na čítanie</translation>
 <translation id="1828824471510190776">Navrhnúť heslo…</translation>
+<translation id="1870148520156231997">Odhaľte heslo</translation>
 <translation id="1876721852596493031">Odosielanie údajov o používaní</translation>
 <translation id="1886928167269928266">Celé obdobie</translation>
 <translation id="1911619930368729126">Nahrať na Disk Google</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Ukazovateľ priebehu načítania stránky, načítané <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Názov</translation>
 <translation id="4004204301268239848">Heslá sa ukladajú do účtu Google, takže ich môžete používať v ľubovoľnom zariadení.</translation>
+<translation id="4006921758705478413">Odoslať do zariadení</translation>
 <translation id="4038354071007134711">Tento súbor nedokáže otvoriť žiadna aplikácia na tomto zariadení.</translation>
 <translation id="4042870976416480368">Nájsť na stránke</translation>
 <translation id="4049507953662678203">Uistite sa, že máte pripojenie k sieti, a skúste to znova.</translation>
@@ -267,6 +270,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="4904877109095351937">Označiť ako prečítané</translation>
 <translation id="4930268273022498155">Odstrániť existujúce údaje. Načítate ich prepnutím späť na účet <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Je nám ľúto, pri zdieľaní položky sa vyskytol problém.</translation>
+<translation id="4945756290001680296">Prejdite do nastavení hesla</translation>
 <translation id="4979397965658815378">Prihláste sa účtom Google a používajte svoje záložky, heslá, históriu a ďalšie nastavenia vo všetkých svojich zariadeniach</translation>
 <translation id="5005498671520578047">Kopírovanie hesla</translation>
 <translation id="5010803260590204777">Otvorte kartu inkognito a prehliadajte web v súkromí.</translation>
@@ -427,7 +431,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7272437679830969316">Vašu totožnosť nie je možné overiť. Heslo sa neskopírovalo.</translation>
 <translation id="7285236536143823449">ÁNO, SÚHLASÍM</translation>
 <translation id="7291368939935408496">Pripravujú sa heslá...</translation>
-<translation id="7293171162284876153">Ak chcete spustiť synchronizáciu, zapnite možnosť „Synchronizovať údaje Chromu“.</translation>
+<translation id="7293171162284876153">Ak chcete spustiť synchronizáciu, zapnite možnosť Synchronizovať údaje Chromu.</translation>
 <translation id="7336264872878993241">Stiahnuté: <ph name="PERCENT" /> percent</translation>
 <translation id="7346909386216857016">Dobre</translation>
 <translation id="7348502496356775519">Uložiť ako záložku</translation>
@@ -520,6 +524,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="8976382372951310360">Pomocník</translation>
 <translation id="8981454092730389528">Riadenie aktivity Google</translation>
 <translation id="8985320356172329008">Prihlásený účet Google</translation>
+<translation id="9016406938567631235">Odosiela sa…</translation>
 <translation id="902659348151742535">Google môže používať vašu históriu prehliadania na prispôsobenie vyhľadávania, reklám a ďalších služieb Googlu.</translation>
 <translation id="9034759925968272072">Neodhlásime vás z účtu Google. Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Rýchlosť pripojenia</translation>

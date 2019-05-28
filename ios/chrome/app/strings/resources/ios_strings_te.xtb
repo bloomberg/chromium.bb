@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">అన్నీ తెరువు</translation>
 <translation id="1430915738399379752">ముద్రించు</translation>
 <translation id="1436290164580597469">సింక్ చేయడం ప్రారంభించడానికి రహస్య పదబంధాన్ని నమోదు చేయండి.</translation>
+<translation id="1449835205994625556">పాస్‌వర్డ్‌ను దాచండి</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> అంశాలు</translation>
 <translation id="1491277525950327607">సెట్టింగ్‌ను టోగుల్ చేయడానికి రెండుసార్లు నొక్కండి</translation>
 <translation id="152234381334907219">ఎప్పటికి సేవ్ చెయ్యబడవు</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">బ్రౌజింగ్‌ డేటాను క్లియర్ చేయి</translation>
 <translation id="1820259098641718022">పఠన జాబితాకు జోడించబడింది</translation>
 <translation id="1828824471510190776">పాస్‌వర్డ్‌ను సూచించండి...</translation>
+<translation id="1870148520156231997">పాస్‌వర్డ్‌ను చూపండి</translation>
 <translation id="1876721852596493031">వినియోగ డేటాను పంపు</translation>
 <translation id="1886928167269928266">ప్రారంభ సమయం</translation>
 <translation id="1911619930368729126">Google డిస్క్‌కి అప్‌. చే.</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">పేజీ లోడ్ పురోగతి బార్, <ph name="EMAIL" /> లోడ్ చేయబడింది.</translation>
 <translation id="4002066346123236978">శీర్షిక</translation>
 <translation id="4004204301268239848">మీ Google ఖాతాలో పాస్‌వర్డ్‌లు సేవ్ చేయబడతాయి కాబట్టి మీరు వాటిని ఏ పరికరంలోనైనా ఉపయోగించవచ్చు.</translation>
+<translation id="4006921758705478413">మీ పరికరాలకు పంపండి</translation>
 <translation id="4038354071007134711">ఈ పరికరంలోని అప్లికేషన్‌ ఏదీ ఫైల్‌ను తెరవలేదు.</translation>
 <translation id="4042870976416480368">పేజీలో కనుగొనండి</translation>
 <translation id="4049507953662678203">మీ ఇంట‌ర్నెట్ ప‌ని చేస్తోందో లేదో చెక్ చేసుకుని మళ్లీ ప్రయత్నించండి.</translation>
@@ -267,6 +270,7 @@
 <translation id="4904877109095351937">చదివినట్లు గుర్తు పెట్టు</translation>
 <translation id="4930268273022498155">ఇప్పటికే ఉన్న డేటాను తొలగించండి. మీరు <ph name="USER_EMAIL1" />కు వెన‌క్కు వెళ్లడం ద్వారా దాన్ని తిరిగి పొందవచ్చు.</translation>
 <translation id="4941089862236492464">క్షమించండి, మీ అంశాన్ని భాగస్వామ్యం చేయడంలో సమస్య ఉంది.</translation>
+<translation id="4945756290001680296">పాస్‌వర్డ్ సెట్టింగ్‌లను యాక్సెస్ చేయండి</translation>
 <translation id="4979397965658815378">మీ బుక్‌మార్క్‌లు, పాస్‌వర్డ్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌లను మీ అన్ని పరికరాలలో పొందడానికి మీ Google ఖాతాతో సైన్ ఇన్ చేయండి</translation>
 <translation id="5005498671520578047">పాస్‌వర్డ్ కాపీచేయడం</translation>
 <translation id="5010803260590204777">వెబ్‌ను ప్రైవేట్‌గా బ్రౌజ్ చేయడానికి అజ్ఞాత ట్యాబ్‌ను తెరవండి.</translation>
@@ -520,6 +524,7 @@
 <translation id="8976382372951310360">సహాయం</translation>
 <translation id="8981454092730389528">Google కార్య‌క‌లాపాల నియంత్రణలు</translation>
 <translation id="8985320356172329008">Googleకి ఇలా సైన్ ఇన్ చేసారు</translation>
+<translation id="9016406938567631235">పంపుతోంది...</translation>
 <translation id="902659348151742535">శోధన, ప్రకటనలు మరియు ఇతర Google సేవలను వ్యక్తిగతీకరించడం కోసం Google మీ బ్రౌజింగ్ చరిత్రను ఉపయోగించవచ్చు.</translation>
 <translation id="9034759925968272072">మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు. <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />లో మీ Google ఖాతా ఇతర రకాల బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు.</translation>
 <translation id="9039373489628511875">బ్యాండ్‌విడ్త్</translation>

@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Да не се създават допълнителни диалогови прозорци от тази страница</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Картата не може да бъде запазена</translation>
 <translation id="1639239467298939599">Зарежда се</translation>
 <translation id="1640180200866533862">Правила за потребителите</translation>
 <translation id="1640244768702815859">Опитайте да <ph name="BEGIN_LINK" />отворите началната страница на сайта<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Поправете връзката си посредством <ph name="BEGIN_LINK" />приложението за диагностика<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Изпращане сега</translation>
 <translation id="225207911366869382">Стойността е оттеглена за това правило.</translation>
+<translation id="2257315177824333709">За съжаление, картата ви не може да бъде запазена в момента</translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
 <translation id="2263079731045660823">Актуализирайте данните за автоматично попълване на кредитни карти от настройките на Chrome</translation>
 <translation id="2270484714375784793">Телефонен номер</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Да се показват правилата без зададена стойност</translation>
 <translation id="239429038616798445">Този начин на доставка не се поддържа. Опитайте с друг.</translation>
 <translation id="2396249848217231973">&amp;Отмяна на изтриването</translation>
+<translation id="2409589295040002961">Администраторът ви може отдалечено да променя настройките на браузъра. Възможно е активността на това устройство да се управлява и извън Chrome. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; възможно е сертификатът му за сигурност да е оттеглен. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="2418081434543109369">Сървърът, който отваряте (<ph name="ORIGIN" />), е поискал
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Заявката е успешна</translation>
 <translation id="2728127805433021124">Сертификатът на сървъра е подписан със слаб алгоритъм.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Стартирайте диагностика на свързаността<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">За това правило има повече от един източник с несъвместими стойности.</translation>
 <translation id="2738330467931008676">Избиране на адрес за вземане</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Премахване на избраните елементи</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">Редактиране на информацията за връзка</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> отказа да установи връзка.</translation>
 <translation id="6434309073475700221">Отхвърляне</translation>
+<translation id="6440503408713884761">Пренебрегнато</translation>
 <translation id="6446163441502663861">Kahu (плик)</translation>
 <translation id="6446608382365791566">Добавяне на още информация</translation>
 <translation id="6447842834002726250">„Бисквитки“</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">Предупреждение: Това правило не бе обединено като списък според посоченото в правилото, тъй като не е списък.</translation>
 <translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
 <translation id="6534179046333460208">Предложения от Физическата мрежа</translation>
+<translation id="6545864417968258051">Сканиране за устройства с Bluetooth</translation>
 <translation id="6554795675067793129">Профилът ви се управлява от <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Възстановяване</translation>
 <translation id="6563469144985748109">Мениджърът ви все още не е одобрил заявката</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">Добавяне на валиден номер на карта</translation>
 <translation id="6628463337424475685">Търсене с/ъс <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Извършители на атака, понастоящем използващи <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, може да опитат да инсталират опасни програми на компютъра ви Mac, които крадат или изтриват информацията ви (например снимки, пароли, съобщения и номера на кредитни карти). <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">За правилото има повече от един източник, но стойностите са еднакви.</translation>
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="6644283850729428850">Това правило е оттеглено.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Няма}=1{От 1 сайт (няма да излезете от профила си в Google)}other{От # сайта (няма да излезете от профила си в Google)}}</translation>

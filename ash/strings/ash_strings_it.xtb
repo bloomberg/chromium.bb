@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Evidenzia il puntatore del mouse</translation>
 <translation id="3513798432020909783">Account gestito da <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
+<translation id="3576141592585647168">Cambia fuso orario</translation>
 <translation id="3595596368722241419">Batteria carica</translation>
 <translation id="3606978283550408104">Display Braille collegato.</translation>
 <translation id="3621202678540785336">Ingresso</translation>
@@ -355,6 +356,7 @@
 <translation id="6559976592393364813">Rivolgiti all'amministratore</translation>
 <translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tasto per la ricerca + MAIUSC + K</translation>
+<translation id="6637729079642709226">Modifica tempo</translation>
 <translation id="6650933572246256093">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questa passkey sul dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6665545700722362599">Concedere a siti web, app ed estensioni l'autorizzazione a utilizzare i servizi di geolocalizzazione, il microfono del dispositivo, la fotocamera o altre funzioni.</translation>
@@ -510,6 +512,7 @@
 <translation id="8990809378771970590">In uso: <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Sblocca il dispositivo con l'account <ph name="LOGIN_ID" /> per eseguire l'azione di notifica</translation>
 <translation id="8995603266996330174">Gestito da <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Inserisci il codice accesso genitori di Family Link.</translation>
 <translation id="9029474291399787231">Aggiornamento di Adobe Flash Player disponibile</translation>
 <translation id="9056839673611986238">Verrà eseguito il rollback del dispositivo</translation>
 <translation id="9070640332319875144">Impostazioni assistente</translation>

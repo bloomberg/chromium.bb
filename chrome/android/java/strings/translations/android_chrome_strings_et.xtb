@@ -580,6 +580,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5324858694974489420">Vanemlikud seaded</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5335288049665977812">Luba saitidel käitada JavaScripti (soovitatav)</translation>
+<translation id="5357811892247919462">Vaheleht võeti vastu</translation>
 <translation id="5363230136052241468">Puudutage uue vahelehe laadimiseks avaekraani nuppu</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> avatud vaheleht, puudutage vahelehtede vahetamiseks}other{<ph name="OPEN_TABS_MANY" /> avatud vahelehte, puudutage vahelehtede vahetamiseks}}</translation>
 <translation id="5391532827096253100">Teie ühendus selle saidiga ei ole turvaline. Saidi teave</translation>
@@ -601,7 +602,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5494752089476963479">Blokeeri reklaamid saitidel, mis kuvavad sekkuvaid või eksitavaid reklaame</translation>
 <translation id="5497272504048921382">Avatud vahelehed</translation>
 <translation id="5500777121964041360">Ei pruugi teie asukohas saadaval olla</translation>
-<translation id="550684401320795253">Chrome’i värskendamine …</translation>
 <translation id="5512137114520586844">Seda kontot haldab <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Keelas selle seadme administraator</translation>
 <translation id="5515439363601853141">Avage oma parooli vaatamiseks</translation>

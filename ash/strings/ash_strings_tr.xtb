@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Fare imlecini vurgula</translation>
 <translation id="3513798432020909783">Hesap <ph name="MANAGER_EMAIL" /> tarafından yönetiliyor</translation>
 <translation id="3573179567135747900">Tekrar "<ph name="FROM_LOCALE" />" ayarına dön (yeniden başlatmak gerekir)</translation>
+<translation id="3576141592585647168">Saat dilimini değiştir</translation>
 <translation id="3595596368722241419">Pil tam dolu</translation>
 <translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
 <translation id="3621202678540785336">Giriş</translation>
@@ -355,6 +356,7 @@
 <translation id="6559976592393364813">Yöneticiye sorun</translation>
 <translation id="6585808820553845416">Oturumun süresi <ph name="SESSION_TIME_REMAINING" /> içinde bitiyor.</translation>
 <translation id="6627638273713273709">Ara+Üst Karakter+K</translation>
+<translation id="6637729079642709226">Saati değiştir</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parolayı girin: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Şifre</translation>
 <translation id="6665545700722362599">Web sitelerine, uygulamalara ve uzantılara konum hizmetlerini, cihazın mikrofonunu, kamerasını ve diğer özelliklerini kullanma izni verme</translation>
@@ -510,6 +512,7 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> kullanılıyor</translation>
 <translation id="899350903320462459">Bildirim işlemi gerçekleştirmek için <ph name="LOGIN_ID" /> olarak cihazın kilidini açın</translation>
 <translation id="8995603266996330174">Yöneten: <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Family Link ebeveyn erişim kodunu girin.</translation>
 <translation id="9029474291399787231">Adobe Flash Player güncellemesi mevcut</translation>
 <translation id="9056839673611986238">Cihaz ilk haline döndürülecek</translation>
 <translation id="9070640332319875144">Asistan Ayarları</translation>

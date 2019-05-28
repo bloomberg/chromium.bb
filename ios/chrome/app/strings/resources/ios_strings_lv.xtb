@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Atvērt visas</translation>
 <translation id="1430915738399379752">Drukāt</translation>
 <translation id="1436290164580597469">Lai sāktu sinhronizāciju, ievadiet ieejas frāzi.</translation>
+<translation id="1449835205994625556">Slēpt paroli</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> vienumi</translation>
 <translation id="1491277525950327607">Veiciet dubultskārienu, lai pārslēgtu iestatījumu.</translation>
 <translation id="152234381334907219">Jaunākie saglabātie</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Dzēst pārlūkošanas datus</translation>
 <translation id="1820259098641718022">Pievienota lasīšanas sarakstam</translation>
 <translation id="1828824471510190776">Ieteikt paroli...</translation>
+<translation id="1870148520156231997">Rādīt paroli</translation>
 <translation id="1876721852596493031">Sūtīt liet. datus</translation>
 <translation id="1886928167269928266">No paša sākuma</translation>
 <translation id="1911619930368729126">Augšupielādēt Google diskā</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Lapas ielādes norises josla, ielādēti <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Nosaukums</translation>
 <translation id="4004204301268239848">Paroles tiek saglabātas jūsu Google kontā, lai jūs tās varētu izmantot jebkurā ierīcē.</translation>
+<translation id="4006921758705478413">Sūtīšana uz jūsu ierīcēm</translation>
 <translation id="4038354071007134711">Šajā ierīcē nav lietotņu, ar ko atvērt šo failu.</translation>
 <translation id="4042870976416480368">Atrast lapā</translation>
 <translation id="4049507953662678203">Pārbaudiet, vai ir izveidots tīkla savienojums, un mēģiniet vēlreiz.</translation>
@@ -267,6 +270,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4904877109095351937">Atzīmēt kā izlasītus</translation>
 <translation id="4930268273022498155">Dzēst esošos datus. Varat tos izgūt, pārslēdzoties atpakaļ uz kontu <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Diemžēl, kopīgojot jūsu vienumu, radās problēma.</translation>
+<translation id="4945756290001680296">Piekļūt paroles iestatījumiem</translation>
 <translation id="4979397965658815378">Pierakstieties Google kontā, lai izmantotu savas grāmatzīmes, paroles, vēsturi un citus Chrome datus visās jūsu ierīcēs.</translation>
 <translation id="5005498671520578047">Paroles kopēšana</translation>
 <translation id="5010803260590204777">Atveriet inkognito režīma cilni, lai privāti pārlūkotu tīmekli.</translation>
@@ -427,7 +431,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7272437679830969316">Nevar apstiprināt jūsu identitāti. Parole nav nokopēta.</translation>
 <translation id="7285236536143823449">JĀ</translation>
 <translation id="7291368939935408496">Notiek paroļu sagatavošana...</translation>
-<translation id="7293171162284876153">Lai sāktu sinhronizāciju, ieslēdziet iestatījumu “Jūsu Chrome datu sinhronizācija”.</translation>
+<translation id="7293171162284876153">Lai sāktu sinhronizāciju, ieslēdziet iestatījumu “Sync your Chrome data” (Sinhronizēt jūsu Chrome datus).</translation>
 <translation id="7336264872878993241">Lejupielādēti <ph name="PERCENT" /> %</translation>
 <translation id="7346909386216857016">Labi, sapratu</translation>
 <translation id="7348502496356775519">Grāmatzīme</translation>
@@ -520,6 +524,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8976382372951310360">Palīdzība</translation>
 <translation id="8981454092730389528">Google aktivitātes vadīklas</translation>
 <translation id="8985320356172329008">Pierakstījies Google kontā kā</translation>
+<translation id="9016406938567631235">Notiek sūtīšana...</translation>
 <translation id="902659348151742535">Google var izmantot jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu, reklāmas un citus Google pakalpojumus.</translation>
 <translation id="9034759925968272072">Jūs netiksiet izrakstīts no sava Google konta. Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> var būt citu veidu pārlūkošanas vēstures dati.</translation>
 <translation id="9039373489628511875">Joslas platums</translation>

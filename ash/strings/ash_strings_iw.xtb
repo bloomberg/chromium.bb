@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">הדגשה של סמן העכבר</translation>
 <translation id="3513798432020909783">החשבון מנוהל על-ידי <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">שנה בחזרה ל"<ph name="FROM_LOCALE" />" (דורש הפעלה מחדש)</translation>
+<translation id="3576141592585647168">שינוי אזור הזמן</translation>
 <translation id="3595596368722241419">סוללה מלאה</translation>
 <translation id="3606978283550408104">צג ברייל מחובר</translation>
 <translation id="3621202678540785336">קלט</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">יש לבקש ממנהל המערכת</translation>
 <translation id="6585808820553845416">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">‏חיפוש+Shift‏+K</translation>
+<translation id="6637729079642709226">שינוי הזמן</translation>
 <translation id="6650933572246256093">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לביצוע התאמה. הזן את מפתח הסיסמה הבא במכשיר הזה: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">סיסמה</translation>
 <translation id="6665545700722362599">הענקת הרשאה לאתרים, לאפליקציות ולתוספים להשתמש בשירותי המיקום, במיקרופון של המכשיר, במצלמה או בתכונות אחרות.</translation>
@@ -511,6 +513,7 @@
 <translation id="8990809378771970590">סוג מקלדת בשימוש - <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">יש לבטל את נעילת המכשיר כ-<ph name="LOGIN_ID" /> על מנת לבצע את פעולת ההודעה</translation>
 <translation id="8995603266996330174">מנוהל על ידי <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">‏יש להזין את קוד הגישה להורים של Family Link.</translation>
 <translation id="9029474291399787231">‏יש עדכון בשביל Adobe Flash Player</translation>
 <translation id="9056839673611986238">המכשיר יוחזר למצב קודם</translation>
 <translation id="9070640332319875144">‏הגדרות Assistant</translation>

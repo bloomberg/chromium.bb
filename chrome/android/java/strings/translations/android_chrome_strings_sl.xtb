@@ -580,6 +580,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5324858694974489420">Starševske nastavitve</translation>
 <translation id="5327248766486351172">Ime</translation>
 <translation id="5335288049665977812">Spletnim mestom dovoli izvajanje JavaScripta (priporočeno)</translation>
+<translation id="5357811892247919462">Prejet zavihek</translation>
 <translation id="5363230136052241468">Dotaknite se gumba za začetni zaslon, če želite naložiti nov zavihek s povezavami</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> odprt zavihek, dotaknite se, če želite preklopiti med zavihki}one{<ph name="OPEN_TABS_MANY" /> odprt zavihek, dotaknite se, če želite preklopiti med zavihki}two{<ph name="OPEN_TABS_MANY" /> odprta zavihka, dotaknite se, če želite preklopiti med zavihki}few{<ph name="OPEN_TABS_MANY" /> odprti zavihki, dotaknite se, če želite preklopiti med zavihki}other{<ph name="OPEN_TABS_MANY" /> odprtih zavihkov, dotaknite se, če želite preklopiti med zavihki}}</translation>
 <translation id="5391532827096253100">Povezava s tem spletnim mestom ni varna. Podatki o spletnem mestu.</translation>
@@ -601,7 +602,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5494752089476963479">Blokiranje oglasov na spletnih mestih, ki prikazujejo vsiljive ali zavajajoče oglase</translation>
 <translation id="5497272504048921382">Odprti zavihki</translation>
 <translation id="5500777121964041360">Morda ni na voljo na vaši lokaciji</translation>
-<translation id="550684401320795253">Posodabljanje Chroma ...</translation>
 <translation id="5512137114520586844">Ta račun upravlja <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Onemogoči skrbnik te naprave</translation>
 <translation id="5515439363601853141">Odklenite, če si želite ogledati geslo</translation>

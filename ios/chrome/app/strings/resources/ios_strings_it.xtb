@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Apri tutte</translation>
 <translation id="1430915738399379752">Stampa</translation>
 <translation id="1436290164580597469">Inserisci la passphrase per avviare la sincronizzazione.</translation>
+<translation id="1449835205994625556">Nascondi password</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementi</translation>
 <translation id="1491277525950327607">Tocca due volte per attivare/disattivare l'impostazione</translation>
 <translation id="152234381334907219">Mai salvate</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Cancella dati di navigazione</translation>
 <translation id="1820259098641718022">Aggiunta all'elenco di lettura</translation>
 <translation id="1828824471510190776">Suggerisci password...</translation>
+<translation id="1870148520156231997">Mostra password</translation>
 <translation id="1876721852596493031">Invia dati di utilizzo</translation>
 <translation id="1886928167269928266">Tutto</translation>
 <translation id="1911619930368729126">Carica su Google Drive</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Barra di avanzamento del caricamento delle pagine. Percentuale di caricamento: <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Titolo</translation>
 <translation id="4004204301268239848">Le password vengono salvate nel tuo Account Google affinché tu possa usarle su qualsiasi dispositivo.</translation>
+<translation id="4006921758705478413">Invia ai tuoi dispositivi</translation>
 <translation id="4038354071007134711">Impossibile aprire il file con le app sul dispositivo.</translation>
 <translation id="4042870976416480368">Trova nella pagina</translation>
 <translation id="4049507953662678203">Controlla la connessione di rete e riprova.</translation>
@@ -267,6 +270,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4904877109095351937">Segna come già letti</translation>
 <translation id="4930268273022498155">Elimina i dati esistenti. Puoi recuperarli tornando all'account <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Spiacenti, si è verificato un problema di condivisione.</translation>
+<translation id="4945756290001680296">Accedi alle impostazioni della password</translation>
 <translation id="4979397965658815378">Accedi con il tuo Account Google per avere preferiti, password, cronologia e altre impostazioni su tutti i tuoi dispositivi</translation>
 <translation id="5005498671520578047">Copia password</translation>
 <translation id="5010803260590204777">Apri una scheda di navigazione in incognito per navigare sul Web in privato.</translation>
@@ -520,6 +524,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8976382372951310360">Guida</translation>
 <translation id="8981454092730389528">Gestione attività di Google</translation>
 <translation id="8985320356172329008">Accesso effettuato a Google come</translation>
+<translation id="9016406938567631235">Invio…</translation>
 <translation id="902659348151742535">Google può utilizzare la tua cronologia di navigazione per personalizzare la Ricerca, gli annunci e altri servizi Google.</translation>
 <translation id="9034759925968272072">Non verrai disconnesso dal tuo Account Google. Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione alla pagina <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Larghezza di banda</translation>

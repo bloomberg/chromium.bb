@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Đánh dấu con trỏ chuột</translation>
 <translation id="3513798432020909783">Tài khoản được quản lý bởi <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Thay đổi lại thành "<ph name="FROM_LOCALE" />" (yêu cầu khởi động lại)</translation>
+<translation id="3576141592585647168">Thay đổi múi giờ</translation>
 <translation id="3595596368722241419">Pin đầy</translation>
 <translation id="3606978283550408104">Đã kết nối màn hình Braille.</translation>
 <translation id="3621202678540785336">Thiết bị vào</translation>
@@ -355,6 +356,7 @@
 <translation id="6559976592393364813">Hỏi quản trị viên</translation>
 <translation id="6585808820553845416">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tìm kiếm+Shift+K</translation>
+<translation id="6637729079642709226">Thay đổi thời gian</translation>
 <translation id="6650933572246256093">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã xác nhận này trên thiết bị đó: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6665545700722362599">Cấp cho trang web, ứng dụng và tiện ích quyền sử dụng dịch vụ vị trí, micrô, máy ảnh hoặc các tính năng khác của thiết bị</translation>
@@ -510,6 +512,7 @@
 <translation id="8990809378771970590">Đang dùng <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Mở khóa thiết bị bằng <ph name="LOGIN_ID" /> để thực hiện hành động thông báo</translation>
 <translation id="8995603266996330174">Được quản lý bởi <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Nhập mã truy cập Family Link dành cho cha mẹ.</translation>
 <translation id="9029474291399787231">Đã có bản cập nhật Adobe Flash Player</translation>
 <translation id="9056839673611986238">Thiết bị sẽ được hạ cấp hệ điều hành</translation>
 <translation id="9070640332319875144">Cài đặt Trợ lý</translation>

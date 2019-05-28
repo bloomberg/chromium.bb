@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Otvori sve</translation>
 <translation id="1430915738399379752">Ispis</translation>
 <translation id="1436290164580597469">Unesite šifru za pokretanje sinkronizacije.</translation>
+<translation id="1449835205994625556">Sakrijte zaporku</translation>
 <translation id="145015347812617860">Broj stavki: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Dodirnite dvaput da biste promijenili postavku</translation>
 <translation id="152234381334907219">Nikad spremljeno</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Brisanje podataka o pregledavanju</translation>
 <translation id="1820259098641718022">Dodano na popis za čitanje</translation>
 <translation id="1828824471510190776">Predloži zaporku...</translation>
+<translation id="1870148520156231997">Otkrijte zaporku</translation>
 <translation id="1876721852596493031">Slanje pod. o upot.</translation>
 <translation id="1886928167269928266">Od početka</translation>
 <translation id="1911619930368729126">Prenesi na Google disk</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Traka napretka učitavanja stranice, učitano <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4004204301268239848">Zaporke se spremaju na vaš Google račun kako biste ih mogli upotrebljavati na bilo kojem uređaju.</translation>
+<translation id="4006921758705478413">Pošaljite na svoje uređaje</translation>
 <translation id="4038354071007134711">Na ovom uređaju nema aplikacije za tu datoteku.</translation>
 <translation id="4042870976416480368">Traži na stranici</translation>
 <translation id="4049507953662678203">Provjerite mrežnu vezu i pokušajte ponovo.</translation>
@@ -267,6 +270,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4904877109095351937">Označi kao pročitano</translation>
 <translation id="4930268273022498155">Postojeći će se podaci izbrisati. Dohvatiti ih možete tako da se vratite na <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Došlo je do problema prilikom dijeljenja vaše stavke.</translation>
+<translation id="4945756290001680296">Pristupite postavkama zaporke</translation>
 <translation id="4979397965658815378">Prijavite se Google računom da biste imali pristup svojim oznakama, zaporkama, povijesti i ostalim postavkama na svim svojim uređajima</translation>
 <translation id="5005498671520578047">Kopiranje zaporke</translation>
 <translation id="5010803260590204777">Otvorite anonimnu karticu da biste pregledavali web u privatnosti.</translation>
@@ -520,6 +524,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="8976382372951310360">Pomoć</translation>
 <translation id="8981454092730389528">Google kontrole aktivnosti</translation>
 <translation id="8985320356172329008">Prijavljeni ste na Google kao</translation>
+<translation id="9016406938567631235">Slanje...</translation>
 <translation id="902659348151742535">Google može upotrebljavati vašu povijest pregledavanja za prilagodbu Pretraživanja, oglasa i drugih Googleovih usluga.</translation>
 <translation id="9034759925968272072">Nećete se odjaviti s Google računa. Na Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Propusnost</translation>

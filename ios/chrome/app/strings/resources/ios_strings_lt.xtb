@@ -38,7 +38,8 @@
 <translation id="1400642268715879018">Pastarosios 4 savaitės</translation>
 <translation id="1407135791313364759">Atidaryti viską</translation>
 <translation id="1430915738399379752">Spausdinti</translation>
-<translation id="1436290164580597469">Įvesti slaptažodį, norint pradėti sinchronizuoti</translation>
+<translation id="1436290164580597469">Įvesti slaptažodį, norint pradėti sinchronizuoti.</translation>
+<translation id="1449835205994625556">Slėpti slaptažodį</translation>
 <translation id="145015347812617860">Elementų: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Dukart palieskite, kad perjungtumėte nustatymą</translation>
 <translation id="152234381334907219">Niekada neišsaugota</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Išvalyti naršymo duomenis</translation>
 <translation id="1820259098641718022">Pridėta prie skaitymo sąrašo</translation>
 <translation id="1828824471510190776">Siūlyti slaptažodį...</translation>
+<translation id="1870148520156231997">Rodyti slaptažodį</translation>
 <translation id="1876721852596493031">Siųsti naud. duom.</translation>
 <translation id="1886928167269928266">Laiko pradžia</translation>
 <translation id="1911619930368729126">Įkelti į „Google“ diską</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Puslapio įkėlimo eigos juosta, įkelta <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Pavadinimas</translation>
 <translation id="4004204301268239848">Slaptažodžiai išsaugomi „Google“ paskyroje, kad galėtumėte juos naudoti bet kuriame įrenginyje.</translation>
+<translation id="4006921758705478413">Išsiųsta į jūsų įrenginius</translation>
 <translation id="4038354071007134711">Šiame įreng. nėra progr., gal. atidaryti failą.</translation>
 <translation id="4042870976416480368">Rasti puslapyje</translation>
 <translation id="4049507953662678203">Įsitikinkite, kad yra tinklo ryšys ir bandykite dar kartą.</translation>
@@ -267,6 +270,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="4904877109095351937">Pažymėti kaip skaitytus</translation>
 <translation id="4930268273022498155">Ištrinti esamus duomenis. Juos galite gauti perjungę atgal į <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Apgailestaujame, bendrinant elementą kilo problema.</translation>
+<translation id="4945756290001680296">Pasiekite slaptažodžio nustatymus</translation>
 <translation id="4979397965658815378">Prisijunkite naudodami „Google“ paskyrą, kad gautumėte žymes, slaptažodžius, istoriją ir kitus nustatymus visuose įrenginiuose</translation>
 <translation id="5005498671520578047">Kopijuoti slaptažodį</translation>
 <translation id="5010803260590204777">Norėdami naršyti žiniatinklį privačiai, atidarykite inkognito skirtuką.</translation>
@@ -520,6 +524,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8976382372951310360">Pagalba</translation>
 <translation id="8981454092730389528">„Google“ veiklos valdikliai</translation>
 <translation id="8985320356172329008">Prisijungta prie „Google“ kaip</translation>
+<translation id="9016406938567631235">Siunčiama...</translation>
 <translation id="902659348151742535">„Google“ gali naudoti jūsų naršymo istoriją, kad suasmenintų Paiešką, skelbimus ir kitas „Google“ paslaugas.</translation>
 <translation id="9034759925968272072">Nebūsite atjungti nuo „Google“ paskyros. Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali būti pateikta kitų formų jūsų „Google“ paskyros istorija.</translation>
 <translation id="9039373489628511875">Pralaidumas</translation>

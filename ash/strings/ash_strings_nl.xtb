@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Muisaanwijzer markeren</translation>
 <translation id="3513798432020909783">Account wordt beheerd door <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Teruggaan naar '<ph name="FROM_LOCALE" />' (opnieuw starten vereist)</translation>
+<translation id="3576141592585647168">Tijdzone wijzigen</translation>
 <translation id="3595596368722241419">Batterij is vol</translation>
 <translation id="3606978283550408104">Braillescherm gekoppeld.</translation>
 <translation id="3621202678540785336">Ingang</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Vraag het de beheerder</translation>
 <translation id="6585808820553845416">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Zoeken+Shift+K</translation>
+<translation id="6637729079642709226">Tijd wijzigen</translation>
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Wachtwoord</translation>
 <translation id="6665545700722362599">Kies of websites, apps en extensies mogen gebruikmaken van locatieservices of de microfoon, de camera of andere functies van het apparaat</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> gebruiken</translation>
 <translation id="899350903320462459">Ontgrendel het apparaat als <ph name="LOGIN_ID" /> om de meldingsactie uit te voeren</translation>
 <translation id="8995603266996330174">Beheerd door <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Geef de Family Link-toegangscode voor ouders op.</translation>
 <translation id="9029474291399787231">Update van Adobe Flash Player beschikbaar</translation>
 <translation id="9056839673611986238">Apparaat wordt teruggezet naar oudere versie</translation>
 <translation id="9070640332319875144">Instellingen voor Assistent</translation>

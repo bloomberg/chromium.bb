@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Zvýrazniť ukazovateľ myši</translation>
 <translation id="3513798432020909783">Správca účtu: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE" />“ (vyžaduje sa reštart)</translation>
+<translation id="3576141592585647168">Zmena časového pásma</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
 <translation id="3606978283550408104">Bola pripojená Braillova obrazovka.</translation>
 <translation id="3621202678540785336">Vstup</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Požiadajte o to správcu</translation>
 <translation id="6585808820553845416">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Hľadať+Shift+K</translation>
+<translation id="6637729079642709226">Zmena času</translation>
 <translation id="6650933572246256093">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení tento prístupový kľúč: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="6665545700722362599">Udeľte webom, aplikáciám a rozšíreniam povolenie používať služby určovania polohy, mikrofón zariadenia, kameru alebo ďalšie funkcie</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">Práve sa používa <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Ak chcete vykonať akciu s upozornením, odomknite zariadenie ako <ph name="LOGIN_ID" /></translation>
 <translation id="8995603266996330174">Spravované doménou <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Zadajte prístupový kód rodiča Family Link.</translation>
 <translation id="9029474291399787231">K dispozícii je aktualizácia prehrávača Adobe Flash Player</translation>
 <translation id="9056839673611986238">Zariadenie sa obnoví</translation>
 <translation id="9070640332319875144">Nastavenia Asistenta</translation>

@@ -375,6 +375,7 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
 <translation id="1617235075406854669">Attiva eliminazione cronologia del browser e dei download</translation>
 <translation id="163200210584085447">I pattern di questo elenco verranno confrontati con l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi di acquisizione video verrà concesso sulle pagine di accesso SAML. In caso contrario, l'accesso verrà automaticamente negato. Non sono consentite sequenze con caratteri jolly.</translation>
 <translation id="1634989431648355062">Consenti il plug-in <ph name="FLASH_PLUGIN_NAME" /> su questi siti</translation>
+<translation id="1645793986494086629">Schema:</translation>
 <translation id="1653229475925941921">Se questa norma viene impostata, consente di controllare il tipo di lente di ingrandimento che viene attivata. Se imposti la norma su "None", la lente di ingrandimento viene disatttivata.
 
           Se imposti questa norma, gli utenti non potranno modificarla o sostituirla.
@@ -577,6 +578,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2014757022750736514">Consente di stabilire il comportamento della schermata di accesso, da cui gli utenti possono accedere ai propri account. Le impostazioni consentono di decidere chi può accedere, che tipi di account sono consentiti, quali metodi di autenticazione devono essere usati. Sono disponibili anche impostazioni generali relative ad accessibilità, metodo di immissione e lingue.</translation>
 <translation id="201557587962247231">Frequenza dei caricamenti del rapporto sullo stato del dispositivo</translation>
 <translation id="2017301949684549118">URL per abb web da installare automaticamente.</translation>
+<translation id="2017459564744167827">Vedi <ph name="REFERENCE_URL" /> per ulteriori informazioni su schema e formattazione.</translation>
 <translation id="2018836497795982119">Consente di specificare in millisecondi il periodo di tempo per cui vengono richieste informazioni sui criteri relativi agli utenti al servizio di gestione del dispositivo.
 
       Se questo criterio viene impostato, il valore predefinito di tre ore viene ignorato. L'intervallo dei valori validi per questo criterio è compreso tra 1800000 (30 minuti) e 86400000 (un giorno). I valori non compresi in questo intervallo verranno bloccati al relativo limite. Se la piattaforma supporta le notifiche relative ai criteri, il ritardo dell'aggiornamento verrà impostato su 24 ore perché è previsto che le notifiche relative ai criteri forzino l'aggiornamento automatico quando cambiano i criteri.
@@ -787,6 +789,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2463034609187171371">Attiva i pacchetti di crittografia DHE in TLS</translation>
 <translation id="2463365186486772703">Lingua dell'applicazione</translation>
 <translation id="2466131534462628618">L'autenticazione tramite captive portal ignora il proxy</translation>
+<translation id="2471748297300970300">Se disattivato, impedisce la visualizzazione degli avvisi sulla sicurezza quando Chrome viene avviato con alcuni flag della riga di comando potenzialmente pericolosi.
+
+          Se attivato o non impostato, gli avvisi sulla sicurezza vengono visualizzati quando vengono utilizzati determinati flag della linea di comando per avviare Chrome.
+
+          Su Windows, questo criterio è disponibile solo per le istanze che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="2482676533225429905">Messaggi nativi</translation>
 <translation id="2483146640187052324">Prevedi le azioni di rete su qualsiasi connessione di rete</translation>
 <translation id="2484208301968418871">Questa norma consente di gestire l'applicazione del filtro di URL di SafeSites.
@@ -1052,6 +1059,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
           |created_time_millis| è il timestamp UTC per la creazione dell'override che viene inviato sotto forma di stringa perché non si adatta a un numero intero. Viene usato per stabilire se applicare ancora l'override o meno. Se la funzione del limite di tempo attivo corrente (limite di tempo di utilizzo o limite della finestra temporale) è iniziata dopo la creazione dell'override, non dovrebbe essere applicata. Inoltre, se l'override è stato creato prima dell'ultima modifica dei valori time_window_limit o time_usage_window attivi, non dovrebbe essere applicato.
 
           È possibile inviare più override; viene applicata la voce valida più recente.</translation>
+<translation id="2901725272378498025">Attiva gli avvisi sulla sicurezza per i flag della riga di comando</translation>
 <translation id="2905984450136807296">Durata dei dati di autenticazione nella cache</translation>
 <translation id="2906874737073861391">Elenco di estensioni AppPack</translation>
 <translation id="2907992746861405243">Consente di stabilire quali stampanti della norma <ph name="BULK_PRINTERS_POLICY" /> mettere a disposizione degli utenti.
@@ -1614,6 +1622,11 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 <translation id="3963602271515417124">Se la norma viene impostata su true, l'attestazione da remoto viene consentita per il dispositivo e viene generato automaticamente un certificato che viene caricato sul Server di gestione del dispositivo.
 
           Se la norma viene impostata su false o non viene impostata, non verrà generato alcun certificato e le chiamate all'API di estensione enterprise.platformKeys non andranno a buon fine.</translation>
+<translation id="3964262920683972987">Consente di configurare l'immagine di sfondo a livello di dispositivo da mostrare nella schermata di accesso se ancora nessun utente ha effettuato l'accesso al dispositivo. Il criterio viene impostato specificando l'URL da cui il dispositivo Chrome OS può scaricare l'immagine di sfondo e un hash crittografico utilizzato per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 16 MB. L'URL deve essere accessibile senza nessuna autenticazione. L'immagine di sfondo viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL o l'hash vengono modificati.
+
+      Se il criterio dello sfondo del dispositivo è impostato, il dispositivo Chrome OS scaricherà e utilizzerà l'immagine di sfondo nella schermata di accesso se ancora nessun utente ha effettuato l'accesso al dispositivo. Quando un utente accede, si attiva il criterio dello sfondo dell'utente.
+
+      Se il criterio dello sfondo del dispositivo non viene impostato, è il criterio dello sfondo dell'utente a decidere cosa mostrare se si imposta il criterio dello sfondo del dispositivo.</translation>
 <translation id="3965339130942650562">Timeout fino a esecuzione uscita utente non attivo</translation>
 <translation id="3973371701361892765">Non nascondere mai automaticamente lo shelf</translation>
 <translation id="3984028218719007910">Consente di stabilire se tenere o meno memorizzati in <ph name="PRODUCT_OS_NAME" /> i dati degli account locali dopo l'uscita. Se la norma viene impostata su true, in <ph name="PRODUCT_OS_NAME" /> non verranno conservati gli account persistenti e tutti i dati della sessione utente verranno eliminati dopo l'uscita. Se la norma viene impostata su false o non viene configurata, il dispositivo potrebbe conservare i dati utente locali (criptati).</translation>
@@ -1669,6 +1682,17 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4056910949759281379">Disabilita protocollo SPDY</translation>
 <translation id="408029843066770167">Consenti query a un servizio orario di Google</translation>
 <translation id="408076456549153854">Attiva accesso al browser</translation>
+<translation id="40853027210512570">Consente di sostituire le regole di selezione della stampante predefinita di <ph name="PRODUCT_NAME" />.
+
+      Questo criterio determina le regole di selezione della stampante predefinita in <ph name="PRODUCT_NAME" />, che viene effettuata al primo utilizzo della funzione di stampa con un profilo.
+
+      Se questo criterio viene impostato, <ph name="PRODUCT_NAME" /> cercherà di trovare una stampante corrispondente a tutti gli attributi specificati e la selezionerà come stampante predefinita. Verrà selezionata la prima stampante trovata corrispondente al criterio; in caso di corrispondenze non univoche, può essere selezionata qualsiasi stampante, a seconda dell'ordine di rilevamento delle stampanti.
+
+      Se questo criterio non viene impostato o se non viene trovata una stampante corrispondente prima del timeout, viene selezionata come predefinita la stampante PDF integrata; se non è disponibile la stampante PDF, non viene selezionata alcuna stampante.
+
+      Le stampanti connesse a <ph name="CLOUD_PRINT_NAME" /> vengono considerate <ph name="PRINTER_TYPE_CLOUD" />, mentre le altre stampanti vengono classificate come <ph name="PRINTER_TYPE_LOCAL" />.
+      L'omissione di un campo implica la corrispondenza di tutti i valori; ad esempio, se non viene specificata la connettività, nell'Anteprima di stampa viene avviato il rilevamento di tutti i tipi di stampanti, locali e cloud.
+      I modelli di espressioni regolari devono seguire la sintassi JavaScript RegExp e per le corrispondenze viene fatta distinzione tra maiuscole e minuscole.</translation>
 <translation id="4088589230932595924">Modalità di navigazione in incognito forzata</translation>
 <translation id="4088983553732356374">Consente di stabilire se consentire o meno ai siti web di impostare dati locali. L'impostazione dei dati locali può essere consentita o vietata per tutti i siti web.
 
@@ -2108,6 +2132,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa norma non viene impostata o viene impostata su true, Chrome manterrà almeno una scheda aperta dopo il passaggio a un browser alternativo.
 
       Se questa norma viene impostata su false, Chrome chiuderà la scheda dopo il passaggio a un browser alternativo, anche se si tratta dell'ultima scheda. Ciò comporterà la chiusura completa di Chrome.</translation>
+<translation id="5102203758995933166">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON come definita nel formato Open Network Configuration.</translation>
 <translation id="5105313908130842249">Ritardo blocco schermo in caso di utilizzo della batteria</translation>
 <translation id="5108031557082757679">Stampanti aziendali associate ai dispositivi disattivate</translation>
 <translation id="5124368997194894978">Attiva avvio tramite CA (corrente alternata)</translation>
@@ -2287,6 +2312,24 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5423001109873148185">Se è attiva, questa norma impone l'importazione dei motori di ricerca dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, il motore di ricerca predefinito non viene importato. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5423197884968724595">Nome della limitazione di Android WebView:</translation>
 <translation id="5424147596523390018">Consenti tutte le modalità a colori</translation>
+<translation id="5427879482805712214">Questo criterio consente di configurare l'immagine avatar che rappresenta l'utente sulla schermata di accesso. Il criterio viene impostato specificando l'URL da cui <ph name="PRODUCT_OS_NAME" /> può scaricare l'immagine e un hash crittografico utilizzato per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 512 kB. L'URL deve essere accessibile senza nessuna autenticazione.
+
+      L'immagine avatar viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL o l'hash vengono modificati.
+
+      Se il criterio è impostato, <ph name="PRODUCT_OS_NAME" /> scaricherà e utilizzerà l'immagine avatar.
+
+      Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+      Se il criterio non viene impostato, l'utente può scegliere l'immagine avatar che lo rappresenta sulla schermata di accesso.</translation>
+<translation id="5432219358069697932">Questo criterio consente di configurare l'immagine di sfondo che visualizza l'utente sul desktop e sullo sfondo della schermata di accesso. Il criterio viene impostato specificando l'URL da cui <ph name="PRODUCT_OS_NAME" /> può scaricare l'immagine di sfondo e un hash di crittografia utilizzato per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 16 MB. L'URL deve essere accessibile senza nessuna autenticazione.
+
+      L'immagine di sfondo viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL o l'hash vengono modificati.
+
+      Se il criterio è impostato, <ph name="PRODUCT_OS_NAME" /> scaricherà e utilizzerà l'immagine di sfondo.
+
+      Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+      Se il criterio non è impostato, l'utente può scegliere un'immagine da visualizzare sul desktop e sullo sfondo della schermata di accesso.</translation>
 <translation id="5437733496511628148">L'attivazione di questa impostazione impedisce l'impostazione dei cookie da parte degli elementi delle pagine web non provenienti dal dominio riportato nella barra degli indirizzi del browser.
 
       La disattivazione di questa impostazione consente ai cookie di essere impostati da elementi delle pagine web non provenienti dal dominio riportato nella barra degli indirizzi del browser e impedisce agli utenti di modificare questa impostazione.
@@ -2741,6 +2784,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6310223829319187614">Consente il completamento automatico del nome di dominio durante l'accesso dell'utente</translation>
 <translation id="6315673513957120120">Chrome mostra una pagina di avviso quando gli utenti visitano siti che presentano errori SSL. Per impostazione predefinita, o se la norma viene impostata su true, gli utenti possono fare clic nelle pagine di avviso.
       Se questa norma viene impostata su false, gli utenti non possono fare clic nelle pagine di avviso.</translation>
+<translation id="6319198883324703402">Imposta il tempo della prima notifica del riavvio per l'utente</translation>
 <translation id="6352543686437322588">Un account locale del dispositivo a cui accedere automaticamente dopo un ritardo.
 
       Se questa norma è impostata, verrà eseguito l'accesso automatico alla sessione specificata dopo che è trascorso un periodo di tempo senza interazioni dell'utente nella schermata di accesso. L'account locale del dispositivo deve essere già configurato (vedi |DeviceLocalAccounts|).
@@ -3081,6 +3125,7 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Google potrebbe associare questi log tramite un ID sessione ad altri log raccolti dal servizio Google stesso al fine di facilitare il debug.
       </translation>
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
+<translation id="7068108874199666656">Consente di forzare l'applicazione della configurazione di rete per tutti gli utenti di un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON come definita nel formato Open Network Configuration.</translation>
 <translation id="7070525176564511548">Richiedi l'inserimento della password ogni settimana (168 ore)</translation>
 <translation id="7072208053150563108">Frequenza di modifica della password del computer</translation>
 <translation id="7079519252486108041">Blocca popup su questi siti</translation>
@@ -3098,6 +3143,7 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
           Questa norma viene applicata soltanto se la norma <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> è disattivata. In caso contrario, questa norma viene ignorata perché il ritardo di oscuramento dello schermo viene stabilito da un modello di machine learning.
 
           Il fattore di regolazione minimo deve essere 100%.</translation>
+<translation id="710003290625031750">Descrizione estesa dello schema:</translation>
 <translation id="7106631983877564505">Consente di attivare il blocco quando lo stato dei dispositivi <ph name="PRODUCT_OS_NAME" /> diventa inattivo o sospeso.
 
       Se questa impostazione viene attivata, agli utenti verrà chiesto di inserire una password per sbloccare il dispositivo dalla sospensione.
@@ -3149,7 +3195,7 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
 
       Se è impostato su un URL valido, <ph name="PRODUCT_NAME" /> scarica l'elenco dei siti da tale URL e applica le regole come se fossero state configurate con il criterio <ph name="SITELIST_POLICY_NAME" />.
 
-      Per ulteriori informazioni sul criterio<ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
+      Per ulteriori informazioni sul criterio <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione video senza richieste</translation>
 <translation id="7138678301420049075">Altro</translation>
 <translation id="7140629953254369759">Indica a <ph name="PRODUCT_OS_NAME" /> di usare la configurazione del programma di pianificazione delle attività identificato dal nome specificato.
@@ -3670,6 +3716,9 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
       Se la norma viene impostata su true, sul dispositivo viene utilizzato il formato di 24 ore, se viene impostata su false viene utilizzato il formato di 12 ore.
 
       Se questa norma non viene impostata, sul dispositivo viene utilizzato il formato predefinito di 24 ore.</translation>
+<translation id="8113421140338762630">Ti consente di impostare il periodo di tempo, in millisecondi, tra la prima notifica che informa che un dispositivo <ph name="PRODUCT_OS_NAME" /> deve essere riavviato per applicare un aggiornamento in sospeso e la fine del periodo di tempo specificato dal criterio <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Se non impostato, il periodo predefinito di 86.400.000 millisecondi (un giorno) viene utilizzato per i dispositivi <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8114382167597081590">Non imporre la Modalità con restrizioni su YouTube</translation>
 <translation id="8118665053362250806">Imposta le dimensioni della cache su disco di supporto</translation>
 <translation id="8124468781472887384">Norma di accesso alla configurazione delle stampanti per i dispositivi.</translation>
@@ -3824,7 +3873,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8465065632133292531">Parametri per l'URL istantaneo che utilizza POST</translation>
 <translation id="8465746466645315861">Se il criterio non viene impostato, l'utente può attivare o disattivare il controllo ortografico nelle impostazioni della lingua.
 
-      Se impostato su true, il controllo ortografico è attivato e l'utente non può disattivarlo. Su <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> e <ph name="LINUX_OS_NAME" />, è possibile attivare o disattivare singolarmente le lingue per correttore ortografico, perciò l'utente può comunque disattivare il correttore ortografico disattivando ogni lingua per correttore ortografico. Per evitare questo, il criterio <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> può essere utilizzato per l'attivazione forzata di determinate lingue per i correttore ortografico.
+      Se il criterio è impostato su true, il controllo ortografico è attivato e l'utente non può disattivarlo. Su <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> e <ph name="LINUX_OS_NAME" />, è possibile attivare o disattivare singolarmente le lingue per correttore ortografico, perciò l'utente può comunque disattivare il correttore ortografico disattivando ogni lingua per correttore ortografico. Per evitare questo, il criterio <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> può essere utilizzato per l'attivazione forzata di determinate lingue per il correttore ortografico.
 
       Se il criterio è impostato su false, il controllo ortografico è disattivato e l'utente non può attivarlo. I criteri <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> e <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> non hanno effetto quando questo criterio è impostato su false.
       </translation>
@@ -3871,6 +3920,11 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8544465954173828789">Consente la sincronizzazione di messaggi SMS dal telefono al Chromebook</translation>
 <translation id="8548832052135586762">Consente di impostare solo la stampa a colori, solo la stampa monocromatica oppure nessuna limitazione per la modalità a colori. Se la norma non viene impostata non vengono applicate limitazioni.</translation>
 <translation id="8549772397068118889">Avvisa quando vengono visitati siti non presenti nei pacchetti di contenuti</translation>
+<translation id="8566729013138025202">Consente di specificare un insieme di criteri che verranno trasferiti al runtime ARC. Il valore deve essere un JSON valido.
+
+      Questo criterio può essere utilizzato per configurare quali app Android vengono installate automaticamente sul dispositivo.
+
+      Per bloccare le app nell'Avvio app, vedi PinnedLauncherApps.</translation>
 <translation id="8566842294717252664">Nascondi il Web Store nella pagina Nuova scheda e in Avvio applicazioni</translation>
 <translation id="8569734380847633643">
           Se la norma è impostata su false, <ph name="PRODUCT_OS_NAME" /> disattiverà la connessione Wi-Fi e gli utenti non potranno riattivarla.
@@ -4053,6 +4107,14 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="8942616385591203339">Questa norma consente di controllare se il consenso alla sincronizzazione può essere mostrato all'utente durante il primo accesso. Dovrebbe essere impostata su false se tale consenso non è mai necessario per l'utente.
       Se impostata su false, il consenso alla sincronizzazione non verrà visualizzato.
       Se impostata su true o non viene impostata, il consenso alla sincronizzazione può essere visualizzato.</translation>
+<translation id="894510252300143386">Configura le impostazioni di gestione delle estensioni per <ph name="PRODUCT_NAME" />.
+
+          Questo criterio controlla più impostazioni, tra cui quelle controllate da criteri correlati alle estensioni già presenti. Questo criterio sostituirà tutti i criteri precedenti se vengono impostati entrambi.
+
+          Questo criterio consente di mappare un ID estensione o un URL di aggiornamento alla relativa configurazione. Con un ID estensione, la configurazione viene applicata solo all'estensione specificata. È possibile impostare una configurazione predefinita per l'ID speciale <ph name="DEFAULT_SCOPE" />, che verrà applicato a tutte le estensioni per cui non è impostata una configurazione personalizzata in questo criterio. Con un URL di aggiornamento, la configurazione verrà applicata a tutte le estensioni con l'esatto URL di aggiornamento indicato nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Per le istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni elencate nel Chrome Web Store.
+          </translation>
 <translation id="8947415621777543415">Segnala posizione del dispositivo</translation>
 <translation id="8951350807133946005">Impostazione directory della cache su disco</translation>
 <translation id="8952317565138994125">Consente di disattivare la sincronizzazione dei dati in <ph name="PRODUCT_NAME" /> tramite servizi di sincronizzazione in hosting su Google e di impedire agli utenti di modificare questa impostazione.

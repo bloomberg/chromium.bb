@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Podświetlaj wskaźnik myszy</translation>
 <translation id="3513798432020909783">Kontem zarządza <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmień z powrotem na „<ph name="FROM_LOCALE" />” (wymaga ponownego uruchomienia)</translation>
+<translation id="3576141592585647168">Zmień strefę czasową</translation>
 <translation id="3595596368722241419">Bateria naładowana</translation>
 <translation id="3606978283550408104">Podłączono monitor brajlowski.</translation>
 <translation id="3621202678540785336">Urządzenie wejściowe</translation>
@@ -355,6 +356,7 @@
 <translation id="6559976592393364813">Poproś administratora</translation>
 <translation id="6585808820553845416">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Szukaj + Shift + K</translation>
+<translation id="6637729079642709226">Zmień czas</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Hasło</translation>
 <translation id="6665545700722362599">przyznawać stronom internetowym, aplikacjom i rozszerzeniom dostęp do usług lokalizacyjnych, mikrofonu bądź aparatu na urządzeniu lub do innych funkcji;</translation>
@@ -510,6 +512,7 @@
 <translation id="8990809378771970590">W użyciu jest <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Odblokuj urządzenie jako <ph name="LOGIN_ID" />, by zareagować na powiadomienie</translation>
 <translation id="8995603266996330174">Zarządzane przez <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Wpisz kod dostępu rodzica Family Link.</translation>
 <translation id="9029474291399787231">Dostępna jest aktualizacja Adobe Flash Playera</translation>
 <translation id="9056839673611986238">Na urządzeniu zostanie przywrócona wcześniejsza wersja oprogramowania</translation>
 <translation id="9070640332319875144">Ustawienia Asystenta</translation>

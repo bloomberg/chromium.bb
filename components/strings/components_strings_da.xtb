@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Undgå, at denne side opretter yderligere dialogbokse</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Kortet kan ikke gemmes</translation>
 <translation id="1639239467298939599">Indlæser...</translation>
 <translation id="1640180200866533862">Brugerpolitikker</translation>
 <translation id="1640244768702815859">Prøv at <ph name="BEGIN_LINK" />gå til websitets startside<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Ret problemerne med din forbindelse ved hjælp af <ph name="BEGIN_LINK" />diagnoseappen<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Send nu</translation>
 <translation id="225207911366869382">Denne værdi er forældet for denne politik.</translation>
+<translation id="2257315177824333709">Kortet kan desværre ikke gemmes lige nu</translation>
 <translation id="2262243747453050782">HTTP-fejl</translation>
 <translation id="2263079731045660823">Opdater AutoFyld-oplysninger for betalingskort i indstillingerne for Chrome</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Vis politikker uden nogen værdier</translation>
 <translation id="239429038616798445">Denne forsendelsesmetode er ikke tilgængelig. Prøv en anden metode.</translation>
 <translation id="2396249848217231973">&amp;Fortryd sletning</translation>
+<translation id="2409589295040002961">Din administrator kan ændre konfigurationen af din browser via fjernadgang. Aktivitet på denne enhed administreres muligvis også uden for Chrome. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet muligvis er blevet tilbagekaldt. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="2418081434543109369">Den server, du er på vej til, <ph name="ORIGIN" />, har anmodet om, at
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Anmodning lykkedes</translation>
 <translation id="2728127805433021124">Serverens certifikat er signeret ved hjælp af en svag signaturalgoritme.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Køre Diagnosticering af forbindelse<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Der er mere end én kilde med modstridende værdier for denne politik.</translation>
 <translation id="2738330467931008676">Vælg afhentningsadresse</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Fjern valgte elementer</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">Rediger kontaktoplysninger</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> nægtede at oprette forbindelse.</translation>
 <translation id="6434309073475700221">Kasser</translation>
+<translation id="6440503408713884761">Ignoreret</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Tilføj flere oplysninger</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">Advarsel! Denne politik blev ikke flettet som angivet i politikken, da den ikke er en liste.</translation>
 <translation id="6529602333819889595">&amp;Annuller fortryd slet</translation>
 <translation id="6534179046333460208">Forslag til Fysisk web</translation>
+<translation id="6545864417968258051">Bluetooth-scanning</translation>
 <translation id="6554795675067793129">Din konto administreres af <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Gør det igen</translation>
 <translation id="6563469144985748109">Din administrator har ikke godkendt det endnu</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">Tilføj gyldigt kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> -søgning</translation>
 <translation id="6630809736994426279">Brugere med ondsindede hensigter, der i øjeblikket er på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, kan forsøge at installere farlige programmer på din Mac, som stjæler eller sletter dine oplysninger (f.eks. fotos, adgangskoder, beskeder og kreditkort). <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Der er mere end én kilde for politikken, men værdierne er de samme.</translation>
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="6644283850729428850">Denne politik er forældet.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ingen}=1{Fra 1 website (du logges ikke ud af din Google-konto)}one{Fra # website (du logges ikke ud af din Google-konto)}other{Fra # websites (du logges ikke ud af din Google-konto)}}</translation>

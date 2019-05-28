@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">การตั้งค่าของผู้ปกครอง</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
 <translation id="5335288049665977812">อนุญาตให้เว็บไซต์เรียกใช้ JavaScript (แนะนำ)</translation>
+<translation id="5357811892247919462">ได้รับแท็บแล้ว</translation>
 <translation id="5363230136052241468">แตะปุ่มหน้าแรกเพื่อโหลดหน้าแท็บใหม่</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{เปิดแท็บไว้ <ph name="OPEN_TABS_ONE" /> แท็บ แตะเพื่อเปลี่ยนแท็บ}other{เปิดแท็บไว้ <ph name="OPEN_TABS_MANY" /> แท็บ แตะเพื่อเปลี่ยนแท็บ}}</translation>
 <translation id="5391532827096253100">การเชื่อมต่อกับเว็บไซต์นี้ไม่ปลอดภัย ข้อมูลเว็บไซต์</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">บล็อกโฆษณาในเว็บไซต์ที่แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
 <translation id="5497272504048921382">แท็บที่เปิดไว้</translation>
 <translation id="5500777121964041360">อาจไม่พร้อมใช้งานในประเทศของคุณ</translation>
-<translation id="550684401320795253">กำลังอัปเดต Chrome...</translation>
 <translation id="5512137114520586844">บัญชีนี้ได้รับการจัดการโดย <ph name="PARENT_NAME" /></translation>
 <translation id="5514904542973294328">ปิดใช้โดยผู้ดูแลระบบของอุปกรณ์นี้</translation>
 <translation id="5515439363601853141">ปลดล็อกเพื่อดูรหัสผ่าน</translation>

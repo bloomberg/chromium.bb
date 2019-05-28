@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Picha isiyo na lebo</translation>
 <translation id="3706100364254443312">badilisha</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">Funga hali ya picha ndani ya picha</translation>
 <translation id="3757388668994797779">GB <ph name="QUANTITY" /></translation>
 <translation id="3808586225841795776">neno</translation>
 <translation id="3822383571486410024">Tafadhali refusha maandishi haya hadi herufi <ph name="MIN_CHARACTERS" /> au zaidi (kwa sasa unatumia herufi <ph name="CURRENT_LENGTH" />).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">mti</translation>
 <translation id="4664250907885839816">Sehemu inayofuata '<ph name="ATSIGN" />' haipaswi kuwa na alama ya '<ph name="INVALIDCHARACTER" />'.</translation>
 <translation id="4668956016107839909">kiambatisho</translation>
+<translation id="4718048029184481307">Inacheza katika hali ya picha ndani ya picha</translation>
 <translation id="4742539557769756338">jalada</translation>
 <translation id="4748357248530471599">tumia mkato kwenye skrini nzima</translation>
 <translation id="4757246831282535685">kisanduku cha kichupo</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">pakua maudhui</translation>
 <translation id="6981594929165378967">uwekaji</translation>
 <translation id="6989848892321993519">Tafadhali refusha maandishi haya hadi herufi <ph name="MIN_CHARACTERS" /> au zaidi (kwa sasa unatumia herufi 1).</translation>
+<translation id="7033340931668032222">juu na chini ili kubadilisha sauti</translation>
 <translation id="709897737746224366">Tafadhali linganisha umbizo lililoombwa.</translation>
 <translation id="7118469954320184356">Hakuna maelezo yanayopatikana.</translation>
 <translation id="7139483182332611405">dibaji</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">ishara ya picha</translation>
 <translation id="8583702881314752957">orodha ya ufafanuzi</translation>
 <translation id="8597182159515967513">kichwa</translation>
+<translation id="8603553056539299761">kushoto na kulia ili kusogeza</translation>
 <translation id="860475260694818407">jedwali la yaliyomo</translation>
 <translation id="8613126697340063924">dhibiti kucheza kwa mbali</translation>
 <translation id="862370744433916922">kichwa kidogo</translation>

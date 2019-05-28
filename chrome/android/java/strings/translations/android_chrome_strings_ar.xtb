@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">الإعدادات الأبوية</translation>
 <translation id="5327248766486351172">الاسم</translation>
 <translation id="5335288049665977812">السماح لمواقع الويب بتشغيل جافا سكريبت (موصى به)</translation>
+<translation id="5357811892247919462">تم تلقي علامة تبويب</translation>
 <translation id="5363230136052241468">انقر على زر "الشاشة الرئيسية" لتحميل صفحة علامة التبويب الجديدة</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}zero{<ph name="OPEN_TABS_MANY" /> علامات تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}two{علامتا تبويب مفتوحتان<ph name="OPEN_TABS_MANY" />، يُرجى النقر لتبديل علامات التبويب}few{<ph name="OPEN_TABS_MANY" /> علامات تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}many{<ph name="OPEN_TABS_MANY" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}other{<ph name="OPEN_TABS_MANY" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}}</translation>
 <translation id="5391532827096253100">إن اتصالك بهذا الموقع الإلكتروني غير آمن. معلومات موقع الويب</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">حظر الإعلانات في المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="5497272504048921382">علامات تبويب مفتوحة</translation>
 <translation id="5500777121964041360">قد لا تتوفَّر هذه الميزة في موقعك الجغرافي</translation>
-<translation id="550684401320795253">‏جارٍ تحديث Chrome...</translation>
 <translation id="5512137114520586844">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">تم الإيقاف من قبل مشرف هذا الجهاز</translation>
 <translation id="5515439363601853141">إلغاء القفل لعرض كلمة المرور</translation>

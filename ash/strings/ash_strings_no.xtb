@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Fremhev musemarkøren</translation>
 <translation id="3513798432020909783">Kontoen er administrert av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
+<translation id="3576141592585647168">Endre tidssonen</translation>
 <translation id="3595596368722241419">Batteriet er fullt</translation>
 <translation id="3606978283550408104">En leselist er tilkoblet.</translation>
 <translation id="3621202678540785336">Inndata</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Spør administratoren</translation>
 <translation id="6585808820553845416">Økten slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Søk + Shift + K</translation>
+<translation id="6637729079642709226">Endre tiden</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Passord</translation>
 <translation id="6665545700722362599">gi nettsteder, apper og utvidelser tillatelse til å bruke posisjonstjenester, enhetens mikrofon, kamera eller andre funksjoner</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">Bruker <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Lås opp enheten som <ph name="LOGIN_ID" /> for å utføre varselhandlingen</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Skriv inn koden for foreldretilgang til Family Link.</translation>
 <translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>
 <translation id="9056839673611986238">Enheten blir tilbakestilt til forrige versjon</translation>
 <translation id="9070640332319875144">Assistent-innstillinger</translation>

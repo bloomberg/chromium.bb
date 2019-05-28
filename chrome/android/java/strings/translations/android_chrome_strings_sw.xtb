@@ -580,6 +580,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5324858694974489420">Mipangilio ya Wazazi</translation>
 <translation id="5327248766486351172">Jina</translation>
 <translation id="5335288049665977812">Ruhusu tovuti zitumie JavaScript (inapendekezwa)</translation>
+<translation id="5357811892247919462">Umepokea kichupo</translation>
 <translation id="5363230136052241468">Gusa kitufe cha ukurasa wa mwanzo ili upakie ukurasa wa kichupo kipya</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{Umefungua kichupo <ph name="OPEN_TABS_ONE" />, gusa ili ubadilishe vichupo}other{Umefungua vichupo <ph name="OPEN_TABS_MANY" />, gusa ili ubadilishe vichupo}}</translation>
 <translation id="5391532827096253100">Muunganisho wako kwenye tovuti hii si salama. Maelezo ya tovuti</translation>
@@ -601,7 +602,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5494752089476963479">Zuia matangazo kwenye tovuti zinazoonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
 <translation id="5497272504048921382">Vichupo ambavyo vimefunguliwa</translation>
 <translation id="5500777121964041360">Huenda haipatikani mahali uliko</translation>
-<translation id="550684401320795253">Inasasisha Chrome...</translation>
 <translation id="5512137114520586844">Akaunti hii inadhibitiwa na <ph name="PARENT_NAME" /></translation>
 <translation id="5514904542973294328">Imezimwa na msimamizi wa kifaa hiki</translation>
 <translation id="5515439363601853141">Fungua ili uangalie nenosiri lako</translation>

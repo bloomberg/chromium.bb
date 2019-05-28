@@ -135,6 +135,7 @@
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1623104350909869708">Evitar que esta página cree cuadros de diálogo adicionales</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">No se puede guardar la tarjeta</translation>
 <translation id="1639239467298939599">Cargando</translation>
 <translation id="1640180200866533862">Políticas de usuario</translation>
 <translation id="1640244768702815859">Prueba a <ph name="BEGIN_LINK" />acceder a la página principal del sitio web<ph name="END_LINK" />.</translation>
@@ -243,6 +244,7 @@
 <translation id="2230458221926704099">Soluciona los problemas de tu conexión con la <ph name="BEGIN_LINK" />aplicación de diagnóstico<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Enviar ahora</translation>
 <translation id="225207911366869382">Este valor ya no se utiliza para esta política.</translation>
+<translation id="2257315177824333709">En estos momentos no se puede guardar tu tarjeta</translation>
 <translation id="2262243747453050782">Error de HTTP</translation>
 <translation id="2263079731045660823">Actualiza la información de autocompletar tarjetas de crédito en la configuración de Chrome</translation>
 <translation id="2270484714375784793">Número de teléfono</translation>
@@ -272,6 +274,7 @@
 <translation id="2392959068659972793">Mostrar políticas sin valores establecidos</translation>
 <translation id="239429038616798445">Este método de envío no está disponible. Selecciona otro.</translation>
 <translation id="2396249848217231973">&amp;Deshacer eliminación</translation>
+<translation id="2409589295040002961">El administrador puede modificar la configuración del navegador de manera remota. Es posible que también se administre la actividad de este dispositivo fuera de Chrome. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" /> y se podría rechazar su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="2418081434543109369">El servidor al que te diriges, <ph name="ORIGIN" />, ha solicitado que se aplique una política de seguridad a todas las solicitudes que reciba. Sin embargo, no ha proporcionado ninguna política, lo que impide al navegador procesar tu solicitud de <ph name="SITE" />.</translation>
@@ -332,6 +335,7 @@
 <translation id="2721148159707890343">Solicitud correcta</translation>
 <translation id="2728127805433021124">El certificado del servidor está firmado con un algoritmo de firma no seguro.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Ejecutar Diagnóstico de conectividad<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Esta política tiene más de una fuente con valores en conflicto.</translation>
 <translation id="2738330467931008676">Seleccionar dirección de recogida</translation>
 <translation id="2740531572673183784">Aceptar</translation>
 <translation id="2742870351467570537">Eliminar elementos seleccionados</translation>
@@ -989,6 +993,7 @@
 <translation id="6433490469411711332">Editar información de contacto</translation>
 <translation id="6433595998831338502">La página <ph name="HOST_NAME" /> ha rechazado la conexión.</translation>
 <translation id="6434309073475700221">Rechazar</translation>
+<translation id="6440503408713884761">Ignorados</translation>
 <translation id="6446163441502663861">Kahu (sobre)</translation>
 <translation id="6446608382365791566">Añadir más información</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1001,9 +1006,10 @@
 <translation id="6507833130742554667">Se aceptan tarjetas de crédito y débito.</translation>
 <translation id="650855688985305916">Sí, guardar</translation>
 <translation id="6508722015517270189">Reinicia Chrome</translation>
-<translation id="6517596291481585650">Advertencia: Esta política no se ha combinado tal como se especifica en la política porque no es una lista.</translation>
+<translation id="6517596291481585650">Advertencia: Esta política no se ha combinado como lista tal como se especifica en la política porque no es una lista.</translation>
 <translation id="6529602333819889595">&amp;Rehacer eliminación</translation>
 <translation id="6534179046333460208">Sugerencias de la Web física</translation>
+<translation id="6545864417968258051">Búsqueda de dispositivos Bluetooth</translation>
 <translation id="6554795675067793129"><ph name="ENROLLMENT_DOMAIN" /> administra tu cuenta.</translation>
 <translation id="6556866813142980365">Rehacer</translation>
 <translation id="6563469144985748109">Tu administrador aún no la ha aprobado</translation>
@@ -1020,6 +1026,7 @@
 <translation id="6626291197371920147">Añadir un número de tarjeta válido</translation>
 <translation id="6628463337424475685">Búsqueda de <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Es posible que los atacantes que se encuentren en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> intenten instalar programas peligrosos en tu Mac para robar o eliminar tu información (por ejemplo, fotos, contraseñas, mensajes y tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Esta política tiene más de una fuente, pero los valores son los mismos.</translation>
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6644283850729428850">Esta política está obsoleta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ninguno}=1{De 1 sitio web (no se cerrará la sesión en tu cuenta de Google)}other{De # sitios web (no se cerrará la sesión en tu cuenta de Google)}}</translation>

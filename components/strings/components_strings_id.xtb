@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Cegah dialog lain dari halaman ini.</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Tidak dapat menyimpan kartu</translation>
 <translation id="1639239467298939599">Memuat</translation>
 <translation id="1640180200866533862">Kebijakan pengguna</translation>
 <translation id="1640244768702815859">Coba <ph name="BEGIN_LINK" />buka beranda situs<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Perbaiki sambungan menggunakan <ph name="BEGIN_LINK" />aplikasi diagnosis<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Kirim sekarang</translation>
 <translation id="225207911366869382">Nilai ini sudah usang untuk kebijakan ini.</translation>
+<translation id="2257315177824333709">Maaf, saat ini kartu Anda tidak dapat disimpan</translation>
 <translation id="2262243747453050782">Kesalahan HTTP</translation>
 <translation id="2263079731045660823">Perbarui info IsiOtomatis kartu kredit di setelan Chrome</translation>
 <translation id="2270484714375784793">Nomor telepon</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Tampilkan kebijakan tanpa nilai yang disetel</translation>
 <translation id="239429038616798445">Metode pengiriman tidak tersedia. Coba metode lain.</translation>
 <translation id="2396249848217231973">&amp;Urungkan penghapusan</translation>
+<translation id="2409589295040002961">Administrator dapat mengubah penyiapan browser Anda dari jarak jauh. Aktivitas di perangkat ini juga dapat dikelola di luar Chrome. <ph name="BEGIN_LINK" />Pelajari Lebih Lanjut<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin dicabut. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="2418081434543109369">Server yang akan Anda akses, <ph name="ORIGIN" />, telah meminta
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Permintaan berhasil</translation>
 <translation id="2728127805433021124">Sertifikat server ditandai menggunakan algoritme yang lemah.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Jalankan Diagnostik Konektivitas<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Ada beberapa sumber dengan nilai yang bertentangan untuk kebijakan ini!</translation>
 <translation id="2738330467931008676">Pilih Alamat Pengambilan</translation>
 <translation id="2740531572673183784">Oke</translation>
 <translation id="2742870351467570537">Hapus item yang dipilih</translation>
@@ -374,7 +378,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya dari <ph name="DOMAIN2" />. Hal ini disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="2948083400971632585">Anda dapat menonaktifkan proxy apa pun yang dikonfigurasi untuk sambungan dari halaman setelan.</translation>
-<translation id="295526156371527179">Perhatian: Kebijakan ini tidak digabung sebagai kamus sebagaimana yang ditetapkan oleh kebijakan karena tidak merupakan kamus.</translation>
+<translation id="295526156371527179">Perhatian: Kebijakan ini tidak digabung sebagai kamus sebagaimana yang ditetapkan oleh kebijakan karena bukan merupakan kamus.</translation>
 <translation id="2955913368246107853">Tutup bilah cari</translation>
 <translation id="2969319727213777354">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Itu karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Google Chrome tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="2970515157925768593">Dapat mengubah penyiapan perangkat dan akun dari jauh.</translation>
@@ -996,6 +1000,7 @@
 <translation id="6433490469411711332">Edit info kontak</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> menolak untuk tersambung.</translation>
 <translation id="6434309073475700221">Tutup</translation>
+<translation id="6440503408713884761">Diabaikan</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Tambahkan informasi lainnya</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -1008,9 +1013,10 @@
 <translation id="6507833130742554667">Kartu kredit dan debit diterima.</translation>
 <translation id="650855688985305916">Ya, simpan</translation>
 <translation id="6508722015517270189">Buka Ulang Chrome</translation>
-<translation id="6517596291481585650">Peringatan: Kebijakan ini tidak digabung sebagai daftar sebagaimana yang ditetapkan oleh kebijakan karena tidak merupakan daftar.</translation>
+<translation id="6517596291481585650">Peringatan: Kebijakan ini tidak digabung sebagai daftar sebagaimana yang ditetapkan oleh kebijakan karena bukan merupakan daftar.</translation>
 <translation id="6529602333819889595">&amp;Ulangi Penghapusan</translation>
 <translation id="6534179046333460208">Saran Web Fisik</translation>
+<translation id="6545864417968258051">Pemindaian Bluetooth</translation>
 <translation id="6554795675067793129">Akun Anda dikelola oleh <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Urungkan</translation>
 <translation id="6563469144985748109">Pengelola Anda belum menyetujuinya</translation>
@@ -1027,6 +1033,7 @@
 <translation id="6626291197371920147">Tambahkan kartu yang valid</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Penelusuran</translation>
 <translation id="6630809736994426279">Penyerang yang saat ini berada di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin berusaha menginstal program berbahaya di Mac Anda untuk mencuri atau menghapus informasi Anda (misalnya, foto, sandi, pesan, dan kartu kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Ada beberapa sumber yang nilainya sama untuk kebijakan ini.</translation>
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="6644283850729428850">Kebijakan ini telah usang.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Tidak ada}=1{Dari 1 situs (Anda tidak akan logout dari Akun Google)}other{Dari # situs (Anda tidak akan logout dari Akun Google)}}</translation>

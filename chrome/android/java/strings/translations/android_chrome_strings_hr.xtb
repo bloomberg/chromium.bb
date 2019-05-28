@@ -580,6 +580,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5324858694974489420">Postavke nadređenog računa</translation>
 <translation id="5327248766486351172">Naziv</translation>
 <translation id="5335288049665977812">Web-lokacije mogu pokretati JavaScript (preporučeno)</translation>
+<translation id="5357811892247919462">Primljena je kartica</translation>
 <translation id="5363230136052241468">Dodirnite gumb početnog zaslona za učitavanje web-stranice nove kartice</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> otvorena kartica, dodirnite da biste prešli na drugu karticu}one{<ph name="OPEN_TABS_MANY" /> otvorena kartica, dodirnite da biste prešli na drugu karticu}few{<ph name="OPEN_TABS_MANY" /> otvorene kartice, dodirnite da biste prešli na drugu karticu}other{<ph name="OPEN_TABS_MANY" /> otvorenih kartica, dodirnite da biste prešli na drugu karticu}}</translation>
 <translation id="5391532827096253100">Veza s web-lokacijom nije sigurna. Informacije o web-lokaciji</translation>
@@ -601,7 +602,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5494752089476963479">Blokiraj oglase na web-lokacijama koje prikazuju ometajuće ili obmanjujuće oglase</translation>
 <translation id="5497272504048921382">Otvorene kartice</translation>
 <translation id="5500777121964041360">Možda nije dostupno na vašoj lokaciji</translation>
-<translation id="550684401320795253">Ažuriranje Chromea...</translation>
 <translation id="5512137114520586844">Računom upravlja <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Opciju je omogućio administrator ovog uređaja</translation>
 <translation id="5515439363601853141">Otključajte za prikaz zaporke</translation>

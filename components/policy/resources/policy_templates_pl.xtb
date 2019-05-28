@@ -391,6 +391,7 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
       odpowiednik nie zostanie znaleziony, następuje automatyczna odmowa
       dostępu. Wzorce z użyciem symboli wieloznacznych są niedozwolone.</translation>
 <translation id="1634989431648355062">Zezwalaj na uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> w tych witrynach</translation>
+<translation id="1645793986494086629">Schemat:</translation>
 <translation id="1653229475925941921">Jeśli ta zasada jest skonfigurowana, określa typ lupy, który jest włączony. Wybranie dla niej ustawienia „Brak” wyłącza lupę.
 
           Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
@@ -593,6 +594,7 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 <translation id="2014757022750736514">Kontroluje zachowanie ekranu, na którym użytkownicy logują się na swoje konta. Ustawienia określają między innymi, kto może się logować, jakie są dopuszczane rodzaje kont oraz jakie są zalecane metody uwierzytelniania. Skonfigurować można też ogólne ustawienia dotyczące ułatwień dostępu, metod wprowadzania i języka.</translation>
 <translation id="201557587962247231">Częstotliwość pobierania raportów o stanie urządzenia</translation>
 <translation id="2017301949684549118">Adresy URL aplikacji internetowych, które mają być instalowane dyskretnie.</translation>
+<translation id="2017459564744167827">Więcej informacji o schemacie i formatowaniu znajdziesz na <ph name="REFERENCE_URL" />.</translation>
 <translation id="2018836497795982119">Określa, co ile milisekund do usługi zarządzania urządzeniami będzie wysyłane zapytanie o zasady dotyczące użytkowników.
 
       Skonfigurowanie tej zasady powoduje zastąpienie wartości domyślnej 3 godzin. Dozwolone są wartości od 1 800 000 (30 minut) do 86 400 000 (1 dzień). Wartości spoza tego zakresu zostaną sprowadzone do odpowiedniej wartości granicznej. Jeśli platforma obsługuje powiadomienia o naruszeniu zasad, czas odświeżania będzie ustawiony na 24 godziny, ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad.
@@ -807,6 +809,11 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 <translation id="2463034609187171371">Włącz mechanizmy szyfrowania DHE w TLS</translation>
 <translation id="2463365186486772703">Język aplikacji</translation>
 <translation id="2466131534462628618">Uwierzytelnianie w portalu przechwytującym ignoruje serwer proxy</translation>
+<translation id="2471748297300970300">Jeśli ta zasada jest wyłączona, podczas uruchamiania Chrome z pewnymi potencjalnie niebezpiecznymi flagami wiersza poleceń nie będą się wyświetlać ostrzeżenia dotyczące bezpieczeństwa.
+
+          Jeśli zasada jest włączona lub nieskonfigurowana, podczas uruchamiania Chrome z pewnymi potencjalnie niebezpiecznymi flagami wiersza poleceń będą się wyświetlać ostrzeżenia dotyczące bezpieczeństwa.
+
+          W przypadku systemu Windows ta zasada jest dostępna tylko w wystąpieniach systemu należących do domeny <ph name="MS_AD_NAME" /> oraz w wystąpieniach Windows 10 Pro lub Enterprise zarejestrowanych w usłudze zarządzania urządzeniami.</translation>
 <translation id="2482676533225429905">Wiadomości natywne</translation>
 <translation id="2483146640187052324">Przewiduj działania w sieci dla każdego połączenia sieciowego</translation>
 <translation id="2484208301968418871">Ta zasada steruje stosowaniem filtra adresów URL SafeSites.
@@ -1072,6 +1079,7 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
           |created_time_millis| to sygnatura czasowa UTC utworzenia pozycji |overrides| – jest to ciąg znaków, ponieważ sygnatura czasowa jest zbyt duża, aby zapisać ją jako liczbę całkowitą. Jest używana do ustalenia, czy ta pozycja nadal obowiązuje. Jeśli aktywny obecnie limit (na podstawie czasu użytkowania lub przedziału czasu) rozpoczął się już po utworzeniu tej pozycji, nie będzie ona stosowana. Nie będzie też używana, jeśli została utworzona przed ostatnią zmianą aktywnego limitu time_window_limit lub time_usage_window.
 
           Można wysłać wiele unieważnień – zastosowane zostanie najnowsze poprawne.</translation>
+<translation id="2901725272378498025">Włącz ostrzeżenia dotyczące bezpieczeństwa dla flag wiersza poleceń</translation>
 <translation id="2905984450136807296">Czas przechowywania danych uwierzytelniania w pamięci podręcznej</translation>
 <translation id="2906874737073861391">Lista rozszerzeń z pakietu aplikacji</translation>
 <translation id="2907992746861405243">Steruje tym, które drukarki określone w zasadzie <ph name="BULK_PRINTERS_POLICY" /> są dostępne dla użytkowników.
@@ -1636,6 +1644,11 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
 <translation id="3963602271515417124">Jeśli ustawiono wartość Prawda, zdalne poświadczanie na potrzeby urządzenia jest dozwolone, a certyfikat jest automatycznie generowany i przesyłany na serwer zarządzania urządzeniami.
 
           Jeśli wartość ustawiono na Fałsz lub nie jest ona określona, certyfikat nie jest generowany, a wywołania kierowane do interfejsu API rozszerzenia enterprise.platformKeys zakończą się niepowodzeniem.</translation>
+<translation id="3964262920683972987">Skonfiguruj obraz tapety na poziomie urządzenia, który będzie widoczny na ekranie logowania, zanim użytkownik zaloguje się na urządzeniu. Aby skonfigurować zasadę, podaj URL, z którego Chrome OS może pobrać obraz tapety, oraz hash kryptograficzny używany do weryfikowania poprawności pobranego pliku. Obraz musi mieć format JPEG i nie może być większy niż 16 MB. URL musi być dostępny bez uwierzytelniania. Obraz tapety jest pobierany i przechowywany w pamięci podręcznej. Zostanie pobrany ponownie po każdej zmianie adresu URL lub hasha.
+
+      Jeśli zasada dotycząca tapety na poziomie urządzenia jest skonfigurowana, a żaden użytkownik nie zalogował się jeszcze na urządzeniu, Chrome OS pobierze obraz tapety i użyje go na ekranie logowania. Po zalogowaniu się użytkownika będzie używana jego tapeta.
+
+      Jeśli zasada dotycząca tapety na poziomie urządzenia jest nieskonfigurowana, a skonfigurowana jest zasada dotycząca tapety na poziomie użytkownika, ta ostatnia będzie decydować o tym, co wyświetlić.</translation>
 <translation id="3965339130942650562">Limit czasu bezczynności, po którym następuje wylogowanie</translation>
 <translation id="3973371701361892765">Nigdy nie autoukrywaj półki</translation>
 <translation id="3984028218719007910">Określa, czy <ph name="PRODUCT_OS_NAME" /> przechowuje po wylogowaniu dane konta lokalnego. W przypadku włączenia trwałe konta nie są przechowywane przez <ph name="PRODUCT_OS_NAME" /> i po wylogowaniu wszystkie dane z sesji użytkownika są usuwane. Jeśli ta zasada będzie wyłączona lub nieskonfigurowana, urządzenie może przechowywać zaszyfrowane lokalne dane użytkownika.</translation>
@@ -1693,6 +1706,17 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4056910949759281379">Wyłącz protokół SPDY</translation>
 <translation id="408029843066770167">Zezwalaj na wysyłanie zapytań do usługi czasu Google</translation>
 <translation id="408076456549153854">Włącz logowanie w przeglądarce</translation>
+<translation id="40853027210512570">Zastępuje reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />.
+
+      Ta zasada określa reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />. Ma to miejsce podczas pierwszego użycia funkcji drukowania w danym profilu.
+
+      Gdy ta zasada jest skonfigurowana, <ph name="PRODUCT_NAME" /> spróbuje znaleźć drukarkę odpowiadającą wszystkim określonym atrybutom, a następnie wybierze ją jako domyślną. Wybierana jest pierwsza znaleziona drukarka, która odpowiada atrybutom. Jeśli zgodnych drukarek jest więcej, może zostać wybrana dowolna z nich – znaczenie ma tutaj kolejność ich wykrycia.
+
+      Jeśli zasada nie jest skonfigurowana lub drukarka odpowiadająca atrybutom nie zostanie znaleziona w przeznaczonym na to czasie, jako domyślna wybierana jest wbudowana drukarka PDF, a jeśli nie jest ona dostępna, drukarka domyślna nie jest wybierana.
+
+      Typ <ph name="PRINTER_TYPE_CLOUD" /> to drukarki połączone z <ph name="CLOUD_PRINT_NAME" />, pozostałe to typ <ph name="PRINTER_TYPE_LOCAL" />.
+      Pominięcie któregoś pola oznacza, że brane są pod uwagę wszystkie wartości. Na przykład jeśli nie określisz typu połączenia, funkcja podglądu wydruku zacznie wykrywać wszystkie rodzaje drukarek – lokalne i w chmurze.
+      Wyrażenia regularne muszą mieć składnię JavaScript RegExp. Rozróżniana jest wielkość liter.</translation>
 <translation id="4088589230932595924">Tryb incognito wymuszany</translation>
 <translation id="4088983553732356374">Pozwala określić, czy witryny mogą tworzyć dane lokalne. Może to być dozwolone lub zabronione dla wszystkich witryn.
 
@@ -2139,6 +2163,7 @@ Pole <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> pozwala określić serwer pro
       Kiedy ta zasada jest nieskonfigurowana lub ma wartość Prawda, Chrome pozostawi otwartą co najmniej jedną kartę po przełączeniu do innej przeglądarki.
 
       Kiedy zasada ma wartość Fałsz, Chrome zamknie kartę po przełączeniu do innej przeglądarki, nawet jeśli jest to ostatnia karta. Spowoduje to całkowite zamknięcie Chrome.</translation>
+<translation id="5102203758995933166">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> poszczególnych użytkowników. Konfiguracja sieci to ciąg znaków w formacie JSON zgodny z formatem Open Network Configuration.</translation>
 <translation id="5105313908130842249">Opóźnienie blokady ekranu przy zasilaniu z baterii</translation>
 <translation id="5108031557082757679">Wyłączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="5124368997194894978">Uruchom po podłączeniu zasilania sieciowego</translation>
@@ -2317,6 +2342,24 @@ Jeśli ta zasada pozostanie nieskonfigurowana, użytkownik może wyłączyć ka�
 <translation id="5423001109873148185">Po włączeniu tej zasady wymuszany jest import wyszukiwarek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia wyszukiwarka domyślna nie jest importowana. Jeśli zasada nie zostanie skonfigurowana, użytkownik może zobaczyć pytanie o zaimportowanie wyszukiwarki lub importowanie odbędzie się automatycznie.</translation>
 <translation id="5423197884968724595">Nazwa ograniczenia w Android WebView:</translation>
 <translation id="5424147596523390018">Zezwalaj na wszystkie tryby kolorów</translation>
+<translation id="5427879482805712214">Ta zasada pozwala wskazać obraz awatara, który oznacza użytkownika na ekranie logowania. Aby ją skonfigurować, podaj URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać obraz awatara, oraz hash kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 512 KB. URL musi być dostępny bez uwierzytelniania.
+
+      Po pobraniu obraz awatara jest zapisywany w pamięci podręcznej. Zostanie pobrany ponownie po każdej zmianie adresu URL lub hasha.
+
+      Jeśli ta zasada jest skonfigurowana, <ph name="PRODUCT_OS_NAME" /> pobierze obraz awatara i będzie go używać.
+
+      Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+      Jeśli zasada pozostanie nieskonfigurowana, użytkownik może wybrać obraz awatara, który będzie oznaczał go na ekranie logowania.</translation>
+<translation id="5432219358069697932">Ta zasada umożliwia skonfigurowanie obrazu tapety, który użytkownik widzi na pulpicie i na ekranie logowania Zasadę konfiguruje się przez podanie adresu URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać obraz tapety, oraz hasha kryptograficznego służącego do weryfikacji integralności pobranego pliku. Obraz musi mieć format JPEG i nie może być większy niż 16 MB. URL musi być dostępny bez uwierzytelniania.
+
+      Obraz tapety jest pobierany i przechowywany w pamięci podręcznej. Zostanie pobrany ponownie po każdej zmianie adresu URL lub hasha.
+
+      Jeśli ta zasada jest skonfigurowana, <ph name="PRODUCT_OS_NAME" /> pobierze obraz tapety i będzie go używać.
+
+      Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+      Jeśli zasada pozostanie nieskonfigurowana, użytkownicy będą mogli samodzielnie wybierać obrazy wyświetlane na pulpicie i jako tło na ekranie logowania.</translation>
 <translation id="5437733496511628148">Włączenie tej zasady uniemożliwia zapisywanie plików cookie przez elementy stron internetowych, które nie pochodzą z domeny widocznej na pasku adresu przeglądarki.
 
       Wyłączenie tej zasady pozwala na zapisywanie plików cookie przez te elementy i uniemożliwia użytkownikom zmianę tego ustawienia.
@@ -2778,6 +2821,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 <translation id="6310223829319187614">Włącz autouzupełnianie nazw domen w czasie logowania użytkownika</translation>
 <translation id="6315673513957120120">Chrome wyświetla stronę z ostrzeżeniem, gdy użytkownicy otworzą witrynę, w której występują błędy SSL. Domyślnie lub wtedy, gdy ta zasada jest włączona, użytkownicy mogą zignorować i zamknąć stronę z ostrzeżeniem.
       Po wyłączeniu tej zasady użytkownicy nie będą mogli zamknąć strony z ostrzeżeniem.</translation>
+<translation id="6319198883324703402">Ustaw czas pierwszego powiadomienia o ponownym uruchomieniu</translation>
 <translation id="6352543686437322588">Lokalne konto na urządzeniu do automatycznego logowania po określonym czasie.
 
       Gdy ta zasada jest skonfigurowana, po upływie określonego czasu bez aktywności użytkownika na ekranie logowania nastąpi automatyczne zalogowanie wskazanej sesji. Lokalne konto na urządzeniu musi zostać skonfigurowane wcześniej (patrz |DeviceLocalAccounts|).
@@ -3111,6 +3155,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
       Google może powiązać te dzienniki za pomocą identyfikatora sesji z innymi dziennikami zebranymi przez same usługi Google – ma to na celu ułatwienie debugowania.
       </translation>
 <translation id="706669471845501145">Zezwalaj witrynom na pokazywanie powiadomień na pulpicie</translation>
+<translation id="7068108874199666656">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> wszystkich użytkowników. Konfiguracja sieci to ciąg znaków w formacie JSON zgodny z formatem Open Network Configuration.</translation>
 <translation id="7070525176564511548">Podanie hasła jest wymagane co tydzień (co 168 godzin)</translation>
 <translation id="7072208053150563108">Częstotliwość zmieniania hasła komputera</translation>
 <translation id="7079519252486108041">Blokuj wyskakujące okienka w tych witrynach</translation>
@@ -3128,6 +3173,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
           Ta zasada jest stosowana tylko wtedy, gdy wyłączona jest zasada <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />. W przeciwnym razie jest ignorowana, ponieważ opóźnienie przyciemnienia ekranu jest określane przez model z systemu uczącego się.
 
           Współczynnik skalowania musi wynosić co najmniej 100%.</translation>
+<translation id="710003290625031750">Pełny opis schematu:</translation>
 <translation id="7106631983877564505">Powoduje włączenie blokady w przypadku bezczynności lub zawieszenia działania urządzenia z systemem operacyjnym <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli włączysz to ustawienie, użytkownik będzie musiał podać hasło w celu odblokowania uśpionego urządzenia.
@@ -3704,6 +3750,9 @@ Zakładki są umieszczane w folderze, którego użytkownik nie może modyfikowa
       Jeśli ustawisz w tej zasadzie wartość prawda, urządzenie będzie korzystało z zegara 24-godzinnego. Jeśli ustawisz wartość fałsz, będzie ono korzystało z zegara 12-godzinnego.
 
       Jeśli nie skonfigurujesz tej zasady, urządzenie będzie domyślnie korzystało z zegara 24-godzinnego.</translation>
+<translation id="8113421140338762630">Umożliwia ustawienie czasu (w milisekundach) między pierwszym powiadomieniem o konieczności zrestartowania urządzenia <ph name="PRODUCT_OS_NAME" /> w celu zastosowania oczekującej aktualizacji a końcem odcinka czasu określonego przez zasadę <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Jeśli zasada jest nieskonfigurowana, na urządzeniach <ph name="PRODUCT_OS_NAME" /> używany jest domyślny czas 86 400 000 milisekund (jedna doba).</translation>
 <translation id="8114382167597081590">Nie wymuszaj trybu ograniczonego dostępu w YouTube</translation>
 <translation id="8118665053362250806">Ustaw rozmiar dyskowej pamięci podręcznej</translation>
 <translation id="8124468781472887384">Zasady dostępu do konfiguracji drukarek powiązanych z urządzeniami.</translation>
@@ -3917,6 +3966,11 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="8544465954173828789">Zezwól na synchronizację SMS-ów między telefonem a Chromebookiem.</translation>
 <translation id="8548832052135586762">Ustawia drukowanie tylko kolorowe, tylko monochromatyczne albo brak ograniczenia. Nieskonfigurowanie zasady oznacza brak ograniczenia.</translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
+<translation id="8566729013138025202">Określa zestaw zasad przesyłany do środowiska wykonawczego ARC. Wartość musi być wyrażona prawidłowym ciągiem znaków JSON.
+
+      Ta zasada może służyć do wybierania aplikacji na Androida, które mają być instalowane automatycznie na urządzeniu.
+
+      Aby przypiąć aplikacje do menu z aplikacjami, zobacz PinnedLauncherApps.</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
 <translation id="8569734380847633643">
           Jeśli zasada ma wartość Fałsz, <ph name="PRODUCT_OS_NAME" /> wyłącza obsługę Wi-Fi, a użytkownicy nie mogą jej włączyć.
@@ -4119,6 +4173,14 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 <translation id="8942616385591203339">Ta zasada określa, czy pytanie o synchronizację jest wyświetlane podczas pierwszego logowania. Jeśli nie ma potrzeby, by użytkownicy korzystali z pytania o synchronizację, należy wybrać wartość false.
       Jeśli wybierzesz wartość false, pytanie o synchronizację nie będzie wyświetlane.
       Jeśli wybierzesz wartość true lub pozostawisz to ustawienie nieskonfigurowane, pytanie o synchronizację będzie wyświetlane.</translation>
+<translation id="894510252300143386">Służy do konfigurowania ustawień zarządzania rozszerzeniami dla <ph name="PRODUCT_NAME" />.
+
+          Ta zasada kontroluje wiele ustawień, w tym te kontrolowane przez dotychczasowe zasady związane z rozszerzeniami. Ta zasada zastąpi wszystkie wcześniejsze skonfigurowane zasady.
+
+          Ta zasada mapuje w swojej konfiguracji identyfikator rozszerzenia lub URL aktualizacji. W przypadku identyfikatora rozszerzenia konfiguracja będzie stosowana tylko do oznaczonego nim rozszerzenia. W przypadku rozszerzeń, które nie mają osobnej konfiguracji ustawionej w tej zasadzie, można stosować konfigurację domyślną, określając identyfikator specjalny <ph name="DEFAULT_SCOPE" />. W przypadku adresu URL aktualizacji konfiguracja będzie obowiązywać we wszystkich rozszerzeniach zawierających w swoich plikach manifestu ten konkretny URL aktualizacji, zgodnie z tym opisem: <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          W przypadku instancji systemu Windows, które nie są połączone z domeną <ph name="MS_AD_NAME" />, wymuszonej instalacji będą podlegać tylko aplikacje i rozszerzenia z Chrome Web Store.
+          </translation>
 <translation id="8947415621777543415">Zgłoś lokalizację urządzenia</translation>
 <translation id="8951350807133946005">Ustaw katalog podręcznej pamięci dyskowej</translation>
 <translation id="8952317565138994125">Wyłącza synchronizację danych w <ph name="PRODUCT_NAME" /> przy użyciu usług synchronizacji obsługiwanych przez Google i uniemożliwia użytkownikom zmianę tego ustawienia.

@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">รูปภาพที่ไม่มีป้ายกำกับ</translation>
 <translation id="3706100364254443312">สวิตช์</translation>
 <translation id="3732799496749320381">ดด</translation>
+<translation id="3754210790023674521">ออกจากการแสดงภาพซ้อนภาพ</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">คีย์เวิร์ด</translation>
 <translation id="3822383571486410024">โปรดกรอกข้อความนี้ให้มีอักขระอย่างน้อย <ph name="MIN_CHARACTERS" /> ตัว (ตอนนี้คุณมี <ph name="CURRENT_LENGTH" /> ตัว)</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">แผนผัง</translation>
 <translation id="4664250907885839816">ส่วนที่ต่อท้าย "<ph name="ATSIGN" />" ต้องไม่มีสัญลักษณ์ "<ph name="INVALIDCHARACTER" />"</translation>
 <translation id="4668956016107839909">ภาคผนวก</translation>
+<translation id="4718048029184481307">กำลังเล่นแบบการแสดงภาพซ้อนภาพ</translation>
 <translation id="4742539557769756338">หน้าปก</translation>
 <translation id="4748357248530471599">สลับเป็นแบบเต็มหน้าจอสำหรับหน้าจอรอยบาก</translation>
 <translation id="4757246831282535685">แผงแท็บ</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">ดาวน์โหลดสื่อ</translation>
 <translation id="6981594929165378967">การแทรก</translation>
 <translation id="6989848892321993519">โปรดกรอกข้อความนี้ให้มีอักขระอย่างน้อย <ph name="MIN_CHARACTERS" /> ตัว (ตอนนี้คุณมี 1 ตัว)</translation>
+<translation id="7033340931668032222">ขึ้นและลงเพื่อเปลี่ยนระดับเสียง</translation>
 <translation id="709897737746224366">โปรดจับคู่รูปแบบที่ร้องขอ</translation>
 <translation id="7118469954320184356">ไม่มีคำอธิบาย</translation>
 <translation id="7139483182332611405">ส่วนนำ</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">สัญลักษณ์กราฟิก</translation>
 <translation id="8583702881314752957">รายการคำจำกัดความ</translation>
 <translation id="8597182159515967513">ส่วนหัว</translation>
+<translation id="8603553056539299761">ซ้ายและขวาเพื่อกรอ</translation>
 <translation id="860475260694818407">สารบัญ</translation>
 <translation id="8613126697340063924">ควบคุมการเล่นระยะไกล</translation>
 <translation id="862370744433916922">คำบรรยาย</translation>

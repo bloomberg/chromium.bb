@@ -580,6 +580,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5324858694974489420">Setări parentale</translation>
 <translation id="5327248766486351172">Nume</translation>
 <translation id="5335288049665977812">Permite site-urilor să ruleze JavaScript (recomandat)</translation>
+<translation id="5357811892247919462">Fila a fost primită</translation>
 <translation id="5363230136052241468">Atinge butonul pagina principală pentru a încărca pagina Filă nouă.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> filă deschisă, atinge pentru a comuta filele}few{<ph name="OPEN_TABS_MANY" /> file deschise, atinge pentru a comuta filele}other{<ph name="OPEN_TABS_MANY" /> de file deschise, atinge pentru a comuta filele}}</translation>
 <translation id="5391532827096253100">Conexiunea la acest site nu este sigură. Informații despre site</translation>
@@ -601,7 +602,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5494752089476963479">Blochează anunțurile pe site-urile care afișează anunțuri deranjante sau înșelătoare</translation>
 <translation id="5497272504048921382">File deschise</translation>
 <translation id="5500777121964041360">Este posibil să nu fie disponibil în locația ta</translation>
-<translation id="550684401320795253">Se actualizează Chrome...</translation>
 <translation id="5512137114520586844">Acest cont este gestionat de <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dezactivată de administratorul dispozitivului</translation>
 <translation id="5515439363601853141">Deblochează pentru a vedea parola</translation>

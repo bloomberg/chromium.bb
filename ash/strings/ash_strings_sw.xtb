@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Angazia kiteuzi cha kipanya</translation>
 <translation id="3513798432020909783">Akaunti inasimamiwa na <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Badilisha hadi "<ph name="FROM_LOCALE" />" (inahitaji uzime na uwashe)</translation>
+<translation id="3576141592585647168">Badilisha saa za eneo</translation>
 <translation id="3595596368722241419">Betri imejaa</translation>
 <translation id="3606978283550408104">Onyesho la breli limeunganishwa.</translation>
 <translation id="3621202678540785336">Ingizo</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Mwulize Msimamizi</translation>
 <translation id="6585808820553845416">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tafuta+Shift+K</translation>
+<translation id="6637729079642709226">Badilisha wakati</translation>
 <translation id="6650933572246256093">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nenosiri hili kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Nenosiri</translation>
 <translation id="6665545700722362599">Zipe tovuti, programu na viendelezi ruhusa za kutumia huduma za mahali, maikrofoni, kamera na vipengele vingine vya kifaa</translation>
@@ -510,6 +512,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8990809378771970590">Unatumia <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Fungua kifaa kwa kuingia katika akaunti ukitumia <ph name="LOGIN_ID" /> ili utekeleze kitendo cha arifa</translation>
 <translation id="8995603266996330174">Inadhibitiwa na <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Weka msimbo wa kufikia wa mzazi katika Family Link.</translation>
 <translation id="9029474291399787231">Sasisho la Adobe Flash Player linapatikana</translation>
 <translation id="9056839673611986238">Mipangilio ya awali itarejeshwa kwenye kifaa</translation>
 <translation id="9070640332319875144">Mipangilio ya Mratibu</translation>

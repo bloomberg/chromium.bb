@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">पालक सेटिंग्ज</translation>
 <translation id="5327248766486351172">नाव</translation>
 <translation id="5335288049665977812">साइटना JavaScript रन करण्याची अनुमती द्या (शिफारस केलेले)</translation>
+<translation id="5357811892247919462">टॅब मिळाला</translation>
 <translation id="5363230136052241468">नवीन टॅब पेज लोड करण्यासाठी होम बटणावर टॅप करा</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> खुला टॅब, टॅब स्विच करण्यासाठी टॅप करा}other{<ph name="OPEN_TABS_MANY" /> खुला टॅब, टॅब स्विच करण्यासाठी टॅप करा}}</translation>
 <translation id="5391532827096253100">या साइटवरील तुमचे कनेक्शन सुरक्षित नाही. साइट माहिती</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवणाऱ्या साइटवरील जाहिराती ब्लॉक करा</translation>
 <translation id="5497272504048921382">खुले टॅब</translation>
 <translation id="5500777121964041360">तुमच्या स्थानामध्ये उपलब्ध नसू शकते</translation>
-<translation id="550684401320795253">Chrome अपडेट करीत आहे...</translation>
 <translation id="5512137114520586844">हे खाते <ph name="PARENT_NAME" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="5514904542973294328">या डिव्हाइसच्या अॅडमिनिस्ट्रेटरने बंद केले आहे.</translation>
 <translation id="5515439363601853141">तुमचा पासवर्ड पाहण्यासाठी अनलॉक करा</translation>

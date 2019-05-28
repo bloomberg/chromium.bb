@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Cameră</translation>
 <translation id="1623104350909869708">Restricționați capacitatea acestei pagini de a crea casete de dialog suplimentare</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Nu se poate salva cardul</translation>
 <translation id="1639239467298939599">Se încarcă</translation>
 <translation id="1640180200866533862">Politici privind utilizatorii</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />Accesează pagina de pornire a site-ului<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Remediază conexiunea folosind <ph name="BEGIN_LINK" />aplicația de diagnosticare<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Trimite acum</translation>
 <translation id="225207911366869382">Valoarea este învechită pentru această politică.</translation>
+<translation id="2257315177824333709">Momentan cardul nu poate fi salvat</translation>
 <translation id="2262243747453050782">Eroare HTTP</translation>
 <translation id="2263079731045660823">Actualizează informațiile privind completarea automată a cardurilor de credit în setările Chrome</translation>
 <translation id="2270484714375784793">Număr telefon</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Afișați politicile care nu au valori setate</translation>
 <translation id="239429038616798445">Această metodă de expediere nu este disponibilă. Încearcă altă metodă.</translation>
 <translation id="2396249848217231973">&amp;Anulați ștergerea</translation>
+<translation id="2409589295040002961">Administratorul poate schimba configurația browserului de la distanță. Este posibil ca activitatea de pe acest dispozitiv să fie gestionată și din afara Chrome. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fie revocat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="2418081434543109369">Serverul pe care dorești să îl accesezi, <ph name="ORIGIN" />, a solicitat
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Solicitarea a reușit</translation>
 <translation id="2728127805433021124">Certificatul serverului este semnat utilizând un algoritm de semnătură slab.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />să rulezi Diagnostice conectivitate<ph name="END_LINK" />;</translation>
+<translation id="2735043616039983645">Pentru această politică este prezentă mai mult de o sursă cu valori în conflict!</translation>
 <translation id="2738330467931008676">Alege adresa de preluare</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Elimină elementele selectate</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">Editează informațiile de contact</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> a refuzat conexiunea.</translation>
 <translation id="6434309073475700221">Renunță</translation>
+<translation id="6440503408713884761">Ignorată</translation>
 <translation id="6446163441502663861">Kahu (Plic)</translation>
 <translation id="6446608382365791566">Adaugă mai multe informații</translation>
 <translation id="6447842834002726250">Cookie-uri</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">Atenție: această politică nu a fost îmbinată ca listă așa cum este indicat de politică, deoarece nu este o listă.</translation>
 <translation id="6529602333819889595">&amp;Repetați ștergerea</translation>
 <translation id="6534179046333460208">Sugestii pentru Webul material</translation>
+<translation id="6545864417968258051">Căutare Bluetooth</translation>
 <translation id="6554795675067793129">Contul tău este administrat de <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Repetă</translation>
 <translation id="6563469144985748109">Administratorul nu l-a aprobat încă</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">Adaugă un număr de card valid</translation>
 <translation id="6628463337424475685">Căutare <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Atacatorii de pe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pot încerca să instaleze programe periculoase pe computerul tău Mac, care să îți fure sau să îți șteargă informațiile (de exemplu, fotografii, parole, mesaje sau date despre cardurile de credit). <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Este prezentă mai mult de o sursă pentru politică, dar valorile sunt identice.</translation>
 <translation id="6643016212128521049">Șterge</translation>
 <translation id="6644283850729428850">Această politică este învechită.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Niciunul}=1{De pe un site (nu te va deconecta de la Contul Google)}few{De pe # site-uri (nu te va deconecta de la Contul Google)}other{De pe # de site-uri (nu te va deconecta de la Contul Google)}}</translation>

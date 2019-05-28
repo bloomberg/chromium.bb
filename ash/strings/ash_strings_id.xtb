@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Sorot kursor mouse</translation>
 <translation id="3513798432020909783">Akun dikelola oleh <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
+<translation id="3576141592585647168">Ubah zona waktu</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
 <translation id="3606978283550408104">Layar Braille tersambung.</translation>
 <translation id="3621202678540785336">Masukan</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Tanyakan kepada Administrator</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tombol Penelusuran+Shift+K</translation>
+<translation id="6637729079642709226">Ubah waktu</translation>
 <translation id="6650933572246256093">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukkan kunci sandi ini pada perangkat tersebut: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Sandi</translation>
 <translation id="6665545700722362599">Berikan izin ke situs, aplikasi, atau ekstensi untuk menggunakan layanan lokasi, mikrofon perangkat, kamera, atau fitur lainnya</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">Menggunakan <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Buka kunci perangkat sebagai <ph name="LOGIN_ID" /> untuk melakukan tindakan notifikasi</translation>
 <translation id="8995603266996330174">Dikelola menurut <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Masukkan kode akses orang tua Family Link.</translation>
 <translation id="9029474291399787231">Update Adobe Flash Player tersedia</translation>
 <translation id="9056839673611986238">Perangkat akan dipulihkan</translation>
 <translation id="9070640332319875144">Setelan Asisten</translation>

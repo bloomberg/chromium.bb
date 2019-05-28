@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Videocamera</translation>
 <translation id="1623104350909869708">Impedisci la creazione di altre finestre di dialogo in questa pagina</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Impossibile salvare la carta</translation>
 <translation id="1639239467298939599">Caricamento</translation>
 <translation id="1640180200866533862">Criteri utente</translation>
 <translation id="1640244768702815859">Prova a <ph name="BEGIN_LINK" />visitare la home page del sito<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Correggi la connessione con l'<ph name="BEGIN_LINK" />app diagnostica<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Invia ora</translation>
 <translation id="225207911366869382">Il valore specificato per la norma è obsoleto.</translation>
+<translation id="2257315177824333709">Spiacenti, al momento non è possibile salvare la tua carta</translation>
 <translation id="2262243747453050782">Errore HTTP</translation>
 <translation id="2263079731045660823">Aggiorna i dati della compilazione automatica delle carte di credito nelle impostazioni di Chrome</translation>
 <translation id="2270484714375784793">Numero di telefono</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Mostra criteri senza valori</translation>
 <translation id="239429038616798445">Questo metodo di spedizione non è disponibile. Prova un metodo diverso.</translation>
 <translation id="2396249848217231973">&amp;Annulla eliminazione</translation>
+<translation id="2409589295040002961">Il tuo amministratore può modificare da remoto la configurazione del browser. L'attività svolta su questo dispositivo potrebbe essere gestita anche al di fuori di Chrome. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere revocato. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="2418081434543109369">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha richiesto
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica della connettività<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Ë presente più di un'origine con valori in conflitto per questo criterio.</translation>
 <translation id="2738330467931008676">Scegli l'indirizzo di ritiro</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Rimuovi gli elementi selezionati</translation>
@@ -993,6 +997,7 @@
 <translation id="6433490469411711332">Modifica informazioni di contatto</translation>
 <translation id="6433595998831338502">Connessione negata da <ph name="HOST_NAME" />.</translation>
 <translation id="6434309073475700221">Annulla</translation>
+<translation id="6440503408713884761">Ignorata</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Aggiungi altre informazioni</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -1008,6 +1013,7 @@
 <translation id="6517596291481585650">Avviso: questo criterio non è stato unito come elenco come specificato dal criterio perché non è un elenco.</translation>
 <translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
 <translation id="6534179046333460208">Suggerimenti relativi al Physical Web</translation>
+<translation id="6545864417968258051">Scansione Bluetooth</translation>
 <translation id="6554795675067793129">Il tuo account è gestito da <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Ripeti</translation>
 <translation id="6563469144985748109">Il tuo gestore non ha ancora approvato la richiesta</translation>
@@ -1024,6 +1030,7 @@
 <translation id="6626291197371920147">Aggiungi un numero di carta valido</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Gli utenti malintenzionati attualmente presenti sul sito <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> potrebbero cercare di installare sul tuo Mac programmi pericolosi che carpiscono o eliminano le tue informazioni (ad esempio, foto, password, messaggi e carte di credito). <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Ë presente più di un'origine per questo criterio, ma i valori sono gli stessi.</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6644283850729428850">Questa norma è obsoleta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nessuno}=1{Da 1 sito (non verrai disconnesso dal tuo Account Google)}other{Da # siti (non verrai disconnesso dal tuo Account Google)}}</translation>

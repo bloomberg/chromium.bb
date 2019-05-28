@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">카메라</translation>
 <translation id="1623104350909869708">이 페이지가 추가적인 대화를 생성하지 않도록 차단</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">카드를 저장할 수 없음</translation>
 <translation id="1639239467298939599">로드 중</translation>
 <translation id="1640180200866533862">사용자 정책</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />사이트의 홈페이지를 방문<ph name="END_LINK" />해 보세요.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />진단 앱<ph name="END_LINK" />을 사용하여 연결 문제를 해결하세요.</translation>
 <translation id="2239100178324503013">지금 보내기</translation>
 <translation id="225207911366869382">이 값은 이 정책에 사용되지 않습니다.</translation>
+<translation id="2257315177824333709">죄송합니다. 지금은 카드를 저장할 수 없습니다.</translation>
 <translation id="2262243747453050782">HTTP 오류</translation>
 <translation id="2263079731045660823">Chrome 설정에서 신용카드 자동 완성 정보를 업데이트하세요.</translation>
 <translation id="2270484714375784793">전화번호</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">값이 설정되지 않은 정책 표시</translation>
 <translation id="239429038616798445">사용할 수 없는 배송 방법입니다. 다른 방법을 선택하세요.</translation>
 <translation id="2396249848217231973">삭제 실행 취소(&amp;U)</translation>
+<translation id="2409589295040002961">관리자가 원격으로 브라우저 설정을 변경할 수 있습니다. 이 기기의 활동은 Chrome 외부에서 관리될 수도 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 취소될 수 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="2418081434543109369">대상 서버인 <ph name="ORIGIN" />에서 모든 요청에
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">요청 성공</translation>
 <translation id="2728127805433021124">서버의 인증서가 안전성이 낮은 서명 알고리즘을 사용하여 서명되어 있습니다.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />연결 진단 프로그램 실행<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">이 정책에 충돌하는 값을 가진 소스가 두 개 이상 있습니다.</translation>
 <translation id="2738330467931008676">수령 주소 선택</translation>
 <translation id="2740531572673183784">확인</translation>
 <translation id="2742870351467570537">선택한 항목 삭제</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">연락처 정보 수정</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" />에서 연결을 거부했습니다.</translation>
 <translation id="6434309073475700221">중지</translation>
+<translation id="6440503408713884761">무시됨</translation>
 <translation id="6446163441502663861">Kahu(봉투)</translation>
 <translation id="6446608382365791566">자세한 정보 추가</translation>
 <translation id="6447842834002726250">쿠키</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">경고: 이 정책은 목록이 아니므로 정책에 명시된 대로 목록으로 병합되지 않았습니다.</translation>
 <translation id="6529602333819889595">삭제 다시 실행(&amp;R)</translation>
 <translation id="6534179046333460208">피지컬 웹 제안</translation>
+<translation id="6545864417968258051">블루투스 검색</translation>
 <translation id="6554795675067793129">사용자의 계정은 <ph name="ENROLLMENT_DOMAIN" />에서 관리합니다.</translation>
 <translation id="6556866813142980365">다시실행</translation>
 <translation id="6563469144985748109">관리자가 아직 승인하지 않았습니다.</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">유효한 카드 번호 추가</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 검색</translation>
 <translation id="6630809736994426279"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />의 공격자가 사용자 정보(예: 사진, 비밀번호, 메시지, 신용카드)를 도용하거나 삭제하는 위험한 프로그램을 Mac에 설치하려고 시도할 수 있습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">정책에 대한 소스가 두 개 이상 있으나 값이 동일합니다.</translation>
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6644283850729428850">이 정책은 사용되지 않습니다.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{없음}=1{사이트 1개(Google 계정에서 로그아웃되지 않음)}other{사이트 #개(Google 계정에서 로그아웃되지 않음)}}</translation>

@@ -16,7 +16,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="123620459398936149">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
 <translation id="127345590676626841">Chrome sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu. Po dokončení sťahovania sa Chrome reštartujte a začnete používať aktuálnu verziu.</translation>
 <translation id="1302523850133262269">Počkajte, kým Chrome nainštaluje najnovšie aktualizácie systému.</translation>
-<translation id="1312676208694947750">{0,plural, =0{Je k dispozícii aktualizácia systému Chrome OS}=1{Je k dispozícii aktualizácia systému Chrome OS}few{Aktualizácia systému Chrome OS je k dispozícii už # dni}many{Aktualizácia systému Chrome OS je k dispozícii už # dňa}other{Aktualizácia systému Chrome OS je k dispozícii už # dní}}</translation>
 <translation id="137466361146087520">Google Chrome beta verzie</translation>
 <translation id="1393853151966637042">Získajte pomoc pri používaní prehliadača Chrome</translation>
 <translation id="1399397803214730675">Tento počítač už obsahuje novšiu verziu prehliadača Google Chrome. Ak softvér nefunguje, odinštalujte prehliadač Google Chrome a skúste to znova.</translation>
@@ -54,7 +53,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="216054706567564023">Nainštalujte si Chrome do telefónu. Pošleme vám správu SMS na telefónne číslo na obnovenie účtu.</translation>
 <translation id="2246246234298806438">Ak vstavaný zobrazovač súborov PDF chýba, prehliadač Google Chrome nemôže zobraziť ukážku pred tlačou.</translation>
 <translation id="2252923619938421629">Nahláste aktuálne nastavenia a pomôžte tak zlepšiť prehliadač Google Chrome</translation>
-<translation id="225363235161345695">{0,plural, =1{Chrome sa znova spustí o 1 hodinu}few{Chrome sa znova spustí o # hodiny}many{Chrome sa znova spustí o # hodiny}other{Chrome sa znova spustí o # hodín}}</translation>
 <translation id="2286950485307333924">Ste prihlásený/-á do prehliadača Chrome</translation>
 <translation id="2290014774651636340">Chýbajú kľúče rozhrania Google API. Niektoré funkcie prehliadača Google Chrome budú zakázané.</translation>
 <translation id="2290095356545025170">Naozaj chcete odinštalovať aplikáciu Google Chrome?</translation>
@@ -144,10 +142,10 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="4750550185319565338">Ak chcete povoliť doplnok <ph name="PLUGIN_NAME" />, reštartujte Chrome</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Tento súbor môže byť nebezpečný, a preto ho Chrome zablokoval.</translation>
+<translation id="479167709087336770">Využíva rovnaký nástroj na kontrolu pravopisu, aký sa používa vo Vyhľadávaní Google. Text zadaný do prehliadača sa odošle Googlu. Toto správanie môžete zmeniť v nastaveniach.</translation>
 <translation id="4891791193823137474">Povoliť prehliadaču Google Chrome spustenie na pozadí</translation>
 <translation id="4895437082222824641">Otvoriť odkaz na novej &amp;karte Chromu</translation>
 <translation id="4921569541910214635">Zdieľať počítač? Teraz si môžete prehliadač Chrome nastaviť podľa vlastných predstáv.</translation>
-<translation id="4945319281866068441">{0,plural, =1{Chrome OS reštartujte do jedného dňa}few{Chrome OS reštartujte do # dní}many{Chrome OS reštartujte do # dňa}other{Chrome OS reštartujte do # dní}}</translation>
 <translation id="4953650215774548573">Nastaviť Google Chrome ako predvolený prehliadač</translation>
 <translation id="495931528404527476">V prehliadači Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -166,7 +164,6 @@ Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo p
 <translation id="5430073640787465221">Súbor predvolieb je poškodený alebo neplatný. 
 
 Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
-<translation id="5483595757826856374">{0,plural, =0{Chrome sa teraz reštartuje}=1{Chrome sa reštartuje o 1 sekundu}few{Chrome sa reštartuje o # sekundy}many{Chrome sa reštartuje o # sekundy}other{Chrome sa reštartuje o # sekúnd}}</translation>
 <translation id="5543953544073077331">Chrome je spustený v ďalších oknách. Ak ho chcete aktualizovať, zavrite ich.</translation>
 <translation id="556024056938947818">Prehliadač Google Chrome sa snaží zobraziť heslá.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -194,7 +191,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6291549208091401781">Google Chrome už majú nainštalovaný všetci používatelia na vašom počítači.</translation>
 <translation id="6338556085225130112">Chrome sa aktualizuje</translation>
 <translation id="6368958679917195344">Chrome OS mohol vzniknúť vďaka ďalšiemu <ph name="BEGIN_LINK_CROS_OSS" />softvéru s otvoreným zdrojom<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6468844726266617801">{0,plural, =1{Chrome znova spustite do jedného dňa}few{Chrome znova spustite do # dní}many{Chrome znova spustite do # dňa}other{Chrome znova spustite do # dní}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Aktualizuje sa Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Na synchronizáciu prehliadača Chrome používate účet <ph name="PROFILE_EMAIL" />. Ak chcete upraviť predvoľby synchronizácie alebo používať prehliadač Chrome bez účtu Google, prejdite na <ph name="SETTINGS_LINK" />.</translation>
@@ -202,17 +198,16 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6634887557811630702">Prehliadač Google Chrome bol aktualizovaný.</translation>
 <translation id="6676384891291319759">Prístup do siete Internet</translation>
 <translation id="6679975945624592337">Povoliť prehliadaču Google Chrome spustenie na pozadí</translation>
+<translation id="6750954913813541382">Chrome odošle text zadaný v prehliadači Googlu s cieľom opraviť pravopisné chyby</translation>
 <translation id="677276454032249905">Chcete Chrome napriek tomu ukončiť?</translation>
 <translation id="683440813066116847">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome verzie Canary, ktoré povoľuje prenos dát mDNS.</translation>
 <translation id="686561893457936865">Vezmite si Chrome všade</translation>
 <translation id="6885412569789873916">Aplikácie pre Chrome beta verzie</translation>
 <translation id="6943584222992551122">Dáta prehliadania tejto osoby sa odstránia z tohto zariadenia. Ak ich budete chcieť obnoviť, prihláste sa do Chromu ako <ph name="USER_EMAIL" />.</translation>
-<translation id="6964107240822114422">{0,plural, =0{Je k dispozícii aktualizácia Chromu}=1{Je k dispozícii aktualizácia Chromu}few{Aktualizácia Chromu je k dispozícii už # dni}many{Aktualizácia Chromu je k dispozícii už # dňa}other{Aktualizácia Chromu je k dispozícii už # dní}}</translation>
 <translation id="6967962315388095737">Pravidlo pre prichádzajúce prenosy pre prehliadač Google Chrome beta verzie, ktoré povoľuje prenos dát mDNS.</translation>
 <translation id="6970811910055250180">Prebieha aktualizácia zariadenia...</translation>
 <translation id="6982337800632491844">Stránky <ph name="DOMAIN" /> vyžadujú, aby ste si pred používaním tohto zariadenia prečítali nasledujúce Zmluvné podmienky a vyjadrili s nimi súhlas. Tieto zmluvné podmienky nerozširujú, neupravujú ani neobmedzujú Zmluvné podmienky systému Chrome OS.</translation>
 <translation id="6989339256997917931">Prehliadač Google Chrome bol aktualizovaný, ale najmenej 30 dní ste ho nepoužili.</translation>
-<translation id="7023651421574588884">Správca požaduje, aby ste reštartovali Chrome OS na použitie aktualizácie</translation>
 <translation id="7098166902387133879">Google Chrome používa váš mikrofón.</translation>
 <translation id="7106741999175697885">Správca úloh – Google Chrome</translation>
 <translation id="7164397146364144019">Automatickým nahlasovaním podrobností o možných bezpečnostných problémoch môžete prispieť k zvýšeniu zabezpečenia prehliadača Chrome a k zjednodušeniu jeho používania.</translation>
@@ -230,7 +225,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7531671357096394523">Zavrite všetky okná Chromu.</translation>
 <translation id="7535429826459677826">Google Chrome verzie pre vývojárov</translation>
 <translation id="7552219221109926349">Zobraziť Chrome OS v tomto jazyku</translation>
-<translation id="7561940363513215021">{0,plural, =1{Chrome sa reštartuje o 1 minútu}few{Chrome sa reštartuje o # minúty}many{Chrome sa reštartuje o # minúty}other{Chrome sa reštartuje o # minút}}</translation>
 <translation id="7589360514048265910">Tento počítač už nebude dostávať aktualizácie prehliadača Google Chrome, pretože systém Mac OS X 10.9 už nie je podporovaný.</translation>
 <translation id="7592736734348559088">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
 <translation id="7626032353295482388">Víta vás prehliadač Chrome</translation>
@@ -254,10 +248,8 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8013993649590906847">Ak obrázok nemá užitočný popis, Chrome sa vám ho pokúsi poskytnúť. Obrázky sa odosielajú Googlu, aby bolo možné vytvoriť popisy.</translation>
 <translation id="8030318113982266900">Prebieha aktualizácia vášho zariadenia na kanál <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8032142183999901390">Po odstránení účtu z prehliadača Chrome možno budete musieť znova načítať otvorené karty, aby sa zmena uplatnila.</translation>
-<translation id="8077352834923175128">Správca vás žiada o reštartovanie systému Chrome OS na použitie aktualizácie</translation>
 <translation id="8129812357326543296">Informácie o prehliadači &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Nainštalujte si Chrome do telefónu. Pošleme vám doň správu SMS.</translation>
-<translation id="8226081633851087288">{0,plural, =0{Chrome OS sa teraz reštartuje}=1{Chrome OS sa reštartuje o sekundu}few{Chrome OS sa reštartuje o # sekundy}many{Chrome OS sa reštartuje o # sekundy}other{Chrome OS sa reštartuje o # sekúnd}}</translation>
 <translation id="825412236959742607">Táto stránka využíva príliš veľa pamäte, a preto Chrome odstránil niektorý obsah.</translation>
 <translation id="8255190535488645436">Google Chrome používa vašu kameru a mikrofón.</translation>
 <translation id="8286862437124483331">Prehliadač Google Chrome sa pokúša zobraziť heslá. Ak to chcete povoliť, zadajte svoje heslo systému Windows.</translation>
@@ -284,14 +276,12 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="873133009373065397">Google Chrome nedokáže určiť alebo nastaviť predvolený prehliadač</translation>
 <translation id="8736674169840206667">Správca požaduje, aby ste reštartovali Chrome na použitie aktualizácie</translation>
 <translation id="8788264404293392165">V tomto jazyku sa zobrazuje používateľské rozhranie systému Google OS</translation>
-<translation id="8791470158600044404">{0,plural, =1{Chrome OS sa reštartuje o 1 minútu}few{Chrome OS sa reštartuje o # minúty}many{Chrome OS sa reštartuje o # minúty}other{Chrome OS sa reštartuje o # minút}}</translation>
 <translation id="8823341990149967727">Prehliadač Chrome je zastaraný</translation>
 <translation id="884296878221830158">Tiež určuje, ktorá stránka sa zobrazí pri spustení prehliadača Chrome alebo po kliknutí na tlačidlo Domovská stránka.</translation>
 <translation id="8862326446509486874">Nemáte potrebné práva na inštaláciu na úrovni systému. Skúste inštalátor spustiť znova ako správca.</translation>
 <translation id="8914504000324227558">Znova spustiť prehliadač Chrome</translation>
 <translation id="9026991721384951619">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože vaše prihlasovacie údaje účtu sú zastarané.</translation>
 <translation id="9067395829937117663">Google Chrome vyžaduje Windows 7 alebo vyšší.</translation>
-<translation id="909149346112452267">{0,plural, =1{Chrome OS sa reštartuje o 1 hodinu}few{Chrome OS sa reštartuje o # hodiny}many{Chrome OS sa reštartuje o # hodiny}other{Chrome OS sa reštartuje o # hodín}}</translation>
 <translation id="911206726377975832">Chcete tiež odstrániť svoje údaje prehliadania?</translation>
 <translation id="9138603949443464873">Ak chcete zmeny použiť, spustite Chrome znova</translation>
 <translation id="919706545465235479">Ak chcete spustiť synchronizáciu, aktualizujte Chrome</translation>

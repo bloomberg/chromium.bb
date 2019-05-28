@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">માઉસ કર્સરને હાઇલાઇટ કરો</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> દ્વારા મેનેજ કરાતું એકાઉન્ટ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" પર પાછા જાઓ (ફરી શરૂ કરવું જરૂરી છે)</translation>
+<translation id="3576141592585647168">ટાઇમઝોનમાં ફેરફાર કરો</translation>
 <translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
 <translation id="3606978283550408104">બ્રેઇલ ડિસ્પ્લે કનેક્ટ થયું.</translation>
 <translation id="3621202678540785336">ઇનપુટ</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">વ્યવસ્થાપકને પૂછો</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> માં સત્ર સમાપ્ત થાય છે.</translation>
 <translation id="6627638273713273709">શોધ+Shift+K</translation>
+<translation id="6637729079642709226">સમય બદલો</translation>
 <translation id="6650933572246256093">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ડિવાઇસ પર આ પાસકીને દાખલ કરો: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
 <translation id="6665545700722362599">સ્થાન સેવાઓ, ડિવાઇસના માઇક્રોફોન, કૅમેરા અથવા અન્ય સુવિધાઓનો ઉપયોગ કરવા માટે વેબસાઇટ, ઍપ અને એક્સ્ટેન્શનને પરવાનગી આપો</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" />નો ઉપયોગ કરી રહ્યા છે</translation>
 <translation id="899350903320462459">નોટિફિકેશન ક્રિયા કરવા માટે ઉપકરણને <ph name="LOGIN_ID" /> તરીકે અનલૉક કરો</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> દ્વારા સંચાલિત</translation>
+<translation id="9017320285115481645">Family Linkનો માતાપિતા માટેનો ઍક્સેસ કોડ દાખલ કરો.</translation>
 <translation id="9029474291399787231">Adobe Flash Player અપડેટ ઉપલબ્ધ છે</translation>
 <translation id="9056839673611986238">ઉપકરણ રોલ બૅક કરવામાં આવશે</translation>
 <translation id="9070640332319875144">આસિસ્ટંટ સેટિંગ</translation>

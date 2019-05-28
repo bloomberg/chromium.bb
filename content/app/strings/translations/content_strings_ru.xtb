@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Изображение без описания</translation>
 <translation id="3706100364254443312">переключить</translation>
 <translation id="3732799496749320381">мм</translation>
+<translation id="3754210790023674521">Выйти из режима "Картинка в картинке"</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
 <translation id="3808586225841795776">запрос</translation>
 <translation id="3822383571486410024">Минимально допустимое количество символов: <ph name="MIN_CHARACTERS" />. Длина текста сейчас: <ph name="CURRENT_LENGTH" />.</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Часть адреса после символа "<ph name="ATSIGN" />" не должна содержать символ "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">приложение</translation>
+<translation id="4718048029184481307">Воспроизведение в режиме "Картинка в картинке"</translation>
 <translation id="4742539557769756338">обложка</translation>
 <translation id="4748357248530471599">Переключить вырезанную область на полный экран</translation>
 <translation id="4757246831282535685">панель вкладок</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">скачать файл</translation>
 <translation id="6981594929165378967">вставка</translation>
 <translation id="6989848892321993519">Текст должен быть не короче <ph name="MIN_CHARACTERS" /> симв. Длина текста сейчас: 1 символ.</translation>
+<translation id="7033340931668032222">вверх и вниз для регулировки громкости</translation>
 <translation id="709897737746224366">Введите данные в указанном формате.</translation>
 <translation id="7118469954320184356">Нет описания.</translation>
 <translation id="7139483182332611405">вступление</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">графический символ</translation>
 <translation id="8583702881314752957">список описаний</translation>
 <translation id="8597182159515967513">заголовок</translation>
+<translation id="8603553056539299761">вправо и влево для поиска</translation>
 <translation id="860475260694818407">оглавление</translation>
 <translation id="8613126697340063924">управлять воспроизведением на удаленных устройствах</translation>
 <translation id="862370744433916922">подзаголовок</translation>

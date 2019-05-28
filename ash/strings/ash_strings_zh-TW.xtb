@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">醒目顯示滑鼠游標</translation>
 <translation id="3513798432020909783">這個帳戶是由 <ph name="MANAGER_EMAIL" /> 管理</translation>
 <translation id="3573179567135747900">改回「<ph name="FROM_LOCALE" />」(需要重新啟動)</translation>
+<translation id="3576141592585647168">變更時區</translation>
 <translation id="3595596368722241419">電池已充滿</translation>
 <translation id="3606978283550408104">已連接點字顯示器。</translation>
 <translation id="3621202678540785336">輸入</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">詢問系統管理員</translation>
 <translation id="6585808820553845416">這個工作階段將在 <ph name="SESSION_TIME_REMAINING" />後結束。</translation>
 <translation id="6627638273713273709">搜尋鍵 + Shift + K 鍵</translation>
+<translation id="6637729079642709226">變更時間</translation>
 <translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入此密碼金鑰：<ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">密碼</translation>
 <translation id="6665545700722362599">將定位服務、裝置的麥克風、相機或其他功能的使用權限授予網站、應用程式及擴充功能</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">目前使用<ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">以 <ph name="LOGIN_ID" /> 帳戶解鎖裝置，即可執行通知動作</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
+<translation id="9017320285115481645">請輸入 Family Link 家長存取碼。</translation>
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9056839673611986238">裝置將復原</translation>
 <translation id="9070640332319875144">個人助理設定</translation>

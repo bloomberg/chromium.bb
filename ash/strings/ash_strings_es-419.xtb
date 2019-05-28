@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Resaltar el cursor del mouse</translation>
 <translation id="3513798432020909783">Cuenta administrada por <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Volver a "<ph name="FROM_LOCALE" />" (debes reiniciar).</translation>
+<translation id="3576141592585647168">Cambiar zona horaria</translation>
 <translation id="3595596368722241419">Batería completa</translation>
 <translation id="3606978283550408104">Dispositivo braille conectado</translation>
 <translation id="3621202678540785336">Entrada</translation>
@@ -355,6 +356,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6559976592393364813">Pregúntale al administrador</translation>
 <translation id="6585808820553845416">La sesión terminará en <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Búsqueda+mayúscula+K</translation>
+<translation id="6637729079642709226">Cambia la hora</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Ingresa la siguiente clave de contraseña en el dispositivo: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6665545700722362599">Otorga permiso a sitios web, apps y extensiones para usar los servicios de ubicación, el micrófono y la cámara del dispositivo, y otras funciones</translation>
@@ -510,6 +512,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> en uso</translation>
 <translation id="899350903320462459">Desbloquea el dispositivo como <ph name="LOGIN_ID" /> para realizar la acción con las notificaciones</translation>
 <translation id="8995603266996330174">Administrado por <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Ingresa el código de acceso para padres de Family Link.</translation>
 <translation id="9029474291399787231">La actualización de Adobe Flash Player está disponible</translation>
 <translation id="9056839673611986238">Se restablecerá el dispositivo</translation>
 <translation id="9070640332319875144">Configuración del Asistente</translation>

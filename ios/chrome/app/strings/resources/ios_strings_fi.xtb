@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Avaa kaikki</translation>
 <translation id="1430915738399379752">Tulosta</translation>
 <translation id="1436290164580597469">Syötä tunnuslause, niin voit aloittaa synkronoinnin.</translation>
+<translation id="1449835205994625556">Piilota salasana</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> kohdetta</translation>
 <translation id="1491277525950327607">Muuta asetusta kaksoisnapauttamalla.</translation>
 <translation id="152234381334907219">Tallentamaton</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Poista selaustiedot</translation>
 <translation id="1820259098641718022">Lisättiin lukulistalle</translation>
 <translation id="1828824471510190776">Ehdota salasanaa…</translation>
+<translation id="1870148520156231997">Näytä salasana</translation>
 <translation id="1876721852596493031">Lähetä käyttötietoja</translation>
 <translation id="1886928167269928266">Alusta asti</translation>
 <translation id="1911619930368729126">Lähetä Google Driveen</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Sivun lataamisen etenemispalkki, <ph name="EMAIL" /> ladattu</translation>
 <translation id="4002066346123236978">Nimi</translation>
 <translation id="4004204301268239848">Salasanat tallennetaan Google-tilillesi, jotta voit käyttää niitä kaikilla laitteilla.</translation>
+<translation id="4006921758705478413">Lähetä laitteillesi</translation>
 <translation id="4038354071007134711">Mikään laitteen sovellus ei voi avata tiedostoa.</translation>
 <translation id="4042870976416480368">Hae sivulta</translation>
 <translation id="4049507953662678203">Varmista, että käytössäsi on verkkoyhteys, ja yritä uudelleen.</translation>
@@ -267,6 +270,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="4904877109095351937">Merkitse luetuksi</translation>
 <translation id="4930268273022498155">Poistaa olemassa olevat tiedot. Voit palauttaa nykyiset tiedot kirjautumalla takaisin tilille <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Virhe jaettaessa kohdetta.</translation>
+<translation id="4945756290001680296">Siirry salasana-asetuksiin</translation>
 <translation id="4979397965658815378">Kirjaudu Google-tilillesi, niin voit käyttää kirjanmerkkejäsi, salasanojasi, historiaasi ja muuta Chrome-sisältöäsi kaikilla laitteillasi.</translation>
 <translation id="5005498671520578047">Kopioi salasana</translation>
 <translation id="5010803260590204777">Selaa verkkoa yksityisesti avaamalla incognito-välilehti.</translation>
@@ -520,6 +524,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8976382372951310360">Ohje</translation>
 <translation id="8981454092730389528">Googlen toimintojen hallinta</translation>
 <translation id="8985320356172329008">Olet kirjautuneena Google-tilille käyttäjänä</translation>
+<translation id="9016406938567631235">Lähetetään…</translation>
 <translation id="902659348151742535">Google voi muokata hakua, mainoksia ja muita Googlen palveluita selaushistoriasi perusteella.</translation>
 <translation id="9034759925968272072">Sinua ei kirjata ulos Google-tililtäsi. Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Kaistanleveys</translation>

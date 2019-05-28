@@ -157,6 +157,7 @@
 <translation id="3308453408813785101">তা সত্ত্বেও, <ph name="USER_EMAIL_ADDRESS" /> পরে সাইন-ইন করতে পারবেন।</translation>
 <translation id="3321628682574733415">ভুল অভিভাবকীয় কোড</translation>
 <translation id="332587331255250389">অনুগ্রহ করে ব্যাটারি পাল্টান</translation>
+<translation id="3335825575923019462">আপনি কি সত্যিই অটোমেটিক ক্লিক বন্ধ করতে চান?</translation>
 <translation id="3351879221545518001">আপনি বর্তমানে স্ক্রিন কাস্ট করছেন।</translation>
 <translation id="3364721542077212959">স্টাইলাস টুল</translation>
 <translation id="3368922792935385530">সংযুক্ত</translation>
@@ -171,6 +172,7 @@
 <translation id="3510164367642747937">মাউস কার্সার হাইলাইট করুন</translation>
 <translation id="3513798432020909783">অ্যাকাউন্টটি <ph name="MANAGER_EMAIL" /> ম্যানেজ করছেন</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" তে ফেরান (পুনর্সূচনা প্রয়োজন)</translation>
+<translation id="3576141592585647168">টাইমজোন পরিবর্তন করা</translation>
 <translation id="3595596368722241419">ব্যাটারি পুরো চার্জ</translation>
 <translation id="3606978283550408104">ব্রেইল প্রদর্শন সংযুক্ত হয়েছে৷</translation>
 <translation id="3621202678540785336">ইনপুট</translation>
@@ -354,6 +356,7 @@
 <translation id="6559976592393364813">অ্যাডমিনিস্ট্রেটরকে জিজ্ঞাসা করুন</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
 <translation id="6627638273713273709">সার্চ+Shift+K</translation>
+<translation id="6637729079642709226">সময় পরিবর্তন করা</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। ডিভাইসটিতে এই পাস কীটি দিন: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
 <translation id="6665545700722362599">ওয়েবসাইট, অ্যাপ এবং এক্সটেনশনকে লোকেশন ভিত্তিক পরিষেবা, ডিভাইসের মাইক্রোফোন, ক্যামেরা ও অন্যান্য ফিচার ব্যবহারের অনুমতি দেয়</translation>
@@ -398,6 +401,7 @@
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>
 <translation id="735745346212279324">VPN ডিসকানেক্ট করা হয়েছে</translation>
 <translation id="7377169924702866686">Caps Lock চালু আছে৷</translation>
+<translation id="7378594059915113390">মিডিয়ার নিয়ন্ত্রণ</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />সেকেন্ড</translation>
 <translation id="7398254312354928459">নেটওয়ার্ক সংযোগ পরিবর্তন করা হয়েছে</translation>
 <translation id="7405710164030118432">ডিভাইসটি আনলক করতে আপনার Family Link-এর অভিভাবকীয় অ্যাক্সেস কোডটি লিখুন</translation>
@@ -482,6 +486,7 @@
 <translation id="8649101189709089199">বাছুন ও শুনুন</translation>
 <translation id="8652175077544655965">সেটিংস বন্ধ করুন</translation>
 <translation id="8653151467777939995">বিজ্ঞপ্তি সেটিংস দেখান। বিজ্ঞপ্তি চালু আছে</translation>
+<translation id="8664483332071009680">অটোমেটিক ক্লিক বন্ধ করতে চান?</translation>
 <translation id="8664753092453405566">নেটওয়ার্ক তালিকা দেখান। <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">২৭০°</translation>
 <translation id="8676770494376880701">নিম্ন শক্তির চার্জার সংযুক্ত করা হয়েছে</translation>
@@ -507,6 +512,7 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> ব্যবহার করা হচ্ছে</translation>
 <translation id="899350903320462459">বিজ্ঞপ্তি সম্পর্কিত অ্যাকশনের জন্য <ph name="LOGIN_ID" /> হিসেবে ডিভাইস আনলক করুন</translation>
 <translation id="8995603266996330174">পরিচালনা করেছেন <ph name="DOMAIN" /> </translation>
+<translation id="9017320285115481645">Family Link-এর অভিভাবকীয় অ্যাক্সেস কোডটি লিখুন।</translation>
 <translation id="9029474291399787231">Adobe Flash Player-এর আপডেট উপলভ্য</translation>
 <translation id="9056839673611986238">ডিভাইস রোল ব্যাক করা হবে</translation>
 <translation id="9070640332319875144">অ্যাসিস্ট্যান্ট সেটিংস</translation>

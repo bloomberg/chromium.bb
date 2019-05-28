@@ -135,6 +135,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Не удалось сохранить карту</translation>
 <translation id="1639239467298939599">Загрузка</translation>
 <translation id="1640180200866533862">Пользовательские правила</translation>
 <translation id="1640244768702815859">Попробуйте <ph name="BEGIN_LINK" />открыть главную страницу сайта<ph name="END_LINK" />.</translation>
@@ -243,6 +244,7 @@
 <translation id="2230458221926704099">Чтобы устранить неполадки, проведите <ph name="BEGIN_LINK" />диагностику<ph name="END_LINK" /> подключения.</translation>
 <translation id="2239100178324503013">Отправить</translation>
 <translation id="225207911366869382">Это значение для данного правила больше не используется.</translation>
+<translation id="2257315177824333709">Сейчас невозможно сохранить карту.</translation>
 <translation id="2262243747453050782">Ошибка HTTP</translation>
 <translation id="2263079731045660823">Обновить данные автозаполнения для кредитной карты в настройках Chrome</translation>
 <translation id="2270484714375784793">Номер телефона</translation>
@@ -272,6 +274,7 @@
 <translation id="2392959068659972793">Показывать правила, значения которых не заданы</translation>
 <translation id="239429038616798445">Этот способ доставки недоступен. Выберите другой.</translation>
 <translation id="2396249848217231973">&amp;Отменить удаление</translation>
+<translation id="2409589295040002961">Администратор может удаленно менять настройки браузера и управлять действиями вне браузера Chrome на этом устройстве. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности может быть отозван. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="2418081434543109369">Ко всем запросам, отправляемым на сервер <ph name="ORIGIN" />, применяются . Однако серверу не удалось отправить правила, поэтому браузер не может выполнить ваш запрос для сайта <ph name="SITE" />.</translation>
@@ -332,6 +335,7 @@
 <translation id="2721148159707890343">Запрос выполнен успешно</translation>
 <translation id="2728127805433021124">Сертификат сервера подписан с использованием ненадежного алгоритма.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Выполните диагностику подключения<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Для этого правила существует более одного источника с конфликтующими значениями.</translation>
 <translation id="2738330467931008676">Выбрать адрес получения</translation>
 <translation id="2740531572673183784">ОК</translation>
 <translation id="2742870351467570537">Удалить выбранные элементы</translation>
@@ -988,6 +992,7 @@
 <translation id="6433490469411711332">Изменить контактную информацию</translation>
 <translation id="6433595998831338502">Сайт <ph name="HOST_NAME" /> не позволяет установить соединение.</translation>
 <translation id="6434309073475700221">Отменить передачу</translation>
+<translation id="6440503408713884761">Пропускается</translation>
 <translation id="6446163441502663861">Kahu (конверт)</translation>
 <translation id="6446608382365791566">Укажите дополнительную информацию</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
@@ -1003,6 +1008,7 @@
 <translation id="6517596291481585650">Внимание! Это правило не объединено, так как оно не является списком.</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
 <translation id="6534179046333460208">Интернет вокруг нас: рекомендации</translation>
+<translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
 <translation id="6554795675067793129">Ваш аккаунт принадлежит домену <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Повторить</translation>
 <translation id="6563469144985748109">Ещё не одобрено администратором</translation>
@@ -1019,6 +1025,7 @@
 <translation id="6626291197371920147">Введите номер действующей карты</translation>
 <translation id="6628463337424475685">Поиск <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> может установить на ваш компьютер Mac вредоносное ПО, которое крадет или удаляет личную информацию (например, фотографии, пароли, сообщения и реквизиты банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Для этого правила существует более одного источника с одинаковыми значениями.</translation>
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="6644283850729428850">Правило устарело.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Нет}=1{С 1 сайта (вы останетесь в аккаунте Google)}one{С # сайта (вы останетесь в аккаунте Google)}few{С # сайтов (вы останетесь в аккаунте Google)}many{С # сайтов (вы останетесь в аккаунте Google)}other{С # сайта (вы останетесь в аккаунте Google)}}</translation>

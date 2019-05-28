@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1623104350909869708">Ngăn trang này tạo hộp thoại bổ sung</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Không thể lưu thẻ</translation>
 <translation id="1639239467298939599">Đang tải</translation>
 <translation id="1640180200866533862">Chính sách người dùng</translation>
 <translation id="1640244768702815859">Hãy thử <ph name="BEGIN_LINK" />truy cập trang chủ của trang web<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Sửa kết nối bằng <ph name="BEGIN_LINK" />ứng dụng chẩn đoán<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Gửi bây giờ</translation>
 <translation id="225207911366869382">Giá trị này không được dùng cho chính sách này nữa.</translation>
+<translation id="2257315177824333709">Rất tiếc, không thể lưu thẻ của bạn ngay bây giờ</translation>
 <translation id="2262243747453050782">Lỗi HTTP</translation>
 <translation id="2263079731045660823">Cập nhật thông tin tự động điền thẻ tín dụng trong mục cài đặt của Chrome</translation>
 <translation id="2270484714375784793">Số điện thoại</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Hiển thị chính sách không có giá trị được đặt</translation>
 <translation id="239429038616798445">Phương thức giao hàng này không có sẵn. Hãy thử một phương thức khác.</translation>
 <translation id="2396249848217231973">&amp;Hoàn tác xóa</translation>
+<translation id="2409589295040002961">Quản trị viên có thể thay đổi quy trình thiết lập trình duyệt của bạn từ xa. Hoạt động trên thiết bị này cũng có thể được quản lý bên ngoài Chrome. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị thu hồi. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="2418081434543109369">Máy chủ bạn định truy cập vào, <ph name="ORIGIN" />, đã yêu cầu phải áp dụng
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Yêu cầu đã thành công</translation>
 <translation id="2728127805433021124">Chứng chỉ của máy chủ đã được ký bằng thuật toán chữ ký yếu.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Chạy Chẩn đoán kết nối<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Chính sách này hiện có nhiều nguồn và các giá trị nguồn xung đột với nhau!</translation>
 <translation id="2738330467931008676">Chọn địa chỉ nhận hàng</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2742870351467570537">Xóa các mục đã chọn</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> đã từ chối kết nối.</translation>
 <translation id="6434309073475700221">Hủy</translation>
+<translation id="6440503408713884761">Bị bỏ qua</translation>
 <translation id="6446163441502663861">Kahu (Phong bì)</translation>
 <translation id="6446608382365791566">Thêm thông tin khác</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">Cảnh báo: Chính sách này không phải là danh sách nên không được hợp nhất dưới dạng danh sách như chỉ định trong chính sách.</translation>
 <translation id="6529602333819889595">&amp;Làm lại xóa</translation>
 <translation id="6534179046333460208">Đề xuất Web trong cuộc sống</translation>
+<translation id="6545864417968258051">Quét tìm Bluetooth</translation>
 <translation id="6554795675067793129">Tài khoản của bạn do <ph name="ENROLLMENT_DOMAIN" /> quản lý.</translation>
 <translation id="6556866813142980365">Làm lại</translation>
 <translation id="6563469144985748109">Người quản lý của bạn chưa phê duyệt trang web</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">Thêm số thẻ hợp lệ</translation>
 <translation id="6628463337424475685">Tìm kiếm trên <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Những kẻ tấn công hiện ở trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố gắng cài đặt các chương trình nguy hiểm vào máy Mac của bạn. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Chính sách này hiện có nhiều nguồn nhưng các giá trị giống nhau.</translation>
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6644283850729428850">Chính sách này không được chấp thuận.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Không có}=1{Của 1 trang web (bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình)}other{Của # trang web (bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình)}}</translation>

@@ -385,6 +385,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       accesul va fi refuzat automat. Șabloanele cu metacaractere nu sunt
       permise.</translation>
 <translation id="1634989431648355062">Permite pluginul <ph name="FLASH_PLUGIN_NAME" /> pe aceste site-uri</translation>
+<translation id="1645793986494086629">Schemă:</translation>
 <translation id="1653229475925941921">Dacă politica este setată, specifică tipul de lupă pentru ecran activată. Dacă setezi politica la „Niciuna”, lupa pentru ecran va fi dezactivată.
 
           Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
@@ -587,6 +588,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2014757022750736514">Controlează comportamentul ecranului de conectare, în care utilizatorii se conectează la conturile lor. Setările includ persoanele care se pot conecta, ce tip de conturi sunt permise, ce metode de autentificare ar trebui să fie folosite, precum și accesibilitatea generală, metoda de introducere a textului și setările limbii.</translation>
 <translation id="201557587962247231">Frecvența de încărcare a raportului privind starea dispozitivului</translation>
 <translation id="2017301949684549118">Adresele URL pentru aplicațiile web de instalat silențios.</translation>
+<translation id="2017459564744167827">Accesează <ph name="REFERENCE_URL" /> pentru mai multe informații despre schemă și formatare.</translation>
 <translation id="2018836497795982119">Specifică intervalul (în milisecunde) la care serviciului de gestionare a dispozitivelor i se solicită informații legate de politica privind utilizatorii.
 
       Setarea acestei politici înlocuiește valoarea prestabilită de 3 ore. Valorile valide pentru această politică se află în intervalul 1800000 (30 de minute) – 86400000 (1 zi). Toate valorile care nu se află în acest interval vor fi fixate în limitele respective. Dacă platforma acceptă notificări privind politica, întârzierea actualizării va fi setată la 24 de ore, deoarece se așteaptă ca notificările privind politica să forțeze automat o actualizare ori de câte ori politica se modifică.
@@ -803,6 +805,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2463034609187171371">Activează suitele de codificare DHE în TLS</translation>
 <translation id="2463365186486772703">Limba aplicației</translation>
 <translation id="2466131534462628618">Autentificarea prin portalul captiv ignoră proxy-ul</translation>
+<translation id="2471748297300970300">Dacă este dezactivată, previne afișarea avertismentelor de securitate când Chrome este lansat cu unele semnalizatoare de linie de comandă potențial periculoase.
+
+          Dacă este activată sau nesetată, avertismentele de securitate sunt afișate când unele semnalizatoare de linie de comandă sunt folosite pentru a lansa Chrome.
+
+          Pe Windows, această politică este disponibilă doar în instanțele asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="2482676533225429905">Mesagerie nativă</translation>
 <translation id="2483146640187052324">Anticipează acțiunile în rețea pentru orice conexiune la rețea</translation>
 <translation id="2484208301968418871">Această politică gestionează aplicarea filtrului SafeSites pentru adresele URL.
@@ -1068,6 +1075,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           |created_time_millis| este marcajul temporal UTC pentru crearea modificării și este trimis ca șir, deoarece n-ar încăpea într-un întreg. Se folosește pentru a stabili dacă modificarea mai trebuie aplicată. Dacă funcția actuală de limitare a timpului (limita de timp de folosire sau limita ferestrei de timp) a început după crearea modificării, nu trebuie aplicată. Dacă modificarea a fost creată înainte de ultima modificare a valorii time_window_limit sau time_usage_window active, nu trebuie aplicată.
 
           Pot fi trimise mai multe modificări, dintre care se va aplica cea mai nouă intrare validă.</translation>
+<translation id="2901725272378498025">Activează avertismentele de securitate pentru semnalizatoarele de linie de comandă</translation>
 <translation id="2905984450136807296">Durata totală a memoriei cache pentru datele de autentificare</translation>
 <translation id="2906874737073861391">Lista extensiilor din pachetul de aplicații</translation>
 <translation id="2907992746861405243">Controlează care imprimante din <ph name="BULK_PRINTERS_POLICY" /> sunt disponibile utilizatorilor.
@@ -1639,6 +1647,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3963602271515417124">Dacă este activată, atestarea la distanță este permisă pentru dispozitiv. De asemenea, un certificat va fi generat și încărcat automat pe Serverul de gestionare a dispozitivelor.
 
           Dacă este dezactivată sau dacă nu este configurată, nu se va genera niciun certificat, iar apelurile către API pentru extensia enterprise.platformKeys nu vor reuși.</translation>
+<translation id="3964262920683972987">Configurează imaginea de fundal la nivel de dispozitiv afișată pe ecranul de conectare dacă încă nu s-a conectat niciun utilizator pe dispozitiv. Politica se configurează prin specificarea adresei URL de la care dispozitivul cu sistemul de operare Chrome poate descărca imaginea de fundal și a unui cod hash criptografic folosit pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea acesteia nu trebuie să depășească 16 MB. Adresa URL trebuie să poată fi accesată fără autentificare. Imaginea de fundal este descărcată și salvată în memoria cache. Aceasta va fi descărcată din nou ori de câte ori se modifică adresa URL sau codul hash.
+
+      Dacă politica privind imaginea de fundal a dispozitivului este configurată, dispozitivul cu sistemul de operare Chrome va descărca și va folosi imaginea de fundal pe ecranul de conectare dacă încă nu s-a conectat niciun utilizator pe dispozitiv. După ce un utilizator se conectează, se aplică politica acestuia privind imaginea de fundal.
+
+      Dacă politica privind imaginea de fundal a dispozitivului nu este configurată, politica utilizatorului privind imaginea de fundal decide ce se afișează dacă aceasta este configurată.</translation>
 <translation id="3965339130942650562">Timp limită până când este executată deconectarea utilizatorului inactiv</translation>
 <translation id="3973371701361892765">Nu ascundeți niciodată automat raftul</translation>
 <translation id="3984028218719007910">Această politică stabilește dacă <ph name="PRODUCT_OS_NAME" /> păstrează datele contului local după deconectare. Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> nu va păstra conturi persistente, iar toate datele din sesiunea utilizatorului vor fi eliminate după deconectare. Dacă această politică nu este activată sau nu este configurată, dispozitivul poate păstra (criptate) datele locale ale utilizatorului.</translation>
@@ -1702,6 +1715,17 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4056910949759281379">Dezactivează protocolul SPDY</translation>
 <translation id="408029843066770167">Permite interogările către un serviciu Google cu informații despre oră</translation>
 <translation id="408076456549153854">Activează conectarea la browser</translation>
+<translation id="40853027210512570">Modifică regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />.
+
+      Această politică stabilește regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />, acțiune care are loc atunci când funcția de printare este folosită pentru prima dată cu un profil.
+
+      Dacă politica este configurată, <ph name="PRODUCT_NAME" /> va încerca să găsească o imprimantă care corespunde cu toate atributele specificate și o va selecta ca imprimantă prestabilită. Se va selecta prima imprimantă conformă cu politica; dacă mai multe imprimante sunt conforme cu politica oricare dintre acestea poate fi selectată în funcție de ordinea în care sunt descoperite.
+
+      Dacă politica nu este configurată sau nu se găsește nicio imprimantă conformă cu politica în timpul limită, imprimanta prestabilită va fi imprimanta PDF încorporată sau, când imprimanta PDF nu este disponibilă, nu se va selecta nicio imprimantă.
+
+      Imprimantele conectate la <ph name="CLOUD_PRINT_NAME" /> intră în categoria <ph name="PRINTER_TYPE_CLOUD" />, iar restul imprimantelor sunt clasificate ca <ph name="PRINTER_TYPE_LOCAL" />.
+      Dacă un câmp nu este completat, toate valorile coincid. De exemplu, dacă nu este specificată conectivitatea, Vizualizarea înainte de printare va iniția descoperirea tuturor tipurilor de imprimante, locale și din cloud.
+      Șabloanele expresiei regulate trebuie să respecte sintaxa RegExp JavaScript, iar valorile care coincid disting între scrierea cu majuscule și minuscule.</translation>
 <translation id="4088589230932595924">Modul incognito a fost impus</translation>
 <translation id="4088983553732356374">Îți permite să setezi dacă site-urile au permisiunea de a seta date locale. Setarea datelor locale poate fi permisă sau refuzată în bloc pentru toate site-urile.
 
@@ -2147,6 +2171,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Când politica nu este configurată sau este activată, Chrome va menține cel puțin o filă deschisă după ce comută la un browser secundar.
 
       Când politica nu este activată, Chrome va închide fila după ce comută la un browser secundar, chiar dacă era ultima filă. Astfel, Chrome se va închide complet.</translation>
+<translation id="5102203758995933166">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de formatul Open Network Configuration.</translation>
 <translation id="5105313908130842249">Interval până la blocarea ecranului la funcționarea pe baterie</translation>
 <translation id="5108031557082757679">Imprimantele dezactivate asociate dispozitivelor companiei</translation>
 <translation id="5124368997194894978">Activează pornirea pe c.a. (curent alternativ)</translation>
@@ -2333,6 +2358,24 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5423001109873148185">Dacă este activată, această politică forțează importarea motoarelor de căutare din browserul prestabilit. Dacă este activată, politica afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, motorul de căutare prestabilit nu este importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="5423197884968724595">Numele restricției Android WebView:</translation>
 <translation id="5424147596523390018">Permite toate modurile de culoare</translation>
+<translation id="5427879482805712214">Cu această politică poți configura imaginea avatar a utilizatorului pe ecranul de conectare. Politica este setată prin specificarea adresei URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca imaginea avatar și a unui cod hash criptografic utilizat pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar mărimea nu trebuie să depășească 512 KB. Adresa URL trebuie să poată fi accesată fără autentificare.
+
+      Imaginea avatar este descărcată și salvată în memoria cache. Aceasta va fi descărcată din nou ori de câte ori se modifică adresa URL sau codul hash.
+
+      Dacă politica este setată, <ph name="PRODUCT_OS_NAME" /> se va descărca și va folosi imaginea avatar.
+
+      Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
+
+      Dacă politica nu este setată, utilizatorul poate alege imaginea avatar care îl reprezintă pe ecranul de conectare.</translation>
+<translation id="5432219358069697932">Cu această politică poți configura imaginea de fundal care se afișează pe desktop și pe fundalul ecranului de conectare pentru utilizator. Politica este setată prin specificarea adresei URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca imaginea de fundal și a unui cod hash criptografic utilizat pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea acesteia nu trebuie să depășească 16 MB. Adresa URL trebuie să poată fi accesată fără autentificare.
+
+      Imaginea de fundal este descărcată și salvată în memoria cache. Aceasta va fi descărcată din nou ori de câte ori se modifică adresa URL sau codul hash.
+
+      Dacă politica este setată, <ph name="PRODUCT_OS_NAME" /> se va descărca și va folosi imaginea de fundal.
+
+      Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
+
+      Dacă politica nu este configurată, utilizatorul poate alege imaginea de afișat pe desktop și pe fundalul ecranului de conectare.</translation>
 <translation id="5437733496511628148">Activarea acestei setări împiedică setarea cookie-urilor de elemente ale paginii web care nu aparțin domeniului din bara de adrese a browserului.
 
       Dezactivarea acestei setări permite setarea cookie-urilor de elemente ale paginii web care nu aparțin domeniului din bara de adrese a browserului și îi împiedică pe utilizatori să schimbe această setare.
@@ -2794,6 +2837,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6310223829319187614">Activează completarea automată a numelui de domeniu la conectarea utilizatorului</translation>
 <translation id="6315673513957120120">Chrome afișează o pagină de avertisment atunci când utilizatorii accesează site-uri care au erori SSL. În mod prestabilit sau atunci când această politică este activată, utilizatorii au permisiunea să-și continue navigarea dând clic pe aceste pagini de avertisment.
       Dacă această politică este dezactivată, utilizatorii nu mai au permisiunea să-și continue navigarea dând clic pe aceste pagini de avertisment.</translation>
+<translation id="6319198883324703402">Setează timpul pentru prima notificare privind repornirea de utilizator</translation>
 <translation id="6352543686437322588">Contul local de pe dispozitiv pentru conectare automată după o întârziere.
 
       Dacă această politică este setată, sesiunea indicată se va conecta automat după o anumită perioadă de timp care s-a scurs după afișarea ecranului de conectare fără ca utilizatorul să interacționeze cu acesta. Contul local de pe dispozitiv trebuie să fie deja configurat (consultă |DeviceLocalAccounts|).
@@ -3136,6 +3180,7 @@ Dacă politica este setată la True sau nu este setată, modelul inteligent de r
       Google poate asocia aceste jurnale, prin intermediul unui ID de sesiune, cu alte jurnale colectate chiar de serviciile Google. Astfel, se poate simplifica remedierea erorilor.
       </translation>
 <translation id="706669471845501145">Permite site-urilor să afișeze notificări pe desktop</translation>
+<translation id="7068108874199666656">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru toți utilizatorii unui dispozitiv <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, așa cum este acesta definit de formatul Open Network Configuration.</translation>
 <translation id="7070525176564511548">Introducerea parolei este necesară o dată pe săptămână (168 de ore).</translation>
 <translation id="7072208053150563108">Frecvența de schimbare a parolelor de computer</translation>
 <translation id="7079519252486108041">Blochează ferestrele pop-up de pe aceste site-uri</translation>
@@ -3153,6 +3198,7 @@ Dacă politica este setată la True sau nu este setată, modelul inteligent de r
           Politica are efect numai dacă politica <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> este dezactivată. În caz contrar, politica este ignorată deoarece intervalul până la reducerea luminozității ecranului este stabilit de un model de învățare automată.
 
           Factorul de ajustare trebuie să fie de cel puțin 100%.</translation>
+<translation id="710003290625031750">Descriere schemă extinsă:</translation>
 <translation id="7106631983877564505">Activează blocarea când dispozitivele <ph name="PRODUCT_OS_NAME" /> ajung să fie inactive sau suspendate.
 
       Dacă activezi această setare, utilizatorilor li se va solicita o parolă pentru a debloca dispozitivul din modul inactiv.
@@ -3730,6 +3776,9 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica este activată, dispozitivul va utiliza un format de ceas cu 24 de ore. Dacă politica este dezactivată, dispozitivul va utiliza formatul de ceas cu 12 ore.
 
       Dacă politica nu este configurată, dispozitivul va utiliza formatul prestabilit al ceasului cu 24 de ore.</translation>
+<translation id="8113421140338762630">Îți permite să setezi perioada de timp, în milisecunde, între prima notificare privind repornirea unui dispozitiv <ph name="PRODUCT_OS_NAME" /> pentru aplicarea unei actualizări în așteptare și sfârșitul perioadei de timp specificat de politica <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Dacă nu este setată, perioada prestabilită de 86400000 milisecunde (o zi) este folosită pentru dispozitivele <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8114382167597081590">Nu impune Modul restricționat pe YouTube</translation>
 <translation id="8118665053362250806">Setați dimensiunea pentru memorare în cache pe disc pentru media</translation>
 <translation id="8124468781472887384">Politica privind accesul la configurarea imprimantelor asociate dispozitivelor.</translation>
@@ -3940,6 +3989,11 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8544465954173828789">Permite sincronizarea mesajelor SMS de pe telefon pe Chromebook.</translation>
 <translation id="8548832052135586762">Setează imprimarea la exclusiv color, exclusiv monocromă sau fără restricții privind modul de culoare. Politica nesetată este tratată ca lipsa oricărei restricții.</translation>
 <translation id="8549772397068118889">Avertisment la accesarea site-urilor din afara pachetelor de conținut</translation>
+<translation id="8566729013138025202">Specifică un set de politici care vor fi trimise în procesul ARC. Valoarea trebuie să fie un fișier JSON valid.
+
+      Această politică poate fi folosită pentru a configura ce aplicații Android sunt instalate automat pe dispozitiv.
+
+      Pentru a fixa aplicațiile în lansator, consultă PinnedLauncherApps.</translation>
 <translation id="8566842294717252664">Ascunde magazinul web în pagina Filă nouă și în lansatorul de aplicații</translation>
 <translation id="8569734380847633643">
           Dacă politica este dezactivată, <ph name="PRODUCT_OS_NAME" /> va dezactiva conexiunea Wi-Fi, iar utilizatorii nu vor putea să o activeze din nou.
@@ -4128,6 +4182,14 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="8942616385591203339">Această politică gestionează dacă utilizatorul poate vedea Consimțământul de sincronizare la prima conectare. Ea trebuie setată la false dacă Consimțământul de sincronizare nu este niciodată necesar pentru utilizator.
       Dacă este setată la false, Consimțământul de sincronizare nu se va afișa.
       Dacă este setată la true sau nu este setată, Consimțământul de sincronizare se poate afișa.</translation>
+<translation id="894510252300143386">Configurează setările de gestionare a extensiilor pentru <ph name="PRODUCT_NAME" />.
+
+          Această politică stabilește mai multe setări, inclusiv pe cele controlate de eventualele politici existente privind extensiile. Politica va anula toate politicile vechi dacă ambele sunt setate.
+
+          Această politică asociază un ID de extensie sau o adresă URL de actualizare la configurația sa. În cazul unui ID de extensie, configurația va fi aplicată numai pentru extensia specificată. O configurație prestabilită poate fi setată pentru ID-ul special <ph name="DEFAULT_SCOPE" /> care se va aplica pentru toate extensiile care nu au o configurație personalizată setată în această politică. În cazul unei adrese URL de actualizare, configurația se va aplica pentru toate extensiile cu adresa URL de actualizare exactă specificată în manifestul acestei extensii, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Pentru copiile Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea automată este limitată la aplicațiile și extensiile afișate în Magazinul web Chrome.
+          </translation>
 <translation id="8947415621777543415">Raportați locația dispozitivului</translation>
 <translation id="8951350807133946005">Setează directorul pentru memorare în cache pe disc</translation>
 <translation id="8952317565138994125">Dezactivează sincronizarea datelor în <ph name="PRODUCT_NAME" /> folosind serviciile de sincronizare găzduite de Google și împiedică utilizatorii să modifice această setare.

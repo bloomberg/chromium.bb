@@ -389,6 +389,7 @@
       bulunmazsa, erişim otomatik olarak reddedilir. Joker karakter kalıplarına
       izin verilmez.</translation>
 <translation id="1634989431648355062">Bu sitelerde <ph name="FLASH_PLUGIN_NAME" /> eklentisine izin ver</translation>
+<translation id="1645793986494086629">Şema:</translation>
 <translation id="1653229475925941921">Bu politika ayarlanırsa, etkinleştirilmiş olan ekran büyütecinin türünü belirler. Politikayı "None" ("Yok") değerine ayarlamak, ekran büyütecini devre dışı bırakır.
 
           Bu politikayı ayarlarsanız kullanıcılar bunu değiştiremez veya geçersiz kılamazlar.
@@ -597,6 +598,7 @@
 <translation id="2014757022750736514">Kullanıcıların hesaplarına giriş yaptıkları oturum açma ekranının davranışını kontrol eder. Ayarlar arasında kimin giriş yapabileceği, ne tür hesaplara izin verildiği, hangi kimlik doğrulama yöntemlerinin kullanılması gerektiği, genel erişilebilirlik, giriş yöntemi ve yerel ayarlar yer alır.</translation>
 <translation id="201557587962247231">Cihaz durumu raporlarının yüklenme sıklığı</translation>
 <translation id="2017301949684549118">Web Uygulamalarının URL'leri sessizce yüklenir.</translation>
+<translation id="2017459564744167827">Şema ve biçimlendirme hakkında daha fazla bilgi için <ph name="REFERENCE_URL" /> adresine bakın.</translation>
 <translation id="2018836497795982119">Cihaz yönetim hizmetinin, kullanıcı politikası bilgileri için sorgulanma süresini milisaniye olarak belirtir.
 
       Bu politika ayarlandığında varsayılan değer (3 saat) geçersiz olur. Bu politika için geçerli değerler 1800000 (30 dakika) ile 86400000 (1 gün) aralığındadır. Bu aralıkta bulunmayan değerler ilgili sınıra çekilir. Politika değiştiğinde politika bildirimlerinin otomatik olarak bir yenilemeyi zorlaması beklendiğinden, platform politika bildirimlerini destekliyorsa yenileme gecikmesi 24 saate ayarlanır.
@@ -816,6 +818,11 @@
 <translation id="2463034609187171371">TLS'deki şifre paketlerini etkinleştir</translation>
 <translation id="2463365186486772703">Uygulama yerel ayarı</translation>
 <translation id="2466131534462628618">Giriş portalı kimlik doğrulaması, proxy'yi yoksayar</translation>
+<translation id="2471748297300970300">Devre dışı bırakılırsa, Chrome tehlikeli olabilecek komut satırı işaretleriyle başlatıldığında güvenlik uyarılarının gösterilmesini engeller.
+
+          Etkinleştirilir veya ayarlanmadan bırakılırsa, Chrome'u başlatmak için komut satırı işaretleri kullanıldığında güvenlik uyarıları gösterilir.
+
+          Windows'da bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış örneklerde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
 <translation id="2482676533225429905">Yerel Mesajlaşma</translation>
 <translation id="2483146640187052324">Ağ bağlantılarında ağ işlemlerini tahmin et</translation>
 <translation id="2484208301968418871">Bu politika SafeSites URL filtresinin uygulanmasını kontrol eder.
@@ -1091,6 +1098,7 @@
           |created_time_millis|, geçersiz kılmanın oluşturulmasıyla ilgili UTC zaman damgasıdır. Zaman damgası bir tam sayıya sığmayacağından Dize olarak gönderilir. Bu geçersiz kılmanın hâlâ uygulanmasının gerekip gerekmediğini belirlemek için kullanılır. Geçerli etkin zaman sınırı özelliği (zaman kullanım sınırı veya zaman aralığı sınırı) geçersiz kılma oluşturulduktan sonra başladıysa herhangi bir işlem yapmaz. Ayrıca, geçersiz kılma, etkin time_window_limit veya time_usage_window değerinde yapılan son değişiklikten önce oluşturulduysa uygulanmamalıdır.
 
           Birden çok geçersiz kılma gönderilebilir, en yeni geçerli giriş uygulanır.</translation>
+<translation id="2901725272378498025">Komut satırı işaretleri için güvenlik uyarılarını etkinleştirme</translation>
 <translation id="2905984450136807296">Kimlik doğrulama verisi önbellek ömrü</translation>
 <translation id="2906874737073861391">AppPack uzantılarının listesi</translation>
 <translation id="2907992746861405243">Kullanıcıların <ph name="BULK_PRINTERS_POLICY" /> politikasındaki hangi yazıcıları kullanabileceğini kontrol eder.
@@ -1664,6 +1672,11 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
 <translation id="3963602271515417124">True (doğru) olarak ayarlanırsa, cihaz için uzaktan doğrulamaya izin verilir, otomatik olarak bir sertifika oluşturulup Cihaz Yönetim Sunucusuna yüklenir.
 
 False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika oluşturulmaz ve enterprise.platformKeysPrivate API'sine yapılan çağrılar başarısız olur.</translation>
+<translation id="3964262920683972987">Henüz cihazda oturum açmış kullanıcı yoksa giriş ekranında gösterilecek cihaz düzeyinde duvar kağıdı resmini yapılandırın. Politikayı ayarlamak için Chrome OS cihazın, duvar kağıdı resmini hangi URL'den indireceği ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreleme karması belirtilmelidir. Resim JPEG biçiminde olmalı, dosya boyutu 16 MB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir. Duvar kağıdı resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.
+
+      Cihaz duvar kağıdı politikası ayarlanırsa Chrome OS cihaz, duvar kağıdı resmini indirir ve cihazda henüz hiçbir kullanıcı oturum açmamışken giriş ekranında bu resmi kullanır. Kullanıcı giriş yaptıktan sonra, kullanıcının duvar kağıdı politikası devreye girer.
+
+      Cihaz duvar kağıdı politikası ayarlanmamış ve kullanıcının duvar kağıdı politikası ayarlanmışsa neyin gösterileceğini kullanıcının duvar kağıdı politikası belirler.</translation>
 <translation id="3965339130942650562">Boştaki kullanıcının çıkış yapması için geçecek zaman aşımı süresi</translation>
 <translation id="3973371701361892765">Rafı hiçbir zaman otomatik olarak gizleme</translation>
 <translation id="3984028218719007910">Çıkış yapıldıktan sonra yerel hesap verilerinin <ph name="PRODUCT_OS_NAME" /> tarafından korunup korunmayacağını belirler. True değerine ayarlanırsa, kalıcı hesaplar <ph name="PRODUCT_OS_NAME" /> tarafından korunmaz ve çıkış yapıldıktan sonra kullanıcı oturumuna ilişkin tüm veriler kaybedilir. Bu politika false değerine ayarlanırsa veya hiçbir şekilde ayarlanmazsa, cihaz (şifreli) yerel kullanıcı verilerini koruyabilir.</translation>
@@ -1728,6 +1741,17 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 <translation id="4056910949759281379">SPDY protokolünü devre dışı bırak</translation>
 <translation id="408029843066770167">Google zaman hizmetini sorgulamaya izin ver</translation>
 <translation id="408076456549153854">Tarayıcıda oturum açmayı etkinleştir</translation>
+<translation id="40853027210512570"><ph name="PRODUCT_NAME" /> varsayılan yazıcı seçim kurallarını geçersiz kılar.
+
+      Bu politika, <ph name="PRODUCT_NAME" /> cihazında varsayılan yazıcıyı seçmeye ilişkin kuralları belirler. Bu seçim, yazdırma işlevi bir profilde ilk kez kullanıldığında yapılır.
+
+      Bu politika ayarlandığında, <ph name="PRODUCT_NAME" /> belirtilen tüm özelliklerle eşleşen bir yazıcı bulmaya ve onu varsayılan yazıcı olarak seçmeye çalışır. Politikayla eşleştiği belirlenen ilk yazıcı seçilir; benzersiz olmayan eşleme olması durumunda, yazıcıların bulunma sırasına göre eşleşen herhangi bir yazıcı seçilebilir.
+
+      Bu politika ayarlanmazsa veya zaman aşımı süresi içinde eşleşen bir yazıcı bulunamazsa, yazıcı varsayılan olarak dahili PDF yazıcısını kullanır veya PDF yazıcısı yoksa hiçbir yazıcı seçilmez.
+
+      <ph name="CLOUD_PRINT_NAME" /> bağlantılı yazıcılar "<ph name="PRINTER_TYPE_CLOUD" />" yazıcı sayılır, geri kalan yazıcılar "<ph name="PRINTER_TYPE_LOCAL" />" olarak sınıflandırılır.
+      Bir alanın atlanması, tüm değerlerin eşleneceği anlamına gelir. Örneğin, bağlantı belirtilmezse Baskı Önizleme'nin yerel veya buluttaki her tür yazıcının bulunması işlemini başlatmasına neden olur.
+      Normal ifade kalıpları JavaScript RegExp söz dizimine uygun olmalıdır. Eşleşmeler büyük/küçük harfe duyarlıdır.</translation>
 <translation id="4088589230932595924">Gizli mod zorunlu</translation>
 <translation id="4088983553732356374">Web sitelerinin yerel verileri ayarlamasına izin verilip verilmeyeceğini belirlemenize olanak sağlar. Yerel verileri ayarlamaları için ya tüm web sitelerine izin verilir ya da hiçbirine izin verilmez.
 
@@ -2186,6 +2210,7 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanmadan bırakılır veya true (doğru) değerine ayarlanırsa, Chrome başka bir tarayıcıya geçtikten sonra en az bir sekmeyi açık bırakır.
 
       Bu politika false (yanlış) değerine ayarlanırsa, başka bir tarayıcıya son sekmeden geçilmiş olsa bile Chrome o sekmeyi kapatır. Bu da Chrome'dan tamamen çıkılmasına neden olur.</translation>
+<translation id="5102203758995933166">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME" /> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
 <translation id="5105313908130842249">Pil gücüyle çalışırken ekran kilidi gecikmesi</translation>
 <translation id="5108031557082757679">Devre dışı bırakılmış kurumsal cihaz yazıcıları</translation>
 <translation id="5124368997194894978">AC'de (alternatif akım) başlat özeliğini etkinleştir</translation>
@@ -2383,6 +2408,24 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
 <translation id="5423197884968724595">Android Web Görünümü kısıtlama adı:</translation>
 <translation id="5424147596523390018">Tüm renk modlarına izin ver</translation>
+<translation id="5427879482805712214">Bu politika, giriş ekranında kullanıcıyı temsil eden avatar resmini yapılandırmanıza olanak tanır. Politika, avatar resminin <ph name="PRODUCT_OS_NAME" /> tarafından indirilebileceği URL'nin belirtilmesi ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreleme karmasının tanımlanmasıyla ayarlanır. Resim JPEG biçiminde olmalı, boyutu 512 kB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.
+
+      Avatar resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.
+
+      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME" />, avatar resmini indirir ve kullanır.
+
+      Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+
+      Bu politika ayarlanmadan bırakılırsa kullanıcı giriş ekranında kendisini temsil edecek avatar resmini seçebilir.</translation>
+<translation id="5432219358069697932">Bu politika, masaüstünde ve kullanıcı için giriş ekranı arka planında görüntülenecek duvar kağıdı resmini yapılandırmanıza olanak tanır. Politika, <ph name="PRODUCT_OS_NAME" /> sisteminin duvar kağıdı resmini indirebileceği URL ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreli bir karma belirtilerek ayarlanır. Resim JPEG biçiminde olmalı, dosya boyutu 16 MB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.
+
+      Duvar kağıdı resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.
+
+      Bu politika ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> duvar kağıdı resmini indirir ve kullanır.
+
+      Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+
+      Bu politika ayarlanmadan bırakılırsa kullanıcı, masaüstünde ve giriş ekranı arka planında görüntülenmek üzere bir resim seçebilir.</translation>
 <translation id="5437733496511628148">Bu ayar etkinleştirildiğinde, tarayıcının adres çubuğundaki alan adına ait olmayan web sayfası öğelerinin çerez yerleştirmesi engellenir.
 
       Bu ayar devre dışı bırakıldığında, tarayıcının adres çubuğundaki alan adına ait olmayan web sayfası öğelerinin çerez yerleştirmesine izin verilir ve kullanıcıların bu ayarı değiştirmeleri engellenir.
@@ -2842,6 +2885,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="6310223829319187614">Kullanıcı oturum açarken alan adı otomatik doldurma özelliğini etkinleştir</translation>
 <translation id="6315673513957120120">Kullanıcılar SSL hatalarına neden olan sitelere gittiğinde Chrome bir uyarı iletisi görüntüler. Varsayılan olarak veya bu politika doğru seçeneğine ayarlandığında, kullanıcıların bu uyarı sayfalarını tıklamalarına izin verilir.
       Bu politika yanlış seçeneğine ayarlanırsa, kullanıcılar uyarı sayfalarını tıklayamazlar.</translation>
+<translation id="6319198883324703402">Kullanıcıya gönderilecek ilk yeniden başlatma bildiriminin zamanını ayarla</translation>
 <translation id="6352543686437322588">Gecikme sonrasında otomatik olarak giriş yapılacak cihaz yerel hesabı.
 
       Bu politika ayarlanırsa, giriş ekranında kullanıcı etkileşimi olmadan bir süre geçtikten sonra, belirlenen oturuma otomatik olarak giriş yapılır. Cihaz yerel hesabının önceden yapılandırılmış olması gerekir (bkz. |DeviceLocalAccounts|).
@@ -3198,6 +3242,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Google bu günlükleri bir oturum kimliği aracılığıyla, Google hizmetinin kendisi tarafından toplanan diğer günlüklerle ilişkilendirebilir; bu özellikle, hata ayıklamayı kolaylaştırmak amaçlanmıştır.
       </translation>
 <translation id="706669471845501145">Sitelerin masaüstü bildirimi göstermesine izin ver</translation>
+<translation id="7068108874199666656">Bir <ph name="PRODUCT_OS_NAME" /> cihazın tüm kullanıcıları için uygulanacak ağ yapılandırmasını aktarmaya olanak tanır. Ağ yapılandırması, Açık Ağ Yapılandırması biçimiyle tanımlanmış JSON biçimli bir dizedir.</translation>
 <translation id="7070525176564511548">Her hafta (168 saatte bir) şifre girilmesi gerekiyor</translation>
 <translation id="7072208053150563108">Makine şifresi değişim hızı</translation>
 <translation id="7079519252486108041">Bu sitelerde pop-up'ları engelle</translation>
@@ -3215,6 +3260,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
           Bu politika yalnızca <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> politikası devre dışı bırakılırsa geçerli olur. Aksi halde, ekran kararma gecikmesi bir makine öğrenimi modeli tarafından belirleneceği için bu politika yoksayılır.
 
           Ölçekleme faktörü en az %100 olmalıdır.</translation>
+<translation id="710003290625031750">Geniş şema açıklaması:</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> cihazları boştayken veya askıya alındığında kilidi etkinleştir.
 
       Bu ayarı etkinleştirirseniz uykudaki cihazlarının kilidini açabilmeleri için kullanıcılardan şifre girmeleri istenir.
@@ -3803,6 +3849,9 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Politika doğru değerine ayarlanırsa cihaz 24 saat biçimini kullanır. Politika yanlış değerine ayarlanırsa cihaz 12 saat biçimini kullanır.
 
       Bu politika ayarlanmazsa cihaz varsayılan olarak 24 saat biçimini kullanır.</translation>
+<translation id="8113421140338762630">Beklemedeki bir güncellemenin uygulanması için bir <ph name="PRODUCT_OS_NAME" /> cihazın yeniden başlatılması gerektiğini belirten ilk bildirim ile <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> politikası tarafından belirtilen süre sonu arasındaki zamanı milisaniye cinsinden ayarlamanıza olanak tanır.
+
+      Bu değer ayarlanmazsa <ph name="PRODUCT_OS_NAME" /> cihazlarda varsayılan süre olan 86.400.000 milisaniye (bir gün) kullanılır.</translation>
 <translation id="8114382167597081590">YouTube'da Kısıtlı Mod'u zorunlu kılma</translation>
 <translation id="8118665053362250806">Medya diski önbellek boyutunu ayarla</translation>
 <translation id="8124468781472887384">Cihaz yazıcı yapılandırması erişim politikası.</translation>
@@ -4000,6 +4049,11 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="8544465954173828789">SMS Mesajlarının telefondan Chromebook'a senkronize edilmesine izin ver</translation>
 <translation id="8548832052135586762">Yazdırmayı yalnızca renkli, yalnızca tek renk veya renk modu kısıtlaması yok değerine ayarlar. Ayarlanmayan politika, kısıtlama yokmuş gibi işlenir.</translation>
 <translation id="8549772397068118889">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar</translation>
+<translation id="8566729013138025202">ARC çalışma zamanına devredilecek politika grubunu belirtir. Değer, geçerli JSON olmalıdır.
+
+      Bu politika, cihaza hangi Android uygulamalarının otomatik olarak yükleneceğini yapılandırmak için kullanılabilir.
+
+      Uygulamaları başlatıcıya sabitlemek için PinnedLauncherApps politikasına bakın.</translation>
 <translation id="8566842294717252664">Yeni sekme sayfasında ve uygulama başlatıcıda web mağazasını gizle</translation>
 <translation id="8569734380847633643">
           Politika false (yanlış) değerine ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> kablosuzu devre dışı bırakır ve kullanıcılar tekrar etkinleştiremezler.
@@ -4197,6 +4251,14 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8942616385591203339">Bu politika, Senkronizasyon İzni'nin ilk oturum açma sırasında kullanıcıya gösterilip gösterilemeyeceğini kontrol eder. Kullanıcı için Senkronizasyon İzni'ne hiçbir zaman gerek duyulmuyorsa false (yanlış) değerine ayarlanmalıdır.
       False (yanlış) değerine ayarlanırsa Senkronizasyon İzni görüntülenmez.
       True (doğru) değerine ayarlanır veya hiç ayarlanmazsa Senkronizasyon İzni görüntülenebilir.</translation>
+<translation id="894510252300143386"><ph name="PRODUCT_NAME" /> için uzantı yönetimi ayarlarını yapılandırır.
+
+          Bu politika birden fazla ayarı kontrol eder. Buna, uzantılarla ilgili mevcut politikaların kontrolündeki ayarlar da dahildir. Bu politika, birlikte ayarlanmaları halinde eski politikaları geçersiz kılar.
+
+          Bu politika, uzantı kimliğini veya güncelleme URL'sini ilgili yapılandırma ile eşler. Uzantı kimliği kullanıldığında yapılandırma yalnızca belirtilen uzantıya uygulanır. <ph name="DEFAULT_SCOPE" /> özel kimliği için varsayılan bir yapılandırma ayarlanabilir ve bu varsayılan yapılandırma, bu politikada özel bir yapılandırma ayarlanmamış tüm uzantılara uygulanır. Güncelleme URL'si kullanıldığında, yapılandırma, <ph name="LINK_TO_EXTENSION_DOC1" /> dokümanında açıklandığı şekilde, bu uzantının manifest dosyasında belirtilen güncelleme URL'sinin aynısına sahip tüm uzantılara uygulanır.
+
+          <ph name="MS_AD_NAME" /> alanına katılmamış Windows örneklerinde zorunlu yükleme, Chrome Web Mağazası'nda listelenen uygulama ve uzantılarla sınırlıdır.
+          </translation>
 <translation id="8947415621777543415">Cihaz konumunu bildir</translation>
 <translation id="8951350807133946005">Disk önbellek dizinini ayarla</translation>
 <translation id="8952317565138994125">Google tarafından barındırılan senkronizasyon hizmetlerini kullanarak yapılan <ph name="PRODUCT_NAME" /> içindeki veri senkronizasyonunu devre dışı bırakır ve kullanıcıların bu ayarı değiştirmelerini önler.

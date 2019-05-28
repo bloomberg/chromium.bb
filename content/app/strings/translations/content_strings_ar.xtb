@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">صورة غير مُصنَّفة</translation>
 <translation id="3706100364254443312">تبديل</translation>
 <translation id="3732799496749320381">شهر</translation>
+<translation id="3754210790023674521">الخروج من وضع "نافذة ضمن نافذة"</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> غيغابايت</translation>
 <translation id="3808586225841795776">عبارة</translation>
 <translation id="3822383571486410024">يُرجى إطالة هذا النص إلى <ph name="MIN_CHARACTERS" /> من الحروف أو أكثر (أنت تستخدم حاليًا <ph name="CURRENT_LENGTH" /> من الحروف).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">متفرع</translation>
 <translation id="4664250907885839816">يجب ألا يشتمل الجزء الذي يلي العلامة "<ph name="ATSIGN" />" على الرمز "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">ملحق</translation>
+<translation id="4718048029184481307">تشغيل في وضع "نافذة ضمن النافذة"</translation>
 <translation id="4742539557769756338">غلاف</translation>
 <translation id="4748357248530471599">تبديل صورة مقطوعة للشاشة إلى وضع ملء الشاشة</translation>
 <translation id="4757246831282535685">لوحة علامة التبويب</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">تنزيل وسائط</translation>
 <translation id="6981594929165378967">إدراج</translation>
 <translation id="6989848892321993519">يُرجى إطالة هذا النص إلى <ph name="MIN_CHARACTERS" /> من الحروف أو أكثر (أنت الآن تستخدم حرفًا واحدًا).</translation>
+<translation id="7033340931668032222">الضغط على السهم المتجه للأعلى والآخر المتجه للأسفل لتغيير مستوى الصوت</translation>
 <translation id="709897737746224366">يُرجى مطابقة التنسيق المطلوب.</translation>
 <translation id="7118469954320184356">لا يتوفر أي وصف.</translation>
 <translation id="7139483182332611405">تمهيد</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">رمز رسومي</translation>
 <translation id="8583702881314752957">قائمة تعريف</translation>
 <translation id="8597182159515967513">العنوان</translation>
+<translation id="8603553056539299761">الضغط على السهم الأيمن وكذلك الأيسر للتمرير</translation>
 <translation id="860475260694818407">جدول المحتويات</translation>
 <translation id="8613126697340063924">التحكم في التشغيل عن بعد</translation>
 <translation id="862370744433916922">ترجمة مصاحِبة</translation>

@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Összes megnyitása</translation>
 <translation id="1430915738399379752">Nyomtatás</translation>
 <translation id="1436290164580597469">A szinkronizálás megkezdéséhez adja meg az összetett jelszót.</translation>
+<translation id="1449835205994625556">Jelszó elrejtése</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elem</translation>
 <translation id="1491277525950327607">A beállítás módosításához koppintson duplán</translation>
 <translation id="152234381334907219">Soha nem került mentésre</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Böngészési adatok törlése</translation>
 <translation id="1820259098641718022">Hozzáadva az olvasási listához</translation>
 <translation id="1828824471510190776">Jelszó ajánlása…</translation>
+<translation id="1870148520156231997">Jelszó megjelenítése</translation>
 <translation id="1876721852596493031">Használati adatok küldése</translation>
 <translation id="1886928167269928266">Mindenkori</translation>
 <translation id="1911619930368729126">Feltöltés Google Drive-ba</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Oldalbetöltési folyamatjelző sáv, <ph name="EMAIL" /> betöltve.</translation>
 <translation id="4002066346123236978">Cím</translation>
 <translation id="4004204301268239848">A jelszavakat Google-fiókjába mentjük, hogy bármelyik eszközén használhassa őket.</translation>
+<translation id="4006921758705478413">Küldés a saját eszközökre</translation>
 <translation id="4038354071007134711">Nincs alkalmazás, amellyel megnyitható ez a fájl.</translation>
 <translation id="4042870976416480368">Keresés az oldalon</translation>
 <translation id="4049507953662678203">Győződjön meg róla, hogy rendelkezik hálózati kapcsolattal, majd próbálja újra.</translation>
@@ -267,6 +270,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="4904877109095351937">Megjelölés olvasottként</translation>
 <translation id="4930268273022498155">Meglévő adatok törlése. Ezeket úgy hívhatja le, hogy visszavált a következő fiókra: <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Sajnos hiba történt az elem megosztásakor.</translation>
+<translation id="4945756290001680296">Hozzáférés a jelszóbeállításokhoz</translation>
 <translation id="4979397965658815378">Jelentkezzen be Google-fiókjába, így könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérheti.</translation>
 <translation id="5005498671520578047">Jelszó másolása</translation>
 <translation id="5010803260590204777">Nyisson meg egy inkognitólapot a privát böngészéshez.</translation>
@@ -520,6 +524,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8976382372951310360">Súgó</translation>
 <translation id="8981454092730389528">Google Tevékenységvezérlők</translation>
 <translation id="8985320356172329008">Bejelentkezve a Google rendszerébe mint</translation>
+<translation id="9016406938567631235">Küldés…</translation>
 <translation id="902659348151742535">A Google felhasználhatja az Ön böngészési előzményeit a Keresés, a hirdetések és más Google-szolgáltatások személyre szabására.</translation>
 <translation id="9034759925968272072">A rendszer nem jelentkezteti ki Google-fiókjából. Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> címen.</translation>
 <translation id="9039373489628511875">Sávszélesség</translation>

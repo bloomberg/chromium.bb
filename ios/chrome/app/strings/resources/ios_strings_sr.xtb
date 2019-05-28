@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Отвори све</translation>
 <translation id="1430915738399379752">Штампај</translation>
 <translation id="1436290164580597469">Унесите приступну фразу да бисте почели синхронизацију.</translation>
+<translation id="1449835205994625556">Сакријте лозинку</translation>
 <translation id="145015347812617860">Ставки: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Двапут додирните да бисте укључили/искључили подешавање</translation>
 <translation id="152234381334907219">Никада се не чува</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Брисање података прегледања</translation>
 <translation id="1820259098641718022">Додато је на листу за читање</translation>
 <translation id="1828824471510190776">Предложи лозинку...</translation>
+<translation id="1870148520156231997">Прикажите лозинку</translation>
 <translation id="1876721852596493031">Шаљи подат. о кориш.</translation>
 <translation id="1886928167269928266">Одувек</translation>
 <translation id="1911619930368729126">Отпреми у Google диск</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Трака напретка учитавања страница, учитано је <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="4004204301268239848">Лозинке се чувају на Google налогу да бисте могли да их користите на било ком уређају.</translation>
+<translation id="4006921758705478413">Пошаљите на своје уређаје</translation>
 <translation id="4038354071007134711">Ниједна апликација на овом уређају не може да отвори датотеку.</translation>
 <translation id="4042870976416480368">Нађи на страници</translation>
 <translation id="4049507953662678203">Проверите да ли сте повезани на мрежу и покушајте поново.</translation>
@@ -267,6 +270,7 @@
 <translation id="4904877109095351937">Означи као прочитано</translation>
 <translation id="4930268273022498155">Избришите постојеће податке. Можете да их вратите ако се вратите на <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Жао нам је, дошло је до проблема при дељењу ставке.</translation>
+<translation id="4945756290001680296">Приступите подешавањима лозинки</translation>
 <translation id="4979397965658815378">Пријавите се помоћу Google налога да бисте имали обележиваче, лозинке, историју и друга подешавања на свим уређајима</translation>
 <translation id="5005498671520578047">Копирање лозинке</translation>
 <translation id="5010803260590204777">Отворите картицу Без архивирања да бисте приватно прегледали веб.</translation>
@@ -427,7 +431,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7272437679830969316">Верификација идентитета није успела. Лозинка није копирана.</translation>
 <translation id="7285236536143823449">ДА, СЛАЖЕМ СЕ</translation>
 <translation id="7291368939935408496">Припремају се лозинке...</translation>
-<translation id="7293171162284876153">Да бисте покренули синхронизацију, укључите опцију „Синхронизујте Chrome податке“.</translation>
+<translation id="7293171162284876153">Да бисте покренули синхронизацију, укључите опцију „Синхронизуј Chrome податке“.</translation>
 <translation id="7336264872878993241">Проценат преузимања: <ph name="PERCENT" /></translation>
 <translation id="7346909386216857016">Важи</translation>
 <translation id="7348502496356775519">Означи</translation>
@@ -520,6 +524,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8976382372951310360">Помоћ</translation>
 <translation id="8981454092730389528">Google контроле активности</translation>
 <translation id="8985320356172329008">Пријављени сте на Google као</translation>
+<translation id="9016406938567631235">Шаље се…</translation>
 <translation id="902659348151742535">Google може да користи историју прегледања за персонализацију Претраге, огласа и других Google услуга.</translation>
 <translation id="9034759925968272072">Нећемо вас одјавити са Google налога. Google налог можда има друге облике историје прегледања на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Пропусни опсег</translation>

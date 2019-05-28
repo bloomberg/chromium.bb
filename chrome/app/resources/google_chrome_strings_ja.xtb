@@ -14,7 +14,6 @@
 <translation id="123620459398936149">Chrome OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="127345590676626841">Chrome は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chrome が再起動し、すぐにお使いいただけます。</translation>
 <translation id="1302523850133262269">Chrome は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
-<translation id="1312676208694947750">{0,plural, =0{Chrome OS のアップデートが利用可能です}=1{Chrome OS のアップデートが利用可能です}other{Chrome OS のアップデートが利用可能になってから # 日経過しています}}</translation>
 <translation id="137466361146087520">Google Chrome ベータ版</translation>
 <translation id="1393853151966637042">Chrome の使用に関するアドバイス</translation>
 <translation id="1399397803214730675">新しいバージョンの Google Chrome が既にインストールされています。ソフトウェアが動作しない場合は、Google Chrome をアンインストールしてからもう一度お試しください。</translation>
@@ -52,7 +51,6 @@
 <translation id="216054706567564023">Chrome をスマートフォンにインストールしませんか。お客様のアカウント再設定用の電話番号に、Google より SMS をお送りします。</translation>
 <translation id="2246246234298806438">Google Chrome では、組み込みの PDF ビューアがない場合、印刷プレビューを表示できません。</translation>
 <translation id="2252923619938421629">現在の設定を送信して Google Chrome の機能向上に役立てる</translation>
-<translation id="225363235161345695">{0,plural, =1{Chrome は 1 時間後に再起動されます}other{Chrome は # 時間後に再起動されます}}</translation>
 <translation id="2286950485307333924">Chrome にログイン済み</translation>
 <translation id="2290014774651636340">Google API キーが欠落しています。Google Chrome の一部の機能は無効になります。</translation>
 <translation id="2290095356545025170">Google Chrome をアンインストールしてもよろしいですか？</translation>
@@ -145,7 +143,6 @@
 <translation id="4891791193823137474">Google Chrome のバックグラウンドでの実行を許可する</translation>
 <translation id="4895437082222824641">新しい Chrome タブでリンクを開く(&amp;T)</translation>
 <translation id="4921569541910214635">共有パソコンにするなど、Chrome をお好みの方法で設定できるようになりました。</translation>
-<translation id="4945319281866068441">{0,plural, =1{1 日以内に Chrome OS を再起動してください}other{# 日以内に Chrome OS を再起動してください}}</translation>
 <translation id="4953650215774548573">Google Chrome を既定のブラウザとして設定する</translation>
 <translation id="495931528404527476">Chrome 専用</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -160,7 +157,6 @@
 <translation id="532046782124376502">警告: 拡張機能による閲覧履歴の記録を Google Chrome で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="5386244825306882791">この拡張機能では、Chrome の起動時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
 <translation id="5430073640787465221">ユーザー設定ファイルが壊れているか無効です。設定を復元できません。</translation>
-<translation id="5483595757826856374">{0,plural, =0{Chrome は今すぐ再起動されます}=1{Chrome は 1 秒後に再起動されます}other{Chrome は # 秒後に再起動されます}}</translation>
 <translation id="5543953544073077331">Chrome の他のコピーが動作しています。更新するには他のコピーを終了してください。</translation>
 <translation id="556024056938947818">Google Chrome はパスワードを表示しようとしています。</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
@@ -188,7 +184,6 @@
 <translation id="6291549208091401781">Google Chrome は既にパソコンのすべてのユーザー対してインストールされています。</translation>
 <translation id="6338556085225130112">Google Chrome を更新しています</translation>
 <translation id="6368958679917195344">Chrome OS は、さらに追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
-<translation id="6468844726266617801">{0,plural, =1{1 日以内に Chrome を再起動してください}other{# 日以内に Chrome を再起動してください}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="6598387184982954187">Chrome データの同期に <ph name="PROFILE_EMAIL" /> を使用しています。同期設定を更新する、または Google アカウントなしで Chrome を使用するには、<ph name="SETTINGS_LINK" /> にアクセスしてください。</translation>
@@ -201,12 +196,10 @@
 <translation id="686561893457936865">どのデバイスでも同じ Chrome を使用できます</translation>
 <translation id="6885412569789873916">Chrome ベータ版アプリ</translation>
 <translation id="6943584222992551122">この操作を行うと、このユーザーの閲覧データがこのデバイスから削除されます。データを復元するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
-<translation id="6964107240822114422">{0,plural, =0{Chrome のアップデートが利用可能です}=1{Chrome のアップデートが利用可能です}other{Chrome のアップデートが利用可能になってから # 日経過しています}}</translation>
 <translation id="6967962315388095737">mDNS トラフィックを許可する Google Chrome ベータ版のインバウンド ルールです。</translation>
 <translation id="6970811910055250180">お使いのデバイスを更新しています...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Google Chrome OS 利用規約を拡張、変更、制限するものではありません。</translation>
 <translation id="6989339256997917931">Google Chrome が更新されましたが、30 日間以上使用されていません。</translation>
-<translation id="7023651421574588884">管理者が、アップデートを適用するために Chrome OS を再起動するよう求めています</translation>
 <translation id="7098166902387133879">Google Chrome がマイクを使用しています。</translation>
 <translation id="7106741999175697885">タスク マネージャ - Google Chrome</translation>
 <translation id="7164397146364144019">セキュリティに関する事象についての詳細を Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
@@ -224,7 +217,6 @@
 <translation id="7531671357096394523">Chrome のすべてのコピーを終了します。</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OS をこの言語で表示</translation>
-<translation id="7561940363513215021">{0,plural, =1{Chrome は 1 分後に再起動されます}other{Chrome は # 分後に再起動されます}}</translation>
 <translation id="7589360514048265910">Mac OS X 10.9 はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="7626032353295482388">Chrome へようこそ</translation>
@@ -248,10 +240,8 @@
 <translation id="8013993649590906847">画像に有効な説明が設定されていない場合に、Chrome で説明を自動的に生成できるよう Google に画像が送信されます。</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>
 <translation id="8032142183999901390">Chrome からアカウントを削除したら、場合によっては開いているタブを再読み込みして変更を反映させる必要があります。</translation>
-<translation id="8077352834923175128">管理者が、このアップデートを適用するために Chrome OS を再起動するよう求めています</translation>
 <translation id="8129812357326543296">Google Chrome について(&amp;G)</translation>
 <translation id="8179874765710681175">Chrome をスマートフォンにインストールしませんか。Google よりスマートフォンに SMS をお送りします。</translation>
-<translation id="8226081633851087288">{0,plural, =0{Chrome OS は今すぐ再起動されます}=1{Chrome OS は 1 秒後に再起動されます}other{Chrome OS は # 秒後に再起動されます}}</translation>
 <translation id="825412236959742607">このページは大量のメモリを使用しているため、Chrome により一部のコンテンツが削除されました。</translation>
 <translation id="8255190535488645436">Google Chrome がカメラとマイクを使用しています。</translation>
 <translation id="8286862437124483331">Google Chrome でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
@@ -278,14 +268,12 @@
 <translation id="873133009373065397">Google Chrome では既定のブラウザを判定または設定できません</translation>
 <translation id="8736674169840206667">管理者が、アップデートを適用するために Chrome を再起動するよう求めています</translation>
 <translation id="8788264404293392165">この言語が Chrome OS UI の表示に使用されます</translation>
-<translation id="8791470158600044404">{0,plural, =1{Chrome OS は 1 分後に再起動されます}other{Chrome OS は # 分後に再起動されます}}</translation>
 <translation id="8823341990149967727">Chrome は古いバージョンです</translation>
 <translation id="884296878221830158">この拡張機能では、Chrome の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
 <translation id="8914504000324227558">Chrome の再起動</translation>
 <translation id="9026991721384951619">アカウントのログイン情報が最新ではないため、Chrome OS はデータを同期できませんでした。</translation>
 <translation id="9067395829937117663">Google Chrome のご利用には Windows 7 以上が必要です。</translation>
-<translation id="909149346112452267">{0,plural, =1{Chrome OS は 1 時間後に再起動されます}other{Chrome OS は # 時間後に再起動されます}}</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="9138603949443464873">変更を適用するには Chrome を再起動してください</translation>
 <translation id="919706545465235479">同期を開始するには、Chrome を更新します</translation>

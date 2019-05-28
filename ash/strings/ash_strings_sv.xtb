@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Markera muspekaren</translation>
 <translation id="3513798432020909783">Kontot hanteras av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Byt tillbaka till "<ph name="FROM_LOCALE" />" (kräver omstart)</translation>
+<translation id="3576141592585647168">Ändra tidszon</translation>
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
 <translation id="3606978283550408104">Punktskriftsskärm ansluten.</translation>
 <translation id="3621202678540785336">Ingång</translation>
@@ -348,12 +349,13 @@
 <translation id="6490471652906364588">USB-C-enhet (höger port)</translation>
 <translation id="6501401484702599040">Skärmen castas till <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Inmatning för handskrift</translation>
-<translation id="6528179044667508675">Stör inte</translation>
+<translation id="6528179044667508675">Stör ej</translation>
 <translation id="6537270692134705506">Ta en bild av skärmen</translation>
 <translation id="6542521951477560771">Castar till <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Fråga administratören</translation>
 <translation id="6585808820553845416">Sessionen upphör om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Söktangenten + Skift + K</translation>
+<translation id="6637729079642709226">Ändra tid</translation>
 <translation id="6650933572246256093">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Ange denna lösenordsnyckel på den enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Lösenord</translation>
 <translation id="6665545700722362599">Ge webbplatser, appar och tillägg behörighet att använda platstjänster, enhetens mikrofon, kamera eller andra funktioner</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">Använder <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Lås upp enheten som <ph name="LOGIN_ID" /> så att aviseringen kan göras</translation>
 <translation id="8995603266996330174">Hanteras av <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Ange föräldraåtkomstkoden för Family Link.</translation>
 <translation id="9029474291399787231">En uppdatering av Adobe Flash Player är tillgänglig</translation>
 <translation id="9056839673611986238">Enheten återställs</translation>
 <translation id="9070640332319875144">Inställningar för Google-assistenten</translation>

@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">家長設定</translation>
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5335288049665977812">允許網站執行 JavaScript (建議)</translation>
+<translation id="5357811892247919462">已收到分頁</translation>
 <translation id="5363230136052241468">輕觸 [首頁] 按鈕即可載入新分頁</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{已開啟 <ph name="OPEN_TABS_ONE" /> 個分頁，輕觸即可切換分頁}other{已開啟 <ph name="OPEN_TABS_MANY" /> 個分頁，輕觸即可切換分頁}}</translation>
 <translation id="5391532827096253100">你與這個網站的連線不安全。網站資訊</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">封鎖干擾性或誤導性的網站廣告</translation>
 <translation id="5497272504048921382">開啟的分頁</translation>
 <translation id="5500777121964041360">你所在的地區可能不支援這項功能</translation>
-<translation id="550684401320795253">正在更新 Chrome...</translation>
 <translation id="5512137114520586844">這個帳戶受 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5514904542973294328">裝置管理員已停用</translation>
 <translation id="5515439363601853141">解鎖即可查看你的密碼</translation>

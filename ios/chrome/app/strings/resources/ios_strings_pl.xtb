@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Otwórz wszystkie</translation>
 <translation id="1430915738399379752">Drukuj</translation>
 <translation id="1436290164580597469">Wpisz hasło, by rozpocząć synchronizację.</translation>
+<translation id="1449835205994625556">Ukryj hasło</translation>
 <translation id="145015347812617860">Elementy: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Kliknij dwukrotnie, by zmienić ustawienie</translation>
 <translation id="152234381334907219">Nigdy nie zapisane</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Wyczyść historię przeglądania</translation>
 <translation id="1820259098641718022">Dodano do listy Do przeczytania</translation>
 <translation id="1828824471510190776">Zaproponuj hasło...</translation>
+<translation id="1870148520156231997">Pokaż hasło</translation>
 <translation id="1876721852596493031">Wysyłaj dane na temat użytkowania</translation>
 <translation id="1886928167269928266">Od początku</translation>
 <translation id="1911619930368729126">Prześlij na Dysk Google</translation>
@@ -130,7 +132,7 @@
 <translation id="2800683595868705743">Zamknij przełącznik kart</translation>
 <translation id="2830972654601096923">Zarządzaj adresami...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2840687315230832938">Nie dokończono wstępnej konfiguracji synchronizowania</translation>
+<translation id="2840687315230832938">Nie dokończono wstępnego konfigurowania synchronizacji</translation>
 <translation id="2843803966603263712">Zresetuj ustawienia tłumaczenia</translation>
 <translation id="2858204748079866344">Aby chronić Twoją prywatność, Chrome nie będzie autouzupełniać hasła w tym polu.</translation>
 <translation id="285960592395650245">Ponów pobieranie</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Pasek postępu wczytywania strony, załadowano <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Tytuł</translation>
 <translation id="4004204301268239848">Hasła są zapisywane na Twoim koncie Google, dzięki czemu możesz ich używać na dowolnym urządzeniu.</translation>
+<translation id="4006921758705478413">Wyślij na swoje urządzenia</translation>
 <translation id="4038354071007134711">Nie masz aplikacji, która może otworzyć ten plik.</translation>
 <translation id="4042870976416480368">Znajdź na stronie</translation>
 <translation id="4049507953662678203">Upewnij się, że masz połączenie z siecią, i spróbuj ponownie.</translation>
@@ -267,6 +270,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4904877109095351937">Oznacz jako przeczytane</translation>
 <translation id="4930268273022498155">Usuń istniejące dane. Aby je pobrać, przełącz się z powrotem na konto <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Niestety, wystąpił problem z udostępnieniem tej rzeczy.</translation>
+<translation id="4945756290001680296">Otwórz ustawienia haseł</translation>
 <translation id="4979397965658815378">Zaloguj się na konto Google, by korzystać z zakładek, haseł, historii i innych ustawień na wszystkich urządzeniach</translation>
 <translation id="5005498671520578047">Skopiuj hasło</translation>
 <translation id="5010803260590204777">Otwórz kartę incognito, by przeglądać strony prywatnie.</translation>
@@ -520,6 +524,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8976382372951310360">Pomoc</translation>
 <translation id="8981454092730389528">Zarządzanie aktywnością w Google</translation>
 <translation id="8985320356172329008">Jesteś zalogowany w Google jako</translation>
+<translation id="9016406938567631235">Wysyłam…</translation>
 <translation id="902659348151742535">Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania, reklamy i działanie innych usług.</translation>
 <translation id="9034759925968272072">Nie spowoduje to wylogowania z konta Google. Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Przepustowość</translation>

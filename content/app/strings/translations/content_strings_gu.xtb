@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">લેબલ વિનાની છબી</translation>
 <translation id="3706100364254443312">સ્વિચ</translation>
 <translation id="3732799496749320381">mm</translation>
+<translation id="3754210790023674521">ચિત્રમાં ચિત્રમાંથી બહાર નીકળો</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">ટર્મ</translation>
 <translation id="3822383571486410024">કૃપા કરીને આ ટેક્સ્ટને <ph name="MIN_CHARACTERS" /> અક્ષર અથવા તેથી વધુ સુધી લંબાવો (તમે હાલમાં <ph name="CURRENT_LENGTH" /> અક્ષરોનો ઉપયોગ કરી રહ્યાં છો).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">ટ્રી</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' ને અનુસરી રહેલા ભાગમાં '<ph name="INVALIDCHARACTER" />' પ્રતીક શામેલ હોવું જોઈએ નહીં.</translation>
 <translation id="4668956016107839909">જોડાણ</translation>
+<translation id="4718048029184481307">ચિત્રમાં ચિત્રમાંથી ચલાવી રહ્યાં છીએ</translation>
 <translation id="4742539557769756338">કવર</translation>
 <translation id="4748357248530471599">ડિસ્પ્લેમાં જ સામેલ પૂર્ણસ્ક્રીન ટૉગલ કરો</translation>
 <translation id="4757246831282535685">ટેબ પેનલ</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">મીડિયા ડાઉનલોડ કરો</translation>
 <translation id="6981594929165378967">ઉમેરો</translation>
 <translation id="6989848892321993519">કૃપા કરીને આ ટેક્સ્ટને <ph name="MIN_CHARACTERS" /> અથવા તેથી વધુ અક્ષર સુધી લંબાવો (તમે હાલમાં 1 અક્ષરનો ઉપયોગ કરી રહ્યાં છો).</translation>
+<translation id="7033340931668032222">વૉલ્યૂમમાં ફેરફાર કરવા માટે up અને down</translation>
 <translation id="709897737746224366">કૃપા કરીને વિનંતી કરેલા ફોર્મેટ સાથે મેળ કરો.</translation>
 <translation id="7118469954320184356">કોઈ વર્ણન ઉપલબ્ધ નથી.</translation>
 <translation id="7139483182332611405">પ્રસ્તાવના</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">ગ્રાફિક્સ પ્રતીક</translation>
 <translation id="8583702881314752957">વિવરણ સૂચિ</translation>
 <translation id="8597182159515967513">મથાળું</translation>
+<translation id="8603553056539299761">શોધવા માટે left અને right</translation>
 <translation id="860475260694818407">અનુક્રમણિકા</translation>
 <translation id="8613126697340063924">રિમોટ પ્લેબેકનું નિયંત્રણ કરો</translation>
 <translation id="862370744433916922">(સબટાઇટલ)</translation>

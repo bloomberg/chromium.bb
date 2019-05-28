@@ -15,7 +15,7 @@
 <translation id="1165039591588034296">Erro</translation>
 <translation id="1172898394251786223">Próximo campo</translation>
 <translation id="1176932207622159128">Impossível salvar imagem</translation>
-<translation id="1180526666083833456">Sincronize e personalize entre dispositivos.</translation>
+<translation id="1180526666083833456">Sincronize seus dispositivos e mantenha suas personalizações em todos eles.</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1201530049782216880">Nova guia anônima</translation>
 <translation id="1209206284964581585">Ocultar por enquanto</translation>
@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1436290164580597469">Digite a senha longa para iniciar a sincronização.</translation>
+<translation id="1449835205994625556">Ocultar senha</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> itens</translation>
 <translation id="1491277525950327607">Toque duas vezes para alternar a configuração</translation>
 <translation id="152234381334907219">Nunca salvas</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Limpar dados de navegação</translation>
 <translation id="1820259098641718022">Adicionada à lista de leitura</translation>
 <translation id="1828824471510190776">Sugerir senha…</translation>
+<translation id="1870148520156231997">Mostrar senha</translation>
 <translation id="1876721852596493031">Enviar dados de uso</translation>
 <translation id="1886928167269928266">Desde o começo</translation>
 <translation id="1911619930368729126">Enviar para o Google Drive</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Barra de progresso do carregamento de página, <ph name="EMAIL" /> carregada.</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4004204301268239848">As senhas são salvas na sua Conta do Google para que você possa usá-las em qualquer dispositivo.</translation>
+<translation id="4006921758705478413">Enviar para seus dispositivos</translation>
 <translation id="4038354071007134711">Nenhum app deste dispositivo pode abrir o arquivo.</translation>
 <translation id="4042870976416480368">Buscar na página</translation>
 <translation id="4049507953662678203">Verifique se você tem uma conexão de rede e tente novamente.</translation>
@@ -267,6 +270,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4904877109095351937">Marcar como lidas</translation>
 <translation id="4930268273022498155">Excluir dados já existentes. É possível recuperá-los voltando para a conta <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Ocorreu um problema ao compartilhar seu item.</translation>
+<translation id="4945756290001680296">Acessar configurações de senha</translation>
 <translation id="4979397965658815378">Faça login com sua Conta do Google para ter seus favoritos, senhas, histórico e outras configurações em todos os seus dispositivos</translation>
 <translation id="5005498671520578047">Copiar senha</translation>
 <translation id="5010803260590204777">Abra uma guia anônima para navegar com privacidade.</translation>
@@ -520,6 +524,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8976382372951310360">Ajuda</translation>
 <translation id="8981454092730389528">Controles de atividades do Google</translation>
 <translation id="8985320356172329008">Conectado(a) ao Google como</translation>
+<translation id="9016406938567631235">Enviando...</translation>
 <translation id="902659348151742535">O Google pode usar seu histórico de navegação para personalizar a Pesquisa Google, os anúncios e outros serviços nossos.</translation>
 <translation id="9034759925968272072">Você não será desconectado da sua Conta do Google. É possível que sua Conta do Google tenha outras formas de histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Largura de banda</translation>

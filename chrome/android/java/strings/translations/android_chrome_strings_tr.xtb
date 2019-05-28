@@ -580,6 +580,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5324858694974489420">Ebeveyn Ayarları</translation>
 <translation id="5327248766486351172">Ad</translation>
 <translation id="5335288049665977812">Sitelerin JavaScript çalıştırmasına izin ver (önerilir)</translation>
+<translation id="5357811892247919462">Sekme alındı</translation>
 <translation id="5363230136052241468">Yeni sekme sayfasını yüklemek için ana ekran düğmesine dokunun</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> açık sekme, sekmeler arasında geçiş yapmak için dokunun}other{<ph name="OPEN_TABS_MANY" /> açık sekme, sekmeler arasında geçiş yapmak için dokunun}}</translation>
 <translation id="5391532827096253100">Bu siteye bağlantınız güvenli değil. Site bilgileri</translation>
@@ -601,7 +602,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5494752089476963479">Araya giren veya yanıltıcı reklamlar gösteren sitelerde reklamları engelle</translation>
 <translation id="5497272504048921382">Sekmeler açıldı</translation>
 <translation id="5500777121964041360">Bulunduğunuz ülkede kullanılamayabilir</translation>
-<translation id="550684401320795253">Chrome güncelleniyor...</translation>
 <translation id="5512137114520586844">Bu hesap <ph name="PARENT_NAME" /> tarafından yönetiliyor.</translation>
 <translation id="5514904542973294328">Bu cihazın yöneticisi tarafından devre dışı bırakıldı</translation>
 <translation id="5515439363601853141">Şifrenizi görüntülemek için kilidi açın</translation>

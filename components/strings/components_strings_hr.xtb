@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Fotoaparat</translation>
 <translation id="1623104350909869708">Spriječi da ova stranica stvori dodatne dijaloške okvire</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Kartica nije spremljena</translation>
 <translation id="1639239467298939599">Učitavanje</translation>
 <translation id="1640180200866533862">Korisnička pravila</translation>
 <translation id="1640244768702815859">Pokušajte <ph name="BEGIN_LINK" />otvoriti početnu stranicu web-lokacije<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Riješite problem s povezivanjem pomoću <ph name="BEGIN_LINK" />dijagnostičke aplikacije<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Pošalji sad</translation>
 <translation id="225207911366869382">Ta je vrijednost obustavljena za to pravilo.</translation>
+<translation id="2257315177824333709">Vaša se kartica trenutačno ne može spremiti</translation>
 <translation id="2262243747453050782">HTTP pogreška</translation>
 <translation id="2263079731045660823">Ažurirajte podatke za automatsko popunjavanje kreditne kartice u postavkama Chromea</translation>
 <translation id="2270484714375784793">Telefonski broj</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Prikaži pravila bez postavljenih vrijednosti</translation>
 <translation id="239429038616798445">Taj način dostave nije dostupan. Pokušajte s drugim načinom.</translation>
 <translation id="2396249848217231973">&amp;Poništi brisanje</translation>
+<translation id="2409589295040002961">Vaš administrator može daljinski promijeniti postavke preglednika. Aktivnostima na ovom uređaju može se upravljati i izvan Chromea. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je opozvan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="2418081434543109369">Poslužitelj kojem pristupate, <ph name="ORIGIN" />, zatražio je primjenu
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Zahtjev je uspio</translation>
 <translation id="2728127805433021124">Certifikat poslužitelja potpisan je slabim algoritmom potpisa.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />pokrenuti Dijagnostiku povezivosti<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Za to je pravilo prisutno više izvora sa sukobljenim vrijednostima!</translation>
 <translation id="2738330467931008676">Odaberite adresu preuzimanja</translation>
 <translation id="2740531572673183784">U redu</translation>
 <translation id="2742870351467570537">Ukloni odabrane stavke</translation>
@@ -996,6 +1000,7 @@
 <translation id="6433490469411711332">Uređivanje podataka za kontakt</translation>
 <translation id="6433595998831338502">Host <ph name="HOST_NAME" /> odbio je povezivanje.</translation>
 <translation id="6434309073475700221">Odbaci</translation>
+<translation id="6440503408713884761">Zanemareno</translation>
 <translation id="6446163441502663861">Kahu (omotnica)</translation>
 <translation id="6446608382365791566">Dodajte još podataka</translation>
 <translation id="6447842834002726250">Kolačići</translation>
@@ -1011,6 +1016,7 @@
 <translation id="6517596291481585650">Upozorenje: pravilo nije spojeno kao popis prema uputama u pravilima jer se ne radi o popisu.</translation>
 <translation id="6529602333819889595">&amp;Ponovi brisanje</translation>
 <translation id="6534179046333460208">Prijedlozi Fizičkog weba</translation>
+<translation id="6545864417968258051">Traženje Bluetootha</translation>
 <translation id="6554795675067793129">Vašim računom upravlja <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Ponovi</translation>
 <translation id="6563469144985748109">Voditelj je još nije odobrio</translation>
@@ -1027,6 +1033,7 @@
 <translation id="6626291197371920147">Dodajte važeći broj kartice</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Pretraživanje</translation>
 <translation id="6630809736994426279">Napadači koji su trenutačno na web-lokaciji <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogu pokušati instalirati opasne programe na vaš Mac radi krađe ili brisanja vaših podataka (na primjer fotografija, zaporki, poruka i brojeva kreditnih kartica). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Za to je pravilo prisutno više izvora, ali vrijednosti su iste.</translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6644283850729428850">Ovo je pravilo zastarjelo.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nijedna}=1{S jedne web-lokacije (nećete se odjaviti s Google računa)}one{S # web-lokacije (nećete se odjaviti s Google računa)}few{S # web-lokacije (nećete se odjaviti s Google računa)}other{S # web-lokacija (nećete se odjaviti s Google računa)}}</translation>

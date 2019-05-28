@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">രക്ഷാകർതൃ ക്രമീകരണം</translation>
 <translation id="5327248766486351172">പേര്</translation>
 <translation id="5335288049665977812">JavaScript റൺ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
+<translation id="5357811892247919462">ടാബ് സ്വീകരിച്ചു</translation>
 <translation id="5363230136052241468">പുതിയ ടാബ് പേജ് ലോഡ് ചെയ്യാൻ ഹോം ബട്ടൺ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ടാബ് തുറന്നിരിക്കുന്നു, ടാബുകൾ മാറാനായി ടാപ്പ് ചെയ്യുക}other{<ph name="OPEN_TABS_MANY" /> ടാബുകൾ തുറന്നിരിക്കുന്നു, മാറാനായി ടാപ്പ് ചെയ്യുക}}</translation>
 <translation id="5391532827096253100">ഈ സൈറ്റിലേക്കുള്ള നിങ്ങളുടെ കണക്ഷൻ സുരക്ഷിതമല്ല. സൈറ്റ് വിവരങ്ങള്‍</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്ന സൈറ്റുകളിലെ പരസ്യങ്ങൾ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="5497272504048921382">തുറന്ന ടാബുകൾ</translation>
 <translation id="5500777121964041360">നിങ്ങളുടെ ലൊക്കേഷനിൽ ലഭ്യമായിരിക്കില്ല</translation>
-<translation id="550684401320795253">Chrome അപ്‌ഡേറ്റുചെയ്യുന്നു...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> ആണ് ഈ അക്കൗണ്ട് നിയന്ത്രിക്കുന്നത്.</translation>
 <translation id="5514904542973294328">ഈ ഉപകരണത്തിന്റെ അഡ്‌മിൻ പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="5515439363601853141">നിങ്ങളുടെ പാസ്‍വേഡ് കാണാൻ അൺലോക്ക് ചെയ്യുക</translation>
@@ -831,6 +831,7 @@
 <translation id="7062545763355031412">അംഗീകരിച്ചശേഷം, അക്കൗണ്ടുകൾ മാറുക</translation>
 <translation id="7063006564040364415">സമന്വയ സെർവറിലേക്ക് കണക്‌റ്റ് ചെയ്യാനായില്ല.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 തിരഞ്ഞെടുത്തു}other{# തിരഞ്ഞെടുത്തു}}</translation>
+<translation id="7071521146534760487">അക്കൗണ്ട് മാനേജ് ചെയ്യുക</translation>
 <translation id="7077143737582773186">SD കാർഡ്</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> എണ്ണം തിരഞ്ഞെടുത്തു. സ്‌ക്രീനിന്റെ മുകളിലുള്ള ഭാഗത്തിന് സമീപം ഓപ്‌ഷനുകൾ ലഭ്യമാണ്</translation>
 <translation id="7121362699166175603">ചരിത്രവും വിലാസ ബാറിലെ സ്വയം പൂർത്തീകരണങ്ങളും മായ്ക്കുന്നു. നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>

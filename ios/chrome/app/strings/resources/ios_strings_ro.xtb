@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Deschideți-le pe toate</translation>
 <translation id="1430915738399379752">Printează</translation>
 <translation id="1436290164580597469">Introdu expresia de acces pentru a începe sincronizarea.</translation>
+<translation id="1449835205994625556">Ascunde parola</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elemente</translation>
 <translation id="1491277525950327607">Atinge de două ori ca să comuți setarea</translation>
 <translation id="152234381334907219">Nu se salvează niciodată</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Ștergeți datele de navigare</translation>
 <translation id="1820259098641718022">S-a adăugat în lista de lectură</translation>
 <translation id="1828824471510190776">Sugerează o parolă...</translation>
+<translation id="1870148520156231997">Afișează parola</translation>
 <translation id="1876721852596493031">Trim. date utilizare</translation>
 <translation id="1886928167269928266">De la început</translation>
 <translation id="1911619930368729126">Încarcă în Google Drive</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Bara de progres a încărcării paginii, <ph name="EMAIL" /> s-a încărcat.</translation>
 <translation id="4002066346123236978">Titlu</translation>
 <translation id="4004204301268239848">Parolele sunt salvate în Contul tău Google, astfel încât să le poți folosi pe orice dispozitiv</translation>
+<translation id="4006921758705478413">Trimite pe dispozitivele tale</translation>
 <translation id="4038354071007134711">Aplicațiile de pe dispozitiv nu deschid fișierul.</translation>
 <translation id="4042870976416480368">Găsește în pagină</translation>
 <translation id="4049507953662678203">Asigură-te că ai o conexiune la rețea și încearcă din nou.</translation>
@@ -267,6 +270,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="4904877109095351937">Marchează ca citite</translation>
 <translation id="4930268273022498155">Șterge datele existente. Le poți recupera comutând înapoi la <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">A apărut o problemă la trimiterea articolului.</translation>
+<translation id="4945756290001680296">Accesează setările pentru parole</translation>
 <translation id="4979397965658815378">Conectează-te folosind Contul Google pentru a accesa marcajele, parolele, istoricul și alte setări pe toate dispozitivele</translation>
 <translation id="5005498671520578047">Copiază parola</translation>
 <translation id="5010803260590204777">Deschide o filă incognito pentru a naviga privat pe web.</translation>
@@ -520,6 +524,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8976382372951310360">Ajutor</translation>
 <translation id="8981454092730389528">Opțiuni privind activitatea Google</translation>
 <translation id="8985320356172329008">Conectat(ă) la Google ca</translation>
+<translation id="9016406938567631235">Se trimite...</translation>
 <translation id="902659348151742535">Google poate folosi istoricul de navigare pentru a personaliza Căutarea, anunțurile și alte servicii Google.</translation>
 <translation id="9034759925968272072">Nu vei fi deconectat(ă) de la Contul Google. Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Lățime de bandă</translation>

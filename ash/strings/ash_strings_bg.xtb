@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Открояване на курсора на мишката</translation>
 <translation id="3513798432020909783">Профилът се управлява от <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Връщане към „<ph name="FROM_LOCALE" />“ (изисква рестартиране)</translation>
+<translation id="3576141592585647168">Промяна на часовата зона</translation>
 <translation id="3595596368722241419">Батерията е заредена</translation>
 <translation id="3606978283550408104">Брайловият дисплей е свързан.</translation>
 <translation id="3621202678540785336">Вход</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Попитайте администратора</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">клавиш „търсене“ + Shift + K</translation>
+<translation id="6637729079642709226">Промяна на часа</translation>
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Парола</translation>
 <translation id="6665545700722362599">да разрешава на уебсайтове, приложения и разширения да използват услугите за местоположение и микрофона, камерата или други функции на устройството;</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">Използвате <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Отключете устройството като <ph name="LOGIN_ID" />, за да се изпълни действието от известието</translation>
 <translation id="8995603266996330174">Управлявано от <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Въведете кода за достъп на родител от Family Link.</translation>
 <translation id="9029474291399787231">Налице е актуализация на Adobe Flash Player</translation>
 <translation id="9056839673611986238">Устройството ще бъде върнато към по-ранна версия</translation>
 <translation id="9070640332319875144">Настройки на Асистент</translation>

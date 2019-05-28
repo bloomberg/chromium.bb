@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Neleisti šiam puslapiui kurti papildomų dialogo langų</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Nepavyko išsaugoti kortelės</translation>
 <translation id="1639239467298939599">Įkeliama</translation>
 <translation id="1640180200866533862">Naudotojo politika</translation>
 <translation id="1640244768702815859">Pabandykite <ph name="BEGIN_LINK" />apsilankyti pagrindiniame svetainės puslapyje<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Išspręskite ryšio problemas naudodami <ph name="BEGIN_LINK" />diagnostikos programą<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Siųsti dabar</translation>
 <translation id="225207911366869382">Pagal šią politiką ši vertė nepatvirtinta.</translation>
+<translation id="2257315177824333709">Deja, šiuo metu negalima išsaugoti jūsų kortelės</translation>
 <translation id="2262243747453050782">HTTP klaida</translation>
 <translation id="2263079731045660823">Atnaujinti kredito kortelės automatinio pildymo informaciją „Chrome“ nustatymuose</translation>
 <translation id="2270484714375784793">Telefono numeris</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Rodyti politiką su nenustatyta verte</translation>
 <translation id="239429038616798445">Šis pristatymo metodas nepasiekiamas. Išbandykite kitą metodą.</translation>
 <translation id="2396249848217231973">&amp;Anuliuoti ištrynimą</translation>
+<translation id="2409589295040002961">Administratorius gali nuotoliniu būdu keisti naršyklės nustatymą. Veiklą šiame įrenginyje taip pat galima tvarkyti ne naršyklėje „Chrome“. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas gali būti atšauktas. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="2418081434543109369">Serveris, į kurį esate nukreipiami (<ph name="ORIGIN" />), pateikė užklausą
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Užklausa sėkminga</translation>
 <translation id="2728127805433021124">Serverio sertifikatas pasirašytas naudojant nepatikimą parašo algoritmą.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Paleistas ryšio diagnostikos įrankis<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Pateiktas daugiau nei vienas šios politikos šaltinis su nesuderinamomis vertėmis!</translation>
 <translation id="2738330467931008676">Pasirinkti paėmimo adresą</translation>
 <translation id="2740531572673183784">Gerai</translation>
 <translation id="2742870351467570537">Pašalinti pasirinktus elementus</translation>
@@ -998,6 +1002,7 @@
 <translation id="6433490469411711332">Kontaktinės informacijos redagavimas</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> atsisakė prisijungti.</translation>
 <translation id="6434309073475700221">Atmesti</translation>
+<translation id="6440503408713884761">Nepaisoma</translation>
 <translation id="6446163441502663861">„Kahu“ (vokas)</translation>
 <translation id="6446608382365791566">Daugiau informacijos pridėjimas</translation>
 <translation id="6447842834002726250">Slapukai</translation>
@@ -1013,6 +1018,7 @@
 <translation id="6517596291481585650">Įspėjimas: ši politika nebuvo sujungta kaip sąrašas, kaip nurodyta politikoje, nes ji nėra sąrašas.</translation>
 <translation id="6529602333819889595">&amp;Ištrinti dar kartą</translation>
 <translation id="6534179046333460208">Fizinio žiniatinklio pasiūlymai</translation>
+<translation id="6545864417968258051">„Bluetooth“ nuskaitymas</translation>
 <translation id="6554795675067793129">Jūsų paskyrą tvarko <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Grąžinti</translation>
 <translation id="6563469144985748109">Jūsų valdytojas dar jos nepatvirtino</translation>
@@ -1029,6 +1035,7 @@
 <translation id="6626291197371920147">Galiojančios kortelės numerio pridėjimas</translation>
 <translation id="6628463337424475685">„<ph name="ENGINE" />“ paieška</translation>
 <translation id="6630809736994426279">Šiuo metu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> užpuolikai gali jūsų „Mac“ įrenginyje bandyti įdiegti pavojingas programas, kurios vagia arba ištrina informaciją (pvz., nuotraukas, slaptažodžius, pranešimus ir kredito kortelių duomenis). <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Pateiktas daugiau nei vienas politikos šaltinis, bet vertės vienodos.</translation>
 <translation id="6643016212128521049">Išvalyti</translation>
 <translation id="6644283850729428850">Ši politika nepatvirtinta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nėra}=1{Iš 1 svetainės (nebūsite atjungti nuo „Google“ paskyros)}one{Iš # svetainės (nebūsite atjungti nuo „Google“ paskyros)}few{Iš # svetainių (nebūsite atjungti nuo „Google“ paskyros)}many{Iš # svetainės (nebūsite atjungti nuo „Google“ paskyros)}other{Iš # svetainių (nebūsite atjungti nuo „Google“ paskyros)}}</translation>

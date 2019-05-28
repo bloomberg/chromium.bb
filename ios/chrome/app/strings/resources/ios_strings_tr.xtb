@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Tümünü aç</translation>
 <translation id="1430915738399379752">Yazdır</translation>
 <translation id="1436290164580597469">Senkronizasyonu başlatmak için parola girin.</translation>
+<translation id="1449835205994625556">Şifreyi Gizle</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> öğe</translation>
 <translation id="1491277525950327607">Ayarı açıp kapatmak için iki kez dokunun</translation>
 <translation id="152234381334907219">Hiç Kaydedilmeyenler</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Tarama Verilerini Temizle</translation>
 <translation id="1820259098641718022">Okuma Listesine eklendi</translation>
 <translation id="1828824471510190776">Şifre Öner...</translation>
+<translation id="1870148520156231997">Şifreyi Göster</translation>
 <translation id="1876721852596493031">Kull. Veril. Gönder</translation>
 <translation id="1886928167269928266">En Baştan</translation>
 <translation id="1911619930368729126">Google Drive'a yükle</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Sayfa yükleme ilerleme çubuğu, <ph name="EMAIL" /> yüklendi.</translation>
 <translation id="4002066346123236978">Başlık</translation>
 <translation id="4004204301268239848">Şifreler Google Hesabınıza kaydedildiğinden bunları herhangi bir cihazda kullanabilirsiniz.</translation>
+<translation id="4006921758705478413">Cihazlarınıza Gönderin</translation>
 <translation id="4038354071007134711">Bu cihazdaki hiçbir uygulama dosyayı açamıyor.</translation>
 <translation id="4042870976416480368">Sayfada Bul</translation>
 <translation id="4049507953662678203">Ağ bağlantınız olduğundan emin olun ve tekrar deneyin.</translation>
@@ -267,6 +270,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="4904877109095351937">Okundu Olarak İşaretle</translation>
 <translation id="4930268273022498155">Mevcut verileri silin. İlgili verileri tekrar <ph name="USER_EMAIL1" /> hesabına geçerek alabilirsiniz.</translation>
 <translation id="4941089862236492464">Maalesef öğeniz paylaşılırken bir sorun oluştu.</translation>
+<translation id="4945756290001680296">Şifre ayarlarına erişin</translation>
 <translation id="4979397965658815378">Yer işaretleri, şifreler, geçmiş ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için Google Hesabınızla oturum açın.</translation>
 <translation id="5005498671520578047">Şifreyi kopyalayın</translation>
 <translation id="5010803260590204777">Web'e gizli olarak göz atmak için gizli bir sekme açın.</translation>
@@ -427,7 +431,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7272437679830969316">Kimliğiniz doğrulanamıyor. Şifre kopyalanmadı.</translation>
 <translation id="7285236536143823449">EVET, İSTİYORUM</translation>
 <translation id="7291368939935408496">Şifreler Hazırlanıyor...</translation>
-<translation id="7293171162284876153">Senkronizasyonu başlatmak için "Chrome verilerimi senkronize et" ayarını etkinleştirin.</translation>
+<translation id="7293171162284876153">Senkronizasyonu başlatmak için "Chrome verilerimi senkronize et" seçeneğini açın.</translation>
 <translation id="7336264872878993241">Yüzde <ph name="PERCENT" /> indirildi</translation>
 <translation id="7346909386216857016">Tamam, anladım</translation>
 <translation id="7348502496356775519">Yer işareti koy</translation>
@@ -520,6 +524,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="8976382372951310360">Yardım</translation>
 <translation id="8981454092730389528">Google Etkinlik Kontrolleri</translation>
 <translation id="8985320356172329008">Google'da Şu Hesapla Oturum Açıldı:</translation>
+<translation id="9016406938567631235">Gönderiliyor...</translation>
 <translation id="902659348151742535">Google; Arama, reklamlar ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi kullanabilir.</translation>
 <translation id="9034759925968272072">Google Hesabınızdaki oturumunuz kapatılmayacaktır. Google hesabınızla ilişkili başka biçimlerde tarama geçmişi <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> adresinde bulunabilir.</translation>
 <translation id="9039373489628511875">Bant Genişliği</translation>

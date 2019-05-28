@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Det gick inte att spara kortet</translation>
 <translation id="1639239467298939599">Läser in</translation>
 <translation id="1640180200866533862">Användarpolicyer</translation>
 <translation id="1640244768702815859">Testa att <ph name="BEGIN_LINK" />besöka webbplatsens startsida<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Åtgärda anslutningsproblemet med hjälp av <ph name="BEGIN_LINK" />diagnostiseringsappen<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Skicka nu</translation>
 <translation id="225207911366869382">Värdet är inte längre giltigt för policyn.</translation>
+<translation id="2257315177824333709">Det går tyvärr inte att spara kortet just nu</translation>
 <translation id="2262243747453050782">HTTP-fel</translation>
 <translation id="2263079731045660823">Uppdatera kreditkortsuppgifter för Autofyll i Chrome-inställningarna</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Visa policyer utan inställt värde</translation>
 <translation id="239429038616798445">Det här fraktalternativet är inte tillgängligt. Testa ett annat alternativ.</translation>
 <translation id="2396249848217231973">&amp;Ångra Ta bort</translation>
+<translation id="2409589295040002961">Administratören kan ändra webbläsarinställningarna på distans. Aktivitet på den här enheten kan hanteras även utanför Chrome. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat kan ha återkallats. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="2418081434543109369">Servern som du är på väg till, <ph name="ORIGIN" />, har begärt att en
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Begäran genomfördes</translation>
 <translation id="2728127805433021124">Serverns certifikat är signerat med en svag signaturalgoritm.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />att köra anslutningsdiagnostik<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Den här principen har flera källor med olika värden.</translation>
 <translation id="2738330467931008676">Välj hämtningsadress</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Ta bort valda objekt</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">Redigera kontaktuppgifter</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avvisade anslutningen.</translation>
 <translation id="6434309073475700221">Kasta</translation>
+<translation id="6440503408713884761">Ignoreras</translation>
 <translation id="6446163441502663861">Kahu (kuvert)</translation>
 <translation id="6446608382365791566">Lägg till mer information</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">Varning: Den här principen kombinerades inte som en lista enligt principens specifikation eftersom den inte är en lista.</translation>
 <translation id="6529602333819889595">&amp;Gör om Ta bort</translation>
 <translation id="6534179046333460208">Förslag från Physical Web</translation>
+<translation id="6545864417968258051">Bluetooth-sökning</translation>
 <translation id="6554795675067793129">Kontot hanteras av <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Upprepa</translation>
 <translation id="6563469144985748109">Den ansvarige har inte godkänt den ännu</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">Lägg till ett giltigt kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Sök</translation>
 <translation id="6630809736994426279">Angripare på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan försöka installera skadliga program som stjäl eller raderar information (t.ex. foton, lösenord, meddelanden och kreditkortsuppgifter) på din Mac. <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Den här principen har fler än en källa, men med samma värden.</translation>
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="6644283850729428850">Policyn är föråldrad.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ingen}=1{Från 1 webbplats (du loggas inte ut från Google-kontot)}other{Från # webbplatser (du loggas inte ut från Google-kontot)}}</translation>

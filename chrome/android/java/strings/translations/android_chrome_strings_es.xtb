@@ -580,6 +580,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5324858694974489420">Configuración parental</translation>
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5335288049665977812">Permitir que los sitios web utilicen JavaScript (recomendado)</translation>
+<translation id="5357811892247919462">Pestaña recibida</translation>
 <translation id="5363230136052241468">Toca el botón de inicio para cargar la página Nueva pestaña</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> pestaña abierta, toca para cambiar de una a otra}other{<ph name="OPEN_TABS_MANY" /> pestañas abiertas, toca para cambiar de una a otra}}</translation>
 <translation id="5391532827096253100">Tu conexión a este sitio web no es segura. Información del sitio web</translation>
@@ -601,7 +602,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5494752089476963479">Bloquea anuncios invasivos o engañosos en los sitios web que los muestran</translation>
 <translation id="5497272504048921382">Pestañas abiertas</translation>
 <translation id="5500777121964041360">Puede que no esté disponible en tu ubicación</translation>
-<translation id="550684401320795253">Actualizando Chrome...</translation>
 <translation id="5512137114520586844">Esta cuenta está administrada por <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Inhabilitada por el administrador de este dispositivo</translation>
 <translation id="5515439363601853141">Desbloquea la pantalla para ver tu contraseña</translation>

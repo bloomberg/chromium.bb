@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Buka semua</translation>
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1436290164580597469">Masukkan frasa sandi untuk memulai sinkronisasi.</translation>
+<translation id="1449835205994625556">Sembunyikan Sandi</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> item</translation>
 <translation id="1491277525950327607">Tap dua kali untuk beralih setelan</translation>
 <translation id="152234381334907219">Jangan Pernah Disimpan</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Hapus Data Penjelajahan</translation>
 <translation id="1820259098641718022">Ditambahkan ke Daftar Baca</translation>
 <translation id="1828824471510190776">Sarankan Sandi...</translation>
+<translation id="1870148520156231997">Tampilkan Sandi</translation>
 <translation id="1876721852596493031">Krm Data Penggunaan</translation>
 <translation id="1886928167269928266">Awal Waktu</translation>
 <translation id="1911619930368729126">Upload ke Google Drive</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Status progres pemuatan halaman, <ph name="EMAIL" /> telah dimuat.</translation>
 <translation id="4002066346123236978">Judul</translation>
 <translation id="4004204301268239848">Sandi disimpan di Akun Google Anda agar Anda dapat menggunakannya di perangkat mana pun.</translation>
+<translation id="4006921758705478413">Kirim ke Perangkat Anda</translation>
 <translation id="4038354071007134711">Tidak ada aplikasi di perangkat ini yang dapat membuka file.</translation>
 <translation id="4042870976416480368">Cari di Halaman</translation>
 <translation id="4049507953662678203">Pastikan Anda memiliki sambungan jaringan, dan coba lagi.</translation>
@@ -267,6 +270,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="4904877109095351937">Tandai Sudah Dibaca</translation>
 <translation id="4930268273022498155">Hapus data yang sudah ada. Anda dapat mengambilnya dengan beralih lagi ke <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Maaf, terjadi masalah saat berbagi item Anda.</translation>
+<translation id="4945756290001680296">Akses setelan sandi</translation>
 <translation id="4979397965658815378">Login dengan Akun Google untuk mendapatkan bookmark, sandi, histori, dan setelan lainnya di semua perangkat Anda.</translation>
 <translation id="5005498671520578047">Salin sandi</translation>
 <translation id="5010803260590204777">Buka tab penyamaran untuk menjelajahi web secara pribadi.</translation>
@@ -520,6 +524,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="8976382372951310360">Bantuan</translation>
 <translation id="8981454092730389528">Kontrol Aktivitas Google</translation>
 <translation id="8985320356172329008">Login ke Google sebagai</translation>
+<translation id="9016406938567631235">Mengirim…</translation>
 <translation id="902659348151742535">Google dapat menggunakan histori penjelajahan Anda untuk mempersonalisasi Penelusuran, iklan, dan layanan Google lainnya.</translation>
 <translation id="9034759925968272072">Anda tidak akan dikeluarkan dari Akun Google. Akun Google Anda mungkin memiliki bentuk histori penjelajahan lainnya di <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Bandwidth</translation>

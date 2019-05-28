@@ -136,6 +136,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Neļaut šai lapai veidot papildu dialoglodziņus</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Nevar saglabāt karti</translation>
 <translation id="1639239467298939599">Notiek ielāde</translation>
 <translation id="1640180200866533862">Lietotāja politikas</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />Apmeklējiet vietnes sākumlapu<ph name="END_LINK" />.</translation>
@@ -244,6 +245,7 @@
 <translation id="2230458221926704099">Labojiet savienojumu, izmantojot <ph name="BEGIN_LINK" />diagnostikas lietotni<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Sūtīt tūlīt</translation>
 <translation id="225207911366869382">Šī vērtība vairs netiek atbalstīta šai politikai.</translation>
+<translation id="2257315177824333709">Atvainojiet, jūsu karti šobrīd nevar saglabāt</translation>
 <translation id="2262243747453050782">HTTP kļūda</translation>
 <translation id="2263079731045660823">Atjaunināt kredītkaršu automātisko aizpildi Chrome iestatījumos</translation>
 <translation id="2270484714375784793">Tālruņa numurs</translation>
@@ -273,6 +275,7 @@
 <translation id="2392959068659972793">Rādīt politikas, kuru vērtība nav iestatīta</translation>
 <translation id="239429038616798445">Šis nosūtīšanas veids nav pieejams. Izmēģiniet citu veidu.</translation>
 <translation id="2396249848217231973">&amp;Atsaukt dzēšanu</translation>
+<translation id="2409589295040002961">Jūsu administrators var attālināti mainīt jūsu pārlūka iestatījumus. Darbību šajā ierīcē var pārvaldīt arī ārpus Chrome. <ph name="BEGIN_LINK" />Uzzināt vairāk<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts, iespējams, ir atsaukts. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="2418081434543109369">Visiem pieprasījumiem uz serveri <ph name="ORIGIN" /> tiek piemērota drošības politika. Bet tagad serveris nevar iesniegt politiku, kas neļauj pārlūkam izpildīt jūsu pieprasījumu vietnei <ph name="SITE" />.</translation>
@@ -333,6 +336,7 @@
 <translation id="2721148159707890343">Pieprasījums bija veiksmīgs.</translation>
 <translation id="2728127805433021124">Servera sertifikāts ir parakstīts, izmantojot vāju paraksta algoritmu.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Palaist savienojamības diagnostiku<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Šai politikai pastāv vairāk nekā viens avots ar pretrunīgām vērtībām.</translation>
 <translation id="2738330467931008676">Izvēlēties saņemšanas adresi</translation>
 <translation id="2740531572673183784">Labi</translation>
 <translation id="2742870351467570537">Noņemt atlasītos vienumus</translation>
@@ -989,6 +993,7 @@
 <translation id="6433490469411711332">Kontaktinformācijas rediģēšana</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> noraidīja savienojuma izveidi.</translation>
 <translation id="6434309073475700221">Atmest</translation>
+<translation id="6440503408713884761">Ignorēts</translation>
 <translation id="6446163441502663861">Kahu (aploksne)</translation>
 <translation id="6446608382365791566">Papildu informācijas pievienošana</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
@@ -1004,6 +1009,7 @@
 <translation id="6517596291481585650">Brīdinājums! Šī politika netika apvienota kā saraksts atbilstoši politikā noteiktajam, jo tā nav saraksts.</translation>
 <translation id="6529602333819889595">&amp;Dzēšanas atsaukuma atcelšana</translation>
 <translation id="6534179046333460208">Fiziskā tīmekļa ieteikumi</translation>
+<translation id="6545864417968258051">Bluetooth meklēšana</translation>
 <translation id="6554795675067793129">Jūsu kontu pārvalda <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Atcelt atsaukšanu</translation>
 <translation id="6563469144985748109">Jūsu vadītājs vēl nav to apstiprinājis</translation>
@@ -1020,6 +1026,7 @@
 <translation id="6626291197371920147">Derīga kartes numura pievienošana</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> meklēšana</translation>
 <translation id="6630809736994426279">Uzbrucēji vietnē <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> var mēģināt jūsu Mac datorā instalēt bīstamas programmas, kas zog vai izdzēš informāciju (piemēram, fotoattēlus, paroles, ziņojumus un kredītkaršu datus). <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="6631202559048444592">Šai politikai ir vairāk nekā viens avots, bet vērtības ir vienādas.</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
 <translation id="6644283850729428850">Šī politika ir izbeigta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nav}=1{No 1 vietnes (jūs netiksiet izrakstīts no sava Google konta)}zero{No # vietnēm (jūs netiksiet izrakstīts no sava Google konta)}one{No # vietnes (jūs netiksiet izrakstīts no sava Google konta)}other{No # vietnēm (jūs netiksiet izrakstīts no sava Google konta)}}</translation>

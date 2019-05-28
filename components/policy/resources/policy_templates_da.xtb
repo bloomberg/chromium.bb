@@ -382,6 +382,7 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
       noget match, nægtes der automatisk adgang.  Mønstre med jokertegn
       tillades ikke.</translation>
 <translation id="1634989431648355062">Tillad <ph name="FLASH_PLUGIN_NAME" />-pluginnet på disse websites</translation>
+<translation id="1645793986494086629">Skema:</translation>
 <translation id="1653229475925941921">Hvis denne politik er konfigureret, styrer den, hvilken type lup der er aktiveret. Hvis politikken konfigureres til "Ingen", deaktiveres luppen.
 
           Hvis du konfigurerer denne politik, kan brugerne ikke ændre eller tilsidesætte den.
@@ -584,6 +585,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2014757022750736514">Styrer adfærden for den loginskærm, hvor brugerne logger ind på deres konti. Indstillingerne omfatter, hvem der kan logge ind, hvilke typer konti der tillades, hvilke godkendelsesmetoder der må anvendes, samt generelle hjælpefunktioner, indtastningsmetode og lokale indstillinger.</translation>
 <translation id="201557587962247231">Hyppighed for upload af rapporter om enhedsstatus</translation>
 <translation id="2017301949684549118">Webadresser til webapps skal installeres uovervåget.</translation>
+<translation id="2017459564744167827">Gå til <ph name="REFERENCE_URL" /> for at få flere oplysninger om skema og format.</translation>
 <translation id="2018836497795982119">Angiver den periode i millisekunder, hvor enhedsadministrationstjenesten anmodes om brugerpolitikoplysninger.
 
       Angivelse af denne politik tilsidesætter standardværdien på tre timer. Gyldige værdier for denne politik ligger i intervallet fra 1800000 (30 minutter) til 86400000 (ét døgn). Alle værdier, der ikke ligger inden for dette interval, fastgøres til den respektive grænse. Hvis platformen understøtter notifikationer vedrørende politik, angives forsinkelsen af opdateringen til 24 timer, da det forventes, at notifikationer vedrørende politik automatisk gennemtvinger en opdatering, når politikken ændres.
@@ -797,6 +799,11 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2463034609187171371">Aktivér DHE-krypteringspakker i TLS</translation>
 <translation id="2463365186486772703">Landestandard for applikationen</translation>
 <translation id="2466131534462628618">Captive portal-godkendelse ignorerer proxy</translation>
+<translation id="2471748297300970300">Hvis den er deaktiveret, forhindres visning af sikkerhedsadvarsler, når Chrome startes med nogle potentielt farlige markeringer på kommandolinjen.
+
+          Hvis den er aktiveret eller ikke er konfigureret, vises sikkerhedsadvarsler, når visse markeringer på kommandolinjen bruges til at starte Chrome.
+
+          I Windows er denne politik kun tilgængelig for forekomster, der er knyttet til et <ph name="MS_AD_NAME" />-domæne, eller Windows 10 Pro- eller Enterprise-forekomster, der er tilmeldt administration af enheder.</translation>
 <translation id="2482676533225429905">Indbyggede beskedhosts</translation>
 <translation id="2483146640187052324">Forudse netværkshandlinger på enhver netværksforbindelse</translation>
 <translation id="2484208301968418871">Denne politik styrer anvendelsen af webadressefilteret for SafeSites.
@@ -1062,6 +1069,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           |created_time_millis| er UTC-tidsstemplet for oprettelsen af tilsidesættelsen. Det sendes som en streng, fordi tidsstemplet ikke kan passe i et heltal. Det bruges til at afgøre, om en tilsidesættelse stadig skal anvendes. Hvis den nuværende funktion til begrænsning af aktiv tid (grænse for tidsforbrug eller tidsrum med begrænsning) startede, før tilsidesættelsen blev oprettet, bør den ikke udføre en handling. Hvis tilsidesættelsen blev oprettet før den sidste ændring af den aktive time_window_limit eller time_usage_window, bør den heller ikke anvendes.
 
           Der kan sendes flere tilsidesættelser. Det er den nyeste gyldige post, der anvendes.</translation>
+<translation id="2901725272378498025">Aktivér sikkerhedsadvarsler for demofunktioner på kommandolinjen</translation>
 <translation id="2905984450136807296">Levetid for cachen til godkendelsesdata</translation>
 <translation id="2906874737073861391">Liste over AppPack-udvidelser</translation>
 <translation id="2907992746861405243">Bestemmer, hvilke printere fra <ph name="BULK_PRINTERS_POLICY" /> der kan anvendes af brugerne.
@@ -1630,6 +1638,11 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3963602271515417124">Hvis denne er angivet som sand, tillades fjernbekræftelse for enheden, og der genereres og uploades automatisk et certifikat til Device Management Server.
 
           Hvis den er angivet som falsk eller slet ikke er angivet, genereres der ikke noget certifikat, og kald til enterprise.platformKeysPrivate extension API mislykkes.</translation>
+<translation id="3964262920683972987">Konfigurer et baggrundsbillede til enheden, som vises på loginskærmen, hvis der endnu ikke er nogen brugere, der er logget ind på enheden. Politikken konfigureres ved at angive den webadresse, hvorfra Chrome OS-enheden kan downloade baggrundsbilledet og en kryptografisk hash-værdi, som bruges til at bekræfte downloadens integritet. Billedet skal være i .jpeg-format, og størrelsen må ikke overstige 16 MB. Webadressen skal være tilgængelig uden nogen form for godkendelse. Baggrundsbilledet downloades og cachelagres. Det downloades igen, når webadressen eller hash-værdien ændres.
+
+      Hvis politikken for baggrundsbilleder på enheden er konfigureret, downloader og bruger Chrome OS-enheden baggrundsbilledet, som vises på loginskærmen, hvis der endnu ikke er nogen brugere, der er logget ind på enheden. Når brugeren logger ind, starter brugerens politik for baggrundsbilleder.
+
+      Hvis politikken for baggrundsbilleder på enheden ikke konfigureres, bestemmer brugerens politik for baggrundsbilleder, hvad der vises, hvis brugerens politik for baggrundsbilleder er konfigureret.</translation>
 <translation id="3965339130942650562">Timeout, indtil brugeren logges ud på grund af inaktivitet</translation>
 <translation id="3973371701361892765">Skjul aldrig hylden automatisk</translation>
 <translation id="3984028218719007910">Bestemmer, om <ph name="PRODUCT_OS_NAME" /> bevarer lokale kontodata efter logout. Hvis den er angivet til sand, er der ingen vedvarende konti, der bevares af <ph name="PRODUCT_OS_NAME" />, og alle data fra brugersessionen kasseres efter logout. Hvis denne politik er angivet til falsk eller ikke er konfigureret, kan enheden beholde (krypterede) lokale brugerdata.</translation>
@@ -1693,6 +1706,17 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="4056910949759281379">Deaktiver SPDY-protokol</translation>
 <translation id="408029843066770167">Tillad forespørgsler til en Google-tidstjeneste</translation>
 <translation id="408076456549153854">Aktivér browserlogin</translation>
+<translation id="40853027210512570">Tilsidesætter regler for valg af standardprinter for <ph name="PRODUCT_NAME" />.
+
+      Denne politik fastlægger reglerne for valg af standardprinter i <ph name="PRODUCT_NAME" />, som vælges, første gang udskrivningsfunktionen anvendes fra en profil.
+
+      Når denne politik er konfigureret, forsøger <ph name="PRODUCT_NAME" /> at finde en printer, der har alle de angivne attributter, og vælge den som standardprinter. Den først fundne printer, der stemmer overens med politikken, vælges. Hvis der ikke kan findes et fuldstændigt match, kan enhver printer vælges ud fra den rækkefølge, som printerne blev fundet i.
+
+      Hvis ikke denne politik angives, eller hvis der ikke findes nogen printer, som stemmer overens med politikken, inden timeouten udløber, vælges en indbygget PDF-printer som standard. Hvis der ikke er nogen tilgængelig PDF-printer, vælges der ikke nogen printer.
+
+      Printere, der er forbundet til <ph name="CLOUD_PRINT_NAME" />, klassificeres som <ph name="PRINTER_TYPE_CLOUD" />, mens de øvrige printere klassificeres som <ph name="PRINTER_TYPE_LOCAL" />.
+      Hvis et felt udelades, matcher alle værdier. Hvis du f.eks. ikke specificerer forbindelsen, vil et tryk på Vis udskrift starte en søgning efter alle typer printere – både lokalt og i skyen.
+      Mønstre for regulære udtryk skal overholde JavaScript RegExp-syntaksen, og der skelnes mellem store og små bogstaver.</translation>
 <translation id="4088589230932595924">Inkognitotilstand er gennemtvunget</translation>
 <translation id="4088983553732356374">Giver dig mulighed for at angive, om websites må angive lokale data. Angivelse af lokale data kan enten være tilladt for alle websites eller forbudt for alle websites.
 
@@ -2135,6 +2159,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       Når denne politik ikke er konfigureret eller er angivet som sand, lader Chrome mindst én fane være åben, efter der er skiftet til en anden browser.
 
       Når denne politik er angivet som falsk, lukker Chrome fanen, efter der er skiftet til en anden browser, også selvom det er den sidste fane. Det betyder, at Chrome lukkes helt.</translation>
+<translation id="5102203758995933166">Tillader, at netværkskonfigurationen gøres gældende pr. bruger for en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration.</translation>
 <translation id="5105313908130842249">Skærmlåsforsinkelse, når batteriet bruges</translation>
 <translation id="5108031557082757679">Deaktiverede virksomhedsprintere for enheder</translation>
 <translation id="5124368997194894978">Aktivér start med vekselstrøm</translation>
@@ -2312,6 +2337,24 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5423001109873148185">Denne politik tvinger import af søgemaskiner fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis standardsøgemaskinen er deaktiveret, bliver den ikke importeret. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5423197884968724595">Navn på Android WebView-begrænsning:</translation>
 <translation id="5424147596523390018">Tillad alle farvetilstande</translation>
+<translation id="5427879482805712214">Denne politik giver dig mulighed for at konfigurere det avatarbillede, der repræsenterer brugeren på loginskærmen. Politikken konfigureres ved at angive den webadresse, hvor <ph name="PRODUCT_OS_NAME" /> kan downloade avatarbilledet og en kryptografisk hash-værdi, som bruges til at bekræfte downloadens integritet. Billedet skal være i .jpeg-format, og dets størrelse må ikke overstige 512 kB. Webadressen skal være tilgængelig uden nogen form for godkendelse.
+
+      Avatarbilledet downloades og cachelagres. Det downloades igen, når webadressen eller hash-værdien ændres.
+
+      Hvis denne politik er konfigureret, downloader og bruger <ph name="PRODUCT_OS_NAME" /> avatarbilledet.
+
+      Hvis politikken konfigureres, kan brugerne ikke ændre eller tilsidesætte den.
+
+      Hvis politikken ikke er konfigureret, kan brugerne vælge et avatarbillede, der repræsenterer dem på loginskærmen.</translation>
+<translation id="5432219358069697932">Denne politik giver dig mulighed for at konfigurere det baggrundsbillede, der er vist på brugerens skrivebord og loginskærm. Politikken konfigureres ved at angive den webadresse, hvorfra <ph name="PRODUCT_OS_NAME" /> kan downloade baggrundsbilledet og en kryptografisk hash-værdi, der bruges til at bekræfte downloadens integritet. Billedet skal være i .jpeg-format, og størrelsen må ikke overstige 16 MB. Webadressen skal være tilgængelig uden nogen form for godkendelse.
+
+      Baggrundsbilledet downloades og cachelagres. Det downloades igen, når webadressen eller hash-værdien ændres.
+
+      Hvis denne politik er konfigureret, downloader og bruger <ph name="PRODUCT_OS_NAME" /> baggrundsbilledet.
+
+      Hvis politikken konfigureres, kan brugerne ikke ændre eller tilsidesætte den.
+
+      Hvis politikken ikke er konfigureret, kan brugeren vælge et baggrundsbillede, der skal vises på skrivebordet og på loginskærmen.</translation>
 <translation id="5437733496511628148">Hvis du aktiverer denne indstilling, forhindrer du websideelementer, der ikke kommer fra domænet i browserens adresselinje, i at angive cookies.
 
       Hvis du deaktiverer denne indstilling, tillader du, at websideelementer, der ikke kommer fra domænet i browserens adresselinje, angiver cookies. Det forhindrer også brugerne i at ændre indstillingen.
@@ -2773,6 +2816,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6310223829319187614">Aktivér autofuldførelse af domænenavn under brugers login</translation>
 <translation id="6315673513957120120">Chrome viser en advarselsside, når brugerne går til websites med SSL-fejl. Som standard, eller når denne politik er angivet til sand, kan brugerne klikke sig videre fra disse advarselssider.
       Hvis denne politik angives til falsk, kan brugerne ikke klikke sig videre fra nogen advarselssider.</translation>
+<translation id="6319198883324703402">Angiv tidspunktet for den første notifikation om brugerens genstart</translation>
 <translation id="6352543686437322588">Automatisk login på en lokal konto på enheden efter en forsinkelse.
 
       Hvis politikken er angivet, logges der automatisk ind på den angivne session, når der er gået en mængde tid på loginskærmen uden brugerinteraktion. Den lokale konto på enheden skal allerede være konfigureret (se |DeviceLocalAccounts|).
@@ -3116,6 +3160,7 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Google kan ved hjælp af et sessions-id knytte disse logfiler til andre logfiler, der er indsamlet af selve Google-tjenesten. Dette kan gøre fejlretningen nemmere.
       </translation>
 <translation id="706669471845501145">Tillad, at websites viser skrivebordsunderretninger</translation>
+<translation id="7068108874199666656">Tillader, at netværkskonfigurationen gøres gældende for alle brugere af en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration.</translation>
 <translation id="7070525176564511548">Adgangskoden skal angives en gang om ugen (168 timer)</translation>
 <translation id="7072208053150563108">Hvor ofte computeradgangskoden skiftes</translation>
 <translation id="7079519252486108041">Bloker pop op-vinduer på disse websites</translation>
@@ -3133,6 +3178,7 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
           Politikken anvendes kun, hvis <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> er deaktiveret. Hvis ikke det er tilfældet, ignoreres politikken, da nedtoningsforsinkelsen på skærmen afhænger af en model til maskinlæring.
 
           Skaleringsfaktoren skal være mindst 100 %.</translation>
+<translation id="710003290625031750">Beskrivelse af udvidet skema:</translation>
 <translation id="7106631983877564505">Aktivér låsen, når <ph name="PRODUCT_OS_NAME" />-enheder bliver inaktive eller suspenderes.
 
       Hvis du aktiverer denne indstilling, vil brugerne blive bedt om en adgangskode for at låse enheden op fra dvale.
@@ -3176,7 +3222,7 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Hvis denne politik er konfigureret, er applikationssættet fast og kan ikke ændres af brugeren.
 
       Hvis politikken ikke er angivet, kan brugeren ændre listen over fastgjorte apps på applisten.</translation>
-<translation id="713121532817834879">Denne politik er en webadresse, der henviser til en XML-fil i det samme format som Internet Explorers <ph name="IEEM_SITELIST_POLICY" />-politik. Denne indlæser regler fra en XML-fil uden at dele disse regler med Internet Explorer.
+<translation id="713121532817834879">Denne politik er en webadresse, der henviser til en XML-fil i det samme format som Internet Explorers <ph name="IEEM_SITELIST_POLICY" />-politik. Den indlæser regler fra en XML-fil uden at dele disse regler med Internet Explorer.
 
       Reglerne i denne XML-fil gælder på samme måde som <ph name="GREYLIST_POLICY_NAME" />. Det betyder, at disse regler forhindrer <ph name="PRODUCT_NAME" /> i at åbne den alternative browser og forhindrer også den alternative browser i at åbne <ph name="PRODUCT_NAME" />.
 
@@ -3709,6 +3755,9 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
       Hvis denne politik er indstillet til sand, bruger enheden et 24-timers urformat. Hvis politikken er indstillet til falsk, bruger enheden et 12-timers urformat.
 
       Hvis denne politik ikke indstilles, bruger enheden som standard et 24-timers urformat.</translation>
+<translation id="8113421140338762630">Giver dig mulighed for at angive et tidsrum i millisekunder mellem den første notifikation om, at en <ph name="PRODUCT_OS_NAME" />-enhed skal genstartes for at anvende en afventende opdatering, og sluttidspunktet for det tidsrum, der er angivet af politikken <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Hvis det ikke angives, anvendes et standardtidsrum på 86400000 millisekunder (én dag) for <ph name="PRODUCT_OS_NAME" />-enheder.</translation>
 <translation id="8114382167597081590">Gennemtving ikke Begrænset tilstand på YouTube</translation>
 <translation id="8118665053362250806">Angiv størrelse på mediediskcache</translation>
 <translation id="8124468781472887384">Adgangspolitik for konfiguration af printere til enheder.</translation>
@@ -3920,6 +3969,11 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8544465954173828789">Tillad, at sms-beskeder synkroniseres mellem telefon og Chromebook.</translation>
 <translation id="8548832052135586762">Indstiller udskrivning til kun farveudskrivning, kun udskrivning i sort/hvid eller ingen begrænsning af farvetilstand. En ikke-angivet politik behandles som ingen begrænsning.</translation>
 <translation id="8549772397068118889">Vis en advarsel, når du er på websites uden for indholdspakkerne</translation>
+<translation id="8566729013138025202">Angiver en række politikker, der overgives til ARC-kørselstiden. Værdien skal være et gyldigt JSON-format.
+
+      Denne politik kan bruges til at konfigurere, hvilke Android-apps der automatisk installeres på enheden.
+
+      Se PinnedLauncherApps, hvis du vil fastgøre apps til Appliste.</translation>
 <translation id="8566842294717252664">Skjul webshoppen fra siden Ny fane og applisten</translation>
 <translation id="8569734380847633643">
           Hvis politikken er angivet som falsk, deaktiverer <ph name="PRODUCT_OS_NAME" /> Wi-Fi, og brugerne kan ikke aktivere det igen.
@@ -4109,6 +4163,14 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="8942616385591203339">Denne politik styrer, hvorvidt samtykke til synkronisering kan vises til brugeren ved første login. Den bør angives som falsk, hvis brugeren aldrig behøver at bruge samtykke til synkronisering.
       Hvis den angives som falsk, vises samtykke til synkronisering ikke.
       Hvis den angives som sand eller slet ikke angives, vises samtykke til synkronisering.</translation>
+<translation id="894510252300143386">Konfigurerer indstillinger for administration af udvidelser for <ph name="PRODUCT_NAME" />.
+
+          Denne politik styrer flere indstillinger, herunder indstillinger, der styres af eksisterende politikker vedrørende udvidelser. Denne politik tilsidesætter eventuelle ældre politikker, hvis begge er konfigureret.
+
+          Denne politik knytter et udvidelses-id eller en opdateringswebadresse til dens konfiguration. Med et udvidelses-id anvendes konfigurationen udelukkende på den angivne udvidelse. Der kan angives en standardkonfiguration for det særlige id <ph name="DEFAULT_SCOPE" />, som gælder for alle udvidelser, hvor der ikke er angivet en standardkonfiguration i denne politik. Med en opdateringswebadresse anvendes konfigurationen på alle udvidelser, hvor den nøjagtige opdateringswebadresse er angivet i denne udvidelses manifestfil som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Fjerninstallation er begrænset til apps og udvidelser, der er angivet i Chrome Webshop, i forbindelse med Windows-forekomster, som ikke er knyttet til et <ph name="MS_AD_NAME" />-domæne.
+          </translation>
 <translation id="8947415621777543415">Rapportér enhedens placering</translation>
 <translation id="8951350807133946005">Angiv mappen for diskens cache</translation>
 <translation id="8952317565138994125">Deaktiverer datasynkronisering i <ph name="PRODUCT_NAME" /> ved hjælp af Google-hostede synkroniseringstjenester og forhindrer brugerne i at ændre denne indstilling.

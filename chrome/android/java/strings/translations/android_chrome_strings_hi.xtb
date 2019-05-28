@@ -601,7 +601,6 @@
 <translation id="5494752089476963479">तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाने वाली साइटों पर विज्ञापन ब्लॉक करें</translation>
 <translation id="5497272504048921382">खुले हुए टैब</translation>
 <translation id="5500777121964041360">शायद, यह सुविधा आपके देश में उपलब्ध न हाे</translation>
-<translation id="550684401320795253">Chrome अपडेट किया जा रहा है...</translation>
 <translation id="5512137114520586844">यह खाता <ph name="PARENT_NAME" /> द्वारा प्रबंधित है.</translation>
 <translation id="5514904542973294328">इस डिवाइस के व्यवस्थापक ने अक्षम किया है</translation>
 <translation id="5515439363601853141">अपना पासवर्ड देखने के लिए अनलॉक करें</translation>
@@ -831,6 +830,7 @@
 <translation id="7062545763355031412">स्वीकार करें और खातों को बदलें</translation>
 <translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 चुना गया}one{# चुने गए}other{# चुने गए}}</translation>
+<translation id="7071521146534760487">खाता प्रबंधित करें</translation>
 <translation id="7077143737582773186">SD कार्ड</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> चुने गए.  विकल्प, स्क्रीन के ऊपरी भाग के पास उपलब्ध हैं</translation>
 <translation id="7121362699166175603">पता बार मेंअपने-आपपूर्णता और इतिहास को हटाता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकतेे हैं.</translation>

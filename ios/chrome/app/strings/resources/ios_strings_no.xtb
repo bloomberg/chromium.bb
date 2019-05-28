@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Åpne alle</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1436290164580597469">Skriv inn passordfrasen for å starte synkroniseringen.</translation>
+<translation id="1449835205994625556">Skjul passordet</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementer</translation>
 <translation id="1491277525950327607">Dobbelttrykk for å slå innstillingen av/på</translation>
 <translation id="152234381334907219">Aldri lagret</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Slett nettleserdata</translation>
 <translation id="1820259098641718022">Lagt til i leselisten</translation>
 <translation id="1828824471510190776">Foreslå passord…</translation>
+<translation id="1870148520156231997">Vis passordet</translation>
 <translation id="1876721852596493031">Send bruksdata</translation>
 <translation id="1886928167269928266">Tidenes morgen</translation>
 <translation id="1911619930368729126">Last opp til Google Disk</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Fremdriftslinje for sideinnlasting, <ph name="EMAIL" /> er lastet inn.</translation>
 <translation id="4002066346123236978">Tittel</translation>
 <translation id="4004204301268239848">Passordene lagres i Google-kontoen din, slik at du kan bruke dem på alle enheter.</translation>
+<translation id="4006921758705478413">Send til enhetene dine</translation>
 <translation id="4038354071007134711">Ingen apper på denne enheten kan åpne filen.</translation>
 <translation id="4042870976416480368">Finn på siden</translation>
 <translation id="4049507953662678203">Sørg for at du er koblet til et nettverk, og prøv igjen.</translation>
@@ -257,7 +260,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 
 For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="4807020197310989387">1 ulest leselisteartikkel.</translation>
-<translation id="4818522717893377262">Legg til språk</translation>
+<translation id="4818522717893377262">Legg til språk...</translation>
 <translation id="481968316161811770">Informasjonskapsler og nettstedsdata</translation>
 <translation id="4833786495304741580">Sender automatisk bruksstatistikk og programstopprapporter til Google.</translation>
 <translation id="4840495572919996524">Bokmerkene, loggen, passord med mer synkroniseres ikke lenger med Google-kontoen din.</translation>
@@ -267,6 +270,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4904877109095351937">Merk som lest</translation>
 <translation id="4930268273022498155">Slett eksisterende data. Du kan hente ut dataene ved å bytte tilbake til <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Det oppsto et problem under delingen av artikkelen.</translation>
+<translation id="4945756290001680296">Åpne passordinnstillingene</translation>
 <translation id="4979397965658815378">Logg på med Google-kontoen din for å få bokmerkene, passordene, loggoppføringene og de andre innstillingene dine på alle enhetene du bruker</translation>
 <translation id="5005498671520578047">Kopiér passordet</translation>
 <translation id="5010803260590204777">Åpne en inkognitofane for å surfe privat på nettet.</translation>
@@ -520,6 +524,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8976382372951310360">Hjelp</translation>
 <translation id="8981454092730389528">Google Aktivitetslagring</translation>
 <translation id="8985320356172329008">Logget på Google som</translation>
+<translation id="9016406938567631235">Sender …</translation>
 <translation id="902659348151742535">Google kan bruke nettlesingsloggen din for å gi Søk, annonser og andre Google-tjenester et personlig preg.</translation>
 <translation id="9034759925968272072">Du blir ikke logget av Google-kontoen din, og det kan hende den har andre typer nettleserlogger på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Båndbredde</translation>

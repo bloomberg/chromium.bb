@@ -29,6 +29,7 @@
 <translation id="1113869188872983271">&amp;पुन: क्रमित करना वापस लाएं</translation>
 <translation id="1125573121925420732">जब वेबसाइटें अपनी सुरक्षा अपडेट कर रही होती हैं, तब चेतावनियां आम हो सकती हैं. इसमें जल्द ही सुधार होगा.</translation>
 <translation id="1126551341858583091">स्थानीय जगह का आकार <ph name="CRASH_SIZE" /> है.</translation>
+<translation id="1127259989763091435">पुष्टि करें और Google खाते में कार्ड की जानकारी सेव करें?</translation>
 <translation id="112840717907525620">नीति कैश मेमोरी ठीक है</translation>
 <translation id="1131264053432022307">आपकी कॉपी की हुई इमेज</translation>
 <translation id="1150979032973867961">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके कंप्यूटर के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
@@ -144,6 +145,7 @@
 <translation id="1656489000284462475">पिकअप</translation>
 <translation id="1662550410081243962">भुगतान के तरीके सेव करें और जानकारी भरें</translation>
 <translation id="1663943134801823270">कार्ड और पते Chrome से मिलते हैं. आप उन्हें <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में प्रबंधित कर सकते हैं.</translation>
+<translation id="1669987054044193553">पुष्टि करें और सेव करें</translation>
 <translation id="1671391448414634642">अब से <ph name="SOURCE_LANGUAGE" /> भाषा के पेज का अनुवाद <ph name="TARGET_LANGUAGE" /> भाषा में किया जाएगा.</translation>
 <translation id="1676269943528358898">आपकी जानकारी की सुरक्षा करने के लिए <ph name="SITE" /> आमतौर पर एन्क्रिप्शन का इस्तेमाल करती है. जब Google Chrome ने इस बार <ph name="SITE" /> से कनेक्ट करने की कोशिश की, तो वेबसाइट ने असामान्य और गलत क्रेडेंशियल वापस भेजे. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दावा करने की कोशिश करे या वाई-फ़ाई साइन इन स्क्रीन ने कनेक्शन को रोक कर दिया हो. आपकी जानकारी अब भी सुरक्षित है क्योंकि किसी भी डेटा के आदान-प्रदान से पहले ही Google Chrome ने कनेक्शन को रोक दिया गया था.</translation>
 <translation id="168841957122794586">सर्वर प्रमाणपत्र में कमज़ोर क्रिप्टोग्राफ़िक कुंजी है.</translation>
@@ -205,6 +207,7 @@
     अमान्य नीति लागू कर दी है, जिस वजह से
     ब्राउज़र <ph name="SITE" /> के लिए आपका अनुरोध पूरा नहीं कर पा रहा है.</translation>
 <translation id="2025186561304664664">प्रॉक्‍सी अपने-आप कॉन्‍फ़‍िगर पर सेट है.</translation>
+<translation id="202813660234680402">नहीं, न जोड़ें</translation>
 <translation id="2030481566774242610">क्या आप मतलब <ph name="LINK" /> से है?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रॉक्सी और फायरवॉल की जाँच करें<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> भाषा के पेजों का अनुवाद नहीं किया जाएगा.</translation>
@@ -370,6 +373,7 @@
 <translation id="2934466151127459956">सरकारी-पत्र</translation>
 <translation id="2941952326391522266">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र <ph name="DOMAIN2" /> की ओर से है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="2948083400971632585">आप किसी कनेक्शन के लिए कॉन्फ़िगर की गई किसी भी प्रॉक्सी को सेटिंग पेज से बंद कर सकते हैं.</translation>
+<translation id="295526156371527179">चेतावनी: इस नीति को शब्दकोश के तौर पर नीति के बताए अनुसार मिलाया नहीं जा सकता, क्योंकि यह शब्दकोश नहीं है.</translation>
 <translation id="2955913368246107853">खोज बार बंद करें</translation>
 <translation id="2969319727213777354">सुरक्षित कनेक्‍शन स्‍थापित करने के लिए, आपकी घड़ी को सही तरीके से सेट किए जाने की आवश्‍यकता है. ऐसा इसलिए क्‍योंकि वेबसाइटों द्वारा स्‍वयं की पहचान करने के लिए उपयोग किए जाने वाले प्रमाणपत्र केवल विशिष्‍ट समयावधियों के लिए ही मान्‍य होते हैं. चूंकि आपके डिवाइस की घड़ी गलत है, इसलिए Google Chrome इन प्रमाणपत्रों का सत्‍यापन नहीं कर सकता.</translation>
 <translation id="2970515157925768593">आपके डिवाइस और खाता सेटअप में दूर से बदलाव कर सकती है.</translation>
@@ -689,6 +693,7 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> खोज सुझाव</translation>
 <translation id="4742407542027196863">पासवर्ड प्रबंधित करें…</translation>
 <translation id="4744603770635761495">निष्पादित किए जाने वाले पाथ</translation>
+<translation id="47454865135383664">Google खाते में कार्ड जोड़ें?</translation>
 <translation id="4750917950439032686">आपकी जानकारी (जैसे- पासवर्ड या क्रेडिट कार्ड नंबर वगैरह) जब इस साइट पर भेजी जाती है, तब वह निजी होती है.</translation>
 <translation id="4756388243121344051">&amp;इतिहास</translation>
 <translation id="4758311279753947758">संपर्क जानकारी जोड़ें</translation>
@@ -784,6 +789,7 @@
 <translation id="5251803541071282808">क्लाउड</translation>
 <translation id="5252000469029418751">सी7 (एन्वेलप)</translation>
 <translation id="5254958791078852567">ई1</translation>
+<translation id="5273658854610202413">चेतावनी: इस नीति को PolicyDictionaryMultipleSourceMergeList नीति में बताए अनुसार नहीं मिलाया जा सकता, क्योंकि यह शब्दकोश की उन नीतियों का हिस्सा नहीं है जिन्हें मिलाया जा सकता है.</translation>
 <translation id="5283044957620376778">बी1</translation>
 <translation id="528468243742722775">खत्म</translation>
 <translation id="5284909709419567258">नेटवर्क के पते</translation>
@@ -907,6 +913,7 @@
 <translation id="5922853866070715753">करीब-करीब हो गया है</translation>
 <translation id="5932224571077948991">साइट में तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाई देते हैं</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> को खोला जा रहा है…</translation>
+<translation id="5947933617628957894">हां, जोड़ें</translation>
 <translation id="5951495562196540101">उपभोक्ता खाते (पैकेज किया गया लाइसेंस मौजूद है) के साथ नामांकन नहीं कर सकते.</translation>
 <translation id="5967592137238574583">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="5967867314010545767">इतिहास से निकालें</translation>
@@ -984,6 +991,7 @@
 <translation id="6414888972213066896">आपने अपने अभिभावक से पूछा है कि इस साइट पर जाना ठीक है या नहीं</translation>
 <translation id="6415778972515849510">क्रोमियम से आप अपने Google खाते की सुरक्षा कर सकते हैं और अपना पासवर्ड बदल सकते हैं.</translation>
 <translation id="6417515091412812850">प्रमाणपत्र को रद्द किया गया है या नहीं, इसकी जांच नहीं की जा सकी.</translation>
+<translation id="6431585503458005759">सेव न करें</translation>
 <translation id="6433490469411711332">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ने कनेक्ट करने से मना कर दिया है.</translation>
 <translation id="6434309073475700221">खारिज करें</translation>
@@ -997,7 +1005,9 @@
 <translation id="6489534406876378309">क्रैश अपलोड करना प्रारंभ करें</translation>
 <translation id="6499038740797743453">क्या पासवर्ड रीसेट करना चाहते हैं?</translation>
 <translation id="6507833130742554667">क्रेडिट और डेबिट कार्ड स्वीकार किए जाते हैं.</translation>
+<translation id="650855688985305916">हां, सेव करें</translation>
 <translation id="6508722015517270189">Chrome को फिर से शुरू करें</translation>
+<translation id="6517596291481585650">चेतावनी: इस नीति को सूची के तौर पर नीति के बताए अनुसार नहीं मिलाया जा सकता, क्योंकि यह सूची नहीं है.</translation>
 <translation id="6529602333819889595">मिटाना &amp;फिर से करें</translation>
 <translation id="6534179046333460208">जीता-जागता वेब के सुझाव</translation>
 <translation id="6554795675067793129">आपके खाते का प्रबंधन <ph name="ENROLLMENT_DOMAIN" /> करता हैै.</translation>
@@ -1023,6 +1033,7 @@
 <translation id="6670613747977017428">सुरक्षित जगह पर लौटें.</translation>
 <translation id="6671697161687535275">क्रोमियम से फ़ॉर्म सुझाव निकालें?</translation>
 <translation id="6685834062052613830">प्रस्थान करें और सेटअप पूरा करें</translation>
+<translation id="6689271823431384964">आपके साइन इन किए होने की वजह से Chrome आपको Google खाते में कार्ड सेव करने की सुविधा देता है. आप सेटिंग में जाकर इसे बदल सकते हैं. कार्डधारक का नाम आपके खाते से लिया जाता है.</translation>
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="6710594484020273272">&lt;खोज शब्द लिखें&gt;</translation>
 <translation id="671076103358959139">नाम दर्ज करने का टोकन:</translation>
@@ -1132,6 +1143,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />सुरक्षित ब्राउज़िंग<ph name="END_LINK" /> की चेतावनियां</translation>
 <translation id="7319430975418800333">ए3</translation>
 <translation id="7320336641823683070">कनेक्शन संबंधी सहायता</translation>
+<translation id="733354035281974745">डिवाइस का स्थानीय खाता बदलें</translation>
 <translation id="7334320624316649418">&amp;पुन: क्रमित करना फिर से करें</translation>
 <translation id="733923710415886693">प्रमाणपत्र पारदर्शिता के माध्यम से सर्वर के प्रमाणपत्र को प्रकट नहीं किया गया.</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1337,6 +1349,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">अगर आप अपनी सुरक्षा संबंधी जोखिमों को समझते हैं तो, खतरनाक प्रोग्राम हटाए जाने से पहले आप <ph name="BEGIN_LINK" />इस साइट पर विज़िट<ph name="END_LINK" /> कर सकते हैं.</translation>
 <translation id="8349305172487531364">बुकमार्क बार</translation>
+<translation id="836241887727198552">Google खाते में कार्ड सेव करें?</translation>
 <translation id="8363502534493474904">हवाई जहाज़ मोड बंद करें</translation>
 <translation id="8364627913115013041">सेट नहीं है.</translation>
 <translation id="8368476060205742148">Google Play सेवाएं</translation>
@@ -1379,6 +1392,7 @@
 <translation id="8620436878122366504">आपके अभिभावकों ने अभी तक इसकी अनुमति नहीं दी है</translation>
 <translation id="8622948367223941507">लीगल-एक्स्ट्रा</translation>
 <translation id="8625384913736129811">इस कार्ड को इस डिवाइस में सेव करें</translation>
+<translation id="8626112503828625890">Google खाते में बिलिंग की जानकारी सेव करें?</translation>
 <translation id="8663226718884576429">ऑर्डर की खास बातें, <ph name="TOTAL_LABEL" />, ज़्यादा जानकारी</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, उत्तर, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">पीआरसी-16के</translation>

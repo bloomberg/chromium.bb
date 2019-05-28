@@ -581,6 +581,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5324858694974489420">Configurações dos pais</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Permitir que sites executem o JavaScript (recomendado)</translation>
+<translation id="5357811892247919462">Guia recebida</translation>
 <translation id="5363230136052241468">Toque no botão home para carregar a página nova guia</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> guia aberta, toque para alternar}one{<ph name="OPEN_TABS_MANY" /> guia aberta, toque para alternar}other{<ph name="OPEN_TABS_MANY" /> guias abertas, toque para alternar}}</translation>
 <translation id="5391532827096253100">Sua conexão com este site não é segura. Informações do site</translation>
@@ -602,7 +603,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5494752089476963479">Bloquear anúncios em sites com publicidade invasiva ou enganosa</translation>
 <translation id="5497272504048921382">Guias abertas</translation>
 <translation id="5500777121964041360">Pode não estar disponível no seu local</translation>
-<translation id="550684401320795253">Atualizando o Chrome…</translation>
 <translation id="5512137114520586844">Esta conta é gerenciada por <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Opção desativada pelo administrador deste dispositivo</translation>
 <translation id="5515439363601853141">Desbloqueie para ver sua senha</translation>

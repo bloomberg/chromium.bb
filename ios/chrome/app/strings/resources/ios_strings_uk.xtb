@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Відкрити все</translation>
 <translation id="1430915738399379752">Друк</translation>
 <translation id="1436290164580597469">Щоб почати синхронізацію, введіть парольну фразу.</translation>
+<translation id="1449835205994625556">Сховати пароль</translation>
 <translation id="145015347812617860">Закладок: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Двічі торкніться, щоб змінити налаштування</translation>
 <translation id="152234381334907219">Ніколи не зберігалося</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Очистити історію</translation>
 <translation id="1820259098641718022">Додано в список читання</translation>
 <translation id="1828824471510190776">Запропонувати пароль…</translation>
+<translation id="1870148520156231997">Показати пароль</translation>
 <translation id="1876721852596493031">Надсилати статистику</translation>
 <translation id="1886928167269928266">Весь період</translation>
 <translation id="1911619930368729126">Завантажити на Google Диск</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Індикатор перебігу завантаження сторінки. Завантажено <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4004204301268239848">Паролі зберігаються в обліковому записі Google, щоб ви могли користуватися ними на будь-якому пристрої.</translation>
+<translation id="4006921758705478413">Надіслати на пристрої</translation>
 <translation id="4038354071007134711">Немає додатків на пристрої, щоб відкрити цей файл.</translation>
 <translation id="4042870976416480368">Знайти на сторінці</translation>
 <translation id="4049507953662678203">Переконайтеся, що з’єднання з мережею встановлено, і повторіть спробу.</translation>
@@ -267,6 +270,7 @@
 <translation id="4904877109095351937">Позначити як прочитані</translation>
 <translation id="4930268273022498155">Видалити наявні дані. Щоб відновити їх, поверніться в обліковий запис <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Під час спроби поділитися елементом виникла проблема.</translation>
+<translation id="4945756290001680296">Доступ до налаштувань паролів</translation>
 <translation id="4979397965658815378">Увійдіть в обліковий запис Google, щоб мати доступ до закладок, паролів, історії й інших налаштувань на всіх своїх пристроях</translation>
 <translation id="5005498671520578047">Копіювати пароль</translation>
 <translation id="5010803260590204777">Щоб переглядати веб-сторінки конфіденційно відкрийте анонімну вкладку.</translation>
@@ -520,6 +524,7 @@
 <translation id="8976382372951310360">Довідка</translation>
 <translation id="8981454092730389528">Відстеження дій у Google</translation>
 <translation id="8985320356172329008">Ви ввійшли в обліковий запис Google як</translation>
+<translation id="9016406938567631235">Надсилання…</translation>
 <translation id="902659348151742535">Google може використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук, рекламу та інші служби Google.</translation>
 <translation id="9034759925968272072">Ви не вийдете з облікового запису Google. Історія веб-перегляду може також зберігатися у вашому обліковому записі Google на сторінці  <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Трафік</translation>

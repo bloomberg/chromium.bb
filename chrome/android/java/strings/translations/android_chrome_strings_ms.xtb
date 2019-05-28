@@ -580,6 +580,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5324858694974489420">Tetapan Ibu Bapa</translation>
 <translation id="5327248766486351172">Nama</translation>
 <translation id="5335288049665977812">Benarkan tapak menjalankan JavaScript (disyorkan)</translation>
+<translation id="5357811892247919462">Tab diterima</translation>
 <translation id="5363230136052241468">Ketik butang skrin utama untuk memuatkan halaman tab baharu</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> tab terbuka, ketik untuk beralih antara tab}other{<ph name="OPEN_TABS_MANY" /> tab terbuka, ketik untuk beralih antara tab}}</translation>
 <translation id="5391532827096253100">Sambungan anda ke tapak web ini tidak selamat. Maklumat tapak</translation>
@@ -601,7 +602,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="5497272504048921382">Tab dibuka</translation>
 <translation id="5500777121964041360">Mungkin tidak tersedia di lokasi anda</translation>
-<translation id="550684401320795253">Mengemas kini Chrome...</translation>
 <translation id="5512137114520586844">Akaun ini diurus oleh <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dilumpuhkan oleh pentadbir peranti ini</translation>
 <translation id="5515439363601853141">Buka kunci untuk melihat kata laluan anda</translation>

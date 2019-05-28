@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Выделять указатель мыши</translation>
 <translation id="3513798432020909783">Администратор аккаунта: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Вернуться к языку: "<ph name="FROM_LOCALE" />" (потребуется перезагрузка)</translation>
+<translation id="3576141592585647168">Изменение часового пояса</translation>
 <translation id="3595596368722241419">Аккумулятор заряжен</translation>
 <translation id="3606978283550408104">Брайлевский дисплей подключен</translation>
 <translation id="3621202678540785336">Вход</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Обратитесь к администратору</translation>
 <translation id="6585808820553845416">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Поиск + Shift + K</translation>
+<translation id="6637729079642709226">Изменение времени</translation>
 <translation id="6650933572246256093">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем код: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="6665545700722362599">Разрешать сайтам, приложениям и расширениям использовать геолокацию, микрофон, камеру и другие функции устройства.</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">Используется <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Чтобы выполнить действие, предложенное в уведомлении, разблокируйте устройство с помощью аккаунта <ph name="LOGIN_ID" />.</translation>
 <translation id="8995603266996330174">В домене <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Введите родительский код доступа Family Link.</translation>
 <translation id="9029474291399787231">Доступно обновление для Adobe Flash Player</translation>
 <translation id="9056839673611986238">Система на устройстве будет возвращена к предыдущей версии</translation>
 <translation id="9070640332319875144">Настройки Ассистента</translation>

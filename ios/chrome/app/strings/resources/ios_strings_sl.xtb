@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Odpri vse</translation>
 <translation id="1430915738399379752">Natisni</translation>
 <translation id="1436290164580597469">Vnesite geslo, če želite začeti sinhronizacijo.</translation>
+<translation id="1449835205994625556">Skrivanje gesla</translation>
 <translation id="145015347812617860">Št. elementov: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Dvakrat se dotaknite, da preklopite nastavitev</translation>
 <translation id="152234381334907219">Nikoli shranjeno</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Brisanje podatkov brskanja</translation>
 <translation id="1820259098641718022">Dodano na bralni seznam</translation>
 <translation id="1828824471510190776">Predlaganje gesla …</translation>
+<translation id="1870148520156231997">Razkrijte geslo</translation>
 <translation id="1876721852596493031">Pošlji pod. o upor.</translation>
 <translation id="1886928167269928266">Beginning of Time</translation>
 <translation id="1911619930368729126">Prenos v Google Drive</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Vrstica z napredkom nalaganja strani, <ph name="EMAIL" /> naloženega.</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4004204301268239848">Gesla so shranjena v Google Računu, da jih lahko uporabite v kateri koli napravi.</translation>
+<translation id="4006921758705478413">Pošiljanje v naprave</translation>
 <translation id="4038354071007134711">Nobena aplikacija v tej napravi ne more odpreti datoteke.</translation>
 <translation id="4042870976416480368">Najdi na strani</translation>
 <translation id="4049507953662678203">Make sure you have a network connection, and try again.</translation>
@@ -267,6 +270,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="4904877109095351937">Označi kot prebrano</translation>
 <translation id="4930268273022498155">Izbris obstoječih podatkov. Pridobite jih lahko tako, da preklopite nazaj na račun <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Težava pri deljenju elementa z drugimi.</translation>
+<translation id="4945756290001680296">Dostop do nastavitev gesel</translation>
 <translation id="4979397965658815378">Prijavite se z Google Računom, da boste zaznamke, gesla, zgodovino in druge nastavitve imeli na voljo v vseh napravah.</translation>
 <translation id="5005498671520578047">Kopiranje gesla</translation>
 <translation id="5010803260590204777">Open an incognito tab to browse the web privately.</translation>
@@ -520,6 +524,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8976382372951310360">Pomoč</translation>
 <translation id="8981454092730389528">Googlovi kontrolniki za dejavnost</translation>
 <translation id="8985320356172329008">V Google ste prijavljeni kot</translation>
+<translation id="9016406938567631235">Pošiljanje …</translation>
 <translation id="902659348151742535">Google lahko vašo zgodovino brskanja uporabi za prilagajanje Iskanja Google, oglasov in drugih Googlovih storitev.</translation>
 <translation id="9034759925968272072">Iz Google Računa ne boste odjavljeni. V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Pasovna širina</translation>

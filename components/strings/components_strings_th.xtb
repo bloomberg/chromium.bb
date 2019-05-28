@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">บันทึกบัตรไม่ได้</translation>
 <translation id="1639239467298939599">กำลังโหลด</translation>
 <translation id="1640180200866533862">นโยบายผู้ใช้</translation>
 <translation id="1640244768702815859">ลอง<ph name="BEGIN_LINK" />ไปที่หน้าแรกของเว็บไซต์<ph name="END_LINK" /></translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">แก้ไขการเชื่อมต่อของคุณด้วย<ph name="BEGIN_LINK" />แอปการวินิจฉัย<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">ส่งเลย</translation>
 <translation id="225207911366869382">เลิกใช้งานค่านี้กับนโยบายนี้</translation>
+<translation id="2257315177824333709">ขออภัย บันทึกบัตรไม่ได้ในตอนนี้</translation>
 <translation id="2262243747453050782">ข้อผิดพลาดของ HTTP</translation>
 <translation id="2263079731045660823">อัปเดตข้อมูลบัตรเครดิตสำหรับป้อนข้อความอัตโนมัติในการตั้งค่า Chrome</translation>
 <translation id="2270484714375784793">หมายเลขโทรศัพท์</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">แสดงนโยบายโดยที่ไม่ได้ตั้งค่า</translation>
 <translation id="239429038616798445">วิธีการจัดส่งสินค้านี้ไม่พร้อมให้บริการ โปรดลองใช้วิธีการอื่น</translation>
 <translation id="2396249848217231973">&amp;เลิกทำการนำออก</translation>
+<translation id="2409589295040002961">ผู้ดูแลระบบจะเปลี่ยนการตั้งค่าเบราว์เซอร์จากระยะไกลได้ กิจกรรมในอุปกรณ์นี้อาจมีการจัดการภายนอก Chrome ได้ด้วย <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะอาจมีการเพิกถอนใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="2418081434543109369">เซิร์ฟเวอร์ที่คุณกำลังจะเข้าถึง <ph name="ORIGIN" /> ขอให้บังคับใช้
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">คำขอสำเร็จ</translation>
 <translation id="2728127805433021124">ใบรับรองของเซิร์ฟเวอร์ถูกเซ็นชื่อด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />เรียกใช้การวินิจฉัยการเชื่อมต่อ<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">นโยบายนี้มีแหล่งที่มามากกว่า 1 แห่งที่มีค่าขัดแย้งกัน</translation>
 <translation id="2738330467931008676">เลือกที่อยู่สำหรับรับสินค้า</translation>
 <translation id="2740531572673183784">ตกลง</translation>
 <translation id="2742870351467570537">นำรายการที่เลือกออก </translation>
@@ -996,6 +1000,7 @@
 <translation id="6433490469411711332">แก้ไขข้อมูลติดต่อ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ปฏิเสธการเชื่อมต่อ</translation>
 <translation id="6434309073475700221">ทิ้ง</translation>
+<translation id="6440503408713884761">ละเว้น</translation>
 <translation id="6446163441502663861">Kahu (ซองจดหมาย)</translation>
 <translation id="6446608382365791566">เพิ่มข้อมูลเพิ่มเติม</translation>
 <translation id="6447842834002726250">คุกกี้</translation>
@@ -1011,6 +1016,7 @@
 <translation id="6517596291481585650">คำเตือน: ระบบไม่ได้รวมนโยบายนี้เป็นรายการตามที่นโยบายระบุเพราะไม่ใช่รายการ</translation>
 <translation id="6529602333819889595">&amp;ทำซ้ำการนำออก</translation>
 <translation id="6534179046333460208">คำแนะนำ Physical Web</translation>
+<translation id="6545864417968258051">การสแกนหาบลูทูธ</translation>
 <translation id="6554795675067793129">บัญชีของคุณจัดการโดย <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="6556866813142980365">ทำซ้ำ</translation>
 <translation id="6563469144985748109">ผู้จัดการยังไม่ได้อนุมัติเว็บไซต์นี้</translation>
@@ -1027,6 +1033,7 @@
 <translation id="6626291197371920147">เพิ่มหมายเลขบัตรที่ถูกต้อง</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> ค้นหา</translation>
 <translation id="6630809736994426279">ผู้โจมตีที่กำลังอยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจพยายามติดตั้งโปรแกรมอันตรายลงในเครื่อง Mac ของคุณ เพื่อขโมยหรือลบข้อมูล (ตัวอย่างเช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">นโยบายนี้มีแหล่งที่มามากกว่า 1 แห่งแต่มีค่าต่างๆ เหมือนกัน</translation>
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="6644283850729428850">นโยบายนี้ถูกยกเลิกแล้ว</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{ไม่มี}=1{จาก 1 เว็บไซต์ (คุณจะไม่ออกจากระบบบัญชี Google)}other{จาก # เว็บไซต์ (คุณจะไม่ออกจากระบบบัญชี Google)}}</translation>

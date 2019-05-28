@@ -29,6 +29,7 @@
 <translation id="1113869188872983271">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="1125573121925420732">ওয়েবসাইটগুলির নিরাপত্তা আপডেট করার সময় সতর্কতা দেখানো খুবই স্বভাবিক। এটি শীঘ্রই উন্নত করা উচিত।</translation>
 <translation id="1126551341858583091">স্থানীয় সঞ্চয়স্থানের আকার হলো <ph name="CRASH_SIZE" />।</translation>
+<translation id="1127259989763091435">Google অ্যাকাউন্টে কি আপনি কার্ড কনফার্ম করে সেভ করতে চান?</translation>
 <translation id="112840717907525620">নীতি ক্যাশেটি ঠিক আছে</translation>
 <translation id="1131264053432022307">আপনার কপি করা ছবি</translation>
 <translation id="1150979032973867961">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা সার্টিফিকেটটি আপনার কম্পিউটার অপারেটিং সিস্টেমের কাছে বিশ্বস্ত নয়। কোনও ভুল কনফিগারেশনের কারণে অথবা কোনও আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
@@ -136,6 +137,7 @@
 <translation id="1620510694547887537">ক্যামেরা</translation>
 <translation id="1623104350909869708">এই পৃষ্ঠাটিকে অতিরিক্ত কথোপকথন তৈরি করা থেকে বাধা দিন</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">ক্রেডিট কার্ড সেভ করা যাচ্ছে না</translation>
 <translation id="1639239467298939599">লোড হচ্ছে</translation>
 <translation id="1640180200866533862">ব্যবহারকারীর নীতিসমূহ</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />এই সাইটের হোমপেজটি ঘুরে দেখুন<ph name="END_LINK" />।</translation>
@@ -145,6 +147,7 @@
 <translation id="1656489000284462475">তুলে নিন</translation>
 <translation id="1662550410081243962">পেমেন্টের পদ্ধতিগুলি পূরণ করে সেভ করুন</translation>
 <translation id="1663943134801823270">Chrome থেকে কার্ড এবং ঠিকানাগুলি এসেছে। আপনি <ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> এ এগুলি পরিচালনা করতে পারবেন।</translation>
+<translation id="1669987054044193553">কনফার্ম করে সেভ করুন</translation>
 <translation id="1671391448414634642">এখন থেকে <ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠা <ph name="TARGET_LANGUAGE" /> ভাষায় অনুবাদ করা হবে।</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> সাধারণত আপনার তথ্য সুরক্ষিত রাখতে এনক্রিপশন ব্যবহার করে। এবার যখন Google Chrome <ph name="SITE" />-এর সাথে সংযোগ স্থাপন করার চেষ্টা করেছে, তখন ওয়েবসাইটটি অস্বাভাবিক এবং ভুল সার্টিফিকেট পাঠিয়েছে। হয় একজন আক্রমণকারী <ph name="SITE" /> হওয়ার ভান করছে অথবা কোনও ওয়াই-ফাই সাইন-ইন স্ক্রিণ সংযোগকে বাধা দেওয়া হয়েছে। আপনার তথ্য এখনো নিরাপদ আছে কারণ কোনও ডেটা আদানপ্রদানের আগেই Google Chrome সংযোগটিকে বন্ধ করে দিয়েছে।</translation>
 <translation id="168841957122794586">সার্ভার সার্টিফিকেটে একটি দুর্বল ক্রিপ্টোগ্রাফিক কী আছে৷</translation>
@@ -207,6 +210,7 @@
     একটি ভুল নীতি পাঠিয়েছে বলে ব্রাউজার আপনার অনুরোধ করা <ph name="SITE" />
     দেখাতে পারছে না।</translation>
 <translation id="2025186561304664664">অটো কনফিগার করতে প্রক্সি সেট করা হয়৷</translation>
+<translation id="202813660234680402">না, সেভ করতে হবে না</translation>
 <translation id="2030481566774242610">আপনি কি <ph name="LINK" /> বোঝাতে চেয়েছিলেন?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />প্রক্সি এবং ফায়ারওয়াল পরীক্ষা করে দেখুন<ph name="END_LINK" /></translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> ভাষার পৃষ্ঠা অনুবাদ করা হবে না।</translation>
@@ -246,6 +250,7 @@
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ডায়াগনস্টিক অ্যাপ্লিকেশান<ph name="END_LINK" /> ব্যবহার করে আপনার সংযোগ ঠিক করুন</translation>
 <translation id="2239100178324503013">এখনই পাঠান</translation>
 <translation id="225207911366869382">এই মান এই নীতির জন্য অসমর্থিত হয়েছে৷</translation>
+<translation id="2257315177824333709">আপনার কার্ড এখন সেভ করা যাচ্ছে না</translation>
 <translation id="2262243747453050782">HTTP ত্রুটি</translation>
 <translation id="2263079731045660823">Chrome সেটিংসে ক্রেডিট কার্ডের অটোমেটিক পূরণের তথ্য আপডেট করুন</translation>
 <translation id="2270484714375784793">ফোন নম্বর</translation>
@@ -275,6 +280,7 @@
 <translation id="2392959068659972793">কোনো মান সেট করা নেই এমন নীতিগুলি দেখান</translation>
 <translation id="239429038616798445">এই পদ্ধতিতে শিপিং করা যাবে না। অন্য পদ্ধতি ব্যবহার করুন।</translation>
 <translation id="2396249848217231973">&amp;মুছে ফেলাকে পূর্বাবস্থায় ফেরান</translation>
+<translation id="2409589295040002961">আপনার অ্যাডমিনিস্ট্রেটর রিমোট লোকেশন থেকে আপনার ব্রাউজারের সেট-আপ পরিবর্তন করতে পারেন। Chrome-এর বাইরে থেকে এই ডিভাইসের অ্যাক্টিভিটি ম্যানেজ করা যেতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা সার্টিফিকেট প্রত্যাহার করা হতে পারে। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
 <translation id="2418081434543109369">আপনি যে সার্ভারে যাচ্ছেন, <ph name="ORIGIN" />, সেটিতে করা যেকোনও অনুরোধের জন্যই একটি নিরাপত্তা নীতি
@@ -338,6 +344,7 @@
 <translation id="2721148159707890343">অনুরোধ সফল হয়েছে</translation>
 <translation id="2728127805433021124">একটি দুর্বল স্বাক্ষর অ্যালগোরিদম ব্যবহার করে সার্ভারের সার্টিফিকেটে সাইন করা হয়েছে৷</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />সংযোগের ডায়গনিস্টিক্স চালান<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">এই নীতির জন্য পরস্পরবিরোধী মান সহ একাধিক উৎস রয়েছে!</translation>
 <translation id="2738330467931008676">পিক-আপের ঠিকানা বেছে নিন</translation>
 <translation id="2740531572673183784">ঠিক আছে</translation>
 <translation id="2742870351467570537">নির্বাচিত আইটেমগুলি সরান</translation>
@@ -372,6 +379,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা সার্টিফিকেট <ph name="DOMAIN2" /> থেকে পাওয়া। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
 <translation id="2948083400971632585">আপনি সেটিংস পৃষ্ঠা থেকে কানেকশনের জন্য কনফিগার করা যেকোনো প্রক্সি নিষ্ক্রিয় করতে পারেন৷</translation>
+<translation id="295526156371527179">সতর্কতা: এই নীতি ডিকশনারি নয় বলে এটিকে নীতি অনুযায়ী ডিকশনারি হিসেবে মার্জ করা হয়নি।</translation>
 <translation id="2955913368246107853">খোঁজ দণ্ড বন্ধ করুন</translation>
 <translation id="2969319727213777354">নিরাপদ নেটওয়ার্ক সংযোগ স্থাপন করতে আপনার ঘড়িকে সঠিকভাবে সেট করতে হবে। এমন হওয়ার কারণ হলো, নিরাপদ সংযোগ স্থাপন করার জন্য নিজেদের শনাক্ত করার জন্য ওয়েবসাইটগুলি যে শংসাপত্রগুলি ব্যবহার করে, সেগুলি শুধুমাত্র নির্দিষ্ট সময়ের জন্য বৈধ থাকে। যেহেতু আপনার ডিভাইসের ঘড়িটি ভুল, সেই জন্য Google Chrome সঠিকভাবে শংসাপত্রগুলি পরীক্ষা করতে পারছে না।</translation>
 <translation id="2970515157925768593">অন্য জায়গা থেকে আপনার ডিভাইস ও অ্যাকাউন্টের সেট-আপ পরিবর্তন করতে পারে।</translation>
@@ -692,6 +700,7 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> সার্চ সাজেশন</translation>
 <translation id="4742407542027196863">পাসওয়ার্ডগুলি পরিচালনা করুন…</translation>
 <translation id="4744603770635761495">সম্পাদনযোগ্য পাথ</translation>
+<translation id="47454865135383664">Google অ্যাকাউন্টে কার্ড যোগ করতে চান?</translation>
 <translation id="4750917950439032686">আপনার তথ্য (উদাহরণস্বরূপ, পাসওয়ার্ড বা ক্রেডিট কার্ড নম্বর) যখন এই সাইটে পাঠানো হয় তখন সেটি ব্যক্তিগত থাকে।</translation>
 <translation id="4756388243121344051">&amp;ইতিহাস</translation>
 <translation id="4758311279753947758">পরিচিতির তথ্য জুড়ুন</translation>
@@ -787,6 +796,7 @@
 <translation id="5251803541071282808">ক্লাউড</translation>
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5273658854610202413">সতর্কতা: এই নীতি ডিকশনারি নীতির অংশ নয় বলে এটিকে PolicyDictionaryMultipleSourceMergeList নীতি অনুযায়ী মার্জ করা হয়নি।</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="528468243742722775">শেষ</translation>
 <translation id="5284909709419567258">নেটওয়ার্ক ঠিকানা</translation>
@@ -910,6 +920,7 @@
 <translation id="5922853866070715753">প্রায় শেষ</translation>
 <translation id="5932224571077948991">সাইট ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন দেখায়</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> খুলছে…</translation>
+<translation id="5947933617628957894">হ্যাঁ, সেভ করে রাখুন</translation>
 <translation id="5951495562196540101">ক্রেতার অ্যাকাউন্টের মাধ্যমে এনরোল করা যাচ্ছে না (প্যাকেজ লাইসেন্স পাওয়া যাবে)৷</translation>
 <translation id="5967592137238574583">পরিচিতির তথ্য সম্পাদনা করুন</translation>
 <translation id="5967867314010545767">ইতিহাস থেকে সরান</translation>
@@ -986,9 +997,11 @@
 <translation id="6414888972213066896">এই পৃষ্ঠাটিতে যাওয়া ঠিক হবে কিনা সেই বিষয়ে আপনি আপনার অভিভাবকের অনুমতি নিন৷</translation>
 <translation id="6415778972515849510">আপনার পাসওয়ার্ড পরিবর্তন করে Google অ্যাকাউন্ট সুরক্ষিত রাখতে Chromium সাহায্য করতে পারবে।</translation>
 <translation id="6417515091412812850">সার্টিফিকেটকরণটি প্রত্যাহার করা হয়েছে কিনা তা যাচাইয়ে অক্ষম৷</translation>
+<translation id="6431585503458005759">সেভ করতে হবে না</translation>
 <translation id="6433490469411711332">পরিচিতি তথ্য সম্পাদনা করুন</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> সংযোগ করতে প্রত্যাখ্যান করেছে।</translation>
 <translation id="6434309073475700221">বাতিল</translation>
+<translation id="6440503408713884761">এড়ানো হয়েছে</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">আরও তথ্য যোগ করুন</translation>
 <translation id="6447842834002726250">কুকিজ</translation>
@@ -999,9 +1012,12 @@
 <translation id="6489534406876378309">ক্র্যাশগুলি আপলোড করা শুরু করুন</translation>
 <translation id="6499038740797743453">পাসওয়ার্ড রিসেট করবেন?</translation>
 <translation id="6507833130742554667">ক্রেডিট ও ডেবিট কার্ড গ্রহণ করা হয়।</translation>
+<translation id="650855688985305916">হ্যাঁ, সেভ করুন</translation>
 <translation id="6508722015517270189">Chrome পুনরায় চালু করুন</translation>
+<translation id="6517596291481585650">সতর্কতা: এই নীতি কোনও তালিকা নয় বলে সেটি নীতি অনুযায়ী তালিকা হিসেবে মার্জ করা হয়নি।</translation>
 <translation id="6529602333819889595">&amp;মুছে ফেলাকে আবার করুন</translation>
 <translation id="6534179046333460208">বাস্তবিক ওয়েব প্রস্তাবনাগুলি</translation>
+<translation id="6545864417968258051">ব্লুটুথ স্ক্যানিং</translation>
 <translation id="6554795675067793129">আপনার অ্যাকাউন্ট <ph name="ENROLLMENT_DOMAIN" /> ম্যানেজ করে।</translation>
 <translation id="6556866813142980365">আবার করুন</translation>
 <translation id="6563469144985748109">আপনার পরিচালক এখনও এটি অনুমোদন করেন নি</translation>
@@ -1018,6 +1034,7 @@
 <translation id="6626291197371920147">বৈধ কার্ড নম্বর যোগ করুন</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> সার্চ</translation>
 <translation id="6630809736994426279"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />-এ যে আক্রমণকারীরা এই মুহূর্তে সক্রিয় আছে, তারা আপনার Mac-এ এমন বিপজ্জনক প্রোগ্রাম ইনস্টল করে দিতে পারে যেগুলি আপনার তথ্যের (যেমন ফটো, পাসওয়ার্ড, মেসেজ এবং ক্রেডিট কার্ড) ক্ষতি করতে বা সেগুলি চুরি করতে পারে। <ph name="BEGIN_LEARN_MORE_LINK" />আরও জানুন<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">এই নীতির জন্য একই মান সহ একাধিক উৎস রয়েছে।</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="6644283850729428850">এই নীতিটি অসমর্থিত হয়েছে৷</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{কিছুই নয়}=1{১টি সাইট থেকে (আপনাকে আপনার Google অ্যাকাউন্ট থেকে সাইন-আউট করা হবে না)}one{#টি সাইট থেকে (আপনাকে আপনার Google অ্যাকাউন্ট থেকে সাইন-আউট করা হবে না)}other{#টি সাইট থেকে (আপনাকে আপনার Google অ্যাকাউন্ট থেকে সাইন-আউট করা হবে না)}}</translation>
@@ -1025,6 +1042,7 @@
 <translation id="6670613747977017428">সুরক্ষিত জায়গায় ফিরুন।</translation>
 <translation id="6671697161687535275">Chromium থেকে ফর্ম প্রস্তাবনা সরাবেন?</translation>
 <translation id="6685834062052613830">সাইন-আউট করে সেট-আপ সম্পূর্ণ করুন</translation>
+<translation id="6689271823431384964">আপনি সাইন-ইন করে আছেন বলে, Chrome আপনার কার্ডগুলি Google অ্যাকাউন্টে সেভ করতে চান কিনা তা জানতে চাইছে। সেটিংস থেকে আপনি এই বিকল্প পরিবর্তন করতে পারেন। আপনার অ্যাকাউন্ট থেকেই কার্ডহোল্ডারের নাম পাওয়া গেছে।</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
 <translation id="6710594484020273272">&lt;সার্চের পদ লিখুন&gt;</translation>
 <translation id="671076103358959139">নথিভুক্ত করার জন্য টোকেন:</translation>
@@ -1134,6 +1152,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" /> সংক্রান্ত সতর্কতা</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">কানেকশন সহায়তা</translation>
+<translation id="733354035281974745">ডিভাইসের স্থানীয় অ্যাকাউন্ট ওভাররাইড করা</translation>
 <translation id="7334320624316649418">&amp;পুনর্বিন্যাসকে আবার করুন</translation>
 <translation id="733923710415886693">সার্ভারের সার্টিফিকেটটি সার্টিফিকেটের স্বচ্ছতার মাধ্যমে প্রকাশ করা হয়নি।</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -1339,6 +1358,7 @@
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">আপনি যদি আপনার নিরাপত্তার ঝুঁকিগুলি বুঝতে পারেন, তাহলে ক্ষতিকারক প্রোগ্রাম সরানোর আগে আপনি <ph name="BEGIN_LINK" />এই সাইটে যেতে পারেন<ph name="END_LINK" />৷</translation>
 <translation id="8349305172487531364">বুকমার্কস বার</translation>
+<translation id="836241887727198552">Google অ্যাকাউন্টে কার্ড সেভ করতে চান?</translation>
 <translation id="8363502534493474904">বিমান মোড বন্ধ করে দেখুন</translation>
 <translation id="8364627913115013041">সেট করা নেই৷</translation>
 <translation id="8368476060205742148">Google Play পরিষেবাদি</translation>
@@ -1380,6 +1400,7 @@
 <translation id="8620436878122366504">আপনার পিতামাতা এখনও এটি অনুমোদন করেন নি</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">এই ডিভাইসে এই কার্ডটি সেভ করুন</translation>
+<translation id="8626112503828625890">বিলিংয়ের বিবরণ Google অ্যাকাউন্টে সেভ করে রাখতে চান?</translation>
 <translation id="8663226718884576429">অর্ডারের সারসংক্ষেপ, <ph name="TOTAL_LABEL" />, আরও বিবরণ</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, উত্তর, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>

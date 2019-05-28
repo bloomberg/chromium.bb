@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Alles openen</translation>
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="1436290164580597469">Geef de wachtwoordzin op om de synchronisatie te starten.</translation>
+<translation id="1449835205994625556">Wachtwoord verbergen</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> items</translation>
 <translation id="1491277525950327607">Dubbeltik om de instelling in of uit te schakelen</translation>
 <translation id="152234381334907219">Nooit opgeslagen</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Browsegegevens wissen</translation>
 <translation id="1820259098641718022">Toegevoegd aan leeslijst</translation>
 <translation id="1828824471510190776">Wachtwoord voorstellen...</translation>
+<translation id="1870148520156231997">Wachtwoord weergeven</translation>
 <translation id="1876721852596493031">Gebruiksgegevens verzenden</translation>
 <translation id="1886928167269928266">Het eerste gebruik</translation>
 <translation id="1911619930368729126">Uploaden naar Google Drive</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Voortgangsbalk voor laden van pagina, <ph name="EMAIL" /> geladen.</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4004204301268239848">Wachtwoorden worden in je Google-account opgeslagen, zodat je deze op elk apparaat kunt gebruiken.</translation>
+<translation id="4006921758705478413">Verzenden naar je apparaten</translation>
 <translation id="4038354071007134711">Geen app op dit apparaat kan het bestand openen.</translation>
 <translation id="4042870976416480368">Zoeken op pagina</translation>
 <translation id="4049507953662678203">Zorg ervoor dat je beschikt over een netwerkverbinding en probeer het opnieuw.</translation>
@@ -267,6 +270,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="4904877109095351937">Markeren als gelezen</translation>
 <translation id="4930268273022498155">Bestaande gegevens verwijderen. Je kunt ze terugkrijgen door weer over te schakelen naar <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Er is een probleem opgetreden bij het delen van je item.</translation>
+<translation id="4945756290001680296">Wachtwoordinstellingen openen</translation>
 <translation id="4979397965658815378">Log in met je Google-account om je bladwijzers, wachtwoorden, geschiedenis en andere instellingen op al je apparaten te gebruiken</translation>
 <translation id="5005498671520578047">Wachtwoord kopiëren</translation>
 <translation id="5010803260590204777">Open een incognitotabblad om privé op internet te surfen.</translation>
@@ -520,6 +524,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8976382372951310360">Help</translation>
 <translation id="8981454092730389528">Google-activiteitsopties</translation>
 <translation id="8985320356172329008">Ingelogd bij Google als</translation>
+<translation id="9016406938567631235">Verzenden…</translation>
 <translation id="902659348151742535">Google kan je browsegeschiedenis gebruiken om Google Zoeken, advertenties en andere Google-services te personaliseren.</translation>
 <translation id="9034759925968272072">Je wordt niet uitgelogd van je Google-account. Voor je Google-account kunnen andere vormen van browsegeschiedenis beschikbaar zijn via <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Bandbreedte</translation>

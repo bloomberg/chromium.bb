@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Истакни курсор миша</translation>
 <translation id="3513798432020909783">Налогом управља <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
+<translation id="3576141592585647168">Промените временску зону</translation>
 <translation id="3595596368722241419">Батерија је пуна</translation>
 <translation id="3606978283550408104">Повезан је екран са Брајевом азбуком.</translation>
 <translation id="3621202678540785336">Улаз</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Питајте администратора</translation>
 <translation id="6585808820553845416">Сесија се завршава за <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Тастер за претрагу+Shift+K</translation>
+<translation id="6637729079642709226">Промените време</translation>
 <translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6665545700722362599">Дозволите веб-сајтовима, апликацијама и додацима да користе услуге локације или микрофон, камеру или друге функције уређаја</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">Користи се <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Откључајте уређај помоћу ИД-а пријављивања <ph name="LOGIN_ID" /> да бисте добили обавештење</translation>
 <translation id="8995603266996330174">Управља <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Унесите приступни кôд родитеља за Family Link.</translation>
 <translation id="9029474291399787231">Доступно је ажурирање за Adobe Flash Player</translation>
 <translation id="9056839673611986238">Уређај ће бити враћен на ранију верзију</translation>
 <translation id="9070640332319875144">Подешавања Помоћника</translation>

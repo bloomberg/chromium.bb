@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Изображение без етикет</translation>
 <translation id="3706100364254443312">превключвател</translation>
 <translation id="3732799496749320381">мм</translation>
+<translation id="3754210790023674521">Изход от „Картина в картината“</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
 <translation id="3808586225841795776">термин</translation>
 <translation id="3822383571486410024">Моля, удължете този текст поне до <ph name="MIN_CHARACTERS" /> знака (понастоящем използвате <ph name="CURRENT_LENGTH" />).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Текстът след „<ph name="ATSIGN" />“ не бива да съдържа символа „<ph name="INVALIDCHARACTER" />“.</translation>
 <translation id="4668956016107839909">приложение</translation>
+<translation id="4718048029184481307">Възпроизвежда се в режим „Картина в картината“</translation>
 <translation id="4742539557769756338">корица</translation>
 <translation id="4748357248530471599">превключване между прорез на екрана и цял екран</translation>
 <translation id="4757246831282535685">панел с раздели</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">изтегляне на мултимедията</translation>
 <translation id="6981594929165378967">вмъкване</translation>
 <translation id="6989848892321993519">Моля, удължете този текст до поне <ph name="MIN_CHARACTERS" /> знака (понастоящем използвате 1 знак).</translation>
+<translation id="7033340931668032222">нагоре и надолу за промяна на силата на звука</translation>
 <translation id="709897737746224366">Моля, спазвайте изисквания формат.</translation>
 <translation id="7118469954320184356">Няма описание.</translation>
 <translation id="7139483182332611405">предисловие</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">графичен символ</translation>
 <translation id="8583702881314752957">списък с дефиниции</translation>
 <translation id="8597182159515967513">заглавие</translation>
+<translation id="8603553056539299761">наляво и надясно за придвижване</translation>
 <translation id="860475260694818407">съдържание</translation>
 <translation id="8613126697340063924">управление на отдалеченото възпроизвеждане</translation>
 <translation id="862370744433916922">подзаглавие</translation>

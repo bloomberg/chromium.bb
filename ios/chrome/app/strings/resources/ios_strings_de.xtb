@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Alle öffnen</translation>
 <translation id="1430915738399379752">Drucken</translation>
 <translation id="1436290164580597469">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten.</translation>
+<translation id="1449835205994625556">Passwort verbergen</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> Elemente</translation>
 <translation id="1491277525950327607">Zum Aktivieren bzw. Deaktivieren doppeltippen</translation>
 <translation id="152234381334907219">Nie speichern für...</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Browserdaten löschen</translation>
 <translation id="1820259098641718022">Zur Leseliste hinzugefügt</translation>
 <translation id="1828824471510190776">Passwort vorschlagen…</translation>
+<translation id="1870148520156231997">Passwort einblenden</translation>
 <translation id="1876721852596493031">Nutzungsdaten senden</translation>
 <translation id="1886928167269928266">Für gesamten Zeitraum</translation>
 <translation id="1911619930368729126">Auf Google Drive hochladen</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Statusanzeige für den Seitenaufbau, <ph name="EMAIL" /> geladen.</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4004204301268239848">Passwörter werden in Ihrem Google-Konto gespeichert, sodass Sie sie auf jedem Gerät verwenden können.</translation>
+<translation id="4006921758705478413">An meine Geräte senden</translation>
 <translation id="4038354071007134711">Keine App zum Öffnen der Datei auf diesem Gerät</translation>
 <translation id="4042870976416480368">Auf Seite suchen</translation>
 <translation id="4049507953662678203">Überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es noch einmal.</translation>
@@ -267,6 +270,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4904877109095351937">Als gelesen markieren</translation>
 <translation id="4930268273022498155">Vorhandene Daten werden gelöscht. Wenn Sie Ihre vorhandenen Daten abrufen möchten, wechseln Sie zurück zu <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Beim Teilen ist ein Fehler aufgetreten.</translation>
+<translation id="4945756290001680296">Auf Passworteinstellungen zugreifen</translation>
 <translation id="4979397965658815378">Melden Sie sich mit Ihrem Google-Konto an, um Ihre Lesezeichen, Ihre Passwörter, Ihren Verlauf und Ihre anderen Einstellungen auf allen Geräten abrufen zu können</translation>
 <translation id="5005498671520578047">Passwort kopieren</translation>
 <translation id="5010803260590204777">Öffnet einen Inkognito-Tab zum anonymen Surfen im Web</translation>
@@ -520,6 +524,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8976382372951310360">Hilfe</translation>
 <translation id="8981454092730389528">Google-Aktivitätseinstellungen</translation>
 <translation id="8985320356172329008">In Google angemeldet als</translation>
+<translation id="9016406938567631235">Wird gesendet…</translation>
 <translation id="902659348151742535">Mithilfe Ihres Browserverlaufs kann Google die Suche, Werbung und andere Google-Dienste personalisieren.</translation>
 <translation id="9034759925968272072">Sie werden nicht von Ihrem Google-Konto abgemeldet. Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> weitere Arten von Browserverlaufsdaten für Ihr Google-Konto.</translation>
 <translation id="9039373489628511875">Bandbreite</translation>

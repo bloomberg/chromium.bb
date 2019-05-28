@@ -96,6 +96,7 @@
 <translation id="1672586136351118594">மீண்டும் காட்டாதே</translation>
 <translation id="1679068421605151609">டெவலப்பர் கருவிகள்</translation>
 <translation id="1692118695553449118">ஒத்திசைவு இயக்கத்தில்</translation>
+<translation id="169515064810179024">தளங்கள் மோஷன் சென்சார்களை அணுகுவதைத் தடுக்கும்</translation>
 <translation id="1717218214683051432">மோஷன் சென்சார்கள்</translation>
 <translation id="1718835860248848330">கடந்த ஒரு மணிநேரம்</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> புதுப்பிக்கப்பட்டது</translation>
@@ -246,6 +247,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> வினாடிகள் மீதமுள்ளன</translation>
 <translation id="2779651927720337254">தோல்வியுற்றது</translation>
 <translation id="2781151931089541271">1 வினாடி மீதமுள்ளது</translation>
+<translation id="2801022321632964776">Chromeமில் உங்கள் மொழியைப் பெற சமீபத்திய பதிப்பிற்குப் புதுப்பிக்கவும்</translation>
 <translation id="2810645512293415242">தரவைச் சேமித்து, வேகமாக ஏற்றுவதற்கு எளிதாக்கப்பட்ட பக்கம்.</translation>
 <translation id="281504910091592009">உங்கள் <ph name="BEGIN_LINK" />Google கணக்கில்<ph name="END_LINK" /> சேமிக்கப்பட்ட கடவுச்சொற்களைப் பார்த்து, நிர்வகிக்கவும்</translation>
 <translation id="2818669890320396765">உங்கள் அனைத்துச் சாதனங்களிலும் புத்தகக்குறிகளைப் பெற, உள்நுழைந்து, ஒத்திசைவை இயக்கவும்</translation>
@@ -305,6 +307,7 @@
 <translation id="3259831549858767975">பக்கத்திலுள்ள அனைத்தையும் சிறிதாக்கும்</translation>
 <translation id="3269093882174072735">படத்தை ஏற்று</translation>
 <translation id="3269956123044984603">பிற சாதனங்களிலிருந்து தாவல்களைப் பெற, Android கணக்கு அமைப்புகளில் "தரவைத் தானாக ஒத்திசை" என்பதை இயக்கவும்.</translation>
+<translation id="3277252321222022663">தளங்கள் சென்சார்களை அணுக அனுமதிக்கும் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="3282568296779691940">Chrome இல் உள்நுழைக</translation>
 <translation id="3288003805934695103">பக்கத்தை மீண்டும் ஏற்றுதல்</translation>
 <translation id="32895400574683172">அறிவிப்புகள் அனுமதிக்கப்படுகின்றன</translation>
@@ -539,6 +542,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">அனுமதி</translation>
 <translation id="5040262127954254034">தனியுரிமை</translation>
+<translation id="5048398596102334565">மோஷன் சென்சார்களை அணுக தளங்களை அனுமதிக்கும் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="5063480226653192405">பயன்பாடு</translation>
 <translation id="5073204694187207510">முழுத்திரை கட்டத்தை மூடு</translation>
 <translation id="5082793167783849073">ஒரு குழுவை உருவாக்கிப் பக்கங்களை விரைவாக ஒப்பிடலாம். தொடங்க, ஓர் இணைப்பைத் தொட்டுப் பிடிக்கவும்.</translation>
@@ -597,7 +601,6 @@
 <translation id="5494752089476963479">குறுக்கிடும் அல்லது தவறாக வழிநடத்தும் விளம்பரங்களைக் காட்டும் தளங்களில் விளம்பரங்களைத் தடு</translation>
 <translation id="5497272504048921382">திறந்துள்ள தாவல்கள்</translation>
 <translation id="5500777121964041360">உங்கள் நாட்டில் இல்லாமல் இருக்கக்கூடும்</translation>
-<translation id="550684401320795253">Chromeஐப் புதுப்பிக்கிறது...</translation>
 <translation id="5512137114520586844">இந்தக் கணக்கு <ph name="PARENT_NAME" /> ஆல் நிர்வகிக்கப்படுகிறது.</translation>
 <translation id="5514904542973294328">இந்தச் சாதனத்தின் நிர்வாகி முடக்கியுள்ளார்</translation>
 <translation id="5515439363601853141">கடவுச்சொல்லைப் பார்க்க, திறக்கவும்</translation>
@@ -644,7 +647,7 @@
 <translation id="5797070761912323120">தேடல், விளம்பரங்கள் மற்றும் பிற Google சேவைகளைத் தனிப்பயனாக்க, உங்கள் வரலாற்றை Google பயன்படுத்தக்கூடும்</translation>
 <translation id="5804241973901381774">அனுமதிகள்</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# மணிநேரம் முன்பு}other{# மணிநேரம் முன்பு}}</translation>
-<translation id="5810288467834065221">பதிப்புரிமை <ph name="YEAR" /> Google LLC. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</translation>
+<translation id="5810288467834065221">பதிப்புரிமை <ph name="YEAR" /> Google LLC. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டுள்ளன.</translation>
 <translation id="5817918615728894473">இணை</translation>
 <translation id="583281660410589416">தெரியாதது</translation>
 <translation id="5833984609253377421">இணைப்பைப் பகிர்</translation>
@@ -729,6 +732,7 @@
 <translation id="6406506848690869874">Sync</translation>
 <translation id="641643625718530986">அச்சிடு...</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> மெ.பை. பதிவிறக்கப்பட்டுள்ளது</translation>
+<translation id="6427112570124116297">இணையத்தை மொழிபெயர்த்தல்</translation>
 <translation id="6433501201775827830">தேடல் இன்ஜினைத் தேர்வுசெய்யவும்</translation>
 <translation id="6437478888915024427">பக்கத் தகவல்</translation>
 <translation id="6441734959916820584">பெயர் மிக நீளமாக உள்ளது</translation>
@@ -841,6 +845,7 @@
 <translation id="7189598951263744875">பகிர்...</translation>
 <translation id="7191430249889272776">தாவல் பின்புலத்தில் திறக்கப்பட்டது.</translation>
 <translation id="723171743924126238">படங்களைத் தேர்ந்தெடுக்கவும்</translation>
+<translation id="7233236755231902816">உங்கள் மொழியில் இணையதளங்களைப் பார்க்க Chromeமின் சமீபத்திய பதிப்பைப் பெறுங்கள்</translation>
 <translation id="7243308994586599757">திரையின் கீழ்ப்பகுதிக்கு அருகில் கிடைக்கும் விருப்பங்கள்</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> தேர்ந்தெடுக்கப்பட்டன</translation>
 <translation id="7253272406652746122">உங்கள் சாதனத்தின் அமைப்புகள் பயன்பாட்டில் உள்ள கணக்குகள் பக்கத்தில் Google கணக்கைச் சேர்க்கவும்.</translation>
@@ -895,7 +900,7 @@
 <translation id="756809126120519699">Chrome தரவு அழிக்கப்பட்டது</translation>
 <translation id="757524316907819857">பாதுகாக்கப்பட்ட உள்ளடக்கத்தைத் தளங்கள் இயக்குவதைத் தடுக்கும்</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> கோப்பு பதிவிறக்கப்பட்டது}other{<ph name="FILES_DOWNLOADED_MANY" /> கோப்புகள் பதிவிறக்கப்பட்டன}}</translation>
-<translation id="7588219262685291874">உங்கள் சாதனத்தின் பேட்டரி சேமிப்பான் இயக்கத்தில் இருக்கும் போது டார்க் தீமினை இயக்கும்</translation>
+<translation id="7588219262685291874">சாதனத்தில் பேட்டரி சேமிப்பான் இயக்கத்தில் இருக்கும்போது டார்க் தீமை இயக்கும்</translation>
 <translation id="7589445247086920869">நடப்புத் தேடல் இன்ஜினுக்குத் தடுக்கும்</translation>
 <translation id="7593557518625677601">Chrome ஒத்திசைவைத் தொடங்க, Android அமைப்புகளைத் திறந்து Android சாதன ஒத்திசைவை மீண்டும் இயக்கவும்</translation>
 <translation id="7596558890252710462">இயக்க முறைமை</translation>
@@ -998,6 +1003,7 @@
 <translation id="8310344678080805313">நிலையான தாவல்கள்</translation>
 <translation id="8313455859591948645">துவக்கப் பக்கத்தைத் திருத்தவும்</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> மற்றும் பல தளங்கள்</translation>
+<translation id="8327155640814342956">சிறந்த உலாவல் அனுபவத்திற்கு Chromeமைத் திறந்து புதுப்பியுங்கள்</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> மொழியில் உள்ள பக்கங்கள் மொழிபெயர்க்கப்படாது</translation>
 <translation id="8349013245300336738">பயன்படுத்திய தரவு அளவின்படி வரிசைப்படுத்தும்</translation>
 <translation id="8372893542064058268">குறிப்பிட்ட தளத்திற்கு, பின்னணி ஒத்திசைவை அனுமதி.</translation>
@@ -1055,6 +1061,7 @@
 <translation id="8788968922598763114">கடைசியாக மூடிய தாவலைத் திறக்கும்</translation>
 <translation id="8801436777607969138">குறிப்பிட்ட தளத்திற்கு JavaScriptடைத் தடுக்கும்.</translation>
 <translation id="8812260976093120287">உங்கள் சாதனத்தில் ஆதரிக்கப்படும் கட்டணம் செலுத்துவதற்கான பயன்பாடுகளைப் (மேலே குறிப்பிட்டவை) பயன்படுத்தி, சில இணையதளங்களின் மூலம் பணம் செலுத்தலாம்.</translation>
+<translation id="8816026460808729765">தளங்கள் சென்சார்களை அணுகுவதைத் தடுக்கும்</translation>
 <translation id="8816439037877937734">Chrome இல் <ph name="APP_NAME" /> திறக்கும். தொடர்வதன் மூலம், Chrome இன் <ph name="BEGIN_LINK1" />சேவை விதிமுறைகள்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />தனியுரிமை அறிக்கை<ph name="END_LINK2" />, <ph name="BEGIN_LINK3" />Family Link மூலம் நிர்வகிக்கப்படும் Google கணக்குகளுக்கான தனியுரிமை அறிக்கை<ph name="END_LINK3" /> ஆகியவற்றை ஏற்கிறீர்கள்.</translation>
 <translation id="8820817407110198400">புக்மார்க்குகள்</translation>
 <translation id="8833831881926404480">ஒரு தளம் உங்கள் திரையைப் பகிர்கிறது</translation>

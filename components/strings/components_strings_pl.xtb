@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Nie można zapisać karty</translation>
 <translation id="1639239467298939599">Wczytuję</translation>
 <translation id="1640180200866533862">Zasady dotyczące użytkowników</translation>
 <translation id="1640244768702815859">Otwórz <ph name="BEGIN_LINK" />stronę główną witryny<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Napraw połączenie, używając <ph name="BEGIN_LINK" />aplikacji diagnostycznej<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Wyślij teraz</translation>
 <translation id="225207911366869382">Ta wartość tej zasady została wycofana.</translation>
+<translation id="2257315177824333709">Nie można teraz zapisać tej karty</translation>
 <translation id="2262243747453050782">Błąd HTTP</translation>
 <translation id="2263079731045660823">Dane karty kredytowej używane do autouzupełniania możesz zmienić w ustawieniach Chrome</translation>
 <translation id="2270484714375784793">Numer telefonu</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Pokaż zasady bez ustawionej wartości</translation>
 <translation id="239429038616798445">Ta metoda wysyłki jest niedostępna. Wybierz inną.</translation>
 <translation id="2396249848217231973">&amp;Cofnij usunięcie</translation>
+<translation id="2409589295040002961">Administrator może zdalnie zmienić konfigurację przeglądarki. Aktywność na tym urządzeniu może być zarządzana również poza Chrome. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa mógł zostać odwołany. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="2418081434543109369">Serwer <ph name="ORIGIN" />, z którym chcesz się połączyć, zażądał stosowania
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Żądanie wykonane pomyślnie</translation>
 <translation id="2728127805433021124">Certyfikat serwera został podpisany przy użyciu słabego algorytmu podpisu.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Uruchomienie diagnostyki połączeń<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Dla tej zasady określono więcej niż jedno źródło, a wartości tych źródeł są sprzeczne.</translation>
 <translation id="2738330467931008676">Wybierz adres odbioru</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Usuń wybrane elementy</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">Edytuj dane kontaktowe</translation>
 <translation id="6433595998831338502">Serwer <ph name="HOST_NAME" /> odrzucił połączenie.</translation>
 <translation id="6434309073475700221">Przerwij</translation>
+<translation id="6440503408713884761">Ignorowany</translation>
 <translation id="6446163441502663861">Kahu (koperta)</translation>
 <translation id="6446608382365791566">Dodaj więcej informacji</translation>
 <translation id="6447842834002726250">Pliki cookie</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">Ostrzeżenie: ta zasada nie została scalona jako lista na podstawie zasady, ponieważ nie jest listą.</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>
 <translation id="6534179046333460208">Sugestie dotyczące internetu rzeczy</translation>
+<translation id="6545864417968258051">Skanowanie Bluetooth</translation>
 <translation id="6554795675067793129">To konto jest zarządzane przez: <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Ponów</translation>
 <translation id="6563469144985748109">Twój menedżer jeszcze na to nie zezwolił</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">Dodaj prawidłowy numer karty</translation>
 <translation id="6628463337424475685">Wyszukiwarka <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Osoby obecnie atakujące stronę <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogą próbować zainstalować na Twoim komputerze Mac niebezpieczne programy wykradające lub usuwające informacje (na przykład zdjęcia, hasła, wiadomości lub dane kart kredytowych). <ph name="BEGIN_LEARN_MORE_LINK" />Więcej informacji<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Dla tej zasady określono więcej niż jedno źródło, ale wartości tych źródeł są jednakowe.</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6644283850729428850">Zasada jest wycofana</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Brak}=1{Z 1 witryny (nie spowoduje to wylogowania z konta Google)}few{Z # witryn (nie spowoduje to wylogowania z konta Google)}many{Z # witryn (nie spowoduje to wylogowania z konta Google)}other{Z # witryny (nie spowoduje to wylogowania z konta Google)}}</translation>

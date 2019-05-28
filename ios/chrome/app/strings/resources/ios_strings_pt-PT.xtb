@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Abrir tudo</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1436290164580597469">Introduza a frase de acesso para iniciar a sincronização.</translation>
+<translation id="1449835205994625556">Ocultar a palavra-passe</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> itens</translation>
 <translation id="1491277525950327607">Toque duas vezes para ativar ou desativar a definição</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Limpar dados de navegação</translation>
 <translation id="1820259098641718022">Adicionada à lista de leitura</translation>
 <translation id="1828824471510190776">Sugerir palavra-passe…</translation>
+<translation id="1870148520156231997">Mostrar palavra-passe</translation>
 <translation id="1876721852596493031">Enviar Dados de Uso</translation>
 <translation id="1886928167269928266">Desde sempre</translation>
 <translation id="1911619930368729126">Carregar p/ Google Drive</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Barra de progresso do carregamento de página, <ph name="EMAIL" /> carregado(s).</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4004204301268239848">As palavras-passe são guardadas na sua Conta Google para que as possa utilizar em qualquer dispositivo.</translation>
+<translation id="4006921758705478413">Enviar para os seus dispositivos</translation>
 <translation id="4038354071007134711">Nenhuma app neste disp. pode abrir o ficheiro.</translation>
 <translation id="4042870976416480368">Localizar na página</translation>
 <translation id="4049507953662678203">Certifique-se de que tem uma ligação de rede e tente novamente.</translation>
@@ -267,6 +270,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="4904877109095351937">Marcar como lidas</translation>
 <translation id="4930268273022498155">Eliminar os dados existentes. Pode obtê-los ao mudar novamente para <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Lamentamos, mas ocorreu um erro ao partilhar o seu item.</translation>
+<translation id="4945756290001680296">Aceder às definições de palavras-passe</translation>
 <translation id="4979397965658815378">Inicie sessão com a sua Conta Google para aceder aos marcadores, às palavras-passe, ao histórico e a outras definições em todos os dispositivos</translation>
 <translation id="5005498671520578047">Copiar palavra-passe</translation>
 <translation id="5010803260590204777">Abra um separador de navegação anónima para navegar na Web de forma privada.</translation>
@@ -520,6 +524,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8976382372951310360">Ajuda</translation>
 <translation id="8981454092730389528">Controlos da atividade Google</translation>
 <translation id="8985320356172329008">Iniciou sessão no Google como</translation>
+<translation id="9016406938567631235">A enviar…</translation>
 <translation id="902659348151742535">A Google pode utilizar o seu histórico de navegação para personalizar a Pesquisa Google, os anúncios e outros serviços Google.</translation>
 <translation id="9034759925968272072">A sessão na sua Conta Google não é terminada. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Largura de banda</translation>

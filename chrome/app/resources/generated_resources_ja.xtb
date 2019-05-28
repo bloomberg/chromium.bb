@@ -912,6 +912,7 @@
 <translation id="2396783860772170191">4 桁の PIN（0000～9999）を入力してください</translation>
 <translation id="2408955596600435184">PIN を入力してください</translation>
 <translation id="241082044617551207">不明なプラグイン</translation>
+<translation id="2412593942846481727">アップデートが利用可能</translation>
 <translation id="2413749388954403953">ブックマークのユーザー インターフェースの変更</translation>
 <translation id="241639282915300771">現在 <ph name="CONTAINER_ID" /> で復元を実行しています</translation>
 <translation id="241727068219398187"><ph name="TIME" />時点の Google パスワードでデータを暗号化しました。
@@ -2769,7 +2770,7 @@
 <translation id="5331975486040154427">USB-C デバイス（左奥のポート）</translation>
 <translation id="5334142896108694079">スクリプト キャッシュ</translation>
 <translation id="5336126339807372270">USB デバイスへのアクセスをどのサイトにも許可しない</translation>
-<translation id="5336688142483283574">このページも履歴と <ph name="SEARCH_ENGINE" /> アクティビティから削除されます。</translation>
+<translation id="5336688142483283574">このページは履歴と <ph name="SEARCH_ENGINE" /> アクティビティからも削除されます。</translation>
 <translation id="5337771866151525739">第三者によってインストールされました。</translation>
 <translation id="5338503421962489998">ローカル ストレージ</translation>
 <translation id="5340638867532133571">サイトに支払いハンドラのインストールを許可する（推奨）</translation>

@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">家长设置</translation>
 <translation id="5327248766486351172">名称</translation>
 <translation id="5335288049665977812">允许网站运行 JavaScript（推荐）</translation>
+<translation id="5357811892247919462">收到了标签页</translation>
 <translation id="5363230136052241468">点按“首页”按钮即可加载新标签页</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> 个打开的标签页，点按即可切换标签页}other{<ph name="OPEN_TABS_MANY" /> 个打开的标签页，点按即可切换标签页}}</translation>
 <translation id="5391532827096253100">您与此网站之间建立的连接不安全。网站信息</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">禁止会展示侵扰性或误导性广告的网站显示广告</translation>
 <translation id="5497272504048921382">已打开的标签页</translation>
 <translation id="5500777121964041360">可能无法在您所在的国家/地区使用</translation>
-<translation id="550684401320795253">正在更新 Chrome…</translation>
 <translation id="5512137114520586844">该帐号由 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5514904542973294328">已被此设备的管理员停用</translation>
 <translation id="5515439363601853141">需解锁才能查看您的密码</translation>
@@ -831,6 +831,7 @@
 <translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已选择 1 项}other{已选择 # 项}}</translation>
+<translation id="7071521146534760487">管理帐号</translation>
 <translation id="7077143737582773186">SD 卡</translation>
 <translation id="7087918508125750058">已选择 <ph name="ITEM_COUNT" /> 项。选项位于屏幕顶部附近</translation>
 <translation id="7121362699166175603">清除历史记录和地址栏中的自动填充项。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>

@@ -135,6 +135,7 @@
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1623104350909869708">מנע מהדף זה ליצור תיבות דו-שיח נוספות</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">לא ניתן לשמור את הכרטיס</translation>
 <translation id="1639239467298939599">טוען</translation>
 <translation id="1640180200866533862">מדיניות משתמשים</translation>
 <translation id="1640244768702815859">נסה <ph name="BEGIN_LINK" />להיכנס לדף הבית של האתר<ph name="END_LINK" />.</translation>
@@ -243,6 +244,7 @@
 <translation id="2230458221926704099">תקן את החיבור באמצעות <ph name="BEGIN_LINK" />אפליקציית הבדיקה<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">שלח עכשיו</translation>
 <translation id="225207911366869382">ערך זה הוצא משימוש עבור מדיניות זו.</translation>
+<translation id="2257315177824333709">מצטערים, אי אפשר לשמור את הכרטיס שלך עכשיו</translation>
 <translation id="2262243747453050782">‏שגיאת HTTP</translation>
 <translation id="2263079731045660823">‏עדכון המילוי האוטומטי של פרטי כרטיס אשראי בהגדרות Chrome</translation>
 <translation id="2270484714375784793">מספר טלפון</translation>
@@ -272,6 +274,7 @@
 <translation id="2392959068659972793">הצגת מדיניות ללא ערך מוגדר</translation>
 <translation id="239429038616798445">שיטת המשלוח הזו לא זמינה. עליך לבחור שיטה אחרת.</translation>
 <translation id="2396249848217231973">&amp;ביטול מחיקה</translation>
+<translation id="2409589295040002961">‏מנהל המערכת יכול לשנות את הגדרת הדפדפן שלך מרחוק. בנוסף, ניתן לנהל את הפעילות במכשיר הזה מחוץ ל-Chrome. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. ייתכן שאישור האבטחה שלו בוטל. הסיבה לכך עשויה להיות הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="2418081434543109369">השרת שאליו ביקשת לעבור, <ph name="ORIGIN" />, ביקש להחיל מדיניות אבטחה על כל הבקשות הנשלחות אליו. עם זאת, עכשיו הוא לא הצליח לספק מדיניות, ומצב זה מונע מהדפדפן למלא את הבקשה לעבור אל <ph name="SITE" />.</translation>
@@ -332,6 +335,7 @@
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
 <translation id="2728127805433021124">האישור של השרת נחתם באמצעות אלגוריתם של חתימה חלשה.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />מפעיל את אבחון הקישוריות<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">קיים יותר ממקור אחד עם ערכים סותרים עבור המדיניות הזו!</translation>
 <translation id="2738330467931008676">בחירת כתובת לאיסוף</translation>
 <translation id="2740531572673183784">אישור</translation>
 <translation id="2742870351467570537">הסר פריטים שנבחרו</translation>
@@ -366,7 +370,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו הוא מ-<ph name="DOMAIN2" />. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="2948083400971632585">‏ניתן להשבית כל שרת proxy המוגדר לחיבור מדף ההגדרות.</translation>
-<translation id="295526156371527179">אזהרה: המדיניות הזו לא עברה מיזוג כמילון בהתאם למדיניות, מאחר שהיא לא מילון.</translation>
+<translation id="295526156371527179">אזהרה: המדיניות הזו לא עברה מיזוג כמילון בהתאם למדיניות, מאחר שהיא אינה מילון.</translation>
 <translation id="2955913368246107853">סגור את חלונית החיפוש</translation>
 <translation id="2969319727213777354">‏כדי ליצור חיבור מאובטח, השעון צריך להיות מוגדר כהלכה. הסיבה לכך היא שהאישורים שבאמצעותם אתרים מזהים את עצמם תקפים רק למשך פרקי זמן מסוימים. מאחר שהשעון במכשיר שלך שגוי, Google Chrome לא יכול לאמת את האישורים האלה.</translation>
 <translation id="2970515157925768593">יכול לשנות מרחוק את הגדרות המכשיר והחשבון שלך.</translation>
@@ -994,6 +998,7 @@ Del</translation>
 <translation id="6433490469411711332">עריכת הפרטים ליצירת קשר</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> סירב להתחבר.</translation>
 <translation id="6434309073475700221">התעלם</translation>
+<translation id="6440503408713884761">המערכת מתעלמת מהפריט</translation>
 <translation id="6446163441502663861">Kahu (Envelope)‎</translation>
 <translation id="6446608382365791566">הוסף מידע</translation>
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
@@ -1006,9 +1011,10 @@ Del</translation>
 <translation id="6507833130742554667">אפשר לשלם באמצעות כרטיסי אשראי וחיוב.</translation>
 <translation id="650855688985305916">כן, לאחסן</translation>
 <translation id="6508722015517270189">‏הפעלה מחדש של Chrome</translation>
-<translation id="6517596291481585650">אזהרה! המדיניות הזו לא עברה מיזוג בהתאם למדיניות, מאחר שהיא לא רשימה.</translation>
+<translation id="6517596291481585650">אזהרה! המדיניות הזו לא עברה מיזוג בהתאם למדיניות, מאחר שהיא אינה רשימה.</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="6534179046333460208">הצעות לאינטרנט הפיזי</translation>
+<translation id="6545864417968258051">‏סריקת Bluetooth</translation>
 <translation id="6554795675067793129">החשבון שלך מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">בצע מחדש</translation>
 <translation id="6563469144985748109">המנהל שלך עדיין לא אישר זאת</translation>
@@ -1025,6 +1031,7 @@ Del</translation>
 <translation id="6626291197371920147">הוסף מספר כרטיס חוקי</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> חיפוש</translation>
 <translation id="6630809736994426279">‏תוקפים שנמצאים כרגע באתר <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> עלולים להתקין במחשב ה-MAC שלך תוכנות מסוכנות שגונבות מידע או מוחקות אותו (לדוגמה, תמונות, סיסמאות, הודעות וכרטיסי אשראי). <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">במדיניות הזו קיים יותר ממקור אחד, אבל הערכים זהים.</translation>
 <translation id="6643016212128521049">ניקוי</translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{ללא}=1{‏מאתר אחד (לא תבוצע יציאה מחשבון Google שלך.)}two{‏מ-# אתרים (לא תבוצע יציאה מחשבון Google שלך.)}many{‏מ-# אתרים (לא תבוצע יציאה מחשבון Google שלך.)}other{‏מ-# אתרים (לא תבוצע יציאה מחשבון Google שלך.)}}</translation>

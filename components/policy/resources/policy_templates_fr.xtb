@@ -398,6 +398,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       automatiquement refusé. Les formats contenant des caractères génériques
       ne sont pas autorisés.</translation>
 <translation id="1634989431648355062">Autoriser le plug-in "<ph name="FLASH_PLUGIN_NAME" />" sur ces sites</translation>
+<translation id="1645793986494086629">Schéma :</translation>
 <translation id="1653229475925941921">Si cette règle est définie, elle contrôle le type de loupe activé. Définissez la règle sur "None" pour désactiver la loupe.
 
           Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.
@@ -606,6 +607,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
 <translation id="2014757022750736514">Contrôle le comportement de l'écran de connexion, où les internautes se connectent à leur compte. Les paramètres incluent qui peut se connecter, quels types de comptes sont autorisés, quelles méthodes d'authentification doivent être utilisées, ainsi que l'accessibilité générale, le mode de saisie et les paramètres régionaux.</translation>
 <translation id="201557587962247231">Fréquence d'importation des rapports sur l'état de l'appareil</translation>
 <translation id="2017301949684549118">URL des applications Web à installer de façon silencieuse.</translation>
+<translation id="2017459564744167827">Consultez la page <ph name="REFERENCE_URL" /> pour en savoir plus sur le schéma et le formatage.</translation>
 <translation id="2018836497795982119">Indique la fréquence en millisecondes à laquelle le service de gestion des appareils est interrogé sur les informations concernant les règles relatives aux utilisateurs.
 
       La définition de cette règle remplace la valeur par défaut de 3 heures. Les valeurs valides pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86,4 millions (1 jour). Toutes les valeurs non comprises dans cette plage seront nivelées à la limite respective. Si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation est défini par défaut sur 24 heures. De plus, la règle est actualisée automatiquement chaque fois qu'elle est modifiée.
@@ -829,6 +831,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="2463034609187171371">Activer des suites de chiffrement DHE dans TLS</translation>
 <translation id="2463365186486772703">Paramètres régionaux de l'application</translation>
 <translation id="2466131534462628618">L'authentification de portail captif ignore le proxy</translation>
+<translation id="2471748297300970300">Si cette règle est désactivée, les avertissements de sécurité ne s'affichent pas lorsque Chrome est lancé avec certains indicateurs de ligne de commande présentant un risque.
+
+          Si elle est activée ou si elle n'est pas définie, les avertissements de sécurité s'affichent si certains indicateurs de ligne de commande sont utilisés pour lancer Chrome.
+
+          Sur Windows, cette règle est uniquement disponible sur les instances associées à un domaine <ph name="MS_AD_NAME" /> ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="2482676533225429905">Messagerie native</translation>
 <translation id="2483146640187052324">Prédire les actions réseau lors d'une connexion au réseau</translation>
 <translation id="2484208301968418871">Cette règle contrôle l'application du filtre d'URL SafeSites.
@@ -1104,6 +1111,7 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
           |created_time_millis|, qui correspond à l'horodatage UTC de la création de la valeur de remplacement, est envoyé sous la forme d'une chaîne, car l'horodatage ne peut pas être exprimé par un nombre entier. Ce paramètre permet de déterminer si cette valeur de remplacement doit encore être appliquée ou non. Si la limite actuelle (time_usage_limit ou time_window_limit) a débuté après la création de la valeur de remplacement, elle ne doit pas être appliquée. De même, si la valeur de remplacement a été créée avant la dernière modification de la valeur active time_window_limit ou time_usage_window, elle ne doit pas être appliquée.
 
           Plusieurs remplacements peuvent être envoyés, l'entrée valide la plus récente étant celle qui sera appliquée.</translation>
+<translation id="2901725272378498025">Activer les alertes de sécurité pour les indicateurs de ligne de commande.</translation>
 <translation id="2905984450136807296">Durée de mise en cache des données d'authentification</translation>
 <translation id="2906874737073861391">Liste des extensions AppPack</translation>
 <translation id="2907992746861405243">Détermine les imprimantes de <ph name="BULK_PRINTERS_POLICY" /> qui sont à la disposition des utilisateurs.
@@ -1679,6 +1687,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="3963602271515417124">Si cette règle est définie sur "True", l'attestation à distance est autorisée pour l'appareil, et un certificat est automatiquement généré et importé sur le serveur de gestion des appareils.
 
           Si la règle est définie sur "False", ou si vous ne l'avez pas définie, aucun certificat n'est généré et les appels vers l'API d'extension enterprise.platformKeys échouent.</translation>
+<translation id="3964262920683972987">Configurer le fond d'écran de l'appareil à afficher sur la page de connexion lorsqu'aucun utilisateur ne s'est encore connecté à l'appareil. Pour la configurer, vous devez indiquer l'URL depuis laquelle l'appareil Chrome OS peut télécharger l'image de fond d'écran et un hachage chiffré utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG, et sa taille ne doit pas dépasser 16 Mo. L'URL doit être accessible sans authentification. L'image de fond d'écran est téléchargée et mise en cache. Elle sera de nouveau téléchargée à chaque modification de l'URL ou du hachage.
+
+      Si la règle relative au fond d'écran est configurée, l'appareil Chrome OS téléchargera et utilisera l'image de fond d'écran sur l'écran de connexion si aucun utilisateur ne s'est encore connecté à l'appareil. Lorsque l'utilisateur se connecte, la règle relative au fond d'écran pour cet utilisateur est activée.
+
+      Si la règle relative au fond d'écran n'est pas définie pour l'appareil, la règle correspondante pour l'utilisateur détermine l'élément à afficher (si cette règle est définie).</translation>
 <translation id="3965339130942650562">Délai avant exécution de la déconnexion de l'utilisateur en cas d'inactivité</translation>
 <translation id="3973371701361892765">Ne jamais masquer automatiquement l'étagère</translation>
 <translation id="3984028218719007910">Détermine si <ph name="PRODUCT_OS_NAME" /> doit conserver les données locales des comptes après la déconnexion. Si cette règle est définie sur "true", aucun compte persistant n'est conservé par <ph name="PRODUCT_OS_NAME" />. Par ailleurs, toutes les données de la session utilisateur sont supprimées après la déconnexion. Si cette règle est définie sur "false" ou si elle n'est pas configurée, l'appareil peut conserver des données utilisateur locales (chiffrées).</translation>
@@ -1742,6 +1755,17 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4056910949759281379">Désactiver le protocole SPDY</translation>
 <translation id="408029843066770167">Autoriser l'envoi de requêtes à un service horaire de Google</translation>
 <translation id="408076456549153854">Activer la connexion au navigateur</translation>
+<translation id="40853027210512570">Remplace les règles par défaut de sélection d'imprimante pour <ph name="PRODUCT_NAME" />.
+
+      Cette règle détermine les critères utilisés pour la sélection d'imprimante par défaut dans <ph name="PRODUCT_NAME" />, ce qui se produit la première fois que la fonction d'impression est utilisée avec un profil.
+
+      Lorsque cette règle est définie, <ph name="PRODUCT_NAME" /> tentera de trouver une imprimante correspondant aux attributs spécifiés afin de la sélectionner en tant qu'imprimante par défaut. La première imprimante correspondant à la règle identifiée est sélectionnée. Si plusieurs imprimantes correspondent aux critères, l'une d'entre elles est sélectionnée de façon arbitraire, selon l'ordre dans lequel elles sont découvertes.
+
+      Lorsque cette règle n'est pas définie ou qu'aucune imprimante n'est identifiée dans le délai imparti, l'imprimante PDF intégrée est sélectionnée. À défaut d'imprimante PDF, aucune imprimante n'est sélectionnée.
+
+      Les imprimantes connectées à <ph name="CLOUD_PRINT_NAME" /> sont considérées comme étant de type <ph name="PRINTER_TYPE_CLOUD" />, les autres sont de type <ph name="PRINTER_TYPE_LOCAL" />.
+      Si vous ne renseignez pas un champ, cela signifie que toutes les valeurs seront prises en compte. Par exemple, si vous ne spécifiez pas de connectivité, l'aperçu avant impression propose toutes sortes d'imprimantes, à la fois de type "local" et "cloud".
+      Les structures d'expressions régulières doivent suivre la syntaxe JavaScript RegExp, et les résultats sont sensibles à la casse.</translation>
 <translation id="4088589230932595924">Mode navigation privée forcé</translation>
 <translation id="4088983553732356374">Vous permet de définir si les sites Web sont autorisés à configurer les données locales. La configuration des données locales peut être soit autorisée, soit bloquée pour tous les sites Web.
 
@@ -2197,6 +2221,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si elle n'est pas configurée, ou si elle est définie sur "True", Chrome laissera au moins un onglet ouvert après le passage à un autre navigateur.
 
       Si elle est définie sur "False", Chrome fermera l'onglet lorsque vous changez de navigateur, même s'il s'agissait du dernier onglet. Chrome sera alors fermé complètement.</translation>
+<translation id="5102203758995933166">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert.</translation>
 <translation id="5105313908130842249">Délai de verrouillage de l'écran (batterie)</translation>
 <translation id="5108031557082757679">Imprimantes d'appareils d'entreprise désactivées</translation>
 <translation id="5124368997194894978">Activer le démarrage au branchement de l'alimentation CA (courant alternatif)</translation>
@@ -2395,6 +2420,24 @@ Si elle est désactivée, le moteur de recherche par défaut n'est pas importé.
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="5423197884968724595">Nom de la restriction Android WebView :</translation>
 <translation id="5424147596523390018">Autoriser tous les modes de couleur</translation>
+<translation id="5427879482805712214">Cette règle vous permet de configurer l'image d'avatar représentant l'utilisateur sur l'écran de connexion. Pour définir cette règle, indiquez l'URL à laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image d'avatar, ainsi qu'un hachage chiffré, utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG et ne doit pas dépasser 512 Ko. L'URL doit être accessible sans authentification.
+
+      L'image d'avatar est téléchargée et mise en cache. Elle sera de nouveau téléchargée à chaque modification de l'URL ou du hachage.
+
+      Si cette règle est définie, <ph name="PRODUCT_OS_NAME" /> téléchargera et utilisera l'image d'avatar.
+
+      Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
+
+      Si la règle n'est pas définie, l'utilisateur peut choisir l'image de l'avatar qui le représente dans l'écran de connexion.</translation>
+<translation id="5432219358069697932">Cette règle vous permet de configurer l'image de fond d'écran qui s'affiche sur le bureau et en arrière-plan sur l'écran de connexion de l'utilisateur. Pour la configurer, vous devez indiquer l'URL depuis laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image de fond d'écran et un hachage chiffré utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG, et sa taille ne doit pas dépasser 16 Mo. L'URL doit être accessible sans authentification.
+
+      L'image de fond d'écran est téléchargée et mise en cache. Elle sera de nouveau téléchargée à chaque modification de l'URL ou du hachage.
+
+      Si cette règle est définie, <ph name="PRODUCT_OS_NAME" /> téléchargera et utilisera l'image de fond d'écran.
+
+      Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
+
+      Si la règle n'est pas définie, l'utilisateur peut choisir une image à afficher sur le bureau et en arrière-plan de l'écran de connexion.</translation>
 <translation id="5437733496511628148">L'activation de ce paramètre empêche que des cookies soient définis par des éléments de page Web qui ne font pas partie du domaine indiqué dans la barre d'adresse du navigateur.
 
       La désactivation de ce paramètre autorise le fait que des cookies soient définis par des éléments de page Web qui ne font pas partie du domaine indiqué dans la barre d'adresse du navigateur, sans que les utilisateurs puissent modifier ce réglage.
@@ -2872,6 +2915,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6310223829319187614">Activer la saisie automatique du nom de domaine lors de la connexion de l'utilisateur</translation>
 <translation id="6315673513957120120">Chrome affiche une page d'avertissement lorsque les utilisateurs naviguent vers des sites présentant des erreurs SSL. Par défaut, ou quand cette règle est définie sur "True", les utilisateurs sont autorisés à poursuivre leur navigation vers la page concernée.
       Définir cette règle sur "False" empêche les utilisateurs de poursuivre leur navigation au-delà de la page d'avertissement.</translation>
+<translation id="6319198883324703402">Définir l'heure de la première notification de redémarrage adressée à l'utilisateur</translation>
 <translation id="6352543686437322588">Compte local de l'appareil auquel le système se connecte automatiquement après l'expiration du délai d'inactivité de l'utilisateur.
 
       Si cette règle est définie, le système se connecte automatiquement à la session spécifiée après expiration du délai d'inactivité. Le compte local de l'appareil doit être configuré au préalable (voir |DeviceLocalAccounts|).
@@ -3223,6 +3267,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Google peut associer ces journaux à d'autres journaux collectés par le service Google proprement dit à l'aide d'un ID de session dans le but de faciliter le débogage.
       </translation>
 <translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
+<translation id="7068108874199666656">Permet de transférer l'application de la configuration réseau à tous les utilisateurs d'un appareil fonctionnant avec <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert.</translation>
 <translation id="7070525176564511548">La saisie du mot de passe est requise toutes les semaines (toutes les 168 heures)</translation>
 <translation id="7072208053150563108">Fréquence de modification du mot de passe machine</translation>
 <translation id="7079519252486108041">Bloquer les fenêtres pop-up sur ces sites</translation>
@@ -3240,6 +3285,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Cette règle ne prend effet que si la règle <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> est désactivée. Elle est ignorée dans le cas contraire, le délai d'assombrissement de l'écran étant alors déterminé par un modèle de machine learning.
 
           Le facteur d'adaptation doit être de 100 % ou plus.</translation>
+<translation id="710003290625031750">Description détaillée du schéma :</translation>
 <translation id="7106631983877564505">Activer le verrouillage lorsque les appareils exécutant <ph name="PRODUCT_OS_NAME" /> sont inactifs ou en veille.
 
       Si vous activez ce paramètre, les utilisateurs sont invités à fournir un mot de passe pour réactiver l'appareil lorsqu'il est en veille.
@@ -3830,6 +3876,9 @@ Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'ut
       Si la règle est définie sur la valeur "true", le format 24 heures est utilisé sur l'appareil. Si elle est définie sur la valeur "false", le format 12 heures est utilisé.
 
       Si cette règle n'est pas définie, le format 24 heures est utilisé par défaut sur l'appareil.</translation>
+<translation id="8113421140338762630">Vous permet de définir le délai, en millisecondes, entre la première notification vous avertissant qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour appliquer une mise à jour en attente et la fin du délai spécifié par la règle <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Si cette règle n'est pas définie, le délai par défaut de 8 640 000 ms (soit 24 h) est utilisé pour les appareils <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8114382167597081590">Ne pas appliquer le mode restreint sur YouTube</translation>
 <translation id="8118665053362250806">Définir la taille du cache disque de support</translation>
 <translation id="8124468781472887384">Règle d'accès à la configuration des imprimantes d'appareils.</translation>
@@ -4034,6 +4083,11 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8544465954173828789">Autoriser la synchronisation des SMS entre le téléphone et le Chromebook</translation>
 <translation id="8548832052135586762">Définit l'impression couleur seulement, monochrome seulement ou sans restriction de couleur. Si aucune règle n'est définie, on considère qu'il n'y a aucune restriction.</translation>
 <translation id="8549772397068118889">Prévenir en cas de consultation de sites en dehors des packs de contenu</translation>
+<translation id="8566729013138025202">Indique un ensemble de règles transmises à l'exécution ARC. Un fichier JSON valide doit être spécifié.
+
+      Cette règle peut être utilisée pour identifier les applications Android qui sont automatiquement installées sur l'appareil.
+
+      Pour épingler des applications dans la barre des tâches, consultez PinnedLauncherApps.</translation>
 <translation id="8566842294717252664">Masquer le Chrome Web Store sur la page Nouvel onglet et dans le lanceur d'applications</translation>
 <translation id="8569734380847633643">
           Si la règle est définie sur "False", <ph name="PRODUCT_OS_NAME" /> désactive le Wi-Fi, et les utilisateurs ne peuvent pas le réactiver.
@@ -4243,6 +4297,14 @@ indique uniquement les imprimantes qui peuvent être choisies.
 <translation id="8942616385591203339">Permet d'activer l'affichage de l'autorisation de synchronisation lors de la première connexion de l'utilisateur. Si cette autorisation n'a jamais besoin d'être montrée à l'utilisateur, cette règle doit être définie sur False.
       Si cette règle est définie sur False, l'autorisation de synchronisation n'est pas affichée.
       Si cette règle est définie sur True ou si elle n'est pas configurée, l'autorisation de synchronisation peut être affichée.</translation>
+<translation id="894510252300143386">Configure les paramètres de gestion des extensions pour <ph name="PRODUCT_NAME" />.
+
+          Cette règle contrôle plusieurs paramètres, y compris ceux contrôlés par des règles existantes associées à une extension. Le cas échéant, elle remplace les anciennes règles.
+
+          Cette règle fait correspondre un ID d'extension ou une URL de mise à jour avec sa configuration. Avec un ID d'extension, la configuration n'est appliquée qu'à l'extension spécifiée. Une configuration par défaut peut être définie pour l'ID spécial <ph name="DEFAULT_SCOPE" />, lequel s'applique à toutes les extensions pour lesquelles aucune configuration personnalisée n'est définie dans cette règle. Avec une URL de mise à jour, la configuration est appliquée à l'ensemble des extensions avec l'URL de mise à jour telle qu'elle est indiquée dans le fichier manifeste de cette extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation d'office est limitée aux applications et aux extensions répertoriées sur le Chrome Web Store.
+          </translation>
 <translation id="8947415621777543415">Indiquer l'emplacement de l'appareil</translation>
 <translation id="8951350807133946005">Définir le répertoire du cache disque</translation>
 <translation id="8952317565138994125">Désactive la synchronisation des données dans <ph name="PRODUCT_NAME" /> à l'aide des services de synchronisation hébergés par Google et empêche les utilisateurs de modifier ce paramètre.

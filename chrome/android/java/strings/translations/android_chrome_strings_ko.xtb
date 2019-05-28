@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">자녀 보호 설정</translation>
 <translation id="5327248766486351172">이름</translation>
 <translation id="5335288049665977812">사이트에서 자바스크립트를 실행하도록 허용(권장)</translation>
+<translation id="5357811892247919462">탭 수신함</translation>
 <translation id="5363230136052241468">새 탭 페이지를 로드하려면 홈 버튼을 탭하세요.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{열려 있는 탭 <ph name="OPEN_TABS_ONE" />개, 탭 간에 전환하려면 탭하세요.}other{열려 있는 탭 <ph name="OPEN_TABS_MANY" />개, 탭 간에 전환하려면 탭하세요.}}</translation>
 <translation id="5391532827096253100">이 사이트와의 연결은 안전하지 않습니다. 사이트 정보</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">방해가 되거나 사용자를 현혹하는 광고를 표시하는 사이트의 광고 차단</translation>
 <translation id="5497272504048921382">탭이 열림</translation>
 <translation id="5500777121964041360">현재 지역에서는 지원되지 않을 수도 있습니다.</translation>
-<translation id="550684401320795253">Chrome 업데이트 중...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" />님이 관리하는 계정입니다.</translation>
 <translation id="5514904542973294328">기기 관리자가 사용 중지함</translation>
 <translation id="5515439363601853141">비밀번호를 보려면 잠금 해제하세요</translation>

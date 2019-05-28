@@ -394,6 +394,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       erkannt, dann wird der Zugriff automatisch verweigert. Platzhaltermuster
       sind nicht zulässig.</translation>
 <translation id="1634989431648355062">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" für diese Websites zulassen</translation>
+<translation id="1645793986494086629">Schema:</translation>
 <translation id="1653229475925941921">Ist diese Richtlinie konfiguriert, wird damit der Lupentyp bestimmt, der aktiviert ist. Wenn Sie die Richtlinie auf "None" setzen, ist die Lupe deaktiviert.
 
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
@@ -596,6 +597,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="2014757022750736514">Legt das Verhalten des Anmeldebildschirms fest, auf dem Nutzer sich in ihren Konten anmelden. Über die Einstellungen wird gesteuert, wer sich anmelden darf, welche Typen von Konten zulässig sind und welche Authentifizierungsmethoden verwendet werden sollen. Außerdem schließen sie allgemeine Bedienungshilfen, Eingabemethode und Sprache ein.</translation>
 <translation id="201557587962247231">Häufigkeit von Uploads mit Berichten zum Gerätestatus</translation>
 <translation id="2017301949684549118">Ohne Nutzereingriff zu installierende URLs für Web-Apps.</translation>
+<translation id="2017459564744167827">Unter <ph name="REFERENCE_URL" /> erhalten Sie weitere Informationen zum Schema und der Formatierung.</translation>
 <translation id="2018836497795982119">Gibt den Zeitraum in Millisekunden an, in dem Nutzerrichtlinieninformationen vom Geräteverwaltungsdienst abgefragt werden.
 
       Durch das Festlegen dieser Richtlinie wird der Standardwert von 3 Stunden außer Kraft gesetzt. Gültige Werte für diese Richtlinie liegen im Bereich zwischen 1.800.000 (30 Minuten) und 86.400.000 (1 Tag). Alle Werte, die nicht in diesem Bereich liegen, werden auf den jeweiligen Grenzwert gesetzt. Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen.
@@ -815,6 +817,11 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2463034609187171371">DHE-Verschlüsselungssammlungen in TLS aktivieren</translation>
 <translation id="2463365186486772703">Gebietsschema der App</translation>
 <translation id="2466131534462628618">Captive-Portal-Authentifizierung ignoriert Proxy</translation>
+<translation id="2471748297300970300">Ist diese Richtlinie deaktiviert, werden keine Sicherheitswarnungen angezeigt, wenn Chrome mit einigen potenziell schädlichen Befehlszeilenparametern gestartet wird.
+
+          Sollte sie aktiviert oder nicht konfiguriert sein, werden Sicherheitswarnungen angezeigt, wenn Chrome mit einigen Befehlszeilenparametern gestartet wird.
+
+          Unter Windows steht diese Richtlinie nur bei Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Windows 10 Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung erfolgt ist.</translation>
 <translation id="2482676533225429905">Natives Messaging</translation>
 <translation id="2483146640187052324">Netzwerkaktionen über alle Netzwerkverbindungen vervollständigen</translation>
 <translation id="2484208301968418871">Mit dieser Richtlinie wird die Anwendung des URL-Filters "SafeSites" konfiguriert.
@@ -1080,6 +1087,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
           |created_time_millis| ist der UTC-Zeitstempel für die Erstellung der Außerkraftsetzung. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde. Mit ihm wird festgestellt, ob diese Außerkraftsetzung weiterhin angewendet werden soll. Wenn das aktuelle aktive Zeitlimit (Nutzungszeitlimit oder Zeitfensterlimit) gestartet wurde, nachdem die Außerkraftsetzung erfolgt ist, sollte sie keine Auswirkungen haben. Entsprechend gilt: Wenn die Außerkraftsetzung vor der letzten Änderung des aktiven "time_window_limit" oder "time_usage_window" erstellt wurde, sollte sie nicht angewendet werden.
 
           Falls mehrere Außerkraftsetzungen gesendet werden, wird der neueste gültige Eintrag angewendet.</translation>
+<translation id="2901725272378498025">Sicherheitswarnungen für Befehlszeilenparameter aktivieren</translation>
 <translation id="2905984450136807296">Cachelebensdauer für Authentifizierungsdaten</translation>
 <translation id="2906874737073861391">Liste der AppPack-Erweiterungen</translation>
 <translation id="2907992746861405243">Legt fest, welche Drucker aus <ph name="BULK_PRINTERS_POLICY" /> Nutzern zur Verfügung stehen.
@@ -1642,6 +1650,11 @@ Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst entscheiden
 <translation id="3963602271515417124">Bei Festlegung auf "true" ist die Remote-Bestätigung für das Gerät erlaubt. Ein Zertifikat wird automatisch erstellt und auf den Device Management Server hochgeladen.
 
 Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zertifikat erstellt und Aufrufe der Erweiterungs-API "enterprise.platformKeys" schlagen fehl.</translation>
+<translation id="3964262920683972987">Sie können ein Hintergrundbild auf Geräteebene konfigurieren, das auf dem Anmeldebildschirm angezeigt wird, wenn sich noch kein Nutzer auf dem Gerät angemeldet hat. Zum Festlegen der Richtlinie muss die URL, über die das Chrome OS-Gerät das Hintergrundbild herunterladen kann, sowie ein kryptografischer Hash angegeben werden, um die Integrität des Downloads zu verifizieren. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 16 MB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein. Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird es noch einmal heruntergeladen.
+
+      Ist die Richtlinie für den Gerätehintergrund konfiguriert, lädt das Chrome OS-Gerät das Hintergrundbild herunter und zeigt es auf dem Anmeldebildschirm an, wenn sich noch kein Nutzer auf dem Gerät angemeldet hat. Sobald sich der Nutzer anmeldet, wird seine Hintergrundrichtlinie wirksam.
+
+      Wenn die Richtlinie für den Gerätehintergrund nicht konfiguriert ist, wird über die Hintergrundrichtlinie des Nutzers bestimmt, was angezeigt werden soll, sofern diese festgelegt ist.</translation>
 <translation id="3965339130942650562">Zeitlimit bis zur Abmeldung eines inaktiven Nutzers</translation>
 <translation id="3973371701361892765">Ablage nie automatisch ausblenden</translation>
 <translation id="3984028218719007910">Legt fest, ob lokale Kontodaten nach der Abmeldung in <ph name="PRODUCT_OS_NAME" /> gespeichert werden. Bei Einstellung auf "true" werden Konten nicht dauerhaft in <ph name="PRODUCT_OS_NAME" /> gespeichert und alle Daten der Nutzersitzung werden nach der Abmeldung verworfen. Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, können (verschlüsselte) lokale Nutzerdaten auf dem Gerät verbleiben.</translation>
@@ -1697,6 +1710,17 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4056910949759281379">SPDY-Protokoll deaktivieren</translation>
 <translation id="408029843066770167">Abfragen an einen Google-Dienst für die Zeiteinstellung zulassen</translation>
 <translation id="408076456549153854">Browseranmeldung aktivieren</translation>
+<translation id="40853027210512570">Diese Richtlinie überschreibt die Regeln zur Auswahl des <ph name="PRODUCT_NAME" />-Standarddruckers.
+
+      Über sie werden die Regeln zur Auswahl des Standarddruckers in <ph name="PRODUCT_NAME" /> festgelegt. Diese Auswahl erfolgt, wenn die Druckfunktion das erste Mal mit einem Profil verwendet wird.
+
+      Wenn diese Richtlinie konfiguriert ist, versucht <ph name="PRODUCT_NAME" />, einen Drucker mit allen angegebenen Attributen zu finden und ihn als Standarddrucker festzulegen. Der erste Drucker, der mit der Richtlinie übereinstimmt, wird ausgewählt. Falls mehrere Drucker gefunden werden, die eine Übereinstimmung aufweisen, kann entsprechend der Reihenfolge, in der sie gefunden werden, einer davon ausgewählt werden.
+
+      Wenn diese Richtlinie nicht konfiguriert ist oder innerhalb des Zeitlimits keine damit übereinstimmenden Drucker gefunden werden, wird der Drucker standardmäßig auf den integrierten PDF-Drucker eingestellt, sofern dieser verfügbar ist. Wenn nicht, wird kein Drucker ausgewählt.
+
+      Mit <ph name="CLOUD_PRINT_NAME" /> verbundene Drucker werden als "<ph name="PRINTER_TYPE_CLOUD" />" klassifiziert, alle anderen als "<ph name="PRINTER_TYPE_LOCAL" />".
+      Wenn ein Feld ausgelassen wird, werden alle Werte als übereinstimmend angesehen. Wird zum Beispiel keine Angabe zur Konnektivität gemacht, sucht die Druckvorschau nach allen Arten von Druckern, also lokalen und solchen in der Cloud.
+      Reguläre Ausdrücke müssen in der RegExp-Syntax von JavaScript sein und bei Übereinstimmungen wird zwischen Groß- und Kleinschreibung unterschieden.</translation>
 <translation id="4088589230932595924">Inkognitomodus erzwungen</translation>
 <translation id="4088983553732356374">Mit dieser Richtlinie können Sie festlegen, welche Websites lokale Daten speichern dürfen. Das Speichern von lokalen Daten kann entweder für alle Websites zugelassen oder für alle Websites unterbunden werden.
 
@@ -2142,6 +2166,7 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
       Wenn die Richtlinie nicht konfiguriert oder auf "true" gesetzt ist, hält Chrome mindestens einen Tab offen, nachdem zu einem alternativen Browser gewechselt wurde.
 
       Falls diese Richtlinie auf "false" festgelegt ist, schließt Chrome den Tab nach dem Wechsel zu einem alternativen Browser, selbst wenn es der letzte Tab war. Dadurch wird Chrome vollständig beendet.</translation>
+<translation id="5102203758995933166">Diese Richtlinie ermöglicht, Netzwerkkonfigurationen auf <ph name="PRODUCT_OS_NAME" />-Geräten einzelner Nutzer zu übernehmen. Die Netzwerkkonfiguration ist ein String im JSON-Format, der der Definition des Open Network Configuration-Formats entspricht.</translation>
 <translation id="5105313908130842249">Verzögerung für die Bildschirmsperre im Akkubetrieb</translation>
 <translation id="5108031557082757679">Deaktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="5124368997194894978">Starten bei anliegender Netzspannung aktivieren</translation>
@@ -2325,6 +2350,24 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5423001109873148185">Bei Aktivierung erzwingt diese Richtlinie den Import von Suchmaschinen aus dem aktuellen Standardbrowser. Wenn die Richtlinie aktiviert ist, wirkt sich das darüber hinaus auf den Importdialog aus. Wenn sie deaktiviert ist, wird die Standardsuchmaschine nicht importiert. Sollte Sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import stattfinden soll, oder der Import erfolgt automatisch.</translation>
 <translation id="5423197884968724595">Name der Android WebView-Einschränkung:</translation>
 <translation id="5424147596523390018">Alle Farbmodi zulassen</translation>
+<translation id="5427879482805712214">Über diese Richtlinie können Sie das Avatarbild des Nutzers für den Anmeldebildschirm konfigurieren. Zum Festlegen der Richtlinie muss die URL, über die <ph name="PRODUCT_OS_NAME" /> das Avatarbild herunterladen kann, sowie ein kryptografischer Hash angegeben werden, um die Integrität des Downloads zu verifizieren. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 512 KB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
+
+      Das Avatarbild wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird es noch einmal heruntergeladen.
+
+      Wenn diese Richtlinie konfiguriert wird, lädt <ph name="PRODUCT_OS_NAME" /> das Avatarbild herunter und verwendet es.
+
+      Falls Sie sie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+      Ist die Richtlinie nicht konfiguriert, kann der Nutzer sein Avatarbild für den Anmeldebildschirm selbst auswählen.</translation>
+<translation id="5432219358069697932">Mit dieser Richtlinie können Sie das Hintergrundbild konfigurieren, das dem Nutzer auf dem Desktop und auf dem Anmeldebildschirm angezeigt wird. Bei der Konfiguration der Richtlinie wird eine URL angegeben, über die <ph name="PRODUCT_OS_NAME" /> das Hintergrundbild und einen kryptografischen Hash zur Verifizierung der Integrität des Downloads herunterladen kann. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 16 MB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
+
+      Das Hintergrundbild wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird es noch einmal heruntergeladen.
+
+      Wenn diese Richtlinie konfiguriert wird, lädt <ph name="PRODUCT_OS_NAME" /> das Hintergrundbild herunter und verwendet es.
+
+      Falls Sie sie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+      Ist die Richtlinie nicht konfiguriert, kann der Nutzer ein Bild auswählen, das als Hintergrund auf dem Desktop und dem Anmeldebildschirm angezeigt wird.</translation>
 <translation id="5437733496511628148">Durch Aktivieren dieser Einstellung wird verhindert, dass Webseitenelemente, die nicht von der Domain in der Adressleiste des Browser stammen, Cookies setzen.
 
       Wenn die Einstellung deaktiviert wird, dürfen Cookies von Webseitenelementen, die nicht von der Domain in der Adressleiste des Browsers stammen, gesetzt werden. Nutzer können diese Einstellung nicht ändern.
@@ -2766,6 +2809,7 @@ Für diese Richtlinie wird die Installation von <ph name="CHROME_REPORTING_EXTEN
 <translation id="6310223829319187614">Automatische Vervollständigung des Domainnamens während der Nutzeranmeldung aktivieren</translation>
 <translation id="6315673513957120120">Chrome zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die SSL-Fehler aufweisen. Standardmäßig oder bei Festlegung von "true" für diese Richtlinie ist es Nutzern gestattet, durch diese Seiten mit Warnmeldung zu klicken.
       Wenn für die Richtlinie "false" festgelegt wird, können Nutzer nicht mehr durch diese Seiten klicken.</translation>
+<translation id="6319198883324703402">Zeitpunkt der ersten Nutzerbenachrichtigung zum Neustart festlegen</translation>
 <translation id="6352543686437322588">Hiermit geben Sie ein lokales Gerätekonto an, in dem ein Nutzer nach Ablauf einer bestimmten Zeit automatisch angemeldet wird.
 
 Ist diese Richtlinie festgelegt, wird der Nutzer automatisch in dem festgelegten Konto angemeldet, wenn er für eine bestimmte Zeit keine Eingabe auf der Anmeldeseite macht. Das lokale Gerätekonto muss bereits konfiguriert sein (siehe |DeviceLocalAccounts|).
@@ -3109,6 +3153,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Google kann diese Protokolle anhand einer Sitzungs-ID mit anderen Protokollen verknüpfen, die vom Google-Dienst selbst erstellt wurden. Dies dient dazu, Fehler leichter zu beheben.
       </translation>
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>
+<translation id="7068108874199666656">Diese Richtlinie ermöglicht, Netzwerkkonfigurationen für alle Nutzer eines <ph name="PRODUCT_OS_NAME" />-Geräts zu übernehmen. Die Netzwerkkonfiguration ist ein String im JSON-Format, der der Definition des Open Network Configuration-Formats entspricht.</translation>
 <translation id="7070525176564511548">Passworteingabe wöchentlich erforderlich (alle 168 Stunden)</translation>
 <translation id="7072208053150563108">Änderungsrate des Computerpassworts</translation>
 <translation id="7079519252486108041">Pop-ups auf diesen Websites blockieren</translation>
@@ -3126,6 +3171,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
           Diese Richtlinie ist nur wirksam, wenn die Richtlinie "<ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />" deaktiviert ist. Andernfalls wird diese Richtlinie ignoriert, da die Verzögerung für die Bildschirmabdunkelung von einem Modell für maschinelles Lernen festgelegt wird.
 
           Der Skalierungsfaktor muss bei mindestens 100 % liegen.</translation>
+<translation id="710003290625031750">Ausführliche Schemabeschreibung:</translation>
 <translation id="7106631983877564505">Ermöglicht das Sperren von Geräten, wenn ein <ph name="PRODUCT_OS_NAME" />-Gerät inaktiv ist oder angehalten wird.
 
       Wenn Sie diese Einstellung aktivieren, werden Nutzer nach einem Passwort gefragt, um das Gerät aus dem Ruhemodus zu reaktivieren.
@@ -3697,6 +3743,9 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
       Falls für die Richtlinie "True" ausgewählt ist, verwendet das Gerät das 24-Stunden-Uhrzeitformat. Ist für die Richtlinie "False" konfiguriert, wird das 12-Stunden-Uhrzeitformat verwendet.
 
       Ist die Richtlinie nicht konfiguriert, wird standardmäßig das 24-Stunden-Uhrzeitformat verwendet.</translation>
+<translation id="8113421140338762630">Diese Richtlinie ermöglicht, den Zeitraum zwischen der ersten Benachrichtigung zum Neustart eines <ph name="PRODUCT_OS_NAME" />-Geräts, um eine ausstehende Aktualisierung anzuwenden, und dem Ende des durch die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />" vorgegebenen Zeitraums in Millisekunden festzulegen.
+
+      Wenn Sie nicht konfiguriert wird, kommt der standardmäßige Zeitraum von 86.400.000 Millisekunden (ein Tag) für <ph name="PRODUCT_OS_NAME" />-Geräte zum Einsatz.</translation>
 <translation id="8114382167597081590">Eingeschränkten Modus auf YouTube nicht erzwingen</translation>
 <translation id="8118665053362250806">Cache-Größe für Mediendatenträger festlegen</translation>
 <translation id="8124468781472887384">Richtlinie für den Zugriff auf die Konfiguration von an Geräte gebundenen Druckern.</translation>
@@ -3900,6 +3949,11 @@ Die Richtlinie wird in M75 entfernt.</translation>
 <translation id="8544465954173828789">Zulassen, dass SMS zwischen Smartphone mit Chromebook synchronisiert werden.</translation>
 <translation id="8548832052135586762">Damit wird festgelegt, ob nur in Farbe, nur in Schwarz-Weiß oder ohne Farbmodusbeschränkung gedruckt wird. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
 <translation id="8549772397068118889">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
+<translation id="8566729013138025202">Gibt eine Gruppe von Richtlinien an, die an die ARC-Laufzeit übergeben werden. Der Wert muss in einem gültigen JSON-Format sein.
+
+      Mit dieser Richtlinie kann festgelegt werden, welche Android-Apps automatisch auf dem Gerät installiert werden sollen.
+
+      Verwenden Sie "PinnedLauncherApps", wenn Sie Apps an den Launcher anpinnen möchten.</translation>
 <translation id="8566842294717252664">Web Store auf der "Neuer Tab"-Seite und im App Launcher ausblenden</translation>
 <translation id="8569734380847633643">
           Wenn diese Richtlinie auf "false" gesetzt ist, wird WLAN unter <ph name="PRODUCT_OS_NAME" /> deaktiviert und Nutzer können die Funktion nicht wieder aktivieren.
@@ -4095,6 +4149,14 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8942616385591203339">Mit dieser Richtlinie wird festgelegt, ob die Einwilligung zur Synchronisierung dem Nutzer bei der ersten Anmeldung angezeigt werden kann. Sie sollte auf "false" gesetzt werden, wenn vom Nutzer keine Einwilligung zur Synchronisierung eingeholt werden muss.
       Wenn diese Richtlinie auf "false" gesetzt ist, wird die Einwilligung zur Synchronisierung nicht angezeigt.
       Falls die Richtlinie auf "true" festgelegt oder nicht konfiguriert ist, kann die Einwilligung zur Synchronisierung angezeigt werden.</translation>
+<translation id="894510252300143386">Diese Richtlinie konfiguriert die Einstellungen zur Erweiterungsverwaltung für <ph name="PRODUCT_NAME" />.
+
+          Mit der Richtlinie werden verschiedene Einstellungen festgelegt, darunter solche, die von anderen auf Erweiterungen bezogenen Richtlinien geregelt werden. Durch diese Richtlinie werden ältere Richtlinien überschrieben, wenn beide konfiguriert sind.
+
+          Mit ihr wird ihrer Konfiguration eine Erweiterungs-ID oder eine Update-URL zugeordnet. Erweiterungs-IDs bewirken, dass die Konfiguration nur auf die angegebene Erweiterung angewendet wird. Für die Spezial-ID "<ph name="DEFAULT_SCOPE" />" kann eine Standardkonfiguration festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine benutzerdefinierte Konfiguration in der Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
+
+          In Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
+          </translation>
 <translation id="8947415621777543415">Gerätestandort melden</translation>
 <translation id="8951350807133946005">Datenträger-Cache-Verzeichnis festlegen</translation>
 <translation id="8952317565138994125">Deaktiviert die Datensynchronisierung in <ph name="PRODUCT_NAME" /> mithilfe von Synchronisierungsdiensten, die von Google gehostet werden, und verhindert, dass Nutzer diese Einstellung ändern.

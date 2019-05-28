@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">마우스 커서 강조표시</translation>
 <translation id="3513798432020909783">계정 관리자: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">'<ph name="FROM_LOCALE" />'(으)로 다시 변경(다시 시작해야 함)</translation>
+<translation id="3576141592585647168">시간대 변경</translation>
 <translation id="3595596368722241419">배터리 충전 완료</translation>
 <translation id="3606978283550408104">점자 디스플레이가 연결되었습니다.</translation>
 <translation id="3621202678540785336">입력</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">관리자에게 요청</translation>
 <translation id="6585808820553845416">세션이 <ph name="SESSION_TIME_REMAINING" /> 후에 종료됩니다.</translation>
 <translation id="6627638273713273709">검색+Shift+K</translation>
+<translation id="6637729079642709226">시간 변경</translation>
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">비밀번호</translation>
 <translation id="6665545700722362599">웹사이트, 앱, 확장 프로그램에 위치 서비스, 기기의 마이크, 카메라 또는 기타 기능을 사용할 권한 부여</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590"><ph name="IME_NAME" /> 사용 중</translation>
 <translation id="899350903320462459">알림 작업을 실행하려면 <ph name="LOGIN_ID" />(으)로 기기의 잠금을 해제하세요.</translation>
 <translation id="8995603266996330174">관리자: <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Family Link 부모 액세스 코드를 입력하세요.</translation>
 <translation id="9029474291399787231">Adobe Flash Player 업데이트 가능</translation>
 <translation id="9056839673611986238">기기가 롤백됨</translation>
 <translation id="9070640332319875144">어시스턴트 설정</translation>

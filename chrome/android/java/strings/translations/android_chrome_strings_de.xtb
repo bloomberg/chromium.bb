@@ -580,6 +580,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5324858694974489420">Jugendschutzeinstellungen</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5335288049665977812">Ausführung von JavaScript durch Websites zulassen (empfohlen)</translation>
+<translation id="5357811892247919462">Tab erhalten</translation>
 <translation id="5363230136052241468">Tippen Sie auf die Schaltfläche "Startseite", um die "Neuer Tab"-Seite zu laden</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> geöffneter Tab, zum Wechseln der Tabs tippen}other{<ph name="OPEN_TABS_MANY" /> geöffnete Tabs, zum Wechseln der Tabs tippen}}</translation>
 <translation id="5391532827096253100">Die Verbindung zu dieser Website ist nicht sicher. Websiteinformationen</translation>
@@ -601,7 +602,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5494752089476963479">Werbung auf Websites blockieren, auf denen aufdringliche oder irreführende Werbung angezeigt wird</translation>
 <translation id="5497272504048921382">Geöffnete Tabs</translation>
 <translation id="5500777121964041360">In Ihrem Land möglicherweise nicht verfügbar</translation>
-<translation id="550684401320795253">Chrome wird aktualisiert...</translation>
 <translation id="5512137114520586844">Dieses Konto wird von <ph name="PARENT_NAME" /> verwaltet.</translation>
 <translation id="5514904542973294328">Vom Administrator dieses Geräts deaktiviert</translation>
 <translation id="5515439363601853141">Entsperren, um Ihr Passwort zu sehen</translation>

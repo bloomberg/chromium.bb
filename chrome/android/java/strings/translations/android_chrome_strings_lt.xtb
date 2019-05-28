@@ -580,6 +580,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5324858694974489420">Tėvų nustatymai</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
 <translation id="5335288049665977812">Leisti svetainėms paleisti „JavaScript“ (rekomenduojama)</translation>
+<translation id="5357811892247919462">Skirtukas gautas</translation>
 <translation id="5363230136052241468">Jei norite įkelti naujo skirtuko puslapį, palieskite pagrindinio ekrano mygtuką</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> atidarytas skirtukas; palieskite, kad perjungtumėte skirtukus}one{<ph name="OPEN_TABS_MANY" /> atidarytas skirtukas; palieskite, kad perjungtumėte skirtukus}few{<ph name="OPEN_TABS_MANY" /> atidaryti skirtukai; palieskite, kad perjungtumėte skirtukus}many{<ph name="OPEN_TABS_MANY" /> atidaryto skirtuko; palieskite, kad perjungtumėte skirtukus}other{<ph name="OPEN_TABS_MANY" /> atidarytų skirtukų; palieskite, kad perjungtumėte skirtukus}}</translation>
 <translation id="5391532827096253100">Ryšys su šia svetaine nėra saugus. Svetainės informacija</translation>
@@ -601,7 +602,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5494752089476963479">Blokuoti skelbimus svetainėse, kuriose rodomi nepageidaujami arba klaidinantys skelbimai</translation>
 <translation id="5497272504048921382">Atidaryti skirtukai</translation>
 <translation id="5500777121964041360">Gali būti nepasiekiama jūsų vietovėje</translation>
-<translation id="550684401320795253">Atnaujinama „Chrome“...</translation>
 <translation id="5512137114520586844">Šią paskyrą tvarko <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Išjungė šio įrenginio administratorius</translation>
 <translation id="5515439363601853141">Atrakinkite, kad galėtumėte peržiūrėti slaptažodį</translation>

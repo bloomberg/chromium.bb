@@ -14,7 +14,6 @@
 <translation id="123620459398936149">Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
 <translation id="127345590676626841">Chrome স্বয়ংক্রিয়ভাবে আপডেট হয় তাই আপনার কাছে সর্বদা নবীনতম ভার্সনটি থাকে৷ এই ডাউনলোডটি সম্পূর্ণ হলে, Chrome পুনরায় চালু হবে এবং আপনি আবার আগের মতো Chrome ব্যবহার করতে পারবেন৷</translation>
 <translation id="1302523850133262269">Chrome যখন সাম্প্রতিক সিস্টেম আপডেটগুলিকে ইনস্টল করে তখন দয়া করে অপেক্ষা করুন৷</translation>
-<translation id="1312676208694947750">{0,plural, =0{Chrome OS-এর আপডেট পাওয়া যাচ্ছে}=1{Chrome OS-এর আপডেট পাওয়া যাচ্ছে}one{# দিন আগে থেকে Chrome OS-এর আপডেট পাওয়া যাচ্ছে}other{# দিন আগে থেকে Chrome OS-এর আপডেট পাওয়া যাচ্ছে}}</translation>
 <translation id="137466361146087520">Google Chrome বিটা</translation>
 <translation id="1393853151966637042">Chrome ব্যবহার করে সাহায্য নিন</translation>
 <translation id="1399397803214730675">এই কম্পিউটারটিতে ইতিমধ্যে Google Chrome-এর অতি সাম্প্রতিক ভার্সন রয়েছে৷ যদি সফ্টওয়্যারটি কাজ না করে তবে দয়া করে Google Chrome আনইনস্টল করুন এবং এটি আবার ডাউনলোড করুন৷</translation>
@@ -54,7 +53,6 @@
 <translation id="216054706567564023">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট ফিরিয়ে আনার ফোন নম্বরে একটি এসএমএস পাঠাব।</translation>
 <translation id="2246246234298806438">বিলট-ইন PDF viewer অনুপস্থিত থাকার সময়ে Google Chrome প্রিন্ট প্রিভিউ দেখাতে পারে না৷</translation>
 <translation id="2252923619938421629">বর্তমান সেটিংস রিপোর্ট করে Google Chrome আরও ভালো করে তুলতে সাহায্য করুন</translation>
-<translation id="225363235161345695">{0,plural, =1{এক ঘণ্টার মধ্যে Chrome রিলঞ্চ করা হবে}one{# ঘণ্টার মধ্যে Chrome রিলঞ্চ করা হবে}other{# ঘণ্টার মধ্যে Chrome রিলঞ্চ করা হবে}}</translation>
 <translation id="2286950485307333924">আপনি এখন Chrome এ প্রবেশ করেছেন</translation>
 <translation id="2290014774651636340">Google এপিআই কীগুলি অনুপস্থিত৷ Google Chrome-এর কিছু বৈশিষ্ট্য নিষ্ক্রিয় হয়ে যাবে৷</translation>
 <translation id="2290095356545025170">আপনি কি Google Chrome আনইনস্টল করার ব্যাপারে নিষ্চিত ?</translation>
@@ -144,10 +142,10 @@
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> সক্ষম করার জন্য Chrome আবার চালু করুন</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">এই ফাইলটি বিপজ্জনক হতে পারে, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
+<translation id="479167709087336770">এটি Google সার্চ-এ যে বানান পরীক্ষা করার টুল ব্যবহার করা হয় সেটিই ব্যবহার করে। আপনি ব্রাউজারে যে টেক্সট লেখেন, সেটি Google-এ পাঠানো হয়। সেটিংস থেকে আপনি এটি পরিবর্তন করতে পারেন।</translation>
 <translation id="4891791193823137474">Google Chrome-কে ব্যাকগ্রাউন্ডে চলতে দিন</translation>
 <translation id="4895437082222824641">নতুন Chrome ট্যাবে লিঙ্ক খুলুন</translation>
 <translation id="4921569541910214635">একটি কম্পিউটার শেয়ার করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chrome কে সেট-আপ করতে পারেন৷</translation>
-<translation id="4945319281866068441">{0,plural, =1{এক দিনের মধ্যে Chrome OS রিস্টার্ট করুন}one{# দিনের মধ্যে Chrome OS রিস্টার্ট করুন}other{# দিনের মধ্যে Chrome OS রিস্টার্ট করুন}}</translation>
 <translation id="4953650215774548573">আপনার ডিফল্ট ব্রাউজার হিসাবে Google Chrome-কে সেট করুন</translation>
 <translation id="495931528404527476">Chrome-এ</translation>
 <translation id="4990567037958725628">Google Chrome  ক্যানারি</translation>
@@ -164,7 +162,6 @@
 <translation id="532046782124376502">সতর্কতা: Google Chrome কোনও এক্সটেনশনকে আপনার ব্রাউজিং ইতিহাস রেকর্ড করা থেকে আটকাতে পারে না। ছদ্মবেশী মোডে এই এক্সটেনশনটি বন্ধ করার জন্য এই বিকল্পটি বন্ধ করুন।</translation>
 <translation id="5386244825306882791">আপনি Chrome শুরু করলে বা Omnibox থেকে সার্চ করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
 <translation id="5430073640787465221">আপনার পছন্দের ফাইল ক্ষতিকর অথবা ভুল৷\n\nGoogle Chrome আপনার সেটিংস পুনরুদ্ধার করতে পারছে না৷</translation>
-<translation id="5483595757826856374">{0,plural, =0{Chrome এখনই রিলঞ্চ হবে}=1{Chrome ১ সেকেন্ডের মধ্যে রিলঞ্চ হবে}one{Chrome # সেকেন্ডের মধ্যে রিলঞ্চ হবে}other{Chrome # সেকেন্ডের মধ্যে রিলঞ্চ হবে}}</translation>
 <translation id="5543953544073077331">Chrome-এর অন্যান্য কপি চলছে। আপডেট করতে, সেগুলি বন্ধ করুন।</translation>
 <translation id="556024056938947818">Google Chrome পাসওয়ার্ডগুলি দেখানোর চেষ্টা করছে৷</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -192,7 +189,6 @@
 <translation id="6291549208091401781">Google Chrome ইতোমধ্যে আপনার কম্পিউটারের সকল ব্যবহারকারীর জন্য ইনস্টল করা হয়েছে।</translation>
 <translation id="6338556085225130112">Google Chrome আপডেট করা হচ্ছে</translation>
 <translation id="6368958679917195344">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" /> দিয়ে তৈরি৷</translation>
-<translation id="6468844726266617801">{0,plural, =1{এক দিনের মধ্যে Chrome রিলঞ্চ করুন}one{# দিনের মধ্যে Chrome রিলঞ্চ করুন}other{# দিনের মধ্যে Chrome রিলঞ্চ করুন}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome আপডেট হচ্ছে (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">আপনার Chrome জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL" /> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chrome ব্যবহার করতে <ph name="SETTINGS_LINK" />-এ যান৷</translation>
@@ -200,17 +196,16 @@
 <translation id="6634887557811630702">Google Chrome আপ টু ডেট আছে:</translation>
 <translation id="6676384891291319759">ইন্টারনেটটি অ্যাক্সেস করুন</translation>
 <translation id="6679975945624592337">Google Chrome-কে ব্যাকগ্রাউন্ডে চলতে দিন</translation>
+<translation id="6750954913813541382">বানান ভুল ঠিক করতে, আপনি ব্রাউজারে যে টেক্সট লেখেন Chrome সেটি Google-এ পাঠায়</translation>
 <translation id="677276454032249905">তা স্বত্তেও Chrome বন্ধ করতে চান?</translation>
 <translation id="683440813066116847">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome Canary এর জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="686561893457936865">Chrome কে সর্বত্র নিয়ে চলুন</translation>
 <translation id="6885412569789873916">Chrome বিটা অ্যাপ</translation>
 <translation id="6943584222992551122">ডিভাইসটি থেকে এই ব্যক্তির ব্রাউজিং ডেটা মুছে ফেলা হবে। ডেটা ফিরিয়ে আনতে Chrome-এ <ph name="USER_EMAIL" /> হিসেবে সাইন-ইন করুন।</translation>
-<translation id="6964107240822114422">{0,plural, =0{Chrome-এর আপডেট পাওয়া যাচ্ছে}=1{Chrome-এর আপডেট পাওয়া যাচ্ছে}one{# দিন আগে থেকে Chrome-এর আপডেট পাওয়া যাচ্ছে}other{# দিন আগে থেকে Chrome-এর আপডেট পাওয়া যাচ্ছে}}</translation>
 <translation id="6967962315388095737">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome বিটার জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="6970811910055250180">আপনার ডিভাইস আপডেট করা হচ্ছে ...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" />-এ এই ডিভাইসটি ব্যবহার করার আগে আপনাকে নিম্নলিখিত পরিষেবার শর্তাদি পড়তে হবে এবং এটিকে স্বীকার করতে হবে৷ এই শর্তাদি Chrome OS-এর শর্তাদিকে প্রসারণ, সংশোধন বা সীমাবদ্ধ করে না৷</translation>
 <translation id="6989339256997917931">Google Chrome আপডেট হয়েছে তবে আপনি এটি কমপক্ষে 30 দিন যাবত ব্যবহার করেন নি৷</translation>
-<translation id="7023651421574588884">আপডেট প্রয়োগ করার জন্য আপনার অ্যাডমিনিস্ট্রেটর চান যে আপনি Chrome OS রিস্টার্ট করুন</translation>
 <translation id="7098166902387133879">Google Chrome আপনার মাইক্রোফোন ব্যবহার করছে৷</translation>
 <translation id="7106741999175697885">কার্য পরিচালক - Google Chrome</translation>
 <translation id="7164397146364144019">আপনি Google-এ নিরাপত্তার সম্ভাব্য লঙ্ঘনের ঘটনাগুলি অটোমেটিক রিপোর্ট করার মাধ্যমে Chrome-কে নিরাপদ ও সহজে ব্যবহারযোগ্য করতে তুলতে সাহায্য করতে পারেন।</translation>
@@ -228,7 +223,6 @@
 <translation id="7531671357096394523">Chrome-এর সবকটি কপি বন্ধ করুন।</translation>
 <translation id="7535429826459677826">Google Chrome ডেভেলপার</translation>
 <translation id="7552219221109926349">এই ভাষায় Chrome OS প্রদর্শন করুন</translation>
-<translation id="7561940363513215021">{0,plural, =1{Chrome ১ মিনিটের মধ্যে রিলঞ্চ হবে}one{Chrome # মিনিটের মধ্যে রিলঞ্চ হবে}other{Chrome # মিনিটের মধ্যে রিলঞ্চ হবে}}</translation>
 <translation id="7589360514048265910">এই কম্পিউটারটি আর Google Chrome এর আপডেট গ্রহণ করবে না কারণ এই Mac OS X 10.9 আর সমর্থিত নয়৷</translation>
 <translation id="7592736734348559088">Google Chrome আপনার অ্যাকাউন্ট সাইন-ইন বিশদ বিবরণটি পুরনো হওয়ার কারণে সিঙ্ক করতে পারেনি৷</translation>
 <translation id="7626032353295482388">Chrome এ স্বাগতম</translation>
@@ -252,10 +246,8 @@
 <translation id="8013993649590906847">যদি ছবিতে প্রয়োজনীয় বিবরণ দেওয়া না থাকে, তাহলে Chrome আপনাকে একটি বিবরণ দেওয়ার চেষ্টা করবে। বিবরণ তৈরির জন্য, Google-এ ছবি পাঠানো হয়।</translation>
 <translation id="8030318113982266900">আপনার ডিভাইস <ph name="CHANNEL_NAME" /> চ্যানেলে আপডেট করা হচ্ছে...</translation>
 <translation id="8032142183999901390">Chrome থেকে আপনার অ্যাকাউন্ট সরানোর পরে, কার্যকর করতে আপনাকে খোলা ট্যাবগুলিকে রিলোড করার প্রয়োজন হতে পারে।</translation>
-<translation id="8077352834923175128">এই আপডেটটি প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর চান যে আপনি Chrome OS রিস্টার্ট করুন</translation>
 <translation id="8129812357326543296">&amp;Google Chrome সম্বন্ধে</translation>
 <translation id="8179874765710681175">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার ফোনে একটি এসএমএস পাঠাব।</translation>
-<translation id="8226081633851087288">{0,plural, =0{Chrome OS এখন রিস্টার্ট হবে}=1{Chrome OS ১ সেকেন্ডের মধ্যে রিস্টার্ট হবে}one{Chrome OS # সেকেন্ডের মধ্যে রিস্টার্ট হবে}other{Chrome OS # সেকেন্ডের মধ্যে রিস্টার্ট হবে}}</translation>
 <translation id="825412236959742607">এই পৃষ্ঠাটি খুব বেশি মেমরি ব্যবহার করছে তাই Chrome কিছু কন্টেন্ট সরিয়ে দিয়েছে।</translation>
 <translation id="8255190535488645436">Google Chrome আপনার ক্যামেরা এবং মাইক্রোফোন ব্যবহার করছে৷</translation>
 <translation id="8286862437124483331">Google Chrome পাসওয়ার্ডগুলি দেখানোর চেষ্টা করছে। এটির অনুমতি দিতে আপনার Windows পাসওয়ার্ড টাইপ করুন।</translation>
@@ -282,14 +274,12 @@
 <translation id="873133009373065397">Google Chrome ডিফল্ট ব্রাউজার নির্ধারণ বা সেট করতে পারছে না</translation>
 <translation id="8736674169840206667">একটি আপডেট প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর চান যে আপনি Chrome আবার চালু করুন</translation>
 <translation id="8788264404293392165">Chrome OS UI-এ দেখানোর জন্য এই ভাষা ব্যবহার করা হয়</translation>
-<translation id="8791470158600044404">{0,plural, =1{Chrome OS ১ মিনিটের মধ্যে রিস্টার্ট হবে}one{Chrome OS # মিনিটের মধ্যে রিস্টার্ট হবে}other{Chrome OS # মিনিটের মধ্যে রিস্টার্ট হবে}}</translation>
 <translation id="8823341990149967727">Chrome পুরানো হয়ে গেছে</translation>
 <translation id="884296878221830158">আপনি Chrome শুরু করলে বা হোম বোতামটি ক্লিক করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
 <translation id="8862326446509486874">সিস্টেম-স্তরীয় ইনস্টলের জন্য আপনার কাছে যথাযথ অধিকারগুলি নেই৷ অ্যাডমিনিস্ট্রেটর হিসেবে আবার ইনস্টলারটি চালানোর চেষ্টা করুন৷</translation>
 <translation id="8914504000324227558">Chrome আবার লঞ্চ করুন</translation>
 <translation id="9026991721384951619">আপনার অ্যাকাউন্টের সাইন-ইনের বিবরণটি পুরনো হওয়ায় Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="9067395829937117663">Google Chrome এর জন্য Windows 7 বা উচ্চতর সংস্করণ প্রয়োজন।</translation>
-<translation id="909149346112452267">{0,plural, =1{Chrome OS এক ঘণ্টার মধ্যে রিস্টার্ট হবে}one{Chrome OS # ঘণ্টার মধ্যে রিস্টার্ট হবে}other{Chrome OS # ঘণ্টার মধ্যে রিস্টার্ট হবে}}</translation>
 <translation id="911206726377975832">আপনার ব্রাউজিং ডেটাও মুছে দেবেন?</translation>
 <translation id="9138603949443464873">আপনার পরিবর্তনগুলি প্রয়োগ করতে, Chrome রিলঞ্চ করুন</translation>
 <translation id="919706545465235479">সিঙ্ক শুরু করতে Chrome আপডেট করুন</translation>

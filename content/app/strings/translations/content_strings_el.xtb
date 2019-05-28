@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Εικόνα χωρίς ετικέτα</translation>
 <translation id="3706100364254443312">εναλλαγή</translation>
 <translation id="3732799496749320381">μμ</translation>
+<translation id="3754210790023674521">Έξοδος από τη λειτουργία picture-in-picture</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">όρος</translation>
 <translation id="3822383571486410024">Αυξήστε την έκταση αυτού του κειμένου στους <ph name="MIN_CHARACTERS" /> χαρακτήρες ή περισσότερο (αυτήν τη στιγμή χρησιμοποιείτε <ph name="CURRENT_LENGTH" /> χαρακτήρες).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">δέντρο</translation>
 <translation id="4664250907885839816">Το τμήμα της διεύθυνσης μετά το σύμβολο "<ph name="ATSIGN" />" δεν πρέπει να περιέχει το σύμβολο "<ph name="INVALIDCHARACTER" />".</translation>
 <translation id="4668956016107839909">παράρτημα</translation>
+<translation id="4718048029184481307">Αναπαραγωγή σε λειτουργία picture-in-picture</translation>
 <translation id="4742539557769756338">εξώφυλλο</translation>
 <translation id="4748357248530471599">εναλλαγή πλήρους οθόνης εγκοπής οθόνης</translation>
 <translation id="4757246831282535685">παράθυρο καρτέλας</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">λήψη μέσων</translation>
 <translation id="6981594929165378967">εισαγωγή</translation>
 <translation id="6989848892321993519">Αυξήστε την έκταση αυτού του κειμένου στους <ph name="MIN_CHARACTERS" /> χαρακτήρες ή περισσότερο (αυτήν τη στιγμή χρησιμοποιείτε 1 χαρακτήρα).</translation>
+<translation id="7033340931668032222">επάνω και κάτω για αλλαγή της έντασης ήχου</translation>
 <translation id="709897737746224366">Αντιστοιχίστε τη ζητούμενη μορφή.</translation>
 <translation id="7118469954320184356">Δεν υπάρχει διαθέσιμη περιγραφή.</translation>
 <translation id="7139483182332611405">πρόλογος</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">σύμβολο γραφικών</translation>
 <translation id="8583702881314752957">λίστα ορισμών</translation>
 <translation id="8597182159515967513">επικεφαλίδα</translation>
+<translation id="8603553056539299761">αριστερά και δεξιά για αναζήτηση</translation>
 <translation id="860475260694818407">πίνακας περιεχομένων</translation>
 <translation id="8613126697340063924">έλεγχος απομακρυσμένης αναπαραγωγής</translation>
 <translation id="862370744433916922">υπότιτλος</translation>

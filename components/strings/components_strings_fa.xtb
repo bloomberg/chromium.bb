@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">نمی‌توان کارت را ذخیره کرد</translation>
 <translation id="1639239467298939599">بارگیری</translation>
 <translation id="1640180200866533862">خط‌مشی‌های کاربر</translation>
 <translation id="1640244768702815859">از<ph name="BEGIN_LINK" />صفحه اصلی سایت دیدن کنید<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">با استفاده از <ph name="BEGIN_LINK" />برنامه عیب‌یابی<ph name="END_LINK" />، مشکل اتصالتان را برطرف کنید</translation>
 <translation id="2239100178324503013">اکنون ارسال شود</translation>
 <translation id="225207911366869382">این مقدار برای این خط‌مشی منسوخ شده است؟</translation>
+<translation id="2257315177824333709">متأسفیم، درحال‌حاضر نمی‌توان کارت شما را ذخیره کرد</translation>
 <translation id="2262243747453050782">‏خطای HTTP</translation>
 <translation id="2263079731045660823">‏اطلاعات تکمیل خودکار کارت اعتباری را در تنظیمات Chrome به‌روزرسانی کنید</translation>
 <translation id="2270484714375784793">شماره تلفن</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">نمایش خط‌مشی‌ها با مقدار تنظیم نشده</translation>
 <translation id="239429038616798445">این روش ارسال در دسترس نیست. روش دیگری را امتحان کنید.</translation>
 <translation id="2396249848217231973">&amp;واگرد حذف</translation>
+<translation id="2409589295040002961">‏سرپرست می‌تواند تنظیم مرورگرتان را ازراه‌دور تغییر دهد. همچنین فعالیت انجام‌شده در این دستگاه می‌تواند از خارج از Chrome مدیریت شود. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن باطل شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="2418081434543109369">سروری که به آن می‌روید، <ph name="ORIGIN" />، درخواست کرده است
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">درخواست با موفقیت انجام شد</translation>
 <translation id="2728127805433021124">گواهی سرور با استفاده از یک الگوریتم امضای ضعیف امضا شده است.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />در حال اجرای عیب‌یابی اتصال<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">بیش از یک منبع با مقادیر مغایر برای این خط‌مشی موجود است!</translation>
 <translation id="2738330467931008676">انتخاب نشانی تحویل گرفتن</translation>
 <translation id="2740531572673183784">تأیید</translation>
 <translation id="2742870351467570537">حذف آیتم های انتخاب شده</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">ویرایش اطلاعات تماس</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> از اتصال خودداری کرد.</translation>
 <translation id="6434309073475700221">رد کردن</translation>
+<translation id="6440503408713884761">نادیده گرفته شد</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">افزودن اطلاعات بیشتر</translation>
 <translation id="6447842834002726250">کوکی‌ها</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">این خط‌مشی به‌عنوان فهرستی که خط‌مشی مشخص کرده است ادغام نشد، زیرا فهرست نیست.</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
 <translation id="6534179046333460208">پیشنهادهای «وب فیزیکی»</translation>
+<translation id="6545864417968258051">اسکن کردن بلوتوث</translation>
 <translation id="6554795675067793129">حساب شما توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود.</translation>
 <translation id="6556866813142980365">انجام مجدد</translation>
 <translation id="6563469144985748109">مدیرتان هنوز این سایت را تأیید نکرده است</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">افزودن شماره کارت معتبر</translation>
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">‏شاید درحال‌حاضر مهاجم‌ها در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> در تلاش باشند برنامه‌های خطرناکی در Mac شما نصب کنند که اطلاعاتتان (مانند عکس‌ها، گذرواژه‌ها، پیام‌ها و کارت‌های اعتباری) را به سرقت می‌برند یا حذف می‌کنند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">بیش از یک منبع برای این خط‌مشی وجود دارد، اما مقادیر یکسانی دارند.</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6644283850729428850">این قانون قدیمی شده است.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{هیچ‌کدام}=1{‏از ۱ سایت (از سیستم حساب Google خود خارج نخواهید شد)}one{‏از # سایت (از سیستم حساب Google خود خارج نخواهید شد)}other{‏از # سایت (از سیستم حساب Google خود خارج نخواهید شد)}}</translation>

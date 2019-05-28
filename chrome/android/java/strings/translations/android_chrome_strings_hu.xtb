@@ -580,6 +580,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5324858694974489420">Szülői beállítások</translation>
 <translation id="5327248766486351172">Név</translation>
 <translation id="5335288049665977812">Engedélyezze a webhelyek számára a JavaScript futtatását (ajánlott)</translation>
+<translation id="5357811892247919462">Lap fogadva</translation>
 <translation id="5363230136052241468">Koppintson a Kezdőképernyő gombra az új lap oldal betöltéséhez</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> megnyitott lap. A lapok között koppintással válthat.}other{<ph name="OPEN_TABS_MANY" /> megnyitott lap. A lapok között koppintással válthat.}}</translation>
 <translation id="5391532827096253100">Kapcsolata a webhellyel nem biztonságos. Webhelyadatok</translation>
@@ -601,7 +602,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5494752089476963479">Hirdetések letiltása a tolakodó és félrevezető hirdetéseket megjelenítő webhelyeken</translation>
 <translation id="5497272504048921382">Megnyitott lapok</translation>
 <translation id="5500777121964041360">Előfordulhat, hogy ez a beállítás nem áll rendelkezésre az Ön tartózkodási helyén</translation>
-<translation id="550684401320795253">A Chrome frissítése…</translation>
 <translation id="5512137114520586844">A fiók kezelője: <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Letiltotta az eszköz rendszergazdája</translation>
 <translation id="5515439363601853141">Oldja fel a képernyőzárat a jelszó megtekintéséhez</translation>

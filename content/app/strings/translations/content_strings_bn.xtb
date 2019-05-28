@@ -36,6 +36,7 @@
 <translation id="2148716181193084225">আজ</translation>
 <translation id="2158401438286456825">পৃষ্ঠা তালিকা</translation>
 <translation id="2226276347425096477">দয়া করে এই পাঠ্যটি <ph name="MAX_CHARACTERS" />টি অক্ষর বা তার কমে (আপনি বর্তমানে <ph name="CURRENT_LENGTH" />টি অক্ষর ব্যবহার করছেন) সংক্ষিপ্ত করুন৷</translation>
+<translation id="2246498165605549352">স্থানীয় ফাইল</translation>
 <translation id="2247351761944213033"><ph name="WEEKNUMBER" /> সপ্তাহ, <ph name="YEAR" /></translation>
 <translation id="2277199496770840904">ট্র্যাক <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">চেকবাক্স</translation>
@@ -74,6 +75,7 @@
 <translation id="3685101356851116974">লেবেল ছাড়া ছবি</translation>
 <translation id="3706100364254443312">পরিবর্তন করুন</translation>
 <translation id="3732799496749320381">মিমি</translation>
+<translation id="3754210790023674521">ছবির-মধ্যে-ছবি মোড থেকে বেরিয়ে আসুন</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> জিবি</translation>
 <translation id="3808586225841795776">পদ</translation>
 <translation id="3822383571486410024">দয়া করে এই পাঠ্যকে ন্যূনতম <ph name="MIN_CHARACTERS" /> অক্ষরের বা তার বেশি (আপনি বর্তমানে <ph name="CURRENT_LENGTH" />টি অক্ষর ব্যবহার করেছেন) দৈর্ঘের করুন।</translation>
@@ -101,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' অনুসরণ করে এমন একটি অংশে '<ph name="INVALIDCHARACTER" />' চিহ্ন থাকা উচিত নয়৷</translation>
 <translation id="4668956016107839909">পরিশিষ্ট</translation>
+<translation id="4718048029184481307">ছবির-মধ্যে-ছবি মোডে চলছে</translation>
 <translation id="4742539557769756338">কভার</translation>
 <translation id="4748357248530471599">ডিসপ্লে কাট-আউট ফুল-স্ক্রিনে টগল করুন</translation>
 <translation id="4757246831282535685">ট্যাব প্যানেল</translation>
@@ -175,6 +178,7 @@
 <translation id="6941933287844615239">মিডিয়া ডাউনলোড করুন</translation>
 <translation id="6981594929165378967">যোগ করা হচ্ছে</translation>
 <translation id="6989848892321993519">দয়া করে এই পাঠ্যকে ন্যূনতম <ph name="MIN_CHARACTERS" /> অক্ষরের বা তার বেশি দৈর্ঘ্যের করুন (আপনি বর্তমানে ১টি অক্ষর ব্যবহার করেছেন)।</translation>
+<translation id="7033340931668032222">ভলিউম পরিবর্তন করতে উপরে এবং নিচে</translation>
 <translation id="709897737746224366">দয়া করে অনুরোধ হওয়া বিন্যাসটি মেলান৷</translation>
 <translation id="7118469954320184356">কোনও বিবরণ নেই।</translation>
 <translation id="7139483182332611405">মুখবন্ধ</translation>
@@ -226,6 +230,7 @@
 <translation id="8550857728288566671">গ্রাফিক্স চিহ্ন</translation>
 <translation id="8583702881314752957">সংজ্ঞার তালিকা</translation>
 <translation id="8597182159515967513">শিরোনাম</translation>
+<translation id="8603553056539299761">খুঁজে পেতে ডানদিকে এবং বাঁদিকে</translation>
 <translation id="860475260694818407">সূচিপত্র</translation>
 <translation id="8613126697340063924">রিমোট প্লেব্যাক নিয়ন্ত্রণ করুন</translation>
 <translation id="862370744433916922">সাবটাইটেল</translation>

@@ -157,6 +157,7 @@
 <translation id="3308453408813785101">Maaari pa ring mag-sign in si <ph name="USER_EMAIL_ADDRESS" /> sa ibang pagkakataon.</translation>
 <translation id="3321628682574733415">Maling code ng magulang</translation>
 <translation id="332587331255250389">Pakipalitan ang baterya</translation>
+<translation id="3335825575923019462">Sigurado ka bang gusto mong i-disable ang mga awtomatikong pag-click?</translation>
 <translation id="3351879221545518001">Kasalukuyan kang nagka-cast ng screen.</translation>
 <translation id="3364721542077212959">Mga stylus tool</translation>
 <translation id="3368922792935385530">Nakakonekta</translation>
@@ -397,6 +398,7 @@
 <translation id="7348093485538360975">Nasa screen na keyboard</translation>
 <translation id="735745346212279324">Nakadiskonekta ang VPN</translation>
 <translation id="7377169924702866686">Naka-on ang Caps Lock.</translation>
+<translation id="7378594059915113390">Mga Kontrol ng Media</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />s</translation>
 <translation id="7398254312354928459">Lumipat ng koneksyon ng network</translation>
 <translation id="7405710164030118432">Para i-unlock ang device, ilagay ang iyong access code ng magulang sa Family Link</translation>
@@ -481,6 +483,7 @@
 <translation id="8649101189709089199">Select-to-Speak</translation>
 <translation id="8652175077544655965">Isara ang mga setting</translation>
 <translation id="8653151467777939995">Ipakita ang mga setting ng notification. Naka-on ang mga notification</translation>
+<translation id="8664483332071009680">I-disable ang mga awtomatikong pag-click?</translation>
 <translation id="8664753092453405566">Ipakita ang listahan ng network. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Nakakabit ang low-power charger</translation>

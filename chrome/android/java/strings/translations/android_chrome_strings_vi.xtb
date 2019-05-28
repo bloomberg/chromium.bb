@@ -580,6 +580,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5324858694974489420">Cài đặt dành cho cha mẹ</translation>
 <translation id="5327248766486351172">Tên</translation>
 <translation id="5335288049665977812">Cho phép các trang web chạy JavaScript (được đề xuất)</translation>
+<translation id="5357811892247919462">Đã nhận tab</translation>
 <translation id="5363230136052241468">Chạm vào nút màn hình chính để tải trang tab mới</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> tab đang mở, nhấn để chuyển tab}other{<ph name="OPEN_TABS_MANY" /> tab đang mở, nhấn để chuyển tab}}</translation>
 <translation id="5391532827096253100">Kết nối của bạn tới trang web này không an toàn. Thông tin trang web</translation>
@@ -601,7 +602,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5494752089476963479">Chặn quảng cáo trên các trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
 <translation id="5497272504048921382">Các tab đã mở</translation>
 <translation id="5500777121964041360">Có thể chưa dùng được tại vị trí của bạn</translation>
-<translation id="550684401320795253">Đang cập nhật Chrome...</translation>
 <translation id="5512137114520586844">Tài khoản này do <ph name="PARENT_NAME" /> quản lý.</translation>
 <translation id="5514904542973294328">Bị quản trị viên của thiết bị này vô hiệu hóa</translation>
 <translation id="5515439363601853141">Mở khóa để xem mật khẩu của bạn</translation>

@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Не вдається зберегти картку</translation>
 <translation id="1639239467298939599">Завантаження</translation>
 <translation id="1640180200866533862">Правила користувача</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />Відвідайте домашню сторінку цього сайту<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Відновіть з’єднання за допомогою <ph name="BEGIN_LINK" />додатка для діагностики<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Надіслати</translation>
 <translation id="225207911366869382">Дію цього значення припинено для цього правила</translation>
+<translation id="2257315177824333709">На жаль, зараз не вдається зберегти картку.</translation>
 <translation id="2262243747453050782">Помилка HTTP</translation>
 <translation id="2263079731045660823">Оновіть дані для автозаповнення кредитної картки в налаштуваннях Chrome</translation>
 <translation id="2270484714375784793">Номер телефону</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Показувати правила, для яких не встановлено значення</translation>
 <translation id="239429038616798445">Цей спосіб відправлення недоступний. Виберіть інший спосіб.</translation>
 <translation id="2396249848217231973">&amp;Відмінити видалення</translation>
+<translation id="2409589295040002961">Адміністратор може змінити налаштування веб-переглядача віддалено. Діями на цьому пристрої можна керувати за межами Chrome. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Можливо, його сертифікат безпеки відкликано. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="2418081434543109369">Сервер, на який ви переходите (<ph name="ORIGIN" />), попросив, щоб
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Запит надіслано</translation>
 <translation id="2728127805433021124">Сертифікат сервера підписано з використанням слабкого алгоритму підпису.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />провести діагностику з’єднання<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">У цьому правилі є кілька джерел із конфліктними значеннями.</translation>
 <translation id="2738330467931008676">Вибрати адресу отримання</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Видалити вибрані елементи</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">Змінити контактні дані</translation>
 <translation id="6433595998831338502">Хост <ph name="HOST_NAME" /> відхилив запит на з’єднання.</translation>
 <translation id="6434309073475700221">Скасувати</translation>
+<translation id="6440503408713884761">Ігнорується</translation>
 <translation id="6446163441502663861">Kahu (конверт)</translation>
 <translation id="6446608382365791566">Додати більше інформації</translation>
 <translation id="6447842834002726250">Cookie-файли</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">Застереження: це правило не об'єднано в список, як указано в правилі, оскільки це не список.</translation>
 <translation id="6529602333819889595">&amp;Повторити видалення</translation>
 <translation id="6534179046333460208">Пропозиції сервісу "Інтернет навколо нас"</translation>
+<translation id="6545864417968258051">Пошук пристроїв Bluetooth</translation>
 <translation id="6554795675067793129">Вашим обліковим записом керує <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Повторити</translation>
 <translation id="6563469144985748109">Адміністратор ще не схвалив його</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">Додати дійсний номер картки</translation>
 <translation id="6628463337424475685">Пошук <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Зловмисники можуть використати сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, щоб установити на ваш комп’ютер Mac небезпечні програми, що викрадають або видаляють інформацію (фотографії, паролі, повідомленняб дані кредитних карток тощо). <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">У правилі є кілька джерел з однаковими значеннями.</translation>
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="6644283850729428850">Це правило більше не використовується.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Немає}=1{З 1 сайту (ви не вийдете з облікового запису Google)}one{З # сайту (ви не вийдете з облікового запису Google)}few{З # сайтів (ви не вийдете з облікового запису Google)}many{З # сайтів (ви не вийдете з облікового запису Google)}other{З # сайту (ви не вийдете з облікового запису Google)}}</translation>

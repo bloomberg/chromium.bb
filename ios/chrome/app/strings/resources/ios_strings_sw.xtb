@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Fungua zote</translation>
 <translation id="1430915738399379752">Chapisha</translation>
 <translation id="1436290164580597469">Weka kauli ya siri ili uanze kusawazisha.</translation>
+<translation id="1449835205994625556">Ficha Nenosiri</translation>
 <translation id="145015347812617860">Vipengee <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Gusa mara mbili ili ugeuze mipangilio</translation>
 <translation id="152234381334907219">Hayatahifadhiwa Kamwe</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Futa Data ya Kuvinjari</translation>
 <translation id="1820259098641718022">Imeongezwa kwenye Orodha ya Kusoma</translation>
 <translation id="1828824471510190776">Pendekeza Nenosiri...</translation>
+<translation id="1870148520156231997">Fichua Nenosiri</translation>
 <translation id="1876721852596493031">Tuma Data ya Utumiaji</translation>
 <translation id="1886928167269928266">Kutoka Mwanzo</translation>
 <translation id="1911619930368729126">Pakia kwenye Hifadhi ya Google</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Upau wa shughuli ya upakiaji wa ukurasa, imepakia <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Kichwa</translation>
 <translation id="4004204301268239848">Manenosiri yanahifadhiwa kwenye Akaunti yako ya Google ili uweze kuyatumia kwenye kifaa chochote.</translation>
+<translation id="4006921758705478413">Tuma Kwenye Vifaa Vyako</translation>
 <translation id="4038354071007134711">Hakuna programu kwenye kifaa hiki inayoweza kufungua faili.</translation>
 <translation id="4042870976416480368">Pata katika Ukurasa</translation>
 <translation id="4049507953662678203">Hakikisha una muunganisho wa mtandao, kisha ujaribu tena.</translation>
@@ -267,6 +270,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="4904877109095351937">Tia Alama Kuwa Umesoma</translation>
 <translation id="4930268273022498155">Futa data iliyopo. Unaweza kuirejesha kwa kurudi kwenye <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Samahani, kulikuwa na tatizo wakati wa kushiriki kipengee chako.</translation>
+<translation id="4945756290001680296">Fikia mipangilio ya nenosiri</translation>
 <translation id="4979397965658815378">Ingia katika akaunti kwa kutumia Akaunti yako ya Google ili upate alamisho, manenosiri, historia na mipangilio mingine kwenye vifaa vyako vyote.</translation>
 <translation id="5005498671520578047">Nakili nenosiri</translation>
 <translation id="5010803260590204777">Fungua kichupo fiche ili uvinjari wavuti kwa njia ya faragha.</translation>
@@ -421,7 +425,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="7173114856073700355">Fungua Mipangilio</translation>
 <translation id="7189598951263744875">Shiriki...</translation>
 <translation id="7192050974311852563">Anza Kuleta Kumbukumbu</translation>
-<translation id="7203585745079012652">Itamke Majibu</translation>
+<translation id="7203585745079012652">Tamka Majibu</translation>
 <translation id="722055596168483966">Badilisha huduma za Google zikufae</translation>
 <translation id="7265758999917665941">Isikumbuke Kamwe Katika Tovuti Hii</translation>
 <translation id="7272437679830969316">Utambulisho wako haujathibitishwa. Nenosiri halijanakiliwa.</translation>
@@ -520,6 +524,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="8976382372951310360">Usaidizi</translation>
 <translation id="8981454092730389528">Vidhibiti vya Shughuli za Google</translation>
 <translation id="8985320356172329008">Umeingia katika Google ukitumia</translation>
+<translation id="9016406938567631235">Inatuma...</translation>
 <translation id="902659348151742535">Google inaweza kutumia historia ya jinsi unavyovinjari ili kuweka mapendeleo kwenye huduma ya Tafuta na Google, matangazo na huduma nyingine za Google.</translation>
 <translation id="9034759925968272072">Hutaondolewa katika Akaunti yako ya Google. Huenda Akaunti yako ya Google ina aina nyingine za historia ya kuvinjari katika <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Kipimo data</translation>

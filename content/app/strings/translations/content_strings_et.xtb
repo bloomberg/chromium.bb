@@ -75,6 +75,7 @@
 <translation id="3685101356851116974">Sildita pilt</translation>
 <translation id="3706100364254443312">lüliti</translation>
 <translation id="3732799496749320381">kk</translation>
+<translation id="3754210790023674521">Välju režiimist Pilt pildis</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">termin</translation>
 <translation id="3822383571486410024">Pikendage teksti vähemalt <ph name="MIN_CHARACTERS" /> tähemärgini (kasutate praegu <ph name="CURRENT_LENGTH" /> tähemärki).</translation>
@@ -102,6 +103,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Märgile „<ph name="ATSIGN" />” järgnev osa ei tohi sisaldada sümbolit „<ph name="INVALIDCHARACTER" />”.</translation>
 <translation id="4668956016107839909">lisa</translation>
+<translation id="4718048029184481307">Režiimis Pilt pildis mängimine</translation>
 <translation id="4742539557769756338">kaas</translation>
 <translation id="4748357248530471599">ekraani väljalõike täisekraanrežiimi sisse-/väljalülitamine</translation>
 <translation id="4757246831282535685">vahelehepaneel</translation>
@@ -176,6 +178,7 @@
 <translation id="6941933287844615239">laadi meedia alla</translation>
 <translation id="6981594929165378967">lisamine</translation>
 <translation id="6989848892321993519">Pikendage teksti vähemalt <ph name="MIN_CHARACTERS" /> tähemärgini (kasutate praegu ühte tähemärki).</translation>
+<translation id="7033340931668032222">hääletugevuse muutmiseks üles- ja allanoole klahvi</translation>
 <translation id="709897737746224366">Vastendage nõutav vorming.</translation>
 <translation id="7118469954320184356">Kirjeldust pole.</translation>
 <translation id="7139483182332611405">eessõna</translation>
@@ -227,6 +230,7 @@
 <translation id="8550857728288566671">graafika sümbol</translation>
 <translation id="8583702881314752957">definitsioonide loend</translation>
 <translation id="8597182159515967513">pealkiri</translation>
+<translation id="8603553056539299761">otsimiseks vasakut ja paremat klahvi</translation>
 <translation id="860475260694818407">sisukord</translation>
 <translation id="8613126697340063924">kaugesituse juhtimine</translation>
 <translation id="862370744433916922">alapealkiri</translation>

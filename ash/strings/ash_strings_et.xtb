@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Hiirekursori esiletõstmine</translation>
 <translation id="3513798432020909783">Kontohaldur: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Muuda tagasi seadele <ph name="FROM_LOCALE" /> (nõuab taaskäivitust)</translation>
+<translation id="3576141592585647168">Ajavööndi muutmine</translation>
 <translation id="3595596368722241419">Aku on täis</translation>
 <translation id="3606978283550408104">Punktkirja ekraanikuva on ühendatud.</translation>
 <translation id="3621202678540785336">Sisend</translation>
@@ -355,6 +356,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6559976592393364813">Küsige administraatorilt</translation>
 <translation id="6585808820553845416">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Otsing + Tõstuklahv + K</translation>
+<translation id="6637729079642709226">Kellaaja muutmine</translation>
 <translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Parool</translation>
 <translation id="6665545700722362599">Andke veebisaitidele, rakendustele ja laiendustele luba kasutada asukohateenuseid, seadme mikrofoni, kaamerat ning teisi funktsioone</translation>
@@ -510,6 +512,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8990809378771970590">Kasutusel: <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Märguandetoimingu tegemiseks avage seade kontoga <ph name="LOGIN_ID" /></translation>
 <translation id="8995603266996330174">Haldaja: <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Sisestage Family Linki vanema pääsukood.</translation>
 <translation id="9029474291399787231">Saadaval on Adobe Flash Playeri värskendus</translation>
 <translation id="9056839673611986238">Seade viiakse vanemale versioonile</translation>
 <translation id="9070640332319875144">Assistendi seaded</translation>

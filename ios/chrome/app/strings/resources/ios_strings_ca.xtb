@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Obre-les totes</translation>
 <translation id="1430915738399379752">Imprimeix</translation>
 <translation id="1436290164580597469">Introdueix la frase de contrasenya per iniciar la sincronització.</translation>
+<translation id="1449835205994625556">Amaga la contrasenya</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elements</translation>
 <translation id="1491277525950327607">Fes doble toc per canviar la configuració</translation>
 <translation id="152234381334907219">Contrasenyes que no es desen mai</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Esborra dades navegació</translation>
 <translation id="1820259098641718022">S'ha afegit a la llista de lectura</translation>
 <translation id="1828824471510190776">Suggereix una contrasenya...</translation>
+<translation id="1870148520156231997">Mostra la contrasenya</translation>
 <translation id="1876721852596493031">Envia les dades d'ús</translation>
 <translation id="1886928167269928266">L'inici</translation>
 <translation id="1911619930368729126">Penja a Google Drive</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Barra de progrés de càrrega de la pàgina; s'ha carregat un <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Títol</translation>
 <translation id="4004204301268239848">Les contrasenyes es desen al Compte de Google perquè les puguis utilitzar en tots els dispositius.</translation>
+<translation id="4006921758705478413">Envia als teus dispositius</translation>
 <translation id="4038354071007134711">Cap aplicació del dispos. no pot obrir el fitxer.</translation>
 <translation id="4042870976416480368">Cerca a la pàgina</translation>
 <translation id="4049507953662678203">Assegureu-vos que teniu una connexió de xarxa i torneu-ho a provar.</translation>
@@ -267,6 +270,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="4904877109095351937">Marca com a llegit</translation>
 <translation id="4930268273022498155">Suprimeix les dades existents. Per recuperar-les, torna a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">S'ha produït un problema en compartir el vostre element.</translation>
+<translation id="4945756290001680296">Accedeix a la configuració de la contrasenya</translation>
 <translation id="4979397965658815378">Inicia la sessió amb el compte de Google per tenir les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
 <translation id="5005498671520578047">Copia la contrasenya</translation>
 <translation id="5010803260590204777">Obriu una pestanya d'incògnit per navegar pel web de manera privada.</translation>
@@ -520,6 +524,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8976382372951310360">Ajuda</translation>
 <translation id="8981454092730389528">Controls d'activitat de Google</translation>
 <translation id="8985320356172329008">Has iniciat la sessió a Google com a</translation>
+<translation id="9016406938567631235">S'està enviant...</translation>
 <translation id="902659348151742535">És possible que Google utilitzi el teu historial de navegació per personalitzar la Cerca, els anuncis i altres serveis de Google.</translation>
 <translation id="9034759925968272072">No se us tancarà la sessió del compte de Google, el qual és possible que tingui altres formes de l'historial de navegació a <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Amplada de banda</translation>

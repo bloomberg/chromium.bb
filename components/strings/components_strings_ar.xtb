@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">يتعذّر حفظ البطاقة</translation>
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="1640180200866533862">سياسات المستخدم</translation>
 <translation id="1640244768702815859">جرّب <ph name="BEGIN_LINK" />الانتقال إلى الصفحة الرئيسية للموقع<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">إصلاح الاتصال باستخدام <ph name="BEGIN_LINK" />تطبيق بيانات التشخيص<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">إرسال الآن</translation>
 <translation id="225207911366869382">تم تجاهل القيمة لهذه السياسة.</translation>
+<translation id="2257315177824333709">عفوًا، يتعذّر حفظ بطاقتك الآن</translation>
 <translation id="2262243747453050782">‏خطأ HTTP</translation>
 <translation id="2263079731045660823">‏تحديث معلومات الملء التلقائي لبطاقة الائتمان في إعدادات Chrome</translation>
 <translation id="2270484714375784793">رقم الهاتف</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">عرض السياسات التي لم يتم تعيين قيم لها</translation>
 <translation id="239429038616798445">طريقة الشحن هذه غير متاحة، جرِّب طريقة أخرى.</translation>
 <translation id="2396249848217231973">تراجع عن الحذ&amp;ف</translation>
+<translation id="2409589295040002961">‏يمكن لمشرفك تغيير إعداد المتصفّح عن بُعد. وقد تتم أيضًا إدارة النشاط على هذا الجهاز خارج Chrome. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان ربما تم إلغاء صلاحيتها. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="2418081434543109369">لقد طلب الخادم الذي تنتقل إليه، <ph name="ORIGIN" />، أن
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">تم إرسال الطلب بنجاح</translation>
 <translation id="2728127805433021124">شهادة الخادم موقّعة باستخدام خوارزمية توقيع ضعيفة.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />تشغيل بيانات تشخيص الاتصال<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">يتوفّر أكثر من مصدر واحد يتضمّن قيمًا متضاربة لهذه السياسة.</translation>
 <translation id="2738330467931008676">اختيار عنوان الاستلام من المستخدم</translation>
 <translation id="2740531572673183784">موافق</translation>
 <translation id="2742870351467570537">إزالة العناصر المحددة</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">تعديل معلومات الاتصال</translation>
 <translation id="6433595998831338502">رفض <ph name="HOST_NAME" /> الاتصال.</translation>
 <translation id="6434309073475700221">إلغاء</translation>
+<translation id="6440503408713884761">تم تجاهله</translation>
 <translation id="6446163441502663861">‏Kahu (مغلف)</translation>
 <translation id="6446608382365791566">إضافة مزيد من المعلومات</translation>
 <translation id="6447842834002726250">ملفّات تعريف الارتباط</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">تحذير: لم يتم دمج هذه السياسة كقائمة كما هو موضح بموجب السياسة؛ لأنها ليست قائمة.</translation>
 <translation id="6529602333819889595">إعادة الح&amp;ذف</translation>
 <translation id="6534179046333460208">اقتراحات الشبكة المادية</translation>
+<translation id="6545864417968258051">البحث عن بلوتوث</translation>
 <translation id="6554795675067793129">يدير <ph name="ENROLLMENT_DOMAIN" /> حسابك.</translation>
 <translation id="6556866813142980365">إعادة</translation>
 <translation id="6563469144985748109">لم يوافق عليه مديرك حتى الآن</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">إضافة رقم بطاقة صالح</translation>
 <translation id="6628463337424475685">بحث <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">‏قد يحاول المهاجمون حاليًا على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> تثبيت برامج خطيرة على جهاز Mac تؤدي إلى سرقة أو حذف معلوماتك (على سبيل المثال، الصور، وكلمات المرور، والرسائل، وبطاقات الائتمان) <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">يتوفّر أكثر من مصدر واحد للسياسة، لكن القيم هي نفسها.</translation>
 <translation id="6643016212128521049">محو</translation>
 <translation id="6644283850729428850">تم تجاهل هذه السياسة.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{بدون}=1{‏من موقع ويب واحد (لن يتم تسجيل خروجك من حسابك على Google)}two{‏من موقعي ويب (#) (لن يتم تسجيل خروجك من حسابك على Google)}few{‏من # مواقع ويب (لن يتم تسجيل خروجك من حسابك على Google)}many{‏من # موقع ويب (لن يتم تسجيل خروجك من حسابك على Google)}other{‏من # موقع ويب (لن يتم تسجيل خروجك من حسابك على Google)}}</translation>

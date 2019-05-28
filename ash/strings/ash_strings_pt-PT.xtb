@@ -172,6 +172,7 @@
 <translation id="3510164367642747937">Realçar cursor do rato</translation>
 <translation id="3513798432020909783">Conta gerida por <ph name="MANAGER_EMAIL" />.</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE" /> (requer reinicio)</translation>
+<translation id="3576141592585647168">Altere o fuso horário</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
 <translation id="3606978283550408104">Visualização em braille ligada.</translation>
 <translation id="3621202678540785336">Entrada</translation>
@@ -354,6 +355,7 @@
 <translation id="6559976592393364813">Peça ao administrador.</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
+<translation id="6637729079642709226">Altere a hora</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="6665545700722362599">Conceda aos Websites, às aplicações e às extensões autorização para utilizar os Serviços de localização, o microfone, a câmara ou outras funcionalidades do dispositivo.</translation>
@@ -509,6 +511,7 @@
 <translation id="8990809378771970590">A utilizar <ph name="IME_NAME" />…</translation>
 <translation id="899350903320462459">Desbloqueie o dispositivo como <ph name="LOGIN_ID" /> para realizar a ação de notificação.</translation>
 <translation id="8995603266996330174">Gerido por <ph name="DOMAIN" /></translation>
+<translation id="9017320285115481645">Introduza o código de acesso parental do Family Link.</translation>
 <translation id="9029474291399787231">Atualização do Adobe Flash Player disponível</translation>
 <translation id="9056839673611986238">O dispositivo voltará à versão anterior</translation>
 <translation id="9070640332319875144">Definições do Assistente</translation>

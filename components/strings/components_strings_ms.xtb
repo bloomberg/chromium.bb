@@ -135,6 +135,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Halang halaman ini daripada mencipta dialog tambahan</translation>
 <translation id="16338877384480380">Seni Bina-B</translation>
+<translation id="1638780421120290329">Tidak dapat menyimpan kad</translation>
 <translation id="1639239467298939599">Memuatkan</translation>
 <translation id="1640180200866533862">Dasar pengguna</translation>
 <translation id="1640244768702815859">Cuba <ph name="BEGIN_LINK" />lawat laman utama tapak<ph name="END_LINK" />.</translation>
@@ -243,6 +244,7 @@
 <translation id="2230458221926704099">Betulkan sambungan anda menggunakan <ph name="BEGIN_LINK" />apl diagnostik<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Hantar sekarang</translation>
 <translation id="225207911366869382">Nilai ini tidak lagi digunakan untuk dasar ini.</translation>
+<translation id="2257315177824333709">Maaf, kad anda tidak dapat disimpan sekarang</translation>
 <translation id="2262243747453050782">Ralat HTTP</translation>
 <translation id="2263079731045660823">Kemas kini maklumat autolengkap kad kredit dalam tetapan Chrome</translation>
 <translation id="2270484714375784793">Nombor telefon</translation>
@@ -272,6 +274,7 @@
 <translation id="2392959068659972793">Paparkan dasar tanpa nilai yang ditetapkan</translation>
 <translation id="239429038616798445">Kaedah penghantaran ini tidak tersedia. Cuba kaedah lain.</translation>
 <translation id="2396249848217231973">&amp;Buat asal pemadaman</translation>
+<translation id="2409589295040002961">Pentadbir anda boleh menukar persediaan penyemak imbas anda dari jauh. Aktiviti pada peranti ini mungkin turut diurus di luar Chrome. <ph name="BEGIN_LINK" />Ketahui Lebih Lanjut<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Kerajaan-Perundangan</translation>
 <translation id="2413528052993050574">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mungkin dibatalkan. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="2418081434543109369">Pelayan destinasi anda, <ph name="ORIGIN" />, telah meminta agar
@@ -333,6 +336,7 @@
 <translation id="2721148159707890343">Permintaan berjaya</translation>
 <translation id="2728127805433021124">Sijil pelayan ditandatangani menggunakan algoritma tandatangan yang lemah.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Jalankan Diagnostik Sambungan<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Lebih daripada satu sumber yang mempunyai nilai yang bercanggah terdapat dalam dasar ini!</translation>
 <translation id="2738330467931008676">Pilih Alamat Pengambilan</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2742870351467570537">Buang item yang dipilih</translation>
@@ -991,6 +995,7 @@
 <translation id="6433490469411711332">Edit maklumat hubungan</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> enggan menyambung.</translation>
 <translation id="6434309073475700221">Buang</translation>
+<translation id="6440503408713884761">Diabaikan</translation>
 <translation id="6446163441502663861">Kahu (Sampul Surat)</translation>
 <translation id="6446608382365791566">Tambahkan maklumat lanjut</translation>
 <translation id="6447842834002726250">Kuki</translation>
@@ -1006,6 +1011,7 @@
 <translation id="6517596291481585650">Amaran: Dasar ini tidak digabungkan sebagai senarai seperti yang dinyatakan oleh dasar kerana dasar ini bukan senarai.</translation>
 <translation id="6529602333819889595">&amp;Buat Semula Pemadaman</translation>
 <translation id="6534179046333460208">Cadangan Web Fizikal</translation>
+<translation id="6545864417968258051">Pengimbasan Bluetooth</translation>
 <translation id="6554795675067793129">Akaun anda diurus oleh <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Buat semula</translation>
 <translation id="6563469144985748109">Pengurus anda belum meluluskannya</translation>
@@ -1022,6 +1028,7 @@
 <translation id="6626291197371920147">Tambahkan nombor kad yang sah</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Carian</translation>
 <translation id="6630809736994426279">Penyerang yang sedang berada di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin cuba memasang atur cara berbahaya pada komputer Mac anda. Atur cara tersebut boleh mencuri atau memadamkan maklumat anda (contohnya, foto, kata laluan, mesej dan kad kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Lebih daripada satu sumber terdapat dalam dasar ini, tetapi nilainya sama.</translation>
 <translation id="6643016212128521049">Kosongkan</translation>
 <translation id="6644283850729428850">Dasar ini telah dikecam.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Tiada}=1{Daripada 1 tapak (anda tidak akan dilog keluar daripada Akaun Google anda)}other{Daripada # tapak (anda tidak akan dilog keluar daripada Akaun Google anda)}}</translation>

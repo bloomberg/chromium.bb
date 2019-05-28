@@ -135,6 +135,7 @@
 <translation id="1620510694547887537">Appareil photo</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Impossible d'enregistrer cette carte</translation>
 <translation id="1639239467298939599">Chargement en cours</translation>
 <translation id="1640180200866533862">Règles relatives aux utilisateurs</translation>
 <translation id="1640244768702815859">Essayez de <ph name="BEGIN_LINK" />consulter la page d'accueil du site<ph name="END_LINK" />.</translation>
@@ -243,6 +244,7 @@
 <translation id="2230458221926704099">Vérifiez la connexion à l'aide de l'<ph name="BEGIN_LINK" />application de diagnostic<ph name="END_LINK" />.</translation>
 <translation id="2239100178324503013">Envoyer maintenant</translation>
 <translation id="225207911366869382">Cette valeur n'est plus utilisée dans le cadre de cette règle.</translation>
+<translation id="2257315177824333709">Désolé, votre carte ne peut pas être enregistrée pour le moment</translation>
 <translation id="2262243747453050782">Erreur HTTP.</translation>
 <translation id="2263079731045660823">Mettre à jour la saisie automatique des informations de paiement dans les paramètres de Chrome</translation>
 <translation id="2270484714375784793">N° de téléphone</translation>
@@ -272,6 +274,7 @@
 <translation id="2392959068659972793">Afficher les règles non paramétrées</translation>
 <translation id="239429038616798445">Mode d'expédition non disponible. Choisissez-en un autre.</translation>
 <translation id="2396249848217231973">&amp;Annuler la suppression</translation>
+<translation id="2409589295040002961">Votre administrateur peut modifier à distance la configuration de votre navigateur. Il est possible que l'activité sur cet appareil soit gérée en dehors de Chrome. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />. Il se peut que son certificat de sécurité ait été révoqué. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="2418081434543109369">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a exigé qu'une règle de sécurité soit appliquée à toutes les demandes qu'il reçoit. Cependant, la règle n'a pas pu être émise, ce qui empêche le navigateur de répondre à votre demande pour <ph name="SITE" />.</translation>
@@ -332,6 +335,7 @@
 <translation id="2721148159707890343">Demande réussie.</translation>
 <translation id="2728127805433021124">Le certificat du serveur a été signé avec un algorithme de signature faible.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Exécuter les diagnostics de connectivité<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Il existe plusieurs sources avec des valeurs en conflit pour cette règle.</translation>
 <translation id="2738330467931008676">Sélectionner une adresse d'enlèvement</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Supprimer les éléments sélectionnés</translation>
@@ -989,6 +993,7 @@
 <translation id="6433490469411711332">Modifier les coordonnées</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> n'autorise pas la connexion.</translation>
 <translation id="6434309073475700221">Annuler</translation>
+<translation id="6440503408713884761">Ignoré</translation>
 <translation id="6446163441502663861">Kahu (enveloppe)</translation>
 <translation id="6446608382365791566">Ajouter d'autres informations</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1004,6 +1009,7 @@
 <translation id="6517596291481585650">Avertissement : Cette règle n'a pas été fusionnée en tant que liste comme indiqué, car ce n'est pas une liste.</translation>
 <translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
 <translation id="6534179046333460208">Suggestions pour le Web physique</translation>
+<translation id="6545864417968258051">Recherche Bluetooth</translation>
 <translation id="6554795675067793129">Votre compte est géré par <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Rétablir</translation>
 <translation id="6563469144985748109">Votre responsable ne l'a pas encore autorisé</translation>
@@ -1020,6 +1026,7 @@
 <translation id="6626291197371920147">Ajouter un numéro de carte valide</translation>
 <translation id="6628463337424475685">Recherche <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Des individus malveillants à l'œuvre sur le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pourraient tenter d'installer des programmes dangereux sur votre Mac afin de récupérer ou de supprimer certaines informations (photos, mots de passe, messages ou numéros de carte de crédit, par exemple). <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Il existe plusieurs sources pour cette règle, mais les valeurs sont identiques.</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="6644283850729428850">Cette règle est obsolète.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Aucun}=1{De 1 site (vous ne serez pas déconnecté de votre compte Google)}one{De # site (vous ne serez pas déconnecté de votre compte Google)}other{De # sites (vous ne serez pas déconnecté de votre compte Google)}}</translation>

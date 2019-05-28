@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1436290164580597469">Ingresa la frase de contraseña para iniciar la sincronización.</translation>
+<translation id="1449835205994625556">Ocultar contraseña</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementos</translation>
 <translation id="1491277525950327607">Presiona dos veces para activar o desactivar la configuración</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Eliminar datos de navegación</translation>
 <translation id="1820259098641718022">Se agregó a la lista de lectura</translation>
 <translation id="1828824471510190776">Sugerir contraseña…</translation>
+<translation id="1870148520156231997">Mostrar contraseña</translation>
 <translation id="1876721852596493031">Enviar datos de uso</translation>
 <translation id="1886928167269928266">Principio</translation>
 <translation id="1911619930368729126">Cargar a Google Drive</translation>
@@ -130,7 +132,7 @@
 <translation id="2800683595868705743">Salir del alternador de pestañas</translation>
 <translation id="2830972654601096923">Administrar direcciones…</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2840687315230832938">No se completó la configuración de sincronización inicial</translation>
+<translation id="2840687315230832938">No se completó la configuración de la sincronización inicial</translation>
 <translation id="2843803966603263712">Restablecer</translation>
 <translation id="2858204748079866344">Para proteger tu privacidad, Chrome no completará de forma automática tu contraseña en este campo.</translation>
 <translation id="285960592395650245">Volver a descargar</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Barra de progreso de la carga de la página; se cargó <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4004204301268239848">Las contraseñas se guardan en tu Cuenta de Google para que puedas usarlas en cualquier dispositivo.</translation>
+<translation id="4006921758705478413">Enviar a tus dispositivos</translation>
 <translation id="4038354071007134711">Ninguna aplicación puede abrir el archivo.</translation>
 <translation id="4042870976416480368">Buscar en la página</translation>
 <translation id="4049507953662678203">Asegúrate de tener una conexión de red y vuelve a intentarlo.</translation>
@@ -267,6 +270,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="4904877109095351937">Marcar como leídas</translation>
 <translation id="4930268273022498155">Borra los datos existentes. Para recuperarlos, cambia de nuevo a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Se produjo un error al compartir tu elemento.</translation>
+<translation id="4945756290001680296">Accede a la configuración de contraseñas</translation>
 <translation id="4979397965658815378">Accede con tu cuenta de Google para obtener tus favoritos, contraseñas, historial y otras opciones de configuración en todos tus dispositivos</translation>
 <translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5010803260590204777">Abre una pestaña de incógnito para navegar por la Web de forma privada.</translation>
@@ -520,6 +524,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8976382372951310360">Ayuda</translation>
 <translation id="8981454092730389528">Controles de actividad de Google</translation>
 <translation id="8985320356172329008">Accediste a Google como</translation>
+<translation id="9016406938567631235">Enviando…</translation>
 <translation id="902659348151742535">Es posible que Google use tu historial de navegación para personalizar Búsqueda, Ads y otros servicios de Google.</translation>
 <translation id="9034759925968272072">No saldrás de tu cuenta de Google. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Ancho de banda</translation>

@@ -580,6 +580,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5324858694974489420">Instellingen voor ouders</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5335288049665977812">Sites toestaan JavaScript uit te voeren (aanbevolen)</translation>
+<translation id="5357811892247919462">Tabblad ontvangen</translation>
 <translation id="5363230136052241468">Tik op de startknop om de nieuwe tabbladpagina te laden</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> geopend tabblad, tik om tussen tabbladen te schakelen}other{<ph name="OPEN_TABS_MANY" /> geopende tabbladen, tik om tussen tabbladen te schakelen}}</translation>
 <translation id="5391532827096253100">Je verbinding met deze site is niet beveiligd. Site-informatie</translation>
@@ -601,7 +602,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5494752089476963479">Advertenties blokkeren op sites die opdringerige of misleidende advertenties weergeven</translation>
 <translation id="5497272504048921382">Geopende tabbladen</translation>
 <translation id="5500777121964041360">Mogelijk niet beschikbaar op jouw locatie</translation>
-<translation id="550684401320795253">Chrome updaten...</translation>
 <translation id="5512137114520586844">Dit account wordt beheerd door <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Uitgeschakeld door de beheerder van dit apparaat</translation>
 <translation id="5515439363601853141">Ontgrendelen om je wachtwoord te bekijken</translation>

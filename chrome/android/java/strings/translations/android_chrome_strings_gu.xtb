@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">પેરેંટલ સેટિંગ્સ</translation>
 <translation id="5327248766486351172">નામ</translation>
 <translation id="5335288049665977812">સાઇટ્સને JavaScript ચલાવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
+<translation id="5357811892247919462">ટૅબ પ્રાપ્ત થયું</translation>
 <translation id="5363230136052241468">નવું ટૅબ પેજ લોડ કરવા માટે હોમ બટનને ટૅપ કરો</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}one{<ph name="OPEN_TABS_MANY" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}other{<ph name="OPEN_TABS_MANY" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}}</translation>
 <translation id="5391532827096253100">આ સાઇટ સાથેનું તમારું કનેક્શન સુરક્ષિત નથી. સાઇટની માહિતી</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી સાઇટ પરથી જાહેરાતો બ્લૉક કરો</translation>
 <translation id="5497272504048921382">ખુલેલા ટૅબ</translation>
 <translation id="5500777121964041360">તમારા સ્થાનમાં ઉપલબ્ધ ન હોઈ શકે</translation>
-<translation id="550684401320795253">Chrome અપડેટ થઈ રહ્યું છે...</translation>
 <translation id="5512137114520586844">આ એકાઉન્ટ <ph name="PARENT_NAME" /> દ્વારા મેનેજ થાય છે.</translation>
 <translation id="5514904542973294328">આ ઉપકરણના વ્યવસ્થાપકે અક્ષમ કરેલ છે</translation>
 <translation id="5515439363601853141">તમારો પાસવર્ડ જોવા માટે અનલૉક કરો</translation>

@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Câmara</translation>
 <translation id="1623104350909869708">Evitar que esta página crie caixas de diálogo adicionais</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Não é possível guardar o cartão</translation>
 <translation id="1639239467298939599">A carregar</translation>
 <translation id="1640180200866533862">Políticas do utilizador</translation>
 <translation id="1640244768702815859">Experimente <ph name="BEGIN_LINK" />aceder à página inicial do site<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Utilize a <ph name="BEGIN_LINK" />aplicação de diagnóstico<ph name="END_LINK" /> para corrigir a ligação</translation>
 <translation id="2239100178324503013">Enviar agora</translation>
 <translation id="225207911366869382">Este valor está desatualizado para esta política.</translation>
+<translation id="2257315177824333709">De momento, não é possível guardar o seu cartão.</translation>
 <translation id="2262243747453050782">Erro HTTP</translation>
 <translation id="2263079731045660823">Atualizar as informações de preenchimento automático do cartão de crédito nas definições do Chrome</translation>
 <translation id="2270484714375784793">Número de telefone</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Apresentar políticas sem valor definido</translation>
 <translation id="239429038616798445">Este método de envio não está disponível. Experimente um método diferente.</translation>
 <translation id="2396249848217231973">&amp;Anular eliminação</translation>
+<translation id="2409589295040002961">O administrador pode alterar a configuração do navegador remotamente. A atividade neste dispositivo também pode ser gerida fora do Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ser revogado. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="2418081434543109369">O servidor ao qual irá aceder, <ph name="ORIGIN" />, solicitou que seja aplicada uma
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Pedido com êxito</translation>
 <translation id="2728127805433021124">O certificado do servidor foi assinado utilizando um algoritmo de assinatura fraco.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Executar o Diagnóstico de conetividade<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Existe mais de uma origem com valores em conflito para esta política!</translation>
 <translation id="2738330467931008676">Escolher endereço de levantamento</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Remover itens seleccionados</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">Editar informações de contacto</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> recusou estabelecer ligação.</translation>
 <translation id="6434309073475700221">Rejeitar</translation>
+<translation id="6440503408713884761">Ignorado</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Adicionar mais informações</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6517596291481585650">Aviso: esta política não foi unida como lista, conforme especificado pela política, porque não é uma lista.</translation>
 <translation id="6529602333819889595">&amp;Refazer eliminação</translation>
 <translation id="6534179046333460208">Sugestões da Web física</translation>
+<translation id="6545864417968258051">Procura de Bluetooth</translation>
 <translation id="6554795675067793129">A sua conta é gerida pelo domínio <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Refazer</translation>
 <translation id="6563469144985748109">O seu gestor ainda não o aprovou</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">Adicionar número de cartão válido</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Pesquisar</translation>
 <translation id="6630809736994426279">Os atacantes atualmente em <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podem tentar instalar programas perigosos no seu Mac que roubam ou eliminam as suas informações (por exemplo, fotos, palavras-passe, mensagens e cartões de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Existe mais de uma origem para a política, mas os valores são iguais.</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6644283850729428850">Esta política está obsoleta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nenhum}=1{De 1 site (a sessão na sua Conta Google não é terminada).}other{De # sites (a sessão na sua Conta Google não é terminada).}}</translation>

@@ -580,6 +580,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5324858694974489420">Indstillinger for børnesikring</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5335288049665977812">Tillad, at websites kører JavaScript (anbefales)</translation>
+<translation id="5357811892247919462">Du har modtaget en fane</translation>
 <translation id="5363230136052241468">Tryk på knappen Hjem for at indlæse siden Ny fane</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> åben fane – tryk for at skifte fane}one{<ph name="OPEN_TABS_MANY" /> åben fane – tryk for at skifte fane}other{<ph name="OPEN_TABS_MANY" /> åbne faner – tryk for at skifte fane}}</translation>
 <translation id="5391532827096253100">Din forbindelse til dette website er ikke sikker. Websiteoplysninger</translation>
@@ -601,7 +602,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5494752089476963479">Bloker annoncer på websites, der viser påtrængende eller vildledende annoncer</translation>
 <translation id="5497272504048921382">Åbne faner</translation>
 <translation id="5500777121964041360">Funktionen er muligvis ikke tilgængelig på din placering</translation>
-<translation id="550684401320795253">Opdaterer Chrome...</translation>
 <translation id="5512137114520586844">Denne konto administreres af <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Deaktiveret af administratoren af denne enhed</translation>
 <translation id="5515439363601853141">Lås op for at se din adgangskode</translation>

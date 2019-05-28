@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">બધું ખોલો</translation>
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
 <translation id="1436290164580597469">સિંક શરૂ કરવા માટે પાસફ્રેઝ દાખલ કરો.</translation>
+<translation id="1449835205994625556">પાસવર્ડ છુપાવો</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> આઇટમ્સ</translation>
 <translation id="1491277525950327607">સેટિંગ ટૉગલ કરવા માટે બે વાર ટૅપ કરો</translation>
 <translation id="152234381334907219">ક્યારેય ન સચવાયેલું</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="1820259098641718022">વાંચન સૂચિમાં ઉમેર્યું</translation>
 <translation id="1828824471510190776">પાસવર્ડ સૂચવો...</translation>
+<translation id="1870148520156231997">પાસવર્ડ જણાવો</translation>
 <translation id="1876721852596493031">ઉપયોગ ડેટા મોકલો</translation>
 <translation id="1886928167269928266">શરૂઆતથી</translation>
 <translation id="1911619930368729126">Google ડ્રાઇવ પર અપલોડ કરો</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">પેજ લોડ પ્રોગ્રેસ બાર, <ph name="EMAIL" /> લોડ થયો.</translation>
 <translation id="4002066346123236978">શીર્ષક</translation>
 <translation id="4004204301268239848">પાસવર્ડ તમારા Google એકાઉન્ટમાં સાચવવામાં આવે છે, જેથી તમે કોઈપણ ડિવાઇસ પર તેનો ઉપયોગ કરી શકો.</translation>
+<translation id="4006921758705478413">તમારા ડિવાઇસ પર મોકલો</translation>
 <translation id="4038354071007134711">આ ઉપકરણ પર કોઈ ઍપ્લિકેશન ફાઇલને ખોલી શકતી નથી.</translation>
 <translation id="4042870976416480368">પેજમાં શોધો</translation>
 <translation id="4049507953662678203">તમારી પાસે નેટવર્ક કનેક્શન છે તેની ખાતરી કરો અને ફરીથી પ્રયાસ કરો.</translation>
@@ -267,6 +270,7 @@
 <translation id="4904877109095351937">વાંચેલ તરીકે ચિહ્નિત કરો</translation>
 <translation id="4930268273022498155">અસ્તિત્વમાંનો ડેટા ડિલીટ કરો. તમે <ph name="USER_EMAIL1" /> પર પાછા સ્વિચ કરીને એને પાછું મેળવી શકો છો.</translation>
 <translation id="4941089862236492464">માફ કરશો, તમારી આઇટમને શેર કરવામાં સમસ્યા આવી હતી.</translation>
+<translation id="4945756290001680296">પાસવર્ડના સેટિંગને ઍક્સેસ કરો</translation>
 <translation id="4979397965658815378">તમારા બુકમાર્ક, પાસવર્ડ, ઇતિહાસ અને બીજા સેટિંગને તમારા બધા ડિવાઇસ પર મેળવવા માટે તમારા Google એકાઉન્ટ સાથે સાઇન ઇન કરો.</translation>
 <translation id="5005498671520578047">પાસવર્ડની કૉપિ કરો</translation>
 <translation id="5010803260590204777">ખાનગીપણે વેબ બ્રાઉઝ કરવા છૂપું ટેબ ખોલો.</translation>
@@ -520,6 +524,7 @@
 <translation id="8976382372951310360">સહાય</translation>
 <translation id="8981454092730389528">Google પ્રવૃત્તિ નિયંત્રણો</translation>
 <translation id="8985320356172329008">Google પર આ તરીકે સાઇન ઇન થયાં</translation>
+<translation id="9016406938567631235">મોકલી રહ્યાં છીએ…</translation>
 <translation id="902659348151742535">શોધ, જાહેરાતો અને અન્ય Google સેવાઓને મનગમતી બનાવવા માટે Google, તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરી શકે છે.</translation>
 <translation id="9034759925968272072">તમે તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ થશો નહિ. તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના બીજા સ્વરૂપો હોય શકે.</translation>
 <translation id="9039373489628511875">બેન્ડવિડ્થ</translation>

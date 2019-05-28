@@ -69,6 +69,7 @@
 <translation id="1813414402673211292">ניקוי נתוני גלישה</translation>
 <translation id="1820259098641718022">נוסף לרשימת הקריאה</translation>
 <translation id="1828824471510190776">הצעת סיסמה…</translation>
+<translation id="1870148520156231997">הצגת הסיסמה</translation>
 <translation id="1876721852596493031">שלח נתוני שימוש</translation>
 <translation id="1886928167269928266">משחר ההיסטוריה</translation>
 <translation id="1911619930368729126">‏העלה אל Google Drive</translation>
@@ -208,6 +209,7 @@
 <translation id="3995521777587992544">סרגל התקדמות של טעינת דף, <ph name="EMAIL" /> נטענו.</translation>
 <translation id="4002066346123236978">כותרת</translation>
 <translation id="4004204301268239848">‏סיסמאות נשמרות בחשבון Google כדי לאפשר לך להשתמש בהן בכל המכשירים.</translation>
+<translation id="4006921758705478413">שליחה אל המכשירים שלך</translation>
 <translation id="4038354071007134711">אין במכשיר זה אף אפליקציה שניתן לפתוח באמצעותה את הקובץ.</translation>
 <translation id="4042870976416480368">מצא בדף</translation>
 <translation id="4049507953662678203">ודא שאתה מחובר לרשת ונסה שוב.</translation>
@@ -268,6 +270,7 @@
 <translation id="4904877109095351937">סמן כ'נקרא'</translation>
 <translation id="4930268273022498155">מחק נתונים קיימים. כדי לאחזר אותם, חזור אל <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">מצטערים, אירעה בעיה בשיתוף הפריט שלך.</translation>
+<translation id="4945756290001680296">גישה להגדרות הסיסמה</translation>
 <translation id="4979397965658815378">‏יש להיכנס באמצעות חשבון Google כדי לקבל גישה אל הסימניות, הסיסמאות, ההיסטוריה והגדרות נוספות בכל המכשירים שלך.</translation>
 <translation id="5005498671520578047">העתק סיסמה</translation>
 <translation id="5010803260590204777">פתח כרטיסייה של גלישה בסתר כדי לגלוש בפרטיות באינטרנט.</translation>
@@ -521,6 +524,7 @@
 <translation id="8976382372951310360">עזרה</translation>
 <translation id="8981454092730389528">‏בחירת הפעילויות ב-Google</translation>
 <translation id="8985320356172329008">‏מחובר ל-Google בשם</translation>
+<translation id="9016406938567631235">שולח...</translation>
 <translation id="902659348151742535">‏חברת Google עשויה להשתמש בהיסטוריית הגלישה שלך לצורך התאמה אישית של חיפוש Google, מודעות Google ושירותי Google אחרים.</translation>
 <translation id="9034759925968272072">‏לא תבוצע יציאה מחשבון Google שלך. ייתכן שתוכל לגשת לסוגים אחרים של היסטוריית גלישה בחשבון Google בכתובת <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">רוחב פס</translation>

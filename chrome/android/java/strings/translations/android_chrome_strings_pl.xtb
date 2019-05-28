@@ -580,6 +580,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5324858694974489420">Ustawienia rodzicielskie</translation>
 <translation id="5327248766486351172">Nazwa</translation>
 <translation id="5335288049665977812">Zezwalaj na wykonywanie kodu JavaScript w witrynach (zalecane)</translation>
+<translation id="5357811892247919462">Odebrano kartę</translation>
 <translation id="5363230136052241468">Kliknij przycisk strony głównej, by załadować stronę nowej karty</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> otwarta karta. Kliknij, by przełączyć się między kartami}few{<ph name="OPEN_TABS_MANY" /> otwarte karty. Kliknij, by przełączyć się między kartami}many{<ph name="OPEN_TABS_MANY" /> otwartych kart. Kliknij, by przełączyć się między kartami}other{<ph name="OPEN_TABS_MANY" /> otwartej karty. Kliknij, by przełączyć się między kartami}}</translation>
 <translation id="5391532827096253100">Twoje połączenie z tą witryną nie jest bezpieczne. Informacje o witrynie</translation>
@@ -601,7 +602,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5494752089476963479">Blokuj reklamy na stronach, które wyświetlają reklamy uciążliwe lub wprowadzające w błąd</translation>
 <translation id="5497272504048921382">Otwarte karty</translation>
 <translation id="5500777121964041360">Funkcja może być niedostępna w Twojej lokalizacji</translation>
-<translation id="550684401320795253">Aktualizuję Chrome...</translation>
 <translation id="5512137114520586844">Tym kontem zarządza <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Wyłączone przez administratora tego urządzenia</translation>
 <translation id="5515439363601853141">Odblokuj, by wyświetlić hasło</translation>

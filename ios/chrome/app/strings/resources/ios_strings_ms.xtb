@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">Buka semua</translation>
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1436290164580597469">Masukkan ungkapan laluan untuk memulakan penyegerakan.</translation>
+<translation id="1449835205994625556">Sembunyikan Kata Laluan</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> item</translation>
 <translation id="1491277525950327607">Dwiketik untuk togol tetapan</translation>
 <translation id="152234381334907219">Tidak Pernah Disimpan</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">Kosongkan Data Semakan Imbas</translation>
 <translation id="1820259098641718022">Ditambahkan pada Senarai Bacaan</translation>
 <translation id="1828824471510190776">Cadangkan Kata Laluan...</translation>
+<translation id="1870148520156231997">Dedahkan Kata Laluan</translation>
 <translation id="1876721852596493031">Hantar Data Penggunaan</translation>
 <translation id="1886928167269928266">Permulaan Masa</translation>
 <translation id="1911619930368729126">Muat naik ke Google Drive</translation>
@@ -130,7 +132,7 @@
 <translation id="2800683595868705743">Tinggalkan Penukar Tab</translation>
 <translation id="2830972654601096923">Urus Alamat...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
-<translation id="2840687315230832938">Persediaan Penyegerakan Permulaan Belum Selesai</translation>
+<translation id="2840687315230832938">Penyediaan Penyegerakan Permulaan Belum Selesai</translation>
 <translation id="2843803966603263712">Tetapkan semula tetapan terjemahan</translation>
 <translation id="2858204748079866344">Untuk melindungi privasi anda, Chrome tidak akan mengisi kata laluan anda ke dalam medan ini secara automatik.</translation>
 <translation id="285960592395650245">Cuba Semula Muat Turun</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">Bar kemajuan pemuatan halaman, <ph name="EMAIL" /> dimuatkan.</translation>
 <translation id="4002066346123236978">Tajuk</translation>
 <translation id="4004204301268239848">Kata laluan disimpan dalam Akaun Google anda supaya anda dapat menggunakannya pada mana-mana peranti.</translation>
+<translation id="4006921758705478413">Hantar ke Peranti Anda</translation>
 <translation id="4038354071007134711">Tiada aplikasi pada peranti ini yang dapat membuka fail itu.</translation>
 <translation id="4042870976416480368">Cari dalam Halaman</translation>
 <translation id="4049507953662678203">Pastikan anda mempunyai sambungan rangkaian dan cuba lagi.</translation>
@@ -267,6 +270,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4904877109095351937">Tandakan Dibaca</translation>
 <translation id="4930268273022498155">Padam data sedia ada. Anda boleh mendapatkannya semula dengan beralih semula kepada <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Maaf, terdapat masalah mengongsi item anda.</translation>
+<translation id="4945756290001680296">Akses tetapan kata laluan</translation>
 <translation id="4979397965658815378">Log masuk dengan Akaun Google anda untuk mendapatkan penanda halaman, kata laluan, sejarah dan tetapan anda yang lain pada semua peranti anda</translation>
 <translation id="5005498671520578047">Salin kata laluan</translation>
 <translation id="5010803260590204777">Buka tab inkognito untuk menyemak imbas web secara sulit.</translation>
@@ -520,6 +524,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8976382372951310360">Bantuan</translation>
 <translation id="8981454092730389528">Kawalan Aktiviti Google</translation>
 <translation id="8985320356172329008">Sedang log masuk ke Google sebagai</translation>
+<translation id="9016406938567631235">Menghantar...</translation>
 <translation id="902659348151742535">Google boleh menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain.</translation>
 <translation id="9034759925968272072">Anda tidak akan dilog keluar daripada Akaun Google anda. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="9039373489628511875">Lebar Jalur</translation>

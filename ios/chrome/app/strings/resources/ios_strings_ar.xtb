@@ -39,6 +39,7 @@
 <translation id="1407135791313364759">فتح الكل</translation>
 <translation id="1430915738399379752">طباعة</translation>
 <translation id="1436290164580597469">إدخال عبارة المرور لبدء المزامنة</translation>
+<translation id="1449835205994625556">إخفاء كلمة المرور</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> من العناصر</translation>
 <translation id="1491277525950327607">انقر مرّتين لتبديل الإعداد</translation>
 <translation id="152234381334907219">المواقع التي لن تحفظ كلمات المرور أبدًا</translation>
@@ -68,6 +69,7 @@
 <translation id="1813414402673211292">محو بيانات التصفّح</translation>
 <translation id="1820259098641718022">تمت الإضافة إلى قائمة القراءة</translation>
 <translation id="1828824471510190776">اقتراح  كلمة مرور...</translation>
+<translation id="1870148520156231997">الكشف عن كلمة المرور</translation>
 <translation id="1876721852596493031">إرسال بيانات الاستخدام</translation>
 <translation id="1886928167269928266">بدايةَ الوقت</translation>
 <translation id="1911619930368729126">‏التحميل إلى Google Drive</translation>
@@ -207,6 +209,7 @@
 <translation id="3995521777587992544">شريط تقدُّم تحميل الصفحة، تم تحميل <ph name="EMAIL" />.</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4004204301268239848">‏يتم حفظ كلمات المرور في حسابك على Google حتى تتمكَّن من استخدامها على أي جهاز.</translation>
+<translation id="4006921758705478413">الإرسال إلى أجهزتك</translation>
 <translation id="4038354071007134711">لا يمكن فتح هذا الملف بأي تطبيق موجود على هذا الجهاز.</translation>
 <translation id="4042870976416480368">البحث في الصفحة</translation>
 <translation id="4049507953662678203">تأكد من اتصالك بالشبكة، وأعد المحاولة.</translation>
@@ -267,6 +270,7 @@
 <translation id="4904877109095351937">وضع علامة كمقروءة</translation>
 <translation id="4930268273022498155">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">عذرًا، حدثت مشكلة أثناء مشاركة العنصر.</translation>
+<translation id="4945756290001680296">الوصول إلى إعدادات كلمات المرور</translation>
 <translation id="4979397965658815378">‏سجّل الدخول إلى حسابك على Google للحصول على الإشارات المرجعية وكلمات المرور والسجلّ والإعدادات الأخرى واستخدامها على جميع أجهزتك.</translation>
 <translation id="5005498671520578047">نسخ كلمة المرور</translation>
 <translation id="5010803260590204777">افتح علامة تبويب تصفح متخفي لتصفّح الويب بخصوصية تامّة.</translation>
@@ -520,6 +524,7 @@
 <translation id="8976382372951310360">مساعدة</translation>
 <translation id="8981454092730389528">‏عناصر التحكم في النشاط على Google</translation>
 <translation id="8985320356172329008">‏أنت مسجّل الدخول إلى Google باستخدام</translation>
+<translation id="9016406938567631235">جارٍ الإرسال…</translation>
 <translation id="902659348151742535">‏قد تستخدم Google سجلّ التصفّح لتخصيص البحث والإعلانات وخدمات Google الأخرى.</translation>
 <translation id="9034759925968272072">‏لن يتم تسجيل خروجك من حسابك في Google. قد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">النطاق الترددي</translation>

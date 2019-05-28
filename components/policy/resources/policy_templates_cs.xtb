@@ -1038,7 +1038,7 @@ Platné jsou tyto specifikace vzorů adres URL:
       Je-li zásada AutoplayAllowed nastavena na hodnotu False, u všech vzorů adres URL nastavených v této zásadě bude přehrávání přesto povoleno.
 
       Pokud je prohlížeč <ph name="PRODUCT_NAME" /> spuštěn a tato zásada se změní, použije se nové nastavení pouze na nově otevřené karty. Některé karty proto mohou nadále vykazovat předchozí chování.</translation>
-<translation id="284288632677954003">Adresa URL nebo soubor XML s adresami URL, které by nikdy neměly způsobit přepnutí prohlížeče.</translation>
+<translation id="284288632677954003">Adresa URL nebo soubor XML s adresami URL, které by nikdy neměly způsobit přepnutí prohlížeče.</translation>
 <translation id="285480231336205327">Aktivovat vysoce kontrastní režim</translation>
 <translation id="2854919890879212089">Způsobí, že bude <ph name="PRODUCT_NAME" /> v Náhledu tisku jako výchozí výběr používat výchozí tiskárnu systému (namísto naposledy použité tiskárny).
 
@@ -1216,7 +1216,7 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
 
       Pokud je tato zásada nastavená, každá položka se považuje za pravidlo, podobně jako v případě zásady <ph name="URL_LIST_POLICY_NAME" />. Logika je však opačná: při shodě s pravidlem se alternativní prohlížeč neotevře.
 
-      Na rozdíl od zásady <ph name="URL_LIST_POLICY_NAME" /> fungují pravidla oběma směry, tj. když je přítomen a zapnut doplněk prohlížeče Internet Explorer, tato zásada také určuje, zda má <ph name="IE_PRODUCT_NAME" /> tyto adresy URL otevírat v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
+      Na rozdíl od zásady <ph name="URL_LIST_POLICY_NAME" /> fungují pravidla oběma směry, tj. když je přítomen a zapnutý doplněk prohlížeče Internet Explorer, tato zásada také určuje, zda má <ph name="IE_PRODUCT_NAME" /> tyto adresy URL otevírat v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Upozornění: Po verzi 57 (přibližně v březnu 2017) bude šifrovací algoritmus DHE z prohlížeče <ph name="PRODUCT_NAME" /> zcela odstraněn a tato zásada přestane fungovat.
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, v protokolu TLS nebudou povoleny šifrovací sady DHE. Nastavením této zásady na hodnotu true je možné šifrovací sady DHE povolit a zajistit tak kompatibilitu se zastaralým serverem. Toto nastavení by však mělo být použito pouze jako dočasné nouzové opatření a server by měl být překonfigurován.
@@ -1418,7 +1418,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 
       Je-li zásada <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> nastavená na hodnotu false, nebude mít tato zásada žádný účinek.
 
-      Pokud je jazyk uveden v této zásadě i v zásadě <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, má přednost tato zásada a kontrola pravopisu pro tento jazyk je povolena.
+      Pokud je jazyk uveden v této zásadě i v zásadě <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, má přednost tato zásada a kontrola pravopisu pro tento jazyk je povolena.
 
       V současné době jsou podporovány tyto jazyky: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Uživatelé mohou nakonfigurovat kanál verzí systému Chrome OS</translation>
@@ -1782,7 +1782,7 @@ K dispozici jsou také samostatná nastavení pro napájení ze sítě a z bater
           Pokud ji ponecháte nenastavenou, bude funkce Jedním prstem ve výchozím nastavení vypnutá, ale uživatel ji bude moci kdykoli zapnout.</translation>
 <translation id="4171331498167688968">Pokud je tato zásada nastavená na hodnotu false, bude software třetích stran moci vkládat spustitelný kód do procesů prohlížeče Chrome. Pokud tato zásada není nastavená nebo je nastavená na hodnotu true, bude mít software třetích stran vkládání spustitelného kódu do procesů prohlížeče Chrome zakázáno.
 
-      Bez ohledu na hodnotu této zásady prohlížeč aktuálně nebude softwaru třetích stran bránit ve vkládání spustitelného kódu do svých procesů na počítačích v doméně <ph name="MS_AD_NAME" />.</translation>
+      Bez ohledu na hodnotu této zásady prohlížeč aktuálně nebude softwaru třetích stran bránit ve vkládání spustitelného kódu do svých procesů na počítačích v doméně <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Výchozí nastavení pluginu <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Adresa URL k potvrzení ověřovacího tokenu klienta vzdáleného připojení</translation>
 <translation id="4203389617541558220">Omezuje dobu, po kterou může být zařízení spuštěno, naplánováním automatických restartů.
@@ -2146,7 +2146,7 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
           Tato zásada je k dispozici jen v instancích systému Windows, které jsou připojené k doméně <ph name="MS_AD_NAME" />, nebo v instancích systému Windows 10 Pro nebo Enterprise, které jsou zaregistrované ke správě zařízení.</translation>
 <translation id="5085647276663819155">Deaktivovat náhled tisku</translation>
 <translation id="5090209345759901501">Rozšířit nastavení obsahu Flash na veškerý obsah</translation>
-<translation id="5090791951240382356">Povolit sloučení slovníkových zásad z různých zdrojů</translation>
+<translation id="5090791951240382356">Povolit sloučení slovníkových zásad z různých zdrojů</translation>
 <translation id="5093540029655764852">Určuje, jak často (ve dnech) klient mění heslo účtu počítače. Heslo generuje klient náhodně a uživatel jej nemůže zobrazit.
 
       Hesla počítačů by se stejně jako hesla uživatelů měla pravidelně měnit. Zakázání této zásady nebo její nastavení na velký počet dní může mít negativní dopad na bezpečnost, protože potenciální útočníci budou mít více času zjistit heslo počítače a použít jej.
@@ -3084,13 +3084,13 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
           Tato zásada bude dodržována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="6924223708804692571">Vynutí zakázání jazyků kontroly pravopisu. Neznámé jazyky v seznamu budou ignorovány.
 
-      Pokud tuto zásadu povolíte, bude pro zadané jazyky kontrola pravopisu zakázána. Pro jazyky, které v seznamu nejsou uvedeny, může uživatel kontrolu pravopisu nadále zapnout nebo vypnout.
+      Pokud tuto zásadu povolíte, bude pro zadané jazyky kontrola pravopisu zakázána. Pro jazyky, které v seznamu nejsou uvedeny, může uživatel kontrolu pravopisu nadále zapnout nebo vypnout.
 
       Pokud tuto zásadu nenastavíte nebo ji zakážete, bude platit nastavení kontroly pravopisu zadané uživatelem beze změny.
 
       Je-li zásada <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> nastavená na hodnotu false, nebude mít tato zásada žádný účinek.
 
-      Pokud je jazyk uveden v této zásadě i v zásadě <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, má přednost povolující zásada a kontrola pravopisu pro tento jazyk bude povolena.
+      Pokud je jazyk uveden v této zásadě i v zásadě <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />, má přednost povolující zásada a kontrola pravopisu pro tento jazyk bude povolena.
 
       V současné době jsou podporovány tyto jazyky: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Povolit oboustranný tisk s vazbou dlouhého okraje</translation>
@@ -3241,15 +3241,15 @@ Pokud tato zásada není nastavená, budou se do zařízení moci přihlašovat 
       Když je zásada nakonfigurována, jsou tyto aplikace pevně dány a uživatel je nemůže změnit.
 
       Pokud zásada nastavena není, uživatel seznam aplikací ve spouštěči změnit může.</translation>
-<translation id="713121532817834879">Tato zásada je adresa URL souboru XML ve stejném formátu jako zásady <ph name="IEEM_SITELIST_POLICY" /> prohlížeče Internet Explorer. Pravidla ze souboru XML se načtou, aniž by se sdílela s prohlížečem Internet Explorer.
+<translation id="713121532817834879">Tato zásada je adresa URL souboru XML ve stejném formátu jako zásady <ph name="IEEM_SITELIST_POLICY" /> prohlížeče Internet Explorer. Pravidla ze souboru XML se načtou, aniž by se sdílela s prohlížečem Internet Explorer.
 
-      Pravidla v tomto souboru XML se používají stejně jako pravidla v zásadě <ph name="GREYLIST_POLICY_NAME" />. Tato pravidla tedy prohlížeči <ph name="PRODUCT_NAME" /> brání v otevření alternativního prohlížeče a také alternativnímu prohlížeči brání v otevření prohlížeče <ph name="PRODUCT_NAME" />.
+      Pravidla v tomto souboru XML se používají stejně jako pravidla v zásadě <ph name="GREYLIST_POLICY_NAME" />. Tato pravidla tedy prohlížeči <ph name="PRODUCT_NAME" /> brání v otevření alternativního prohlížeče a také alternativnímu prohlížeči brání v otevření prohlížeče <ph name="PRODUCT_NAME" />.
 
-      Když je tato zásada ponechána nenastavená nebo není nastavená na platnou adresu URL, prohlížeč <ph name="PRODUCT_NAME" /> ji nepoužívá jako zdroj pravidel, které nespouštějí přepnutí prohlížeče.
+      Když je tato zásada ponechána nenastavená nebo není nastavená na platnou adresu URL, prohlížeč <ph name="PRODUCT_NAME" /> ji nepoužívá jako zdroj pravidel, která nespouštějí přepnutí prohlížeče.
 
-      Když je tato zásada nastavená na platnou adresu URL, prohlížeč <ph name="PRODUCT_NAME" /> z dané adresy URL stáhne seznam webů a pravidla použije, jako kdyby byla nakonfigurovaná pomocí zásady <ph name="SITELIST_POLICY_NAME" />.
+      Když je tato zásada nastavená na platnou adresu URL, prohlížeč <ph name="PRODUCT_NAME" /> z dané adresy URL stáhne seznam webů a pravidla použije, jako kdyby byla nakonfigurovaná pomocí zásady <ph name="SITELIST_POLICY_NAME" />.
 
-      Další informace o zásadách <ph name="IEEM_SITELIST_POLICY" /> prohlížeče Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
+      Další informace o zásadách <ph name="IEEM_SITELIST_POLICY" /> prohlížeče Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Adresy URL, kterým bude udělen přístup pro záznam videa bez zobrazení výzvy</translation>
 <translation id="7138678301420049075">Ostatní</translation>
 <translation id="7140629953254369759">Sděluje systému <ph name="PRODUCT_OS_NAME" />, aby použil konfiguraci plánovače úloh se zadaným názvem.
@@ -3293,15 +3293,15 @@ Pokud tato zásada není nastavená, budou se do zařízení moci přihlašovat 
           Automatické přehrávání je povoleno pouze u domén, které jsou výslovně uvedeny v zásadě <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Chcete-li automatické přehrávání povolit pro všechny weby, přidejte do tohoto seznamu položky http://* a https://*.
 
           Pokud je tato zásada ponechána nenastavená, uživatel toto nastavení bude moci ručně změnit.</translation>
-<translation id="7222749588229362483">Umožňuje sloučení vybraných zásad, když pocházejí z různých zdrojů se stejným rozsahem a úrovní.
+<translation id="7222749588229362483">Umožňuje sloučení vybraných zásad, když pocházejí z různých zdrojů se stejným rozsahem a úrovní.
 
-        Sloučení spočívá ve sloučení klíčů první úrovně ze slovníků z jednotlivých zdrojů. V případě konfliktu mezi klíči se použije klíč ze zdroje s nejvyšší prioritou.
+        Sloučení spočívá ve sloučení klíčů první úrovně ze slovníků z jednotlivých zdrojů. V případě konfliktu mezi klíči se použije klíč ze zdroje s nejvyšší prioritou.
 
-        Pokud je zásada v seznamu a dojde ke konfliktu mezi dvěma zdroji se stejným rozsahem a úrovní, sloučí se hodnoty do nového slovníku zásad.
+        Pokud je zásada v seznamu a dojde ke konfliktu mezi dvěma zdroji se stejným rozsahem a úrovní, sloučí se hodnoty do nového slovníku zásad.
 
-        Pokud je zásada v seznamu a dojde ke konfliktu mezi dvěma zdroji, ale také mezi různými rozsahy či úrovněmi, použije se zásada s nejvyšší prioritou.
+        Pokud je zásada v seznamu a dojde ke konfliktu mezi dvěma zdroji, ale také mezi různými rozsahy či úrovněmi, použije se zásada s nejvyšší prioritou.
 
-        Pokud zásada není v seznamu a dojde ke konfliktu mezi zdroji, rozsahy nebo úrovněmi, použije se zásada s nejvyšší prioritou.</translation>
+        Pokud zásada není v seznamu a dojde ke konfliktu mezi zdroji, rozsahy nebo úrovněmi, použije se zásada s nejvyšší prioritou.</translation>
 <translation id="7229975860249300121">Obsahuje regulární výraz určující účty Google, které lze v prohlížeči <ph name="PRODUCT_NAME" /> nastavit jako primární (tj. jako účet, který se vybere během procesu přihlášení k synchronizaci).
 
       Pokud se uživatel pokusí nastavit v prohlížeči primární účet s uživatelským jménem, které se neshoduje s tímto vzorem, zobrazí se odpovídající chybová zpráva.
@@ -3933,11 +3933,11 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 
       Pokud je tato zásada nastavena na hodnotu Nahradit, zásady pro uživatele v GPO uživatele se nahradí zásadami pro uživatele v GPO počítače (GPO uživatele jsou ignorovány).</translation>
 <translation id="8465065632133292531">Parametry pro adresu URL dynamického vyhledávání používající metodu POST</translation>
-<translation id="8465746466645315861">Pokud tato zásada není nastavená, uživatel kontrolu pravopisu může zapnout nebo vypnout v jazykových nastaveních.
+<translation id="8465746466645315861">Pokud tato zásada není nastavená, uživatel kontrolu pravopisu může zapnout nebo vypnout v jazykových nastaveních.
 
-      Pokud je tato zásada nastavená na hodnotu true, je kontrola pravopisu zapnutá a uživatel ji nemůže vypnout. V systémech <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> a <ph name="LINUX_OS_NAME" /> lze zapnout nebo vypnout jednotlivé jazyky kontroly pravopisu. Uživatel proto kontrolu pravopisu může vypnout tím, že vypnete všechny jazyky kontroly pravopisu. Lze tomu předejít vynucením zapnutí konkrétních jazyků kontroly pravopisu pomocí zásady <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />.
+      Pokud je tato zásada nastavená na hodnotu true, je kontrola pravopisu zapnutá a uživatel ji nemůže vypnout. V systémech <ph name="MS_WIN_NAME" />, <ph name="PRODUCT_OS_NAME" /> a <ph name="LINUX_OS_NAME" /> lze zapnout nebo vypnout jednotlivé jazyky kontroly pravopisu. Uživatel proto kontrolu pravopisu může vypnout tím, že vypne všechny jazyky kontroly pravopisu. Lze tomu předejít vynucením zapnutí konkrétních jazyků kontroly pravopisu pomocí zásady <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" />.
 
-      Pokud je tato zásada nastavená na hodnotu false, je kontrola pravopisu vypnutá a uživatel ji nemůže zapnout. Když je tato zásada nastavená na hodnotu false, zásady <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> a <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> nemají žádný účinek.
+      Pokud je tato zásada nastavená na hodnotu false, je kontrola pravopisu vypnutá a uživatel ji nemůže zapnout. Když je tato zásada nastavená na hodnotu false, zásady <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME" /> a <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> nemají žádný účinek.
       </translation>
 <translation id="847472800012384958">Nepovolit zobrazení vyskakovacích oken žádným webovým stránkám</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>

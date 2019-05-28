@@ -580,6 +580,7 @@
 <translation id="5324858694974489420">የወላጅ መቆጣጠሪያዎች</translation>
 <translation id="5327248766486351172">ስም</translation>
 <translation id="5335288049665977812">ጣቢያዎች ጃቫስክሪፕትን እንዲያሄዱ ፍቀድላቸው (የሚመከር)</translation>
+<translation id="5357811892247919462">ትር ደርሷል</translation>
 <translation id="5363230136052241468">አዲሱን የትር ገጽ ለመጫን መነሻ አዝራሩን መታ ያድርጉ</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ትርን ይክፈቱ፣ ትሮችን ለመቀየር መታ ያድርጉ}one{<ph name="OPEN_TABS_MANY" /> ትሮችን ይክፈቱ፣ ትሮችን ለመቀየር መታ ያድርጉ}other{<ph name="OPEN_TABS_MANY" /> ትሮችን ይክፈቱ፣ ትሮችን ለመቀየር መታ ያድርጉ}}</translation>
 <translation id="5391532827096253100">ወደዚህ ጣቢያ ያልዎት ግንኙነት ደህንነቱ የተጠበቀ አይደለም። የጣቢያ መረጃ</translation>
@@ -601,7 +602,6 @@
 <translation id="5494752089476963479">ረባሽ ወይም አሳሳች ማስታወቂያዎችን ከሚያሳዩ ጣቢያዎች የሚመጡ ማስታወቂያዎችን አግድ</translation>
 <translation id="5497272504048921382">የተከፈቱ ትሮች</translation>
 <translation id="5500777121964041360">በአካባቢዎ ውስጥ ላይገኝ ይችላል</translation>
-<translation id="550684401320795253">Chromeን በማዘመን ላይ...</translation>
 <translation id="5512137114520586844">ይህ መለያ የሚቀናበረው በ<ph name="PARENT_NAME" /> ነው።</translation>
 <translation id="5514904542973294328">በዚህ መሣሪያ አስተዳዳሪ ተሰናክሏል</translation>
 <translation id="5515439363601853141">የይለፍ ቃልዎን ለመመልከት ይክፈቱ</translation>
@@ -831,6 +831,7 @@
 <translation id="7062545763355031412">ይቀበሉ እና መለያዎችን ይቀይሩ</translation>
 <translation id="7063006564040364415">ከማመሳሰያ አገልጋዩ ጋር መገናኘት አልተቻለም።</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ተመርጧል}one{# ተመርጠዋል}other{# ተመርጠዋል}}</translation>
+<translation id="7071521146534760487">መለያን አቀናብር</translation>
 <translation id="7077143737582773186">ኤስዲ ካርድ</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ተመርጠዋል።  አማራጮች ከማያ ገጹ አናት አጠገብ ይገኛሉ</translation>
 <translation id="7121362699166175603">በአድራሻ አሞሌው ላይ ታሪክን እና ራስ-ማጠናቀቆችን ያጸዳል። የእርስዎ Google መለያ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ አይነቶች ሊኖሩት ይችላል።</translation>

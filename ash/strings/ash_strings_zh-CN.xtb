@@ -157,6 +157,7 @@
 <translation id="3308453408813785101">日后“<ph name="USER_EMAIL_ADDRESS" />”仍能登录。</translation>
 <translation id="3321628682574733415">家长访问代码不正确</translation>
 <translation id="332587331255250389">请更换电池</translation>
+<translation id="3335825575923019462">确定要停用自动点击吗？</translation>
 <translation id="3351879221545518001">您目前正在投射屏幕。</translation>
 <translation id="3364721542077212959">触控笔工具</translation>
 <translation id="3368922792935385530">已连接</translation>
@@ -171,6 +172,7 @@
 <translation id="3510164367642747937">突出显示鼠标光标</translation>
 <translation id="3513798432020909783">该帐号由 <ph name="MANAGER_EMAIL" /> 管理</translation>
 <translation id="3573179567135747900">重新更改为“<ph name="FROM_LOCALE" />”（需要重启）</translation>
+<translation id="3576141592585647168">更改时区</translation>
 <translation id="3595596368722241419">电池已充满</translation>
 <translation id="3606978283550408104">已连接盲文显示屏。</translation>
 <translation id="3621202678540785336">输入</translation>
@@ -354,6 +356,7 @@
 <translation id="6559976592393364813">询问您的管理员</translation>
 <translation id="6585808820553845416">会话将在<ph name="SESSION_TIME_REMAINING" />后结束。</translation>
 <translation id="6627638273713273709">搜索键+Shift+K</translation>
+<translation id="6637729079642709226">更改时间</translation>
 <translation id="6650933572246256093">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下配对密钥：<ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="6665545700722362599">授权网站、应用和扩展程序使用位置信息服务或使用此设备的麦克风/摄像头/其他功能</translation>
@@ -398,6 +401,7 @@
 <translation id="7348093485538360975">屏幕键盘</translation>
 <translation id="735745346212279324">VPN 连接已断开</translation>
 <translation id="7377169924702866686">大写锁定已打开。</translation>
+<translation id="7378594059915113390">媒体控件</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" /> 分 <ph name="SECONDS_REMAINING" /> 秒</translation>
 <translation id="7398254312354928459">已切换网络连接</translation>
 <translation id="7405710164030118432">要解锁此设备，请输入您的 Family Link 家长访问码</translation>
@@ -482,6 +486,7 @@
 <translation id="8649101189709089199">随选朗读</translation>
 <translation id="8652175077544655965">关闭设置</translation>
 <translation id="8653151467777939995">显示通知设置。通知已开启</translation>
+<translation id="8664483332071009680">要停用自动点击吗？</translation>
 <translation id="8664753092453405566">显示网络列表。<ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">已连接低功率充电器</translation>
@@ -507,6 +512,7 @@
 <translation id="8990809378771970590">目前使用的是“<ph name="IME_NAME" />”</translation>
 <translation id="899350903320462459">以 <ph name="LOGIN_ID" /> 身份解锁设备即可执行通知操作</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
+<translation id="9017320285115481645">输入 Family Link 家长访问码。</translation>
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9056839673611986238">设备将被回滚</translation>
 <translation id="9070640332319875144">Google 助理设置</translation>

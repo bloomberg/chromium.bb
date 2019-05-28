@@ -135,6 +135,7 @@
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Voorkomen dat deze pagina extra dialoogvensters weergeeft</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Kan kaart niet opslaan</translation>
 <translation id="1639239467298939599">Laden</translation>
 <translation id="1640180200866533862">Gebruikersbeleid</translation>
 <translation id="1640244768702815859">Probeer <ph name="BEGIN_LINK" />de homepage van de site te bezoeken<ph name="END_LINK" />.</translation>
@@ -243,6 +244,7 @@
 <translation id="2230458221926704099">Los problemen met je verbinding op met de <ph name="BEGIN_LINK" />diagnose-app<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Nu verzenden</translation>
 <translation id="225207911366869382">Deze waarde is verouderd voor dit beleid.</translation>
+<translation id="2257315177824333709">Sorry, je kaart kan op dit moment niet worden opgeslagen</translation>
 <translation id="2262243747453050782">HTTP-fout</translation>
 <translation id="2263079731045660823">De gegevens updaten voor het automatisch aanvullen van creditcardgegevens in de Chrome-instellingen</translation>
 <translation id="2270484714375784793">Telefoonnummer</translation>
@@ -272,6 +274,7 @@
 <translation id="2392959068659972793">Beleid weergeven zonder waarde ingesteld</translation>
 <translation id="239429038616798445">Deze verzendmethode is niet beschikbaar. Kies een andere methode.</translation>
 <translation id="2396249848217231973">&amp;Verwijderen ongedaan maken</translation>
+<translation id="2409589295040002961">Je beheerder kan je browserinstellingen op afstand wijzigen. Activiteit op dit apparaat kan ook buiten Chrome worden beheerd. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is mogelijk ingetrokken. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="2418081434543109369">De server waar je naartoe gaat (<ph name="ORIGIN" />), heeft gevraagd om een beveiligingsbeleid toe te passen op alle verzoeken aan de server. De server heeft nu echter geen beleid geleverd, waardoor de browser je verzoek voor <ph name="SITE" /> niet kan uitvoeren.</translation>
@@ -332,6 +335,7 @@
 <translation id="2721148159707890343">Verzoek geslaagd</translation>
 <translation id="2728127805433021124">Het certificaat van de server is ondertekend met een zwak ondertekeningsalgoritme.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Verbindingsdiagnose uitvoeren<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Er zijn meerdere bronnen met conflicterende waarden aanwezig voor dit beleid.</translation>
 <translation id="2738330467931008676">Ophaaladres kiezen</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Geselecteerde items verwijderen</translation>
@@ -983,6 +987,7 @@
 <translation id="6433490469411711332">Contactgegevens bewerken</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> heeft de verbinding geweigerd.</translation>
 <translation id="6434309073475700221">Annuleren</translation>
+<translation id="6440503408713884761">Genegeerd</translation>
 <translation id="6446163441502663861">Kahu (envelop)</translation>
 <translation id="6446608382365791566">Meer informatie toevoegen</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -998,6 +1003,7 @@
 <translation id="6517596291481585650">Waarschuwing: Dit beleid is niet samengevoegd als lijst zoals gespecificeerd door het beleid, omdat het geen lijst is.</translation>
 <translation id="6529602333819889595">&amp;Opnieuw verwijderen</translation>
 <translation id="6534179046333460208">Fysieke web-suggesties</translation>
+<translation id="6545864417968258051">Bluetooth-scannen</translation>
 <translation id="6554795675067793129">Je account wordt beheerd door <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Opnieuw</translation>
 <translation id="6563469144985748109">Je beheerder heeft dit nog niet goedgekeurd</translation>
@@ -1014,6 +1020,7 @@
 <translation id="6626291197371920147">Een geldig kaartnummer toevoegen</translation>
 <translation id="6628463337424475685">Zoeken via <ph name="ENGINE" /></translation>
 <translation id="6630809736994426279">Cybercriminelen op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> proberen mogelijk gevaarlijke programma's op je Mac te installeren waarmee je gegevens kunnen worden gestolen of verwijderd (bijvoorbeeld foto's, wachtwoorden, berichten en creditcardgegevens). <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Er zijn meerdere bronnen aanwezig voor het beleid, maar de waarden zijn gelijk.</translation>
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="6644283850729428850">Dit beleid is verouderd.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Geen}=1{Van 1 site (je wordt niet uitgelogd bij je Google-account)}other{Van # sites (je wordt niet uitgelogd bij je Google-account)}}</translation>

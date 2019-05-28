@@ -137,6 +137,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
 <translation id="16338877384480380">Architecture-B</translation>
+<translation id="1638780421120290329">Kan ikke lagre kortet</translation>
 <translation id="1639239467298939599">Laster inn</translation>
 <translation id="1640180200866533862">Brukerretningslinjer</translation>
 <translation id="1640244768702815859">Prøv <ph name="BEGIN_LINK" />å gå til startsiden for nettstedet<ph name="END_LINK" />.</translation>
@@ -248,6 +249,7 @@
 <translation id="2230458221926704099">Løs tilkoblingsproblemene med <ph name="BEGIN_LINK" />diagnostikkappen<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Send nå</translation>
 <translation id="225207911366869382">Denne verdien er foreldet for denne innstillingen.</translation>
+<translation id="2257315177824333709">Beklager, men kortet kan ikke lagres akkurat nå</translation>
 <translation id="2262243747453050782">HTTP-feil</translation>
 <translation id="2263079731045660823">Oppdater autofyll av kredittkortinformasjon i Chrome-innstillingene</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
@@ -277,6 +279,7 @@
 <translation id="2392959068659972793">Vis innstillinger uten verdi</translation>
 <translation id="239429038616798445">Denne leveringsmetoden er ikke tilgjengelig. Prøv en annen metode.</translation>
 <translation id="2396249848217231973">&amp;Angre slettingen</translation>
+<translation id="2409589295040002961">Administratoren kan endre nettleseroppsettet eksternt. Aktiviteten på denne enheten kan også administreres utenfor Chrome. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan være trukket tilbake. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="2418081434543109369">Tjeneren du er på vei til (<ph name="ORIGIN" />), har bedt om at
@@ -340,6 +343,7 @@
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Kjør Tilkoblingsdiagnostikk<ph name="END_LINK" /></translation>
+<translation id="2735043616039983645">Denne regelen har mer enn én kilde med motstridende verdier!</translation>
 <translation id="2738330467931008676">Velg henteadresse</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Fjern valgte elementer</translation>
@@ -374,7 +378,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat er fra <ph name="DOMAIN2" />. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="2948083400971632585">På innstillingssiden kan du deaktivere eventuelle mellomtjenere for tilkoblinger.</translation>
-<translation id="295526156371527179">Advarsel: Denne regelen ble ikke sammenslått som en ordliste som angitt av regler fordi den ikke er en ordliste.</translation>
+<translation id="295526156371527179">Advarsel: Denne regelen ble ikke sammenslått som en regelspesifisert ordliste fordi den ikke er en ordliste.</translation>
 <translation id="2955913368246107853">Lukk søkefelt</translation>
 <translation id="2969319727213777354">Klokken må være riktig stilt før du kan opprette sikre tilkoblinger. Grunnen til dette er at sertifikatene nettsteder identifiserer seg med, bare er gyldige i visse tidsperioder. Ettersom klokken på enheten din er feil, kan ikke Google Chrome bekrefte disse sertifikatene.</translation>
 <translation id="2970515157925768593">endre enhets- og kontooppsettet eksternt</translation>
@@ -997,6 +1001,7 @@
 <translation id="6433490469411711332">Endre kontaktinformasjonen</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avviste tilkoblingsforsøket.</translation>
 <translation id="6434309073475700221">Forkast</translation>
+<translation id="6440503408713884761">Ignorert</translation>
 <translation id="6446163441502663861">Kahu (konvolutt)</translation>
 <translation id="6446608382365791566">Legg til mer informasjon</translation>
 <translation id="6447842834002726250">Informasjonskapsler</translation>
@@ -1009,9 +1014,10 @@
 <translation id="6507833130742554667">Kreditt- og debetkort godtas.</translation>
 <translation id="650855688985305916">Ja, lagre</translation>
 <translation id="6508722015517270189">Start Chrome på nytt</translation>
-<translation id="6517596291481585650">Advarsel: Denne regelen ble ikke sammenslått som en liste som angitt av regler fordi den ikke er en liste.</translation>
+<translation id="6517596291481585650">Advarsel: Denne regelen ble ikke sammenslått som en regelspesifisert liste fordi den ikke er en liste.</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
 <translation id="6534179046333460208">Fysisk nett-forslag</translation>
+<translation id="6545864417968258051">Bluetooth-skanning</translation>
 <translation id="6554795675067793129">Kontoen din administreres av <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Gjør om</translation>
 <translation id="6563469144985748109">Administratoren din har ikke godkjent det ennå</translation>
@@ -1028,6 +1034,7 @@
 <translation id="6626291197371920147">Legg til et gyldig kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søk</translation>
 <translation id="6630809736994426279">Angripere som er på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, kan prøve å installere farlige programmer på Macen du bruker, for å stjele eller slette informasjonen din (for eksempel bilder, passord, meldinger og kredittkortinformasjon). <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6631202559048444592">Regelen har mer enn én kilde, men verdiene er like.</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6644283850729428850">Denne retningslinjen er foreldet.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ingen}=1{Fra 1 nettsted (du blir ikke logget av Google-kontoen din)}other{Fra # nettsteder (du blir ikke logget av Google-kontoen din)}}</translation>
@@ -1035,7 +1042,7 @@
 <translation id="6670613747977017428">Tilbake til trygg grunn.</translation>
 <translation id="6671697161687535275">Vil du fjerne forslaget fra Chromium?</translation>
 <translation id="6685834062052613830">Logg av og fullfør konfigurasjonen</translation>
-<translation id="6689271823431384964">Chrome tilbyr å lagre kort i Google-kontoen din fordi du er logget på. Du kan endre dette i innstillingene. Navnet på kortinnehaver kommer fra kontoen din.</translation>
+<translation id="6689271823431384964">Chrome tilbyr å lagre kort i Google-kontoen din fordi du er logget på. Du kan endre dette i innstillingene. Kortinnehaverens navn kommer fra kontoen din.</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6710594484020273272">&lt;Skriv inn en søketerm&gt;</translation>
 <translation id="671076103358959139">Registreringstoken:</translation>
