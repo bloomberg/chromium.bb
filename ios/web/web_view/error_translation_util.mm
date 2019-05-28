@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/error_translation_util.h"
+#import "ios/web/web_view/error_translation_util.h"
 
 #include <CFNetwork/CFNetwork.h>
 #include <Foundation/Foundation.h>

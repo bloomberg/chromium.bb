@@ -49,7 +49,6 @@ source_set("web") {
     "//ios/web/security",
     "//ios/web/session",
     "//ios/web/web_state",
-    "//ios/web/web_state:error_translation_util",
     "//ios/web/web_state:web_view_internal_creation_util",
     "//services/network:network_service",
     "//services/network/public/mojom",
@@ -426,7 +425,6 @@ source_set("ios_web_web_state_unittests") {
     "//ios/web/test/fakes",
     "//ios/web/web_state",
     "//ios/web/web_state:context_menu",
-    "//ios/web/web_state:error_translation_util",
     "//ios/web/web_state:web_view_internal_creation_util",
     "//net:test_support",
     "//services/service_manager/public/cpp",
@@ -439,7 +437,6 @@ source_set("ios_web_web_state_unittests") {
 
   sources = [
     "web_state/context_menu_params_utils_unittest.mm",
-    "web_state/error_translation_util_unittest.mm",
     "web_state/page_display_state_unittest.mm",
     "web_state/ui/wk_security_origin_util_unittest.mm",
     "web_state/web_state_delegate_bridge_unittest.mm",

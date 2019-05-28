@@ -58,22 +58,6 @@ source_set("web_state_impl_header") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("error_translation_util") {
-  deps = [
-    "//base",
-    "//ios/net",
-    "//ios/web/public",
-    "//net",
-  ]
-
-  sources = [
-    "error_translation_util.h",
-    "error_translation_util.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
 source_set("page_viewport_state") {
   deps = [
     "//base",

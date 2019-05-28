@@ -16,7 +16,7 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
-#import "ios/web/web_state/error_translation_util.h"
+#import "ios/web/web_view/error_translation_util.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"

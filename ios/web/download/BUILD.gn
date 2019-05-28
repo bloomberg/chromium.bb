@@ -11,7 +11,7 @@ source_set("download") {
     "//ios/web/net/cookies",
     "//ios/web/public",
     "//ios/web/public/download",
-    "//ios/web/web_state:error_translation_util",
+    "//ios/web/web_view:util",
     "//ui/base",
   ]
 
