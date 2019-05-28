@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_shared_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_bottom_container_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_overlay_element.h"
@@ -270,9 +271,8 @@ void MediaControlsTouchlessImpl::ShowContextMenu() {
 
   WTF::Vector<mojom::blink::MenuItem> menu_items;
 
-  // TODO(jazzhsu, https://crbug.com/942577): Populate fullscreen list entry
-  // properly.
-  menu_items.push_back(mojom::blink::MenuItem::FULLSCREEN);
+  if (MediaControlsSharedHelpers::ShouldShowFullscreenButton(MediaElement()))
+    menu_items.push_back(mojom::blink::MenuItem::FULLSCREEN);
 
   if (MediaElement().HasAudio())
     menu_items.push_back(mojom::blink::MenuItem::MUTE);

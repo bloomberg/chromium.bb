@@ -87,6 +87,7 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_rotate_to_fullscreen_delegate.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_shared_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -153,33 +154,6 @@ constexpr WTF::TimeDelta kTimeToShowVolumeSliderTest =
 
 // The number of seconds to jump when double tapping.
 constexpr int kNumberOfSecondsToJump = 10;
-
-bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
-  // Unconditionally allow the user to exit fullscreen if we are in it
-  // now.  Especially on android, when we might not yet know if
-  // fullscreen is supported, we sometimes guess incorrectly and show
-  // the button earlier, and we don't want to remove it here if the
-  // user chose to enter fullscreen.  crbug.com/500732 .
-  if (media_element.IsFullscreen())
-    return true;
-
-  if (!media_element.IsHTMLVideoElement())
-    return false;
-
-  if (!media_element.HasVideo())
-    return false;
-
-  if (!Fullscreen::FullscreenEnabled(media_element.GetDocument()))
-    return false;
-
-  if (media_element.ControlsListInternal()->ShouldHideFullscreen()) {
-    UseCounter::Count(media_element.GetDocument(),
-                      WebFeature::kHTMLMediaElementControlsListNoFullscreen);
-    return false;
-  }
-
-  return true;
-}
 
 void MaybeParserAppendChild(Element* parent, Element* child) {
   DCHECK(parent);
@@ -967,12 +941,14 @@ void MediaControlsImpl::OnControlsListUpdated() {
 
   if (IsModern() && ShouldShowVideoControls()) {
     fullscreen_button_->SetIsWanted(true);
-    fullscreen_button_->setAttribute(html_names::kDisabledAttr,
-                                     ShouldShowFullscreenButton(MediaElement())
-                                         ? AtomicString()
-                                         : AtomicString(""));
+    fullscreen_button_->setAttribute(
+        html_names::kDisabledAttr,
+        MediaControlsSharedHelpers::ShouldShowFullscreenButton(MediaElement())
+            ? AtomicString()
+            : AtomicString(""));
   } else {
-    fullscreen_button_->SetIsWanted(ShouldShowFullscreenButton(MediaElement()));
+    fullscreen_button_->SetIsWanted(
+        MediaControlsSharedHelpers::ShouldShowFullscreenButton(MediaElement()));
     fullscreen_button_->removeAttribute(html_names::kDisabledAttr);
   }
 
