@@ -175,6 +175,12 @@ class CONTENT_EXPORT PeerConnectionTracker
       RTCPeerConnectionHandler* pc_handler,
       webrtc::PeerConnectionInterface::IceConnectionState state);
 
+  // Sends an update when the connection state
+  // of a PeerConnection has changed.
+  virtual void TrackConnectionStateChange(
+      RTCPeerConnectionHandler* pc_handler,
+      webrtc::PeerConnectionInterface::PeerConnectionState state);
+
   // Sends an update when the Ice gathering state
   // of a PeerConnection has changed.
   virtual void TrackIceGatheringStateChange(

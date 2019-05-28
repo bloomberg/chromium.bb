@@ -36,6 +36,9 @@ class MockWebRTCPeerConnectionHandlerClient
                void(webrtc::PeerConnectionInterface::IceGatheringState state));
   MOCK_METHOD1(DidChangeIceConnectionState,
                void(webrtc::PeerConnectionInterface::IceConnectionState state));
+  MOCK_METHOD1(
+      DidChangePeerConnectionState,
+      void(webrtc::PeerConnectionInterface::PeerConnectionState state));
   void DidAddReceiverPlanB(
       std::unique_ptr<blink::WebRTCRtpReceiver> web_rtp_receiver) override {
     DidAddReceiverPlanBForMock(&web_rtp_receiver);

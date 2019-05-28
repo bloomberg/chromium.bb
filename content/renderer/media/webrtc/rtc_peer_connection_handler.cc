@@ -2073,6 +2073,8 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
 void RTCPeerConnectionHandler::OnConnectionChange(
     webrtc::PeerConnectionInterface::PeerConnectionState new_state) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->TrackConnectionStateChange(this, new_state);
   if (!is_closed_)
     client_->DidChangePeerConnectionState(new_state);
 }

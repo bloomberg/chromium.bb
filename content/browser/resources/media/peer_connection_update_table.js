@@ -90,6 +90,7 @@ var PeerConnectionUpdateTable = (function() {
         signalingStateChange: 'signalingstatechange',
         iceGatheringStateChange: 'icegatheringstatechange',
         iceConnectionStateChange: 'iceconnectionstatechange',
+        connectionStateChange: 'connectionstatechange',
         onIceCandidate: 'icecandidate',
         stop: 'close'
       }[update.type] ||
