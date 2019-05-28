@@ -1130,7 +1130,8 @@ class FileManager extends cr.EventTarget {
   }
 
   /**
-   * Setup crostini 'Linux files'.
+   * Sets up Crostini 'Linux files'.
+   * @return {!Promise<void>}
    * @private
    */
   async setupCrostini_() {
@@ -1150,11 +1151,12 @@ class FileManager extends cr.EventTarget {
     // Only observe firstForSession when using full-page FilesApp.
     // I.e., don't show toast in a dialog.
     let showToast = false;
-    const getSharedPaths = (vmName) => {
+    const getSharedPaths = async (vmName) => {
+      if (!this.crostini_.isEnabled(vmName)) {
+        return 0;
+      }
+
       return new Promise(resolve => {
-        if (!this.crostini_.isEnabled(vmName)) {
-          return resolve(0);
-        }
         chrome.fileManagerPrivate.getCrostiniSharedPaths(
             this.dialogType === DialogType.FULL_PAGE, vmName,
             (entries, firstForSession) => {
@@ -1203,15 +1205,18 @@ class FileManager extends cr.EventTarget {
 
   /**
    * @param {chrome.fileManagerPrivate.CrostiniEvent} event
+   * @return {!Promise<void>}
    * @private
    */
-  onCrostiniChanged_(event) {
-    if (event.eventType === 'enable') {
-      this.crostini_.setEnabled(event.vmName, true);
-      this.setupCrostini_();
-    } else if (event.eventType === 'disable') {
-      this.crostini_.setEnabled(event.vmName, false);
-      this.setupCrostini_();
+  async onCrostiniChanged_(event) {
+    switch (event.eventType) {
+      case chrome.fileManagerPrivate.CrostiniEventType.ENABLE:
+        this.crostini_.setEnabled(event.vmName, true);
+        return this.setupCrostini_();
+
+      case chrome.fileManagerPrivate.CrostiniEventType.DISABLE:
+        this.crostini_.setEnabled(event.vmName, false);
+        return this.setupCrostini_();
     }
   }
 

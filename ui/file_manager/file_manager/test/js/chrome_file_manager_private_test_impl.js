@@ -16,6 +16,12 @@ const mockVolumeManager = new MockVolumeManager();
  * @suppress {checkTypes}
  */
 chrome.fileManagerPrivate = {
+  CrostiniEventType: {
+    ENABLE: 'enable',
+    DISABLE: 'disable',
+    SHARE: 'share',
+    UNSHARE: 'unshare',
+  },
   Verb: {
     OPEN_WITH: 'open_with',
     ADD_TO: 'add_to',
