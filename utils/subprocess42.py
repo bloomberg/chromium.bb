@@ -498,7 +498,7 @@ class Popen(subprocess.Popen):
     self.detached = kwargs.pop('detached', False)
     if self.detached:
       if subprocess.mswindows:
-        prev = kwargs.get('creationflags') or 0
+        prev = kwargs.get('creationflags', 0)
         kwargs['creationflags'] = prev | CREATE_NEW_PROCESS_GROUP
       else:
         old_preexec_fn_1 = kwargs.get('preexec_fn')
@@ -512,7 +512,7 @@ class Popen(subprocess.Popen):
       if subprocess.mswindows:
         # TODO(maruel): If already in this class, it should use
         # IDLE_PRIORITY_CLASS.
-        prev = kwargs.get('creationflags') or 0
+        prev = kwargs.get('creationflags', 0)
         kwargs['creationflags'] = prev | BELOW_NORMAL_PRIORITY_CLASS
       else:
         old_preexec_fn_2 = kwargs.get('preexec_fn')
@@ -534,7 +534,7 @@ class Popen(subprocess.Popen):
         self._job = _JobObject(self.containment)
         # In this case, start the process suspended, so we can assign the job
         # object, then resume it.
-        prev = kwargs.get('creationflags') or 0
+        prev = kwargs.get('creationflags', 0)
         kwargs['creationflags'] = prev | CREATE_SUSPENDED
 
     self.end = None
