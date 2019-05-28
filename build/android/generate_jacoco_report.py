@@ -133,8 +133,7 @@ def _GenerateJsonCoverageMetadata(out_file_path, jacoco_xml_path, source_dirs):
     source_dirs: A list of source directories of Java source files.
 
   Raises:
-    Exception: No Jacoco xml report found or
-      cannot find package directory according to src root.
+    Exception: No Jacoco xml report found.
   """
   if not os.path.exists(jacoco_xml_path):
     raise Exception('No Jacoco xml report found on %s' % jacoco_xml_path)
@@ -152,11 +151,17 @@ def _GenerateJsonCoverageMetadata(out_file_path, jacoco_xml_path, source_dirs):
     # Find package directory according to src root.
     package_source_dir = ''
     for source_dir in source_dirs:
+      # Filter out 'out/...' source directories.
+      if source_dir.startswith('out/'):
+        continue
       if package_path in source_dir:
         package_source_dir = source_dir
         break
+    # TODO(crbug/966918): Skip auto-generated Java files/packages for now.
     if not package_source_dir:
-      raise Exception('Cannot find package directory according to src root')
+      print('Cannot find package %s directory according to src root' %
+            package_path)
+      continue
 
     for sourcefile in package.iter('sourcefile'):
       sourcefile_name = sourcefile.attrib['name']
