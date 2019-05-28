@@ -613,15 +613,18 @@ bool ChromeContentRendererClient::IsPluginHandledExternally(
   // necessary here (see https://crbug.com/965747). For now, returning false
   // should take us to CreatePlugin after HTMLPlugInElement which is called
   // through HTMLPlugInElement::LoadPlugin code path.
-  if ((plugin_info->status != chrome::mojom::PluginStatus::kAllowed &&
-       plugin_info->status !=
-           chrome::mojom::PluginStatus::kPlayImportantContent) ||
-      !ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
-          plugin_element, original_url, plugin_info->actual_mime_type,
-          plugin_info->plugin)) {
+  if (plugin_info->status != chrome::mojom::PluginStatus::kAllowed &&
+      plugin_info->status !=
+          chrome::mojom::PluginStatus::kPlayImportantContent) {
+    // We could get here when a MimeHandlerView is loaded inside a <webview>
+    // which is using permissions API (see WebViewPluginTests).
+    ChromeExtensionsRendererClient::DidBlockMimeHandlerViewForDisallowedPlugin(
+        plugin_element);
     return false;
   }
-  return true;
+  return ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
+      plugin_element, original_url, plugin_info->actual_mime_type,
+      plugin_info->plugin);
 #else
   return false;
 #endif

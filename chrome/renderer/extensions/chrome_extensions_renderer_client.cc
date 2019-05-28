@@ -319,6 +319,16 @@ ChromeExtensionsRendererClient::CreateBrowserPluginDelegate(
 }
 
 // static
+void ChromeExtensionsRendererClient::DidBlockMimeHandlerViewForDisallowedPlugin(
+    const blink::WebElement& plugin_element) {
+  extensions::MimeHandlerViewContainerManager::Get(
+      content::RenderFrame::FromWebFrame(
+          plugin_element.GetDocument().GetFrame()),
+      true /* create_if_does_not_exist */)
+      ->DidBlockMimeHandlerViewForDisallowedPlugin(plugin_element);
+}
+
+// static
 bool ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
     const blink::WebElement& plugin_element,
     const GURL& resource_url,

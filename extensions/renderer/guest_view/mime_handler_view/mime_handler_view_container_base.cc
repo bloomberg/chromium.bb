@@ -146,6 +146,11 @@ PostMessageSupport::Delegate* PostMessageSupport::Delegate::FromWebLocalFrame(
 }
 
 // static
+mojom::GuestView* MimeHandlerViewContainerBase::GuestView() {
+  return GetGuestView();
+}
+
+// static
 std::vector<MimeHandlerViewContainerBase*>
 MimeHandlerViewContainerBase::FromRenderFrame(
     content::RenderFrame* render_frame) {

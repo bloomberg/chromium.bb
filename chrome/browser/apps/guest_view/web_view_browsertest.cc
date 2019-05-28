@@ -92,6 +92,7 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_embedder.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
@@ -3341,7 +3342,13 @@ IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginInternalResource) {
                                                                 true);
 
   TestHelper("testPluginLoadInternalResource", "web_view/shim", NO_TEST_SERVER);
+  // Sanity check to ensure no GuestView was created.
+  for (auto* guest_wc : GetEmbedderWebContents()->GetInnerWebContents()) {
+    EXPECT_FALSE(extensions::MimeHandlerViewEmbedder::Get(
+        guest_wc->GetMainFrame()->GetFrameTreeNodeId()));
+  }
 }
+
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 class WebViewCaptureTest : public WebViewTest {

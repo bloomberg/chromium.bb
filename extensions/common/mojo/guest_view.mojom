@@ -30,6 +30,13 @@ interface GuestView {
       int32 element_instance_id,
       gfx.mojom.Size element_size,
       extensions.mime_handler.BeforeUnloadControl? before_unload_control);
+
+  // Notifies the browser whether or not now is a good time to start loading the
+  // MimeHandlerView. |routing_id| identifies the embedder frame. If |success|
+  // is false, then MimeHandlerViewEmbedder should destroy itself. When
+  // |success| is true the MimeHandlerViewEmbedder should proceed with attaching
+  // the GuestView.
+  ReadyToCreateMimeHandlerView(int32 routing_id, bool success);
 };
 
 // An interface implemented by the renderer which is used for creating a

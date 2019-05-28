@@ -33,6 +33,17 @@ EmbedderMap* GetMimeHandlerViewEmbeddersMap() {
 }
 }  // namespace
 
+// static
+MimeHandlerViewEmbedder* MimeHandlerViewEmbedder::Get(
+    int32_t frame_tree_node_id) {
+  const auto& map = *GetMimeHandlerViewEmbeddersMap();
+  auto it = map.find(frame_tree_node_id);
+  if (it == map.cend())
+    return nullptr;
+  return it->second.get();
+}
+
+// static
 void MimeHandlerViewEmbedder::Create(int32_t frame_tree_node_id,
                                      const GURL& resource_url,
                                      const std::string& mime_type,
@@ -94,6 +105,13 @@ void MimeHandlerViewEmbedder::RenderFrameCreated(
   if (!render_frame_host_ ||
       render_frame_host_ != render_frame_host->GetParent() ||
       render_frame_host_->GetLastCommittedURL() != resource_url_) {
+    return;
+  }
+  if (!ready_to_create_mime_handler_view_) {
+    // Renderer notifies the browser about creating MimeHandlerView right after
+    // HTMLPlugInElement::RequestObject, which is before the plugin element is
+    // navigated.
+    GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
     return;
   }
   outer_contents_frame_tree_node_id_ = render_frame_host->GetFrameTreeNodeId();
@@ -185,4 +203,12 @@ MimeHandlerViewEmbedder::GetContainerManager() {
   }
   return container_manager_.get();
 }
+
+void MimeHandlerViewEmbedder::ReadyToCreateMimeHandlerView(
+    bool ready_to_create_mime_handler_view) {
+  ready_to_create_mime_handler_view_ = ready_to_create_mime_handler_view;
+  if (!ready_to_create_mime_handler_view_)
+    GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
+}
+
 }  // namespace extensions

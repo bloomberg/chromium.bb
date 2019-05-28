@@ -82,6 +82,8 @@ class ExtensionsGuestViewMessageFilter
       int32_t element_instance_id,
       const gfx::Size& element_size,
       mime_handler::BeforeUnloadControlPtr before_unload_control) override;
+  void ReadyToCreateMimeHandlerView(int32_t render_frame_id,
+                                    bool success) override;
 
   void CreateMimeHandlerViewGuestOnUIThread(
       int32_t render_frame_id,

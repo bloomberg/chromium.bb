@@ -109,6 +109,18 @@ bool MimeHandlerViewContainerManager::CreateFrameContainer(
   return true;
 }
 
+void MimeHandlerViewContainerManager::
+    DidBlockMimeHandlerViewForDisallowedPlugin(
+        const blink::WebElement& plugin_element) {
+  if (IsManagedByContainerManager(plugin_element)) {
+    // This is the one injected by HTML string. Return true so that the
+    // HTMLPlugInElement creates a child frame to be used as the outer
+    // WebContents frame.
+    MimeHandlerViewContainerBase::GuestView()->ReadyToCreateMimeHandlerView(
+        render_frame()->GetRoutingID(), false);
+  }
+}
+
 v8::Local<v8::Object> MimeHandlerViewContainerManager::GetScriptableObject(
     const blink::WebElement& plugin_element,
     v8::Isolate* isolate) {
@@ -295,6 +307,8 @@ bool MimeHandlerViewContainerManager::IsManagedByContainerManager(
       base::ToUpperASCII(plugin_element.GetAttribute("internalid").Utf8()) ==
           internal_id_) {
     plugin_element_ = plugin_element;
+    MimeHandlerViewContainerBase::GuestView()->ReadyToCreateMimeHandlerView(
+        render_frame()->GetRoutingID(), true);
   }
   return plugin_element_ == plugin_element;
 }

@@ -32,6 +32,10 @@ namespace extensions {
 //.  - the embedder or the <iframe> are removed from DOM.
 class MimeHandlerViewEmbedder : public content::WebContentsObserver {
  public:
+  // Returns the instances associated with an ongoing navigation in a frame
+  // identified by |frame_tree_node_id|.
+  static MimeHandlerViewEmbedder* Get(int32_t frame_tree_node_id);
+
   static void Create(int32_t frame_tree_node_id,
                      const GURL& resource_url,
                      const std::string& mime_type,
@@ -45,6 +49,8 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void DidStartNavigation(content::NavigationHandle* handle) override;
   void ReadyToCommitNavigation(content::NavigationHandle* handle) override;
+
+  void ReadyToCreateMimeHandlerView(bool result);
 
  private:
   MimeHandlerViewEmbedder(int32_t frame_tree_node_id,
@@ -81,6 +87,8 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   mojom::MimeHandlerViewContainerManagerAssociatedPtr container_manager_;
 
   const std::string internal_id_;
+
+  bool ready_to_create_mime_handler_view_ = false;
 
   base::WeakPtrFactory<MimeHandlerViewEmbedder> weak_factory_;
 

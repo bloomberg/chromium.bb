@@ -46,6 +46,8 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
 
   ~MimeHandlerViewContainerBase() override;
 
+  static mojom::GuestView* GuestView();
+
   // TODO(ekaramad): Remove this and make MimeHandlerViewContainerManager of
   // |render_frame| hold on to the list of MimeHandlerViewContainerBase.
   static std::vector<MimeHandlerViewContainerBase*> FromRenderFrame(

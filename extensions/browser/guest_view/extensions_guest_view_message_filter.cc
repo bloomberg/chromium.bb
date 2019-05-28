@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_stream_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_embedder.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -126,6 +127,22 @@ void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuest(
                      false));
 }
 
+void ExtensionsGuestViewMessageFilter::ReadyToCreateMimeHandlerView(
+    int32_t render_frame_id,
+    bool success) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(
+            &ExtensionsGuestViewMessageFilter::ReadyToCreateMimeHandlerView,
+            this, render_frame_id, success));
+    return;
+  }
+  auto* rfh =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id);
+  if (auto* mhve = MimeHandlerViewEmbedder::Get(rfh->GetFrameTreeNodeId()))
+    mhve->ReadyToCreateMimeHandlerView(success);
+}
 void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuestOnUIThread(
     int render_frame_id,
     const std::string& view_id,

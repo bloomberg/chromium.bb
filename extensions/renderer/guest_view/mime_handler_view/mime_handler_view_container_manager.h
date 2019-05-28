@@ -66,6 +66,10 @@ class MimeHandlerViewContainerManager
                             const GURL& resource_url,
                             const std::string& mime_type,
                             const content::WebPluginInfo& plugin_info);
+  // Called to notify about a failed plugin load; this could happen if a
+  // <webview> with permissions API tries to load a plugin.
+  void DidBlockMimeHandlerViewForDisallowedPlugin(
+      const blink::WebElement& plugin_element);
   // A wrapper for custom postMessage scripts. There should already be a
   // MimeHandlerViewFrameContainer for |plugin_element|.
   v8::Local<v8::Object> GetScriptableObject(
