@@ -20,7 +20,6 @@ import android.os.Build;
 import android.support.annotation.StyleRes;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
@@ -76,7 +75,6 @@ class AssistantDetailsViewBinder
         final TextView mPriceAttributionView;
         final View mPriceView;
         final TextView mTotalPriceLabelView;
-        final ImageView mTotalPriceLabelIconView;
         final TextView mTotalPriceView;
 
         public ViewHolder(Context context, View detailsView) {
@@ -90,8 +88,6 @@ class AssistantDetailsViewBinder
             mPriceAttributionView = detailsView.findViewById(R.id.details_price_attribution);
             mPriceView = detailsView.findViewById(R.id.details_price);
             mTotalPriceView = detailsView.findViewById(R.id.details_total_price);
-            mTotalPriceLabelIconView =
-                    detailsView.findViewById(R.id.details_total_price_label_icon);
             mTotalPriceLabelView = detailsView.findViewById(R.id.details_total_price_label);
         }
     }
@@ -179,18 +175,6 @@ class AssistantDetailsViewBinder
         // If no price provided, hide the price view (containing separator, price label, and price).
         viewHolder.mPriceView.setVisibility(
                 details.getTotalPrice().isEmpty() ? View.GONE : View.VISIBLE);
-
-        // Show label icon only if there is a label.
-        // TODO(crbug.com/806868): Show popup when the label icon is tapped.
-        viewHolder.mTotalPriceLabelIconView.setVisibility(
-                details.getTotalPriceLabel().isEmpty() ? View.GONE : View.VISIBLE);
-
-        // Set label icon color.
-        ApiCompatibilityUtils.setImageTintList(viewHolder.mTotalPriceLabelIconView,
-                AppCompatResources.getColorStateList(mContext,
-                        details.getUserApprovalRequired()
-                                ? org.chromium.chrome.R.color.modern_grey_300
-                                : org.chromium.chrome.R.color.default_text_color_secondary));
 
         viewHolder.mImageView.setVisibility(View.VISIBLE);
         if (details.getImageUrl().isEmpty()) {
