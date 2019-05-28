@@ -193,7 +193,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   bool transaction_ack_pending_ = false;
 
   gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
-  EGLSurface offscreen_surface_;
+  EGLSurface offscreen_surface_ = nullptr;
   base::CancelableOnceClosure check_pending_presentation_callback_queue_task_;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
