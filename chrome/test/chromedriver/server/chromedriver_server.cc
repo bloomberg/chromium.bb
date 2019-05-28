@@ -427,6 +427,8 @@ int main(int argc, char *argv[]) {
         "whitelisted-ips",
             "comma-separated whitelist of remote IP addresses "
             "which are allowed to connect to ChromeDriver",
+        "readable-timestamp",
+            "add readable timestamps to log",
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
         "disable-dev-shm-usage",
             "do not use /dev/shm "
