@@ -11,6 +11,7 @@
 #include "gpu/ipc/common/dx_diag_node_struct_traits.h"
 #include "gpu/ipc/common/gpu_info.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/mojo/buffer_types_struct_traits.h"
 
 namespace mojo {
 
@@ -361,6 +362,12 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static std::vector<gpu::ImageDecodeAcceleratorSupportedProfile>
   image_decode_accelerator_supported_profiles(const gpu::GPUInfo& input) {
     return input.image_decode_accelerator_supported_profiles;
+  }
+
+  static std::vector<gfx::BufferFormat>
+  supported_buffer_formats_for_allocation_and_texturing(
+      const gpu::GPUInfo& input) {
+    return input.supported_buffer_formats_for_allocation_and_texturing;
   }
 
   static uint64_t system_visual(const gpu::GPUInfo& input) {

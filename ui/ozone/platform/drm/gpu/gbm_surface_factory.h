@@ -74,6 +74,9 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
       gfx::BufferFormat format,
       gfx::NativePixmapHandle handle) override;
 
+  std::vector<gfx::BufferFormat> GetSupportedFormatsForTexturing()
+      const override;
+
  private:
   scoped_refptr<gfx::NativePixmap> CreateNativePixmapFromHandleInternal(
       gfx::AcceleratedWidget widget,

@@ -206,6 +206,7 @@ mojom("interfaces") {
     ":gpu_preferences_interface",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
+    "//ui/gfx/mojo",
   ]
 }
 

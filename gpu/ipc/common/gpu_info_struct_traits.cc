@@ -393,7 +393,9 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadVideoEncodeAcceleratorSupportedProfiles(
              &out->video_encode_accelerator_supported_profiles) &&
          data.ReadImageDecodeAcceleratorSupportedProfiles(
-             &out->image_decode_accelerator_supported_profiles);
+             &out->image_decode_accelerator_supported_profiles) &&
+         data.ReadSupportedBufferFormatsForAllocationAndTexturing(
+             &out->supported_buffer_formats_for_allocation_and_texturing);
 }
 
 }  // namespace mojo

@@ -100,4 +100,9 @@ void SurfaceFactoryOzone::SetGetProtectedNativePixmapDelegate(
     const GetProtectedNativePixmapCallback&
         get_protected_native_pixmap_callback) {}
 
+std::vector<gfx::BufferFormat>
+SurfaceFactoryOzone::GetSupportedFormatsForTexturing() const {
+  return std::vector<gfx::BufferFormat>();
+}
+
 }  // namespace ui

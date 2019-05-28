@@ -8,6 +8,7 @@ module gpu.mojom;
 import "gpu/ipc/common/dx_diag_node.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/buffer_types.mojom";
 
 // gpu::GPUInfo::GPUDevice
 struct GpuDevice {
@@ -161,6 +162,9 @@ struct GpuInfo {
 
   array<ImageDecodeAcceleratorSupportedProfile>
     image_decode_accelerator_supported_profiles;
+
+  array<gfx.mojom.BufferFormat>
+      supported_buffer_formats_for_allocation_and_texturing;
 
   uint64 system_visual;
   uint64 rgba_visual;

@@ -304,6 +304,21 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
       "RGBA visual ID", base::NumberToString(gpu_info.rgba_visual)));
 #endif
 
+  std::string buffer_formats;
+  for (int i = 0; i <= static_cast<int>(gfx::BufferFormat::LAST); ++i) {
+    const gfx::BufferFormat buffer_format = static_cast<gfx::BufferFormat>(i);
+    if (i > 0)
+      buffer_formats += ",  ";
+    buffer_formats += gfx::BufferFormatToString(buffer_format);
+    const bool supported = base::ContainsValue(
+        gpu_info.supported_buffer_formats_for_allocation_and_texturing,
+        buffer_format);
+    buffer_formats += supported ? ": supported" : ": not supported";
+  }
+  basic_info->Append(NewDescriptionValuePair(
+      "gfx::BufferFormats supported for allocation and texturing",
+      buffer_formats));
+
   return basic_info;
 }
 

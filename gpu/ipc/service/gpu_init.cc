@@ -33,6 +33,7 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 #endif
 
 #if defined(OS_WIN)
@@ -240,6 +241,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
                                         .requires_mojo;
   params.viz_display_compositor = features::IsVizDisplayCompositorEnabled();
   ui::OzonePlatform::InitializeForGPU(params);
+  gpu_info_.supported_buffer_formats_for_allocation_and_texturing =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->GetSupportedFormatsForTexturing();
 #endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -439,6 +444,10 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
                                         .requires_mojo;
   params.viz_display_compositor = features::IsVizDisplayCompositorEnabled();
   ui::OzonePlatform::InitializeForGPU(params);
+  gpu_info_.supported_buffer_formats_for_allocation_and_texturing =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->GetSupportedFormatsForTexturing();
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
   bool needs_more_info = true;
