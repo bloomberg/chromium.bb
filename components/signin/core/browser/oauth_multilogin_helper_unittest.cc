@@ -146,7 +146,7 @@ class OAuthMultiloginHelperTest : public testing::Test {
   }
 
   network::TestURLLoaderFactory* url_loader() {
-    return test_signin_client_.test_url_loader_factory();
+    return test_signin_client_.GetTestURLLoaderFactory();
   }
 
   std::string multilogin_url() const {

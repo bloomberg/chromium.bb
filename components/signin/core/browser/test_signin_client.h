@@ -61,7 +61,7 @@ class TestSigninClient : public SigninClient {
 
   // Returns |test_url_loader_factory_| if it is specified. Otherwise, lazily
   // creates a default factory and returns it.
-  network::TestURLLoaderFactory* test_url_loader_factory();
+  network::TestURLLoaderFactory* GetTestURLLoaderFactory();
 
   // Pass a TestURLLoader factory to use instead of the default one.
   void OverrideTestUrlLoaderFactory(network::TestURLLoaderFactory* factory);

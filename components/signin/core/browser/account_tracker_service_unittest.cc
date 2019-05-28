@@ -339,8 +339,8 @@ class AccountTrackerServiceTest : public testing::Test {
   PrefService* prefs() { return &pref_service_; }
   AccountTrackerObserver* observer() { return &observer_; }
 
-  network::TestURLLoaderFactory* test_url_loader_factory() {
-    return signin_client_.test_url_loader_factory();
+  network::TestURLLoaderFactory* GetTestURLLoaderFactory() {
+    return signin_client_.GetTestURLLoaderFactory();
   }
 
   bool* force_account_id_to_email_for_legacy_tests_pointer() {
@@ -406,11 +406,11 @@ void AccountTrackerServiceTest::ReturnFetchResults(
     net::HttpStatusCode response_code,
     const std::string& response_string) {
   GURL url = GaiaUrls::GetInstance()->oauth_user_info_url();
-  EXPECT_TRUE(test_url_loader_factory()->IsPending(url.spec()));
+  EXPECT_TRUE(GetTestURLLoaderFactory()->IsPending(url.spec()));
 
   // It's possible for multiple requests to be pending. Respond to all of them.
-  while (test_url_loader_factory()->IsPending(url.spec())) {
-    test_url_loader_factory()->SimulateResponseForPendingRequest(
+  while (GetTestURLLoaderFactory()->IsPending(url.spec())) {
+    GetTestURLLoaderFactory()->SimulateResponseForPendingRequest(
         url, network::URLLoaderCompletionStatus(net::OK),
         network::CreateResourceResponseHead(response_code), response_string,
         network::TestURLLoaderFactory::kMostRecentMatch);
@@ -438,14 +438,14 @@ void AccountTrackerServiceTest::ReturnAccountInfoFetchFailure(
 
 void AccountTrackerServiceTest::ReturnAccountImageFetchSuccess(
     AccountKey account_key) {
-  test_url_loader_factory()->AddResponse(
+  GetTestURLLoaderFactory()->AddResponse(
       AccountKeyToPictureURLWithSize(account_key), "image data");
   scoped_task_environment_.RunUntilIdle();
 }
 
 void AccountTrackerServiceTest::ReturnAccountImageFetchFailure(
     AccountKey account_key) {
-  test_url_loader_factory()->AddResponse(
+  GetTestURLLoaderFactory()->AddResponse(
       AccountKeyToPictureURLWithSize(account_key), std::string(),
       net::HTTP_BAD_REQUEST);
   scoped_task_environment_.RunUntilIdle();
@@ -637,7 +637,7 @@ TEST_F(AccountTrackerServiceTest, GetAccountInfo_TokenAvailable_EnableNetwork) {
   SimulateTokenAvailable(kAccountKeyAlpha);
   IssueAccessToken(kAccountKeyAlpha);
   // No fetcher has been created yet.
-  EXPECT_EQ(0, test_url_loader_factory()->NumPending());
+  EXPECT_EQ(0, GetTestURLLoaderFactory()->NumPending());
 
   // Enable the network to create the fetcher then issue the access token.
   account_fetcher()->EnableNetworkFetchesForTest();

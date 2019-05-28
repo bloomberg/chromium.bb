@@ -179,7 +179,7 @@ class GaiaCookieManagerServiceTest : public testing::Test {
   }
 
   void SimulateGetCheckConnectionInfoSuccess(const std::string& data) {
-    signin_client_->test_url_loader_factory()->AddResponse(
+    signin_client_->GetTestURLLoaderFactory()->AddResponse(
         GaiaUrls::GetInstance()
             ->GetCheckConnectionInfoURLWithSource(GaiaConstants::kChromeSource)
             .spec(),
@@ -189,7 +189,7 @@ class GaiaCookieManagerServiceTest : public testing::Test {
 
   void SimulateGetCheckConnectionInfoResult(const std::string& url,
                                             const std::string& result) {
-    signin_client_->test_url_loader_factory()->AddResponse(url, result);
+    signin_client_->GetTestURLLoaderFactory()->AddResponse(url, result);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -201,12 +201,12 @@ class GaiaCookieManagerServiceTest : public testing::Test {
   }
 
   bool IsLoadPending(const std::string& url) {
-    return signin_client_->test_url_loader_factory()->IsPending(
+    return signin_client_->GetTestURLLoaderFactory()->IsPending(
         GURL(url).spec());
   }
 
   bool IsLoadPending() {
-    return signin_client_->test_url_loader_factory()->NumPending() > 0;
+    return signin_client_->GetTestURLLoaderFactory()->NumPending() > 0;
   }
 
   const GoogleServiceAuthError& no_error() { return no_error_; }

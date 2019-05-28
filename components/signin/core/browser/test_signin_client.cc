@@ -40,7 +40,7 @@ void TestSigninClient::PreSignOut(
 
 scoped_refptr<network::SharedURLLoaderFactory>
 TestSigninClient::GetURLLoaderFactory() {
-  return test_url_loader_factory()->GetSafeWeakWrapper();
+  return GetTestURLLoaderFactory()->GetSafeWeakWrapper();
 }
 
 network::mojom::CookieManager* TestSigninClient::GetCookieManager() {
@@ -49,7 +49,7 @@ network::mojom::CookieManager* TestSigninClient::GetCookieManager() {
   return cookie_manager_.get();
 }
 
-network::TestURLLoaderFactory* TestSigninClient::test_url_loader_factory() {
+network::TestURLLoaderFactory* TestSigninClient::GetTestURLLoaderFactory() {
   if (test_url_loader_factory_)
     return test_url_loader_factory_;
 

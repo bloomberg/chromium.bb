@@ -322,7 +322,7 @@ void IdentityTestEnvironment::SetCookieAccounts(
     const std::vector<CookieParams>& cookie_accounts) {
   identity::SetCookieAccounts(
       identity_manager(),
-      dependencies_owner_->signin_client()->test_url_loader_factory(),
+      dependencies_owner_->signin_client()->GetTestURLLoaderFactory(),
       cookie_accounts);
 }
 
