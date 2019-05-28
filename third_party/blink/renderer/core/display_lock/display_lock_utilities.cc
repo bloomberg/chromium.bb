@@ -11,6 +11,8 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_boundary.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 
 namespace blink {
 
@@ -164,6 +166,43 @@ Element* DisplayLockUtilities::HighestLockedExclusiveAncestor(
   if (Node* parent = FlatTreeTraversal::Parent(node))
     return HighestLockedInclusiveAncestor(*parent);
   return nullptr;
+}
+
+bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
+    const Node& source_node) {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+    return false;
+  const Node* node = &source_node;
+
+  // Special case self-node checking.
+  if (node->GetDocument().LockedDisplayLockCount() && node->IsElementNode()) {
+    auto* context = ToElement(node)->GetDisplayLockContext();
+    if (context && !context->ShouldLayout(DisplayLockContext::kSelf))
+      return true;
+  }
+
+  auto get_frame_owner_node = [](const Node* child) -> const Node* {
+    if (!child || !child->GetDocument().GetFrame() ||
+        !child->GetDocument().GetFrame()->OwnerLayoutObject()) {
+      return nullptr;
+    }
+    return child->GetDocument().GetFrame()->OwnerLayoutObject()->GetNode();
+  };
+
+  // Since we handled the self-check above, we need to do inclusive checks
+  // starting from the parent.
+  node = FlatTreeTraversal::Parent(*node);
+  // If we don't have a flat-tree parent, get the |source_node|'s owner node
+  // instead.
+  if (!node)
+    node = get_frame_owner_node(&source_node);
+
+  while (node) {
+    if (NearestLockedInclusiveAncestor(*node))
+      return true;
+    node = get_frame_owner_node(node);
+  }
+  return false;
 }
 
 }  // namespace blink

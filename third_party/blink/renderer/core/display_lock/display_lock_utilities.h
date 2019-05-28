@@ -56,6 +56,10 @@ class CORE_EXPORT DisplayLockUtilities {
 
   // Returns the highest exclusive ancestor of |node| that is display locked.
   static Element* HighestLockedExclusiveAncestor(const Node& node);
+
+  // Returns true if the element is in a locked subtree (or is self-locked with
+  // no self-updates). This crosses frames while navigating the ancestor chain.
+  static bool IsInLockedSubtreeCrossingFrames(const Node& node);
 };
 
 }  // namespace blink

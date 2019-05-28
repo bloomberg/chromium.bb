@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/intersection_observer/intersection_geometry.h"
 
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -125,6 +126,11 @@ void IntersectionGeometry::ComputeGeometry(Element* root_element,
     return;
   if (root_element && !IsContainingBlockChainDescendant(target, root))
     return;
+  // If the target is inside a locked subtree, it isn't ever visible.
+  if (UNLIKELY(DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
+          target_element))) {
+    return;
+  }
 
   DCHECK(!target_element.GetDocument().View()->NeedsLayout());
 
