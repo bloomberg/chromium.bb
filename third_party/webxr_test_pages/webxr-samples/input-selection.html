@@ -432,6 +432,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // Save the session-specific reference space, and apply the
           // current player orientation/position as originOffset.
           setRefSpace(session, refSpace, false);
+          updateOriginOffset(session);
           session.requestReferenceSpace('viewer').then(function(viewerSpace){
             xrViewerSpace = viewerSpace;
             session.requestAnimationFrame(onXRFrame);
