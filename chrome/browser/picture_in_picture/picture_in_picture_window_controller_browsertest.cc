@@ -93,6 +93,9 @@ class MockPictureInPictureWindowController
   DISALLOW_COPY_AND_ASSIGN(MockPictureInPictureWindowController);
 };
 
+const base::FilePath::CharType kPictureInPictureWindowSizePage[] =
+    FILE_PATH_LITERAL("media/picture-in-picture/window-size.html");
+
 }  // namespace
 
 class PictureInPictureWindowControllerBrowserTest
@@ -120,11 +123,10 @@ class PictureInPictureWindowControllerBrowserTest
     return mock_controller_;
   }
 
-  void LoadTabAndEnterPictureInPicture(Browser* browser) {
+  void LoadTabAndEnterPictureInPicture(Browser* browser,
+                                       const base::FilePath& file_path) {
     GURL test_page_url = ui_test_utils::GetTestUrl(
-        base::FilePath(base::FilePath::kCurrentDirectory),
-        base::FilePath(
-            FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+        base::FilePath(base::FilePath::kCurrentDirectory), file_path);
     ui_test_utils::NavigateToURL(browser, test_page_url);
 
     content::WebContents* active_web_contents =
@@ -203,8 +205,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        CreationAndVisibilityAndActivation) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -267,12 +268,12 @@ class PictureInPicturePixelComparisonBrowserTest
     quit_run_loop.Run();
   }
 
-  bool SaveBitmap(base::FilePath& file_path, SkBitmap& bitmap) {
-    std::vector<unsigned char> png_data;
-    CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_data));
-    char* data = reinterpret_cast<char*>(&png_data[0]);
-    int size = static_cast<int>(png_data.size());
-    return base::WriteFile(file_path, data, size) == size;
+  bool ReadImageFile(const base::FilePath& file_path, SkBitmap* read_image) {
+    std::string png_string;
+    base::ReadFileToString(file_path, &png_string);
+    return gfx::PNGCodec::Decode(
+        reinterpret_cast<const unsigned char*>(png_string.data()),
+        png_string.length(), read_image);
   }
 
   void TakeOverlayWindowScreenshot(OverlayWindowViews* overlay_window_views) {
@@ -288,12 +289,10 @@ class PictureInPicturePixelComparisonBrowserTest
     run_loop.Run();
   }
 
-  bool CompareImages(const SkBitmap& actual_bmp) {
+  bool CompareImages(const SkBitmap& actual_bmp, const SkBitmap& expected_bmp) {
     // Allowable error and thresholds because of small color shift by
     // video to image conversion and GPU issues.
-    const int allowable_error = 2;
-    const unsigned high_threshold = 0xff - allowable_error;
-    const unsigned low_threshold = 0x00 + allowable_error;
+    const int kAllowableError = 3;
     // Number of pixels with an error
     int error_pixels_count = 0;
     gfx::Rect error_bounding_rect;
@@ -301,12 +300,13 @@ class PictureInPicturePixelComparisonBrowserTest
     for (int x = 0; x < actual_bmp.width(); ++x) {
       for (int y = 0; y < actual_bmp.height(); ++y) {
         SkColor actual_color = actual_bmp.getColor(x, y);
-        // Check color is Yellow and is within the tolerance range.
-        // TODO(cliffordcheng): Compare with an expected image instead of just
-        // checking pixel RGB color.
-        if (SkColorGetR(actual_color) < high_threshold &&
-            SkColorGetG(actual_color) < high_threshold &&
-            SkColorGetB(actual_color) > low_threshold) {
+        SkColor expected_color = expected_bmp.getColor(x, y);
+        if ((fabs(SkColorGetR(actual_color) - SkColorGetR(expected_color)) >
+             kAllowableError) ||
+            (fabs(SkColorGetG(actual_color) - SkColorGetG(expected_color)) >
+             kAllowableError) ||
+            (fabs(SkColorGetB(actual_color) - SkColorGetB(expected_color))) >
+                kAllowableError) {
           ++error_pixels_count;
           error_bounding_rect.Union(gfx::Rect(x, y, 1, 1));
         }
@@ -338,38 +338,26 @@ class PictureInPicturePixelComparisonBrowserTest
 // Picture-in-Picture window and verifies it's as expected.
 IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  GURL test_page_url = ui_test_utils::GetTestUrl(
-      base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/pixel_test.html")));
-  ui_test_utils::NavigateToURL(browser(), test_page_url);
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(FILE_PATH_LITERAL(
+                     "media/picture-in-picture/pixel_test.html")));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_NE(nullptr, active_web_contents);
-
-  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
-  SetUpWindowController(active_web_contents);
-  ASSERT_NE(nullptr, window_controller());
-
-  ASSERT_NE(nullptr, window_controller()->GetWindowForTesting());
-  ASSERT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
-
-  bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      active_web_contents, "enterPictureInPicture();", &result));
-  EXPECT_TRUE(result);
 
   bool in_picture_in_picture = false;
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
 
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  SetUpWindowController(active_web_contents);
+  ASSERT_NE(nullptr, window_controller());
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
   OverlayWindowViews* overlay_window_views = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
-  overlay_window_views->SetSize(gfx::Size(600, 400));
+  overlay_window_views->SetSize(gfx::Size(402, 268));
   base::string16 expected_title = base::ASCIIToUTF16("resized");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
@@ -377,11 +365,78 @@ IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest, VideoPlay) {
   Wait(base::TimeDelta::FromSeconds(3));
   TakeOverlayWindowScreenshot(overlay_window_views);
 
-  const base::FilePath::StringPieceType test_image =
-      FILE_PATH_LITERAL("pixel_test_actual_0.png");
-  base::FilePath test_image_path = GetFilePath(test_image);
-  ASSERT_TRUE(SaveBitmap(test_image_path, GetResultBitmap()));
-  EXPECT_TRUE(CompareImages(GetResultBitmap()));
+  SkBitmap expected_image;
+  base::FilePath expected_image_path =
+      GetFilePath(FILE_PATH_LITERAL("pixel_expected_video_play.png"));
+  ASSERT_TRUE(ReadImageFile(expected_image_path, &expected_image));
+  EXPECT_TRUE(CompareImages(GetResultBitmap(), expected_image));
+}
+
+// Plays a video in PiP. Trigger the play and pause control in PiP by using a
+// mouse move. Capture the images and verift they are expected.
+IN_PROC_BROWSER_TEST_F(PictureInPicturePixelComparisonBrowserTest,
+                       PlayAndPauseControls) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(FILE_PATH_LITERAL(
+                     "media/picture-in-picture/pixel_test.html")));
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  bool in_picture_in_picture = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  OverlayWindowViews* overlay_window_views = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrc();", &result));
+
+  const int resize_width = 402, resize_height = 268;
+  overlay_window_views->SetSize(gfx::Size(resize_width, resize_height));
+  base::string16 expected_title = base::ASCIIToUTF16("resized");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  Wait(base::TimeDelta::FromSeconds(3));
+  MoveMouseOver(overlay_window_views);
+  TakeOverlayWindowScreenshot(overlay_window_views);
+
+  base::FilePath expected_pause_image_path =
+      GetFilePath(FILE_PATH_LITERAL("pixel_expected_pause_control.png"));
+  base::FilePath expected_play_image_path =
+      GetFilePath(FILE_PATH_LITERAL("pixel_expected_play_control.png"));
+  // If the test image is cropped, usually off by 1 pixel, use another image.
+  if (GetResultBitmap().width() < resize_width ||
+      GetResultBitmap().height() < resize_height) {
+    LOG(INFO) << "Actual image is cropped and backup images are used. "
+              << "Test image dimension: "
+              << "(" << GetResultBitmap().width() << "x"
+              << GetResultBitmap().height() << "). "
+              << "Expected image dimension: "
+              << "(" << resize_width << "x" << resize_height << ")";
+    expected_pause_image_path =
+        GetFilePath(FILE_PATH_LITERAL("pixel_expected_pause_control_crop.png"));
+    expected_play_image_path =
+        GetFilePath(FILE_PATH_LITERAL("pixel_expected_play_control_crop.png"));
+  }
+
+  SkBitmap expected_image;
+  ASSERT_TRUE(ReadImageFile(expected_pause_image_path, &expected_image));
+  EXPECT_TRUE(CompareImages(GetResultBitmap(), expected_image));
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.pause();"));
+  Wait(base::TimeDelta::FromSeconds(3));
+  MoveMouseOver(overlay_window_views);
+  TakeOverlayWindowScreenshot(overlay_window_views);
+  ASSERT_TRUE(ReadImageFile(expected_play_image_path, &expected_image));
+  EXPECT_TRUE(CompareImages(GetResultBitmap(), expected_image));
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -391,8 +446,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        TabIconUpdated) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -428,8 +482,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        ResizeEventFired) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -464,8 +517,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        CloseWindowWhilePlaying) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -505,8 +557,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        CloseWindowWithoutPlaying) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -540,8 +591,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        CloseWindowCantEnterPictureInPictureAgain) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -579,8 +629,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        CloseWindowFromWebAPIWhilePlaying) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -618,8 +667,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        RequestPictureInPictureTwiceFromSameVideo) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -676,8 +724,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        OpenSecondPictureInPictureStopsFirst) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -722,7 +769,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // keep Picture-in-Picture window opened.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        ResetVideoSrcKeepsPictureInPictureWindowOpened) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
@@ -748,7 +796,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // keep Picture-in-Picture window opened.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        UpdateVideoSrcKeepsPictureInPictureWindowOpened) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
@@ -787,7 +836,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     PictureInPictureWindowControllerBrowserTest,
     ChangeVideoSrcToMediaStreamKeepsPictureInPictureWindowOpened) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
@@ -850,8 +900,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        CloseTwiceSideEffects) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -901,8 +950,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        PictureInPictureAfterClosingTab) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -953,8 +1001,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        PictureInPictureDoNotCloseAfterClosingTab) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* initial_web_contents =
@@ -1093,8 +1140,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        RequestPictureInPictureAfterDisablePictureInPicture) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -1200,14 +1246,16 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        MultipleBrowserWindowOnePIPWindow) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   content::PictureInPictureWindowController* first_controller =
       window_controller();
   EXPECT_TRUE(first_controller->GetWindowForTesting()->IsVisible());
 
   Browser* second_browser = CreateBrowser(browser()->profile());
-  LoadTabAndEnterPictureInPicture(second_browser);
+  LoadTabAndEnterPictureInPicture(
+      second_browser, base::FilePath(kPictureInPictureWindowSizePage));
 
   content::PictureInPictureWindowController* second_controller =
       window_controller();
@@ -1217,7 +1265,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        EnterPictureInPictureThenFullscreen) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1236,8 +1285,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        EnterFullscreenThenPictureInPicture) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -1266,8 +1314,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        EnterPictureInPictureThenNavigateAwayCloseWindow) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -1302,7 +1349,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // doesn't move back to its default position.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        SurfaceIdChangeDoesNotMoveWindow) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1352,7 +1400,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // is closed at a system level.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        CloseWindowNotifiesController) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1372,7 +1421,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // Picture-in-Picture is created after a reload.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        PlayPauseStateAtCreation) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1435,7 +1485,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        EnterUsingWebContentsThenUsingController) {
   // Enter using WebContents.
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
@@ -1468,7 +1519,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // Now show the WebContents based Picture-in-Picture window controller.
   // This should close the existing window and show the new one.
   EXPECT_CALL(mock_controller(), Close(_));
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
@@ -1585,8 +1637,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        HandleMediaKeyPlayPause) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* first_active_web_contents =
@@ -1631,8 +1682,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        MovingQuadrantsMovesBackToTabAndResizeControls) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -1737,7 +1787,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // Picture-in-Picture window.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        PlayPauseButtonVisibility) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1776,8 +1827,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        PageVisibilityEventsFired) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -1813,7 +1863,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // Picture-in-Picture and video playback is not disrupted.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        PageVisibilityEventsFiredWhenPictureInPicture) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1896,7 +1947,8 @@ class MediaSessionPictureInPictureWindowControllerBrowserTest
 // when Media Session Action "skipad" is handled by the website.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                        SkipAdButtonVisibility) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
   ASSERT_TRUE(overlay_window);
@@ -1942,7 +1994,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 // website even if video is a media stream.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                        PlayPauseButtonVisibility) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
@@ -2015,7 +2068,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 // when Media Session Action "nexttrack" is handled by the website.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                        NextTrackButtonVisibility) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
   ASSERT_TRUE(overlay_window);
@@ -2069,7 +2123,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 // Picture-in-Picture window controls are hidden.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                        NextTrackButtonBounds) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
   ASSERT_TRUE(overlay_window);
@@ -2095,7 +2150,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 // window when Media Session Action "previoustrack" is handled by the website.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                        PreviousTrackButtonVisibility) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
   ASSERT_TRUE(overlay_window);
@@ -2149,7 +2205,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 // Picture-in-Picture window controls are hidden.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                        PreviousTrackButtonBounds) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
   ASSERT_TRUE(overlay_window);
@@ -2175,7 +2232,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 // calls the Media Session Action "skipad" handler function.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                        SkipAdHandlerCalled) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
@@ -2195,7 +2253,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 // calls the Media Session actions "play" and "pause" handler functions.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                        PlayPauseHandlersCalled) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
@@ -2228,7 +2287,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 // calls the Media Session Action "nexttrack" handler function.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                        NextTrackHandlerCalled) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
@@ -2249,7 +2309,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 // window calls the Media Session Action "previoustrack" handler function.
 IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
                        PreviousTrackHandlerCalled) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
@@ -2283,8 +2344,7 @@ IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
                        AutoEnterPictureInPictureIsNotTriggeredInRegularWebApp) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -2318,8 +2378,7 @@ IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
                        AutoExitPictureInPictureIsTriggeredInRegularWebApp) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -2363,8 +2422,7 @@ IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
                        AutoPictureInPictureTriggeredWhenFullscreen) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -2804,8 +2862,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        VideoWithNoAudioPausedWhenHiddenResumesPlayback) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
-      base::FilePath(
-          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+      base::FilePath(kPictureInPictureWindowSizePage));
   ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
@@ -2846,7 +2903,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // event and resolves the callback.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        ExitFireEventAndCallbackWhenNoSource) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -2873,7 +2931,8 @@ class MuteButtonPictureInPictureWindowControllerBrowserTest
 // experimental feature MuteButton is enabled.
 IN_PROC_BROWSER_TEST_F(MuteButtonPictureInPictureWindowControllerBrowserTest,
                        MuteButtonEnabled) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
@@ -2992,7 +3051,8 @@ IN_PROC_BROWSER_TEST_F(MuteButtonPictureInPictureWindowControllerBrowserTest,
 // experimental feature MuteButton is disabled.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        MuteButtonDisabled) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
 
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
@@ -3054,7 +3114,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // element is still notified.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        ResetPlayerCloseWindowNotifiesElement) {
-  LoadTabAndEnterPictureInPicture(browser());
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
