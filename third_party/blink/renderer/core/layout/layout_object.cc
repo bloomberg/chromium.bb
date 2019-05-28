@@ -944,7 +944,22 @@ void LayoutObject::SetNeedsCollectInlines() {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;
 
+  if (NeedsCollectInlines())
+    return;
+
   if (UNLIKELY(IsSVGChild()))
+    return;
+
+  // Don't mark |LayoutFlowThread| because |CollectInlines()| skips them.
+  if (!IsLayoutFlowThread())
+    SetNeedsCollectInlines(true);
+
+  if (LayoutObject* parent = Parent())
+    parent->SetChildNeedsCollectInlines();
+}
+
+void LayoutObject::SetChildNeedsCollectInlines() {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;
 
   LayoutObject* object = this;
@@ -957,7 +972,10 @@ void LayoutObject::SetNeedsCollectInlines() {
     if (object->NeedsCollectInlines())
       break;
     object->SetNeedsCollectInlines(true);
-    if (object->IsLayoutBlockFlow())
+    if (object->IsLayoutBlockFlow() ||
+        // Some LayoutReplaced have children (e.g., LayoutSVGRoot). Stop marking
+        // because their children belong to different context.
+        object->IsAtomicInlineLevel())
       break;
     object = object->Parent();
   } while (object);

@@ -1282,6 +1282,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Mark this object needing to re-run |CollectInlines()|. Ancestors may be
   // marked too if needed.
   void SetNeedsCollectInlines();
+  void SetChildNeedsCollectInlines();
   void ClearNeedsCollectInlines() { SetNeedsCollectInlines(false); }
 
   void MarkContainerChainForLayout(bool schedule_relayout = true,

@@ -128,7 +128,7 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
     }
 
     if (old_child->IsInLayoutNGInlineFormattingContext()) {
-      owner->SetNeedsCollectInlines();
+      owner->SetChildNeedsCollectInlines();
     }
   }
 
@@ -218,7 +218,7 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
 
     if (owner->IsInLayoutNGInlineFormattingContext() ||
         (owner->EverHadLayout() && owner->ChildrenInline())) {
-      owner->SetNeedsCollectInlines();
+      owner->SetChildNeedsCollectInlines();
     }
   }
 

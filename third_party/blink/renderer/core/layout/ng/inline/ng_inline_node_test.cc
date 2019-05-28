@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 
@@ -1386,6 +1387,22 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   const NGPaintFragment* block_fragment = anonymous_block->PaintFragment();
   const NGPaintFragment* line_box_fragment = block_fragment->FirstChild();
   EXPECT_EQ(line_box_fragment->FirstChild(), text_fragment_after_layout);
+}
+
+TEST_F(NGInlineNodeTest, AddChildToSVGRoot) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container">
+      text
+      <svg id="svg"></svg>
+    </div>
+  )HTML");
+
+  Element* svg = GetElementById("svg");
+  svg->appendChild(GetDocument().CreateRawElement(svg_names::kTextTag));
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  LayoutObject* container = GetLayoutObjectByElementId("container");
+  EXPECT_FALSE(container->NeedsCollectInlines());
 }
 
 // https://crbug.com/911220
