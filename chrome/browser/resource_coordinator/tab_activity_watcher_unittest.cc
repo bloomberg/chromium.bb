@@ -7,9 +7,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
@@ -69,6 +74,9 @@ blink::WebMouseEvent CreateMouseEvent(WebInputEvent::Type event_type) {
 class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
  public:
   TabActivityWatcherTest() {
+    // Use MRUScorer for TabRanker to bypass ML model.
+    feature_list_.InitAndEnableFeatureWithParameters(features::kTabRanker,
+                                                     {{"scorer_type", "0"}});
     TabActivityWatcher::GetInstance()->ResetForTesting();
   }
 
@@ -79,13 +87,54 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
+  LifecycleUnit* AddNewTab(TabStripModel* tab_strip_model, int i) {
+    LifecycleUnit* result = TabLifecycleUnitSource::GetTabLifecycleUnit(
+        tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
+                                                          GURL(kTestUrls[i])));
+    if (i == 0)
+      tab_strip_model->ActivateTabAt(i);
+    else
+      tab_activity_simulator_.SwitchToTabAt(tab_strip_model, i);
+
+    return result;
+  }
+
  protected:
   UkmEntryChecker ukm_entry_checker_;
   TabActivitySimulator tab_activity_simulator_;
+  base::test::ScopedFeatureList feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabActivityWatcherTest);
 };
+
+// Test that lifecycleunits are sorted with high activation score first order.
+TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithTabRanker) {
+  Browser::CreateParams params(profile(), true);
+  std::unique_ptr<Browser> browser =
+      CreateBrowserWithTestWindowForParams(&params);
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+
+  // Create lifecycleunits.
+  LifecycleUnit* tab0 = AddNewTab(tab_strip_model, 0);
+  LifecycleUnit* tab1 = AddNewTab(tab_strip_model, 1);
+  LifecycleUnit* tab2 = AddNewTab(tab_strip_model, 2);
+  LifecycleUnit* tab3 = AddNewTab(tab_strip_model, 3);
+  std::vector<LifecycleUnit*> lifecycleunits = {tab0, tab2, tab3, tab1};
+
+  // Sort and check the new order.
+  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+      &lifecycleunits);
+  EXPECT_EQ(lifecycleunits[0], tab3);
+  EXPECT_EQ(lifecycleunits[1], tab2);
+  EXPECT_EQ(lifecycleunits[2], tab1);
+  EXPECT_EQ(lifecycleunits[3], tab0);
+
+  // Closing the tabs destroys the WebContentses but should not trigger logging.
+  // The TestWebContentsObserver simulates hiding these tabs as they are closed;
+  // we verify in TearDown() that no logging occurred.
+  tab_strip_model->CloseAllTabs();
+}
 
 // Tests TabManager.TabMetrics UKM entries generated when tabs are backgrounded.
 class TabMetricsTest : public TabActivityWatcherTest {

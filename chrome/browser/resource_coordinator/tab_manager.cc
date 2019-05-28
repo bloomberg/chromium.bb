@@ -94,22 +94,6 @@ constexpr TimeDelta kDefaultBackgroundTabLoadTimeout =
 // load the next background tab when the loading slots free up.
 constexpr size_t kNumOfLoadingSlots = 1;
 
-struct LifecycleUnitAndSortKey {
-  explicit LifecycleUnitAndSortKey(LifecycleUnit* lifecycle_unit)
-      : lifecycle_unit(lifecycle_unit),
-        sort_key(lifecycle_unit->GetSortKey()) {}
-
-  bool operator<(const LifecycleUnitAndSortKey& other) const {
-    return sort_key < other.sort_key;
-  }
-  bool operator>(const LifecycleUnitAndSortKey& other) const {
-    return sort_key > other.sort_key;
-  }
-
-  LifecycleUnit* lifecycle_unit;
-  LifecycleUnit::SortKey sort_key;
-};
-
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat> DataAsTraceValue(
     TabManager::BackgroundTabLoadingMode mode,
     size_t num_of_pending_navigations,
@@ -242,21 +226,13 @@ void TabManager::Start() {
 }
 
 LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
-  std::vector<LifecycleUnitAndSortKey> lifecycle_units_and_sort_keys;
-  lifecycle_units_and_sort_keys.reserve(lifecycle_units_.size());
-  for (auto* lifecycle_unit : lifecycle_units_)
-    lifecycle_units_and_sort_keys.emplace_back(lifecycle_unit);
-
-  std::sort(lifecycle_units_and_sort_keys.begin(),
-            lifecycle_units_and_sort_keys.end());
-
-  LifecycleUnitVector sorted_lifecycle_units;
-  sorted_lifecycle_units.reserve(lifecycle_units_and_sort_keys.size());
-  for (auto& lifecycle_unit_and_sort_key : lifecycle_units_and_sort_keys) {
-    sorted_lifecycle_units.push_back(
-        lifecycle_unit_and_sort_key.lifecycle_unit);
-  }
-
+  LifecycleUnitVector sorted_lifecycle_units(lifecycle_units_.begin(),
+                                             lifecycle_units_.end());
+  // Sort lifecycle_units with ascending importance.
+  std::sort(sorted_lifecycle_units.begin(), sorted_lifecycle_units.end(),
+            [](LifecycleUnit* a, LifecycleUnit* b) {
+              return a->GetSortKey() < b->GetSortKey();
+            });
   return sorted_lifecycle_units;
 }
 

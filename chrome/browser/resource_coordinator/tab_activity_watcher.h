@@ -20,6 +20,8 @@ class TabMetricsLogger;
 
 namespace resource_coordinator {
 
+class LifecycleUnit;
+
 // Observes background tab activity in order to log UKMs for tabs and score tabs
 // using the Tab Ranker. Metrics will be compared against tab reactivation/close
 // events to determine the end state of each background tab.
@@ -38,6 +40,10 @@ class TabActivityWatcher : public BrowserListObserver,
 
   // Log TabFeatures for oldest n tabs.
   void LogOldestNTabFeatures();
+
+  // |tabs| are sorted by descending importance, so that the last tab is
+  // the first candidate that will be discarded.
+  void SortLifecycleUnitWithTabRanker(std::vector<LifecycleUnit*>* tabs);
 
   // Returns the single instance, creating it if necessary.
   static TabActivityWatcher* GetInstance();

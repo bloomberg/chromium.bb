@@ -29,6 +29,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/utils.h"
@@ -126,7 +128,7 @@ bool TabManagerDelegate::Candidate::operator<(
     const TabManagerDelegate::Candidate& rhs) const {
   if (process_type() != rhs.process_type())
     return process_type() < rhs.process_type();
-  return lifecycle_unit_sort_key_ > rhs.lifecycle_unit_sort_key_;
+  return LastActivityTime() > rhs.LastActivityTime();
 }
 
 ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
@@ -140,7 +142,7 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
     return ProcessType::BACKGROUND;
   }
   if (lifecycle_unit()) {
-    if (lifecycle_unit_sort_key_.last_focused_time == base::TimeTicks::Max())
+    if (LastActivityTime() == base::TimeTicks::Max())
       return ProcessType::FOCUSED_TAB;
     DecisionDetails decision_details;
     if (!lifecycle_unit()->CanDiscard(
@@ -151,6 +153,17 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
     return ProcessType::BACKGROUND;
   }
   return ProcessType::UNKNOWN_TYPE;
+}
+
+base::TimeTicks TabManagerDelegate::Candidate::LastActivityTime() const {
+  if (app()) {
+    return base::TimeTicks::FromUptimeMillis(app()->last_activity_time());
+  }
+  if (lifecycle_unit()) {
+    return lifecycle_unit()->GetLastFocusedTime();
+  }
+  NOTREACHED();
+  return base::TimeTicks();
 }
 
 // Holds the info of a newly focused tab or app window. The focused process is
@@ -534,6 +547,40 @@ TabManagerDelegate::GetSortedCandidates(
   return candidates;
 }
 
+void TabManagerDelegate::SortLifecycleUnitWithTabRanker(
+    std::vector<Candidate>* candidates,
+    LifecycleUnitSorter sorter) {
+  const uint32_t num_of_tab_to_score = GetNumOldestTabsToScoreWithTabRanker();
+  if (num_of_tab_to_score <= 1)
+    return;
+  // Put the oldest num_of_tab_to_score lifecycle units into a vector.
+  LifecycleUnitVector oldest_lifecycle_units;
+  for (auto it = candidates->rbegin(); it != candidates->rend(); ++it) {
+    auto& candidate = *it;
+    if (oldest_lifecycle_units.size() == num_of_tab_to_score ||
+        candidate.process_type() < ProcessType::BACKGROUND)
+      break;
+    if (candidate.lifecycle_unit()) {
+      oldest_lifecycle_units.push_back(candidate.lifecycle_unit());
+    }
+  }
+
+  // Re-sort them with TabRanker.
+  std::move(sorter).Run(&oldest_lifecycle_units);
+
+  // Put the sorted lifecycle units back to their original vacancies.
+  for (auto it = candidates->rbegin(); it != candidates->rend(); ++it) {
+    const auto& candidate = *it;
+    if (oldest_lifecycle_units.empty() ||
+        candidate.process_type() < ProcessType::BACKGROUND)
+      break;
+    if (candidate.lifecycle_unit()) {
+      *it = Candidate(oldest_lifecycle_units.back());
+      oldest_lifecycle_units.pop_back();
+    }
+  }
+}
+
 bool TabManagerDelegate::IsRecentlyKilledArcProcess(
     const std::string& process_name,
     const TimeTicks& now) {
@@ -581,8 +628,15 @@ void TabManagerDelegate::LowMemoryKillImpl(
                   [](auto& proc) { return proc.IsPersistent(); });
   }
 
-  std::vector<TabManagerDelegate::Candidate> candidates =
+  std::vector<Candidate> candidates =
       GetSortedCandidates(GetLifecycleUnits(), arc_processes);
+
+  if (base::FeatureList::IsEnabled(features::kTabRanker)) {
+    SortLifecycleUnitWithTabRanker(
+        &candidates,
+        base::BindOnce(&TabActivityWatcher::SortLifecycleUnitWithTabRanker,
+                       base::Unretained(TabActivityWatcher::GetInstance())));
+  }
 
   // TODO(semenzato): decide if TargetMemoryToFreeKB is doing real
   // I/O and if it is, move to I/O thread (crbug.com/778703).

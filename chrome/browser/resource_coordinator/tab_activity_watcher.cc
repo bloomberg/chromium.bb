@@ -10,6 +10,8 @@
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
@@ -68,16 +70,7 @@ class TabActivityWatcher::WebContentsData
     if (web_contents()->IsBeingDestroyed() || backgrounded_time_.is_null())
       return base::nullopt;
 
-    // Only Scores Oldest N tabs (based on least recently used index calculated
-    // as mru.total - mru.index - 1).
     const auto mru = GetMRUFeatures();
-    const int lru_index = mru.total - mru.index - 1;
-
-    // If the least recently used index is greater than or equal to N, which
-    // means the tab is not in the oldest N list, we should simply skip it.
-    // The N is defaulted as kMaxInt so that all tabs are scored.
-    if (lru_index >= GetNumOldestTabsToScoreWithTabRanker())
-      return base::nullopt;
 
     base::Optional<tab_ranker::TabFeatures> tab = GetTabFeatures(mru);
     if (!tab.has_value())
@@ -540,6 +533,26 @@ void TabActivityWatcher::LogOldestNTabFeatures() {
     web_contents_data[i]->mru_features_.total = contents_data_size;
     web_contents_data[i]->LogCurrentTabFeatures();
   }
+}
+
+void TabActivityWatcher::SortLifecycleUnitWithTabRanker(
+    std::vector<LifecycleUnit*>* tabs) {
+  std::map<int32_t, float> reactivation_scores;
+
+  for (auto* lifecycle_unit : *tabs) {
+    content::WebContents* web_content =
+        lifecycle_unit->AsTabLifecycleUnitExternal()->GetWebContents();
+    base::Optional<float> score = CalculateReactivationScore(web_content);
+    reactivation_scores[lifecycle_unit->GetID()] =
+        score.has_value() ? score.value() : std::numeric_limits<float>::max();
+  }
+
+  // Sort with larger reactivation_score first (desending importance).
+  std::sort(tabs->begin(), tabs->end(),
+            [&reactivation_scores](LifecycleUnit* a, LifecycleUnit* b) {
+              return reactivation_scores[a->GetID()] >
+                     reactivation_scores[b->GetID()];
+            });
 }
 
 void TabActivityWatcher::OnBrowserSetLastActive(Browser* browser) {
