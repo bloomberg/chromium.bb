@@ -5924,6 +5924,9 @@ void v8::V8::InitializeExternalStartupData(const char* directory_path) {
   i::InitializeExternalStartupData(directory_path);
 }
 
+intptr_t v8::V8::GetHeapHandle() {
+  return _get_heap_handle();
+}
 
 void v8::V8::InitializeExternalStartupData(const char* natives_blob,
                                            const char* snapshot_blob) {
