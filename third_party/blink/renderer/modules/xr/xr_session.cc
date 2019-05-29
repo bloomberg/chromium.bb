@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_macros.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_frame_request_callback.h"
@@ -48,8 +49,6 @@ namespace blink {
 namespace {
 
 const char kSessionEnded[] = "XRSession has already ended.";
-
-const char kUnknownReferenceSpace[] = "Unknown reference space type.";
 
 const char kReferenceSpaceNotSupported[] =
     "This device does not support the requested reference space type.";
@@ -247,7 +246,14 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
                           DOMExceptionCode::kInvalidStateError, kSessionEnded));
   }
 
-  if (sensorless_session_ && type != "viewer") {
+  XRReferenceSpace::Type requested_type =
+      XRReferenceSpace::StringToReferenceSpaceType(type);
+
+  UMA_HISTOGRAM_ENUMERATION("XR.WebXR.ReferenceSpace.Requested",
+                            requested_type);
+
+  if (sensorless_session_ &&
+      requested_type != XRReferenceSpace::Type::kTypeViewer) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
@@ -255,58 +261,56 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
   }
 
   XRReferenceSpace* reference_space = nullptr;
-  if (type == "viewer") {
-    reference_space = MakeGarbageCollected<XRReferenceSpace>(
-        this, XRReferenceSpace::Type::kTypeViewer);
-  } else if (type == "local") {
-    reference_space = MakeGarbageCollected<XRReferenceSpace>(
-        this, XRReferenceSpace::Type::kTypeLocal);
-  } else if (type == "local-floor") {
-    reference_space = MakeGarbageCollected<XRReferenceSpace>(
-        this, XRReferenceSpace::Type::kTypeLocalFloor);
-  } else if (type == "bounded-floor") {
-    bool supports_bounded = false;
-    if (immersive() && display_info_->stageParameters) {
-      if (display_info_->stageParameters->bounds) {
-        supports_bounded = true;
-      } else if (display_info_->stageParameters->sizeX > 0 &&
-                 display_info_->stageParameters->sizeZ > 0) {
-        supports_bounded = true;
+  switch (requested_type) {
+    case XRReferenceSpace::Type::kTypeViewer:
+    case XRReferenceSpace::Type::kTypeLocal:
+    case XRReferenceSpace::Type::kTypeLocalFloor:
+      reference_space =
+          MakeGarbageCollected<XRReferenceSpace>(this, requested_type);
+      break;
+    case XRReferenceSpace::Type::kTypeBoundedFloor: {
+      bool supports_bounded = false;
+      if (immersive() && display_info_->stageParameters) {
+        if (display_info_->stageParameters->bounds) {
+          supports_bounded = true;
+        } else if (display_info_->stageParameters->sizeX > 0 &&
+                   display_info_->stageParameters->sizeZ > 0) {
+          supports_bounded = true;
+        }
       }
-    }
 
-    if (supports_bounded) {
-      reference_space = MakeGarbageCollected<XRBoundedReferenceSpace>(this);
-    } else {
-      return ScriptPromise::RejectWithDOMException(
-          script_state, MakeGarbageCollected<DOMException>(
-                            DOMExceptionCode::kNotSupportedError,
-                            kReferenceSpaceNotSupported));
+      if (supports_bounded) {
+        reference_space = MakeGarbageCollected<XRBoundedReferenceSpace>(this);
+      } else {
+        return ScriptPromise::RejectWithDOMException(
+            script_state, MakeGarbageCollected<DOMException>(
+                              DOMExceptionCode::kNotSupportedError,
+                              kReferenceSpaceNotSupported));
+      }
+      break;
     }
-  } else if (type == "unbounded") {
-    if (immersive() && environment_integration_) {
-      reference_space = MakeGarbageCollected<XRReferenceSpace>(
-          this, XRReferenceSpace::Type::kTypeUnbounded);
-    } else {
-      return ScriptPromise::RejectWithDOMException(
-          script_state, MakeGarbageCollected<DOMException>(
-                            DOMExceptionCode::kNotSupportedError,
-                            kReferenceSpaceNotSupported));
-    }
+    case XRReferenceSpace::Type::kTypeUnbounded:
+      if (immersive() && environment_integration_) {
+        reference_space = MakeGarbageCollected<XRReferenceSpace>(
+            this, XRReferenceSpace::Type::kTypeUnbounded);
+      } else {
+        return ScriptPromise::RejectWithDOMException(
+            script_state, MakeGarbageCollected<DOMException>(
+                              DOMExceptionCode::kNotSupportedError,
+                              kReferenceSpaceNotSupported));
+      }
+      break;
   }
 
-  if (!reference_space) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                           kUnknownReferenceSpace));
-  } else {
-    reference_spaces_.push_back(reference_space);
-  }
+  DCHECK(reference_space);
+  reference_spaces_.push_back(reference_space);
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   resolver->Resolve(reference_space);
+
+  UMA_HISTOGRAM_ENUMERATION("XR.WebXR.ReferenceSpace.Succeeded",
+                            requested_type);
 
   return promise;
 }

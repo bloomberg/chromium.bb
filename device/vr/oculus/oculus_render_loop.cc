@@ -139,7 +139,9 @@ void OculusRenderLoop::StopRuntime() {
   ovr_frame_index_ = 0;
 }
 
-void OculusRenderLoop::OnSessionStart() {}
+void OculusRenderLoop::OnSessionStart() {
+  LogViewerType(VrViewerType::OCULUS_UNKNOWN);
+}
 
 bool OculusRenderLoop::PreComposite() {
   // If our current swap chain has a different size than the recommended size

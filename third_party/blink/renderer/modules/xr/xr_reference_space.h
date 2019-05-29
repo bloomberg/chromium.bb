@@ -18,13 +18,17 @@ class XRReferenceSpace : public XRSpace {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum Type {
-    kTypeViewer,
-    kTypeLocal,
-    kTypeLocalFloor,
-    kTypeBoundedFloor,
-    kTypeUnbounded,
+  // Used for metrics, don't remove or change values.
+  enum class Type : int {
+    kTypeViewer = 0,
+    kTypeLocal = 1,
+    kTypeLocalFloor = 2,
+    kTypeBoundedFloor = 3,
+    kTypeUnbounded = 4,
+    kMaxValue = kTypeUnbounded,
   };
+
+  static Type StringToReferenceSpaceType(const String& reference_space_type);
 
   XRReferenceSpace(XRSession*, Type);
   XRReferenceSpace(XRSession*, XRRigidTransform*, Type);

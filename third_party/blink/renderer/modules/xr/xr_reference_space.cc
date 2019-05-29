@@ -13,7 +13,24 @@
 namespace blink {
 
 // Rough estimate of avg human eye height in meters.
-const double kDefaultEmulationHeight = 1.6;
+const double kDefaultEmulationHeightMeters = 1.6;
+
+XRReferenceSpace::Type XRReferenceSpace::StringToReferenceSpaceType(
+    const String& reference_space_type) {
+  if (reference_space_type == "viewer") {
+    return XRReferenceSpace::Type::kTypeViewer;
+  } else if (reference_space_type == "local") {
+    return XRReferenceSpace::Type::kTypeLocal;
+  } else if (reference_space_type == "local-floor") {
+    return XRReferenceSpace::Type::kTypeLocalFloor;
+  } else if (reference_space_type == "bounded-floor") {
+    return XRReferenceSpace::Type::kTypeBoundedFloor;
+  } else if (reference_space_type == "unbounded") {
+    return XRReferenceSpace::Type::kTypeUnbounded;
+  }
+  NOTREACHED();
+  return Type::kTypeViewer;
+}
 
 // origin offset starts as identity transform
 XRReferenceSpace::XRReferenceSpace(XRSession* session, Type type)
@@ -31,7 +48,7 @@ XRReferenceSpace::~XRReferenceSpace() = default;
 XRPose* XRReferenceSpace::getPose(
     XRSpace* other_space,
     std::unique_ptr<TransformationMatrix> base_pose_matrix) {
-  if (type_ == kTypeViewer) {
+  if (type_ == Type::kTypeViewer) {
     std::unique_ptr<TransformationMatrix> viewer_pose_matrix =
         other_space->GetViewerPoseMatrix(std::move(base_pose_matrix));
     if (!viewer_pose_matrix) {
@@ -58,7 +75,7 @@ void XRReferenceSpace::UpdateFloorLevelTransform() {
   } else {
     // Otherwise, create a transform based on the default emulated height.
     floor_level_transform_ = std::make_unique<TransformationMatrix>();
-    floor_level_transform_->Translate3d(0, kDefaultEmulationHeight, 0);
+    floor_level_transform_->Translate3d(0, kDefaultEmulationHeightMeters, 0);
   }
 
   display_info_id_ = session()->DisplayInfoPtrId();
@@ -68,8 +85,8 @@ void XRReferenceSpace::UpdateFloorLevelTransform() {
 // viewer reference spaces.
 std::unique_ptr<TransformationMatrix> XRReferenceSpace::DefaultPose() {
   // A viewer reference space always returns an identity matrix.
-  return type_ == kTypeViewer ? std::make_unique<TransformationMatrix>()
-                              : nullptr;
+  return type_ == Type::kTypeViewer ? std::make_unique<TransformationMatrix>()
+                                    : nullptr;
 }
 
 // Transforms a given pose from a "base" reference space used by the XR
@@ -77,11 +94,11 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::DefaultPose() {
 std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBasePose(
     const TransformationMatrix& base_pose) {
   switch (type_) {
-    case kTypeLocal:
+    case Type::kTypeLocal:
       // Currently all base poses are 'local' poses, so return directly.
       return std::make_unique<TransformationMatrix>(base_pose);
       break;
-    case kTypeLocalFloor:
+    case Type::kTypeLocalFloor:
       // Currently all base poses are 'local' space, so use of 'local-floor'
       // reference spaces requires adjustment. Ideally the service will
       // eventually provide poses in the requested space directly, avoiding the
@@ -100,15 +117,15 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBasePose(
         return pose;
       }
       break;
-    case kTypeViewer:
+    case Type::kTypeViewer:
       // Always return the default pose because we will only get here for an
       // "viewer" reference space.
       return DefaultPose();
-    case kTypeUnbounded:
+    case Type::kTypeUnbounded:
       // For now we assume that poses returned by systems that support unbounded
       // reference spaces are already in the correct space.
       return std::make_unique<TransformationMatrix>(base_pose);
-    case kTypeBoundedFloor:
+    case Type::kTypeBoundedFloor:
       break;
   }
 
@@ -122,12 +139,12 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBaseInputPose(
     const TransformationMatrix& base_input_pose,
     const TransformationMatrix& base_pose) {
   switch (type_) {
-    case kTypeViewer:
-    case kTypeLocal:
-    case kTypeLocalFloor:
-    case kTypeUnbounded:
+    case Type::kTypeViewer:
+    case Type::kTypeLocal:
+    case Type::kTypeLocalFloor:
+    case Type::kTypeUnbounded:
       return TransformBasePose(base_input_pose);
-    case kTypeBoundedFloor:
+    case Type::kTypeBoundedFloor:
       break;
   }
   return nullptr;
@@ -181,7 +198,7 @@ void XRReferenceSpace::Trace(blink::Visitor* visitor) {
 }
 
 void XRReferenceSpace::OnReset() {
-  if (type_ != kTypeViewer) {
+  if (type_ != Type::kTypeViewer) {
     DispatchEvent(
         *XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
   }

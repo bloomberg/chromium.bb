@@ -384,10 +384,13 @@ void MixedRealityRenderLoop::EnsureStageBounds() {
 }
 
 void MixedRealityRenderLoop::OnSessionStart() {
+  LogViewerType(VrViewerType::WINDOWS_MIXED_REALITY_UNKNOWN);
+
   // Each session should start with new origins.
   origin_ = nullptr;
   attached_ = nullptr;
   last_origin_from_attached_ = base::nullopt;
+
   InitializeOrigin();
 
   ClearStageOrigin();

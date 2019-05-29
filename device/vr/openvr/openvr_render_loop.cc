@@ -4,7 +4,6 @@
 
 #include "device/vr/openvr/openvr_render_loop.h"
 
-#include "base/metrics/histogram_functions.h"
 #include "device/vr/openvr/openvr_api_wrapper.h"
 #include "device/vr/openvr/openvr_gamepad_helper.h"
 #include "device/vr/openvr/openvr_type_converters.h"
@@ -163,7 +162,7 @@ void OpenVRRenderLoop::OnSessionStart() {
   else if (model == "Vive MV")
     type = VrViewerType::OPENVR_VIVE;
 
-  base::UmaHistogramSparse("VRViewerType", static_cast<int>(type));
+  LogViewerType(type);
 }
 
 mojom::XRGamepadDataPtr OpenVRRenderLoop::GetNextGamepadData() {

@@ -71,9 +71,17 @@ XRWebGLLayer* XRWebGLLayer::Create(
   bool want_alpha_channel = initializer->alpha();
   bool want_ignore_depth_values = initializer->ignoreDepthValues();
 
+  if (want_ignore_depth_values) {
+    UseCounter::Count(session->GetExecutionContext(),
+                      WebFeature::kWebXrIgnoreDepthValues);
+  }
+
   double framebuffer_scale = 1.0;
 
   if (initializer->hasFramebufferScaleFactor()) {
+    UseCounter::Count(session->GetExecutionContext(),
+                      WebFeature::kWebXrFramebufferScale);
+
     // The max size will be either the native resolution or the default
     // if that happens to be larger than the native res. (That can happen on
     // desktop systems.)

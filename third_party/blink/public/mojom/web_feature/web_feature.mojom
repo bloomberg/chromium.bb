@@ -2296,6 +2296,13 @@ enum WebFeature {
   kNonPassiveTouchEventListener = 2903,
   kPassiveTouchEventListener = 2904,
   kCSSValueAppearanceSearchCancelForOthers2Rendered = 2905,
+  kWebXrFramebufferScale = 2906,
+  kWebXrIgnoreDepthValues = 2907,
+  kWebXrSessionCreated = 2908,
+  kV8XRReferenceSpace_GetOffsetReferenceSpace_Method = 2909,
+  kV8XRInputSource_Gamepad_AttributeGetter = 2910,
+  kV8XRSession_End_Method = 2911,
+  kV8XRWebGLLayer_Constructor = 2912,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

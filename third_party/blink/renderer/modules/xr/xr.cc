@@ -510,6 +510,8 @@ void XR::OnRequestSessionReturned(
         &XR::OnMagicWindowProviderDisconnect, WrapWeakPersistent(this)));
   }
 
+  UseCounter::Count(ExecutionContext::From(query->resolver->GetScriptState()),
+                    WebFeature::kWebXrSessionCreated);
   query->resolver->Resolve(session);
 }
 

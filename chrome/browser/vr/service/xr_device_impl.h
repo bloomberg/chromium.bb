@@ -75,11 +75,13 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   bool IsAnotherHostPresenting();
 
   bool InternalSupportsSession(device::mojom::XRSessionOptions* options);
-  void OnNonImmersiveSessionCreated(
+  void OnInlineSessionCreated(
+      device::mojom::XRDeviceId session_runtime_id,
       device::mojom::XRDevice::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr controller);
   void OnSessionCreated(
+      device::mojom::XRDeviceId session_runtime_id,
       device::mojom::XRDevice::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session);
   void OnUserConsent(device::mojom::XRSessionOptionsPtr options,

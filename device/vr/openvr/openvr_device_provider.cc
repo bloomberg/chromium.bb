@@ -18,8 +18,7 @@ void OpenVRDeviceProvider::RecordRuntimeAvailability() {
   XrRuntimeAvailable runtime = XrRuntimeAvailable::NONE;
   if (vr::VR_IsRuntimeInstalled())
     runtime = XrRuntimeAvailable::OPENVR;
-  UMA_HISTOGRAM_ENUMERATION("XR.RuntimeAvailable", runtime,
-                            XrRuntimeAvailable::COUNT);
+  UMA_HISTOGRAM_ENUMERATION("XR.RuntimeAvailable", runtime);
 }
 
 OpenVRDeviceProvider::OpenVRDeviceProvider() = default;

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
@@ -71,7 +72,8 @@ XRDeviceImpl::XRDeviceImpl(content::RenderFrameHost* render_frame_host,
   binding_.Bind(std::move(request));
 }
 
-void XRDeviceImpl::OnNonImmersiveSessionCreated(
+void XRDeviceImpl::OnInlineSessionCreated(
+    device::mojom::XRDeviceId session_runtime_id,
     device::mojom::XRDevice::RequestSessionCallback callback,
     device::mojom::XRSessionPtr session,
     device::mojom::XRSessionControllerPtr controller) {
@@ -85,16 +87,19 @@ void XRDeviceImpl::OnNonImmersiveSessionCreated(
 
   magic_window_controllers_.AddPtr(std::move(controller));
 
-  OnSessionCreated(std::move(callback), std::move(session));
+  OnSessionCreated(session_runtime_id, std::move(callback), std::move(session));
 }
 
 void XRDeviceImpl::OnSessionCreated(
+    device::mojom::XRDeviceId session_runtime_id,
     device::mojom::XRDevice::RequestSessionCallback callback,
     device::mojom::XRSessionPtr session) {
   if (!session) {
     std::move(callback).Run(nullptr);
     return;
   }
+
+  UMA_HISTOGRAM_ENUMERATION("XR.RuntimeUsed", session_runtime_id);
 
   device::mojom::XRSessionClientPtr client;
   session->client_request = mojo::MakeRequest(&client);
@@ -166,13 +171,14 @@ void XRDeviceImpl::OnUserConsent(
   // Get the runtime we'll be creating a session with.
   BrowserXRRuntime* runtime =
       XRRuntimeManager::GetInstance()->GetRuntimeForOptions(options.get());
-  int id_for_event = runtime ? static_cast<int>(runtime->GetId()) : -1;
-  TRACE_EVENT_INSTANT1("xr", "GetRuntimeForOptions", TRACE_EVENT_SCOPE_THREAD,
-                       "id", id_for_event);
   if (!runtime) {
     std::move(callback).Run(nullptr);
     return;
   }
+
+  device::mojom::XRDeviceId session_runtime_id = runtime->GetId();
+  TRACE_EVENT_INSTANT1("xr", "GetRuntimeForOptions", TRACE_EVENT_SCOPE_THREAD,
+                       "id", session_runtime_id);
 
   auto runtime_options = GetRuntimeOptions(options.get());
   runtime_options->render_process_id =
@@ -185,15 +191,17 @@ void XRDeviceImpl::OnUserConsent(
 
     base::OnceCallback<void(device::mojom::XRSessionPtr)> immersive_callback =
         base::BindOnce(&XRDeviceImpl::OnSessionCreated,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+                       weak_ptr_factory_.GetWeakPtr(), session_runtime_id,
+                       std::move(callback));
     runtime->RequestSession(this, std::move(runtime_options),
                             std::move(immersive_callback));
   } else {
     base::OnceCallback<void(device::mojom::XRSessionPtr,
                             device::mojom::XRSessionControllerPtr)>
         non_immersive_callback =
-            base::BindOnce(&XRDeviceImpl::OnNonImmersiveSessionCreated,
-                           weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+            base::BindOnce(&XRDeviceImpl::OnInlineSessionCreated,
+                           weak_ptr_factory_.GetWeakPtr(), session_runtime_id,
+                           std::move(callback));
     runtime->GetRuntime()->RequestSession(std::move(runtime_options),
                                           std::move(non_immersive_callback));
   }
