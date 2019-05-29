@@ -61,6 +61,7 @@
 #include <ui/base/win/hidden_window.h>
 #include <ui/aura/window.h>
 #include <errno.h>
+#include <imm.h>
 
 namespace blpwtk2 {
 
@@ -354,7 +355,42 @@ void WebViewImpl::activateKeyboardLayout(unsigned int hkl)
         return;
     }
 
-    ::ActivateKeyboardLayout((HKL)hkl, KLF_SETFORPROCESS);
+    blpwtk2::NativeView hwnd = d_widget->getNativeWidgetView();
+    HIMC hImeContext = ImmGetContext(hwnd);
+    LANGID currentLangId = (WORD)((DWORD)currentKL & 0xffff);
+    LANGID newLangId = (WORD)(hkl & 0xffff);
+
+    DWORD dwConversion=0, dwSentence=0;
+    ::ImmGetConversionStatus(hImeContext, &dwConversion, &dwSentence);
+
+    // Only change input mode to alpha-numeric if new language is English,
+    // don't change IME.
+    if (newLangId == MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT)) {
+        dwConversion = IME_CMODE_ALPHANUMERIC;
+        ::ImmSetConversionStatus(hImeContext, dwConversion, dwSentence);
+        ImmSetOpenStatus(hImeContext, false);
+        ImmReleaseContext(hwnd, hImeContext);
+        return;
+    }
+    
+    // new input language is not English, switch IME first.
+    if (newLangId != currentLangId) {
+        ::ActivateKeyboardLayout((HKL)hkl, KLF_SETFORPROCESS);
+    }
+    
+    ImmSetOpenStatus(hImeContext, true);
+
+    // set input mode to none alpha-numeric
+    if (newLangId == MAKELANGID(LANG_JAPANESE, SUBLANG_DEFAULT)) {                
+        dwConversion = IME_CMODE_NATIVE | IME_CMODE_FULLSHAPE | IME_CMODE_ROMAN; // hiragana
+    }else if (newLangId == MAKELANGID(LANG_KOREAN, SUBLANG_DEFAULT)) {
+        dwConversion = IME_CMODE_NATIVE;
+    }else if (newLangId == MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED)) {
+        dwConversion = IME_CMODE_NATIVE | IME_CMODE_FULLSHAPE;
+    }
+    ::ImmSetConversionStatus(hImeContext, dwConversion, dwSentence);
+    
+    ImmReleaseContext(hwnd, hImeContext);
 }
 
 void WebViewImpl::clearTooltip()
