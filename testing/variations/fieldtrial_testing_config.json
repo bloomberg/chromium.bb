@@ -2763,6 +2763,8 @@
                 {
                     "name": "Enabled",
                     "params": {
+                        "automatic-lazy-load-frames-enabled": "true",
+                        "automatic-lazy-load-images-enabled": "true",
                         "restrict-lazy-load-frames-to-data-saver-only": "true",
                         "restrict-lazy-load-images-to-data-saver-only": "true"
                     },
