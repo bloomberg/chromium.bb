@@ -322,8 +322,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildTextNodeInfo(Text* text_node) {
   LayoutObject* layout_object = text_node->GetLayoutObject();
   if (!layout_object || !layout_object->IsText())
     return text_info;
-  PhysicalRect bounding_box =
-      ToLayoutText(layout_object)->PhysicalVisualOverflowRect();
+  LayoutRect bounding_box = ToLayoutText(layout_object)->VisualOverflowRect();
   text_info->setString("nodeWidth", bounding_box.Width().ToString());
   text_info->setString("nodeHeight", bounding_box.Height().ToString());
   text_info->setString("tagName", "#text");
@@ -846,7 +845,8 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
 
   if (layout_object->IsText()) {
     LayoutText* layout_text = ToLayoutText(layout_object);
-    PhysicalRect text_rect = layout_text->PhysicalVisualOverflowRect();
+    PhysicalRect text_rect =
+        layout_text->FlipForWritingMode(layout_text->VisualOverflowRect());
     content_box = text_rect;
     padding_box = text_rect;
     border_box = text_rect;

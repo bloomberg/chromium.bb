@@ -147,7 +147,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
   PhysicalRect PhysicalLinesBoundingBox() const;
-  PhysicalRect PhysicalVisualOverflowRect() const final;
+  LayoutRect VisualOverflowRect() const final;
   PhysicalRect ReferenceBoxForClipPath() const;
 
   InlineFlowBox* CreateAndAppendInlineFlowBox();
@@ -287,13 +287,13 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   bool ComputeInitialShouldCreateBoxFragment() const;
   bool ComputeInitialShouldCreateBoxFragment(const ComputedStyle& style) const;
 
-  PhysicalRect CulledInlineVisualOverflowBoundingBox() const;
+  LayoutRect CulledInlineVisualOverflowBoundingBox() const;
   InlineBox* CulledInlineFirstLineBox() const;
   InlineBox* CulledInlineLastLineBox() const;
 
-  // For PhysicalVisualOverflowRect() only, to get bounding box of visual
-  // overflow of line boxes.
-  PhysicalRect LinesVisualOverflowBoundingBox() const;
+  // For visualOverflowRect() only, to get bounding box of visual overflow of
+  // line boxes.
+  LayoutRect LinesVisualOverflowBoundingBox() const;
 
   // PhysicalRectCollector should be like a function:
   // void (const PhysicalRect&).

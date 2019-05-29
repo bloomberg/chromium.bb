@@ -712,9 +712,9 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     needs_descendant_dependent_flags_update_ = false;
 
     if (IsSelfPaintingLayer() && needs_visual_overflow_recalc_) {
-      auto old_visual_rect = GetLayoutObject().PhysicalVisualOverflowRect();
+      LayoutRect old_visual_rect = GetLayoutObject().VisualOverflowRect();
       GetLayoutObject().RecalcVisualOverflow();
-      if (old_visual_rect != GetLayoutObject().PhysicalVisualOverflowRect()) {
+      if (old_visual_rect != GetLayoutObject().VisualOverflowRect()) {
         SetNeedsCompositingInputsUpdateInternal();
         MarkAncestorChainForFlagsUpdate(DoesNotNeedDescendantDependentUpdate);
       }
@@ -2566,11 +2566,19 @@ bool PaintLayer::IntersectsDamageRect(
 }
 
 PhysicalRect PaintLayer::LocalBoundingBox() const {
-  PhysicalRect rect = GetLayoutObject().PhysicalVisualOverflowRect();
+  PhysicalRect rect;
+  if (GetLayoutObject().IsBox()) {
+    rect = ToLayoutBox(GetLayoutObject()).PhysicalVisualOverflowRect();
+  } else {
+    LayoutRect layout_rect = GetLayoutObject().VisualOverflowRect();
+    rect = GetLayoutObject().FlipForWritingMode(layout_rect);
+  }
+
   if (GetLayoutObject().IsEffectiveRootScroller() || IsRootLayer()) {
     rect.Unite(
         PhysicalRect(rect.offset, GetLayoutObject().View()->ViewRect().size));
   }
+
   return rect;
 }
 

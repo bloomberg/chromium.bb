@@ -1242,16 +1242,11 @@ InlineBox* LayoutInline::CulledInlineLastLineBox() const {
   return nullptr;
 }
 
-PhysicalRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
-  PhysicalRect result;
-  CollectCulledLineBoxRects(
-      [&result](const PhysicalRect& r) { result.UniteIfNonZero(r); });
-  if (!FirstChild())
-    return result;
-
+LayoutRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
+  LayoutRect result;
+  CollectCulledLineBoxRectsInFlippedBlocksDirection(
+      [&result](const LayoutRect& r) { result.UniteIfNonZero(r); }, this);
   bool is_horizontal = StyleRef().IsHorizontalWritingMode();
-  const LayoutBlock* block_for_flipping =
-      UNLIKELY(HasFlippedBlocksWritingMode()) ? ContainingBlock() : nullptr;
   for (LayoutObject* curr = FirstChild(); curr; curr = curr->NextSibling()) {
     if (curr->IsFloatingOrOutOfFlowPositioned())
       continue;
@@ -1264,31 +1259,29 @@ PhysicalRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
             curr_box->LogicalVisualOverflowRectForPropagation();
         if (is_horizontal) {
           logical_rect.MoveBy(curr_box->Location());
-          result.UniteIfNonZero(PhysicalRect(logical_rect));
+          result.UniteIfNonZero(logical_rect);
         } else {
           logical_rect.MoveBy(curr_box->Location());
-          result.UniteIfNonZero(FlipForWritingMode(
-              logical_rect.TransposedRect(), block_for_flipping));
+          result.UniteIfNonZero(logical_rect.TransposedRect());
         }
       }
     } else if (curr->IsLayoutInline()) {
       // If the child doesn't need line boxes either, then we can recur.
       LayoutInline* curr_inline = ToLayoutInline(curr);
-      if (!curr_inline->AlwaysCreateLineBoxes()) {
+      if (!curr_inline->AlwaysCreateLineBoxes())
         result.UniteIfNonZero(
             curr_inline->CulledInlineVisualOverflowBoundingBox());
-      } else if (!curr_inline->HasSelfPaintingLayer()) {
-        result.UniteIfNonZero(curr_inline->PhysicalVisualOverflowRect());
-      }
+      else if (!curr_inline->HasSelfPaintingLayer())
+        result.UniteIfNonZero(curr_inline->VisualOverflowRect());
     } else if (curr->IsText()) {
       LayoutText* curr_text = ToLayoutText(curr);
-      result.UniteIfNonZero(curr_text->PhysicalVisualOverflowRect());
+      result.UniteIfNonZero(curr_text->VisualOverflowRect());
     }
   }
   return result;
 }
 
-PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
+LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     PhysicalRect result;
     NGPaintFragment::InlineFragmentsIncludingCulledFor(
@@ -1300,14 +1293,14 @@ PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
           result->Unite(child_rect);
         },
         &result);
-    return result;
+    return FlipForWritingMode(result);
   }
 
   if (!AlwaysCreateLineBoxes())
     return CulledInlineVisualOverflowBoundingBox();
 
   if (!FirstLineBox() || !LastLineBox())
-    return PhysicalRect();
+    return LayoutRect();
 
   // Return the width of the minimal left side and the maximal right side.
   LayoutUnit logical_left_side = LayoutUnit::Max();
@@ -1333,13 +1326,13 @@ PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
                   logical_height);
   if (!StyleRef().IsHorizontalWritingMode())
     rect = rect.TransposedRect();
-  return FlipForWritingMode(rect);
+  return rect;
 }
 
 PhysicalRect LayoutInline::VisualRectInDocument(VisualRectFlags flags) const {
   PhysicalRect rect;
   if (!Continuation()) {
-    rect = PhysicalVisualOverflowRect();
+    rect = FlipForWritingMode(VisualOverflowRect());
   } else {
     // Should also cover continuations.
     rect = UnionRect(OutlineRects(PhysicalOffset(),
@@ -1361,11 +1354,11 @@ PhysicalRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
 
   // VisualOverflowRect() is in "physical coordinates with flipped blocks
   // direction", while all "VisualRect"s are in pure physical coordinates.
-  return PhysicalVisualOverflowRect();
+  return FlipForWritingMode(VisualOverflowRect());
 }
 
-PhysicalRect LayoutInline::PhysicalVisualOverflowRect() const {
-  PhysicalRect overflow_rect = LinesVisualOverflowBoundingBox();
+LayoutRect LayoutInline::VisualOverflowRect() const {
+  LayoutRect overflow_rect = LinesVisualOverflowBoundingBox();
   LayoutUnit outline_outset(StyleRef().OutlineOutsetExtent());
   if (outline_outset) {
     Vector<PhysicalRect> rects;
@@ -1385,7 +1378,7 @@ PhysicalRect LayoutInline::PhysicalVisualOverflowRect() const {
                       OutlineRectsShouldIncludeBlockVisualOverflow());
     }
     if (!rects.IsEmpty()) {
-      PhysicalRect outline_rect = UnionRectEvenIfEmpty(rects);
+      LayoutRect outline_rect = FlipForWritingMode(UnionRectEvenIfEmpty(rects));
       outline_rect.Inflate(outline_outset);
       overflow_rect.Unite(outline_rect);
     }

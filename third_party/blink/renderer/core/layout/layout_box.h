@@ -506,8 +506,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return LayoutSize(LayoutOverflowRect().MaxX(), LayoutOverflowRect().MaxY());
   }
 
-  LayoutRect VisualOverflowRect() const;
-  PhysicalRect PhysicalVisualOverflowRect() const final {
+  LayoutRect VisualOverflowRect() const override;
+  PhysicalRect PhysicalVisualOverflowRect() const {
     return FlipForWritingMode(VisualOverflowRect());
   }
   LayoutUnit LogicalLeftVisualOverflow() const {
