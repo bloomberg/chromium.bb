@@ -74,6 +74,7 @@ _METRIC_TYPE =  models.ObjectNodeType(
     attributes=[
       ('name', unicode, r'^[A-Za-z0-9_.]+$'),
       ('semantic_type', unicode, None),
+      ('enum', unicode, None),
     ],
     alphabetization=[
         (_OBSOLETE_TYPE.tag, _KEEP_ORDER),

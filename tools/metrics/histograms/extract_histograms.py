@@ -187,7 +187,7 @@ def _ExpandHistogramNameWithSuffixes(suffix_name, histogram_name,
   return cluster + suffix_name + separator + remainder
 
 
-def _ExtractEnumsFromXmlTree(tree):
+def ExtractEnumsFromXmlTree(tree):
   """Extract all <enum> nodes in the tree into a dictionary."""
 
   enums = {}
@@ -563,7 +563,7 @@ def ExtractHistogramsFromDom(tree):
   """
   _NormalizeAllAttributeValues(tree)
 
-  enums, enum_errors = _ExtractEnumsFromXmlTree(tree)
+  enums, enum_errors = ExtractEnumsFromXmlTree(tree)
   histograms, histogram_errors = _ExtractHistogramsFromXmlTree(tree, enums)
   update_errors = _UpdateHistogramsWithSuffixes(tree, histograms)
 

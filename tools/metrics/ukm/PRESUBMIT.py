@@ -36,7 +36,7 @@ def CheckChange(input_api, output_api):
         return [
             output_api.PresubmitError(
                 '%s does not pass format validation; run %s/validate_format.py '
-                'and fix the reported error(s).' %
+                'and fix the reported error(s) or warning(s).' %
                 (UKM_XML, input_api.PresubmitLocalPath())),
         ]
 

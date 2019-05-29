@@ -4,11 +4,18 @@
 # found in the LICENSE file.
 """Verifies that the UKM XML file is well-formatted."""
 
+import os
 import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+import path_util
+
 from xml_validations import UkmXmlValidation
 from xml.dom import minidom
 
-UKM_XML = 'ukm.xml'
+UKM_XML = path_util.GetInputFile('tools/metrics/ukm/ukm.xml')
+
+IGNORE_METRIC_CHECK_WARNINGS = True
 
 
 def main():
@@ -18,9 +25,18 @@ def main():
     validator = UkmXmlValidation(config)
 
     ownerCheckSuccess, ownerCheckErrors = validator.checkEventsHaveOwners()
+    metricCheckSuccess, metricCheckErrors, metricCheckWarnings = \
+      validator.checkMetricTypeIsSpecified()
 
-    if not ownerCheckSuccess:
-      return ownerCheckErrors
+    results = dict();
+
+    if not metricCheckSuccess or not metricCheckSuccess:
+      results['Errors'] = ownerCheckErrors + metricCheckErrors
+    if metricCheckWarnings and not IGNORE_METRIC_CHECK_WARNINGS:
+      results['Warnings'] = metricCheckWarnings
+
+    if 'Warnings' in results or 'Errors' in results:
+      return results
 
 
 if __name__ == '__main__':
