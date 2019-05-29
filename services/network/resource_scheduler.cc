@@ -480,6 +480,10 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
   bool HasNoPendingRequests() const { return pending_requests_.IsEmpty(); }
 
+  bool IsActiveResourceSchedulerClient() const {
+    return (!pending_requests_.IsEmpty() || !in_flight_requests_.empty());
+  }
+
  private:
   enum ShouldStartReqResult {
     DO_NOT_START_REQUEST_AND_STOP_SEARCHING,
@@ -1109,6 +1113,9 @@ void ResourceScheduler::OnClientCreated(
   client_map_[client_id] =
       std::make_unique<Client>(child_id == mojom::kBrowserProcessId,
                                network_quality_estimator, this, tick_clock_);
+
+  UMA_HISTOGRAM_COUNTS_100("ResourceScheduler.ActiveSchedulerClientsCount",
+                           ActiveSchedulerClientsCounter());
 }
 
 void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
@@ -1135,6 +1142,16 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   }
 
   client_map_.erase(it);
+}
+
+size_t ResourceScheduler::ActiveSchedulerClientsCounter() const {
+  size_t active_scheduler_clients_count = 0;
+  for (const auto& client : client_map_) {
+    if (client.second->IsActiveResourceSchedulerClient()) {
+      ++active_scheduler_clients_count;
+    }
+  }
+  return active_scheduler_clients_count;
 }
 
 ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,
