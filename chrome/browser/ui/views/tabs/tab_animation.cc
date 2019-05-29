@@ -62,14 +62,6 @@ void TabAnimation::CompleteAnimation() {
   duration_ = kZeroDuration;
 }
 
-void TabAnimation::CancelAnimation() {
-  TabAnimationState current_state = GetCurrentState();
-  initial_state_ = current_state;
-  target_state_ = current_state;
-  start_time_ = base::TimeTicks::Now();
-  duration_ = kZeroDuration;
-}
-
 void TabAnimation::NotifyCloseCompleted() {
   std::move(tab_removed_callback_).Run();
 }

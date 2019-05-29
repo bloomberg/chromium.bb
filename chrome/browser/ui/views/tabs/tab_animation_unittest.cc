@@ -95,48 +95,6 @@ TEST_F(TabAnimationTest, CompletedAnimationSnapsToTarget) {
             PinnednessOf(animation.GetCurrentState()));
 }
 
-TEST_F(TabAnimationTest, CanceledAnimationStaysAtInitial) {
-  TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
-      TabAnimationState::TabOpenness::kOpen,
-      TabAnimationState::TabPinnedness::kUnpinned,
-      TabAnimationState::TabActiveness::kInactive, 0);
-  TabAnimationState target_state =
-      initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
-  TabAnimation animation =
-      TabAnimation::ForStaticState(initial_state, base::BindOnce([]() {}));
-  animation.AnimateTo(target_state);
-
-  animation.CancelAnimation();
-
-  EXPECT_EQ(kZeroDuration, animation.GetTimeRemaining());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0), animation.GetTimeRemaining());
-  EXPECT_EQ(PinnednessOf(initial_state),
-            PinnednessOf(animation.GetCurrentState()));
-}
-
-TEST_F(TabAnimationTest, PartwayFinishedCanceledAnimationStaysPartwayFinished) {
-  TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
-      TabAnimationState::TabOpenness::kOpen,
-      TabAnimationState::TabPinnedness::kUnpinned,
-      TabAnimationState::TabActiveness::kInactive, 0);
-  TabAnimationState target_state =
-      initial_state.WithPinnedness(TabAnimationState::TabPinnedness::kPinned);
-  TabAnimation animation =
-      TabAnimation::ForStaticState(initial_state, base::BindOnce([]() {}));
-  animation.AnimateTo(target_state);
-
-  env_.FastForwardBy(TabAnimation::kAnimationDuration / 2.0);
-
-  animation.CancelAnimation();
-
-  EXPECT_EQ(kZeroDuration, animation.GetTimeRemaining());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0), animation.GetTimeRemaining());
-  EXPECT_LT(PinnednessOf(initial_state),
-            PinnednessOf(animation.GetCurrentState()));
-  EXPECT_LT(PinnednessOf(animation.GetCurrentState()),
-            PinnednessOf(target_state));
-}
-
 TEST_F(TabAnimationTest, ReplacedAnimationRestartsDuration) {
   TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
       TabAnimationState::TabOpenness::kOpen,

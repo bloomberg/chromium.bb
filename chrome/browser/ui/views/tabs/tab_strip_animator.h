@@ -58,10 +58,12 @@ class TabStripAnimator {
 
   void CompleteAnimations();
 
-  // TODO(958173): Temporary method that aborts current animations, leaving
-  // tabs where they are. Use to hand off animation responsibilities from
-  // this animator to elsewhere without teleporting tabs.
-  void CancelAnimations();
+  // TODO(958173): Temporary method that completes running animations,
+  // without invoking the callback to destroy removed tabs. Use to hand
+  // off animation (and removed tab destruction) responsibilities from
+  // this animator to elsewhere without teleporting tabs or destroying
+  // the same tab more than once.
+  void CompleteAnimationsWithoutDestroyingTabs();
 
  private:
   void AnimateTabTo(int index, TabAnimationState target_state);

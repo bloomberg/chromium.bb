@@ -2105,6 +2105,10 @@ void TabStrip::StartMoveTabAnimation() {
 }
 
 void TabStrip::AnimateToIdealBounds() {
+  // bounds_animator_ and animator_ should not run concurrently.
+  // bounds_animator_ takes precedence, and can finish what animator_ started.
+  animator_->CompleteAnimationsWithoutDestroyingTabs();
+
   for (int i = 0; i < tab_count(); ++i) {
     // If the tab is being dragged manually, skip it.
     Tab* tab = tab_at(i);

@@ -97,16 +97,13 @@ void TabStripAnimator::SetActiveTab(int prev_active_index,
 }
 
 void TabStripAnimator::CompleteAnimations() {
-  for (size_t i = 0; i < animations_.size(); i++) {
-    animations_[i].CompleteAnimation();
-  }
+  CompleteAnimationsWithoutDestroyingTabs();
   RemoveClosedTabs();
-  timer_.Stop();
 }
 
-void TabStripAnimator::CancelAnimations() {
+void TabStripAnimator::CompleteAnimationsWithoutDestroyingTabs() {
   for (TabAnimation& animation : animations_) {
-    animation.CancelAnimation();
+    animation.CompleteAnimation();
   }
   timer_.Stop();
 }
