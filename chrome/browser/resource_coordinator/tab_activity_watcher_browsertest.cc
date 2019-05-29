@@ -56,6 +56,7 @@ const UkmMetricMap kBasicMetricValues({
 
 // These parameters don't affect logging.
 const bool kCheckNavigationSuccess = true;
+const int64_t kIdShift = 1 << 13;
 
 }  // namespace
 
@@ -423,8 +424,10 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
         [TabManager_TabMetrics::kNumReactivationBeforeName] = 0;
     expected_tab_feature_values[TabManager_TabMetrics::kTotalTabCountName] = 2;
     expected_tab_feature_values[TabManager_TabMetrics::kWindowTabCountName] = 2;
-    expected_tab_feature_values[TabManager_TabMetrics::kLabelIdName] = 2;
-    expected_tab_feature_values[TabManager_TabMetrics::kQueryIdName] = 1;
+    expected_tab_feature_values[TabManager_TabMetrics::kLabelIdName] =
+        2 * kIdShift;
+    expected_tab_feature_values[TabManager_TabMetrics::kQueryIdName] =
+        1 * kIdShift;
     expected_tab_feature_values
         [TabManager_TabMetrics::kNavigationEntryCountName] = 2;
 
@@ -548,8 +551,10 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, LogOldestNTabFeatures) {
         [TabManager_TabMetrics::kNumReactivationBeforeName] = 0;
     expected_tab_feature_values[TabManager_TabMetrics::kTotalTabCountName] = 3;
     expected_tab_feature_values[TabManager_TabMetrics::kWindowTabCountName] = 3;
-    expected_tab_feature_values[TabManager_TabMetrics::kLabelIdName] = 2;
-    expected_tab_feature_values[TabManager_TabMetrics::kQueryIdName] = 1;
+    expected_tab_feature_values[TabManager_TabMetrics::kLabelIdName] =
+        2 * kIdShift;
+    expected_tab_feature_values[TabManager_TabMetrics::kQueryIdName] =
+        1 * kIdShift;
 
     ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[1],
                                        expected_tab_feature_values);
@@ -565,7 +570,8 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, LogOldestNTabFeatures) {
     ukm_entry_checker_->ExpectNewEntry(
         kFOCEntryName, test_urls_[1],
         {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 1},
-         {TabManager_Background_ForegroundedOrClosed::kLabelIdName, 2},
+         {TabManager_Background_ForegroundedOrClosed::kLabelIdName,
+          2 * kIdShift},
          {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 0}});
   }
 
@@ -580,8 +586,10 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, LogOldestNTabFeatures) {
         [TabManager_TabMetrics::kNumReactivationBeforeName] = 0;
     expected_tab_feature_values[TabManager_TabMetrics::kTotalTabCountName] = 3;
     expected_tab_feature_values[TabManager_TabMetrics::kWindowTabCountName] = 3;
-    expected_tab_feature_values[TabManager_TabMetrics::kLabelIdName] = 4;
-    expected_tab_feature_values[TabManager_TabMetrics::kQueryIdName] = 3;
+    expected_tab_feature_values[TabManager_TabMetrics::kLabelIdName] =
+        4 * kIdShift;
+    expected_tab_feature_values[TabManager_TabMetrics::kQueryIdName] =
+        3 * kIdShift;
 
     ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[2],
                                        expected_tab_feature_values);
@@ -596,7 +604,8 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, LogOldestNTabFeatures) {
     ukm_entry_checker_->ExpectNewEntry(
         kFOCEntryName, test_urls_[2],
         {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 0},
-         {TabManager_Background_ForegroundedOrClosed::kLabelIdName, 4},
+         {TabManager_Background_ForegroundedOrClosed::kLabelIdName,
+          4 * kIdShift},
          {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 0}});
 
     // Close Browser should log a ForegroundedOrClosed event for tab@0 with
@@ -629,8 +638,8 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
     SCOPED_TRACE("");
     UkmMetricMap expected_metrics = kBasicMetricValues;
     expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName] = 2;
-    expected_metrics[TabManager_TabMetrics::kLabelIdName] = 2;
-    expected_metrics[TabManager_TabMetrics::kQueryIdName] = 1;
+    expected_metrics[TabManager_TabMetrics::kLabelIdName] = 2 * kIdShift;
+    expected_metrics[TabManager_TabMetrics::kQueryIdName] = 1 * kIdShift;
     // tab feature of tab@0 should be logged correctly.
     ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[0],
                                        expected_metrics);
@@ -651,7 +660,8 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
     UkmMetricMap expected_metrics = {
         {TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 1},
         {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 1},
-        {TabManager_Background_ForegroundedOrClosed::kLabelIdName, 2}};
+        {TabManager_Background_ForegroundedOrClosed::kLabelIdName,
+         2 * kIdShift}};
 
     ukm_entry_checker_->ExpectNewEntry(kFOCEntryName, test_urls_[0],
                                        expected_metrics);
@@ -663,8 +673,8 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
     SCOPED_TRACE("");
     // tab feature of tab@1 should be logged correctly.
     UkmMetricMap expected_metrics = kBasicMetricValues;
-    expected_metrics[TabManager_TabMetrics::kLabelIdName] = 4;
-    expected_metrics[TabManager_TabMetrics::kQueryIdName] = 3;
+    expected_metrics[TabManager_TabMetrics::kLabelIdName] = 4 * kIdShift;
+    expected_metrics[TabManager_TabMetrics::kQueryIdName] = 3 * kIdShift;
     ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[1],
                                        expected_metrics);
   }
@@ -682,10 +692,53 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
     UkmMetricMap expected_metrics = {
         {TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 0},
         {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 1},
-        {TabManager_Background_ForegroundedOrClosed::kLabelIdName, 4}};
+        {TabManager_Background_ForegroundedOrClosed::kLabelIdName,
+         4 * kIdShift}};
 
     ukm_entry_checker_->ExpectNewEntry(kFOCEntryName, test_urls_[1],
                                        expected_metrics);
   }
 }
+
+// Tests label_id is incremented if the LogOldestNTabFeatures is called second
+// times without logging the label first.
+IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
+                       TabsAlreadyHaveLabelIdGetIncrementalLabelIds) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kTabRanker,
+      {{"number_of_oldest_tabs_to_log_with_TabRanker", "1"},
+       {"disable_background_log_with_TabRanker", "true"}});
+
+  ui_test_utils::NavigateToURL(browser(), test_urls_[0]);
+  AddTabAtIndex(1, test_urls_[1], ui::PAGE_TRANSITION_LINK);
+  // No TabMetrics events are logged till now.
+  EXPECT_EQ(0u, ukm_entry_checker_->NumEntries(kEntryName));
+
+  // Log tab_0.
+  TabActivityWatcher::GetInstance()->LogOldestNTabFeatures();
+  {
+    SCOPED_TRACE("");
+    UkmMetricMap expected_metrics = kBasicMetricValues;
+    expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName] = 2;
+    expected_metrics[TabManager_TabMetrics::kLabelIdName] = 2 * kIdShift;
+    expected_metrics[TabManager_TabMetrics::kQueryIdName] = 1 * kIdShift;
+    // tab feature of tab@0 should be logged correctly.
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[0],
+                                       expected_metrics);
+  }
+
+  TabActivityWatcher::GetInstance()->LogOldestNTabFeatures();
+  {
+    SCOPED_TRACE("");
+    UkmMetricMap expected_metrics = kBasicMetricValues;
+    expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName] = 2;
+    expected_metrics[TabManager_TabMetrics::kLabelIdName] = 2 * kIdShift + 1;
+    expected_metrics[TabManager_TabMetrics::kQueryIdName] = 3 * kIdShift;
+    // tab feature of tab@0 should be logged correctly.
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[0],
+                                       expected_metrics);
+  }
+}
+
 }  // namespace resource_coordinator

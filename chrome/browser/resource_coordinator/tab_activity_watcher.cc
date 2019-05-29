@@ -48,7 +48,14 @@ namespace {
 // incrementally from 1.
 int64_t NewInt64ForLabelIdOrQueryId() {
   static int64_t id = 0;
-  return ++id;
+  // The id is shifted 13 bits so that the lower bits are reserved for counting
+  // multiple queries.
+  // We choose 13 so that the lower bits for counting multiple queries and
+  // higher bits for labeling queries are both unlikely to overflow. (lower bits
+  // only overflows when we have more than 8192 queries without labeling events;
+  // higher bits only overflow when we have more than 100 billion discards.
+  constexpr int kIdShiftBits = 13;
+  return (++id) << kIdShiftBits;
 }
 
 }  // namespace
@@ -161,10 +168,12 @@ class TabActivityWatcher::WebContentsData
     if (!tab.has_value())
       return;
 
-    // A new label_id_ is generated for this query.
+    // Update label_id_: a new label_id is generated for this query if the
+    // label_id_ is 0; otherwise the old label_id_ is incremented. This allows
+    // us to better pairing TabMetrics with ForegroundedOrClosed events offline.
     // The same label_id_ will be logged with ForegroundedOrClosed event later
     // on so that TabFeatures can be paired with ForegroundedOrClosed.
-    label_id_ = NewInt64ForLabelIdOrQueryId();
+    label_id_ = label_id_ ? label_id_ + 1 : NewInt64ForLabelIdOrQueryId();
 
     TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogTabMetrics(
         ukm_source_id_, tab.value(), web_contents(), label_id_);
