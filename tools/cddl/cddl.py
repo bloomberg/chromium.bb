@@ -8,12 +8,6 @@ import subprocess
 import sys
 
 def main():
-  header = ''
-  cc = ''
-  genDir = ''
-  cddlFile = ''
-
-  # Parse and validate input
   args = parseInput()
 
   assert validateHeaderInput(args.header), \
@@ -30,23 +24,28 @@ def main():
     log = open(logPath, "w")
     log.write("OUTPUT FOR CDDL CODE GENERATION TOOL:\n\n")
     log = open(logPath, "a")
-    print("Logging to %s" % logPath)
+
+    if (args.verbose):
+      print("Logging to %s" % logPath)
   else:
     log = None
 
-  # Execute command line commands with these variables.
-  print('Creating C++ files from provided CDDL file...')
+  if (args.verbose):
+    print('Creating C++ files from provided CDDL file...')
   echoAndRunCommand(['./cddl', "--header", args.header, "--cc", args.cc,
-                     "--gen-dir", args.gen_dir, args.file], False, log)
+                     "--gen-dir", args.gen_dir, args.file],
+                     False, log, args.verbose)
 
   clangFormatLocation = findClangFormat()
-  if clangFormatLocation == None:
+  if clangFormatLocation == None and args.verbose:
     print("\tWARNING: clang-format could not be found")
   else:
     echoAndRunCommand([clangFormatLocation + 'clang-format', "-i",
-                       os.path.join(args.gen_dir, args.header)], True)
+                       os.path.join(args.gen_dir, args.header)],
+                       True, verbose=args.verbose)
     echoAndRunCommand([clangFormatLocation + 'clang-format', "-i",
-                       os.path.join(args.gen_dir, args.cc)], True)
+                       os.path.join(args.gen_dir, args.cc)],
+                       True, verbose=args.verbose)
 
 def parseInput():
   parser = argparse.ArgumentParser()
@@ -57,8 +56,10 @@ def parseInput():
      source file")
   parser.add_argument("--gen-dir", help="Specify the directory prefix that \
      should be added to the output header and source file.")
-  parser.add_argument("--log", help="Specify the file to which stdout shoud \
+  parser.add_argument("--log", help="Specify the file to which stdout should \
      be redirected.")
+  parser.add_argument("--verbose", help="Specify that we should log info \
+     messages to stdout")
   parser.add_argument("file", help="the input file which contains the spec")
   return parser.parse_args()
 
@@ -74,8 +75,11 @@ def validatePathInput(dirPath):
 def validateCddlInput(cddlFile):
   return cddlFile and os.path.isfile(cddlFile)
 
-def echoAndRunCommand(commandArray, allowFailure, logfile = None):
-  print("\tExecuting Command: '%s'" % " ".join(commandArray))
+def echoAndRunCommand(commandArray, allowFailure,
+                      logfile = None, verbose = False):
+  if verbose:
+    print("\tExecuting Command: '%s'" % " ".join(commandArray))
+
   if logfile != None:
     process = subprocess.Popen(commandArray, stdout=logfile, stderr=logfile)
     process.wait()
@@ -83,11 +87,12 @@ def echoAndRunCommand(commandArray, allowFailure, logfile = None):
   else:
     process = subprocess.Popen(commandArray)
     process.wait()
+
   returncode = process.returncode
   if returncode != None and returncode != 0:
     if not allowFailure:
       sys.exit("\t\tERROR: Command failed with error code: '%i'!" % returncode)
-    else:
+    elif verbose:
       print("\t\tWARNING: Command failed with error code: '%i'!" % returncode)
 
 def findClangFormat():
