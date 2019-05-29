@@ -66,7 +66,8 @@ public class TaskRecognizer extends EmptyTabObserver implements ResolveResponse 
      * @param tab The tab that might be about a product.  Must be the current front tab.
      */
     private void tryToShowProduct(Tab tab) {
-        boolean isCurrentSelectedTab = tab.equals(tab.getActivity().getActivityTab());
+        boolean isCurrentSelectedTab =
+                tab != null && tab.equals(tab.getActivity().getActivityTab());
         if (mTabInUse != null || !isCurrentSelectedTab) {
             return;
         }
