@@ -54,24 +54,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       </details>
     </header>
     <header>
-        <details open>
+        <details id="gamepad-details-hand-none">
             <summary>None-hand Gamepad</summary>
             <p>Real-time info for gamepad not associated with a particular hand.</p>
-            <div id="gamepad-hand-none"></div>
         </details>
     </header>
     <header>
-        <details open>
+        <details id="gamepad-details-hand-left">
             <summary>Left-hand Gamepad</summary>
             <p>Real-time info for gamepad associated with left hand.</p>
-            <div id="gamepad-hand-left"></div>
         </details>
     </header>
     <header>
-        <details open>
+        <details id="gamepad-details-hand-right">
             <summary>Right-hand Gamepad</summary>
             <p>Real-time info for gamepad associated with right hand.</p>
-            <div id="gamepad-hand-right"></div>
         </details>
     </header>
     <script type="module">
@@ -125,6 +122,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let boxTable = {};
       let movableBoxes = {};
       let loggedGamepadInfo = {};
+
+      let frame_number = 0;
+      let axes_tables = {};
+      let info_tables = {};
+      let button_tables = {};
 
       class XRControllerState {
         constructor(button_count) {
@@ -184,66 +186,143 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
 
-      function AddCell(row, text) {
-        let cell = document.createElement("td");
-        let textNode = document.createTextNode(text);
-        cell.appendChild(textNode);
-        row.appendChild(cell);
-      }
-
-      function AddRow(tableBody, values) {
-        let row = document.createElement("tr");
-        for (let i = 0; i < values.length; ++i) {
-          AddCell(row, values[i]);
+      class GamepadTable {
+        constructor(title, cols, hand) {
+          this.table = document.createElement("table");
+          this.table.setAttribute("border", 1);
+          this.body = document.createElement("tbody");
+          this.AddHeader(title, cols);
+          this.table.appendChild(this.body);
+          document.getElementById("gamepad-details-hand-" + hand).appendChild(this.table);
         }
-        tableBody.appendChild(row);
-      }
 
-      function AddHeader(tableBody, title, cols) {
-        let row = document.createElement("tr");
-        let th = document.createElement("th");
-        th.setAttribute("colspan", cols);
-        th.appendChild(document.createTextNode(title));
-        row.appendChild(th);
-        tableBody.appendChild(row);
-      }
-
-      function BuildButtonTable(buttons) {
-        let table = document.createElement("table");
-        let tableBody = document.createElement("tbody");
-        AddHeader(tableBody, "buttons", 3);
-        AddRow(tableBody, ["pressed", "touched", "value"]);
-        for (let i = 0; i < buttons.length; ++i) {
-          AddRow(tableBody, [buttons[i].pressed, buttons[i].touched, buttons[i].value.toFixed(3)]);
+        AddHeader(title, cols) {
+          let row = document.createElement("tr");
+          let th = document.createElement("th");
+          th.setAttribute("colspan", cols);
+          th.appendChild(document.createTextNode(title));
+          row.appendChild(th);
+          this.body.appendChild(row);
         }
-        table.appendChild(tableBody);
-        table.setAttribute("border", 1);
-        return table;
-      }
 
-      function BuildAxesTable(axes) {
-        let table = document.createElement("table");
-        let tableBody = document.createElement("tbody");
-        AddHeader(tableBody, "axes", 1);
-        AddRow(tableBody, ["value"]);
-        for (let i = 0; i < axes.length; ++i) {
-          AddRow(tableBody, [axes[i].toFixed(3)]);
+        AddCell(row, text) {
+          let cell = document.createElement("td");
+          cell.appendChild(document.createTextNode(text));
+          row.appendChild(cell);
+          return cell;
         }
-        table.appendChild(tableBody);
-        table.setAttribute("border", 1);
-        return table;
+
+        AddRow(values) {
+          let cells = [];
+          let row = document.createElement("tr");
+          for (let i = 0; i < values.length; ++i) {
+            cells.push(this.AddCell(row, values[i]));
+          }
+          this.body.appendChild(row);
+          return cells;
+        }
       }
 
-      function BuildInfoTable(gamepad, hand) {
-        let table = document.createElement("table");
-        let tableBody = document.createElement("tbody");
-        AddHeader(tableBody, "Gamepad", 2);
-        AddRow(tableBody, ["hand", hand]);
-        AddRow(tableBody, ["id", gamepad.id]);
-        AddRow(tableBody, ["mapping", gamepad.mapping]);
-        table.appendChild(tableBody);
-        table.setAttribute("border", 1);
-        return table;
+      class ButtonTable extends GamepadTable {
+        constructor(buttons, hand) {
+          super("button data", 3, hand);
+
+          this.AddRow(["pressed", "touched", "value"]);
+
+          this.pressed_cells = [];
+          this.touched_cells = [];
+          this.value_cells = [];
+
+          this.pressed = [];
+          this.touched = [];
+          this.values = [];
+
+          for (let i = 0; i < buttons.length; ++i) {
+            this.pressed.push(buttons[i].pressed);
+            this.touched.push(buttons[i].touched);
+            this.values.push(buttons[i].value);
+            let cells = this.AddRow([buttons[i].pressed, buttons[i].touched, buttons[i].value.toFixed(3)]);
+            this.pressed_cells.push(cells[0]);
+            this.touched_cells.push(cells[1]);
+            this.value_cells.push(cells[2]);
+          }
+        }
+
+        update(buttons) {
+          for (let i = 0; i < buttons.length; ++i) {
+            const is_pressed = buttons[i].pressed;
+            if (this.pressed[i] != is_pressed) {
+              this.pressed_cells[i].innerHTML = is_pressed;
+              this.pressed[i] = is_pressed;
+            }
+            const is_touched = buttons[i].touched;
+            if (this.touched[i] != is_touched) {
+              this.touched_cells[i].innerHTML = is_touched;
+              this.touched[i] = is_touched;
+            }
+            const value = buttons[i].value;
+            if (this.values[i] != value) {
+              this.value_cells[i].innerHTML = value.toFixed(3);
+              this.values[i] = value;
+            }
+          }
+        }
+      }
+
+      class AxesTable extends GamepadTable {
+        constructor(axes, hand) {
+          super("axis values", 1, hand);
+
+          this.values = [];
+          for (let i = 0; i < axes.length; ++i) {
+            this.values.push(axes[i]);
+          }
+
+          this.cells = [];
+          for (let i = 0; i < axes.length; ++i) {
+            let temp_cells = this.AddRow([axes[i].toFixed(3)]);
+            this.cells.push(temp_cells[0]);
+          }
+        }
+
+        update(axes) {
+          // assumes length is still the same
+          for (let i = 0; i < axes.length; ++i) {
+            if (this.values[i] != axes[i]) {
+              this.cells[i].innerHTML = axes[i].toFixed(3);
+              this.values[i] = axes[i];
+            }
+          }
+        }
+      }
+
+      class InfoTable extends GamepadTable {
+        constructor(gamepad, hand) {
+          super("Gamepad", 2, hand);
+
+          this.hand = hand;
+          this.id = gamepad.id;
+          this.mapping = gamepad.mapping;
+
+          this.hand_cell = this.AddRow(["hand", hand])[1];
+          this.id_cell = this.AddRow(["id", gamepad.id])[1];
+          this.mapping_cell = this.AddRow(["mapping", gamepad.mapping])[1];
+        }
+
+        update(gamepad, hand) {
+          if (this.hand != hand) {
+            this.hand_cell.innerHTML = hand;
+            this.hand = hand;
+          }
+          if (this.id != gamepad.id) {
+            this.id_cell.innerHTML = gamepad.id;
+            this.id = gamepad.id;
+          }
+          if (this.mapping != gamepad.mapping) {
+            this.mapping_cell.innerHTML = gamepad.mapping;
+            this.mapping = gamepad.mapping;
+          }
+        }
       }
 
       function ProcessGamepad(gamepad, input_source) {
@@ -290,17 +369,33 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             movableBoxes[hand].update(dx, -dy);
           }
         }
-        let infoTable = BuildInfoTable(gamepad, hand);
-        let buttonTable = BuildButtonTable(gamepad.buttons);
-        let axesTable = BuildAxesTable(gamepad.axes);
-        let divID = "gamepad-hand-" + hand;
-        let div = document.getElementById(divID);
-        while (div.firstChild) {
-          div.removeChild(div.firstChild);
+
+        // Only update the gamepad tables once every 10 frames for perf reasons.
+        // Only update the tables if the relevant section is expanded on the page.
+        let details_elem = document.getElementById("gamepad-details-hand-" + hand);
+        if (details_elem.hasAttribute("open")) {
+          // Construct the tables if necessary. Must check this every frame
+          // because otherwise, the table doesn't get created until the gamepad
+          // has an input change on a frame that's a multiple of 10.
+          if (!(hand in info_tables)) {
+            info_tables[hand] = new InfoTable(gamepad, hand);
+          }
+
+          if (!(hand in axes_tables)) {
+            axes_tables[hand] = new AxesTable(gamepad.axes, hand);
+          }
+
+          if (!(hand in button_tables)) {
+            button_tables[hand] = new ButtonTable(gamepad.buttons, hand);
+          }
+
+          if ((frame_number % 10) == 0) {
+            info_tables[hand].update(gamepad, hand);
+            axes_tables[hand].update(gamepad.axes);
+            button_tables[hand].update(gamepad.buttons);
+          }
         }
-        div.appendChild(infoTable);
-        div.appendChild(buttonTable);
-        div.appendChild(axesTable);
+        frame_number++;
       }
 
       function initXR() {
