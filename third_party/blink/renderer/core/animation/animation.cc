@@ -519,9 +519,11 @@ bool Animation::Affects(const Element& element,
 
 base::Optional<double> Animation::CalculateStartTime(
     double current_time) const {
-  base::Optional<double> start_time =
-      timeline_->EffectiveTime() - current_time / playback_rate_;
-  DCHECK(!IsNull(start_time.value()));
+  base::Optional<double> start_time;
+  if (timeline_) {
+    start_time = timeline_->EffectiveTime() - current_time / playback_rate_;
+    DCHECK(!IsNull(start_time.value()));
+  }
   return start_time;
 }
 
@@ -981,7 +983,8 @@ void Animation::SetOutdated() {
 }
 
 void Animation::ForceServiceOnNextFrame() {
-  timeline_->Wake();
+  if (timeline_)
+    timeline_->Wake();
 }
 
 CompositorAnimations::FailureReasons
