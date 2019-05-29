@@ -326,7 +326,7 @@ class MediaControlsImpl::MediaElementMutationCallback
 
 // static
 bool MediaControlsImpl::IsModern() {
-  return RuntimeEnabledFeatures::ModernMediaControlsEnabled();
+  return true;
 }
 
 bool MediaControlsImpl::IsTouchEvent(Event* event) {

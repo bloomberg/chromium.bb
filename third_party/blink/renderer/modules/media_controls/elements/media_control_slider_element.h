@@ -34,6 +34,8 @@ class MODULES_EXPORT MediaControlSliderElement
   int TrackWidth();
 
  protected:
+  friend class MediaControlsImplTest;
+
   class MediaControlSliderElementResizeObserverDelegate;
 
   MediaControlSliderElement(MediaControlsImpl&);

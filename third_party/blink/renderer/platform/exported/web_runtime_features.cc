@@ -264,10 +264,6 @@ void WebRuntimeFeatures::EnableMimeHandlerViewInCrossProcessFrame(bool enable) {
   RuntimeEnabledFeatures::SetMimeHandlerViewInCrossProcessFrameEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableModernMediaControls(bool enable) {
-  RuntimeEnabledFeatures::SetModernMediaControlsEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableNotificationConstructor(bool enable) {
   RuntimeEnabledFeatures::SetNotificationConstructorEnabled(enable);
 }

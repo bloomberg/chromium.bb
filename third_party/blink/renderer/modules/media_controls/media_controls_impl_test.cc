@@ -21,16 +21,19 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_cast_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_download_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_mute_button_element.h"
@@ -50,12 +53,8 @@
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 // The MediaTimelineWidths histogram suffix expected to be encountered in these
-// tests. Depends on the OS, since Android sizes its timeline differently.
-#if defined(OS_ANDROID)
-#define TIMELINE_W "80_127"
-#else
-#define TIMELINE_W "128_255"
-#endif
+// tests.
+#define TIMELINE_W "256_511"
 
 namespace blink {
 
@@ -218,6 +217,11 @@ class MediaControlsImplTest : public PageTestBase,
   MediaControlTimelineElement* TimelineElement() const {
     return media_controls_->timeline_;
   }
+  Element* TimelineTrackElement() const {
+    if (!TimelineElement())
+      return nullptr;
+    return &TimelineElement()->GetTrackElement();
+  }
   MediaControlCurrentTimeDisplayElement* GetCurrentTimeDisplayElement() const {
     return media_controls_->current_time_display_;
   }
@@ -227,6 +231,12 @@ class MediaControlsImplTest : public PageTestBase,
   }
   MediaControlMuteButtonElement* MuteButtonElement() const {
     return media_controls_->mute_button_;
+  }
+  MediaControlCastButtonElement* CastButtonElement() const {
+    return media_controls_->cast_button_;
+  }
+  MediaControlDownloadButtonElement* DownloadButtonElement() const {
+    return media_controls_->download_button_;
   }
   MediaControlPlayButtonElement* PlayButtonElement() const {
     return media_controls_->play_button_;
@@ -279,6 +289,24 @@ class MediaControlsImplTest : public PageTestBase,
 
   const String GetDisplayedTime(MediaControlTimeDisplayElement* display) {
     return To<Text>(display->firstChild())->data();
+  }
+
+  bool IsOverflowElementVisible(MediaControlInputElement& element) {
+    MediaControlInputElement* overflow_element =
+        element.OverflowElementForTests();
+    if (!overflow_element)
+      return false;
+
+    Element* overflow_parent_label = overflow_element->parentElement();
+    if (!overflow_parent_label)
+      return false;
+
+    const CSSPropertyValueSet* inline_style =
+        overflow_parent_label->InlineStyle();
+    if (inline_style->GetPropertyValue(CSSPropertyID::kDisplay) == "none")
+      return false;
+
+    return true;
   }
 
  private:
@@ -387,36 +415,34 @@ TEST_F(MediaControlsImplTest, ResetDoesNotTriggerInitialLayout) {
 TEST_F(MediaControlsImplTest, CastButtonRequiresRoute) {
   EnsureSizing();
 
-  Element* cast_button = GetElementByShadowPseudoId(
-      MediaControls(), "-internal-media-controls-cast-button");
+  MediaControlCastButtonElement* cast_button = CastButtonElement();
   ASSERT_NE(nullptr, cast_button);
 
-  ASSERT_FALSE(IsElementVisible(*cast_button));
+  ASSERT_FALSE(IsOverflowElementVisible(*cast_button));
 
   SimulateRouteAvailable();
-  ASSERT_TRUE(IsElementVisible(*cast_button));
+  ASSERT_TRUE(IsOverflowElementVisible(*cast_button));
 }
 
 TEST_F(MediaControlsImplTest, CastButtonDisableRemotePlaybackAttr) {
   EnsureSizing();
 
-  Element* cast_button = GetElementByShadowPseudoId(
-      MediaControls(), "-internal-media-controls-cast-button");
+  MediaControlCastButtonElement* cast_button = CastButtonElement();
   ASSERT_NE(nullptr, cast_button);
 
-  ASSERT_FALSE(IsElementVisible(*cast_button));
+  ASSERT_FALSE(IsOverflowElementVisible(*cast_button));
   SimulateRouteAvailable();
-  ASSERT_TRUE(IsElementVisible(*cast_button));
+  ASSERT_TRUE(IsOverflowElementVisible(*cast_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
       html_names::kDisableremoteplaybackAttr, true);
   test::RunPendingTasks();
-  ASSERT_FALSE(IsElementVisible(*cast_button));
+  ASSERT_FALSE(IsOverflowElementVisible(*cast_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
       html_names::kDisableremoteplaybackAttr, false);
   test::RunPendingTasks();
-  ASSERT_TRUE(IsElementVisible(*cast_button));
+  ASSERT_TRUE(IsOverflowElementVisible(*cast_button));
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDefault) {
@@ -533,8 +559,7 @@ TEST_F(MediaControlsImplTest, KeepControlsVisibleIfOverflowListVisible) {
 TEST_F(MediaControlsImplTest, DownloadButtonDisplayed) {
   EnsureSizing();
 
-  Element* download_button = GetElementByShadowPseudoId(
-      MediaControls(), "-internal-media-controls-download-button");
+  MediaControlDownloadButtonElement* download_button = DownloadButtonElement();
   ASSERT_NE(nullptr, download_button);
 
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
@@ -542,28 +567,26 @@ TEST_F(MediaControlsImplTest, DownloadButtonDisplayed) {
   SimulateLoadedMetadata();
 
   // Download button should normally be displayed.
-  EXPECT_TRUE(IsElementVisible(*download_button));
+  EXPECT_TRUE(IsOverflowElementVisible(*download_button));
 }
 
 TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedEmptyUrl) {
   EnsureSizing();
 
-  Element* download_button = GetElementByShadowPseudoId(
-      MediaControls(), "-internal-media-controls-download-button");
+  MediaControlDownloadButtonElement* download_button = DownloadButtonElement();
   ASSERT_NE(nullptr, download_button);
 
   // Download button should not be displayed when URL is empty.
   MediaControls().MediaElement().SetSrc("");
   test::RunPendingTasks();
   SimulateLoadedMetadata();
-  EXPECT_FALSE(IsElementVisible(*download_button));
+  EXPECT_FALSE(IsOverflowElementVisible(*download_button));
 }
 
 TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedInfiniteDuration) {
   EnsureSizing();
 
-  Element* download_button = GetElementByShadowPseudoId(
-      MediaControls(), "-internal-media-controls-download-button");
+  MediaControlDownloadButtonElement* download_button = DownloadButtonElement();
   ASSERT_NE(nullptr, download_button);
 
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
@@ -573,27 +596,26 @@ TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedInfiniteDuration) {
   MediaControls().MediaElement().DurationChanged(
       std::numeric_limits<double>::infinity(), false /* requestSeek */);
   SimulateLoadedMetadata();
-  EXPECT_FALSE(IsElementVisible(*download_button));
+  EXPECT_FALSE(IsOverflowElementVisible(*download_button));
 
   // Download button should be shown if the duration changes back to finite.
   MediaControls().MediaElement().DurationChanged(20.0f,
                                                  false /* requestSeek */);
   SimulateLoadedMetadata();
-  EXPECT_TRUE(IsElementVisible(*download_button));
+  EXPECT_TRUE(IsOverflowElementVisible(*download_button));
 }
 
 TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedHLS) {
   EnsureSizing();
 
-  Element* download_button = GetElementByShadowPseudoId(
-      MediaControls(), "-internal-media-controls-download-button");
+  MediaControlDownloadButtonElement* download_button = DownloadButtonElement();
   ASSERT_NE(nullptr, download_button);
 
   // Download button should not be displayed for HLS streams.
   MediaControls().MediaElement().SetSrc("https://example.com/foo.m3u8");
   test::RunPendingTasks();
   SimulateLoadedMetadata();
-  EXPECT_FALSE(IsElementVisible(*download_button));
+  EXPECT_FALSE(IsOverflowElementVisible(*download_button));
 }
 
 TEST_F(MediaControlsImplTest, TimelineSeekToRoundedEnd) {
@@ -723,13 +745,20 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromCurrentPosition) {
   test::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
-  DOMRect* timeline_rect = TimelineElement()->getBoundingClientRect();
+  DOMRect* timeline_rect = TimelineTrackElement()->getBoundingClientRect();
   ASSERT_LT(0, timeline_rect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
 
+  DOMRect* thumb_rect =
+      TimelineElement()
+          ->UserAgentShadowRoot()
+          ->getElementById(shadow_element_names::SliderThumb())
+          ->getBoundingClientRect();
+  WebFloatPoint thumb(thumb_rect->x() + (thumb_rect->width() / 2),
+                      thumb_rect->y() + 1);
+
   float y = timeline_rect->top() + timeline_rect->height() / 2;
-  WebFloatPoint thumb(timeline_rect->left(), y);
   WebFloatPoint track_two_thirds(
       timeline_rect->left() + timeline_rect->width() * 2 / 3, y);
   MouseDownAt(thumb);
@@ -759,7 +788,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromElsewhere) {
   test::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
-  DOMRect* timelineRect = TimelineElement()->getBoundingClientRect();
+  DOMRect* timelineRect = TimelineTrackElement()->getBoundingClientRect();
   ASSERT_LT(0, timelineRect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
@@ -796,7 +825,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragBackAndForth) {
   test::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
-  DOMRect* timelineRect = TimelineElement()->getBoundingClientRect();
+  DOMRect* timelineRect = TimelineTrackElement()->getBoundingClientRect();
   ASSERT_LT(0, timelineRect->width());
 
   EXPECT_EQ(0, MediaControls().MediaElement().currentTime());
@@ -866,16 +895,7 @@ TEST_F(MediaControlsImplTest, TimeIsCorrectlyFormatted) {
 
 namespace {
 
-class ModernMediaControlsImplTest : public MediaControlsImplTest {
- public:
-  void SetUp() override {
-    RuntimeEnabledFeatures::SetModernMediaControlsEnabled(true);
-    MediaControlsImplTest::SetUp();
-  }
-};
-
-class MediaControlsImplTestWithMockScheduler
-    : public ModernMediaControlsImplTest {
+class MediaControlsImplTestWithMockScheduler : public MediaControlsImplTest {
  public:
   MediaControlsImplTestWithMockScheduler() { EnablePlatform(); }
 
@@ -885,7 +905,7 @@ class MediaControlsImplTestWithMockScheduler
     platform()->AdvanceClockSeconds(1);
     platform()->SetAutoAdvanceNowToPendingTasks(false);
 
-    ModernMediaControlsImplTest::SetUp();
+    MediaControlsImplTest::SetUp();
   }
 
   void TearDown() override {
@@ -1369,7 +1389,7 @@ TEST_F(MediaControlsImplTest, isConnected) {
   EXPECT_FALSE(MediaControls().isConnected());
 }
 
-TEST_F(ModernMediaControlsImplTest, ControlsShouldUseSafeAreaInsets) {
+TEST_F(MediaControlsImplTest, ControlsShouldUseSafeAreaInsets) {
   UpdateAllLifecyclePhasesForTest();
   {
     const ComputedStyle* style = MediaControls().GetComputedStyle();
@@ -1400,7 +1420,7 @@ TEST_F(ModernMediaControlsImplTest, ControlsShouldUseSafeAreaInsets) {
   }
 }
 
-TEST_F(ModernMediaControlsImplTest, MediaControlsDisabledWithNoSource) {
+TEST_F(MediaControlsImplTest, MediaControlsDisabledWithNoSource) {
   EXPECT_EQ(MediaControls().State(), MediaControlsImpl::kNoSource);
 
   EXPECT_TRUE(PlayButtonElement()->hasAttribute(html_names::kDisabledAttr));
@@ -1431,7 +1451,7 @@ TEST_F(ModernMediaControlsImplTest, MediaControlsDisabledWithNoSource) {
   EXPECT_FALSE(TimelineElement()->hasAttribute(html_names::kDisabledAttr));
 }
 
-TEST_F(ModernMediaControlsImplTest, DoubleTouchChangesTime) {
+TEST_F(MediaControlsImplTest, DoubleTouchChangesTime) {
   double duration = 60;  // 1 minute.
   LoadMediaWithDuration(duration);
   EnsureSizing();
@@ -1461,7 +1481,7 @@ TEST_F(ModernMediaControlsImplTest, DoubleTouchChangesTime) {
   EXPECT_EQ(30, MediaControls().MediaElement().currentTime());
 }
 
-TEST_F(ModernMediaControlsImplTest, DoubleTouchChangesTimeWhenZoomed) {
+TEST_F(MediaControlsImplTest, DoubleTouchChangesTimeWhenZoomed) {
   double duration = 60;  // 1 minute.
   LoadMediaWithDuration(duration);
   EnsureSizing();

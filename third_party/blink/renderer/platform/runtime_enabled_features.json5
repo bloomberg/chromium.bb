@@ -896,9 +896,6 @@
       name: "MobileLayoutTheme",
     },
     {
-      name: "ModernMediaControls",
-    },
-    {
       name: "ModuleDedicatedWorker",
       status: "experimental",
     },

@@ -374,9 +374,6 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableAllowActivationDelegationAttr(
       base::FeatureList::IsEnabled(features::kAllowActivationDelegationAttr));
 
-  WebRuntimeFeatures::EnableModernMediaControls(
-      base::FeatureList::IsEnabled(media::kUseModernMediaControls));
-
   WebRuntimeFeatures::EnableScriptStreamingOnPreload(
       base::FeatureList::IsEnabled(features::kScriptStreamingOnPreload));
 

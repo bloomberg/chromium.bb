@@ -32,7 +32,6 @@ class LocalePlatformSupport : public TestingPlatformSupport {
 class MediaControlToggleClosedCaptionsButtonElementTest : public PageTestBase {
  public:
   void SetUp() final {
-    RuntimeEnabledFeatures::SetModernMediaControlsEnabled(true);
     PageTestBase::SetUp();
     SetBodyInnerHTML("<video controls></video>");
     media_element_ =

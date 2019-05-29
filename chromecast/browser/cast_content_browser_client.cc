@@ -233,15 +233,11 @@ CastContentBrowserClient::CastContentBrowserClient(
 #endif
   });
 
-  cast_feature_list_creator_->SetExtraDisableFeatures({
-    // TODO(mdellaquila): This feature has to be disabled because it causes
-    // significantly higher power consumption while flinging media files.
-    // Remove this after fixing the bug: b/111363899
-    ::media::kUseModernMediaControls,
 #if defined(OS_ANDROID)
-        ::media::kAudioFocusLossSuspendMediaSession,
-#endif
+  cast_feature_list_creator_->SetExtraDisableFeatures({
+      ::media::kAudioFocusLossSuspendMediaSession,
   });
+#endif
 }
 
 CastContentBrowserClient::~CastContentBrowserClient() {

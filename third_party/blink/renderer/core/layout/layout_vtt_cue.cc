@@ -348,48 +348,26 @@ IntRect LayoutVTTCue::ComputeControlsRect() const {
   if (!controls || !controls->ContainerLayoutObject())
     return IntRect();
 
-  if (RuntimeEnabledFeatures::ModernMediaControlsEnabled()) {
-    // Only a part of the media controls is used for overlap avoidance.
-    // For modern media controls, we avoid both the button panel and the
-    // timeline.
-    LayoutObject* button_panel_layout_object =
-        media_element->GetMediaControls()->ButtonPanelLayoutObject();
-    LayoutObject* timeline_layout_object =
-        media_element->GetMediaControls()->TimelineLayoutObject();
+  // Only a part of the media controls is used for overlap avoidance.
+  LayoutObject* button_panel_layout_object =
+      media_element->GetMediaControls()->ButtonPanelLayoutObject();
+  LayoutObject* timeline_layout_object =
+      media_element->GetMediaControls()->TimelineLayoutObject();
 
-    if (!button_panel_layout_object || !button_panel_layout_object->IsBox() ||
-        !timeline_layout_object || !timeline_layout_object->IsBox()) {
-      return IntRect();
-    }
-
-    IntRect button_panel_box = ContentBoxRelativeToAncestor(
-        ToLayoutBox(*button_panel_layout_object),
-        ToLayoutBox(*controls->ContainerLayoutObject()));
-    IntRect timeline_box = PaddingBoxRelativeToAncestor(
-        ToLayoutBox(*timeline_layout_object),
-        ToLayoutBox(*controls->ContainerLayoutObject()));
-
-    button_panel_box.Unite(timeline_box);
-    return button_panel_box;
+  if (!button_panel_layout_object || !button_panel_layout_object->IsBox() ||
+      !timeline_layout_object || !timeline_layout_object->IsBox()) {
+    return IntRect();
   }
 
-  // Only a part of the media controls is used for overlap avoidance.
-  LayoutObject* panel_layout_object =
-      media_element->GetMediaControls()->PanelLayoutObject();
-
-  // The (second part of the) following is mostly defensive - in general
-  // there should be a LayoutBox representing the part of the controls that
-  // are relevant for overlap avoidance. (The controls pseudo elements are
-  // generally reachable from outside the shadow tree though, hence the
-  // "mostly".)
-  if (!panel_layout_object || !panel_layout_object->IsBox())
-    return IntRect();
-
-  // Assume that the controls container are positioned in the same relative
-  // position as the text track container. (LayoutMedia::layout ensures this.)
-  return ContentBoxRelativeToAncestor(
-      ToLayoutBox(*panel_layout_object),
+  IntRect button_panel_box = ContentBoxRelativeToAncestor(
+      ToLayoutBox(*button_panel_layout_object),
       ToLayoutBox(*controls->ContainerLayoutObject()));
+  IntRect timeline_box = PaddingBoxRelativeToAncestor(
+      ToLayoutBox(*timeline_layout_object),
+      ToLayoutBox(*controls->ContainerLayoutObject()));
+
+  button_panel_box.Unite(timeline_box);
+  return button_panel_box;
 }
 
 void LayoutVTTCue::UpdateLayout() {

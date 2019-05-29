@@ -38,13 +38,6 @@ static const char kSafeAreaInsetExpectedDefault[] = "0px";
 
 class StyleEnvironmentVariablesTest : public PageTestBase {
  public:
-  void SetUp() override {
-    PageTestBase::SetUp();
-
-    // Needed for RecordUseCounter_IgnoreMediaControls.
-    RuntimeEnabledFeatures::SetModernMediaControlsEnabled(true);
-  }
-
   void TearDown() override {
     StyleEnvironmentVariables::GetRootInstance().ClearForTesting();
   }
