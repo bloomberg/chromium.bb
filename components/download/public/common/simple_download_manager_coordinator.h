@@ -70,6 +70,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
   // Returns a non-empty notifier to be used for observing download events.
   AllDownloadEventNotifier* GetNotifier();
 
+  // Whether this object is initialized.
+  bool initialized() const { return initialized_; }
+
   bool has_all_history_downloads() const { return has_all_history_downloads_; }
 
  private:

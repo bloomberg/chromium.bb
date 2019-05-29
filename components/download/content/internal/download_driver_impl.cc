@@ -151,9 +151,7 @@ void DownloadDriverImpl::HardRecover() {
 
 bool DownloadDriverImpl::IsReady() const {
   return client_ && download_manager_coordinator_ &&
-         (download_manager_coordinator_->has_all_history_downloads() ||
-          base::FeatureList::IsEnabled(
-              features::kUseInProgressDownloadManagerForDownloadService));
+         download_manager_coordinator_->initialized();
 }
 
 void DownloadDriverImpl::Start(
