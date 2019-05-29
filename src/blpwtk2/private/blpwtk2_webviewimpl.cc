@@ -75,6 +75,20 @@ static const blink::MediaStreamDevice *findDeviceById(
     return 0;
 }
 
+static bool is_asian_langid(LANGID kl)
+{
+    WORD primary_lang = PRIMARYLANGID(kl);
+    if (primary_lang == LANG_JAPANESE || primary_lang == LANG_CHINESE || primary_lang == LANG_KOREAN || primary_lang == LANG_THAI) return true;
+    return false;
+}
+
+static bool is_english_langid(LANGID kl)
+{
+    WORD primary_lang = PRIMARYLANGID(kl);
+    if (primary_lang == LANG_ENGLISH) return true;
+    return false;
+}
+
 static std::set<WebViewImpl*> g_instances;
 
 
@@ -310,6 +324,18 @@ void WebViewImpl::setRegion(NativeRegion region)
     if (d_widget) {
         d_widget->setRegion(region);
     }
+}
+
+void WebViewImpl::activateKeyboardLayout(unsigned int hkl)
+{
+    HKL currentKL = ::GetKeyboardLayout(0);
+    if (is_english_langid(LANGID(hkl)) && !is_asian_langid(LANGID(currentKL))) {
+        // user might expecting any of the eropean keyboard layout, 
+        // so keep current layout unchanged if it is not an asian IME.
+        return;
+    }
+
+    ::ActivateKeyboardLayout((HKL)hkl, KLF_SETFORPROCESS);
 }
 
 void WebViewImpl::clearTooltip()
