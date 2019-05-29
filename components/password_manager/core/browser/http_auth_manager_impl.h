@@ -28,7 +28,7 @@ class HttpAuthManagerImpl : public HttpAuthManager {
 
   HttpAuthManagerImpl(PasswordManagerClient* client,
                       HttpAuthObserver* observer,
-                      const autofill::PasswordForm& observerd_form);
+                      const autofill::PasswordForm& observed_form);
 
   ~HttpAuthManagerImpl() override;
 

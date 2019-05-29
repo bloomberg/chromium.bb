@@ -60,7 +60,8 @@ void HttpAuthManagerImpl::SetObserverAndDeliverCredentials(
   observer_ = observer;
   // Initialize the form manager.
   form_manager_ = std::make_unique<NewPasswordFormManager>(
-      client_, observed_form, nullptr, /* form_fetcher */
+      client_, PasswordStore::FormDigest(observed_form),
+      nullptr, /* form_fetcher */
       std::make_unique<FormSaverImpl>(client_->GetPasswordStore()));
 }
 

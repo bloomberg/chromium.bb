@@ -23,6 +23,7 @@
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
@@ -379,8 +380,8 @@ class NewPasswordFormManagerTest : public testing::Test {
     fetcher_.reset(new FakeFormFetcher());
     fetcher_->Fetch();
     form_manager_.reset(new NewPasswordFormManager(
-        &client_, base_auth_observed_form, fetcher_.get(),
-        std::make_unique<NiceMock<MockFormSaver>>()));
+        &client_, PasswordStore::FormDigest(base_auth_observed_form),
+        fetcher_.get(), std::make_unique<NiceMock<MockFormSaver>>()));
   }
 
   void SetNonFederatedAndNotifyFetchCompleted(

@@ -146,17 +146,15 @@ NewPasswordFormManager::NewPasswordFormManager(
 
 NewPasswordFormManager::NewPasswordFormManager(
     PasswordManagerClient* client,
-    const PasswordForm& http_auth_observed_form,
+    PasswordStore::FormDigest observed_http_auth_digest,
     FormFetcher* form_fetcher,
     std::unique_ptr<FormSaver> form_saver)
-    : NewPasswordFormManager(
-          client,
-          form_fetcher,
-          std::move(form_saver),
-          nullptr /* metrics_recorder */,
-          PasswordStore::FormDigest(http_auth_observed_form)) {
-  observed_http_auth_digest_ =
-      PasswordStore::FormDigest(http_auth_observed_form);
+    : NewPasswordFormManager(client,
+                             form_fetcher,
+                             std::move(form_saver),
+                             nullptr /* metrics_recorder */,
+                             observed_http_auth_digest) {
+  observed_http_auth_digest_ = std::move(observed_http_auth_digest);
   form_fetcher_->AddConsumer(this);
 }
 
@@ -728,13 +726,13 @@ NewPasswordFormManager::NewPasswordFormManager(
     FormFetcher* form_fetcher,
     std::unique_ptr<FormSaver> form_saver,
     scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
-    const PasswordStore::FormDigest& form_digest)
+    PasswordStore::FormDigest form_digest)
     : client_(client),
       metrics_recorder_(metrics_recorder),
       owned_form_fetcher_(form_fetcher
                               ? nullptr
                               : std::make_unique<FormFetcherImpl>(
-                                    form_digest,
+                                    std::move(form_digest),
                                     client_,
                                     true /* should_migrate_http_passwords */)),
       form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),

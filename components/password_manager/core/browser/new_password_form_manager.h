@@ -57,7 +57,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
 
   // Constructor for http authentication (aka basic authentication).
   NewPasswordFormManager(PasswordManagerClient* client,
-                         const autofill::PasswordForm& http_auth_observed_form,
+                         PasswordStore::FormDigest observed_http_auth_digest,
                          FormFetcher* form_fetcher,
                          std::unique_ptr<FormSaver> form_saver);
 
@@ -211,7 +211,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
       FormFetcher* form_fetcher,
       std::unique_ptr<FormSaver> form_saver,
       scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
-      const PasswordStore::FormDigest& form_digest);
+      PasswordStore::FormDigest form_digest);
 
   // Compares |parsed_form| with |old_parsing_result_| and records UKM metric.
   // TODO(https://crbug.com/831123): Remove it when the old form parsing is
