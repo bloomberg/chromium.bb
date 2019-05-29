@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,6 +23,7 @@
 #include "remoting/base/test_rsa_key_pair.h"
 #include "remoting/proto/remoting/v1/directory_service.grpc.pb.h"
 #include "remoting/signaling/fake_signal_strategy.h"
+#include "remoting/signaling/log_to_server.h"
 #include "remoting/signaling/muxing_signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -114,7 +116,7 @@ decltype(auto) DoValidateHeartbeatAndRespondOk(
 
 }  // namespace
 
-class HeartbeatSenderTest : public testing::Test {
+class HeartbeatSenderTest : public testing::Test, public LogToServer {
  public:
   HeartbeatSenderTest() {
     auto ftl_signal_strategy =
@@ -137,7 +139,7 @@ class HeartbeatSenderTest : public testing::Test {
     heartbeat_sender_ = std::make_unique<HeartbeatSender>(
         mock_heartbeat_successful_callback_.Get(),
         mock_unknown_host_id_error_callback_.Get(), kHostId,
-        muxing_signal_strategy_.get(), key_pair, &oauth_token_getter_);
+        muxing_signal_strategy_.get(), key_pair, &oauth_token_getter_, this);
     heartbeat_sender_->SetGrpcChannelForTest(
         test_server_.CreateInProcessChannel());
   }
@@ -155,7 +157,16 @@ class HeartbeatSenderTest : public testing::Test {
   base::MockCallback<base::OnceClosure> mock_heartbeat_successful_callback_;
   base::MockCallback<base::OnceClosure> mock_unknown_host_id_error_callback_;
 
+  std::vector<ServerLogEntry> received_log_entries_;
+
  private:
+  // LogToServer interface.
+  void Log(const ServerLogEntry& entry) override {
+    received_log_entries_.push_back(entry);
+  }
+
+  ServerLogEntry::Mode mode() const override { return ServerLogEntry::ME2ME; }
+
   std::unique_ptr<MuxingSignalStrategy> muxing_signal_strategy_;
 
   // |heartbeat_sender_| must be deleted before |muxing_signal_strategy_|.
@@ -385,6 +396,27 @@ TEST_F(HeartbeatSenderTest, UnknownHostId) {
         xmpp_signal_strategy_->Connect();
       }));
   run_loop.Run();
+}
+
+TEST_F(HeartbeatSenderTest, SendHeartbeatLogEntryOnHeartbeat) {
+  base::RunLoop run_loop;
+
+  EXPECT_CALL(*test_server_, Heartbeat(_, _, _))
+      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
+                                                /* xmpp */ true, 0));
+
+  EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).WillOnce([&]() {
+    run_loop.Quit();
+  });
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        ftl_signal_strategy_->Connect();
+        xmpp_signal_strategy_->Connect();
+      }));
+  run_loop.Run();
+
+  ASSERT_EQ(1u, received_log_entries_.size());
 }
 
 }  // namespace remoting

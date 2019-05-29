@@ -38,7 +38,7 @@
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/validating_authenticator.h"
 #include "remoting/signaling/jid_util.h"
-#include "remoting/signaling/server_log_entry.h"
+#include "remoting/signaling/log_to_server.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace remoting {
@@ -87,6 +87,7 @@ void It2MeHost::Connect(
     std::unique_ptr<base::DictionaryValue> policies,
     std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
     std::unique_ptr<RegisterSupportHostRequest> register_request,
+    std::unique_ptr<LogToServer> log_to_server,
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
     const std::string& username,
@@ -98,6 +99,7 @@ void It2MeHost::Connect(
   observer_ = std::move(observer);
   confirmation_dialog_factory_ = std::move(dialog_factory);
   signal_strategy_ = std::move(signal_strategy);
+  log_to_server_ = std::move(log_to_server);
 
   OnPolicyUpdate(std::move(policies));
 
@@ -206,8 +208,7 @@ void It2MeHost::ConnectOnNetworkThread(
       host_context_->video_encode_task_runner(), options));
   host_->status_monitor()->AddStatusObserver(this);
   host_status_logger_.reset(
-      new HostStatusLogger(host_->status_monitor(), ServerLogEntry::IT2ME,
-                           signal_strategy_.get(), directory_bot_jid));
+      new HostStatusLogger(host_->status_monitor(), log_to_server_.get()));
 
   // Create event logger.
   host_event_logger_ =
@@ -486,6 +487,7 @@ void It2MeHost::DisconnectOnNetworkThread() {
 
   register_request_ = nullptr;
   host_status_logger_ = nullptr;
+  log_to_server_ = nullptr;
   signal_strategy_ = nullptr;
   host_event_logger_ = nullptr;
 

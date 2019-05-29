@@ -22,8 +22,11 @@
 #include "remoting/base/logging.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/host/host_details.h"
+#include "remoting/host/server_log_entry_host.h"
 #include "remoting/proto/remoting/v1/directory_service.grpc.pb.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
+#include "remoting/signaling/log_to_server.h"
+#include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
@@ -116,15 +119,18 @@ HeartbeatSender::HeartbeatSender(
     const std::string& host_id,
     MuxingSignalStrategy* signal_strategy,
     const scoped_refptr<const RsaKeyPair>& host_key_pair,
-    OAuthTokenGetter* oauth_token_getter)
+    OAuthTokenGetter* oauth_token_getter,
+    LogToServer* log_to_server)
     : on_heartbeat_successful_callback_(
           std::move(on_heartbeat_successful_callback)),
       on_unknown_host_id_error_(std::move(on_unknown_host_id_error)),
       host_id_(host_id),
       signal_strategy_(signal_strategy),
       host_key_pair_(host_key_pair),
-      client_(std::make_unique<HeartbeatClient>(oauth_token_getter)) {
+      client_(std::make_unique<HeartbeatClient>(oauth_token_getter)),
+      log_to_server_(log_to_server) {
   DCHECK(host_key_pair_.get());
+  DCHECK(log_to_server_);
 
   signal_strategy_->AddListener(this);
   OnSignalStrategyStateChange(signal_strategy_->GetState());
@@ -214,6 +220,11 @@ void HeartbeatSender::SendHeartbeat() {
       CreateHeartbeatRequest(),
       base::BindOnce(&HeartbeatSender::OnResponse, base::Unretained(this)));
   ++sequence_id_;
+
+  // Send a heartbeat log
+  std::unique_ptr<ServerLogEntry> log_entry = MakeLogEntryForHeartbeat();
+  AddHostFieldsToLogEntry(log_entry.get());
+  log_to_server_->Log(*log_entry);
 }
 
 void HeartbeatSender::OnResponse(const grpc::Status& status,

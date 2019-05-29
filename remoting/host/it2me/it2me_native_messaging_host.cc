@@ -40,6 +40,9 @@
 #include "remoting/signaling/ftl_client_uuid_device_id_provider.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/muxing_signal_strategy.h"
+#include "remoting/signaling/remoting_log_to_server.h"
+#include "remoting/signaling/server_log_entry.h"
+#include "remoting/signaling/xmpp_log_to_server.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 
 #if defined(OS_WIN)
@@ -278,6 +281,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
 
   std::unique_ptr<SignalStrategy> signal_strategy;
   std::unique_ptr<RegisterSupportHostRequest> register_host_request;
+  std::unique_ptr<LogToServer> log_to_server;
   if (use_signaling_proxy) {
     if (username.empty()) {
       // Allow unauthenticated users for the delegated signal strategy case.
@@ -286,6 +290,9 @@ void It2MeNativeMessagingHost::ProcessConnect(
     signal_strategy = CreateDelegatedSignalStrategy(message.get());
     register_host_request =
         std::make_unique<XmppRegisterSupportHostRequest>(directory_bot_jid);
+    log_to_server = std::make_unique<XmppLogToServer>(
+        ServerLogEntry::IT2ME, signal_strategy.get(), directory_bot_jid,
+        host_context_->network_task_runner());
   } else {
     std::string access_token = ExtractAccessToken(message.get());
     signal_strategy =
@@ -294,6 +301,9 @@ void It2MeNativeMessagingHost::ProcessConnect(
         std::make_unique<RemotingRegisterSupportHostRequest>(
             std::make_unique<PassthroguhOAuthTokenGetter>(username,
                                                           access_token));
+    log_to_server = std::make_unique<RemotingLogToServer>(
+        ServerLogEntry::IT2ME,
+        std::make_unique<PassthroguhOAuthTokenGetter>(username, access_token));
   }
   if (!signal_strategy) {
     SendErrorAndExit(std::move(response), ErrorCode::INCOMPATIBLE_PROTOCOL);
@@ -332,11 +342,11 @@ void It2MeNativeMessagingHost::ProcessConnect(
   it2me_host_->set_enable_dialogs(!no_dialogs);
   it2me_host_->set_terminate_upon_input(terminate_upon_input);
 #endif
-  it2me_host_->Connect(host_context_->Copy(), std::move(policies),
-                       std::make_unique<It2MeConfirmationDialogFactory>(),
-                       std::move(register_host_request), weak_ptr_,
-                       std::move(signal_strategy), username, directory_bot_jid,
-                       ice_config);
+  it2me_host_->Connect(
+      host_context_->Copy(), std::move(policies),
+      std::make_unique<It2MeConfirmationDialogFactory>(),
+      std::move(register_host_request), std::move(log_to_server), weak_ptr_,
+      std::move(signal_strategy), username, directory_bot_jid, ice_config);
 
   SendMessageToClient(std::move(response));
 }

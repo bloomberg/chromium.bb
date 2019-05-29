@@ -34,6 +34,8 @@ static_library("signaling") {
     "push_notification_subscriber.cc",
     "push_notification_subscriber.h",
     "registration_manager.h",
+    "remoting_log_to_server.cc",
+    "remoting_log_to_server.h",
     "server_log_entry.cc",
     "server_log_entry.h",
     "signal_strategy.h",
@@ -58,6 +60,7 @@ static_library("signaling") {
   public_deps = [
     "//remoting/proto",
     "//remoting/proto/ftl/v1:ftl_grpc_library",
+    "//remoting/proto/remoting/v1:telemetry_grpc_library",
     "//third_party/libjingle_xmpp",
     "//third_party/webrtc_overrides",
   ]
@@ -70,6 +73,7 @@ static_library("signaling") {
     "//net",
     "//remoting/base",
     "//remoting/base/grpc_support",
+    "//remoting/proto/remoting/v1:telemetry_messages",
     "//third_party/grpc:grpcpp",
   ]
 
@@ -89,6 +93,8 @@ static_library("signaling") {
       "ftl_registration_manager.h",
       "ftl_signal_strategy.cc",
       "ftl_signal_strategy.h",
+      "remoting_log_to_server.cc",
+      "remoting_log_to_server.h",
       "server_log_entry.cc",
       "xmpp_log_to_server.cc",
       "xmpp_signal_strategy.cc",
@@ -98,7 +104,10 @@ static_library("signaling") {
       "//remoting/base/grpc_support",
       "//third_party/grpc:grpcpp",
     ]
-    public_deps -= [ "//remoting/proto/ftl/v1:ftl_grpc_library" ]
+    public_deps -= [
+      "//remoting/proto/ftl/v1:ftl_grpc_library",
+      "//remoting/proto/remoting/v1:telemetry_grpc_library",
+    ]
   }
 }
 
@@ -130,6 +139,7 @@ source_set("unit_tests") {
     "message_tracker_unittest.cc",
     "muxing_signal_strategy_unittest.cc",
     "push_notification_subscriber_unittest.cc",
+    "remoting_log_to_server_unittest.cc",
     "server_log_entry_unittest.cc",
     "server_log_entry_unittest.h",
     "signaling_address_unittest.cc",

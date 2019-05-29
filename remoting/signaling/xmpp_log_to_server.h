@@ -10,7 +10,11 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
+#include "remoting/signaling/log_to_server.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/signal_strategy.h"
 
@@ -22,14 +26,17 @@ namespace remoting {
 
 class IqSender;
 
-// XmppLogToServer sends log entries to a server.
-// The contents of the log entries are described in server_log_entry.cc.
-// They do not contain any personally identifiable information.
-class XmppLogToServer : public SignalStrategy::Listener {
+// XmppLogToServer sends log entries to a server through the signaling strategy.
+class XmppLogToServer : public LogToServer, public SignalStrategy::Listener {
  public:
-  XmppLogToServer(ServerLogEntry::Mode mode,
-                  SignalStrategy* signal_strategy,
-                  const std::string& directory_bot_jid);
+  // The instance will be initialized on |caller_task_runner|, and thereafter
+  // it must be used on the sequence of |caller_task_runner|. By default it will
+  // be initialized on the current active sequence.
+  XmppLogToServer(
+      ServerLogEntry::Mode mode,
+      SignalStrategy* signal_strategy,
+      const std::string& directory_bot_jid,
+      scoped_refptr<base::SequencedTaskRunner> caller_task_runner = {});
   ~XmppLogToServer() override;
 
   // SignalStrategy::Listener interface.
@@ -37,11 +44,12 @@ class XmppLogToServer : public SignalStrategy::Listener {
   bool OnSignalStrategyIncomingStanza(
       const jingle_xmpp::XmlElement* stanza) override;
 
-  void Log(const ServerLogEntry& entry);
-
-  ServerLogEntry::Mode mode() { return mode_; }
+  // LogToServer interface.
+  void Log(const ServerLogEntry& entry) override;
+  ServerLogEntry::Mode mode() const override;
 
  private:
+  void Init();
   void SendPendingEntries();
 
   ServerLogEntry::Mode mode_;
@@ -53,6 +61,7 @@ class XmppLogToServer : public SignalStrategy::Listener {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+  base::WeakPtrFactory<XmppLogToServer> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(XmppLogToServer);
 };
 

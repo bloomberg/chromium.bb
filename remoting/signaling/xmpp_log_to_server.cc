@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "remoting/base/constants.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/signal_strategy.h"
@@ -17,13 +18,23 @@ using jingle_xmpp::XmlElement;
 
 namespace remoting {
 
-XmppLogToServer::XmppLogToServer(ServerLogEntry::Mode mode,
-                                 SignalStrategy* signal_strategy,
-                                 const std::string& directory_bot_jid)
+XmppLogToServer::XmppLogToServer(
+    ServerLogEntry::Mode mode,
+    SignalStrategy* signal_strategy,
+    const std::string& directory_bot_jid,
+    scoped_refptr<base::SequencedTaskRunner> caller_task_runner)
     : mode_(mode),
       signal_strategy_(signal_strategy),
-      directory_bot_jid_(directory_bot_jid) {
-  signal_strategy_->AddListener(this);
+      directory_bot_jid_(directory_bot_jid),
+      weak_factory_(this) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  if (!caller_task_runner || caller_task_runner->RunsTasksInCurrentSequence()) {
+    Init();
+    return;
+  }
+  caller_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&XmppLogToServer::Init, weak_factory_.GetWeakPtr()));
 }
 
 XmppLogToServer::~XmppLogToServer() {
@@ -52,6 +63,11 @@ void XmppLogToServer::Log(const ServerLogEntry& entry) {
   SendPendingEntries();
 }
 
+void XmppLogToServer::Init() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  signal_strategy_->AddListener(this);
+}
+
 void XmppLogToServer::SendPendingEntries() {
   if (iq_sender_ == nullptr) {
     return;
@@ -69,6 +85,10 @@ void XmppLogToServer::SendPendingEntries() {
   // Send the stanza to the server and ignore the response.
   iq_sender_->SendIq(jingle_xmpp::STR_SET, directory_bot_jid_,
                      std::move(stanza), IqSender::ReplyCallback());
+}
+
+ServerLogEntry::Mode XmppLogToServer::mode() const {
+  return mode_;
 }
 
 }  // namespace remoting

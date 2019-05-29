@@ -29,6 +29,7 @@
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/fake_signal_strategy.h"
+#include "remoting/signaling/xmpp_log_to_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_LINUX)
@@ -294,11 +295,15 @@ void It2MeHostTest::StartHost(bool enable_dialogs) {
   }
   auto register_host_request =
       std::make_unique<XmppRegisterSupportHostRequest>("fake_bot_jid");
-  it2me_host_->Connect(
-      host_context_->Copy(), policies_->CreateDeepCopy(),
-      std::move(dialog_factory), std::move(register_host_request),
-      weak_factory_.GetWeakPtr(), std::move(fake_signal_strategy),
-      kTestUserName, "fake_bot_jid", ice_config);
+  auto log_to_server = std::make_unique<XmppLogToServer>(
+      ServerLogEntry::IT2ME, fake_signal_strategy.get(), "fake_bot_jid",
+      host_context_->network_task_runner());
+  it2me_host_->Connect(host_context_->Copy(), policies_->CreateDeepCopy(),
+                       std::move(dialog_factory),
+                       std::move(register_host_request),
+                       std::move(log_to_server), weak_factory_.GetWeakPtr(),
+                       std::move(fake_signal_strategy), kTestUserName,
+                       "fake_bot_jid", ice_config);
 
   base::RunLoop run_loop;
   state_change_callback_ =

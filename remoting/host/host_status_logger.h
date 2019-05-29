@@ -12,7 +12,7 @@
 #include "base/sequence_checker.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/protocol/transport.h"
-#include "remoting/signaling/xmpp_log_to_server.h"
+#include "remoting/signaling/log_to_server.h"
 
 namespace remoting {
 
@@ -24,9 +24,7 @@ class HostStatusMonitor;
 class HostStatusLogger : public HostStatusObserver {
  public:
   HostStatusLogger(scoped_refptr<HostStatusMonitor> monitor,
-                   ServerLogEntry::Mode mode,
-                   SignalStrategy* signal_strategy,
-                   const std::string& directory_bot_jid);
+                   LogToServer* log_to_server);
   ~HostStatusLogger() override;
 
   // Logs a session state change. Currently, this is either
@@ -40,11 +38,8 @@ class HostStatusLogger : public HostStatusObserver {
                            const std::string& channel_name,
                            const protocol::TransportRoute& route) override;
 
-  // Allows test code to fake SignalStrategy state change events.
-  void SetSignalingStateForTest(SignalStrategy::State state);
-
  private:
-  XmppLogToServer xmpp_log_to_server_;
+  LogToServer* log_to_server_;
 
   scoped_refptr<HostStatusMonitor> monitor_;
 

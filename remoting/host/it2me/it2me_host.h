@@ -33,6 +33,7 @@ class ChromotingHostContext;
 class DesktopEnvironmentFactory;
 class HostEventLogger;
 class HostStatusLogger;
+class LogToServer;
 class RegisterSupportHostRequest;
 class RsaKeyPair;
 
@@ -81,11 +82,15 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Methods called by the script object, from the plugin thread.
 
   // Creates It2Me host structures and starts the host.
+  //
+  // XmppLogToServer cannot be created and used in different sequence, so pass
+  // in a factory callback instead.
   virtual void Connect(
       std::unique_ptr<ChromotingHostContext> context,
       std::unique_ptr<base::DictionaryValue> policies,
       std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
       std::unique_ptr<RegisterSupportHostRequest> register_request,
+      std::unique_ptr<LogToServer> log_to_server,
       base::WeakPtr<It2MeHost::Observer> observer,
       std::unique_ptr<SignalStrategy> signal_strategy,
       const std::string& username,
@@ -167,6 +172,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   std::unique_ptr<ChromotingHostContext> host_context_;
   base::WeakPtr<It2MeHost::Observer> observer_;
   std::unique_ptr<SignalStrategy> signal_strategy_;
+  std::unique_ptr<LogToServer> log_to_server_;
 
   It2MeHostState state_ = kDisconnected;
 

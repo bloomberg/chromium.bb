@@ -66,10 +66,18 @@ cc_grpc_library("remote_support_host_grpc_library") {
   ]
 }
 
-cc_grpc_library("telemetry_grpc_library") {
+proto_library("telemetry_messages") {
   sources = [
     "generic_log_entry.proto",
     "telemetry_messages.proto",
+  ]
+}
+
+cc_grpc_library("telemetry_grpc_library") {
+  sources = [
     "telemetry_service.proto",
+  ]
+  deps = [
+    ":telemetry_messages",
   ]
 }

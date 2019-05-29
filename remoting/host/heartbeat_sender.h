@@ -29,6 +29,7 @@ class Status;
 
 namespace remoting {
 
+class LogToServer;
 class OAuthTokenGetter;
 class RsaKeyPair;
 
@@ -73,7 +74,8 @@ class HeartbeatSender final : public SignalStrategy::Listener {
                   const std::string& host_id,
                   MuxingSignalStrategy* signal_strategy,
                   const scoped_refptr<const RsaKeyPair>& host_key_pair,
-                  OAuthTokenGetter* oauth_token_getter);
+                  OAuthTokenGetter* oauth_token_getter,
+                  LogToServer* log_to_server);
   ~HeartbeatSender() override;
 
   // Sets host offline reason for future heartbeat, and initiates sending a
@@ -121,6 +123,7 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   MuxingSignalStrategy* const signal_strategy_;
   scoped_refptr<const RsaKeyPair> host_key_pair_;
   std::unique_ptr<HeartbeatClient> client_;
+  LogToServer* const log_to_server_;
 
   base::OneShotTimer heartbeat_timer_;
 

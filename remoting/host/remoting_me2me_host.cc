@@ -104,6 +104,8 @@
 #include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/muxing_signal_strategy.h"
 #include "remoting/signaling/push_notification_subscriber.h"
+#include "remoting/signaling/remoting_log_to_server.h"
+#include "remoting/signaling/xmpp_log_to_server.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
@@ -422,6 +424,9 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Must outlive |signal_strategy_|, |gcd_state_updater_| and
   // |signaling_connector_|.
   std::unique_ptr<OAuthTokenGetterImpl> oauth_token_getter_;
+
+  // Must outlive |heartbeat_sender_| and |host_status_logger_|.
+  std::unique_ptr<LogToServer> log_to_server_;
 
   bool enable_ftl_signaling_ = false;
 
@@ -1484,6 +1489,9 @@ void HostProcess::InitializeSignaling() {
       base::BindRepeating(&HostProcess::OnAuthFailed, base::Unretained(this)));
 
   if (enable_ftl_signaling_) {
+    log_to_server_ = std::make_unique<RemotingLogToServer>(
+        ServerLogEntry::ME2ME, std::make_unique<OAuthTokenGetterProxy>(
+                                   oauth_token_getter_->GetWeakPtr()));
     auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
         std::make_unique<OAuthTokenGetterProxy>(
             oauth_token_getter_->GetWeakPtr()),
@@ -1500,7 +1508,7 @@ void HostProcess::InitializeSignaling() {
         base::BindOnce(&HostProcess::OnUnknownHostIdError,
                        base::Unretained(this)),
         host_id_, muxing_signal_strategy.get(), key_pair_,
-        oauth_token_getter_.get());
+        oauth_token_getter_.get(), log_to_server_.get());
     signal_strategy_ = std::move(muxing_signal_strategy);
   } else {
     xmpp_heartbeat_sender_.reset(new XmppHeartbeatSender(
@@ -1510,6 +1518,8 @@ void HostProcess::InitializeSignaling() {
                             base::Unretained(this)),
         host_id_, xmpp_signal_strategy_, key_pair_, directory_bot_jid_));
     signal_strategy_ = std::move(xmpp_signal_strategy);
+    log_to_server_ = std::make_unique<XmppLogToServer>(
+        ServerLogEntry::ME2ME, signal_strategy_.get(), directory_bot_jid_);
   }
 
 #if defined(USE_GCD)
@@ -1618,9 +1628,8 @@ void HostProcess::StartHost() {
   host_change_notification_listener_.reset(new HostChangeNotificationListener(
       this, host_id_, xmpp_signal_strategy_, directory_bot_jid_));
 
-  host_status_logger_.reset(
-      new HostStatusLogger(host_->status_monitor(), ServerLogEntry::ME2ME,
-                           xmpp_signal_strategy_, directory_bot_jid_));
+  host_status_logger_ = std::make_unique<HostStatusLogger>(
+      host_->status_monitor(), log_to_server_.get());
 
   power_save_blocker_.reset(new HostPowerSaveBlocker(
       host_->status_monitor(), context_->ui_task_runner(),
