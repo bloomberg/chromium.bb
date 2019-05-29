@@ -3330,9 +3330,6 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_UTILITY_PROCESS_CUPS_IPP_PARSER_SERVICE_NAME" desc="The name of the utility process used for parsing IPP requests out-of-process.">
           CUPS IPP Parser
         </message>
-        <message name="IDS_UTILITY_PROCESS_IME_SERVICE_NAME" desc="The name of the utility process providing the input methods.">
-          Chrome OS Input Method
-        </message>
       </if>
       <message name="IDS_UTILITY_PROCESS_FILE_UTILITY_NAME" desc="The name of the utility process used for various Chrome specific file operations.">
           Chrome File Utilities
@@ -3359,12 +3356,6 @@ are declared in tools/grit/grit_rule.gni.
       </if>
       <message name="IDS_UTILITY_PROCESS_NOOP_SERVICE_NAME" desc="The name of the utility process which does nothing, used for experimentation.">
         No-op Service
-      </message>
-      <message name="IDS_UTILITY_PROCESS_PATCH_NAME" desc="The name of the utility process used for patching file operations.">
-        Patch Service
-      </message>
-      <message name="IDS_UTILITY_PROCESS_UNZIP_NAME" desc="The name of the utility process used for unzipping files.">
-        Unzip Service
       </message>
 
       <!-- Theme preview infobar -->

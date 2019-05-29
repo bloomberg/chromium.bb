@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace chromeos {
@@ -16,7 +17,7 @@ const service_manager::Manifest& GetManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kServiceName)
-          .WithDisplayName("IME")
+          .WithDisplayName(IDS_IME_SERVICE_DISPLAY_NAME)
           .WithOptions(service_manager::ManifestOptionsBuilder()
                            .WithSandboxType("utility")
                            .WithInstanceSharingPolicy(

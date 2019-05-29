@@ -44,6 +44,11 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ManifestBuilder {
     return *this;
   }
 
+  ManifestBuilder& WithDisplayName(int resource_id) {
+    manifest_.display_name = Manifest::DisplayName(resource_id);
+    return *this;
+  }
+
   ManifestBuilder& WithOptions(Manifest::Options options) {
     manifest_.options = std::move(options);
     return *this;

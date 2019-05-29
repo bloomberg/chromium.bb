@@ -25,6 +25,7 @@ source_set("manifest") {
   deps = [
     "//base",
     "//components/services/patch/public/interfaces",
+    "//components/strings",
     "//services/service_manager/public/cpp",
   ]
 }

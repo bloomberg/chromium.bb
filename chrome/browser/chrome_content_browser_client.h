@@ -416,8 +416,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const service_manager::BindSourceInfo& source_info,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
-  void RegisterOutOfProcessServices(
-      OutOfProcessServiceMap* services) override;
+  void WillStartServiceManager() override;
   void RunServiceInstance(
       const service_manager::Identity& identity,
       mojo::PendingReceiver<service_manager::mojom::Service>* receiver)

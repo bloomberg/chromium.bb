@@ -236,6 +236,7 @@ if (!is_android) {
 
     deps = [
       "//base",
+      "//chrome:strings",
       "//chrome/common/importer:interfaces",
       "//services/service_manager/public/cpp",
     ]

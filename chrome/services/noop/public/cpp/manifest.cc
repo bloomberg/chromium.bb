@@ -5,6 +5,7 @@
 #include "chrome/services/noop/public/cpp/manifest.h"
 
 #include "base/no_destructor.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/services/noop/public/mojom/noop.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
@@ -12,7 +13,7 @@ const service_manager::Manifest& GetNoopManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName(chrome::mojom::kNoopServiceName)
-          .WithDisplayName("No-op Service")
+          .WithDisplayName(IDS_UTILITY_PROCESS_NOOP_SERVICE_NAME)
           .WithOptions(service_manager::ManifestOptionsBuilder()
                            .WithSandboxType("network")
                            .WithInstanceSharingPolicy(

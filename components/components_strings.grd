@@ -382,6 +382,13 @@
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY">
         Privacy
       </message>
+
+      <message name="IDS_PATCH_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process used for patching file operations.">
+        Patch Service
+      </message>
+      <message name="IDS_UNZIP_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process used for unzipping files.">
+        Unzip Service
+      </message>
     </messages>
   </release>
 </grit>

@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Printing specific strings (included from generated_resources.grd). -->
 <grit-part>
-  <message name="IDS_UTILITY_PROCESS_PDF_COMPOSITOR_SERVICE_NAME" desc="The name of the utility process used for PDF compositing.">
-    PDF Compositor Service
-  </message>
   <if expr="enable_print_preview or is_win">
     <message name="IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME" desc="The name of the utility process used for printing conversions.">
       Printing Service

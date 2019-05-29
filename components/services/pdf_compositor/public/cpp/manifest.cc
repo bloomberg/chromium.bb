@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
+#include "components/strings/grit/components_strings.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace printing {
@@ -14,7 +15,7 @@ const service_manager::Manifest& GetPdfCompositorManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kServiceName)
-          .WithDisplayName("PDF Compositor Service")
+          .WithDisplayName(IDS_PDF_COMPOSITOR_SERVICE_DISPLAY_NAME)
           .WithOptions(service_manager::ManifestOptionsBuilder()
                            .WithSandboxType("pdf_compositor")
                            .WithInstanceSharingPolicy(

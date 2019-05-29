@@ -37,17 +37,20 @@ if (use_cups) {
   }
 }
 
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
+if (is_chromeos) {
+  source_set("manifest") {
+    sources = [
+      "manifest.cc",
+      "manifest.h",
+    ]
 
-  deps = [
-    "//base",
-    "//chrome/services/cups_ipp_parser/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
+    deps = [
+      "//base",
+      "//chrome:strings",
+      "//chrome/services/cups_ipp_parser/public/mojom",
+      "//services/service_manager/public/cpp",
+    ]
+  }
 }
 
 # A dummy group to make fuzz targets discoverable.

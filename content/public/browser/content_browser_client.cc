@@ -687,27 +687,6 @@ base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
 }
 #endif  // defined(OS_WIN)
 
-ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo() =
-    default;
-
-ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
-    const OutOfProcessServiceInfo&) = default;
-
-ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
-    const ProcessNameCallback& process_name_callback)
-    : process_name_callback(process_name_callback) {}
-
-ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
-    const ProcessNameCallback& process_name_callback,
-    const std::string& process_group)
-    : process_name_callback(process_name_callback),
-      process_group(process_group) {
-  DCHECK(!process_group.empty());
-}
-
-ContentBrowserClient::OutOfProcessServiceInfo::~OutOfProcessServiceInfo() =
-    default;
-
 void ContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}

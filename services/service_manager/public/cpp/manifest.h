@@ -12,6 +12,7 @@
 
 #include "base/component_export.h"
 #include "base/files/file_path.h"
+#include "base/strings/string16.h"
 
 namespace service_manager {
 
@@ -40,15 +41,20 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
   using RequiredCapabilityMap = std::map<ServiceName, CapabilityNameSet>;
 
   // Represents the display name of this service (in e.g. a task manager).
-  //
-  // TODO(https://crbug.com/915806): Extend this to support resource IDs in
-  // addition to raw strings.
   struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) DisplayName {
-    DisplayName() = default;
-    explicit DisplayName(const std::string& raw_string)
-        : raw_string(raw_string) {}
+    enum class Type { kDefault, kRawString, kResourceId };
 
-    std::string raw_string;
+    DisplayName() : type(Type::kDefault) {}
+    explicit DisplayName(const char* raw_string)
+        : type(Type::kRawString), raw_string(raw_string) {}
+    explicit DisplayName(int resource_id)
+        : type(Type::kResourceId), resource_id(resource_id) {}
+
+    Type type;
+    union {
+      const char* raw_string;
+      int resource_id;
+    };
   };
 
   enum class InstanceSharingPolicy {

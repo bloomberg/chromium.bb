@@ -31,6 +31,7 @@ source_set("manifest") {
   deps = [
     "//base",
     "//components/services/pdf_compositor/public/interfaces",
+    "//components/strings",
     "//services/service_manager/public/cpp",
   ]
 }

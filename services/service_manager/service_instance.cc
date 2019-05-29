@@ -10,11 +10,14 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/service_process_host.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_IOS)
 #include "services/service_manager/service_process_launcher.h"
@@ -243,8 +246,22 @@ bool ServiceInstance::StartWithProcessHost(
   DCHECK(!service_remote_);
   DCHECK(!process_host_);
 
+  base::string16 display_name;
+  switch (manifest_.display_name.type) {
+    case Manifest::DisplayName::Type::kDefault:
+      display_name =
+          base::ASCIIToUTF16(base::StrCat({identity_.name(), "service"}));
+      break;
+    case Manifest::DisplayName::Type::kRawString:
+      display_name = base::ASCIIToUTF16(manifest_.display_name.raw_string);
+      break;
+    case Manifest::DisplayName::Type::kResourceId:
+      display_name =
+          l10n_util::GetStringUTF16(manifest_.display_name.resource_id);
+      break;
+  }
   auto remote = host->Launch(
-      identity_, sandbox_type,
+      identity_, sandbox_type, display_name,
       base::BindOnce(&ServiceInstance::SetPID, weak_ptr_factory_.GetWeakPtr()));
   if (!remote)
     return false;

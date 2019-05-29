@@ -292,14 +292,6 @@ void ShellContentBrowserClient::BindInterfaceRequestFromFrame(
                                       render_frame_host);
 }
 
-void ShellContentBrowserClient::RegisterOutOfProcessServices(
-    OutOfProcessServiceMap* services) {
-  (*services)[kTestServiceUrl] =
-      base::BindRepeating(&base::ASCIIToUTF16, "Test Service");
-  (*services)[echo::mojom::kServiceName] =
-      base::BindRepeating(&base::ASCIIToUTF16, "Echo Service");
-}
-
 void ShellContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {

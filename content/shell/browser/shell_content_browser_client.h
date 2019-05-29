@@ -41,7 +41,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) override;
-  void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   void RunServiceInstance(
       const service_manager::Identity& identity,
       mojo::PendingReceiver<service_manager::mojom::Service>* receiver)

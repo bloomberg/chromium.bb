@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/unzipper.mojom.h"
+#include "components/strings/grit/components_strings.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace unzip {
@@ -15,7 +16,7 @@ const service_manager::Manifest& GetManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kServiceName)
-          .WithDisplayName("Unzip Service")
+          .WithDisplayName(IDS_UNZIP_SERVICE_DISPLAY_NAME)
           .WithOptions(service_manager::ManifestOptionsBuilder()
                            .WithSandboxType("utility")
                            .WithInstanceSharingPolicy(

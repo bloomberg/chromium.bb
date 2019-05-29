@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
+#include "services/strings/grit/services_strings.h"
 
 namespace proxy_resolver {
 
@@ -14,7 +15,7 @@ const service_manager::Manifest& GetManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kProxyResolverServiceName)
-          .WithDisplayName("Proxy resolver")
+          .WithDisplayName(IDS_PROXY_RESOLVER_DISPLAY_NAME)
           .WithOptions(service_manager::ManifestOptionsBuilder()
                            .WithInstanceSharingPolicy(
                                service_manager::Manifest::

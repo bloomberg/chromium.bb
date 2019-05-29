@@ -79,6 +79,7 @@ class DefaultServiceProcessHost : public ServiceProcessHost {
 
   mojo::PendingRemote<mojom::Service> Launch(const Identity& identity,
                                              SandboxType sandbox_type,
+                                             const base::string16& display_name,
                                              LaunchCallback callback) override {
 #if defined(OS_IOS)
     return mojo::NullRemote();

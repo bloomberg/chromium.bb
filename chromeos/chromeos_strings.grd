@@ -204,6 +204,10 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PASSWORD_EXPIRY_CHOOSE_NEW_PASSWORD_LINK" desc="Added to the message body on a notification to explain that clicking the notification will open a dialog where a new password can be chosen.">
         Click here to choose a new password
       </message>
+
+      <message name="IDS_IME_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process providing the input methods.">
+        Chrome OS Input Method Service
+      </message>
     </messages>
   </release>
 </grit>

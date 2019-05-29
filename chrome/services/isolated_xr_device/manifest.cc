@@ -5,6 +5,7 @@
 #include "chrome/services/isolated_xr_device/manifest.h"
 
 #include "base/no_destructor.h"
+#include "chrome/grit/generated_resources.h"
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -13,7 +14,7 @@ const service_manager::Manifest& GetXrDeviceServiceManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName(device::mojom::kVrIsolatedServiceName)
-          .WithDisplayName("XR Isolated Device Service")
+          .WithDisplayName(IDS_ISOLATED_XR_PROCESS_NAME)
           .WithOptions(service_manager::ManifestOptionsBuilder()
                            .WithSandboxType("xr_compositing")
                            .Build())

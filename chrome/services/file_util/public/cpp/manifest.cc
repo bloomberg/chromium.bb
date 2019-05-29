@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
@@ -21,7 +22,7 @@ const service_manager::Manifest& GetFileUtilManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
         .WithServiceName(chrome::mojom::kFileUtilServiceName)
-        .WithDisplayName("Chrome File Utilities")
+        .WithDisplayName(IDS_UTILITY_PROCESS_FILE_UTILITY_NAME)
         .WithOptions(service_manager::ManifestOptionsBuilder()
                          .WithSandboxType("utility")
                          .WithInstanceSharingPolicy(

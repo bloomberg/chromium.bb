@@ -1005,35 +1005,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& name,
       mojo::ScopedMessagePipeHandle* handle) {}
 
-  using ProcessNameCallback = base::RepeatingCallback<base::string16()>;
-
-  struct CONTENT_EXPORT OutOfProcessServiceInfo {
-    OutOfProcessServiceInfo();
-    OutOfProcessServiceInfo(const OutOfProcessServiceInfo&);
-    OutOfProcessServiceInfo(const ProcessNameCallback& process_name_callback);
-    OutOfProcessServiceInfo(const ProcessNameCallback& process_name_callback,
-                            const std::string& process_group);
-    ~OutOfProcessServiceInfo();
-
-    // The callback function to get the display name of the service process
-    // launched for the service.
-    ProcessNameCallback process_name_callback;
-
-    // If provided, a string which groups this service into a process shared
-    // by other services using the same string.
-    base::Optional<std::string> process_group;
-
-    // If |true| the service is run in the GPU process rather than a standalone
-    // service process.
-    bool run_in_gpu_process = false;
-  };
-
-  using OutOfProcessServiceMap = std::map<std::string, OutOfProcessServiceInfo>;
-
-  // Registers services to be loaded out of the browser process in an
-  // utility process. The value of each map entry should be a process name,
-  // to use for the service's host process when launched.
-  virtual void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) {}
+  // Called just before the Service Manager is initialized.
+  virtual void WillStartServiceManager() {}
 
   // Handles a service instance request for a new service instance with identity
   // |identity|. If the client knows how to run the named service, it should

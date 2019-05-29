@@ -33,7 +33,6 @@
 #include "headless/lib/headless_macros.h"
 #include "net/base/url_util.h"
 #include "net/ssl/client_cert_identity.h"
-#include "printing/buildflags/buildflags.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -44,11 +43,6 @@
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "content/public/common/content_descriptors.h"
 #endif  // defined(HEADLESS_USE_BREAKPAD)
-
-#if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-#include "base/strings/utf_string_conversions.h"
-#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
-#endif
 
 namespace headless {
 
@@ -156,14 +150,6 @@ HeadlessContentBrowserClient::GetServiceManifestOverlay(
     return GetHeadlessContentPackagedServicesOverlayManifest();
 
   return base::nullopt;
-}
-
-void HeadlessContentBrowserClient::RegisterOutOfProcessServices(
-    OutOfProcessServiceMap* services) {
-#if BUILDFLAG(ENABLE_PRINTING) && !defined(CHROME_MULTIPLE_DLL_CHILD)
-  (*services)[printing::mojom::kServiceName] =
-      base::BindRepeating(&base::ASCIIToUTF16, "PDF Compositor Service");
-#endif
 }
 
 scoped_refptr<content::QuotaPermissionContext>

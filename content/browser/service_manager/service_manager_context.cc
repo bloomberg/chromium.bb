@@ -22,7 +22,6 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -161,19 +160,19 @@ void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 class ContentChildServiceProcessHost
     : public service_manager::ServiceProcessHost {
  public:
-  explicit ContentChildServiceProcessHost(
-      const ContentBrowserClient::OutOfProcessServiceInfo& service_info)
-      : service_info_(service_info) {}
+  explicit ContentChildServiceProcessHost(bool run_in_gpu_process)
+      : run_in_gpu_process_(run_in_gpu_process) {}
   ~ContentChildServiceProcessHost() override = default;
 
   // service_manager::ServiceProcessHost:
   mojo::PendingRemote<service_manager::mojom::Service> Launch(
       const service_manager::Identity& identity,
       service_manager::SandboxType sandbox_type,
+      const base::string16& display_name,
       LaunchCallback callback) override {
     mojo::PendingRemote<service_manager::mojom::Service> remote;
     auto receiver = remote.InitWithNewPipeAndPassReceiver();
-    if (service_info_.run_in_gpu_process) {
+    if (run_in_gpu_process_) {
       // TODO(https://crbug.com/781334): Services running in the GPU process
       // should be packaged into the content_gpu manifest. Then this would be
       // unnecessary.
@@ -192,33 +191,13 @@ class ContentChildServiceProcessHost
       return remote;
     }
 
-    // Look for an existing process group.
-    base::WeakPtr<UtilityProcessHost>* weak_host = nullptr;
-    if (service_info_.process_group)
-      weak_host = &g_active_process_groups.Get()[*service_info_.process_group];
-
-    UtilityProcessHost* process_host = nullptr;
-    if (weak_host && *weak_host) {
-      // Start service in an existing process.
-      process_host = weak_host->get();
-    } else {
-      // Start a new process for this service.
-      UtilityProcessHost* impl = new UtilityProcessHost(nullptr, nullptr);
-      base::string16 process_name =
-          service_info_.process_name_callback
-              ? service_info_.process_name_callback.Run()
-              : base::ASCIIToUTF16(base::StrCat({identity.name(), " service"}));
-      DCHECK(!process_name.empty());
-      impl->SetName(process_name);
-      impl->SetMetricsName(identity.name());
-      impl->SetServiceIdentity(identity);
-      impl->SetSandboxType(sandbox_type);
-      impl->Start();
-      if (weak_host)
-        *weak_host = impl->AsWeakPtr();
-      process_host = impl;
-    }
-
+    // Start a new process for this service.
+    UtilityProcessHost* process_host = new UtilityProcessHost(nullptr, nullptr);
+    process_host->SetName(display_name);
+    process_host->SetMetricsName(identity.name());
+    process_host->SetServiceIdentity(identity);
+    process_host->SetSandboxType(sandbox_type);
+    process_host->Start();
     process_host->RunService(
         identity.name(), std::move(receiver),
         base::BindOnce(
@@ -231,7 +210,7 @@ class ContentChildServiceProcessHost
   }
 
  private:
-  const ContentBrowserClient::OutOfProcessServiceInfo service_info_;
+  const bool run_in_gpu_process_;
   DISALLOW_COPY_AND_ASSIGN(ContentChildServiceProcessHost);
 };
 
@@ -406,6 +385,7 @@ class ServiceExecutableProcessHost
   mojo::PendingRemote<service_manager::mojom::Service> Launch(
       const service_manager::Identity& identity,
       service_manager::SandboxType sandbox_type,
+      const base::string16& display_name,
       LaunchCallback callback) override {
     // TODO(https://crbug.com/781334): Support sandboxing.
     return launcher_
@@ -434,10 +414,8 @@ class BrowserServiceManagerDelegate
  public:
   BrowserServiceManagerDelegate(
       const scoped_refptr<base::SequencedTaskRunner>& main_thread_task_runner,
-      ContentBrowserClient::OutOfProcessServiceMap out_of_process_services,
       ServiceRequestHandler main_thread_request_handler)
       : main_thread_task_runner_(main_thread_task_runner),
-        out_of_process_services_(std::move(out_of_process_services)),
         main_thread_request_handler_(std::move(main_thread_request_handler)) {}
   ~BrowserServiceManagerDelegate() override = default;
 
@@ -466,11 +444,16 @@ class BrowserServiceManagerDelegate
   std::unique_ptr<service_manager::ServiceProcessHost>
   CreateProcessHostForBuiltinServiceInstance(
       const service_manager::Identity& identity) override {
-    ContentBrowserClient::OutOfProcessServiceInfo info;
-    auto it = out_of_process_services_.find(identity.name());
-    if (it != out_of_process_services_.end())
-      info = it->second;
-    return std::make_unique<ContentChildServiceProcessHost>(info);
+    // TODO(crbug.com/895615): Package these services in content_gpu instead
+    // of using this hack.
+    bool run_in_gpu_process = false;
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+    if (identity.name() == media::mojom::kMediaServiceName)
+      run_in_gpu_process = true;
+#endif
+    if (identity.name() == shape_detection::mojom::kServiceName)
+      run_in_gpu_process = true;
+    return std::make_unique<ContentChildServiceProcessHost>(run_in_gpu_process);
   }
 
   std::unique_ptr<service_manager::ServiceProcessHost>
@@ -486,7 +469,6 @@ class BrowserServiceManagerDelegate
 
  private:
   const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
-  const ContentBrowserClient::OutOfProcessServiceMap out_of_process_services_;
   const ServiceRequestHandler main_thread_request_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserServiceManagerDelegate);
@@ -506,15 +488,13 @@ class ServiceManagerContext::InProcessServiceManagerContext
   void Start(
       std::vector<service_manager::Manifest> manifests,
       mojo::PendingRemote<service_manager::mojom::Service> system_remote,
-      ContentBrowserClient::OutOfProcessServiceMap out_of_process_services,
       ServiceRequestHandler request_handler) {
     service_manager_thread_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             &InProcessServiceManagerContext::StartOnServiceManagerThread, this,
             std::move(manifests), base::ThreadTaskRunnerHandle::Get(),
-            std::move(system_remote), std::move(out_of_process_services),
-            std::move(request_handler)));
+            std::move(system_remote), std::move(request_handler)));
   }
 
   void ShutDown() {
@@ -541,13 +521,11 @@ class ServiceManagerContext::InProcessServiceManagerContext
       std::vector<service_manager::Manifest> manifests,
       scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner,
       mojo::PendingRemote<service_manager::mojom::Service> system_remote,
-      ContentBrowserClient::OutOfProcessServiceMap out_of_process_services,
       ServiceRequestHandler request_handler) {
     service_manager_ = std::make_unique<service_manager::ServiceManager>(
         std::move(manifests),
         std::make_unique<BrowserServiceManagerDelegate>(
-            ui_thread_task_runner, std::move(out_of_process_services),
-            std::move(request_handler)));
+            ui_thread_task_runner, std::move(request_handler)));
 
     mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
     service_manager_->RegisterService(
@@ -683,13 +661,7 @@ ServiceManagerContext::ServiceManagerContext(
   // GetConnectorForIOThread().
   g_io_thread_connector.Get() = system_connection->GetConnector()->Clone();
 
-  // TODO(https://crbug.com/781334): Remove |out_of_process_services|.  We can
-  // add support for resource IDs as Manifest display names, obviating the need
-  // for this map, now that manifests also can convey whether to run a service
-  // in- or out-of-process.
-  ContentBrowserClient::OutOfProcessServiceMap out_of_process_services;
-  GetContentClient()->browser()->RegisterOutOfProcessServices(
-      &out_of_process_services);
+  GetContentClient()->browser()->WillStartServiceManager();
 
   if (base::FeatureList::IsEnabled(features::kTracingServiceInProcess)) {
     RegisterInProcessService(
@@ -699,19 +671,7 @@ ServiceManagerContext::ServiceManagerContext(
              base::WithBaseSyncPrimitives(),
              base::TaskPriority::USER_BLOCKING}),
         base::BindRepeating(&CreateTracingService));
-  } else {
-    out_of_process_services[tracing::mojom::kServiceName] =
-        base::BindRepeating(&base::ASCIIToUTF16, "Tracing Service");
   }
-
-  out_of_process_services[data_decoder::mojom::kServiceName] =
-      base::BindRepeating(&base::ASCIIToUTF16, "Data Decoder Service");
-
-  auto& shape_detection_info =
-      out_of_process_services[shape_detection::mojom::kServiceName];
-  shape_detection_info.process_name_callback =
-      base::BindRepeating(&base::ASCIIToUTF16, "Shape Detection Service");
-  shape_detection_info.run_in_gpu_process = true;
 
   bool network_service_enabled =
       base::FeatureList::IsEnabled(network::features::kNetworkService);
@@ -728,50 +688,11 @@ ServiceManagerContext::ServiceManagerContext(
       GetNetworkTaskRunner()->StartWithTaskRunner(task_runner);
       RegisterInProcessService(mojom::kNetworkServiceName, task_runner,
                                base::BindRepeating(&CreateNetworkService));
-    } else {
-      out_of_process_services[mojom::kNetworkServiceName] =
-          base::BindRepeating(&base::ASCIIToUTF16, "Network Service");
     }
   }
 
-  if (AudioServiceOutOfProcess()) {
-    DCHECK(base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams));
-    out_of_process_services[audio::mojom::kServiceName] =
-        base::BindRepeating(&base::ASCIIToUTF16, "Audio Service");
-  }
-
-  if (features::IsVideoCaptureServiceEnabledForOutOfProcess()) {
-    out_of_process_services[video_capture::mojom::kServiceName] =
-        base::BindRepeating(&base::ASCIIToUTF16, "Video Capture Service");
-  }
-
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  out_of_process_services[media::mojom::kMediaServiceName] =
-      base::BindRepeating(&base::ASCIIToUTF16, "Media Service");
-#elif BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  auto& media_service_info =
-      out_of_process_services[media::mojom::kMediaServiceName];
-  media_service_info.process_name_callback =
-      base::BindRepeating(&base::ASCIIToUTF16, "Media Service");
-  media_service_info.run_in_gpu_process = true;
-#endif
-
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  out_of_process_services[media::mojom::kCdmServiceName] = base::BindRepeating(
-      &base::ASCIIToUTF16, "Content Decryption Module Service");
-#endif
-
-#if defined(OS_CHROMEOS)
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  out_of_process_services
-      [chromeos::assistant::mojom::kAudioDecoderServiceName] =
-          base::BindRepeating(&base::ASCIIToUTF16,
-                              "Assistant Audio Decoder Service");
-#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#endif
-
   in_process_context_->Start(
-      manifests, std::move(system_remote), std::move(out_of_process_services),
+      manifests, std::move(system_remote),
       base::BindRepeating(&ServiceManagerContext::RunServiceInstance,
                           weak_ptr_factory_.GetWeakPtr()));
   in_process_context_->StartServices(

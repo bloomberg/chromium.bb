@@ -176,7 +176,8 @@ GetChromeBuiltinServiceManifests() {
 #if BUILDFLAG(ENABLE_PRINTING)
       MakeOutOfProcess(printing::GetPdfCompositorManifest()),
 #endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
       MakeOutOfProcess(GetChromePrintingManifest()),
 #endif
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
