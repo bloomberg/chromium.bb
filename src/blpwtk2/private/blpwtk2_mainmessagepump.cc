@@ -29,6 +29,7 @@
 #include <base/threading/thread_local.h>
 #include <base/win/wrapped_window_proc.h>
 #include <base/time/time.h>
+#include <gin/public/debug.h>
 #include <v8.h>
 
 namespace blpwtk2 {
@@ -348,6 +349,17 @@ MainMessagePump* MainMessagePump::current()
     return pump;
 }
 
+// CLASS METHODS
+void MainMessagePump::OnDebugBreak()
+{
+    current()->modalLoop(true);
+}
+
+void MainMessagePump::OnDebugResume()
+{
+    current()->modalLoop(false);
+}
+
 // CREATORS
 MainMessagePump::MainMessagePump()
     : base::MessagePumpForUI()
@@ -401,10 +413,16 @@ MainMessagePump::MainMessagePump()
 
     DCHECK(!g_lazy_tls.Pointer()->Get());
     g_lazy_tls.Pointer()->Set(this);
+
+    gin::Debug::SetDebugBreakCallback(&MainMessagePump::OnDebugBreak);
+    gin::Debug::SetDebugResumeCallback(&MainMessagePump::OnDebugResume);
 }
 
 MainMessagePump::~MainMessagePump()
 {
+    gin::Debug::SetDebugBreakCallback(nullptr);
+    gin::Debug::SetDebugResumeCallback(nullptr);
+
     ::DestroyWindow(d_window);
     g_lazy_tls.Pointer()->Set(nullptr);
 }
