@@ -26,6 +26,9 @@ source_set("public") {
     "notification_params.cc",
     "notification_params.h",
     "notification_schedule_service.h",
+    "notification_scheduler_client.h",
+    "notification_scheduler_client_registrar.cc",
+    "notification_scheduler_client_registrar.h",
     "notification_scheduler_types.h",
     "schedule_params.cc",
     "schedule_params.h",
@@ -35,6 +38,7 @@ source_set("public") {
   deps = [
     "//base",
     "//components/keyed_service/core",
+    "//skia",
   ]
 }
 
@@ -112,6 +116,7 @@ source_set("lib") {
     "//chrome/browser/notifications/proto",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
+    "//skia",
   ]
 }
 

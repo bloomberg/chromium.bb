@@ -18,11 +18,13 @@ class ProtoDatabaseProvider;
 namespace notifications {
 
 class NotificationBackgroundTaskScheduler;
+class NotificationSchedulerClientRegistrar;
 
 // Creates the notification schedule service with all the embedder level
 // dependencies. This layer is mainly to forbid the embedder to depend on
 // notification scheduler internal code.
 KeyedService* CreateNotificationScheduleService(
+    std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
     std::unique_ptr<NotificationBackgroundTaskScheduler>
         background_task_scheduler,
     leveldb_proto::ProtoDatabaseProvider* db_provider,

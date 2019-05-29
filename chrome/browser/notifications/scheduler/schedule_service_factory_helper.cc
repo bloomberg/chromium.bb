@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/scheduler/init_aware_scheduler.h"
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_impl.h"
+#include "chrome/browser/notifications/scheduler/notification_scheduler_client_registrar.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/notification_store.h"
 #include "chrome/browser/notifications/scheduler/scheduled_notification_manager.h"
@@ -32,6 +33,7 @@ const base::FilePath::CharType kNotificationDBName[] =
 }  // namespace
 
 KeyedService* CreateNotificationScheduleService(
+    std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
     std::unique_ptr<NotificationBackgroundTaskScheduler>
         background_task_scheduler,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
@@ -71,9 +73,10 @@ KeyedService* CreateNotificationScheduleService(
   notification_manager->Create(std::move(notification_store));
 
   auto context = std::make_unique<NotificationSchedulerContext>(
-      std::move(background_task_scheduler), std::move(icon_store),
-      std::move(impression_tracker), std::move(notification_manager),
-      DisplayDecider::Create(), std::move(config));
+      std::move(client_registrar), std::move(background_task_scheduler),
+      std::move(icon_store), std::move(impression_tracker),
+      std::move(notification_manager), DisplayDecider::Create(),
+      std::move(config));
 
   auto scheduler = NotificationScheduler::Create(std::move(context));
   auto init_aware_scheduler =

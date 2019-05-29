@@ -17,6 +17,7 @@ class DisplayDecider;
 class IconStore;
 class ImpressionHistoryTracker;
 class NotificationBackgroundTaskScheduler;
+class NotificationSchedulerClientRegistrar;
 class ScheduledNotificationManager;
 struct SchedulerConfig;
 
@@ -25,6 +26,7 @@ struct SchedulerConfig;
 class NotificationSchedulerContext {
  public:
   NotificationSchedulerContext(
+      std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
       std::unique_ptr<NotificationBackgroundTaskScheduler> scheduler,
       std::unique_ptr<IconStore> icon_store,
       std::unique_ptr<ImpressionHistoryTracker> impression_tracker,
@@ -33,7 +35,9 @@ class NotificationSchedulerContext {
       std::unique_ptr<SchedulerConfig> config);
   ~NotificationSchedulerContext();
 
-  const std::vector<SchedulerClientType>& clients() const { return clients_; }
+  NotificationSchedulerClientRegistrar* client_registrar() {
+    return client_registrar_.get();
+  }
 
   NotificationBackgroundTaskScheduler* background_task_scheduler() {
     return background_task_scheduler_.get();
@@ -54,9 +58,8 @@ class NotificationSchedulerContext {
   const SchedulerConfig* config() const { return config_.get(); }
 
  private:
-  // List of clients using the notification scheduler system.
-  // TODO(xingliu): Pass in the registered the clients.
-  std::vector<SchedulerClientType> clients_;
+  // Holds a list of clients using the notification scheduler system.
+  std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar_;
 
   // Used to schedule background task in OS level.
   std::unique_ptr<NotificationBackgroundTaskScheduler>

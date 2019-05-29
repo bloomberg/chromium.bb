@@ -11,19 +11,6 @@
 
 namespace notifications {
 
-// Categorizes type of notification buttons. Different type of button clicks
-// may result in change of notification shown frequency.
-enum class ActionButtonType {
-  // The action button is not categorized.
-  kUnknownAction = 0,
-
-  // Helpful button indicates the user likes to interact with the notification.
-  kHelpful = 1,
-
-  // Unhelpful button indicates dislike of the notification.
-  kUnhelpful = 2,
-};
-
 // An interface to plumb user actions events to notification scheduling system.
 // Each event needs to provide an unique id of the notification shown.
 class UserActionHandler {

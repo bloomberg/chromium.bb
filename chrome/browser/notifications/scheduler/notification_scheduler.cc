@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/scheduler/notification_scheduler.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/notification_params.h"
+#include "chrome/browser/notifications/scheduler/notification_scheduler_client.h"
+#include "chrome/browser/notifications/scheduler/notification_scheduler_client_registrar.h"
 #include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/scheduled_notification_manager.h"
 
@@ -160,8 +163,11 @@ class NotificationSchedulerImpl
     for (const auto& client_state : client_states) {
       client_state_ptrs.emplace(client_state.first, client_state.second.get());
     }
+    std::vector<SchedulerClientType> clients;
+    context_->client_registrar()->GetRegisteredClients(&clients);
+
     context_->display_decider()->FindNotificationsToShow(
-        context_->config(), context_->clients(), DistributionPolicy::Create(),
+        context_->config(), std::move(clients), DistributionPolicy::Create(),
         task_start_time, std::move(notifications), std::move(client_state_ptrs),
         &results);
 

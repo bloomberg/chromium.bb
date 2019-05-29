@@ -52,7 +52,8 @@ enum class UserFeedback {
   kMaxValue = kIgnore
 };
 
-// The user impression of a particular notification.
+// The user impression of a particular notification, which may impact the
+// notification display frenquency.
 enum class ImpressionResult {
   // Invalid user impression.
   kInvalid = 0,
@@ -63,6 +64,19 @@ enum class ImpressionResult {
   // The feedback is neutral to the user.
   kNeutral = 3,
   kMaxValue = kNeutral
+};
+
+// Categorizes type of notification buttons. Different type of button clicks
+// may result in change of notification shown frequency.
+enum class ActionButtonType {
+  // The action button is not categorized.
+  kUnknownAction = 0,
+
+  // Helpful button indicates the user likes to interact with the notification.
+  kHelpful = 1,
+
+  // Unhelpful button indicates dislike of the notification.
+  kUnhelpful = 2,
 };
 
 }  // namespace notifications
