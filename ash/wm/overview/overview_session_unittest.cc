@@ -1063,6 +1063,60 @@ TEST_F(OverviewSessionTest, ActivateAnotherWindowDuringDragNotCancelOverview) {
   EXPECT_TRUE(InOverviewSession());
 }
 
+// Tests that if an overview item is dragged, the activation of the
+// corresponding window does not cancel overview.
+TEST_F(OverviewSessionTest, ActivateDraggedOverviewWindowNotCancelOverview) {
+  UpdateDisplay("800x600");
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+  ToggleOverview();
+  OverviewItem* item = GetWindowItemForWindow(0, window.get());
+  gfx::PointF drag_point = item->target_bounds().CenterPoint();
+  overview_session()->InitiateDrag(item, drag_point);
+  drag_point.Offset(5.f, 0.f);
+  overview_session()->Drag(item, drag_point);
+  ::wm::ActivateWindow(window.get());
+  EXPECT_TRUE(InOverviewSession());
+}
+
+// Tests that if an overview item is dragged, the activation of the window
+// corresponding to another overview item does not cancel overview.
+TEST_F(OverviewSessionTest,
+       ActivateAnotherOverviewWindowDuringOverviewDragNotCancelOverview) {
+  UpdateDisplay("800x600");
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  ToggleOverview();
+  OverviewItem* item1 = GetWindowItemForWindow(0, window1.get());
+  gfx::PointF drag_point = item1->target_bounds().CenterPoint();
+  overview_session()->InitiateDrag(item1, drag_point);
+  drag_point.Offset(5.f, 0.f);
+  overview_session()->Drag(item1, drag_point);
+  ::wm::ActivateWindow(window2.get());
+  EXPECT_TRUE(InOverviewSession());
+}
+
+// Tests that if an overview item is dragged, the activation of a window
+// excluded from overview does not cancel overview.
+TEST_F(OverviewSessionTest,
+       ActivateWindowExcludedFromOverviewDuringOverviewDragNotCancelOverview) {
+  UpdateDisplay("800x600");
+  EnterTabletMode();
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP));
+  EXPECT_TRUE(wm::ShouldExcludeForOverview(window2.get()));
+  ToggleOverview();
+  OverviewItem* item1 = GetWindowItemForWindow(0, window1.get());
+  gfx::PointF drag_point = item1->target_bounds().CenterPoint();
+  overview_session()->InitiateDrag(item1, drag_point);
+  drag_point.Offset(5.f, 0.f);
+  overview_session()->Drag(item1, drag_point);
+  ::wm::ActivateWindow(window2.get());
+  EXPECT_TRUE(InOverviewSession());
+}
+
 // Tests that exiting overview mode without selecting a window restores focus
 // to the previously focused window.
 TEST_F(OverviewSessionTest, CancelRestoresFocus) {

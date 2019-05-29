@@ -143,19 +143,6 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   return bounds;
 }
 
-bool IsWindowDragInProgress() {
-  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-  for (auto* window : windows) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
-    if (window_state && window_state->is_dragged() &&
-        (window_state->drag_details()->window_component == HTCLIENT ||
-         window_state->drag_details()->window_component == HTCAPTION)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 }  // namespace
 
 OverviewSession::OverviewSession(OverviewDelegate* delegate)
@@ -716,9 +703,13 @@ void OverviewSession::OnWindowActivating(
   // Don't restore focus on exit if a window was just activated.
   ResetFocusRestoreWindow(false);
 
-  // Do not cancel overview mode if a window drag in progress.
-  if (IsWindowDragInProgress())
-    return;
+  // Do not cancel overview mode while a window or overview item is being
+  // dragged as evidenced by the presence of a drop target. (Dragging to close
+  // does not count; canceling overview mode is okay then.)
+  for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
+    if (overview_grid->GetDropTarget())
+      return;
+  }
 
   const auto& windows = grid->window_list();
   auto iter = std::find_if(
@@ -1018,12 +1009,8 @@ void OverviewSession::OnDisplayBoundsChanged() {
 }
 
 void OverviewSession::MaybeCreateAndPositionNoWindowsWidget() {
-  // Hide the widget if there is an item in overview or there are none but there
-  // is a window drag in progress. It is possible for a window drag to be in
-  // progress when we notify that split view has started so check for that case.
-  if (!IsEmpty() ||
-      (IsWindowDragInProgress() &&
-       !Shell::Get()->split_view_controller()->InSplitViewMode())) {
+  // Hide the widget if there is an item in overview.
+  if (!IsEmpty()) {
     no_windows_widget_.reset();
     return;
   }
