@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <wrl/client.h>
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -136,11 +138,16 @@ void TtsPlatformImplWin::ProcessSpeech(
   }
 
   if (params.pitch >= 0.0) {
-    // The TTS api allows a range of -10 to 10 for speech pitch.
-    // TODO(dtseng): cleanup if we ever use any other properties that
-    // require xml.
-    std::wstring pitch_value = base::NumberToString16(params.pitch * 10 - 10);
-    prefix = L"<pitch absmiddle=\"" + pitch_value + L"\">";
+    // The TTS api allows a range of -10 to 10 for speech pitch:
+    // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ms720500(v%3Dvs.85)
+    // Note that the API requires an integer value, so be sure to cast the pitch
+    // value to an int before calling NumberToString16. TODO(dtseng): cleanup if
+    // we ever use any other properties that require xml.
+    double adjusted_pitch =
+        std::max<double>(-10, std::min<double>(params.pitch * 10 - 10, 10));
+    std::wstring adjusted_pitch_string =
+        base::NumberToString16(static_cast<int>(adjusted_pitch));
+    prefix = L"<pitch absmiddle=\"" + adjusted_pitch_string + L"\">";
     suffix = L"</pitch>";
   }
 
