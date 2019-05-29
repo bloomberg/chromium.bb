@@ -915,4 +915,12 @@ void WebContentsAndroid::SetDisplayCutoutSafeArea(
       gfx::Insets(top, left, bottom, right));
 }
 
+void WebContentsAndroid::NotifyRendererPreferenceUpdate(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  DCHECK(rvh);
+  rvh->OnWebkitPreferencesChanged();
+}
+
 }  // namespace content

@@ -494,4 +494,9 @@ public interface WebContents extends Parcelable {
      * @param insets The insets stored in a Rect.
      */
     void setDisplayCutoutSafeArea(Rect insets);
+
+    /**
+     * Notify that web preferences needs update for various properties.
+     */
+    void notifyRendererPreferenceUpdate();
 }

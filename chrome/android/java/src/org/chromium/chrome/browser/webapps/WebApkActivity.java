@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.metrics.WebApkSplashscreenMetrics;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
@@ -47,7 +48,8 @@ public class WebApkActivity extends WebappActivity {
     @Override
     protected void initializeUI(Bundle savedInstance) {
         super.initializeUI(savedInstance);
-        getActivityTab().notifyRendererPreferenceUpdate();
+        WebContents webContents = getActivityTab().getWebContents();
+        if (webContents != null) webContents.notifyRendererPreferenceUpdate();
     }
 
     @Override

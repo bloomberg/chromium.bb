@@ -202,9 +202,6 @@ class TabAndroid {
   bool AreRendererInputEventsIgnored(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void NotifyRendererPreferenceUpdate(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
 
  private:
   prerender::PrerenderManager* GetPrerenderManager() const;

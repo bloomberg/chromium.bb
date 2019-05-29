@@ -274,4 +274,7 @@ public class MockWebContents implements WebContents {
 
     @Override
     public void setDisplayCutoutSafeArea(Rect insets) {}
+
+    @Override
+    public void notifyRendererPreferenceUpdate() {}
 }

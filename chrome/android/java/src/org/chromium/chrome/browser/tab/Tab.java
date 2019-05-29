@@ -1032,16 +1032,10 @@ public class Tab
         assert windowAndroid != null;
         mWindowAndroid = windowAndroid;
         WebContents webContents = getWebContents();
-        if (webContents != null) webContents.setTopLevelNativeWindow(mWindowAndroid);
-        if (getActivity() != null) notifyRendererPreferenceUpdate();
-    }
-
-    /**
-     * Notify that web preferences needs update for various properties.
-     * TODO(jinsukkim): Expose RenderViewHost at java layer and remove this method.
-     */
-    public void notifyRendererPreferenceUpdate() {
-        if (mNativeTabAndroid != 0) nativeNotifyRendererPreferenceUpdate(mNativeTabAndroid);
+        if (webContents != null) {
+            webContents.setTopLevelNativeWindow(mWindowAndroid);
+            webContents.notifyRendererPreferenceUpdate();
+        }
     }
 
     /**
@@ -1190,7 +1184,7 @@ public class Tab
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
-            if (getActivity() != null) notifyRendererPreferenceUpdate();
+            mWebContents.notifyRendererPreferenceUpdate();
             TabHelpers.initWebContentsHelpers(this);
             notifyContentChanged();
         } finally {
@@ -1967,5 +1961,4 @@ public class Tab
     private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);
     private native void nativeAttachDetachedTab(long nativeTabAndroid);
     private native boolean nativeAreRendererInputEventsIgnored(long nativeTabAndroid);
-    private native void nativeNotifyRendererPreferenceUpdate(long nativeTabAndroid);
 }

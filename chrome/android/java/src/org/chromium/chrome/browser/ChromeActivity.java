@@ -947,16 +947,18 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         markSessionResume();
         RecordUserAction.record("MobileComeToForeground");
 
-        if (getActivityTab() != null) {
-            LaunchMetrics.commitLaunchMetrics(getActivityTab().getWebContents());
+        Tab tab = getActivityTab();
+        if (tab != null) {
+            WebContents webContents = tab.getWebContents();
+            LaunchMetrics.commitLaunchMetrics(webContents);
+
+            // For picture-in-picture mode
+            if (webContents != null) webContents.notifyRendererPreferenceUpdate();
         }
 
         FeatureUtilities.setCustomTabVisible(isCustomTab());
         FeatureUtilities.setIsInMultiWindowMode(
                 MultiWindowUtils.getInstance().isInMultiWindowMode(this));
-
-        // For picture-in-picture mode
-        if (getActivityTab() != null) getActivityTab().notifyRendererPreferenceUpdate();
 
         if (mPictureInPictureController != null) {
             mPictureInPictureController.cleanup(this);

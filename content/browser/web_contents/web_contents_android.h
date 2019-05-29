@@ -256,6 +256,9 @@ class CONTENT_EXPORT WebContentsAndroid {
                                 int left,
                                 int bottom,
                                 int right);
+  void NotifyRendererPreferenceUpdate(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 

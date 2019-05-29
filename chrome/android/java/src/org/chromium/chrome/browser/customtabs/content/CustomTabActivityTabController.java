@@ -296,7 +296,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
         TabAssociatedApp.from(tab).setAppId(mConnection.getClientPackageNameForSession(mSession));
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
             // Configures web preferences for viewing downloaded media.
-            tab.notifyRendererPreferenceUpdate();
+            if (tab.getWebContents() != null) tab.getWebContents().notifyRendererPreferenceUpdate();
         }
         initializeTab(tab);
         return tab;
@@ -319,7 +319,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
                 null, false /*unfreeze*/);
 
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
-            tab.notifyRendererPreferenceUpdate();
+            if (tab.getWebContents() != null) tab.getWebContents().notifyRendererPreferenceUpdate();
         }
 
         initializeTab(tab);

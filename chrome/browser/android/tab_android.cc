@@ -556,13 +556,6 @@ bool TabAndroid::HasPrerenderedUrl(JNIEnv* env,
   return HasPrerenderedUrl(gurl);
 }
 
-void TabAndroid::NotifyRendererPreferenceUpdate(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  if (web_contents() && web_contents()->GetRenderViewHost())
-    web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
-}
-
 void TabAndroid::AttachDetachedTab(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
