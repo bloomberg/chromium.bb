@@ -231,9 +231,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   void OnActivationDependencyResolved(const SurfaceId& activation_dependency,
                                       SurfaceAllocationGroup* group);
 
-  // Called when this surface's activation no longer has to block on the parent.
-  void ResetBlockActivationOnParent();
-
   // Notifies that this surface is no longer the primary surface of the
   // embedder. All future CompositorFrames will activate as soon as they arrive
   // and if a pending frame currently exists it will immediately activate as
@@ -312,8 +309,13 @@ class VIZ_SERVICE_EXPORT Surface final {
   base::Optional<FrameData> active_frame_data_;
   bool seen_first_frame_activation_ = false;
   bool seen_first_surface_embedding_ = false;
+  // Indicates whether another surface adds this surface as a dependency. When
+  // set to true, this surface will be unthrottled and the surface that is
+  // created after it will also not be throttled.
   bool seen_first_surface_dependency_ = false;
   const bool needs_sync_tokens_;
+  // When false, this surface will not be subject to child throttling even if
+  // it's not embedded yet.
   bool block_activation_on_parent_ = false;
 
   // A set of all valid SurfaceIds contained |last_surface_id_for_range_| to

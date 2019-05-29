@@ -255,7 +255,11 @@ void SurfaceAllocationGroup::UpdateLastReferenceAndMaybeActivate(
   ++it;
   if (it == surfaces_.end())
     return;
-  (*it)->ResetBlockActivationOnParent();
+  // This ensures the next surface has its seen_first_surface_dependency_ bit
+  // set so that throttling doesn't kick in until 3 surfaces after the surface
+  // that was just embedded. We see regression if throttling kicks in sooner.
+  // See https://crbug.com/951992.
+  (*it)->OnSurfaceDependencyAdded();
 }
 
 }  // namespace viz

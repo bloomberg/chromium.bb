@@ -3496,6 +3496,7 @@ TEST_F(SurfaceSynchronizationTest,
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1, 1);
   const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 1, 2);
   const SurfaceId child_id3 = MakeSurfaceId(kChildFrameSink1, 1, 3);
+  const SurfaceId child_id4 = MakeSurfaceId(kChildFrameSink1, 1, 4);
 
   // |child_id1| Surface should immediately activate because one unembedded
   // surface is allowed.
@@ -3529,8 +3530,8 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_FALSE(child_surface2->HasPendingFrame());
   EXPECT_TRUE(child_surface2->HasActiveFrame());
 
-  // The child submits to |child_id3|. Now again we have two unembedded surface
-  // so throttling should kick in.
+  // The child submits to |child_id3|. Throttling should still not kick in due
+  // to https://crbug.com/951992.
   child_support1().SubmitCompositorFrame(
       child_id3.local_surface_id(),
       MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
@@ -3538,8 +3539,19 @@ TEST_F(SurfaceSynchronizationTest,
                           MakeDeadline(1u)));
   Surface* child_surface3 = GetSurfaceForId(child_id3);
   ASSERT_NE(nullptr, child_surface3);
-  EXPECT_TRUE(child_surface3->HasPendingFrame());
-  EXPECT_FALSE(child_surface3->HasActiveFrame());
+  EXPECT_FALSE(child_surface3->HasPendingFrame());
+  EXPECT_TRUE(child_surface3->HasActiveFrame());
+
+  // The child submits to |child_id4|. Throttling should kick in.
+  child_support1().SubmitCompositorFrame(
+      child_id4.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ranges(),
+                          std::vector<TransferableResource>(),
+                          MakeDeadline(1u)));
+  Surface* child_surface4 = GetSurfaceForId(child_id4);
+  ASSERT_NE(nullptr, child_surface4);
+  EXPECT_TRUE(child_surface4->HasPendingFrame());
+  EXPECT_FALSE(child_surface4->HasActiveFrame());
 }
 
 }  // namespace viz

@@ -744,17 +744,4 @@ void Surface::ActivatePendingFrameForInheritedDeadline() {
   ActivatePendingFrameForDeadline();
 }
 
-void Surface::ResetBlockActivationOnParent() {
-  if (!block_activation_on_parent_)
-    return;
-
-  block_activation_on_parent_ = false;
-
-  if (!activation_dependencies_.empty() || !pending_frame_data_)
-    return;
-
-  // All blockers have been cleared. The surface can be activated now.
-  ActivatePendingFrame();
-}
-
 }  // namespace viz
