@@ -126,7 +126,8 @@ ShapeResultView::~ShapeResultView() = default;
 
 scoped_refptr<ShapeResult> ShapeResultView::CreateShapeResult() const {
   ShapeResult* new_result =
-      new ShapeResult(primary_font_, num_characters_, Direction());
+      new ShapeResult(primary_font_, start_index_ + char_index_offset_,
+                      num_characters_, Direction());
   new_result->runs_.ReserveCapacity(parts_.size());
   for (const auto& part : parts_) {
     auto new_run = ShapeResult::RunInfo::Create(
@@ -145,7 +146,6 @@ scoped_refptr<ShapeResult> ShapeResultView::CreateShapeResult() const {
     new_result->runs_.push_back(std::move(new_run));
   }
 
-  new_result->start_index_ = start_index_ + char_index_offset_;
   new_result->num_glyphs_ = num_glyphs_;
   new_result->has_vertical_offsets_ = has_vertical_offsets_;
   new_result->width_ = width_;
@@ -157,7 +157,14 @@ template <class ShapeResultType>
 void ShapeResultView::CreateViewsForResult(const ShapeResultType* other,
                                            unsigned start_index,
                                            unsigned end_index) {
-  bool first_result = num_characters_ == 0;
+  // Compute the diff of index and the number of characters from the source
+  // ShapeResult and given offsets, because computing them from runs/parts can
+  // be inaccurate when all characters in a run/part are missing.
+  int index_diff = start_index_ + num_characters_ -
+                   std::max(start_index, other->StartIndex());
+  num_characters_ += std::min(end_index, other->EndIndex()) -
+                     std::max(start_index, other->StartIndex());
+
   for (const auto& run : other->RunsOrParts()) {
     if (!run->GetRunInfo())
       continue;
@@ -190,28 +197,16 @@ void ShapeResultView::CreateViewsForResult(const ShapeResultType* other,
       }
 
       // Adjust start_index for runs to be continuous.
-      unsigned part_start_index;
-      unsigned part_offset;
-      if (!run->Rtl()) {  // Left-to-right
-        part_start_index = start_index_ + num_characters_;
-        part_offset = adjusted_start;
-      } else {  // Right-to-left
-        part_start_index = run->start_index_ + adjusted_start;
-        part_offset = adjusted_start;
-      }
-
+      unsigned part_start_index = run_start + adjusted_start + index_diff;
+      unsigned part_offset = adjusted_start;
       parts_.push_back(std::make_unique<RunInfoPart>(
           run->GetRunInfo(), range, part_start_index, part_offset,
           part_characters, part_width));
 
-      num_characters_ += part_characters;
       num_glyphs_ += range.end - range.begin;
       width_ += part_width;
     }
   }
-
-  if (first_result || Rtl())
-    start_index_ = ComputeStartIndex();
 }
 
 scoped_refptr<ShapeResultView> ShapeResultView::Create(const Segment* segments,
@@ -251,7 +246,13 @@ scoped_refptr<ShapeResultView> ShapeResultView::Create(
   // This specialization is an optimization to allow the bounding box to be
   // re-used.
   ShapeResultView* out = new ShapeResultView(result);
-  out->char_index_offset_ = out->Rtl() ? 0 : result->StartIndex();
+  out->char_index_offset_ = result->StartIndex();
+  if (!out->Rtl()) {
+    out->start_index_ = 0;
+  } else {
+    out->start_index_ = out->char_index_offset_;
+    out->char_index_offset_ = 0;
+  }
   out->CreateViewsForResult(result, 0, std::numeric_limits<unsigned>::max());
   out->has_vertical_offsets_ = result->has_vertical_offsets_;
   return base::AdoptRef(out);
@@ -269,11 +270,13 @@ void ShapeResultView::AddSegments(const Segment* segments,
 
   // Compute start index offset for the overall run. This is added to the start
   // index of each glyph to ensure consistency with ShapeResult::SubRange
+  char_index_offset_ = segments[0].result ? segments[0].result->StartIndex()
+                                          : segments[0].view->StartIndex();
+  char_index_offset_ = std::max(char_index_offset_, segments[0].start_index);
   if (!Rtl()) {  // Left-to-right
-    char_index_offset_ = segments[0].result ? segments[0].result->StartIndex()
-                                            : segments[0].view->StartIndex();
-    char_index_offset_ = std::max(char_index_offset_, segments[0].start_index);
+    start_index_ = 0;
   } else {  // Right to left
+    start_index_ = char_index_offset_;
     char_index_offset_ = 0;
   }
 
@@ -293,17 +296,6 @@ void ShapeResultView::AddSegments(const Segment* segments,
       NOTREACHED();
     }
   }
-}
-
-unsigned ShapeResultView::ComputeStartIndex() const {
-  if (UNLIKELY(parts_.IsEmpty()))
-    return 0;
-  const RunInfoPart& first_part = *parts_.front();
-  if (!Rtl())  // Left-to-right.
-    return first_part.start_index_;
-  // Right-to-left.
-  unsigned end_index = first_part.start_index_ + first_part.num_characters_;
-  return end_index - num_characters_;
 }
 
 unsigned ShapeResultView::PreviousSafeToBreakOffset(unsigned index) const {

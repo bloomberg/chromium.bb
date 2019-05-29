@@ -363,19 +363,23 @@ void ShapeResult::RunInfo::CharacterIndexForXPosition(
 }
 
 ShapeResult::ShapeResult(scoped_refptr<const SimpleFontData> font_data,
+                         unsigned start_index,
                          unsigned num_characters,
                          TextDirection direction)
     : width_(0),
       primary_font_(font_data),
+      start_index_(start_index),
       num_characters_(num_characters),
       num_glyphs_(0),
       direction_(static_cast<unsigned>(direction)),
       has_vertical_offsets_(0) {}
 
 ShapeResult::ShapeResult(const Font* font,
+                         unsigned start_index,
                          unsigned num_characters,
                          TextDirection direction)
-    : ShapeResult(font->PrimaryFont(), num_characters, direction) {}
+    : ShapeResult(font->PrimaryFont(), start_index, num_characters, direction) {
+}
 
 ShapeResult::ShapeResult(const ShapeResult& other)
     : width_(other.width_),
@@ -1096,10 +1100,6 @@ void ShapeResult::InsertRun(scoped_refptr<ShapeResult::RunInfo> run) {
   // If we didn't find an existing slot to place it, append.
   if (run)
     runs_.push_back(std::move(run));
-
-  // TODO(layout-dev): We could skip this unless the inserted run is the first
-  // one but determiening that is likely as expensive as the computation.
-  UpdateStartIndex();
 }
 
 ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
@@ -1152,21 +1152,6 @@ void ShapeResult::ReorderRtlRuns(unsigned run_size_before) {
   for (unsigned i = 0; i < run_size_before; i++)
     new_runs.push_back(std::move(runs_[i]));
   runs_.swap(new_runs);
-}
-
-unsigned ShapeResult::ComputeStartIndex() const {
-  if (UNLIKELY(runs_.IsEmpty()))
-    return 0;
-  const RunInfo& first_run = *runs_.front();
-  if (!Rtl())  // Left-to-right.
-    return first_run.start_index_;
-  // Right-to-left.
-  unsigned end_index = first_run.start_index_ + first_run.num_characters_;
-  return end_index - num_characters_;
-}
-
-void ShapeResult::UpdateStartIndex() {
-  start_index_ = ComputeStartIndex();
 }
 
 void ShapeResult::CopyRange(unsigned start_offset,
@@ -1224,10 +1209,20 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
 
   // When |target| is empty, its character indexes are the specified sub range
   // of |this|. Otherwise the character indexes are renumbered to be continuous.
-  int index_diff =
-      !target->num_characters_
-          ? 0
-          : target->EndIndex() - std::max(start_offset, StartIndex());
+  //
+  // Compute the diff of index and the number of characters from the source
+  // ShapeResult and given offsets, because computing them from runs/parts can
+  // be inaccurate when all characters in a run/part are missing.
+  int index_diff;
+  if (!target->num_characters_) {
+    index_diff = 0;
+    target->start_index_ = start_offset;
+  } else {
+    index_diff = target->EndIndex() - std::max(start_offset, StartIndex());
+  }
+  target->num_characters_ +=
+      std::min(end_offset, EndIndex()) - std::max(start_offset, StartIndex());
+
   unsigned target_run_size_before = target->runs_.size();
   for (; run_index < runs_.size(); run_index++) {
     const auto& run = runs_[run_index];
@@ -1242,7 +1237,6 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
       auto sub_run = run->CreateSubRun(start, end);
       sub_run->start_index_ += index_diff;
       target->width_ += sub_run->width_;
-      target->num_characters_ += sub_run->num_characters_;
       target->num_glyphs_ += sub_run->glyph_data_.size();
       target->runs_.push_back(std::move(sub_run));
 
@@ -1255,7 +1249,6 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
   }
 
   if (!target->num_glyphs_) {
-    target->UpdateStartIndex();
     return run_index;
   }
 
@@ -1266,7 +1259,6 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
     target->ReorderRtlRuns(target_run_size_before);
 
   target->has_vertical_offsets_ |= has_vertical_offsets_;
-  target->UpdateStartIndex();
 
 #if DCHECK_IS_ON()
   DCHECK_EQ(
@@ -1281,7 +1273,7 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
 scoped_refptr<ShapeResult> ShapeResult::SubRange(unsigned start_offset,
                                                  unsigned end_offset) const {
   scoped_refptr<ShapeResult> sub_range =
-      Create(primary_font_.get(), 0, Direction());
+      Create(primary_font_.get(), 0, 0, Direction());
   CopyRange(start_offset, end_offset, sub_range.get());
   return sub_range;
 }
@@ -1302,7 +1294,7 @@ scoped_refptr<ShapeResult> ShapeResult::CopyAdjustedOffset(
     }
   }
 
-  result->UpdateStartIndex();
+  result->start_index_ = start_index;
   return result;
 }
 
@@ -1314,7 +1306,6 @@ void ShapeResult::CheckConsistency() const {
     return;
   }
 
-  DCHECK_EQ(start_index_, ComputeStartIndex());
   const unsigned start_index = StartIndex();
   unsigned index = start_index;
   unsigned num_glyphs = 0;
@@ -1361,7 +1352,7 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   DCHECK_GT(length, 0u);
   const SimpleFontData* font_data = font->PrimaryFont();
   scoped_refptr<ShapeResult> result =
-      ShapeResult::Create(font, length, direction);
+      ShapeResult::Create(font, start_index, length, direction);
   result->num_glyphs_ = length;
   DCHECK_EQ(result->num_glyphs_, length);  // no overflow
   result->has_vertical_offsets_ =
@@ -1394,7 +1385,6 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
     length -= run_length;
     start_index += run_length;
   } while (length);
-  result->UpdateStartIndex();
   return result;
 }
 
@@ -1406,7 +1396,7 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
   DCHECK_GT(length, 0u);
   const SimpleFontData* font_data = font->PrimaryFont();
   scoped_refptr<ShapeResult> result =
-      ShapeResult::Create(font, length, direction);
+      ShapeResult::Create(font, start_index, length, direction);
   result->num_glyphs_ = length;
   DCHECK_EQ(result->num_glyphs_, length);  // no overflow
   result->has_vertical_offsets_ =
@@ -1423,7 +1413,6 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
     width = 0;
   }
   result->runs_.push_back(std::move(run));
-  result->UpdateStartIndex();
   return result;
 }
 

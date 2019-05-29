@@ -112,13 +112,15 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
  public:
   static scoped_refptr<ShapeResult> Create(const Font* font,
-                                    unsigned num_characters,
-                                    TextDirection direction) {
-    return base::AdoptRef(new ShapeResult(font, num_characters, direction));
+                                           unsigned start_index,
+                                           unsigned num_characters,
+                                           TextDirection direction) {
+    return base::AdoptRef(
+        new ShapeResult(font, start_index, num_characters, direction));
   }
   static scoped_refptr<ShapeResult> CreateEmpty(const ShapeResult& other) {
     return base::AdoptRef(
-        new ShapeResult(other.primary_font_, 0, other.Direction()));
+        new ShapeResult(other.primary_font_, 0, 0, other.Direction()));
   }
   static scoped_refptr<ShapeResult> Create(const ShapeResult& other) {
     return base::AdoptRef(new ShapeResult(other));
@@ -342,16 +344,21 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
  protected:
   ShapeResult(scoped_refptr<const SimpleFontData>,
+              unsigned start_index,
               unsigned num_characters,
               TextDirection);
-  ShapeResult(const Font*, unsigned num_characters, TextDirection);
+  ShapeResult(const Font*,
+              unsigned start_index,
+              unsigned num_characters,
+              TextDirection);
   ShapeResult(const ShapeResult&);
 
   static scoped_refptr<ShapeResult> Create(const SimpleFontData* font_data,
+                                           unsigned start_index,
                                            unsigned num_characters,
                                            TextDirection direction) {
     return base::AdoptRef(
-        new ShapeResult(font_data, num_characters, direction));
+        new ShapeResult(font_data, start_index, num_characters, direction));
   }
 
   // Ensure |grapheme_| is computed. |BreakGlyphs| is valid only when
@@ -447,8 +454,6 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                  hb_buffer_t*);
   void InsertRun(scoped_refptr<ShapeResult::RunInfo>);
   void ReorderRtlRuns(unsigned run_size_before);
-  unsigned ComputeStartIndex() const;
-  void UpdateStartIndex();
 
   template <bool is_horizontal_run>
   void ComputeRunInkBounds(const ShapeResult::RunInfo&,

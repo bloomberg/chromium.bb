@@ -147,7 +147,6 @@ class PLATFORM_EXPORT ShapeResultView final
  private:
   template <class ShapeResultType>
   ShapeResultView(const ShapeResultType*);
-  unsigned ComputeStartIndex() const;
 
   struct RunInfoPart;
   template <class ShapeResultType>
@@ -171,7 +170,7 @@ class PLATFORM_EXPORT ShapeResultView final
 
   scoped_refptr<const SimpleFontData> primary_font_;
 
-  mutable unsigned start_index_;  // Cached and updated by ComputeStartIndex.
+  unsigned start_index_;
   unsigned num_characters_;
   unsigned num_glyphs_ : 30;
 

@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_test_info.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
@@ -102,6 +103,16 @@ class HarfBuzzShaperTest : public testing::Test {
     return shape_result;
   }
 
+  scoped_refptr<ShapeResult> CreateMissingRunResult(TextDirection direction) {
+    scoped_refptr<ShapeResult> result =
+        ShapeResult::Create(&font, 2, 8, direction);
+    result->InsertRunForTesting(2, 1, direction, {0});
+    result->InsertRunForTesting(3, 3, direction, {0, 1});
+    // The character index 6 and 7 is missing.
+    result->InsertRunForTesting(8, 2, direction, {0});
+    return result;
+  }
+
   FontCachePurgePreventer font_cache_purge_preventer;
   FontDescription font_description;
   Font font;
@@ -178,7 +189,7 @@ INSTANTIATE_TEST_SUITE_P(HarfBuzzShaperTest,
 
 TEST_F(HarfBuzzShaperTest, MutableUnique) {
   scoped_refptr<ShapeResult> result =
-      ShapeResult::Create(&font, 0, TextDirection::kLtr);
+      ShapeResult::Create(&font, 0, 0, TextDirection::kLtr);
   EXPECT_TRUE(result->HasOneRef());
 
   // At this point, |result| has only one ref count.
@@ -462,7 +473,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
       shaper.Shape(&font, direction, 3, string.length());
 
   scoped_refptr<ShapeResult> composite_result =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result1->CopyRange(0, 3, composite_result.get());
   result2->CopyRange(3, string.length(), composite_result.get());
 
@@ -486,7 +497,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalUprightIdeograph) {
       shaper.Shape(&font, direction, 3, string.length());
 
   scoped_refptr<ShapeResult> composite_result =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result1->CopyRange(0, 3, composite_result.get());
   result2->CopyRange(3, string.length(), composite_result.get());
 
@@ -554,7 +565,7 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
       shaper.Shape(&font, direction, 3, string.length());
 
   scoped_refptr<ShapeResult> composite_result =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result1->CopyRange(0, 3, composite_result.get());
   result2->CopyRange(3, string.length(), composite_result.get());
 
@@ -1129,13 +1140,15 @@ TEST_P(ShapeResultCopyRangeTest, Split) {
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // Split the result.
-  scoped_refptr<ShapeResult> result1 = ShapeResult::Create(&font, 0, direction);
+  scoped_refptr<ShapeResult> result1 =
+      ShapeResult::Create(&font, 0, 0, direction);
   result->CopyRange(0, test_data.break_point, result1.get());
   EXPECT_EQ(test_data.break_point, result1->NumCharacters());
   EXPECT_EQ(0u, result1->StartIndex());
   EXPECT_EQ(test_data.break_point, result1->EndIndex());
 
-  scoped_refptr<ShapeResult> result2 = ShapeResult::Create(&font, 0, direction);
+  scoped_refptr<ShapeResult> result2 =
+      ShapeResult::Create(&font, 0, 0, direction);
   result->CopyRange(test_data.break_point, string.length(), result2.get());
   EXPECT_EQ(string.length() - test_data.break_point, result2->NumCharacters());
   EXPECT_EQ(test_data.break_point, result2->StartIndex());
@@ -1143,7 +1156,7 @@ TEST_P(ShapeResultCopyRangeTest, Split) {
 
   // Combine them.
   scoped_refptr<ShapeResult> composite_result =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result1->CopyRange(0, test_data.break_point, composite_result.get());
   result2->CopyRange(0, string.length(), composite_result.get());
   EXPECT_EQ(string.length(), composite_result->NumCharacters());
@@ -1176,7 +1189,7 @@ TEST_P(ShapeResultCopyRangeTest, ShapeRange) {
 
   // Combine them.
   scoped_refptr<ShapeResult> composite_result =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result1->CopyRange(0, test_data.break_point, composite_result.get());
   result2->CopyRange(0, string.length(), composite_result.get());
   EXPECT_EQ(string.length(), composite_result->NumCharacters());
@@ -1197,7 +1210,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoLatin) {
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   scoped_refptr<ShapeResult> composite_result =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result->CopyRange(0, 10, composite_result.get());
   result->CopyRange(10, 20, composite_result.get());
   result->CopyRange(20, 30, composite_result.get());
@@ -1228,7 +1241,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   scoped_refptr<ShapeResult> composite_result =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result->CopyRange(0, 4, composite_result.get());
   result->CopyRange(4, 6, composite_result.get());
   result->CopyRange(6, 8, composite_result.get());
@@ -1266,7 +1279,8 @@ TEST_P(ShapeParameterTest, ShapeResultCopyRangeAcrossRuns) {
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   // CopyRange(5, 7) should copy 1 character from [1] and 1 from [2].
-  scoped_refptr<ShapeResult> target = ShapeResult::Create(&font, 0, direction);
+  scoped_refptr<ShapeResult> target =
+      ShapeResult::Create(&font, 0, 0, direction);
   result->CopyRange(5, 7, target.get());
   EXPECT_EQ(2u, target->NumCharacters());
 }
@@ -1296,7 +1310,7 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
       shaper.Shape(&font, direction, 6, string.length());
 
   scoped_refptr<ShapeResult> composite_result =
-      ShapeResult::Create(&font, 0, direction);
+      ShapeResult::Create(&font, 0, 0, direction);
   result1->CopyRange(0, 6, composite_result.get());
   result2->CopyRange(6, string.length(), composite_result.get());
 
@@ -1344,7 +1358,7 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinCommonLigatures) {
   // Verify safe to break information in copied results to ensure that both
   // copying and multi-run break information works.
   scoped_refptr<ShapeResult> copied_result =
-      ShapeResult::Create(&testFont, 0, TextDirection::kLtr);
+      ShapeResult::Create(&testFont, 0, 0, TextDirection::kLtr);
   result->CopyRange(0, 3, copied_result.get());
   result->CopyRange(3, string.length(), copied_result.get());
 
@@ -1384,7 +1398,7 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakPreviousLatinCommonLigatures) {
   // Verify safe to break information in copied results to ensure that both
   // copying and multi-run break information works.
   scoped_refptr<ShapeResult> copied_result =
-      ShapeResult::Create(&testFont, 0, TextDirection::kLtr);
+      ShapeResult::Create(&testFont, 0, 0, TextDirection::kLtr);
   result->CopyRange(0, 3, copied_result.get());
   result->CopyRange(3, string.length(), copied_result.get());
 
@@ -1493,11 +1507,7 @@ TEST_F(HarfBuzzShaperTest, MAYBE_SafeToBreakArabicCommonLigatures) {
 // Test when some characters are missing in |runs_|.
 TEST_P(ShapeParameterTest, SafeToBreakMissingRun) {
   TextDirection direction = GetParam();
-  scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 8, direction);
-  result->InsertRunForTesting(2, 1, direction, {0});
-  result->InsertRunForTesting(3, 3, direction, {0, 1});
-  // The character index 6 and 7 is missing.
-  result->InsertRunForTesting(8, 2, direction, {0});
+  scoped_refptr<ShapeResult> result = CreateMissingRunResult(direction);
 #if DCHECK_IS_ON()
   result->CheckConsistency();
 #endif
@@ -1522,6 +1532,53 @@ TEST_P(ShapeParameterTest, SafeToBreakMissingRun) {
   EXPECT_EQ(6u, result->PreviousSafeToBreakOffset(7));
   EXPECT_EQ(8u, result->PreviousSafeToBreakOffset(8));
   EXPECT_EQ(8u, result->PreviousSafeToBreakOffset(9));
+}
+
+TEST_P(ShapeParameterTest, CopyRangeMissingRun) {
+  TextDirection direction = GetParam();
+  scoped_refptr<ShapeResult> result = CreateMissingRunResult(direction);
+
+  // 6 and 7 are missing but NumCharacters() should be 4.
+  scoped_refptr<ShapeResult> sub = result->SubRange(5, 9);
+  EXPECT_EQ(sub->StartIndex(), 5u);
+  EXPECT_EQ(sub->EndIndex(), 9u);
+  EXPECT_EQ(sub->NumCharacters(), 4u);
+
+  // The end is missing.
+  sub = result->SubRange(5, 7);
+  EXPECT_EQ(sub->StartIndex(), 5u);
+  EXPECT_EQ(sub->EndIndex(), 7u);
+  EXPECT_EQ(sub->NumCharacters(), 2u);
+
+  // The start is missing.
+  sub = result->SubRange(7, 9);
+  EXPECT_EQ(sub->StartIndex(), 7u);
+  EXPECT_EQ(sub->EndIndex(), 9u);
+  EXPECT_EQ(sub->NumCharacters(), 2u);
+}
+
+TEST_P(ShapeParameterTest, ShapeResultViewMissingRun) {
+  TextDirection direction = GetParam();
+  scoped_refptr<ShapeResult> result = CreateMissingRunResult(direction);
+
+  // 6 and 7 are missing but NumCharacters() should be 4.
+  scoped_refptr<ShapeResultView> view =
+      ShapeResultView::Create(result.get(), 5, 9);
+  EXPECT_EQ(view->StartIndex(), 5u);
+  EXPECT_EQ(view->EndIndex(), 9u);
+  EXPECT_EQ(view->NumCharacters(), 4u);
+
+  // The end is missing.
+  view = ShapeResultView::Create(result.get(), 5, 7);
+  EXPECT_EQ(view->StartIndex(), 5u);
+  EXPECT_EQ(view->EndIndex(), 7u);
+  EXPECT_EQ(view->NumCharacters(), 2u);
+
+  // The start is missing.
+  view = ShapeResultView::Create(result.get(), 7, 9);
+  EXPECT_EQ(view->StartIndex(), 7u);
+  EXPECT_EQ(view->EndIndex(), 9u);
+  EXPECT_EQ(view->NumCharacters(), 2u);
 }
 
 // Call this to ensure your test string has some kerning going on.

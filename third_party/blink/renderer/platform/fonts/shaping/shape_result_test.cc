@@ -45,7 +45,8 @@ class ShapeResultTest : public testing::Test {
 
   ShapeResult* CreateShapeResult(TextDirection direction) const {
     return new ShapeResult(
-        direction == TextDirection::kLtr ? &font : &arabic_font, 0, direction);
+        direction == TextDirection::kLtr ? &font : &arabic_font, 0, 0,
+        direction);
   }
 
   FontCachePurgePreventer font_cache_purge_preventer;
@@ -150,7 +151,8 @@ TEST_F(ShapeResultTest, CopyRangeLatinMultiRun) {
 
   // Combine four separate results into a single one to ensure we have a result
   // with multiple runs.
-  scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 0, direction);
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(&font, 0, 0, direction);
   shaper_a.Shape(&font, direction)->CopyRange(0u, 5u, result.get());
   shaper_b.Shape(&font, direction)->CopyRange(0u, 2u, result.get());
   shaper_c.Shape(&font, direction)->CopyRange(0u, 25u, result.get());
@@ -166,7 +168,8 @@ TEST_F(ShapeResultTest, CopyRangeLatinMultiRunWithHoles) {
   HarfBuzzShaper shaper_c(string.Substring(7, 32));
   HarfBuzzShaper shaper_d(string.Substring(32, 34));
 
-  scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 0, direction);
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(&font, 0, 0, direction);
   shaper_a.Shape(&font, direction)->CopyRange(0u, 5u, result.get());
   shaper_b.Shape(&font, direction)->CopyRange(0u, 2u, result.get());
   shaper_c.Shape(&font, direction)->CopyRange(0u, 25u, result.get());
@@ -232,7 +235,7 @@ TEST_F(ShapeResultTest, CopyRangeArabicMultiRun) {
   // Combine three separate results into a single one to ensure we have a result
   // with multiple runs.
   scoped_refptr<ShapeResult> result =
-      ShapeResult::Create(&arabic_font, 0, direction);
+      ShapeResult::Create(&arabic_font, 0, 0, direction);
   shaper_a.Shape(&arabic_font, direction)->CopyRange(0u, 2u, result.get());
   shaper_b.Shape(&arabic_font, direction)->CopyRange(0u, 7u, result.get());
   shaper_c.Shape(&arabic_font, direction)->CopyRange(0u, 8u, result.get());
