@@ -142,7 +142,9 @@ class ZeroSuggestProvider : public BaseSearchProvider {
       std::unique_ptr<network::SimpleURLLoader> loader);
 
   // Whether zero suggest suggestions are allowed in the given context.
-  bool AllowZeroSuggestSuggestions(const GURL& current_page_url) const;
+  // Invoked early, confirms all the external conditions for ZeroSuggest are
+  // met.
+  bool AllowZeroSuggestSuggestions(const AutocompleteInput& input) const;
 
   // Checks whether we have a set of zero suggest results cached, and if so
   // populates |matches_| with cached results.

@@ -44,6 +44,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
@@ -104,11 +105,18 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
           this,
           AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
   // Creating an arbitrary fake_request_source to avoid passing in an invalid
-  // AutocompleteInput object.
-  base::string16 fake_request_source(base::ASCIIToUTF16(
-      "http://www.foobarbazblah.com"));
-  AutocompleteInput input(fake_request_source,
-                          metrics::OmniboxEventProto::OTHER,
+  // AutocompleteInput object. This source is ignored entirely when
+  // kZeroSuggestionsOnNTP feature flag is enabled.
+  base::string16 fake_request_source =
+      base::ASCIIToUTF16("chrome-native://newtab");
+  auto context = metrics::OmniboxEventProto::NTP;
+
+  if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
+    fake_request_source = base::ASCIIToUTF16("http://www.foobarbazblah.com");
+    context = metrics::OmniboxEventProto::OTHER;
+  }
+
+  AutocompleteInput input(fake_request_source, context,
                           ChromeAutocompleteSchemeClassifier(profile));
   input.set_current_url(GURL(fake_request_source));
   input.set_from_omnibox_focus(true);

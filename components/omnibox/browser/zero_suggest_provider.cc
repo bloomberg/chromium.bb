@@ -89,6 +89,10 @@ const int kDefaultZeroSuggestRelevance = 100;
 // Used for testing whether zero suggest is ever available.
 constexpr char kArbitraryInsecureUrlString[] = "http://www.google.com/";
 
+// Metric name tracking the omnibox suggestion eligibility.
+constexpr char kOmniboxZeroSuggestEligibleHistogramName[] =
+    "Omnibox.ZeroSuggest.Eligible.OnFocusV2";
+
 // If the user is not signed-in or the user does not have Google set up as their
 // default search engine, the personalized service is replaced with the most
 // visited service.
@@ -131,15 +135,13 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   TRACE_EVENT0("omnibox", "ZeroSuggestProvider::Start");
   matches_.clear();
   Stop(true, false);
-  if (!input.from_omnibox_focus() || client()->IsOffTheRecord())
-    return;
 
-  // Zero suggest is allowed to run in the Chrome OS app_list context
-  // with invalid (empty) input.
-  if (input.type() == metrics::OmniboxInputType::INVALID &&
-      input.current_page_classification() !=
-          metrics::OmniboxEventProto::CHROMEOS_APP_LIST)
+  if (!AllowZeroSuggestSuggestions(input)) {
+    UMA_HISTOGRAM_ENUMERATION(kOmniboxZeroSuggestEligibleHistogramName,
+                              ZeroSuggestEligibility::GENERALLY_INELIGIBLE,
+                              ZeroSuggestEligibility::ELIGIBLE_MAX_VALUE);
     return;
+  }
 
   result_type_running_ = NONE;
   set_field_trial_triggered(false);
@@ -454,8 +456,14 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
 
   // Show Most Visited results after ZeroSuggest response is received.
   if (result_type_running_ == MOST_VISITED) {
-    if (!current_url_match_.destination_url.is_valid())
+    // Ensure we don't show most visited URL suggestions on NTP.
+    // This allows us to prevent undesired side outcome of presenting
+    // URL suggestions to users who are not in the personalized field trial for
+    // zero query suggestions.
+    if (IsNTPPage(current_page_classification_) ||
+        !current_url_match_.destination_url.is_valid()) {
       return;
+    }
     matches_.push_back(current_url_match_);
     int relevance = 600;
     if (num_results > 0) {
@@ -480,13 +488,14 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   if (num_results == 0)
     return;
 
-  // Normally |current_url_match_.destination_url| should be valid unless it is
-  // under particular page context.
-  DCHECK(current_page_classification_ ==
-             metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
-         current_url_match_.destination_url.is_valid());
-  if (current_url_match_.destination_url.is_valid())
+  // Do not add the default URL match if we're on the NTP to prevent
+  // chrome-native://newtab or chrome://newtab from showing up on the list of
+  // suggestions.
+  if (!IsNTPPage(current_page_classification_) &&
+      current_url_match_.destination_url.is_valid()) {
     matches_.push_back(current_url_match_);
+  }
+
   for (MatchMap::const_iterator it(map.begin()); it != map.end(); ++it)
     matches_.push_back(it->second);
 
@@ -513,38 +522,43 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
 }
 
 bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
-    const GURL& current_page_url) const {
-  if (IsNTPPage(current_page_classification_) &&
-      !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
-    return false;
-  }
+    const AutocompleteInput& input) const {
+  const auto& page_url = input.current_url();
+  const auto page_class = input.current_page_classification();
+  const auto input_type = input.type();
 
-  // Don't run if in incognito mode.
+  if (!input.from_omnibox_focus())
+    return false;
+
   if (client()->IsOffTheRecord())
     return false;
 
-  if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
+  // Check if ZeroSuggest is allowed in an empty state.
+  if (input_type == metrics::OmniboxInputType::INVALID &&
+      !(page_class == metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
+        (IsNTPPage(page_class) &&
+         base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)))) {
     return false;
   }
 
-  // Only show zero suggest for pages with URLs the user will recognize
-  // if it is not running in ChromeOS app_list context.
+  // When omnibox contains pre-populated content, only show zero suggest for
+  // pages with URLs the user will recognize.
+  //
   // This list intentionally does not include items such as ftp: and file:
   // because (a) these do not work on Android and iOS, where non-contextual
   // zero suggest is launched and (b) on desktop, where contextual zero suggest
   // is running, these types of schemes aren't eligible to be sent to the
   // server to ask for suggestions (and thus in practice we won't display zero
   // suggest for them).
-  if (current_page_classification_ !=
-          metrics::OmniboxEventProto::CHROMEOS_APP_LIST &&
-      (!current_page_url.is_valid() ||
-       ((current_page_url.scheme() != url::kHttpScheme) &&
-        (current_page_url.scheme() != url::kHttpsScheme) &&
-        (current_page_url.scheme() != url::kAboutScheme) &&
-        (current_page_url.scheme() !=
-         client()->GetEmbedderRepresentationOfAboutScheme()))))
+  if (input_type != metrics::OmniboxInputType::INVALID &&
+      !(page_url.is_valid() &&
+        ((page_url.scheme() == url::kHttpScheme) ||
+         (page_url.scheme() == url::kHttpsScheme) ||
+         (page_url.scheme() == url::kAboutScheme) ||
+         (page_url.scheme() ==
+          client()->GetEmbedderRepresentationOfAboutScheme())))) {
     return false;
+  }
 
   return true;
 }
@@ -590,12 +604,13 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
                       : ZeroSuggestEligibility::GENERALLY_INELIGIBLE;
   }
   UMA_HISTOGRAM_ENUMERATION(
-      "Omnibox.ZeroSuggest.Eligible.OnFocus", static_cast<int>(eligibility),
+      kOmniboxZeroSuggestEligibleHistogramName, static_cast<int>(eligibility),
       static_cast<int>(ZeroSuggestEligibility::ELIGIBLE_MAX_VALUE));
 
-  // Check if zero suggestions are allowed in the current context.
-  if (!AllowZeroSuggestSuggestions(current_url))
+  if (base::FeatureList::IsEnabled(
+          omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
     return NONE;
+  }
 
   if (current_page_classification_ ==
       metrics::OmniboxEventProto::CHROMEOS_APP_LIST) {
