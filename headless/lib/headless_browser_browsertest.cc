@@ -41,6 +41,10 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(OS_MACOSX)
+#include "third_party/crashpad/crashpad/client/crash_report_database.h"
+#endif
+
 using testing::UnorderedElementsAre;
 
 namespace headless {
@@ -486,17 +490,22 @@ IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
 
   // Check that one minidump got created.
   {
-#if defined(OS_MACOSX)
-    // Mac outputs dumps in the 'pending' directory.
-    crash_dumps_dir_ = crash_dumps_dir_.Append("pending");
-#endif
     base::ThreadRestrictions::SetIOAllowed(true);
+
+#if defined(OS_MACOSX)
+    auto database = crashpad::CrashReportDatabase::Initialize(crash_dumps_dir_);
+    std::vector<crashpad::CrashReportDatabase::Report> reports;
+    ASSERT_EQ(database->GetPendingReports(&reports),
+              crashpad::CrashReportDatabase::kNoError);
+    EXPECT_EQ(reports.size(), 1u);
+#else
     base::FileEnumerator it(crash_dumps_dir_, /* recursive */ false,
                             base::FileEnumerator::FILES);
     base::FilePath minidump = it.Next();
     EXPECT_FALSE(minidump.empty());
     EXPECT_EQ(FILE_PATH_LITERAL(".dmp"), minidump.Extension());
     EXPECT_TRUE(it.Next().empty());
+#endif
   }
 
   web_contents_->RemoveObserver(this);
