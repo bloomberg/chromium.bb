@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_VULKAN_VULKAN_YCBCR_INFO_H_
-#define GPU_VULKAN_VULKAN_YCBCR_INFO_H_
+#ifndef GPU_IPC_COMMON_VULKAN_YCBCR_INFO_H_
+#define GPU_IPC_COMMON_VULKAN_YCBCR_INFO_H_
 
 #include <stdint.h>
 
-#include "gpu/vulkan/vulkan_export.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 
 // Sampler Ycbcr conversion information.
-struct VULKAN_EXPORT VulkanYCbCrInfo {
+struct GPU_EXPORT VulkanYCbCrInfo {
   VulkanYCbCrInfo();
   VulkanYCbCrInfo(uint32_t suggested_ycbcr_model,
                   uint32_t suggested_ycbcr_range,
@@ -55,4 +55,4 @@ struct VULKAN_EXPORT VulkanYCbCrInfo {
 
 }  // namespace gpu
 
-#endif  // GPU_VULKAN_VULKAN_YCBCR_INFO_H_
+#endif  // GPU_IPC_COMMON_VULKAN_YCBCR_INFO_H_

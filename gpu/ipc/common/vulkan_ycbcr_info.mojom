@@ -8,7 +8,7 @@ module gpu.mojom;
 // enums defined in the vulkan api which are passed as uint32/uint64 over ipc.
 // We use all of these values in an "opaque" way and don't consume it directly
 // in chrome.
-// See gpu/vulkan/vulkan_ycbcr_info.h.
+// See gpu/ipc/common/vulkan_ycbcr_info.h.
 struct VulkanYCbCrInfo {
   uint32 suggested_ycbcr_model;
   uint32 suggested_ycbcr_range;

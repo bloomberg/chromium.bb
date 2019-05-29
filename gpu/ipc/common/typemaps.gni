@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//gpu/vulkan/features.gni")
-
 typemaps = [
   "//gpu/ipc/common/capabilities.typemap",
   "//gpu/ipc/common/context_result.typemap",
@@ -16,8 +14,5 @@ typemaps = [
   "//gpu/ipc/common/memory_stats.typemap",
   "//gpu/ipc/common/surface_handle.typemap",
   "//gpu/ipc/common/sync_token.typemap",
+  "//gpu/ipc/common/vulkan_ycbcr_info.typemap",
 ]
-
-if (enable_vulkan) {
-  typemaps += [ "//gpu/ipc/common/vulkan_ycbcr_info.typemap" ]
-}
