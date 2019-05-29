@@ -25,7 +25,6 @@ etna_pipe_del
 etna_pipe_wait
 etna_pipe_wait_ns
 etna_bo_new
-etna_bo_from_handle
 etna_bo_from_name
 etna_bo_from_dmabuf
 etna_bo_ref
