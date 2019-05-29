@@ -30,6 +30,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
 #include "third_party/blink/renderer/core/html/parser/background_html_input_stream.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder_simulator.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html/parser/xss_auditor_delegate.h"
+#include "third_party/blink/renderer/core/page/viewport_description.h"
 
 namespace blink {
 
@@ -116,7 +118,7 @@ class BackgroundHTMLParser {
 
   CompactHTMLTokenStream pending_tokens_;
   PreloadRequestStream pending_preloads_;
-  ViewportDescriptionWrapper viewport_description_;
+  base::Optional<ViewportDescription> viewport_description_;
   XSSInfoStream pending_xss_infos_;
 
   std::unique_ptr<XSSAuditor> xss_auditor_;

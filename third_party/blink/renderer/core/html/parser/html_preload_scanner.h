@@ -32,6 +32,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 #include "third_party/blink/renderer/core/html/parser/compact_html_token.h"
@@ -49,12 +50,6 @@ typedef wtf_size_t TokenPreloadScannerCheckpoint;
 class HTMLParserOptions;
 class HTMLTokenizer;
 class SegmentedString;
-
-struct ViewportDescriptionWrapper {
-  ViewportDescription description;
-  bool set;
-  ViewportDescriptionWrapper() : set(false) {}
-};
 
 struct CORE_EXPORT CachedDocumentParameters {
   USING_FAST_MALLOC(CachedDocumentParameters);
@@ -88,12 +83,12 @@ class TokenPreloadScanner {
   void Scan(const HTMLToken&,
             const SegmentedString&,
             PreloadRequestStream& requests,
-            ViewportDescriptionWrapper*,
+            base::Optional<ViewportDescription>*,
             bool* is_csp_meta_tag);
   void Scan(const CompactHTMLToken&,
             const SegmentedString&,
             PreloadRequestStream& requests,
-            ViewportDescriptionWrapper*,
+            base::Optional<ViewportDescription>*,
             bool* is_csp_meta_tag);
 
   void SetPredictedBaseElementURL(const KURL& url) {
@@ -112,7 +107,7 @@ class TokenPreloadScanner {
   inline void ScanCommon(const Token&,
                          const SegmentedString&,
                          PreloadRequestStream& requests,
-                         ViewportDescriptionWrapper*,
+                         base::Optional<ViewportDescription>*,
                          bool* is_csp_meta_tag);
 
   template <typename Token>
@@ -181,7 +176,7 @@ class CORE_EXPORT HTMLPreloadScanner {
 
   void AppendToEnd(const SegmentedString&);
   PreloadRequestStream Scan(const KURL& document_base_element_url,
-                            ViewportDescriptionWrapper*,
+                            base::Optional<ViewportDescription>*,
                             bool& has_csp_meta_tag);
 
  private:

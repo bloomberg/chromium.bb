@@ -758,7 +758,7 @@ void TokenPreloadScanner::RewindTo(
 void TokenPreloadScanner::Scan(const HTMLToken& token,
                                const SegmentedString& source,
                                PreloadRequestStream& requests,
-                               ViewportDescriptionWrapper* viewport,
+                               base::Optional<ViewportDescription>* viewport,
                                bool* is_csp_meta_tag) {
   ScanCommon(token, source, requests, viewport, is_csp_meta_tag);
 }
@@ -766,7 +766,7 @@ void TokenPreloadScanner::Scan(const HTMLToken& token,
 void TokenPreloadScanner::Scan(const CompactHTMLToken& token,
                                const SegmentedString& source,
                                PreloadRequestStream& requests,
-                               ViewportDescriptionWrapper* viewport,
+                               base::Optional<ViewportDescription>* viewport,
                                bool* is_csp_meta_tag) {
   ScanCommon(token, source, requests, viewport, is_csp_meta_tag);
 }
@@ -775,17 +775,15 @@ static void HandleMetaViewport(
     const String& attribute_value,
     const CachedDocumentParameters* document_parameters,
     MediaValuesCached* media_values,
-    ViewportDescriptionWrapper* viewport) {
+    base::Optional<ViewportDescription>* viewport) {
   if (!document_parameters->viewport_meta_enabled)
     return;
   ViewportDescription description(ViewportDescription::kViewportMeta);
   HTMLMetaElement::GetViewportDescriptionFromContentAttribute(
       attribute_value, description, nullptr,
       document_parameters->viewport_meta_zero_values_quirk);
-  if (viewport) {
-    viewport->description = description;
-    viewport->set = true;
-  }
+  if (viewport)
+    *viewport = description;
   FloatSize initial_viewport(media_values->DeviceWidth(),
                              media_values->DeviceHeight());
   PageScaleConstraints constraints = description.Resolve(
@@ -814,7 +812,7 @@ static void HandleMetaNameAttribute(
     CachedDocumentParameters* document_parameters,
     MediaValuesCached* media_values,
     CSSPreloadScanner* css_scanner,
-    ViewportDescriptionWrapper* viewport) {
+    base::Optional<ViewportDescription>* viewport) {
   const typename Token::Attribute* name_attribute =
       token.GetAttributeItem(kNameAttr);
   if (!name_attribute)
@@ -840,11 +838,12 @@ static void HandleMetaNameAttribute(
 }
 
 template <typename Token>
-void TokenPreloadScanner::ScanCommon(const Token& token,
-                                     const SegmentedString& source,
-                                     PreloadRequestStream& requests,
-                                     ViewportDescriptionWrapper* viewport,
-                                     bool* is_csp_meta_tag) {
+void TokenPreloadScanner::ScanCommon(
+    const Token& token,
+    const SegmentedString& source,
+    PreloadRequestStream& requests,
+    base::Optional<ViewportDescription>* viewport,
+    bool* is_csp_meta_tag) {
   if (!document_parameters_->do_html_preload_scanning)
     return;
 
@@ -992,7 +991,7 @@ void HTMLPreloadScanner::AppendToEnd(const SegmentedString& source) {
 
 PreloadRequestStream HTMLPreloadScanner::Scan(
     const KURL& starting_base_element_url,
-    ViewportDescriptionWrapper* viewport,
+    base::Optional<ViewportDescription>* viewport,
     bool& has_csp_meta_tag) {
   // HTMLTokenizer::updateStateFor only works on the main thread.
   DCHECK(IsMainThread());

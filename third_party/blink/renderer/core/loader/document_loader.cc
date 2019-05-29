@@ -307,7 +307,7 @@ void DocumentLoader::SetServiceWorkerNetworkProvider(
 }
 
 void DocumentLoader::DispatchLinkHeaderPreloads(
-    ViewportDescriptionWrapper* viewport,
+    const base::Optional<ViewportDescription>& viewport,
     PreloadHelper::MediaPreloadPolicy media_policy) {
   DCHECK_GE(state_, kCommitted);
   PreloadHelper::LoadLinksFromHeader(
@@ -1202,7 +1202,7 @@ void DocumentLoader::StartLoadingInternal() {
       response_.HttpHeaderField(http_names::kLink),
       response_.CurrentRequestUrl(), *GetFrame(), nullptr,
       PreloadHelper::kDoNotLoadResources, PreloadHelper::kLoadAll,
-      nullptr /* viewport_description_wrapper */,
+      base::nullopt /* viewport_description */,
       nullptr /* alternate_resource_info */);
   if (!frame_->IsMainFrame() && response_.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
@@ -1405,7 +1405,8 @@ void DocumentLoader::DidCommitNavigation(
 
   // Links with media values need more information (like viewport information).
   // This happens after the first chunk is parsed in HTMLDocumentParser.
-  DispatchLinkHeaderPreloads(nullptr, PreloadHelper::kOnlyLoadNonMedia);
+  DispatchLinkHeaderPreloads(base::nullopt /* viewport */,
+                             PreloadHelper::kOnlyLoadNonMedia);
 
   frame_->GetPage()->DidCommitLoad(frame_);
   GetUseCounter().DidCommitLoad(frame_);

@@ -135,7 +135,7 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
       response.HttpHeaderField(http_names::kLink), response.CurrentRequestUrl(),
       frame, &frame_or_imported_document_->GetDocument(),
       resource_loading_policy, PreloadHelper::kLoadAll,
-      nullptr /* viewport_description_wrapper */,
+      base::nullopt /* viewport_description */,
       std::move(alternate_resource_info));
 
   if (response.HasMajorCertificateErrors()) {

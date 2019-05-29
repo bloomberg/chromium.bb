@@ -273,7 +273,7 @@ void BackgroundHTMLParser::EnqueueTokenizedChunk() {
                          chunk.get(), TRACE_EVENT_FLAG_FLOW_OUT);
 
   chunk->preloads.swap(pending_preloads_);
-  if (viewport_description_.set)
+  if (viewport_description_.has_value())
     chunk->viewport = viewport_description_;
   chunk->xss_infos.swap(pending_xss_infos_);
   chunk->tokenizer_state = tokenizer_->GetState();

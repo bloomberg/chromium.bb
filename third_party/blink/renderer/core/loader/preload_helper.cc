@@ -83,11 +83,12 @@ bool IsSupportedType(ResourceType resource_type, const String& mime_type) {
   return false;
 }
 
-MediaValues* CreateMediaValues(Document& document,
-                               ViewportDescription* viewport_description) {
+MediaValues* CreateMediaValues(
+    Document& document,
+    const base::Optional<ViewportDescription>& viewport_description) {
   MediaValues* media_values =
       MediaValues::CreateDynamicIfFrameExists(document.GetFrame());
-  if (viewport_description) {
+  if (viewport_description.has_value()) {
     FloatSize initial_viewport(media_values->DeviceWidth(),
                                media_values->DeviceHeight());
     PageScaleConstraints constraints = viewport_description->Resolve(
@@ -209,7 +210,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
     Document& document,
     const KURL& base_url,
     LinkCaller caller,
-    ViewportDescription* viewport_description,
+    const base::Optional<ViewportDescription>& viewport_description,
     ParserDisposition parser_disposition) {
   if (!document.Loader() || !params.rel.IsLinkPreload())
     return nullptr;
@@ -303,7 +304,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
 void PreloadHelper::ModulePreloadIfNeeded(
     const LinkLoadParameters& params,
     Document& document,
-    ViewportDescription* viewport_description,
+    const base::Optional<ViewportDescription>& viewport_description,
     SingleModuleClient* client) {
   if (!document.Loader() || !params.rel.IsModulePreload())
     return;
@@ -466,7 +467,7 @@ void PreloadHelper::LoadLinksFromHeader(
     Document* document,
     CanLoadResources can_load_resources,
     MediaPreloadPolicy media_policy,
-    ViewportDescriptionWrapper* viewport_description_wrapper,
+    const base::Optional<ViewportDescription>& viewport_description,
     std::unique_ptr<AlternateSignedExchangeResourceInfo>
         alternate_resource_info) {
   if (header_value.IsEmpty())
@@ -518,11 +519,6 @@ void PreloadHelper::LoadLinksFromHeader(
     }
     if (can_load_resources != kDoNotLoadResources) {
       DCHECK(document);
-      ViewportDescription* viewport_description =
-          (viewport_description_wrapper && viewport_description_wrapper->set)
-              ? &(viewport_description_wrapper->description)
-              : nullptr;
-
       PreloadIfNeeded(params, *document, base_url, kLinkCalledFromHeader,
                       viewport_description, kNotParserInserted);
       PrefetchIfNeeded(params, *document);

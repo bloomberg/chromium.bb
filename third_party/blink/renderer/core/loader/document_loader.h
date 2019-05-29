@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
@@ -81,7 +82,6 @@ class ResourceTimingInfo;
 class SerializedScriptValue;
 class SubresourceFilter;
 class WebServiceWorkerNetworkProvider;
-struct ViewportDescriptionWrapper;
 
 namespace mojom {
 enum class CommitResult : int32_t;
@@ -217,7 +217,7 @@ class CORE_EXPORT DocumentLoader
 
   bool WasBlockedAfterCSP() { return was_blocked_after_csp_; }
 
-  void DispatchLinkHeaderPreloads(ViewportDescriptionWrapper*,
+  void DispatchLinkHeaderPreloads(const base::Optional<ViewportDescription>&,
                                   PreloadHelper::MediaPreloadPolicy);
 
   void SetServiceWorkerNetworkProvider(
