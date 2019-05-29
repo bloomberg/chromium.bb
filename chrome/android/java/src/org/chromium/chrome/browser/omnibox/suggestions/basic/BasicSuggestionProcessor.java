@@ -141,8 +141,9 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
             suggestionIcon = SuggestionIcon.MAGNIFIER;
             if (suggestionType == OmniboxSuggestionType.VOICE_SUGGEST) {
                 suggestionIcon = SuggestionIcon.VOICE;
-            } else if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED)
-                    || (suggestionType == OmniboxSuggestionType.SEARCH_HISTORY)) {
+            } else if (!mEnableSuggestionFavicons
+                    && ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED)
+                            || (suggestionType == OmniboxSuggestionType.SEARCH_HISTORY))) {
                 // Show history icon for suggestions based on user queries.
                 suggestionIcon = SuggestionIcon.HISTORY;
             }
