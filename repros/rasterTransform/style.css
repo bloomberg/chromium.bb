@@ -1,0 +1,12 @@
+#composited {
+  position: absolute;
+  transform: translate3d(20.5px, 0, 10px);
+  border: 4px inset pink;
+}
+
+html {
+  background: black;
+  font-size: 12px;
+  color: white;
+  -bb-lcd-background-color: auto;
+}
