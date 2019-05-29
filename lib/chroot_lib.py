@@ -17,10 +17,19 @@ from chromite.lib import constants
 class Chroot(object):
   """Chroot class."""
 
-  def __init__(self, path=None, cache_dir=None):
+  def __init__(self, path=None, cache_dir=None, env=None):
     self.path = path or constants.DEFAULT_CHROOT_PATH
-    self._is_default_path = path is not None
-    self.cache_dir = cache_dir
+    self._is_default_path = not bool(path)
+    self._env = env
+    # cache_dir is often '' when not set, but testing and comparing is much
+    # easier when the "unset" value is consistent, so do an explicit "or None".
+    self.cache_dir = cache_dir or None
+
+  def __eq__(self, other):
+    if not isinstance(other, Chroot):
+      return False
+    return (self.path == other.path and self.cache_dir == other.cache_dir
+            and self.env == other.env)
 
   def GetEnterArgs(self):
     """Build the arguments to enter this chroot."""
@@ -34,3 +43,7 @@ class Chroot(object):
       args.extend(['--cache-dir', self.cache_dir])
 
     return args
+
+  @property
+  def env(self):
+    return self._env.copy() if self._env else None

@@ -15,6 +15,7 @@ from google.protobuf import json_format
 from google.protobuf import symbol_database
 
 from chromite.api import controller
+from chromite.api import field_handler
 from chromite.api.gen.chromite.api import artifacts_pb2
 from chromite.api.gen.chromite.api import binhost_pb2
 from chromite.api.gen.chromite.api import build_api_pb2
@@ -23,8 +24,6 @@ from chromite.api.gen.chromite.api import image_pb2
 from chromite.api.gen.chromite.api import sdk_pb2
 from chromite.api.gen.chromite.api import sysroot_pb2
 from chromite.api.gen.chromite.api import test_pb2
-from chromite.api.gen.chromiumos import common_pb2
-from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -279,57 +278,42 @@ class Router(object):
       service_name (str): The name of the service to run.
       method_name (str): The name of the method to run.
     """
-    chroot_args = []
-    chroot_path = constants.DEFAULT_CHROOT_PATH
-    chroot_field_name = None
-    chroot_extra_env = None
-    # Find the Chroot field. Search for the field by type to prevent it being
-    # tied to a naming convention.
-    for descriptor in input_msg.DESCRIPTOR.fields:
-      field = getattr(input_msg, descriptor.name)
-      if isinstance(field, common_pb2.Chroot):
-        chroot_field_name = descriptor.name
-        chroot = field
-        chroot_path = chroot.path or chroot_path
-        chroot_args.extend(self._GetChrootArgs(chroot))
-        chroot_extra_env = self._GetChrootEnv(chroot)
-        break
+    # Parse the chroot and clear the chroot field in the input message.
+    chroot = field_handler.handle_chroot(input_msg)
 
-    base_dir = os.path.join(chroot_path, 'tmp')
-    with osutils.TempDir(base_dir=base_dir) as tempdir:
-      new_input = os.path.join(tempdir, 'input.json')
-      chroot_input = '/%s' % os.path.relpath(new_input, chroot_path)
-      new_output = os.path.join(tempdir, 'output.json')
-      chroot_output = '/%s' % os.path.relpath(new_output, chroot_path)
+    base_dir = os.path.join(chroot.path, 'tmp')
+    with field_handler.handle_paths(input_msg, base_dir):
+      with osutils.TempDir(base_dir=base_dir) as tempdir:
+        new_input = os.path.join(tempdir, 'input.json')
+        chroot_input = '/%s' % os.path.relpath(new_input, chroot.path)
+        new_output = os.path.join(tempdir, 'output.json')
+        chroot_output = '/%s' % os.path.relpath(new_output, chroot.path)
 
-      if chroot_field_name:
-        input_msg.ClearField(chroot_field_name)
+        logging.info('Writing input message to: %s', new_input)
+        osutils.WriteFile(new_input, json_format.MessageToJson(input_msg))
+        osutils.Touch(new_output)
 
-      logging.info('Writing input message to: %s', new_input)
-      osutils.WriteFile(new_input, json_format.MessageToJson(input_msg))
-      osutils.Touch(new_output)
+        cmd = ['build_api', '%s/%s' % (service_name, method_name),
+               '--input-json', chroot_input, '--output-json', chroot_output]
 
-      cmd = ['build_api', '%s/%s' % (service_name, method_name),
-             '--input-json', chroot_input, '--output-json', chroot_output]
+        try:
+          result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
+                                             chroot_args=chroot.GetEnterArgs(),
+                                             error_code_ok=True,
+                                             extra_env=chroot.env)
+        except cros_build_lib.RunCommandError:
+          # A non-zero return code will not result in an error, but one is still
+          # thrown when the command cannot be run in the first place. This is
+          # known to happen at least when the PATH does not include the chromite
+          # bin dir.
+          raise CrosSdkNotRunError('Unable to enter the chroot.')
 
-      try:
-        result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
-                                           chroot_args=chroot_args,
-                                           error_code_ok=True,
-                                           extra_env=chroot_extra_env)
-      except cros_build_lib.RunCommandError:
-        # A non-zero return code will not result in an error, but one is still
-        # thrown when the command cannot be run in the first place. This is
-        # known to happen at least when the PATH does not include the chromite
-        # bin dir.
-        raise CrosSdkNotRunError('Unable to enter the chroot.')
+        logging.info('Endpoint execution completed, return code: %d',
+                     result.returncode)
 
-      logging.info('Endpoint execution completed, return code: %d',
-                   result.returncode)
+        shutil.move(new_output, output_path)
 
-      shutil.move(new_output, output_path)
-
-      return result.returncode
+        return result.returncode
 
   def _GetChrootArgs(self, chroot):
     """Translate a Chroot message to chroot enter args.

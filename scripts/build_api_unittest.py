@@ -103,7 +103,7 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     service_method = '%s/%s' % (service, method)
     self.router.Route(service, method, self.input_file, self.output_file)
 
-    self.assertCommandContains(['build_api', service_method])
+    self.assertCommandContains(['build_api', service_method], enter_chroot=True)
 
   def testInsideServiceOutsideMethodInsideChroot(self):
     """Test inside chroot for outside method raises an error."""
@@ -145,4 +145,4 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     service_method = '%s/%s' % (service, method)
     self.router.Route(service, method, self.input_file, self.output_file)
 
-    self.assertCommandContains(['build_api', service_method])
+    self.assertCommandContains(['build_api', service_method], enter_chroot=True)

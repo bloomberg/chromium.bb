@@ -27,3 +27,8 @@ class ChrootTest(cros_test_lib.TestCase):
     chroot = chroot_lib.Chroot(path=path, cache_dir=cache_dir)
 
     self.assertItemsEqual(expected, chroot.GetEnterArgs())
+
+  def testEnv(self):
+    env = {'VAR': 'val'}
+    chroot = chroot_lib.Chroot(env=env)
+    self.assertEqual(env, chroot.env)
