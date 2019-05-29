@@ -42,8 +42,8 @@
 class ManualFillingController {
  public:
   // The controller checks if at least one of these sources needs the accessory
-  // to be displayed. Only if neither needs the accessory, it will not show up.
-  enum class FillingSource { AUTOFILL, PASSWORD_FALLBACKS };
+  // to be displayed.
+  enum class FillingSource { AUTOFILL, PASSWORD_FALLBACKS, ADDRESS_FALLBACKS };
 
   ManualFillingController() = default;
   virtual ~ManualFillingController() = default;
@@ -95,6 +95,7 @@ class ManualFillingController {
   // the currently focused field. Forwards the request to a type-specific
   // accessory controller.
   virtual void OnFillingTriggered(
+      autofill::AccessoryTabType type,
       const autofill::UserInfo::Field& selection) = 0;
 
   // Called by the UI code because a user triggered the |selected_action|,

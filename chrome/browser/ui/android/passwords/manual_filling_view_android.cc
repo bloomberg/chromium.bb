@@ -44,7 +44,6 @@ ManualFillingViewAndroid::ManualFillingViewAndroid(
     ManualFillingController* controller)
     : controller_(controller) {
   ui::ViewAndroid* view_android = controller_->container_view();
-
   DCHECK(view_android);
   java_object_.Reset(Java_ManualFillingComponentBridge_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
@@ -105,10 +104,10 @@ void ManualFillingViewAndroid::OnAutomaticGenerationStatusChanged(
 void ManualFillingViewAndroid::OnFaviconRequested(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    jint desiredSizeInPx,
+    jint desired_size_in_px,
     const base::android::JavaParamRef<jobject>& j_callback) {
   controller_->GetFavicon(
-      desiredSizeInPx,
+      desired_size_in_px,
       base::BindOnce(&ManualFillingViewAndroid::OnImageFetched,
                      base::Unretained(this),  // Outlives or cancels request.
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
@@ -117,18 +116,19 @@ void ManualFillingViewAndroid::OnFaviconRequested(
 void ManualFillingViewAndroid::OnFillingTriggered(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    jboolean isPassword,
+    jint tab_type,
     const base::android::JavaParamRef<jobject>& j_user_info_field) {
   controller_->OnFillingTriggered(
+      static_cast<autofill::AccessoryTabType>(tab_type),
       ConvertJavaUserInfoField(env, j_user_info_field));
 }
 
 void ManualFillingViewAndroid::OnOptionSelected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    jint selectedAction) {
+    jint selected_action) {
   controller_->OnOptionSelected(
-      static_cast<autofill::AccessoryAction>(selectedAction));
+      static_cast<autofill::AccessoryAction>(selected_action));
 }
 
 void ManualFillingViewAndroid::OnGenerationRequested(
@@ -163,6 +163,7 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
     for (const UserInfo::Field& field : user_info.fields()) {
       Java_ManualFillingComponentBridge_addFieldToUserInfo(
           env, java_object_, j_user_info,
+          static_cast<int>(tab_data.get_sheet_type()),
           ConvertUTF16ToJavaString(env, field.display_text()),
           ConvertUTF16ToJavaString(env, field.a11y_description()),
           field.is_obfuscated(), field.selectable());

@@ -41,7 +41,8 @@ enum class AccessorySheetTrigger {
 enum class AccessorySuggestionType {
   USERNAME = 0,
   PASSWORD = 1,
-  CREDIT_CARDS = 2,
+  PAYMENT_INFO = 2,
+  ADDRESS_INFO = 3,
   COUNT,
 };
 

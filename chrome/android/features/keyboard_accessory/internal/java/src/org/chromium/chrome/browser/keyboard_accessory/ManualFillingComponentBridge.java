@@ -46,7 +46,18 @@ class ManualFillingComponentBridge {
 
     @CalledByNative
     private void onItemsAvailable(Object objAccessorySheetData) {
-        mSheetDataProvider.notifyObservers((AccessorySheetData) objAccessorySheetData);
+        AccessorySheetData accessorySheetData = (AccessorySheetData) objAccessorySheetData;
+        switch (accessorySheetData.getSheetType()) {
+            case AccessoryTabType.PASSWORDS:
+                mSheetDataProvider.notifyObservers(accessorySheetData);
+                return;
+            case AccessoryTabType.CREDIT_CARDS:
+                // TODO(crbug.com/926365): Implement.
+                return;
+            case AccessoryTabType.ADDRESSES:
+                // TODO(crbug.com/962548): Implement.
+                return;
+        }
     }
 
     @CalledByNative
@@ -120,16 +131,15 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
-    private void addFieldToUserInfo(Object objUserInfo, String displayText, String a11yDescription,
-            boolean isObfuscated, boolean selectable) {
+    private void addFieldToUserInfo(Object objUserInfo, @AccessoryTabType int sheetType,
+            String displayText, String a11yDescription, boolean isObfuscated, boolean selectable) {
         Callback<UserInfoField> callback = null;
         if (selectable) {
             callback = (field) -> {
                 assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
-                ManualFillingMetricsRecorder.recordSuggestionSelected(AccessoryTabType.PASSWORDS,
-                        field.isObfuscated() ? AccessorySuggestionType.PASSWORD
-                                             : AccessorySuggestionType.USERNAME);
-                nativeOnFillingTriggered(mNativeView, field.isObfuscated(), field);
+                ManualFillingMetricsRecorder.recordSuggestionSelected(
+                        sheetType, field.isObfuscated());
+                nativeOnFillingTriggered(mNativeView, sheetType, field);
             };
         }
         ((UserInfo) objUserInfo)
@@ -167,7 +177,7 @@ class ManualFillingComponentBridge {
     private native void nativeOnFaviconRequested(long nativeManualFillingViewAndroid,
             int desiredSizeInPx, Callback<Bitmap> faviconCallback);
     private native void nativeOnFillingTriggered(
-            long nativeManualFillingViewAndroid, boolean isObfuscated, UserInfoField userInfoField);
+            long nativeManualFillingViewAndroid, int tabType, UserInfoField userInfoField);
     private native void nativeOnOptionSelected(
             long nativeManualFillingViewAndroid, int accessoryAction);
     private native void nativeOnGenerationRequested(long nativeManualFillingViewAndroid);

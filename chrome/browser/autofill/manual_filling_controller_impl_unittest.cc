@@ -7,11 +7,13 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/autofill/address_accessory_controller.h"
 #include "chrome/browser/autofill/manual_filling_view_interface.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_generation_controller.h"
@@ -22,6 +24,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+using autofill::AccessoryAction;
+using autofill::AddressAccessoryController;
 using autofill::mojom::FocusedFieldType;
 using testing::_;
 using testing::AnyNumber;
@@ -43,8 +47,18 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));
   MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
-  MOCK_METHOD1(OnOptionSelected,
-               void(autofill::AccessoryAction selected_action));
+  MOCK_METHOD1(OnOptionSelected, void(AccessoryAction selected_action));
+};
+
+class MockAddressAccessoryController : public AddressAccessoryController {
+ public:
+  MOCK_METHOD2(
+      SavePasswordsForOrigin,
+      void(const std::map<base::string16, const autofill::PasswordForm*>&,
+           const url::Origin&));
+  MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
+  MOCK_METHOD1(OnOptionSelected, void(AccessoryAction selected_action));
+  MOCK_METHOD0(RefreshSuggestions, void());
 };
 
 class MockPasswordGenerationController : public PasswordGenerationController {
@@ -86,7 +100,7 @@ class MockPasswordAccessoryView : public ManualFillingViewInterface {
 autofill::AccessorySheetData dummy_accessory_sheet_data() {
   constexpr char kExampleAccessorySheetDataTitle[] = "Example title";
   return autofill::AccessorySheetData(
-      autofill::AccessoryTabType::CREDIT_CARDS,
+      autofill::AccessoryTabType::PASSWORDS,
       base::ASCIIToUTF16(kExampleAccessorySheetDataTitle));
 }
 
@@ -101,7 +115,7 @@ class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL(kExampleSite));
     ManualFillingControllerImpl::CreateForWebContentsForTesting(
         web_contents(), mock_pwd_controller_.AsWeakPtr(),
-        &mock_pwd_generation_controller_,
+        mock_address_controller_.AsWeakPtr(), &mock_pwd_generation_controller_,
         std::make_unique<StrictMock<MockPasswordAccessoryView>>());
     NavigateAndCommit(GURL(kExampleSite));
   }
@@ -116,6 +130,7 @@ class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
+  NiceMock<MockAddressAccessoryController> mock_address_controller_;
   NiceMock<MockPasswordGenerationController> mock_pwd_generation_controller_;
 };
 
@@ -223,7 +238,26 @@ TEST_F(ManualFillingControllerTest, OnFillingTriggered) {
                                         true);
 
   EXPECT_CALL(mock_pwd_controller_, OnFillingTriggered(field));
-  controller()->OnFillingTriggered(field);
+  controller()->OnFillingTriggered(autofill::AccessoryTabType::PASSWORDS,
+                                   field);
+}
+
+TEST_F(ManualFillingControllerTest, ForwardsPasswordManagingToController) {
+  EXPECT_CALL(mock_pwd_controller_,
+              OnOptionSelected(AccessoryAction::MANAGE_PASSWORDS));
+  controller()->OnOptionSelected(AccessoryAction::MANAGE_PASSWORDS);
+}
+
+TEST_F(ManualFillingControllerTest, ForwardsPasswordGenerationToController) {
+  EXPECT_CALL(mock_pwd_controller_,
+              OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_MANUAL));
+  controller()->OnOptionSelected(AccessoryAction::GENERATE_PASSWORD_MANUAL);
+}
+
+TEST_F(ManualFillingControllerTest, ForwardsAddressManagingToController) {
+  EXPECT_CALL(mock_address_controller_,
+              OnOptionSelected(AccessoryAction::MANAGE_ADDRESSES));
+  controller()->OnOptionSelected(AccessoryAction::MANAGE_ADDRESSES);
 }
 
 TEST_F(ManualFillingControllerTest, OnGenerationRequested) {

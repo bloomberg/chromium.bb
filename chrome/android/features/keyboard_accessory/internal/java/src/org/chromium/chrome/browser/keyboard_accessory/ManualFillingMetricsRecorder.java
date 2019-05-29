@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.keyboard_accessory;
 
 import org.chromium.base.metrics.RecordHistogram;
 
+import java.security.InvalidParameterException;
+
 /**
  * This class provides helpers to record metrics related to the keyboard accessory and its sheets.
  */
@@ -85,23 +87,36 @@ public class ManualFillingMetricsRecorder {
     }
 
     /**
-     * Records a selected suggestions.
+     * Records that a suggestion was selected in one of the accessory tabs.
      * @param tabType The sheet to record for. An {@link AccessoryTabType}.
-     * @param bucket An {@link AccessoryAction}.
+     * @param isFieldObfuscated denotes whether a field is obfuscated (e.g. a password field).
      */
-    static void recordSuggestionSelected(
-            @AccessoryTabType int tabType, @AccessorySuggestionType int bucket) {
-        // TODO(crbug.com/926372): Add metrics capabilities for credit cards.
-        if (tabType == AccessoryTabType.CREDIT_CARDS) return;
+    static void recordSuggestionSelected(@AccessoryTabType int tabType, boolean isFieldObfuscated) {
+        @AccessorySuggestionType
+        int suggestionRecordingType = AccessorySuggestionType.COUNT;
+        switch (tabType) {
+            case AccessoryTabType.PASSWORDS:
+                suggestionRecordingType = isFieldObfuscated ? AccessorySuggestionType.PASSWORD
+                                                            : AccessorySuggestionType.USERNAME;
+                break;
+            case AccessoryTabType.CREDIT_CARDS:
+                suggestionRecordingType = AccessorySuggestionType.PAYMENT_INFO;
+                break;
+            case AccessoryTabType.ADDRESSES:
+                // TODO(crbug.com/965494): Consider splitting and/or separate recording.
+                suggestionRecordingType = AccessorySuggestionType.ADDRESS_INFO;
+                break;
+            case AccessoryTabType.ALL:
+                throw new InvalidParameterException("Unable to handle tabType: " + tabType);
+        }
 
+        // TODO(crbug.com/965494): Double-check we don't record twice with new address filling.
         RecordHistogram.recordEnumeratedHistogram(
                 getHistogramForType(
                         UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED, AccessoryTabType.ALL),
-                bucket, AccessorySuggestionType.COUNT);
-        if (tabType != AccessoryTabType.ALL) { // If recorded for all, don't record again.
-            RecordHistogram.recordEnumeratedHistogram(
-                    getHistogramForType(UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED, tabType),
-                    bucket, AccessorySuggestionType.COUNT);
-        }
+                suggestionRecordingType, AccessorySuggestionType.COUNT);
+        RecordHistogram.recordEnumeratedHistogram(
+                getHistogramForType(UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED, tabType),
+                suggestionRecordingType, AccessorySuggestionType.COUNT);
     }
 }

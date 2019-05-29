@@ -39,16 +39,16 @@ class ManualFillingViewAndroid : public ManualFillingViewInterface {
   void OnFaviconRequested(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jint desiredSizeInPx,
+      jint desired_size_in_px,
       const base::android::JavaParamRef<jobject>& j_callback);
   void OnFillingTriggered(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jboolean isPassword,
+      jint tab_type,
       const base::android::JavaParamRef<jobject>& j_user_info_field);
   void OnOptionSelected(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
-                        jint selectedAction);
+                        jint selected_action);
   void OnGenerationRequested(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
 

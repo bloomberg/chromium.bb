@@ -861,6 +861,8 @@ Unknown properties are collapsed to zero. -->
 <enum name="AccessorySuggestionType">
   <int value="0" label="USERNAME"/>
   <int value="1" label="PASSWORD"/>
+  <int value="2" label="PAYMENT_INFO"/>
+  <int value="3" label="ADDRESS_INFO"/>
 </enum>
 
 <enum name="AccessPasswordInSettingsEvent">
