@@ -21,10 +21,6 @@ namespace web {
 class TestWebThreadBundle;
 }
 
-namespace blpwtk2 {
-class MainMessagePump;
-}
-
 namespace base {
 
 class MessageLoopBase;
@@ -210,7 +206,6 @@ class BASE_EXPORT MessageLoopCurrent {
   friend class sequence_manager::internal::SequenceManagerImpl;
   friend class MessageLoopTaskRunnerTest;
   friend class web::TestWebThreadBundle;
-  friend class blpwtk2::MainMessagePump;
 
   // Return the pointer to MessageLoop for internal needs.
   // All other callers should call MessageLoopCurrent::Get().

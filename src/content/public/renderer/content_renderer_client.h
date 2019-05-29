@@ -22,6 +22,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
+#include "content/renderer/loader/resource_loader_bridge.h"
 #include "media/base/supported_types.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -195,9 +196,9 @@ class CONTENT_EXPORT ContentRendererClient {
   OverrideSpeechSynthesizer(blink::WebSpeechSynthesizerClient* client);
 
   // Allows the embedder to override the ResourceLoaderBridge used.
-  // If it returns NULL, the content layer will provide a bridge.
-  virtual content::ResourceLoaderBridge* OverrideResourceLoaderBridge(
-      const network::ResourceRequest* request);
+  // If it returns NULL, the content layer will use the default loader.
+  virtual std::unique_ptr<ResourceLoaderBridge> OverrideResourceLoaderBridge(
+      const ResourceRequestInfoProvider& request_info);
 
   // Called on the main-thread immediately after the io thread is
   // created.

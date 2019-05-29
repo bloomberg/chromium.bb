@@ -39,7 +39,6 @@ static_library("chrome_blpwtk2") {
     "//chrome/common/pref_names.h",
     "//chrome/utility/chrome_content_utility_client.cc",
     "//chrome/utility/chrome_content_utility_client.h",
-
     # required by //chrome/common/chrome_content_client.cc
     "//chrome/common/chrome_switches.cc",
     "//chrome/common/chrome_switches.h",
@@ -58,8 +57,10 @@ static_library("chrome_blpwtk2") {
   ]
 
   deps = [
+     "//chrome/app:chrome_service_manifests",
      "//chrome/services/printing/public/mojom",
      "//chrome/services/printing:lib",
+     "//chrome/services/printing/public/cpp:manifest",
      "//chrome/services/util_win/public/mojom",
      "//chrome/services/util_win:lib",
      "//components/signin/core/browser:signin_buildflags",

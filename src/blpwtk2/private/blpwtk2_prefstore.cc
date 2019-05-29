@@ -77,14 +77,16 @@ bool PrefStore::GetMutableValue(const std::string& key, base::Value** result)
 
 void PrefStore::SetValue(const std::string& key, std::unique_ptr<base::Value> value, uint32_t flags)
 {
-    if (d_prefs.SetValue(key, std::move(value))) {
+    DCHECK(value);
+    if (d_prefs.SetValue(key, base::Value::FromUniquePtrValue(std::move(value)))) {
         ReportValueChanged(key, flags);
     }
 }
 
 void PrefStore::SetValueSilently(const std::string& key, std::unique_ptr<base::Value> value, uint32_t flags)
 {
-    d_prefs.SetValue(key, std::move(value));
+    DCHECK(value);
+    d_prefs.SetValue(key, base::Value::FromUniquePtrValue(std::move(value)));
 }
 
 void PrefStore::RemoveValue(const std::string& key, uint32_t flags)

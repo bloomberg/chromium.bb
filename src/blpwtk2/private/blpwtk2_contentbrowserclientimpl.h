@@ -119,18 +119,20 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
         mojo::OutgoingInvitation* broker_client_invitation,
         const std::string& service_token) override;
 
-    std::vector<content::ContentBrowserClient::ServiceManifestInfo>
-        GetExtraServiceManifests() override;
+    // Use build-time C++ manifests instead of runtime JSON manifests
+    // https://chromium-review.googlesource.com/c/chromium/src/+/1423354
+    std::vector<service_manager::Manifest> GetExtraServiceManifests() override;
 
     mojo::OutgoingInvitation* GetClientInvitation() const;
 
-    std::unique_ptr<base::Value> GetServiceManifestOverlay(
+    base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
             base::StringPiece name) override;
 
-    void RegisterInProcessServices(StaticServiceMap* services,
-                                   content::ServiceManagerConnection* connection) override;
-
     void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
+
+    // Returns the user agent.  Content may cache this value.
+    std::string GetUserAgent() const override;
+
 };
 
 }  // close namespace blpwtk2

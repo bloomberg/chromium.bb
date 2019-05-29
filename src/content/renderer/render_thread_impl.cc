@@ -1650,9 +1650,8 @@ void RenderThreadImpl::OnChannelError() {
   // So, if we get a channel error, crash the whole process right now to get a
   // more informative stack, since we will otherwise just crash later when we
   // try to restart it.
-  bool exiting = widget_count_ == 0;
   CHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess) || exiting);
+          switches::kSingleProcess));
   ChildThreadImpl::OnChannelError();
 }
 

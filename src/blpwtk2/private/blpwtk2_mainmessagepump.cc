@@ -194,8 +194,7 @@ LRESULT CALLBACK MainMessagePump::windowProcedureHook(int code,
 
 void MainMessagePump::schedulePumpIfNecessary()
 {
-    LONG workState = work_state_;
-    if (HAVE_WORK == workState) {
+    if (work_scheduled_) {
         schedulePump();
     }
 }
@@ -262,8 +261,7 @@ void MainMessagePump::doWork()
                        reinterpret_cast<WPARAM>(this),
                        0);
 
-        LONG workState = work_state_;
-        if (READY == workState) {
+        if (!work_scheduled_) {
             // Break out of the loop if no more work is scheduled.
             break;
         }
@@ -427,8 +425,12 @@ void MainMessagePump::init()
 
     d_runLoop.reset(new base::RunLoop());
     d_runLoop->BeforeRun();
-    PushRunState(&d_runState, 
-        base::MessageLoopCurrent::Get().ToMessageLoopBaseDeprecated());
+    base::MessagePump::Delegate* pump_delegate = d_runLoop->GetPumpDelegate();
+    if(!pump_delegate) {
+        LOG(ERROR) << "Could not get message pump delegate";
+        return;
+    }
+    PushRunState(&d_runState, pump_delegate);
 }
 
 void MainMessagePump::flush()
@@ -441,8 +443,7 @@ void MainMessagePump::flush()
     // loop.
 
     for (int i=0; i<255; ++i) {
-        LONG workState = work_state_;
-        if (HAVE_WORK == workState) {
+        if (work_scheduled_) {
             // This call to schedulePump() is not strictly required but it
             // helps to keep the data members in the expected state.   The
             // side effect of calling schedulePump() is the setting of the
@@ -500,10 +501,10 @@ void MainMessagePump::postHandleMessage(const MSG& msg)
         modalLoop(false);
     }
 
-    LONG workState = work_state_;
+    bool has_work = work_scheduled_;
     LONG wasPumped = d_isPumped;
 
-    if (HAVE_WORK == workState && 0 == wasPumped) {
+    if (has_work && 0 == wasPumped) {
         MSG msg_ = {};
 
         // We will unintrusively keep our own message loop pumping without
@@ -547,7 +548,7 @@ void MainMessagePump::setTraceThreshold(unsigned int timeoutMS)
 
 void MainMessagePump::ScheduleWork()
 {
-    ::InterlockedExchange(&work_state_, HAVE_WORK);
+    work_scheduled_ = true;
 
     // Record the time when the MessageLoop becomes non-empty.  We need this
     // information when the UI thread is operating inside a modal loop to

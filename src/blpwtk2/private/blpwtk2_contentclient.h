@@ -43,9 +43,6 @@ class ContentClient : public ChromeContentClient {
     ContentClient();
     ~ContentClient() final;
 
-    std::string GetUserAgent() const override;
-        // Returns the user agent.
-
     base::StringPiece GetDataResource(
         int             resource_id,
         ui::ScaleFactor scale_factor) const override;

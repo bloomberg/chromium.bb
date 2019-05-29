@@ -23,6 +23,7 @@
 #include <blpwtk2_webviewhostobserver.h>
 
 namespace blpwtk2 {
+WebViewHostObserver::WebViewHostObserver() = default;
 
 WebViewHostObserver::~WebViewHostObserver()
 {

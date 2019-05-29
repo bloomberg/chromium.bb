@@ -59,7 +59,7 @@ BrowserMainRunner::BrowserMainRunner(
     d_mainParams.sandbox_info = &d_sandboxInfo;
     content::BrowserTaskExecutor::Create();
     base::TaskScheduler::Create("Browser");
-    d_impl.reset(content::BrowserMainRunner::Create());
+    d_impl = content::BrowserMainRunner::Create();
     int rc = d_impl->Initialize(d_mainParams);
     DCHECK(-1 == rc);  // it returns -1 for success!!
 

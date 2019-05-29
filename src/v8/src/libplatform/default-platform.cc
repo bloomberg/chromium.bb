@@ -30,7 +30,7 @@ void PrintStackTrace() {
 
 }  // namespace
 
-std::unique_ptr<v8::Platform> NewDefaultPlatform(
+std::unique_ptr<v8::Platform> NewDefaultPlatformImpl(
     int thread_pool_size, IdleTaskSupport idle_task_support,
     InProcessStackDumping in_process_stack_dumping,
     std::unique_ptr<v8::TracingController> tracing_controller) {

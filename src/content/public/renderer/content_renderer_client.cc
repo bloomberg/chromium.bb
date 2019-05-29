@@ -85,10 +85,10 @@ ContentRendererClient::OverrideSpeechSynthesizer(
   return nullptr;
 }
 
-content::ResourceLoaderBridge*
+std::unique_ptr<ResourceLoaderBridge>
 ContentRendererClient::OverrideResourceLoaderBridge(
-    const network::ResourceRequest* request) {
-  return NULL;
+    const ResourceRequestInfoProvider&) {
+  return nullptr;
 }
 
 void ContentRendererClient::PostIOThreadCreated(

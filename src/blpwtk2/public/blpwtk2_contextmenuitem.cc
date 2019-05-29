@@ -87,7 +87,7 @@ const ContextMenuItem ContextMenuItem::subMenuItem(int index) const
     return ContextMenuItem(d_impl->subMenu[index].get());
 }
 
-};
+}
 
 // vim: ts=4 et
 

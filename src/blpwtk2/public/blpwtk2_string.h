@@ -47,7 +47,7 @@ class BLPWTK2_EXPORT String {
     explicit String(const StringRef& str) : d_impl(make(str.data(), str.length())) {}
     explicit String(const std::string& str) : d_impl(make(str.data(), str.length())) {}
     explicit String(const std::wstring& str) : d_impl(make(str.data(), str.length())) {}
-    ~String() { if (d_impl) unmake(d_impl); }
+    ~String();
 
     String& operator=(const String& rhs)
     {
@@ -80,7 +80,7 @@ class BLPWTK2_EXPORT String {
     }
 
     const char* data() const { return d_impl; }
-    const char* c_str() const { return d_impl ? d_impl : ""; }
+    const char* c_str() const;
     size_t length() const { return d_impl ? length(d_impl) : 0; }
     size_t size() const { return length(); }
     int isEmpty() const { return !d_impl; }

@@ -1052,7 +1052,7 @@ class V8_EXPORT HandleScope {
 class V8_EXPORT EscapableHandleScope : public HandleScope {
  public:
   explicit EscapableHandleScope(Isolate* isolate);
-  V8_INLINE ~EscapableHandleScope() = default;
+  ~EscapableHandleScope();
 
   /**
    * Pushes the value into the previous scope and returns a handle to it.
@@ -2794,7 +2794,7 @@ class V8_EXPORT String : public Name {
      * ExternalStringResource::data() may be cached, otherwise it is not
      * expected to be stable beyond the current top-level task.
      */
-    virtual bool IsCacheable() const { return true; }
+    virtual bool IsCacheable() const;
 
    protected:
     ExternalStringResourceBase() = default;
@@ -2818,12 +2818,12 @@ class V8_EXPORT String : public Name {
      * several times, from different threads, and unlocking should only happen
      * when the balance of Lock() and Unlock() calls is 0.
      */
-    virtual void Lock() const {}
+    virtual void Lock() const;
 
     /**
      * Unlocks the string.
      */
-    virtual void Unlock() const {}
+    virtual void Unlock() const;
 
     // Disallow copying and assigning.
     ExternalStringResourceBase(const ExternalStringResourceBase&) = delete;
@@ -2887,7 +2887,7 @@ class V8_EXPORT String : public Name {
     /** The number of Latin-1 characters in the string.*/
     virtual size_t length() const = 0;
    protected:
-    ExternalOneByteStringResource() = default;
+    ExternalOneByteStringResource();
   };
 
   /**
@@ -4463,6 +4463,11 @@ struct OwnedBuffer {
   OwnedBuffer(std::unique_ptr<const uint8_t[]> buffer, size_t size)
       : buffer(std::move(buffer)), size(size) {}
   OwnedBuffer() = default;
+#if !defined(MSVC_2015_PLUS)
+  OwnedBuffer(OwnedBuffer&& src)
+      : buffer(std::move(src.buffer)), size(src.size) {}
+  OwnedBuffer(const OwnedBuffer& src) = delete;
+#endif
 };
 
 // Wrapper around a compiled WebAssembly module, which is potentially shared by
@@ -4502,15 +4507,15 @@ class V8_EXPORT WasmModuleObject : public Object {
     TransferrableModule(TransferrableModule&& src) = default;
 #else
     TransferrableModule(TransferrableModule&& src);
-#endif
     TransferrableModule(const TransferrableModule& src) = delete;
+#endif
 
 #if defined(MSVC_2015_PLUS)
     TransferrableModule& operator=(TransferrableModule&& src) = default;
 #else
     TransferrableModule& operator=(TransferrableModule&& src);
-#endif
     TransferrableModule& operator=(const TransferrableModule& src) = delete;
+#endif
 
    private:
     typedef std::shared_ptr<internal::wasm::NativeModule> SharedModule;
@@ -6377,10 +6382,7 @@ class V8_EXPORT ObjectTemplate : public Template {
       IndexedPropertyQueryCallback query = nullptr,
       IndexedPropertyDeleterCallback deleter = nullptr,
       IndexedPropertyEnumeratorCallback enumerator = nullptr,
-      Local<Value> data = Local<Value>()) {
-    SetHandler(IndexedPropertyHandlerConfiguration(getter, setter, query,
-                                                   deleter, enumerator, data));
-  }
+      Local<Value> data = Local<Value>());
 
   /**
    * Sets an indexed property handler on the object template.
@@ -6605,9 +6607,7 @@ class V8_EXPORT ResourceConstraints {
   }
 
   size_t max_old_space_size() const { return max_old_space_size_; }
-  void set_max_old_space_size(size_t limit_in_mb) {
-    max_old_space_size_ = limit_in_mb;
-  }
+  void set_max_old_space_size(size_t limit_in_mb);
   uint32_t* stack_limit() const { return stack_limit_; }
   // Sets an address beyond which the VM's stack may not grow.
   void set_stack_limit(uint32_t* value) { stack_limit_ = value; }
@@ -7281,7 +7281,7 @@ class V8_EXPORT EmbedderHeapTracer {
     virtual void VisitTracedGlobalHandle(const TracedGlobal<Value>& value) = 0;
   };
 
-  virtual ~EmbedderHeapTracer() = default;
+  virtual ~EmbedderHeapTracer();
 
   /**
    * Iterates all TracedGlobal handles created for the v8::Isolate the tracer is
@@ -7354,9 +7354,7 @@ class V8_EXPORT EmbedderHeapTracer {
    * Default implementation will keep all TracedGlobal references as roots.
    */
   virtual bool IsRootForNonTracingGC(
-      const v8::TracedGlobal<v8::Value>& handle) {
-    return true;
-  }
+      const v8::TracedGlobal<v8::Value>& handle);
 
   /*
    * Called by the embedder to immediately perform a full garbage collection.
@@ -7508,7 +7506,7 @@ class V8_EXPORT Isolate {
       isolate->Enter();
     }
 
-    ~Scope() { isolate_->Exit(); }
+    ~Scope();
 
     // Prevent copying of Scope objects.
     Scope(const Scope&) = delete;

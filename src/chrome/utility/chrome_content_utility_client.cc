@@ -16,8 +16,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/common/buildflags.h"
+#if !defined(BLPWTK2_IMPLEMENTATION)
 #include "chrome/services/noop/noop_service.h"
 #include "chrome/services/noop/public/cpp/utils.h"
+#endif
 #include "components/mirroring/mojom/constants.mojom.h"
 #include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
@@ -264,10 +266,12 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
   if (service_name == unzip::mojom::kServiceName)
     return std::make_unique<unzip::UnzipService>(std::move(request));
 
+#if !defined(BLPWTK2_IMPLEMENTATION)
   if (service_name == chrome::mojom::kNoopServiceName &&
       chrome::IsNoopServiceEnabled()) {
     return std::make_unique<chrome::NoopService>(std::move(request));
   }
+#endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
   if (service_name == printing::mojom::kServiceName)
