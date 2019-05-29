@@ -165,6 +165,25 @@ bool LoadTableCellMethods() {
   return cell_get_type;
 }
 
+AXPlatformNodeAuraLinux* ToAXPlatformNodeAuraLinux(
+    AXPlatformNodeAuraLinuxObject* atk_object) {
+  if (!atk_object)
+    return nullptr;
+
+  return atk_object->m_object;
+}
+
+AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
+    AtkObject* atk_object) {
+  if (!atk_object)
+    return nullptr;
+
+  if (IS_AX_PLATFORM_NODE_AURALINUX(atk_object))
+    return ToAXPlatformNodeAuraLinux(AX_PLATFORM_NODE_AURALINUX(atk_object));
+
+  return nullptr;
+}
+
 bool SupportsAtkComponentScrollingInterface() {
   return dlsym(RTLD_DEFAULT, "atk_component_scroll_to_point");
 }
@@ -176,6 +195,49 @@ AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
     atk_object = atk_object_get_parent(atk_object);
   }
   return nullptr;
+}
+
+bool EmitsAtkTextEvents(AtkObject* atk_object) {
+  // If this node is not a static text node, it supports the full AtkText
+  // interface.
+  AtkRole role = atk_object_get_role(atk_object);
+  if (role != ATK_ROLE_TEXT)
+    return true;
+
+  // If this node is not a static text leaf node, it supports the full AtkText
+  // interface.
+  if (atk_object_get_n_accessible_children(atk_object))
+    return true;
+
+  // If this node is an anonymous block that is a static text leaf node, it
+  // should also emit events. The heuristic that Orca uses for this is to check
+  // whether or not it has any non-static-text siblings. We duplicate that here
+  // to maintain compatibility.
+  AtkObject* parent = atk_object_get_parent(atk_object);
+  if (!parent)
+    return false;
+
+  int num_siblings = atk_object_get_n_accessible_children(parent);
+  for (int i = 0; i < num_siblings; i++) {
+    AtkObject* sibling = atk_object_ref_accessible_child(parent, i);
+    AtkRole role = atk_object_get_role(sibling);
+    g_object_unref(sibling);
+    if (role != ATK_ROLE_TEXT)
+      return true;
+  }
+
+  return false;
+}
+
+AtkObject* FindFirstAncestorThatEmitsAtkTextEvents(AtkObject* atk_object) {
+  if (!atk_object)
+    return nullptr;
+
+  if (EmitsAtkTextEvents(atk_object))
+    return atk_object;
+
+  return FindFirstAncestorThatEmitsAtkTextEvents(
+      atk_object_get_parent(atk_object));
 }
 
 bool IsFrameAncestorOfAtkObject(AtkObject* frame, AtkObject* atk_object) {
@@ -305,25 +367,6 @@ AtkAttributeSet* PrependAtkAttributeToAtkAttributeSet(
   attribute->name = g_strdup(name);
   attribute->value = g_strdup(value);
   return g_slist_prepend(attribute_set, attribute);
-}
-
-AXPlatformNodeAuraLinux* ToAXPlatformNodeAuraLinux(
-    AXPlatformNodeAuraLinuxObject* atk_object) {
-  if (!atk_object)
-    return nullptr;
-
-  return atk_object->m_object;
-}
-
-AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
-    AtkObject* atk_object) {
-  if (!atk_object)
-    return nullptr;
-
-  if (IS_AX_PLATFORM_NODE_AURALINUX(atk_object))
-    return ToAXPlatformNodeAuraLinux(AX_PLATFORM_NODE_AURALINUX(atk_object));
-
-  return nullptr;
 }
 
 // TODO(aleventhal) Remove this and use atk_role_get_name() once the following
@@ -3223,11 +3266,16 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
 }
 
 void AXPlatformNodeAuraLinux::OnTextSelectionChanged() {
+  AtkObject* object = FindFirstAncestorThatEmitsAtkTextEvents(atk_object_);
+  if (!object)
+    return;
+
+  DCHECK(ATK_IS_TEXT(object));
   if (HasCaret()) {
-    g_signal_emit_by_name(atk_object_, "text-caret-moved",
-                          atk_text_get_caret_offset(ATK_TEXT(atk_object_)));
+    g_signal_emit_by_name(object, "text-caret-moved",
+                          atk_text_get_caret_offset(ATK_TEXT(object)));
   }
-  g_signal_emit_by_name(atk_object_, "text-selection-changed");
+  g_signal_emit_by_name(object, "text-selection-changed");
 }
 
 bool AXPlatformNodeAuraLinux::SupportsSelectionWithAtkSelection() {
@@ -3410,6 +3458,9 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
 
   DCHECK(atk_object_);
   DCHECK(ATK_IS_TEXT(atk_object_));
+
+  if (!EmitsAtkTextEvents(atk_object_))
+    return;
 
   if (old_len > 0) {
     base::string16 removed_substring =

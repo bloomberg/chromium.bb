@@ -848,4 +848,51 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(child_7);
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestTextEventsInStaticText) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(
+      R"HTML(<!DOCTYPE html>
+          <html>
+          <body>
+            <div contenteditable="true">Text inside field</div>
+          </body>
+          </html>)HTML"));
+
+  AtkObject* document = GetRendererAccessible();
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
+
+  AtkText* div_element = ATK_TEXT(atk_object_ref_accessible_child(document, 0));
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(ATK_OBJECT(div_element)));
+  AtkText* text =
+      ATK_TEXT(atk_object_ref_accessible_child(ATK_OBJECT(div_element), 0));
+
+  auto callback = G_CALLBACK(+[](AtkText*, gint, bool* flag) { *flag = true; });
+  bool saw_caret_move_in_text = false;
+  bool saw_caret_move_in_div = false;
+  g_signal_connect(text, "text-caret-moved", callback, &saw_caret_move_in_text);
+  g_signal_connect(div_element, "text-caret-moved", callback,
+                   &saw_caret_move_in_div);
+
+  AccessibilityNotificationWaiter selection_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  ExecuteScript(base::UTF8ToUTF16(
+      "let selection = document.getSelection();"
+      "let editable = document.querySelector('div[contenteditable=\"true\"]');"
+      "editable.focus();"
+      "let range = document.createRange();"
+      "range.setStart(editable.lastChild, 4);"
+      "range.setEnd(editable.lastChild, 4);"
+      "selection.removeAllRanges();"
+      "selection.addRange(range);"));
+  selection_waiter.WaitForNotification();
+
+  // We should see the event happen in div and not the static text element.
+  EXPECT_TRUE(saw_caret_move_in_div);
+  EXPECT_FALSE(saw_caret_move_in_text);
+
+  g_object_unref(div_element);
+  g_object_unref(text);
+}
+
 }  // namespace content
