@@ -948,6 +948,12 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
       if (!any_transition_had_transition_all && !animation_style_recalc &&
           !listed_properties.Contains(property)) {
         update.CancelTransition(property);
+        // Measure how often transitions are cancelled by removing their style.
+        // See https://crbug.com/934700.
+        if (!transition_data) {
+          UseCounter::Count(animating_element->GetDocument(),
+                            WebFeature::kCSSTransitionCancelledByRemovingStyle);
+        }
       } else if (entry.value.animation->FinishedInternal()) {
         update.FinishTransition(property);
       }

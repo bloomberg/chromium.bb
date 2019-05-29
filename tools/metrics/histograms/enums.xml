@@ -23408,6 +23408,7 @@ Called by update_net_error_codes.py.-->
   <int value="2911" label="V8XRSession_End_Method"/>
   <int value="2912" label="V8XRWebGLLayer_Constructor"/>
   <int value="2913" label="FetchKeepalive"/>
+  <int value="2914" label="CSSTransitionCancelledByRemovingStyle"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
