@@ -18,6 +18,10 @@ component("system_media_controls") {
     "//base",
     "//ui/gfx",
   ]
+
+  public_deps = [
+    "//skia",
+  ]
 }
 
 static_library("test_support") {

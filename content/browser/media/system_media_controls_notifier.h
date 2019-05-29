@@ -27,7 +27,8 @@ namespace content {
 // metadata. It observes changes to the active Media Session and updates the
 // SMTC accordingly.
 class CONTENT_EXPORT SystemMediaControlsNotifier
-    : public media_session::mojom::MediaControllerObserver {
+    : public media_session::mojom::MediaControllerObserver,
+      public media_session::mojom::MediaControllerImageObserver {
  public:
   explicit SystemMediaControlsNotifier(service_manager::Connector* connector);
   ~SystemMediaControlsNotifier() override;
@@ -38,12 +39,17 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
-      const base::Optional<media_session::MediaMetadata>& metadata) override {}
+      const base::Optional<media_session::MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
       override {}
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
+
+  // media_session::mojom::MediaControllerImageObserver implementation.
+  void MediaControllerImageChanged(
+      ::media_session::mojom::MediaSessionImageType type,
+      const SkBitmap& bitmap) override;
 
   void SetSystemMediaControlsServiceForTesting(
       system_media_controls::SystemMediaControlsService* service) {
@@ -59,11 +65,13 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
 
   // Tracks current media session state/metadata.
   media_session::mojom::MediaControllerPtr media_controller_ptr_;
-  media_session::mojom::MediaSessionInfoPtr session_info_;
+  media_session::mojom::MediaSessionInfoPtr session_info_ptr_;
 
   // Used to receive updates to the active media controller.
   mojo::Binding<media_session::mojom::MediaControllerObserver>
       media_controller_observer_binding_{this};
+  mojo::Binding<media_session::mojom::MediaControllerImageObserver>
+      media_controller_image_observer_binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SystemMediaControlsNotifier);
 };

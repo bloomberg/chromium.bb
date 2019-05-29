@@ -478,6 +478,7 @@
 #include "chrome/browser/ui/passwords/google_password_manager_navigation_throttle.h"
 #include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
 #include "chrome/common/importer/profile_import.mojom.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #endif  //  !defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
@@ -5761,6 +5762,19 @@ std::string ChromeContentBrowserClient::GetUserAgent() const {
 blink::UserAgentMetadata ChromeContentBrowserClient::GetUserAgentMetadata()
     const {
   return ::GetUserAgentMetadata();
+}
+
+base::Optional<gfx::ImageSkia> ChromeContentBrowserClient::GetProductLogo()
+    const {
+  // This icon is available on Android, but adds 19KiB to the APK. Since it
+  // isn't used on Android we exclude it to avoid bloat.
+#if !defined(OS_ANDROID)
+  return base::Optional<gfx::ImageSkia>(
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_PRODUCT_LOGO_256));
+#else
+  return base::nullopt;
+#endif
 }
 
 bool ChromeContentBrowserClient::IsBuiltinComponent(

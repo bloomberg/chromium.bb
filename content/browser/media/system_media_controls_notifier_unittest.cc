@@ -18,6 +18,7 @@ using ABI::Windows::Media::MediaPlaybackStatus;
 using media_session::mojom::MediaPlaybackState;
 using media_session::mojom::MediaSessionInfo;
 using media_session::mojom::MediaSessionInfoPtr;
+using testing::_;
 using testing::Expectation;
 
 class SystemMediaControlsNotifierTest : public testing::Test {
@@ -48,6 +49,29 @@ class SystemMediaControlsNotifierTest : public testing::Test {
 
   void SimulateStopped() { notifier_->MediaSessionInfoChanged(nullptr); }
 
+  void SimulateMetadataChanged(bool empty,
+                               base::string16 title,
+                               base::string16 artist) {
+    if (!empty) {
+      media_session::MediaMetadata metadata;
+      metadata.title = title;
+      metadata.artist = artist;
+      notifier_->MediaSessionMetadataChanged(
+          base::Optional<media_session::MediaMetadata>(metadata));
+    } else {
+      notifier_->MediaSessionMetadataChanged(base::nullopt);
+    }
+  }
+
+  void SimulateImageChanged() {
+    // Need a non-empty SkBitmap so MediaControllerImageChanged doesn't try to
+    // get the icon from ChromeContentBrowserClient.
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(1, 1);
+    notifier_->MediaControllerImageChanged(
+        media_session::mojom::MediaSessionImageType::kArtwork, bitmap);
+  }
+
   SystemMediaControlsNotifier& notifier() { return *notifier_; }
   system_media_controls::testing::MockSystemMediaControlsService&
   mock_system_media_controls_service() {
@@ -71,14 +95,43 @@ TEST_F(SystemMediaControlsNotifierTest, ProperlyUpdatesPlaybackState) {
           mock_system_media_controls_service(),
           SetPlaybackStatus(MediaPlaybackStatus::MediaPlaybackStatus_Paused))
           .After(playing);
-  EXPECT_CALL(
-      mock_system_media_controls_service(),
-      SetPlaybackStatus(MediaPlaybackStatus::MediaPlaybackStatus_Stopped))
-      .After(paused);
+  Expectation stopped =
+      EXPECT_CALL(
+          mock_system_media_controls_service(),
+          SetPlaybackStatus(MediaPlaybackStatus::MediaPlaybackStatus_Stopped))
+          .After(paused);
+  EXPECT_CALL(mock_system_media_controls_service(), ClearMetadata())
+      .After(stopped);
 
   SimulatePlaying();
   SimulatePaused();
   SimulateStopped();
+}
+
+TEST_F(SystemMediaControlsNotifierTest, ProperlyUpdatesMetadata) {
+  base::string16 title = L"title";
+  base::string16 artist = L"artist";
+
+  EXPECT_CALL(mock_system_media_controls_service(), SetTitle(title));
+  EXPECT_CALL(mock_system_media_controls_service(), SetArtist(artist));
+  EXPECT_CALL(mock_system_media_controls_service(), ClearMetadata()).Times(0);
+  EXPECT_CALL(mock_system_media_controls_service(), UpdateDisplay());
+
+  SimulateMetadataChanged(false, title, artist);
+}
+
+TEST_F(SystemMediaControlsNotifierTest, ProperlyUpdatesNullMetadata) {
+  EXPECT_CALL(mock_system_media_controls_service(), SetTitle(_)).Times(0);
+  EXPECT_CALL(mock_system_media_controls_service(), SetArtist(_)).Times(0);
+  EXPECT_CALL(mock_system_media_controls_service(), ClearMetadata());
+
+  SimulateMetadataChanged(true, L"", L"");
+}
+
+TEST_F(SystemMediaControlsNotifierTest, ProperlyUpdatesImage) {
+  EXPECT_CALL(mock_system_media_controls_service(), SetThumbnail(_));
+
+  SimulateImageChanged();
 }
 
 }  // namespace content

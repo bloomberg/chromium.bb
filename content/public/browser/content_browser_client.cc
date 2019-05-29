@@ -963,6 +963,10 @@ blink::UserAgentMetadata ContentBrowserClient::GetUserAgentMetadata() const {
   return blink::UserAgentMetadata();
 }
 
+base::Optional<gfx::ImageSkia> ContentBrowserClient::GetProductLogo() const {
+  return base::nullopt;
+}
+
 bool ContentBrowserClient::IsBuiltinComponent(BrowserContext* browser_context,
                                               const url::Origin& origin) {
   return false;

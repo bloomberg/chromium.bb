@@ -1535,6 +1535,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns user agent metadata. Content may cache this value.
   virtual blink::UserAgentMetadata GetUserAgentMetadata() const;
 
+  // Returns a 256x256 transparent background image of the product logo, i.e.
+  // the browser icon, if available.
+  virtual base::Optional<gfx::ImageSkia> GetProductLogo() const;
+
   // Returns whether |origin| should be considered a integral component similar
   // to native code, and as such whether its log messages should be recorded.
   virtual bool IsBuiltinComponent(BrowserContext* browser_context,

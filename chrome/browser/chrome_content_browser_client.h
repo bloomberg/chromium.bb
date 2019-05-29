@@ -576,6 +576,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::string GetUserAgent() const override;
   blink::UserAgentMetadata GetUserAgentMetadata() const override;
 
+  base::Optional<gfx::ImageSkia> GetProductLogo() const override;
+
   bool IsBuiltinComponent(content::BrowserContext* browser_context,
                           const url::Origin& origin) override;
 
