@@ -47,12 +47,10 @@ ScriptRunner::ScriptRunner(Document* document)
 void ScriptRunner::QueueScriptForExecution(PendingScript* pending_script) {
   DCHECK(pending_script);
   document_->IncrementLoadEventDelayCount();
+  pending_script->StartStreamingIfPossible();
   switch (pending_script->GetSchedulingType()) {
     case ScriptSchedulingType::kAsync:
       pending_async_scripts_.insert(pending_script);
-      if (!is_suspended_) {
-        pending_script->StartStreamingIfPossible();
-      }
       break;
 
     case ScriptSchedulingType::kInOrder:
