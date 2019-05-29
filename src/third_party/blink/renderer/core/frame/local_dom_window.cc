@@ -205,6 +205,14 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
                              &LocalDOMWindow::WarnUnusedPreloads),
       should_print_when_finished_loading_(false) {}
 
+LocalDOMWindow::LocalDOMWindow()
+    : DOMWindow(),
+      visualViewport_(DOMVisualViewport::Create(this)),
+      unused_preloads_timer_(Platform::Current()->MainThread()->GetTaskRunner(),
+                             this,
+                             &LocalDOMWindow::WarnUnusedPreloads),
+      should_print_when_finished_loading_(false) {}
+
 void LocalDOMWindow::ClearDocument() {
   if (!document_)
     return;
@@ -272,6 +280,19 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
   if (GetFrame()->GetPage() && GetFrame()->View()) {
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
   }
+
+  return document_;
+}
+
+Document* LocalDOMWindow::InstallNewUnintializedDocument(
+  const String& mime_type,
+  const DocumentInit& init,
+  bool force_xhtml) {
+  DCHECK_EQ(init.GetFrame(), GetFrame());
+
+  ClearDocument();
+
+  document_ = CreateDocument(mime_type, init, force_xhtml);
 
   return document_;
 }

@@ -82,6 +82,11 @@ v8::Maybe<{{method.cpp_type}}> {{v8_class}}::{{method.name}}({{method.argument_d
 
 {% if methods|length == 1 and methods[0].idl_type == 'void' %}
 void {{v8_class}}::InvokeAndReportException({{methods[0].argument_declarations | join(', ')}}) {
+  // Silently fail if the callback were initialized with an invalid function
+  if (!CallbackRelevantScriptState()) {
+    return;
+  }
+
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
 
