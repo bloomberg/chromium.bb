@@ -2361,33 +2361,6 @@
             ]
         }
     ],
-    "GwpAsanMallocMacOSLaunch": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "//0": "The server side experiment varies the",
-                    "//1": "AllocationSamplingFrequency; however, it's kept",
-                    "//2": "at the default value here as I plan to change the",
-                    "//3": "parameter name and meaning based on the data",
-                    "//4": "captured from the experiment. The perf results",
-                    "//5": "from the default value are sufficient.",
-                    "name": "Enabled",
-                    "params": {
-                        "MaxAllocations": "30",
-                        "MaxMetadata": "100",
-                        "ProcessSamplingProbability": "0.2",
-                        "TotalPages": "100"
-                    },
-                    "enable_features": [
-                        "GwpAsanMalloc"
-                    ]
-                }
-            ]
-        }
-    ],
     "GwpAsanPartitionAlloc": [
         {
             "platforms": [
