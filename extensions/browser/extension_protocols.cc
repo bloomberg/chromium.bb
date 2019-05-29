@@ -521,8 +521,9 @@ void GetSecurityPolicyForURL(const GURL& url,
 }
 
 bool IsBackgroundPageURL(const GURL& url) {
-  std::string path = url.path();
-  return path.size() > 1 && path.substr(1) == kGeneratedBackgroundPageFilename;
+  base::StringPiece path_piece = url.path_piece();
+  return path_piece.size() > 1 &&
+         path_piece.substr(1) == kGeneratedBackgroundPageFilename;
 }
 
 class ExtensionProtocolHandler
