@@ -48,19 +48,13 @@ void ButtonExample::CreateExampleView(View* container) {
   label_button->set_request_focus_on_press(true);
   label_button_ = container->AddChildView(std::move(label_button));
 
-  auto styled_button =
-      std::make_unique<LabelButton>(this, ASCIIToUTF16("Styled Button"));
-  styled_button->SetStyleDeprecated(Button::STYLE_BUTTON);
-  styled_button_ = container->AddChildView(std::move(styled_button));
-
-  auto disabled_button =
-      std::make_unique<LabelButton>(this, ASCIIToUTF16("Disabled Button"));
-  disabled_button->SetStyleDeprecated(Button::STYLE_BUTTON);
-  disabled_button->SetState(Button::STATE_DISABLED);
-  disabled_button_ = container->AddChildView(std::move(disabled_button));
-
   md_button_ = container->AddChildView(
-      MdTextButton::Create(this, base::ASCIIToUTF16("Material design")));
+      MdTextButton::Create(this, base::ASCIIToUTF16("Material Design")));
+
+  auto md_disabled_button = MdTextButton::Create(
+      this, ASCIIToUTF16("Material Design Disabled Button"));
+  md_disabled_button->SetState(Button::STATE_DISABLED);
+  md_disabled_button_ = container->AddChildView(std::move(md_disabled_button));
 
   auto md_default_button =
       MdTextButton::Create(this, base::ASCIIToUTF16("Default"));
@@ -106,9 +100,6 @@ void ButtonExample::LabelButtonPressed(LabelButton* label_button,
       label_button_->IsAccessibilityFocusable()
           ? label_button_->SetFocusBehavior(View::FocusBehavior::NEVER)
           : label_button_->SetFocusForPlatform();
-    } else {
-      label_button->SetStyleDeprecated(static_cast<Button::ButtonStyle>(
-          (label_button->style() + 1) % Button::STYLE_COUNT));
     }
   } else if (event.IsAltDown()) {
     label_button->SetIsDefault(!label_button->GetIsDefault());
@@ -119,12 +110,10 @@ void ButtonExample::LabelButtonPressed(LabelButton* label_button,
 void ButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == label_button_)
     LabelButtonPressed(label_button_, event);
-  else if (sender == styled_button_)
-    LabelButtonPressed(styled_button_, event);
-  else if (sender == disabled_button_)
-    LabelButtonPressed(disabled_button_, event);
   else if (sender == md_button_ || sender == md_default_button_)
     static_cast<Button*>(sender)->StartThrobbing(5);
+  else if (sender == md_disabled_button_)
+    LabelButtonPressed(md_disabled_button_, event);
   else
     PrintStatus("Image Button Pressed! count: %d", ++count_);
 }
