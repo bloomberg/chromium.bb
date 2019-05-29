@@ -211,23 +211,15 @@ enum LogLockingState { LOCK_LOG_FILE, DONT_LOCK_LOG_FILE };
 enum OldFileDeletionState { DELETE_OLD_LOG_FILE, APPEND_TO_OLD_LOG_FILE };
 
 struct BASE_EXPORT LoggingSettings {
-  // The defaults values are:
-  //
-  //  logging_dest: LOG_DEFAULT
-  //  log_file:     NULL
-  //  lock_log:     LOCK_LOG_FILE
-  //  delete_old:   APPEND_TO_OLD_LOG_FILE
-  LoggingSettings();
-
   // Equivalent to logging destination enum, but allows for multiple
   // destinations.
-  uint32_t logging_dest;
+  uint32_t logging_dest = LOG_DEFAULT;
 
   // The three settings below have an effect only when LOG_TO_FILE is
   // set in |logging_dest|.
-  const PathChar* log_file;
-  LogLockingState lock_log;
-  OldFileDeletionState delete_old;
+  const PathChar* log_file = nullptr;
+  LogLockingState lock_log = LOCK_LOG_FILE;
+  OldFileDeletionState delete_old = APPEND_TO_OLD_LOG_FILE;
 };
 
 // Define different names for the BaseInitLoggingImpl() function depending on

@@ -407,12 +407,6 @@ BASE_EXPORT logging::LogSeverity LOG_DCHECK = LOG_INFO;
 // operator.
 std::ostream* g_swallow_stream;
 
-LoggingSettings::LoggingSettings()
-    : logging_dest(LOG_DEFAULT),
-      log_file(nullptr),
-      lock_log(LOCK_LOG_FILE),
-      delete_old(APPEND_TO_OLD_LOG_FILE) {}
-
 bool BaseInitLoggingImpl(const LoggingSettings& settings) {
 #if defined(OS_NACL)
   // Can log only to the system debug log and stderr.
