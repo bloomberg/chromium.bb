@@ -4,19 +4,15 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.util.Base64;
 import android.view.Menu;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +21,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -39,9 +34,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.EmbeddedTestServerRule;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -51,58 +45,40 @@ import java.util.concurrent.atomic.AtomicReference;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class CustomTabFromChromeExternalNavigationTest {
     @Rule
-    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
+    public CustomTabActivityTestRule mActivityRule = new CustomTabActivityTestRule();
 
-    private EmbeddedTestServer mTestServer;
-
-    @Before
-    public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
-    }
-
-    private void startActivityCompletely(Intent intent) {
-        Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
-        Assert.assertTrue(activity instanceof CustomTabActivity);
-        mCustomTabActivityTestRule.setActivity((CustomTabActivity) activity);
-    }
+    @Rule
+    public EmbeddedTestServerRule mServerRule = new EmbeddedTestServerRule();
 
     private Intent getCustomTabFromChromeIntent(final String url, final boolean markFromChrome) {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Intent>() {
-            @Override
-            public Intent call() throws Exception {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
-                        InstrumentationRegistry.getTargetContext(), intent);
-                if (markFromChrome) {
-                    // Explicitly not marking this as a trusted intent.  If you add the trusted bit,
-                    // then it prohibits launching external apps.  We want to allow external apps
-                    // to be launched, so we are intentionally not adding that for now.  Ideally,
-                    // being opened by Chrome would only be allowed with the corresponding trusted
-                    // flag, but that requires additional refactoring in our external navigation
-                    // handling.
-                    intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
-                }
-                return intent;
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
+                    InstrumentationRegistry.getTargetContext(), intent);
+            if (markFromChrome) {
+                // Explicitly not marking this as a trusted intent.  If you add the trusted bit,
+                // then it prohibits launching external apps.  We want to allow external apps
+                // to be launched, so we are intentionally not adding that for now.  Ideally,
+                // being opened by Chrome would only be allowed with the corresponding trusted
+                // flag, but that requires additional refactoring in our external navigation
+                // handling.
+                intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
             }
+            return intent;
         });
     }
 
     private void startCustomTabFromChrome(String url) throws InterruptedException {
         Intent intent = getCustomTabFromChromeIntent(url, true);
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        mActivityRule.startCustomTabActivityWithIntent(intent);
     }
 
     private void startPaymentRequestUIFromChrome(String url) throws InterruptedException {
         Intent intent = getCustomTabFromChromeIntent(url, false);
         CustomTabIntentDataProvider.addPaymentRequestUIExtras(intent);
 
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        mActivityRule.startCustomTabActivityWithIntent(intent);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
@@ -112,7 +88,7 @@ public class CustomTabFromChromeExternalNavigationTest {
     public void testUsingStandardExternalNavigationHandler() throws Exception {
         startCustomTabFromChrome("about:blank");
 
-        Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
+        Tab tab = mActivityRule.getActivity().getActivityTab();
         TabDelegateFactory delegateFactory = tab.getDelegateFactory();
         Assert.assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
         CustomTabDelegateFactory customTabDelegateFactory =
@@ -124,54 +100,43 @@ public class CustomTabFromChromeExternalNavigationTest {
     @Test
     @Feature("CustomTabFromChrome")
     @LargeTest
-    @DisableIf.Build(message = "Flaky on K, https://crbug.com/962974",
-            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
-    public void
-    testIntentWithRedirectToApp() throws Exception {
+    public void testIntentWithRedirectToApp() throws Exception {
         final String redirectUrl = "https://maps.google.com/maps?q=1600+amphitheatre+parkway";
         final String initialUrl =
-                mTestServer.getURL("/chrome/test/data/android/redirect/js_redirect.html"
+                mServerRule.getServer().getURL("/chrome/test/data/android/redirect/js_redirect.html"
                         + "?replace_text="
                         + Base64.encodeToString(
-                                  ApiCompatibilityUtils.getBytesUtf8("PARAM_URL"), Base64.URL_SAFE)
+                                ApiCompatibilityUtils.getBytesUtf8("PARAM_URL"), Base64.URL_SAFE)
                         + ":"
-                        + Base64.encodeToString(ApiCompatibilityUtils.getBytesUtf8(redirectUrl),
-                                  Base64.URL_SAFE));
+                        + Base64.encodeToString(
+                                ApiCompatibilityUtils.getBytesUtf8(redirectUrl), Base64.URL_SAFE));
 
-        startActivityCompletely(getCustomTabFromChromeIntent(initialUrl, true));
-        mCustomTabActivityTestRule.waitForActivityNativeInitializationComplete();
+        mActivityRule.startActivityCompletely(getCustomTabFromChromeIntent(initialUrl, true));
+        mActivityRule.waitForActivityNativeInitializationComplete();
 
         final AtomicReference<InterceptNavigationDelegateImpl> navigationDelegate =
                 new AtomicReference<>();
-        CriteriaHelper.pollUiThread(new Criteria("Tab never selected/initialized.") {
-            @Override
-            public boolean isSatisfied() {
-                Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                if (tab == null) return false;
-                InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateImpl.get(tab);
-                if (delegate == null) return false;
-                navigationDelegate.set(delegate);
-                return true;
-            }
-        });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, new Callable<Integer>() {
-                    @Override
-                    public @OverrideUrlLoadingResult Integer call() throws Exception {
-                        return navigationDelegate.get().getLastOverrideUrlLoadingResultForTests();
-                    }
-                }));
+        CriteriaHelper.pollUiThread(() -> {
+            return mActivityRule.getActivity().getActivityTab() != null;
+        }, "Tab never initialized.");
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                int activityState = ApplicationStatus.getStateForActivity(
-                        mCustomTabActivityTestRule.getActivity());
-                return activityState == ActivityState.STOPPED
-                        || activityState == ActivityState.DESTROYED;
-            }
-        });
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = mActivityRule.getActivity().getActivityTab();
+            InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateImpl.get(tab);
+            if (delegate == null) return false;
+            navigationDelegate.set(delegate);
+            return true;
+        }, "Navigation delegate never initialized.");
+
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        navigationDelegate.get()::getLastOverrideUrlLoadingResultForTests));
+
+        CriteriaHelper.pollUiThread(() -> {
+            int state = ApplicationStatus.getStateForActivity(mActivityRule.getActivity());
+            return state == ActivityState.STOPPED || state == ActivityState.DESTROYED;
+        }, "Activity never stopped or destroyed.");
     }
 
     @Test
@@ -180,7 +145,7 @@ public class CustomTabFromChromeExternalNavigationTest {
     public void testIntentToOpenPaymentRequestUI() throws Exception {
         startPaymentRequestUIFromChrome("about:blank");
 
-        Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
+        Tab tab = mActivityRule.getActivity().getActivityTab();
         TabDelegateFactory delegateFactory = tab.getDelegateFactory();
         Assert.assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
         CustomTabDelegateFactory customTabDelegateFactory =
@@ -188,8 +153,8 @@ public class CustomTabFromChromeExternalNavigationTest {
         Assert.assertFalse(customTabDelegateFactory.getExternalNavigationDelegate()
                                    instanceof CustomTabNavigationDelegate);
 
-        CustomTabsTestUtils.openAppMenuAndAssertMenuShown(mCustomTabActivityTestRule.getActivity());
-        Menu menu = mCustomTabActivityTestRule.getMenu();
+        CustomTabsTestUtils.openAppMenuAndAssertMenuShown(mActivityRule.getActivity());
+        Menu menu = mActivityRule.getMenu();
 
         Assert.assertTrue(menu.findItem(R.id.icon_row_menu_id).isVisible());
         Assert.assertTrue(menu.findItem(R.id.find_in_page_id).isVisible());
