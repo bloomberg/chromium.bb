@@ -645,6 +645,15 @@ public class FeatureUtilities {
         return sIsGridTabSwitcherEnabled || isTabGroupsAndroidEnabled();
     }
 
+    /**
+     * Toggles whether the Grid Tab Switcher is enabled for testing. Should be reset back to
+     * null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setGridTabSwitcherEnabledForTesting(@Nullable Boolean enabled) {
+        sIsGridTabSwitcherEnabled = enabled;
+    }
+
     private static void cacheTabGroupsAndroidEnabled() {
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY,
@@ -661,13 +670,12 @@ public class FeatureUtilities {
      * @return Whether the tab group feature is enabled and available for use.
      */
     public static boolean isTabGroupsAndroidEnabled() {
-        if (!isHighEndPhone()) return false;
-
         if (sIsTabGroupsAndroidEnabled == null) {
             ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
 
             sIsTabGroupsAndroidEnabled = preferenceManager.readBoolean(
                     ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY, false);
+            sIsTabGroupsAndroidEnabled &= isHighEndPhone();
         }
 
         return sIsTabGroupsAndroidEnabled;

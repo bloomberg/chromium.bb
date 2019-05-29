@@ -25,7 +25,9 @@ import android.view.View;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -50,6 +52,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -66,6 +69,9 @@ import java.util.List;
 @Config(manifest = Config.NONE)
 @Features.DisableFeatures(ChromeFeatureList.TAB_SWITCHER_ON_RETURN)
 public class GridTabSwitcherMediatorUnitTest {
+    @Rule
+    public TestRule mProcessor = new Features.JUnitProcessor();
+
     private static final int CONTROL_HEIGHT_DEFAULT = 56;
     private static final int CONTROL_HEIGHT_MODIFIED = 0;
 
@@ -121,6 +127,7 @@ public class GridTabSwitcherMediatorUnitTest {
     public void setUp() {
         RecordUserAction.setDisabledForTests(true);
         RecordHistogram.setDisabledForTests(true);
+        FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
 
         MockitoAnnotations.initMocks(this);
 
