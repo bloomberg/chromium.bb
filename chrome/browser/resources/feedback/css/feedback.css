@@ -144,6 +144,10 @@ body {
   flex: auto;
 }
 
+.content #sys-info-container {
+  margin-inline-end: 130px;
+}
+
 .content #privacy-note {
   color: #969696;
   font-size: 12px;
