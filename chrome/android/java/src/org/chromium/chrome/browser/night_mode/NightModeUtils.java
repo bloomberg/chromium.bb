@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.night_mode;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.support.annotation.StyleRes;
+import android.view.ContextThemeWrapper;
 
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 
@@ -77,5 +79,27 @@ public class NightModeUtils {
                                                        : Configuration.UI_MODE_NIGHT_NO;
         config.uiMode = nightMode | (config.uiMode & ~Configuration.UI_MODE_NIGHT_MASK);
         return true;
+    }
+
+    /**
+     * Wraps a {@link Context} into one having a resource configuration with the given night mode
+     * setting.
+     * @param context {@link Context} to wrap.
+     * @param themeResId Theme resource to use with {@link ContextThemeWrapper}.
+     * @param nightMode Whether to apply night mode.
+     * @return Wrapped {@link Context}.
+     */
+    public static Context wrapContextWithNightModeConfig(Context context, @StyleRes int themeResId,
+            boolean nightMode) {
+        ContextThemeWrapper wrapper = new ContextThemeWrapper(context, themeResId);
+        Configuration config = new Configuration();
+        // Pre-Android O, fontScale gets initialized to 1 in the constructor. Set it to 0 so
+        // that applyOverrideConfiguration() does not interpret it as an overridden value.
+        config.fontScale = 0;
+        int nightModeFlag = nightMode ? Configuration.UI_MODE_NIGHT_YES
+                : Configuration.UI_MODE_NIGHT_NO;
+        config.uiMode = nightModeFlag | (config.uiMode & ~Configuration.UI_MODE_NIGHT_MASK);
+        wrapper.applyOverrideConfiguration(config);
+        return wrapper;
     }
 }

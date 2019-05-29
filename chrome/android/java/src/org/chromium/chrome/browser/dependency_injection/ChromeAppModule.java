@@ -14,6 +14,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionStore;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -77,5 +78,10 @@ public class ChromeAppModule {
         // TrustedWebActivityServiceConnectionManager comes from the Custom Tabs Support Library
         // so we can't make it injectable.
         return new TrustedWebActivityServiceConnectionManager(context);
+    }
+
+    @Provides
+    public SystemNightModeMonitor provideSystemNightModeMonitor() {
+        return SystemNightModeMonitor.getInstance();
     }
 }

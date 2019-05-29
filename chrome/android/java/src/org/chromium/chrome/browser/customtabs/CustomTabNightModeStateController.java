@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 /**
  * Maintains and provides the night mode state for {@link CustomTabActivity}.
  */
-class CustomTabNightModeStateController
+public class CustomTabNightModeStateController
         implements Destroyable, NightModeStateProvider, SystemNightModeMonitor.Observer {
     private final ObserverList<Observer> mObservers = new ObserverList<>();
 

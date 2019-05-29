@@ -888,7 +888,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     protected CustomTabActivityComponent createComponent(
             ChromeActivityCommonsModule commonsModule) {
         CustomTabActivityModule customTabsModule =
-                new CustomTabActivityModule(mIntentDataProvider);
+                new CustomTabActivityModule(mIntentDataProvider, mNightModeStateController);
         CustomTabActivityComponent component =
                 ChromeApplication.getComponent().createCustomTabActivityComponent(
                         commonsModule, customTabsModule);
