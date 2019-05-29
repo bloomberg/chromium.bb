@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_ACTIVE_DIRECTORY_LOGIN_MIXIN_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -75,13 +76,6 @@ class ActiveDirectoryLoginMixin : public InProcessBrowserTestMixin {
  private:
   void SetupActiveDirectoryJSNotifications();
   void TestPasswordChangeError(const std::string& invalid_element);
-  void ExpectValid(const std::string& parent_id,
-                   const std::string& child_id,
-                   bool valid);
-  // Returns string representing element with id=|element_id| inside Active
-  // Directory login element.
-  std::string JSElement(const std::string& parent_id,
-                        const std::string& selector);
 
   std::string autocomplete_realm_;
   std::unique_ptr<content::DOMMessageQueue> message_queue_;

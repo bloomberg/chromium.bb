@@ -95,30 +95,40 @@ void OfflineGaiaTestMixin::StartGaiaAuthOffline() {
       .CreateWaiter("window.$ && $('error-offline-login-link')")
       ->Wait();
   test::ExecuteOobeJS("$('error-offline-login-link').onclick();");
-  test::OobeJS().CreateVisibilityWaiter(true, {"offline-gaia"})->Wait();
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"gaia-signin", "offline-gaia"})
+      ->Wait();
 }
 
 void OfflineGaiaTestMixin::SubmitGaiaAuthOfflineForm(
     const std::string& user_email,
     const std::string& password) {
-  test::OobeJS().ExpectVisible("offline-gaia");
-  test::OobeJS().ExpectHidden("signin-frame");
+  test::OobeJS().ExpectVisiblePath({"gaia-signin", "offline-gaia"});
+  test::OobeJS().ExpectHiddenPath({"gaia-signin", "signin-frame"});
   test::OobeJS()
-      .CreateDisplayedWaiter(true, {"offline-gaia", "email-section"})
+      .CreateDisplayedWaiter(true,
+                             {"gaia-signin", "offline-gaia", "email-section"})
       ->Wait();
   test::OobeJS()
-      .CreateDisplayedWaiter(false, {"offline-gaia", "password-section"})
+      .CreateDisplayedWaiter(
+          false, {"gaia-signin", "offline-gaia", "password-section"})
       ->Wait();
-  test::OobeJS().TypeIntoPath(user_email, {"offline-gaia", "emailInput"});
-  test::OobeJS().TapOnPath({"offline-gaia", "email-input-form", "button"});
+  test::OobeJS().TypeIntoPath(user_email,
+                              {"gaia-signin", "offline-gaia", "emailInput"});
+  test::OobeJS().TapOnPath(
+      {"gaia-signin", "offline-gaia", "email-input-form", "button"});
   test::OobeJS()
-      .CreateDisplayedWaiter(false, {"offline-gaia", "email-section"})
+      .CreateDisplayedWaiter(false,
+                             {"gaia-signin", "offline-gaia", "email-section"})
       ->Wait();
   test::OobeJS()
-      .CreateDisplayedWaiter(true, {"offline-gaia", "password-section"})
+      .CreateDisplayedWaiter(
+          true, {"gaia-signin", "offline-gaia", "password-section"})
       ->Wait();
-  test::OobeJS().TypeIntoPath(password, {"offline-gaia", "passwordInput"});
-  test::OobeJS().TapOnPath({"offline-gaia", "password-input-form", "button"});
+  test::OobeJS().TypeIntoPath(password,
+                              {"gaia-signin", "offline-gaia", "passwordInput"});
+  test::OobeJS().TapOnPath(
+      {"gaia-signin", "offline-gaia", "password-input-form", "button"});
 }
 
 }  // namespace chromeos

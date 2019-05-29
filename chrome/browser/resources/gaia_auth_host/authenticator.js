@@ -113,7 +113,7 @@ cr.define('cr.login', function() {
    */
   class Authenticator extends cr.EventTarget {
     /**
-     * @param {webview|string} webview The webview element or its ID to host
+     * @param {!WebView|string} webview The webview element or its ID to host
      *     IdP web pages.
      */
     constructor(webview) {
@@ -127,12 +127,19 @@ cr.define('cr.login', function() {
       this.skipForNow_ = false;
       this.authFlow = AuthFlow.DEFAULT;
       this.authDomain = '';
+      /**
+       * @type {!cr.login.SamlHandler|undefined}
+       * @private
+       */
+      this.samlHandler_ = undefined;
       this.videoEnabled = false;
       this.idpOrigin_ = null;
       this.initialFrameUrl_ = null;
       this.reloadUrl_ = null;
       this.trusted_ = true;
       this.readyFired_ = false;
+      this.webview_ = typeof webview == 'string' ? $(webview) : webview;
+      assert(this.webview_);
       this.webviewEventManager_ = WebviewEventManager.create();
 
       this.clientId_ = null;
@@ -160,12 +167,22 @@ cr.define('cr.login', function() {
        */
       this.isSamlUserPasswordless_ = null;
 
-      this.bindToWebview_(webview);
-
       window.addEventListener(
           'message', this.onMessageFromWebview_.bind(this), false);
       window.addEventListener('focus', this.onFocus_.bind(this), false);
       window.addEventListener('popstate', this.onPopState_.bind(this), false);
+
+      /**
+       * @type {boolean}
+       * @private
+       */
+      this.isDomLoaded_ = document.readyState != 'loading';
+      if (this.isDomLoaded_) {
+        this.initializeAfterDomLoaded_();
+      } else {
+        document.addEventListener(
+            'DOMContentLoaded', this.initializeAfterDomLoaded_.bind(this));
+      }
     }
 
     /**
@@ -199,16 +216,23 @@ cr.define('cr.login', function() {
     }
 
     /**
-     * Binds this authenticator to the passed webview.
-     * @param {!Object} webview the new webview to be used by this
-     *     Authenticator.
+     * Completes the part of the initialization that should happen after the
+     * page's DOM has loaded.
      * @private
      */
-    bindToWebview_(webview) {
-      assert(!this.webview_);
-      assert(!this.samlHandler_);
+    initializeAfterDomLoaded_() {
+      this.isDomLoaded_ = true;
+      this.bindToWebview_();
+    }
 
-      this.webview_ = typeof webview == 'string' ? $(webview) : webview;
+    /**
+     * Binds this authenticator to the current |webview_|.
+     * @private
+     */
+    bindToWebview_() {
+      assert(this.webview_);
+      assert(this.webview_.request);
+      assert(!this.samlHandler_);
 
       this.samlHandler_ =
           new cr.login.SamlHandler(this.webview_, false /* startsOnSamlPage */);
@@ -266,8 +290,16 @@ cr.define('cr.login', function() {
      * @param {Object} webview the new webview to be used by this Authenticator.
      */
     rebindWebview(webview) {
+      if (!this.isDomLoaded_) {
+        // We haven't bound to the previously set webview yet, so simply update
+        // |webview_| to use the new element during the delayed initialization.
+        this.webview_ = webview;
+        return;
+      }
       this.unbindFromWebview_();
-      this.bindToWebview_(webview);
+      assert(!this.webview_);
+      this.webview_ = webview;
+      this.bindToWebview_();
     }
 
     /**

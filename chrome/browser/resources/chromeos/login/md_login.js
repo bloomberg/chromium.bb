@@ -31,7 +31,6 @@
 // <include src="screen_arc_kiosk_splash.js">
 // <include src="screen_arc_terms_of_service.js">
 // <include src="screen_error_message.js">
-// <include src="screen_gaia_signin.js">
 // <include src="screen_password_changed.js">
 // <include src="screen_tpm_error.js">
 // <include src="screen_wrong_hwid.js">
@@ -73,7 +72,6 @@ cr.define('cr.ui.Oobe', function() {
       cr.ui.login.DisplayManager.initialize();
       login.WrongHWIDScreen.register();
       login.AccountPickerScreen.register();
-      login.GaiaSigninScreen.register();
       login.ResetScreen.register();
       login.AutolaunchScreen.register();
       login.KioskEnableScreen.register();
