@@ -45,7 +45,15 @@ module.exports = function(grunt) {
           "node_modules/@webgpu/shaderc/dist/index.js",
           "-o", "out/shaderc.js",
         ]
-      }
+      },
+      "lint": {
+        cmd: "npx",
+        args: [ "tslint", "--project", "." ]
+      },
+      "fix": {
+        cmd: "npx",
+        args: [ "tslint", "--project", ".", "--fix" ]
+      },
     },
 
     "http-server": {
@@ -72,22 +80,12 @@ module.exports = function(grunt) {
         },
       },
     },
-
-    tslint: {
-      options: {
-        configuration: "tslint.json",
-      },
-      files: {
-        src: [ "src/**/*.ts" ],
-      },
-    },
   });
 
   grunt.loadNpmTasks("grunt-contrib-clean");
   grunt.loadNpmTasks("grunt-http-server");
   grunt.loadNpmTasks("grunt-run");
   grunt.loadNpmTasks("grunt-ts");
-  grunt.loadNpmTasks("grunt-tslint");
 
   const publishedTasks = [];
   function publishTask(name, desc, deps) {
@@ -98,7 +96,7 @@ module.exports = function(grunt) {
   publishTask("check", "Check Typescript build", [
     "ts:check",
   ]);
-  publishedTasks.push({ name: "tslint", desc: "Run tslint" });
+  publishedTasks.push({ name: "run:{lint,fix}", desc: "Run tslint" });
   publishTask("build", "Build out/", [
     "run:build-shaderc",
     "run:build-out",

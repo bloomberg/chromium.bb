@@ -3,7 +3,7 @@ import {
   paramsEqual,
   ParamSpecIterable,
   ParamSpecIterator,
-} from "./index.js";
+} from './index.js';
 
 export function pexclude(params: ParamSpecIterable, exclude: ParamSpecIterable) {
   return new PExclude(params, exclude);

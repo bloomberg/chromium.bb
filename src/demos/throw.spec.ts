@@ -3,19 +3,20 @@ Manual tests for tests which throw/reject.
 `;
 
 import {
-  TestGroup, DefaultFixture,
-} from "../framework/index.js";
+  DefaultFixture,
+  TestGroup,
+} from '../framework/index.js';
 
 export const group = new TestGroup();
 
-group.test("sync_throw", DefaultFixture, (t) => {
+group.test('sync_throw', DefaultFixture, (t) => {
   throw new Error();
 });
 
-group.test("async_throw", DefaultFixture, async (t) => {
+group.test('async_throw', DefaultFixture, async (t) => {
   throw new Error();
 });
 
-group.test("promise_reject", DefaultFixture, (t) => {
+group.test('promise_reject', DefaultFixture, (t) => {
   return Promise.reject(new Error());
 });

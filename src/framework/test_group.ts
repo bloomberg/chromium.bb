@@ -1,5 +1,5 @@
-import { CaseRecorder, GroupRecorder, IResult } from "./logger.js";
-import { IParamsAny, IParamsSpec } from "./params/index.js";
+import { CaseRecorder, GroupRecorder, IResult } from './logger.js';
+import { IParamsAny, IParamsSpec } from './params/index.js';
 
 type TestFn<F extends Fixture> = (t: F) => (Promise<void> | void);
 interface ICase {
@@ -13,10 +13,11 @@ interface IRunCase {
   run: () => Promise<IResult>;
 }
 
-export type FixtureCreate<F extends Fixture> = (log: CaseRecorder, params: IParamsAny) => Promise<F>;
+export type FixtureCreate<F extends Fixture> =
+    (log: CaseRecorder, params: IParamsAny) => Promise<F>;
 
 interface IFixture<F extends Fixture> {
-  create: FixtureCreate<F>,
+  create: FixtureCreate<F>;
 }
 
 export abstract class Fixture {
@@ -58,6 +59,7 @@ export class TestGroup {
         try {
           await t.run(rec);
         } catch (e) {
+          // tslint:disable-next-line: no-console
           console.warn(e);
           rec.threw(e);
         }
@@ -71,7 +73,7 @@ export class TestGroup {
                                       params: (IParamsSpec | undefined),
                                       fixture: IFixture<F>,
                                       fn: TestFn<F>): void {
-    const n = params ? (name + "/" + JSON.stringify(params)) : name;
+    const n = params ? (name + '/' + JSON.stringify(params)) : name;
     const p = params ? params : {};
     this.tests.push({ name: n, run: async (log) => {
       const inst = await fixture.create(log, p);

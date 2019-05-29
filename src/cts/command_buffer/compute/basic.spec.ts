@@ -2,12 +2,12 @@ export const description = `
 Basic command buffer compute tests.
 `;
 
-import { TestGroup } from "../../../framework/index.js";
-import { GPUTest } from "../../gpu_test.js";
+import { TestGroup } from '../../../framework/index.js';
+import { GPUTest } from '../../gpu_test.js';
 
 export const group = new TestGroup();
 
-group.test("memcpy", GPUTest, async (t) => {
+group.test('memcpy', GPUTest, async (t) => {
   const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 8 | 128 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 128 });
@@ -15,20 +15,19 @@ group.test("memcpy", GPUTest, async (t) => {
 
   const bgl = t.device.createBindGroupLayout({
     bindings: [
-      { binding: 0, visibility: 4, type: "storage-buffer" },
-      { binding: 1, visibility: 4, type: "storage-buffer" },
-    ]
+      { binding: 0, visibility: 4, type: 'storage-buffer' },
+      { binding: 1, visibility: 4, type: 'storage-buffer' },
+    ],
   });
   const bg = t.device.createBindGroup({
-    layout: bgl,
     bindings: [
       { binding: 0, resource: { buffer: src, offset: 0, size: 4 } },
       { binding: 1, resource: { buffer: dst, offset: 0, size: 4 } },
     ],
+    layout: bgl,
   });
 
-
-  const module = t.makeShaderModule("c", `#version 450
+  const module = t.makeShaderModule('c', `#version 450
     layout(std140, set = 0, binding = 0) buffer Src {
       int value;
     } src;
@@ -42,8 +41,8 @@ group.test("memcpy", GPUTest, async (t) => {
   `);
   const pl = t.device.createPipelineLayout({ bindGroupLayouts: [bgl] });
   const pipeline = t.device.createComputePipeline({
+    computeStage: { module, entryPoint: 'main' },
     layout: pl,
-    computeStage: { module, entryPoint: "main" },
   });
 
   const encoder = t.device.createCommandEncoder({});

@@ -127,6 +127,8 @@ class Device extends EventTarget implements GPUDevice {
   public readonly extensions: GPUExtensions;
   public readonly limits = kDefaultLimits;
   public readonly lost: Promise<GPUDeviceLostInfo> = new Promise(() => {});
+
+  public onuncapturederror: Event | undefined;
   private queue: Queue = new Queue();
   constructor(adapter: Adapter, descriptor: GPUDeviceDescriptor) {
     super();
@@ -147,16 +149,15 @@ class Device extends EventTarget implements GPUDevice {
   public getQueue(): Queue { return this.queue; }
 
   public createSwapChain(descriptor: GPUSwapChainDescriptor): SwapChain { return new SwapChain(); }
-  public async getSwapChainPreferredFormat(context: GPUCanvasContext): Promise<GPUTextureFormat> { return "rgba8unorm"; }
+  public async getSwapChainPreferredFormat(context: GPUCanvasContext): Promise<GPUTextureFormat> { return 'rgba8unorm'; }
 
-  public onuncapturederror: Event | undefined;
   public pushErrorScope(filter: GPUErrorFilter): void {}
   public async popErrorScope(): Promise<GPUError | null> { return null; }
 }
 
 class Adapter implements GPUAdapter {
   public extensions = kNoExtensions;
-  public name = "dummy";
+  public name = 'dummy';
   public async requestDevice(descriptor: GPUDeviceDescriptor): Promise<Device> {
     return new Device(this, descriptor);
   }

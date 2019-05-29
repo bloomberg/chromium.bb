@@ -1,19 +1,19 @@
-import { CaseRecorder } from "./logger.js";
+import { CaseRecorder } from './logger.js';
 
 export function getStackTrace(e: Error): string {
   if (!e.stack) {
-    return "";
+    return '';
   }
 
-  const parts = e.stack.split("\n");
+  const parts = e.stack.split('\n');
   const stack = [];
 
   let distanceFromTop = 0;
   for (const part of parts) {
-    if (part.indexOf("internalTickCallback") > -1) {
+    if (part.indexOf('internalTickCallback') > -1) {
       break;
     }
-    if (part.indexOf("Object.run") > -1) {
+    if (part.indexOf('Object.run') > -1) {
       break;
     }
     if (part.indexOf(CaseRecorder.name) > -1) {
@@ -29,11 +29,11 @@ export function getStackTrace(e: Error): string {
     }
     distanceFromTop -= 1;
   }
-  return stack.join("\n");
+  return stack.join('\n');
 }
 
 // tslint:disable-next-line no-var-requires
-const perf = typeof performance !== "undefined" ? performance : require("perf_hooks").performance;
+const perf = typeof performance !== 'undefined' ? performance : require('perf_hooks').performance;
 
 export function now(): number {
   return perf.now();

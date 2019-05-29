@@ -2,7 +2,7 @@ import {
   IParamsAny,
   ParamSpecIterable,
   ParamSpecIterator,
-} from "./index.js";
+} from './index.js';
 
 type Predicate = (o: IParamsAny) => boolean;
 

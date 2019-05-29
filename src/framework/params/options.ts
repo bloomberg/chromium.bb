@@ -1,4 +1,4 @@
-import { ParamSpec, ParamSpecIterable, ParamSpecIterator } from "./index.js";
+import { ParamSpec, ParamSpecIterable, ParamSpecIterator } from './index.js';
 
 export function poptions(name: string, values: ParamSpec[]) {
   return new POptions(name, values);

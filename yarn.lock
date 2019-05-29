@@ -1114,11 +1114,6 @@ grunt-ts@^6.0.0-beta.22:
     semver "^5.3.0"
     strip-bom "^2.0.0"
 
-grunt-tslint@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/grunt-tslint/-/grunt-tslint-5.0.2.tgz#cb6c1e2b6afbcef2ac583f0d8d5560de097871ce"
-  integrity sha512-a9aq8HiDtnwIZAsyGCUpwnqEVFWeof2HQIhj6incOMB/IUO7NQ7aNkzVX8Y+j3HaqyCZU31wUSFyDluqIEBKXA==
-
 grunt@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.0.4.tgz#c799883945a53a3d07622e0737c8f70bfe19eb38"

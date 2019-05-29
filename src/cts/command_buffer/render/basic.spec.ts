@@ -2,17 +2,17 @@ export const description = `
 Basic command buffer rendering tests.
 `;
 
-import { TestGroup } from "../../../framework/index.js";
-import { GPUTest } from "../../gpu_test.js";
+import { TestGroup } from '../../../framework/index.js';
+import { GPUTest } from '../../gpu_test.js';
 
 export const group = new TestGroup();
 
-group.test("clear", GPUTest, async (t) => {
+group.test('clear', GPUTest, async (t) => {
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
 
   const colorAttachment = t.device.createTexture({
+    format: 'rgba8unorm',
     size: { width: 1, height: 1, depth: 1 },
-    format: "rgba8unorm",
     usage: 1 | 16,
   });
   const colorAttachmentView = colorAttachment.createDefaultView();
@@ -22,10 +22,10 @@ group.test("clear", GPUTest, async (t) => {
     colorAttachments: [
       {
         attachment: colorAttachmentView,
-        loadOp: "clear",
-        storeOp: "store",
-        clearColor: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 }
-      }
+        clearColor: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
+        loadOp: 'clear',
+        storeOp: 'store',
+      },
     ],
   });
   pass.endPass();
@@ -38,24 +38,24 @@ group.test("clear", GPUTest, async (t) => {
   await t.expectContents(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));
 });
 
-group.test("fullscreen-quad", GPUTest, async (t) => {
+group.test('fullscreen-quad', GPUTest, async (t) => {
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
 
   const colorAttachment = t.device.createTexture({
+    format: 'rgba8unorm',
     size: { width: 1, height: 1, depth: 1 },
-    format: "rgba8unorm",
     usage: 1 | 16,
   });
   const colorAttachmentView = colorAttachment.createDefaultView();
 
-  const vertexModule = t.makeShaderModule("v", `#version 450
+  const vertexModule = t.makeShaderModule('v', `#version 450
     void main() {
       const vec2 pos[3] = vec2[3](
           vec2(-1.f, -3.f), vec2(3.f, 1.f), vec2(-1.f, 1.f));
       gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
     }
   `);
-  const fragmentModule = t.makeShaderModule("f", `#version 450
+  const fragmentModule = t.makeShaderModule('f', `#version 450
     layout(location = 0) out vec4 fragColor;
     void main() {
       fragColor = vec4(0.0, 1.0, 0.0, 1.0);
@@ -63,18 +63,18 @@ group.test("fullscreen-quad", GPUTest, async (t) => {
   `);
   const pl = t.device.createPipelineLayout({ bindGroupLayouts: [] });
   const pipeline = t.device.createRenderPipeline({
-    vertexStage: { module: vertexModule, entryPoint: "main" },
-    fragmentStage: { module: fragmentModule, entryPoint: "main" },
+    vertexStage: { module: vertexModule, entryPoint: 'main' },
+    fragmentStage: { module: fragmentModule, entryPoint: 'main' },
     layout: pl,
-    primitiveTopology: "triangle-list",
+    primitiveTopology: 'triangle-list',
     rasterizationState: {
-      frontFace: "ccw",
+      frontFace: 'ccw',
     },
     colorStates: [
-      { format: "rgba8unorm", alphaBlend: {}, colorBlend: {} }
+      { format: 'rgba8unorm', alphaBlend: {}, colorBlend: {} },
     ],
     vertexInput: {
-      indexFormat: "uint16",
+      indexFormat: 'uint16',
       vertexBuffers: [],
     },
   });
@@ -84,10 +84,10 @@ group.test("fullscreen-quad", GPUTest, async (t) => {
     colorAttachments: [
       {
         attachment: colorAttachmentView,
-        loadOp: "clear",
-        storeOp: "store",
-        clearColor: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 }
-      }
+        loadOp: 'clear',
+        storeOp: 'store',
+        clearColor: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+      },
     ],
   });
   pass.setPipeline(pipeline);

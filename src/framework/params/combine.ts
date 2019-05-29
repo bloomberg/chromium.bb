@@ -2,7 +2,7 @@ import {
   IParamsSpec,
   ParamSpecIterable,
   ParamSpecIterator,
-} from "./index.js";
+} from './index.js';
 
 export function pcombine(params: ParamSpecIterable[]) { return new PCombine(params); }
 
@@ -11,7 +11,7 @@ class PCombine implements ParamSpecIterable {
   private static merge(a: IParamsSpec, b: IParamsSpec): IParamsSpec {
     for (const key of Object.keys(a)) {
       if (b.hasOwnProperty(key)) {
-        throw new Error("Duplicate key: " + key);
+        throw new Error('Duplicate key: ' + key);
       }
     }
     return {...a, ...b};

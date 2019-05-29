@@ -1,6 +1,6 @@
-import { getStackTrace, now } from "./util.js";
+import { getStackTrace, now } from './util.js';
 
-type Status = "running" | "pass" | "warn" | "fail";
+type Status = 'running' | 'pass' | 'warn' | 'fail';
 interface ITestLog {
   path: string;
   cases: IResult[];
@@ -35,7 +35,7 @@ export class GroupRecorder {
   }
 
   public record(name: string, params?: object): [IResult, CaseRecorder] {
-    const result: IResult = { name, status: "running", timems: -1 };
+    const result: IResult = { name, status: 'running', timems: -1 };
     if (params) {
       result.params = params;
     }
@@ -64,12 +64,12 @@ export class CaseRecorder {
 
   public finish() {
     if (this.startTime < 0) {
-      throw new Error("finish() before start()");
+      throw new Error('finish() before start()');
     }
     const endTime = now();
     this.result.timems = endTime - this.startTime;
-    this.result.status = this.failed ? "fail" :
-        this.warned ? "warn" : "pass";
+    this.result.status = this.failed ? 'fail' :
+        this.warned ? 'warn' : 'pass';
 
     this.result.logs = this.logs;
   }
@@ -80,28 +80,28 @@ export class CaseRecorder {
 
   public warn(msg?: string) {
     this.warned = true;
-    let m = "WARN";
+    let m = 'WARN';
     if (msg) {
-      m += ": " + msg;
+      m += ': ' + msg;
     }
-    m += " " + getStackTrace(new Error());
+    m += ' ' + getStackTrace(new Error());
     this.log(m);
   }
 
   public fail(msg?: string) {
     this.failed = true;
-    let m = "FAIL";
+    let m = 'FAIL';
     if (msg) {
-      m += ": " + msg;
+      m += ': ' + msg;
     }
-    m += " " + getStackTrace(new Error());
+    m += ' ' + getStackTrace(new Error());
     this.log(m);
   }
 
   public threw(e: Error) {
     this.failed = true;
-    let m = "EXCEPTION";
-    m += " " + getStackTrace(e);
+    let m = 'EXCEPTION';
+    m += ' ' + getStackTrace(e);
     this.log(m);
   }
 }
