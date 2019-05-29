@@ -52,9 +52,11 @@ class DownloadFileWithError : public download::DownloadFileImpl {
                   bool is_parallelizable) override;
 
   // DownloadFile interface.
-  download::DownloadInterruptReason WriteDataToFile(int64_t offset,
-                                                    const char* data,
-                                                    size_t data_len) override;
+  download::DownloadInterruptReason ValidateAndWriteDataToFile(
+      int64_t offset,
+      const char* data,
+      size_t bytes_to_validate,
+      size_t bytes_to_write) override;
 
   download::DownloadInterruptReason HandleStreamCompletionStatus(
       SourceStream* source_stream) override;
@@ -174,13 +176,15 @@ void DownloadFileWithError::Initialize(
                                          received_slices, is_parallelizable);
 }
 
-download::DownloadInterruptReason DownloadFileWithError::WriteDataToFile(
-    int64_t offset,
-    const char* data,
-    size_t data_len) {
+download::DownloadInterruptReason
+DownloadFileWithError::ValidateAndWriteDataToFile(int64_t offset,
+                                                  const char* data,
+                                                  size_t bytes_to_validate,
+                                                  size_t bytes_to_write) {
   return ShouldReturnError(
       TestFileErrorInjector::FILE_OPERATION_WRITE,
-      download::DownloadFileImpl::WriteDataToFile(offset, data, data_len));
+      download::DownloadFileImpl::ValidateAndWriteDataToFile(
+          offset, data, bytes_to_validate, bytes_to_write));
 }
 
 download::DownloadInterruptReason

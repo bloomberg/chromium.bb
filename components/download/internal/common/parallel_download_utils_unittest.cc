@@ -43,7 +43,8 @@ class ParallelDownloadUtilsRecoverErrorTest
     EXPECT_CALL(*input_stream_, GetCompletionStatus())
         .WillRepeatedly(Return(DOWNLOAD_INTERRUPT_REASON_NONE));
     return std::make_unique<DownloadFileImpl::SourceStream>(
-        offset, length, std::unique_ptr<MockInputStream>(input_stream_));
+        offset, length, offset,
+        std::unique_ptr<MockInputStream>(input_stream_));
   }
 
  protected:
@@ -166,7 +167,7 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Even if it has written some data.
-  preceding_stream->OnWriteBytesToDisk(1000u);
+  preceding_stream->OnBytesConsumed(1000u, 1000u);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Now capped the length of preceding stream with different values.
@@ -177,14 +178,15 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
   preceding_stream->set_finished(false);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
   preceding_stream->set_finished(true);
-  preceding_stream->OnWriteBytesToDisk(kErrorStreamOffset - preceding_offset);
+  int64_t bytes_consumed = kErrorStreamOffset - preceding_offset;
+  preceding_stream->OnBytesConsumed(bytes_consumed, bytes_consumed);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Inject an error results in failure, even if data written exceeds the first
   // byte of error stream.
   EXPECT_CALL(*input_stream_, GetCompletionStatus())
       .WillRepeatedly(Return(DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE));
-  preceding_stream->OnWriteBytesToDisk(1000u);
+  preceding_stream->OnBytesConsumed(1000u, 1000u);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Make preceding stream can reach the first byte of error stream.
@@ -194,9 +196,9 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
   preceding_stream->set_finished(false);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
   preceding_stream->set_finished(true);
-  preceding_stream->OnWriteBytesToDisk(kErrorStreamOffset - preceding_offset);
+  preceding_stream->OnBytesConsumed(bytes_consumed, bytes_consumed);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
-  preceding_stream->OnWriteBytesToDisk(1);
+  preceding_stream->OnBytesConsumed(1, 1);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Preceding stream that never download data won't recover the error stream.
@@ -229,11 +231,13 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
   // Since the preceding stream can never reach the starting offset, for an
   // unfinished stream, we rely on length instead of bytes written.
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
-  preceding_stream->OnWriteBytesToDisk(kErrorStreamOffset - preceding_offset);
+  int64_t bytes_consumed = kErrorStreamOffset - preceding_offset;
+  preceding_stream->OnBytesConsumed(bytes_consumed, bytes_consumed);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
-  preceding_stream->OnWriteBytesToDisk(kErrorStreamLength - 1);
+  preceding_stream->OnBytesConsumed(kErrorStreamLength - 1,
+                                    kErrorStreamLength - 1);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
-  preceding_stream->OnWriteBytesToDisk(1);
+  preceding_stream->OnBytesConsumed(1, 1);
 
   // Create preceding stream that can reach the upper bound of error stream.
   // Since it's unfinished, it potentially can take over error stream's work
@@ -248,11 +252,12 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
   // Finished preceding stream only checks data written.
   preceding_stream = CreateSourceStream(preceding_offset, 1);
   preceding_stream->set_finished(true);
-  preceding_stream->OnWriteBytesToDisk(kErrorStreamOffset - preceding_offset);
+  preceding_stream->OnBytesConsumed(bytes_consumed, bytes_consumed);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
-  preceding_stream->OnWriteBytesToDisk(kErrorStreamLength - 1);
+  preceding_stream->OnBytesConsumed(kErrorStreamLength - 1,
+                                    kErrorStreamLength - 1);
   EXPECT_FALSE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
-  preceding_stream->OnWriteBytesToDisk(1);
+  preceding_stream->OnBytesConsumed(1, 1);
   EXPECT_TRUE(CanRecoverFromError(error_stream.get(), preceding_stream.get()));
 
   // Even if inject an error, since data written has cover the upper bound of
