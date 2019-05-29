@@ -57,6 +57,7 @@ VSyncThreadWin::VSyncThreadWin(
 }
 
 VSyncThreadWin::~VSyncThreadWin() {
+  SetEnabled(false);
   vsync_thread_.Stop();
 }
 
