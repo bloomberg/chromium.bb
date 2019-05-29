@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
+#include "content/renderer/loader/resource_loader_bridge.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -48,6 +49,9 @@ class CONTENT_EXPORT NavigationBodyLoader
  public:
   // This method fills navigation params related to the navigation request,
   // redirects and response, and also creates a body loader if needed.
+  using LoaderCreator =
+      std::function<std::unique_ptr<blink::WebNavigationBodyLoader>(
+          const ResourceRequestInfoProvider&)>;
   static void FillNavigationParamsResponseAndBodyLoader(
       const CommonNavigationParams& common_params,
       const CommitNavigationParams& commit_params,
@@ -57,7 +61,8 @@ class CONTENT_EXPORT NavigationBodyLoader
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       int render_frame_id,
       bool is_main_frame,
-      blink::WebNavigationParams* navigation_params);
+      blink::WebNavigationParams* navigation_params,
+      LoaderCreator loader_creator);
   ~NavigationBodyLoader() override;
 
  private:

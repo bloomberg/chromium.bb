@@ -511,6 +511,11 @@ content::PermissionControllerDelegate* BrowserContextImpl::GetPermissionControll
     return nullptr;
 }
 
+content::ClientHintsControllerDelegate* BrowserContextImpl::GetClientHintsControllerDelegate()
+{
+    return nullptr;
+}
+
 content::BackgroundFetchDelegate* BrowserContextImpl::GetBackgroundFetchDelegate()
 {
     return nullptr;

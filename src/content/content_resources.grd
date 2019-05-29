@@ -6,7 +6,6 @@
       <emit emit_type='prepend'></emit>
     </output>
     <output filename="content_resources.pak" type="data_package" />
-    <output filename="content_resources.rc" type="rc_all" />
   </outputs>
   <translations />
   <release seq="1">

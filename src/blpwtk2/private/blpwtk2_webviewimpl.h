@@ -131,7 +131,7 @@ class WebViewImpl final : public WebView,
 
     bool CheckMediaAccessPermission(content::RenderFrameHost*,
                                     const GURL&,
-                                    content::MediaStreamType) override;
+                                    blink::MediaStreamType) override;
         // Checks if we have permission to access the microphone or camera.
         // Note that this does not query the user. |type| must be
         // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.

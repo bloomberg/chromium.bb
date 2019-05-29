@@ -201,12 +201,8 @@ void URLRequestContextGetterImpl::initialize()
 
     builder.set_proxy_resolution_service(std::move(d_proxyService));
     builder.set_network_delegate(std::unique_ptr<NetworkDelegateImpl>(new NetworkDelegateImpl()));
-    builder.SetCookieAndChannelIdStores(
-        std::unique_ptr<net::CookieMonster>(
-            new net::CookieMonster(d_cookieStore.get(), 0, nullptr)),
-        std::make_unique<net::ChannelIDService>(
-            new net::DefaultChannelIDStore(nullptr)));
-
+    builder.SetCookieStore(std::unique_ptr<net::CookieMonster>(
+            new net::CookieMonster(d_cookieStore.get(), 0, nullptr)));
     builder.set_accept_language("en-us,en");
     builder.set_user_agent(base::EmptyString());
 

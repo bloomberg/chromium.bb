@@ -24,6 +24,7 @@
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
+#include "content/renderer/loader/resource_loader_bridge.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -59,15 +60,6 @@ class ResourceDispatcherDelegate;
 struct SyncLoadResponse;
 class ThrottlingURLLoader;
 class URLLoaderClientImpl;
-
-// TODO(shez): Move this into its own header.
-class ResourceLoaderBridge {
- public:
-  virtual ~ResourceLoaderBridge() {}
-  virtual bool Start(content::RequestPeer* peer) = 0;
-  virtual void Cancel() = 0;
-  virtual void SyncLoad(content::SyncLoadResponse* response) = 0;
-};
 
 // This class serves as a communication interface to the ResourceDispatcherHost
 // in the browser process. It can be used from any child process.

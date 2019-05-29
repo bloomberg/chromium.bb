@@ -710,10 +710,15 @@ config("shared_library_public_config") {
   }
 }
 
+optional_bb_suffix = ""
+if (bb_version != "") {
+  optional_bb_suffix = ".${bb_version}"
+}
+
 config("library_name_config") {
   defines = [
-    "ANGLE_EGL_LIBRARY_NAME=\"libEGL${angle_libs_suffix}\"",
-    "ANGLE_GLESV2_LIBRARY_NAME=\"libGLESv2${angle_libs_suffix}\"",
+    "ANGLE_EGL_LIBRARY_NAME=\"blpcr_egl${optional_bb_suffix}\"",
+    "ANGLE_GLESV2_LIBRARY_NAME=\"blpcr_glesv2${optional_bb_suffix}\"",
   ]
 }
 
@@ -729,11 +734,7 @@ config("angle_static") {
 }
 
 angle_shared_library("libGLESv2${angle_libs_suffix}") {
-  if (bb_version != "") {
-    output_name = "blpcr_glesv2.$bb_version"
-  } else {
-    output_name = "blpcr_glesv2"
-  }
+  output_name = "blpcr_glesv2${optional_bb_suffix}"
  
   sources = libglesv2_sources
 
@@ -774,6 +775,11 @@ angle_static_library("libGLESv2_static") {
   ]
   public_deps = [
     ":libANGLE",
+  ]
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
+  public_deps += [
     "//blpwtk2:blpwtk2_generate_sources",
   ]
 }
@@ -826,11 +832,7 @@ angle_source_set("libEGL_egl_loader") {
 }
 
 angle_shared_library("libEGL${angle_libs_suffix}") {
-  if (bb_version != "") {
-    output_name = "blpcr_egl.$bb_version"
-  } else {
-    output_name = "blpcr_egl"
-  }
+    output_name = "blpcr_egl${optional_bb_suffix}"
 
   sources = libegl_sources
 
@@ -842,6 +844,9 @@ angle_shared_library("libEGL${angle_libs_suffix}") {
   if (bb_generate_map_files) {
     configs += [ "//blpwtk2:blpwtk2_gen_map" ]
   }
+  public_configs = [
+    "//blpwtk2:blpwtk2_public"
+  ]
 
   defines = [ "LIBEGL_IMPLEMENTATION" ]
   if (is_win) {
@@ -879,7 +884,9 @@ angle_static_library("libEGL_static") {
   if (bb_generate_map_files) {
     configs += [ "//blpwtk2:blpwtk2_gen_map" ]
   }
-
+  public_deps = [
+    "//blpwtk2:blpwtk2_generate_sources",
+  ]
   public_configs += [ ":angle_static" ]
 
   deps = [

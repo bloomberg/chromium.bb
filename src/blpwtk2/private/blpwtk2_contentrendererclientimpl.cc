@@ -41,9 +41,8 @@
 #include <content/child/font_warmup_win.h>
 #include <content/public/renderer/render_thread.h>
 #include <net/base/net_errors.h>
-#include <services/service_manager/public/cpp/service_context.h>
 #include "services/service_manager/public/cpp/bind_source_info.h"
-#include <skia/ext/fontmgr_default_win.h>
+#include <skia/ext/fontmgr_default.h>
 #include <third_party/skia/include/core/SkFontMgr.h>
 #include <third_party/blink/public/platform/web_url_error.h>
 #include <third_party/blink/public/platform/web_url_request.h>
@@ -61,7 +60,7 @@ namespace blpwtk2 {
 
 ContentRendererClientImpl::ContentRendererClientImpl()
 {
-    SetDefaultSkiaFactory(SkFontMgr_New_DirectWrite());
+    skia::OverrideDefaultSkFontMgr(SkFontMgr_New_DirectWrite());
 }
 
 ContentRendererClientImpl::~ContentRendererClientImpl()
@@ -95,11 +94,12 @@ void ContentRendererClientImpl::RenderFrameCreated(
 
 void ContentRendererClientImpl::PrepareErrorPage(
     content::RenderFrame* render_frame,
-    const blink::WebURLRequest& failed_request,
     const blink::WebURLError& error,
+    const std::string& http_method,
+    bool ignoring_cache,
     std::string* error_html)
 {
-    GURL gurl = failed_request.Url();
+    GURL gurl = (GURL) error.url();
 
     std::string description;
     description = net::ErrorToString(error.reason());
@@ -126,18 +126,16 @@ void ContentRendererClientImpl::PrepareErrorPage(
     }
 }
 
-content::ResourceLoaderBridge*
+std::unique_ptr<content::ResourceLoaderBridge>
 ContentRendererClientImpl::OverrideResourceLoaderBridge(
-    const network::ResourceRequest *request)
-{
-    StringRef url = request->url.spec();
+    const content::ResourceRequestInfoProvider& request_info) {
+  StringRef url = request_info.url().spec();
 
-    if (!Statics::inProcessResourceLoader ||
-        !Statics::inProcessResourceLoader->canHandleURL(url))
-    {
-        return nullptr;
-    }
-    return new InProcessResourceLoaderBridge(request);
+  if (!Statics::inProcessResourceLoader ||
+      !Statics::inProcessResourceLoader->canHandleURL(url)) {
+    return nullptr;
+  }
+  return std::make_unique<InProcessResourceLoaderBridge>(request_info);
 }
 
 bool ContentRendererClientImpl::OverrideCreatePlugin(
@@ -174,10 +172,6 @@ void ContentRendererClientImpl::GetInterface(
 void ContentRendererClientImpl::CreateRendererService(
     service_manager::mojom::ServiceRequest service_request)
 {
-    // needed for chrome services
-    d_service_context = std::make_unique<service_manager::ServiceContext>(
-        std::make_unique<blpwtk2::ForwardingService>(this),
-        std::move(service_request));
 }
 
 service_manager::Connector* ContentRendererClientImpl::GetConnector()
@@ -206,10 +200,6 @@ void ForwardingService::OnBindInterface(
 
 bool ForwardingService::OnServiceManagerConnectionLost() {
   return target_->OnServiceManagerConnectionLost();
-}
-
-void ForwardingService::SetContext(service_manager::ServiceContext* context) {
-  target_->SetContext(context);
 }
 
 }  // close namespace blpwtk2

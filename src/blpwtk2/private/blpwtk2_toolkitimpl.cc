@@ -66,7 +66,7 @@
 #include <content/public/renderer/render_thread.h>
 #include <content/browser/browser_main_loop.h>
 #include <sandbox/win/src/win_utils.h>
-#include <services/service_manager/runner/common/switches.h>
+#include <services/service_manager/public/cpp/service_executable/switches.h>
 #include <services/service_manager/sandbox/switches.h>
 #include <third_party/blink/public/platform/web_security_origin.h>
 //#include <third_party/blink/public/web/blink.h>
@@ -279,7 +279,7 @@ static void startRenderer(
 static size_t GetSwitchPrefixLength(const base::string16& string)
 {
     const wchar_t* const kSwitchPrefixes[] = {L"--", L"-", L"/"};
-    size_t switch_prefix_count = arraysize(kSwitchPrefixes);
+    size_t switch_prefix_count = base::size(kSwitchPrefixes);
 
     for (size_t i = 0; i < switch_prefix_count; ++i) {
         base::string16 prefix(kSwitchPrefixes[i]);
@@ -532,7 +532,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         std::vector<std::string> filteredArgs;
 
         for (const auto& arg : args) {
-            if (startsWith(arg, service_manager::switches::kServicePipeToken)) {
+            if (startsWith(arg, service_manager::switches::kServiceRequestAttachmentName)) {
                 continue;
             }
 

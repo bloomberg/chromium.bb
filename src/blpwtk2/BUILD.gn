@@ -300,6 +300,8 @@ shared_library("blpwtk2") {
     "//components/keyed_service/content",
     "//components/services/pdf_compositor",
     "//components/services/pdf_compositor/public/interfaces",
+    "//components/spellcheck/browser",
+    "//components/spellcheck/common:common",
     "//components/user_prefs",
     "//content",
     "//content:resources",

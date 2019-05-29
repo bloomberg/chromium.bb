@@ -147,9 +147,11 @@ void DevToolsFrontendHostDelegateImpl::RenderViewCreated(
     content::RenderViewHost* renderViewHost)
 {
     if (!d_frontendHost) {
-        d_frontendHost.reset(content::DevToolsFrontendHost::Create(web_contents()->GetMainFrame(),
-                                                                   base::Bind(&DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend,
-                                                                              base::Unretained(this))));
+      d_frontendHost = content::DevToolsFrontendHost::Create(
+          web_contents()->GetMainFrame(),
+          base::Bind(&DevToolsFrontendHostDelegateImpl::
+                         HandleMessageFromDevToolsFrontend,
+                     base::Unretained(this)));
     }
 }
 
@@ -181,7 +183,7 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
     std::string method;
     base::ListValue* params = NULL;
     base::DictionaryValue* dict = NULL;
-    std::unique_ptr<base::Value> parsed_message = base::JSONReader::Read(message);
+    base::Optional<base::Value> parsed_message = base::JSONReader::Read(message);
     if (!parsed_message ||
         !parsed_message->GetAsDictionary(&dict) ||
         !dict->GetString("method", &method)) {

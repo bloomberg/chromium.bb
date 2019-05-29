@@ -38,9 +38,6 @@ void ContentUtilityClientImpl::UtilityThreadStarted() {
 bool ContentUtilityClientImpl::OnMessageReceived(const IPC::Message& message) {
   return chrome_utility_client_->OnMessageReceived(message);
 }
-void ContentUtilityClientImpl::RegisterServices(StaticServiceMap* services) {
-  chrome_utility_client_->RegisterServices(services);
-}
 void ContentUtilityClientImpl::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
   chrome_utility_client_->RegisterNetworkBinders(registry);

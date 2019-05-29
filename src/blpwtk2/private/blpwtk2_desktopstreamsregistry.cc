@@ -41,9 +41,9 @@ const int kApprovedStreamTimeToLiveSeconds = 10;
 
 std::string GenerateRandomStreamId() {
   char buffer[kStreamIdLengthBytes];
-  base::RandBytes(buffer, arraysize(buffer));
+  base::RandBytes(buffer, base::size(buffer));
   std::string result;
-  base::Base64Encode(base::StringPiece(buffer, arraysize(buffer)),
+  base::Base64Encode(base::StringPiece(buffer, base::size(buffer)),
                      &result);
   return result;
 }
@@ -96,8 +96,8 @@ std::string DesktopStreamsRegistry::RegisterStream(
   DCHECK(approved_streams_.find(id) == approved_streams_.end());
   ApprovedDesktopMediaStream& stream = approved_streams_[id];
   stream.source = source;
-  stream.device = content::MediaStreamDevice(
-      content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, source.ToString(), source.ToString());
+  stream.device = blink::MediaStreamDevice(
+      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, source.ToString(), source.ToString());
 
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
@@ -108,7 +108,7 @@ std::string DesktopStreamsRegistry::RegisterStream(
   return id;
 }
 
-content::MediaStreamDevice DesktopStreamsRegistry::RequestMediaForStreamId(
+blink::MediaStreamDevice DesktopStreamsRegistry::RequestMediaForStreamId(
     const std::string& id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -117,10 +117,10 @@ content::MediaStreamDevice DesktopStreamsRegistry::RequestMediaForStreamId(
   // Verify that if there is a request with the specified ID it was created for
   // the same origin and the same renderer.
   if (it == approved_streams_.end()) {
-    return content::MediaStreamDevice();
+    return blink::MediaStreamDevice();
   }
 
-  content::MediaStreamDevice result = it->second.device;
+  blink::MediaStreamDevice result = it->second.device;
   approved_streams_.erase(it);
   return result;
 }

@@ -45,6 +45,7 @@
 #include <content/browser/renderer_host/render_widget_host_view_base.h>
 #include <content/public/browser/host_zoom_map.h>
 #include <content/public/browser/media_capture_devices.h>
+#include <content/public/browser/media_stream_request.h>
 #include <content/public/browser/render_frame_host.h>
 
 #include <content/public/browser/render_process_host.h>
@@ -60,12 +61,11 @@
 #include <third_party/blink/public/web/web_view.h>
 #include <ui/base/win/hidden_window.h>
 #include <errno.h>
-
 namespace blpwtk2 {
 
-static const content::MediaStreamDevice *findDeviceById(
+static const blink::MediaStreamDevice *findDeviceById(
     const std::string& id,
-    const content::MediaStreamDevices& devices)
+    const blink::MediaStreamDevices& devices)
 {
     for (std::size_t i = 0; i < devices.size(); ++i) {
         if (id == devices[i].id) {
@@ -117,7 +117,7 @@ WebViewImpl::WebViewImpl(WebViewDelegate          *delegate,
     static const base::NoDestructor<gfx::FontRenderParams> fontRenderParams(
                     gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL));
 
-    content::RendererPreferences *prefs = d_webContents->GetMutableRendererPrefs();
+    blink::mojom::RendererPreferences *prefs = d_webContents->GetMutableRendererPrefs();
 
     prefs->should_antialias_text    = fontRenderParams->antialiasing;
     prefs->use_subpixel_positioning = fontRenderParams->subpixel_positioning;
@@ -664,53 +664,53 @@ void WebViewImpl::RequestMediaAccessPermission(
 {
     class DummyMediaStreamUI final : public content::MediaStreamUI {
       public:
-        gfx::NativeViewId OnStarted(const base::Closure& stop) override
-        {
-            return 0;
-        }
+        gfx::NativeViewId OnStarted(base::OnceClosure stop,
+                                   base::RepeatingClosure source) override {
+        return 0;
+       }
     };
 
-    const content::MediaStreamDevices& audioDevices =
+    const blink::MediaStreamDevices& audioDevices =
         content::MediaCaptureDevices::GetInstance()->GetAudioCaptureDevices();
-    const content::MediaStreamDevices& videoDevices =
+    const blink::MediaStreamDevices& videoDevices =
         content::MediaCaptureDevices::GetInstance()->GetVideoCaptureDevices();
 
     std::unique_ptr<content::MediaStreamUI> ui(new DummyMediaStreamUI());
-    content::MediaStreamDevices devices;
+    blink::MediaStreamDevices devices;
     if (request.requested_video_device_id.empty()) {
-        if (request.video_type != content::MEDIA_NO_SERVICE && !videoDevices.empty()) {
+        if (request.video_type != blink::MEDIA_NO_SERVICE && !videoDevices.empty()) {
             devices.push_back(videoDevices[0]);
         }
     }
     else {
-        const content::MediaStreamDevice *device = findDeviceById(request.requested_video_device_id, videoDevices);
+        const blink::MediaStreamDevice *device = findDeviceById(request.requested_video_device_id, videoDevices);
         if (device) {
             devices.push_back(*device);
         }
         else {
-            content::MediaStreamDevice desktop_device = DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(request.requested_video_device_id);
-            if (desktop_device.type != content::MEDIA_NO_SERVICE) {
+            blink::MediaStreamDevice desktop_device = DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(request.requested_video_device_id);
+            if (desktop_device.type != blink::MEDIA_NO_SERVICE) {
                 devices.push_back(desktop_device);
             }
         }
     }
     if (request.requested_audio_device_id.empty()) {
-        if (request.audio_type != content::MEDIA_NO_SERVICE && !audioDevices.empty()) {
+        if (request.audio_type != blink::MEDIA_NO_SERVICE && !audioDevices.empty()) {
             devices.push_back(audioDevices[0]);
         }
     }
     else {
-        const content::MediaStreamDevice *device = findDeviceById(request.requested_audio_device_id, audioDevices);
+        const blink::MediaStreamDevice *device = findDeviceById(request.requested_audio_device_id, audioDevices);
         if (device) {
             devices.push_back(*device);
         }
     }
-    std::move(callback).Run(devices, content::MEDIA_DEVICE_OK, std::move(ui));
+    std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK, std::move(ui));
 }
 
 bool WebViewImpl::CheckMediaAccessPermission(content::RenderFrameHost*,
                                              const GURL&,
-                                             content::MediaStreamType)
+                                             blink::MediaStreamType)
 {
     // When CheckMediaAccessPermission returns true,
     // the user will be able to access MediaDeviceInfo.label

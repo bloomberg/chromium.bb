@@ -462,11 +462,11 @@ class V8_EXPORT OutputStream {  // NOLINT
     kContinue = 0,
     kAbort = 1
   };
-  virtual ~OutputStream() = default;
+  virtual ~OutputStream();
   /** Notify about the end of stream. */
   virtual void EndOfStream() = 0;
   /** Get preferred output chunk size. Called only once. */
-  virtual int GetChunkSize() { return 1024; }
+  virtual int GetChunkSize();
   /**
    * Writes the next chunk of snapshot data into the stream. Writing
    * can be stopped by returning kAbort as function result. EndOfStream
@@ -478,9 +478,7 @@ class V8_EXPORT OutputStream {  // NOLINT
    * can be stopped by returning kAbort as function result. EndOfStream
    * will not be called in case writing was aborted.
    */
-  virtual WriteResult WriteHeapStatsChunk(HeapStatsUpdate* data, int count) {
-    return kAbort;
-  }
+  virtual WriteResult WriteHeapStatsChunk(HeapStatsUpdate* data, int count);
 };
 
 

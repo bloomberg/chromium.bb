@@ -27,7 +27,7 @@
 
 #include <base/memory/singleton.h>
 #include <content/public/browser/desktop_media_id.h>
-#include <content/public/common/media_stream_request.h>
+#include <content/public/browser/media_stream_request.h>
 
 #include <map>
 #include <string>
@@ -49,7 +49,7 @@ class DesktopStreamsRegistry {
   // DesktopMediaID if the specified |id| is invalid, i.e. wasn't generated
   // using RegisterStream(). Otherwise returns ID of the source and removes
   // it from the registry.
-  content::MediaStreamDevice RequestMediaForStreamId(const std::string& id);
+  blink::MediaStreamDevice RequestMediaForStreamId(const std::string& id);
 
  private:
   friend struct base::DefaultSingletonTraits<DesktopStreamsRegistry>;
@@ -59,7 +59,7 @@ class DesktopStreamsRegistry {
   // Type used to store list of accepted desktop media streams.
   struct ApprovedDesktopMediaStream {
     content::DesktopMediaID source;
-    content::MediaStreamDevice device;
+    blink::MediaStreamDevice device;
   };
   typedef std::map<std::string, ApprovedDesktopMediaStream> StreamsMap;
 

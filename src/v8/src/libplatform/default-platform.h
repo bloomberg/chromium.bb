@@ -89,10 +89,11 @@ class V8_PLATFORM_EXPORT DefaultPlatform : public NON_EXPORTED_BASE(Platform) {
   DISALLOW_COPY_AND_ASSIGN(DefaultPlatform);
 };
 
-V8_PLATFORM_EXPORT v8::Platform* CreateDefaultPlatformImpl(
-    int thread_pool_size, IdleTaskSupport idle_task_support,
+V8_PLATFORM_EXPORT std::unique_ptr<v8::Platform> NewDefaultPlatformImpl(
+    int thread_pool_size,
+    IdleTaskSupport idle_task_support,
     InProcessStackDumping in_process_stack_dumping,
-    v8::TracingController* tracing_controller);
+    std::unique_ptr<v8::TracingController> tracing_controller);
 
 V8_PLATFORM_EXPORT bool PumpMessageLoopImpl(v8::Platform* platform,
                                             v8::Isolate* isolate,

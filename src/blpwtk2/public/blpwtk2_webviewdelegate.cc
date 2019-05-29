@@ -25,9 +25,35 @@
 
 namespace blpwtk2 {
 
-WebViewDelegate::~WebViewDelegate()
-{
-}
+WebViewDelegate::~WebViewDelegate() {}
+
+void WebViewDelegate::didFinishLoad(WebView* source, const StringRef& url) {}
+
+void WebViewDelegate::didFailLoad(WebView* source, const StringRef& url) {}
+
+void WebViewDelegate::focused(WebView* source) {}
+
+void WebViewDelegate::blurred(WebView* source) {}
+
+void WebViewDelegate::showContextMenu(WebView* source,
+                                      const ContextMenuParams& params) {}
+
+void WebViewDelegate::requestNCHitTest(WebView* source) {}
+
+void WebViewDelegate::ncDragBegin(WebView* source,
+                                  int hitTestCode,
+                                  const POINT& startPoint) {}
+
+void WebViewDelegate::ncDragMove(WebView* source, const POINT& movePoint) {}
+
+void WebViewDelegate::ncDragEnd(WebView* source, const POINT& endPoint) {}
+
+void WebViewDelegate::ncDoubleClick(WebView* source, const POINT& endPoint) {}
+
+void WebViewDelegate::findState(WebView* source,
+                                int numberOfMatches,
+                                int activeMatchOrdinal,
+                                bool finalUpdate) {}
 
 }  // close namespace blpwtk2
 

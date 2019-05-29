@@ -514,13 +514,13 @@ static inline bool IsExecutionTerminatingCheck(i::Isolate* isolate) {
 
 namespace platform {
 
-v8::Platform* CreateDefaultPlatform(
+std::unique_ptr<v8::Platform> NewDefaultPlatform(
     int thread_pool_size, IdleTaskSupport idle_task_support,
     InProcessStackDumping in_process_stack_dumping,
-    v8::TracingController* tracing_controller) {
-  return CreateDefaultPlatformImpl(thread_pool_size, idle_task_support,
-                                   in_process_stack_dumping,
-                                   tracing_controller);
+    std::unique_ptr<v8::TracingController> tracing_controller) {
+  return NewDefaultPlatformImpl(thread_pool_size, idle_task_support,
+                                in_process_stack_dumping,
+                                std::move(tracing_controller));
 }
 
 bool PumpMessageLoop(v8::Platform* platform, v8::Isolate* isolate,
@@ -1012,6 +1012,10 @@ void ResourceConstraints::ConfigureDefaults(uint64_t physical_memory,
         i::Min(i::kMaximalCodeRangeSize / i::MB,
                static_cast<size_t>((virtual_memory_limit >> 3) / i::MB)));
   }
+}
+
+void ResourceConstraints::set_max_old_space_size(size_t limit_in_mb) {
+  max_old_space_size_ = limit_in_mb;
 }
 
 void SetResourceConstraints(i::Isolate* isolate,
@@ -1855,6 +1859,14 @@ void ObjectTemplate::SetAccessor(v8::Local<Name> name,
                       getter_side_effect_type, setter_side_effect_type);
 }
 
+void ObjectTemplate::SetIndexedPropertyHandler(
+    IndexedPropertyGetterCallback getter, IndexedPropertySetterCallback setter,
+    IndexedPropertyQueryCallback query, IndexedPropertyDeleterCallback deleter,
+    IndexedPropertyEnumeratorCallback enumerator, Local<Value> data) {
+  SetHandler(IndexedPropertyHandlerConfiguration(getter, setter, query, deleter,
+                                                 enumerator, data));
+}
+
 template <typename Getter, typename Setter, typename Query, typename Descriptor,
           typename Deleter, typename Enumerator, typename Definer>
 static i::Handle<i::InterceptorInfo> CreateInterceptorInfo(
@@ -2080,6 +2092,8 @@ void ObjectTemplate::SetImmutableProto() {
   ENTER_V8_NO_SCRIPT_NO_EXCEPTION(isolate);
   Utils::OpenHandle(this)->set_immutable_proto(true);
 }
+
+EscapableHandleScope::~EscapableHandleScope() = default;
 
 // --- S c r i p t s ---
 
@@ -5529,6 +5543,12 @@ bool v8::String::IsExternalOneByte() const {
   return i::StringShape(*str).IsExternalOneByte();
 }
 
+bool v8::String::ExternalStringResourceBase::IsCacheable() const {
+  return true;
+}
+
+void v8::String::ExternalStringResourceBase::Lock() const {}
+void v8::String::ExternalStringResourceBase::Unlock() const {}
 
 void v8::String::VerifyExternalStringResource(
     v8::String::ExternalStringResource* value) const {
@@ -5576,6 +5596,8 @@ void v8::String::VerifyExternalStringResourceBase(
   CHECK_EQ(expected, value);
   CHECK_EQ(expectedEncoding, encoding);
 }
+
+String::ExternalOneByteStringResource::ExternalOneByteStringResource() = default;
 
 String::ExternalStringResource* String::GetExternalStringResourceSlow() const {
   i::DisallowHeapAllocation no_allocation;
@@ -8315,6 +8337,10 @@ void Isolate::SetPrepareStackTraceCallback(PrepareStackTraceCallback callback) {
   isolate->SetPrepareStackTraceCallback(callback);
 }
 
+Isolate::Scope::~Scope() {
+  isolate_->Exit();
+}
+
 Isolate::DisallowJavascriptExecutionScope::DisallowJavascriptExecutionScope(
     Isolate* isolate,
     Isolate::DisallowJavascriptExecutionScope::OnFailure on_failure)
@@ -10332,6 +10358,15 @@ int HeapGraphNode::GetChildrenCount() const {
   return ToInternal(this)->children_count();
 }
 
+OutputStream::WriteResult OutputStream::WriteHeapStatsChunk(HeapStatsUpdate* data, int count) {
+    return kAbort;
+}
+
+OutputStream::~OutputStream() = default;
+
+int OutputStream::GetChunkSize() {
+  return 1024;
+}
 
 const HeapGraphEdge* HeapGraphNode::GetChild(int index) const {
   return reinterpret_cast<const HeapGraphEdge*>(ToInternal(this)->child(index));
@@ -10564,6 +10599,8 @@ void Testing::DeoptimizeAll(Isolate* isolate) {
   i::Deoptimizer::DeoptimizeAll(i_isolate);
 }
 
+EmbedderHeapTracer::~EmbedderHeapTracer() = default;
+
 void EmbedderHeapTracer::FinalizeTracing() {
   if (isolate_) {
     i::Isolate* isolate = reinterpret_cast<i::Isolate*>(isolate_);
@@ -10572,6 +10609,11 @@ void EmbedderHeapTracer::FinalizeTracing() {
           i::GarbageCollectionReason::kExternalFinalize);
     }
   }
+}
+
+bool EmbedderHeapTracer::IsRootForNonTracingGC(
+    const v8::TracedGlobal<v8::Value>& handle) {
+  return true;
 }
 
 void EmbedderHeapTracer::GarbageCollectionForTesting(
