@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/threading/platform_thread.h"
 #include "components/crash/core/common/crash_key.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -20,6 +21,8 @@ namespace gfx {
 // code, while the bug lies in client code. Logging an id helps better identify
 // the client code that created the window/widget.
 //
+// This class only logs ids on the thread identified by RegisterMainThread().
+//
 // Example usage:
 // {
 //   auto logger = CrashIdHelper::Get()->OnWillProcessMessages(crash_id);
@@ -28,6 +31,9 @@ namespace gfx {
 class GFX_EXPORT CrashIdHelper {
  public:
   static CrashIdHelper* Get();
+
+  // Registers the thread used for logging.
+  static void RegisterMainThread(base::PlatformThreadId thread_id);
 
   // RAII style class that unregisters in the destructor.
   class GFX_EXPORT ScopedLogger {
@@ -43,6 +49,7 @@ class GFX_EXPORT CrashIdHelper {
 
   // Adds |id| to the list of active debugging ids. When the returned object
   // is destroyed, |id| is removed from the list of active debugging ids.
+  // Returns null if logging is not enabled on the current thread.
   std::unique_ptr<ScopedLogger> OnWillProcessMessages(const std::string& id);
 
  private:
@@ -70,6 +77,8 @@ class GFX_EXPORT CrashIdHelper {
   // This uses the name 'widget' as this code is most commonly triggered from
   // views, which uses the term Widget.
   crash_reporter::CrashKeyString<128> debugging_crash_key_{"widget-id"};
+
+  static base::PlatformThreadId main_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashIdHelper);
 };

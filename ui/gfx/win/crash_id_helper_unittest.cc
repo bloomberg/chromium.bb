@@ -25,6 +25,8 @@ class CrashIdHelperTest : public testing::Test {
 // crash_reporter::CrashKeyString, but that class isn't particularly test
 // friendly (and the implementation varies depending upon compile time flags).
 TEST_F(CrashIdHelperTest, Basic) {
+  CrashIdHelper::RegisterMainThread(base::PlatformThread::CurrentId());
+
   const std::string id1 = "id";
   {
     auto scoper = CrashIdHelper::Get()->OnWillProcessMessages(id1);
@@ -45,6 +47,7 @@ TEST_F(CrashIdHelperTest, Basic) {
     }
     EXPECT_EQ("(N) id2", CurrentCrashId());
   }
+  CrashIdHelper::RegisterMainThread(base::kInvalidThreadId);
 }
 
 }  // namespace gfx

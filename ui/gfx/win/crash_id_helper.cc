@@ -15,6 +15,11 @@ CrashIdHelper* CrashIdHelper::Get() {
   return helper.get();
 }
 
+// static
+void CrashIdHelper::RegisterMainThread(base::PlatformThreadId thread_id) {
+  main_thread_id_ = thread_id;
+}
+
 CrashIdHelper::ScopedLogger::~ScopedLogger() {
   CrashIdHelper::Get()->OnDidProcessMessages();
 }
@@ -23,6 +28,11 @@ CrashIdHelper::ScopedLogger::ScopedLogger() = default;
 
 std::unique_ptr<CrashIdHelper::ScopedLogger>
 CrashIdHelper::OnWillProcessMessages(const std::string& id) {
+  if (main_thread_id_ == base::kInvalidThreadId ||
+      base::PlatformThread::CurrentId() != main_thread_id_) {
+    return nullptr;
+  }
+
   if (!ids_.empty())
     was_nested_ = true;
   ids_.push_back(id.empty() ? "unspecified" : id);
@@ -63,5 +73,8 @@ std::string CrashIdHelper::CurrentCrashId() const {
   }
   return base::JoinString(ids_, ">");
 }
+
+// static
+base::PlatformThreadId CrashIdHelper::main_thread_id_ = base::kInvalidThreadId;
 
 }  // namespace gfx

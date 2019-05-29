@@ -93,6 +93,7 @@
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/switches.h"
 #include "ui/gfx/system_fonts_win.h"
+#include "ui/gfx/win/crash_id_helper.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -501,10 +502,11 @@ ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     StartupData* startup_data)
     : ChromeBrowserMainParts(parameters, startup_data) {}
 
-ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() {
-}
+ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() = default;
 
 void ChromeBrowserMainPartsWin::ToolkitInitialized() {
+  DCHECK_NE(base::PlatformThread::CurrentId(), base::kInvalidThreadId);
+  gfx::CrashIdHelper::RegisterMainThread(base::PlatformThread::CurrentId());
   ChromeBrowserMainParts::ToolkitInitialized();
   gfx::win::SetAdjustFontCallback(&AdjustUIFont);
   gfx::win::SetGetMinimumFontSizeCallback(&GetMinimumFontSize);
