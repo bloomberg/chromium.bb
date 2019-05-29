@@ -546,14 +546,6 @@ class YouTubeDesktopStory2018(_MediaBrowsingStory):
   PLATFORM_SPECIFIC = True
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018]
 
-  # TODO(yoichio): Remove this flags when YouTube finish V0 migration.
-  # crbug.com/911943.
-  def __init__(self, story_set, take_memory_measurement):
-    super(YouTubeDesktopStory2018, self).__init__(
-        story_set, take_memory_measurement,
-        extra_browser_args=[
-          '--enable-blink-features=HTMLImports,CustomElementsV0'])
-
 
 class YouTubeTVDesktopStory2019(_MediaBrowsingStory):
   """Load a typical YouTube TV video then navigate to a next few videos. Stop

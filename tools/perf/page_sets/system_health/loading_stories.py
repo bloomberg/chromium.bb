@@ -255,13 +255,6 @@ class LoadYouTubeStory2018(_LoadingStory):
   TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
           story_tags.YEAR_2018]
 
-  # TODO(yoichio): Remove this flags when YouTube finishes V0 migration.
-  # crbug.com/911943.
-  def __init__(self, story_set, take_memory_measurement):
-    super(LoadYouTubeStory2018, self).__init__(
-        story_set, take_memory_measurement,
-        extra_browser_args=[
-          '--enable-blink-features=HTMLImports,CustomElementsV0'])
 
 class LoadDailymotionStory(_LoadingStory):
   # The side panel with related videos doesn't show on desktop due to

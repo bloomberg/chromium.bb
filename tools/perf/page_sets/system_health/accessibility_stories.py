@@ -61,14 +61,6 @@ class AccessibilityYouTubeHomepageStory(_AccessibilityStory):
   TAGS = [story_tags.ACCESSIBILITY, story_tags.KEYBOARD_INPUT,
           story_tags.YEAR_2016]
 
-  # TODO(yoichio): Remove this flags when YouTube finish V0 migration.
-  # crbug.com/911943.
-  def __init__(self, story_set, take_memory_measurement):
-    super(AccessibilityYouTubeHomepageStory, self).__init__(
-        story_set, take_memory_measurement,
-        extra_browser_args=[
-          '--enable-blink-features=HTMLImports,CustomElementsV0'])
-
   def RunNavigateSteps(self, action_runner):
     action_runner.Navigate('https://www.youtube.com/')
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
