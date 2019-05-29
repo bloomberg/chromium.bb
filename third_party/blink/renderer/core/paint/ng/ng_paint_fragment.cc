@@ -1120,22 +1120,6 @@ Node* NGPaintFragment::NodeForHitTest() const {
   return nullptr;
 }
 
-bool NGPaintFragment::ShouldPaintCursorCaret() const {
-  // TODO(xiaochengh): Merge cursor caret painting functions from LayoutBlock to
-  // FrameSelection.
-  if (!GetLayoutObject()->IsLayoutBlock())
-    return false;
-  return To<LayoutBlock>(GetLayoutObject())->ShouldPaintCursorCaret();
-}
-
-bool NGPaintFragment::ShouldPaintDragCaret() const {
-  // TODO(xiaochengh): Merge drag caret painting functions from LayoutBlock to
-  // DragCaret.
-  if (!GetLayoutObject()->IsLayoutBlock())
-    return false;
-  return To<LayoutBlock>(GetLayoutObject())->ShouldPaintDragCaret();
-}
-
 String NGPaintFragment::DebugName() const {
   StringBuilder name;
 

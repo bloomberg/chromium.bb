@@ -232,6 +232,14 @@ class CORE_EXPORT NGPhysicalFragment
   // be confused with the CSS 'direction' property.
   TextDirection ResolvedDirection() const;
 
+  // Utility functions for caret painting. Note that carets are painted as part
+  // of the containing block's foreground.
+  bool ShouldPaintCursorCaret() const;
+  bool ShouldPaintDragCaret() const;
+  bool ShouldPaintCarets() const {
+    return ShouldPaintCursorCaret() || ShouldPaintDragCaret();
+  }
+
   String ToString() const;
 
   void CheckCanUpdateInkOverflow() const;

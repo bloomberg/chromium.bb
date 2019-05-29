@@ -213,14 +213,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // from GetNode() when this fragment is content of a pseudo node.
   Node* NodeForHitTest() const;
 
-  // Utility functions for caret painting. Note that carets are painted as part
-  // of the containing block's foreground.
-  bool ShouldPaintCursorCaret() const;
-  bool ShouldPaintDragCaret() const;
-  bool ShouldPaintCarets() const {
-    return ShouldPaintCursorCaret() || ShouldPaintDragCaret();
-  }
-
   // Returns true when associated fragment of |layout_object| has line box.
   static bool TryMarkFirstLineBoxDirtyFor(const LayoutObject& layout_object);
   static bool TryMarkLastLineBoxDirtyFor(const LayoutObject& layout_object);

@@ -292,18 +292,18 @@ void NGBoxFragmentPainter::PaintObject(
   // If the caret's node's fragment's containing block is this block, and
   // the paint action is PaintPhaseForeground, then paint the caret.
   if (paint_phase == PaintPhase::kForeground &&
-      box_fragment_.ShouldPaintCarets())
+      physical_box_fragment.ShouldPaintCarets())
     PaintCarets(paint_info, paint_offset);
 }
 
 void NGBoxFragmentPainter::PaintCarets(const PaintInfo& paint_info,
                                        const PhysicalOffset& paint_offset) {
-  LocalFrame* frame = box_fragment_.GetLayoutObject()->GetFrame();
-
-  if (box_fragment_.ShouldPaintCursorCaret())
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
+  LocalFrame* frame = fragment.GetLayoutObject()->GetFrame();
+  if (fragment.ShouldPaintCursorCaret())
     frame->Selection().PaintCaret(paint_info.context, paint_offset);
 
-  if (box_fragment_.ShouldPaintDragCaret()) {
+  if (fragment.ShouldPaintDragCaret()) {
     frame->GetPage()->GetDragCaret().PaintDragCaret(frame, paint_info.context,
                                                     paint_offset);
   }
