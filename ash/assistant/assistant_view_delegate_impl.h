@@ -48,7 +48,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   CaptionBarDelegate* GetCaptionBarDelegate() override;
   void DownloadImage(
       const GURL& url,
-      mojom::AssistantImageDownloader::DownloadCallback callback) override;
+      AssistantImageDownloader::DownloadCallback callback) override;
   mojom::ConsentStatus GetConsentStatus() const override;
   ::wm::CursorManager* GetCursorManager() override;
   void GetNavigableContentsFactoryForView(

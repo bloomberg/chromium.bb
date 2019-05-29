@@ -4,7 +4,6 @@
 
 module ash.mojom;
 
-import "ash/public/interfaces/assistant_image_downloader.mojom";
 import "ash/public/interfaces/assistant_setup.mojom";
 import "chromeos/services/assistant/public/mojom/assistant.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -17,11 +16,6 @@ import "mojo/public/mojom/base/time.mojom";
 interface AssistantController {
   // Provides a reference to the underlying |assistant| service.
   SetAssistant(chromeos.assistant.mojom.Assistant assistant);
-
-  // Provides an interface to the |assistant_image_downloader| owned by
-  // AssistantClient.
-  SetAssistantImageDownloader(
-    AssistantImageDownloader assistant_image_downloader);
 
   // Opens Google Assistant settings.
   OpenAssistantSettings();

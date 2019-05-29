@@ -102,11 +102,6 @@ void AssistantController::SetAssistant(
     observer.OnAssistantReady();
 }
 
-void AssistantController::SetAssistantImageDownloader(
-    mojom::AssistantImageDownloaderPtr assistant_image_downloader) {
-  assistant_image_downloader_ = std::move(assistant_image_downloader);
-}
-
 void AssistantController::OpenAssistantSettings() {
   // Launch Assistant settings via deeplink.
   OpenUrl(assistant::util::CreateAssistantSettingsDeepLink());
@@ -147,9 +142,7 @@ void AssistantController::StartSpeakerIdEnrollmentFlow() {
 
 void AssistantController::DownloadImage(
     const GURL& url,
-    mojom::AssistantImageDownloader::DownloadCallback callback) {
-  DCHECK(assistant_image_downloader_);
-
+    AssistantImageDownloader::DownloadCallback callback) {
   const UserSession* user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
 
@@ -160,7 +153,8 @@ void AssistantController::DownloadImage(
   }
 
   AccountId account_id = user_session->user_info.account_id;
-  assistant_image_downloader_->Download(account_id, url, std::move(callback));
+  AssistantImageDownloader::GetInstance()->Download(account_id, url,
+                                                    std::move(callback));
 }
 
 void AssistantController::OnDeepLinkReceived(

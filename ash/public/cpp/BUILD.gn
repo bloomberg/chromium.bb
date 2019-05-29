@@ -44,6 +44,8 @@ component("cpp") {
     "ash_typography.cc",
     "ash_typography.h",
     "ash_view_ids.h",
+    "assistant/assistant_image_downloader.cc",
+    "assistant/assistant_image_downloader.h",
     "assistant/assistant_state_base.cc",
     "assistant/assistant_state_base.h",
     "assistant/assistant_state_proxy.cc",
