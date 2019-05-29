@@ -708,8 +708,11 @@ void AppListControllerImpl::OnUiVisibilityChanged(
         break;
 
       // Reset model state.
-      presenter_.ShowEmbeddedAssistantUI(false);
+      // When Launcher is closing, we do not want to call
+      // |ShowEmbeddedAssistantUI(false)|, which will show previous state page
+      // in Launcher and make the Ui flashing.
       if (IsHomeScreenAvailable()) {
+        presenter_.ShowEmbeddedAssistantUI(false);
         presenter_.GetView()->app_list_main_view()->ResetForShow();
         presenter_.GetView()->SetState(
             ash::AppListViewState::kFullscreenAllApps);
