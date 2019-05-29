@@ -39,6 +39,8 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
       bool auto_refresh);
   OAuthTokenGetterImpl(
       std::unique_ptr<OAuthAuthorizationCredentials> authorization_credentials,
+      const OAuthTokenGetter::RefreshTokenUpdatedCallback&
+          on_refresh_token_updated,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       bool auto_refresh);
   ~OAuthTokenGetterImpl() override;
@@ -81,6 +83,7 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   std::unique_ptr<OAuthAuthorizationCredentials> authorization_credentials_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
   OAuthTokenGetter::CredentialsUpdatedCallback credentials_updated_callback_;
+  OAuthTokenGetter::RefreshTokenUpdatedCallback refresh_token_updated_callback_;
 
   bool response_pending_ = false;
   bool email_verified_ = false;

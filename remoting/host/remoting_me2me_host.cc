@@ -346,6 +346,8 @@ class HostProcess : public ConfigWatcher::Delegate,
   void GoOffline(const std::string& host_offline_reason);
   void OnHostOfflineReasonAck(bool success);
 
+  void UpdateConfigRefreshToken(const std::string& token);
+
 #if defined(OS_WIN)
   // Initializes the pairing registry on Windows. This should be invoked on the
   // network thread.
@@ -1469,8 +1471,13 @@ void HostProcess::InitializeSignaling() {
       std::make_unique<OAuthTokenGetter::OAuthAuthorizationCredentials>(
           xmpp_server_config_.username, oauth_refresh_token_,
           use_service_account_);
+  // Unretained is sound because we own the OAuthTokenGetterImpl, and the
+  // callback will never be invoked once it is destroyed.
   oauth_token_getter_ = std::make_unique<OAuthTokenGetterImpl>(
-      std::move(oauth_credentials), context_->url_loader_factory(), false);
+      std::move(oauth_credentials),
+      base::BindRepeating(&HostProcess::UpdateConfigRefreshToken,
+                          base::Unretained(this)),
+      context_->url_loader_factory(), false);
   xmpp_signaling_connector_ = std::make_unique<SignalingConnector>(
       xmpp_signal_strategy_, std::move(dns_blackhole_checker),
       oauth_token_getter_.get(),
@@ -1767,6 +1774,13 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   } else {
     NOTREACHED();
   }
+}
+
+void HostProcess::UpdateConfigRefreshToken(const std::string& token) {
+#if defined(REMOTING_MULTI_PROCESS)
+  daemon_channel_->Send(
+      new ChromotingNetworkDaemonMsg_UpdateConfigRefreshToken(token));
+#endif
 }
 
 void HostProcess::OnCrash(const std::string& function_name,

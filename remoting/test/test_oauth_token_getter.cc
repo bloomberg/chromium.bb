@@ -167,7 +167,7 @@ std::unique_ptr<OAuthTokenGetter> TestOAuthTokenGetter::CreateWithRefreshToken(
           email, refresh_token, is_service_account);
 
   return std::make_unique<OAuthTokenGetterImpl>(
-      std::move(oauth_credentials),
+      std::move(oauth_credentials), base::DoNothing(),
       url_loader_factory_owner_->GetURLLoaderFactory(),
       /*auto_refresh=*/true);
 }

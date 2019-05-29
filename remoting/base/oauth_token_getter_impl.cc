@@ -44,10 +44,13 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
 
 OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     std::unique_ptr<OAuthAuthorizationCredentials> authorization_credentials,
+    const OAuthTokenGetter::RefreshTokenUpdatedCallback&
+        on_refresh_token_updated,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     bool auto_refresh)
     : authorization_credentials_(std::move(authorization_credentials)),
       gaia_oauth_client_(new gaia::GaiaOAuthClient(url_loader_factory)),
+      refresh_token_updated_callback_(on_refresh_token_updated),
       token_exchanger_(url_loader_factory),
       weak_factory_(this) {
   if (auto_refresh) {
@@ -303,6 +306,13 @@ void OAuthTokenGetterImpl::OnExchangeTokenResponse(
       NotifyTokenCallbacks(status, std::string(), std::string());
       break;
     case SUCCESS:
+      if (!refresh_token.empty() &&
+          refresh_token != authorization_credentials_->refresh_token) {
+        authorization_credentials_->refresh_token = refresh_token;
+        if (refresh_token_updated_callback_) {
+          refresh_token_updated_callback_.Run(refresh_token);
+        }
+      }
       NotifyTokenCallbacks(status, authorization_credentials_->login,
                            oauth_access_token_);
       break;
