@@ -77,6 +77,9 @@ class ASH_EXPORT TrayNetworkStateModel
   }
 
  private:
+  // For BindCrosNetworkConfig() calls from tests to override the connector:
+  friend class WifiToggleNotificationControllerTest;
+
   // CrosNetworkConfigObserver
   void OnActiveNetworksChanged(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>)
@@ -84,7 +87,10 @@ class ASH_EXPORT TrayNetworkStateModel
   void OnNetworkStateListChanged() override;
   void OnDeviceStateListChanged() override;
 
+  // Binds the network_config interface to |connector| and sets up the observer.
+  // Also requests the initial state to set the cached properties.
   void BindCrosNetworkConfig(service_manager::Connector* connector);
+
   void GetDeviceStateList();
   void OnGetDeviceStateList(
       std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
