@@ -242,8 +242,8 @@ void WilcoDtcSupportdWebRequestService::OnRequestComplete(
   // Got a network error.
   if (net_error != net::OK &&
       (response_code == -1 || IsHttpOkCode(response_code))) {
-    DVLOG(0) << "Web request failed with error: " << net_error
-             << net::ErrorToString(net_error);
+    VLOG(0) << "Web request failed with error: " << net_error << " "
+            << net::ErrorToString(net_error);
     std::move(active_request_->callback)
         .Run(wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
                  kNetworkError,
