@@ -44,6 +44,8 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -81,7 +83,10 @@ public class TileGroupTest {
         mMostVisitedSites.setTileSuggestions(mSiteSuggestionUrls);
 
         mSuggestionsDeps.getFactory().suggestionsSource = new FakeSuggestionsSource();
+        initializeTab();
+    }
 
+    public void initializeTab() throws Exception {
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         Tab mTab = mActivityTestRule.getActivity().getActivityTab();
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
@@ -117,6 +122,23 @@ public class TileGroupTest {
         });
         waitForTileRemoved(siteToDismiss);
         Assert.assertEquals(2, getTileGridLayout().getChildCount());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    public void testDismissExploreTileWithContextMenuFails() throws Exception {
+        SiteSuggestion exploreTile = recreateSuggestionsWithExploreTile();
+        initializeTab();
+
+        Assert.assertEquals(4, getTileGridLayout().getChildCount());
+
+        final View tileView = getTileViewFor(exploreTile);
+        TestTouchUtils.performLongClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), tileView);
+        Assert.assertFalse(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
+                mActivityTestRule.getActivity(), ContextMenuManager.ContextMenuItemId.REMOVE, 0));
+        Assert.assertEquals(4, getTileGridLayout().getChildCount());
     }
 
     @Test
@@ -238,5 +260,20 @@ public class TileGroupTest {
         });
         callback.waitForCallback("The expected tile was not added.", 0);
         tileContainer.setOnHierarchyChangeListener(null);
+    }
+
+    private SiteSuggestion recreateSuggestionsWithExploreTile() {
+        // need a copy of the list in order to modify it.
+        final ArrayList<SiteSuggestion> currentSuggestions =
+                new ArrayList<>(mMostVisitedSites.getCurrentSites());
+
+        SiteSuggestion exploreTile = new SiteSuggestion("chrome-native://explore",
+                "chrome-native://explore", "", TileTitleSource.UNKNOWN, TileSource.EXPLORE,
+                TileSectionType.PERSONALIZED, new Date());
+        currentSuggestions.add(exploreTile);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mMostVisitedSites.setTileSuggestions(currentSuggestions));
+
+        return exploreTile;
     }
 }

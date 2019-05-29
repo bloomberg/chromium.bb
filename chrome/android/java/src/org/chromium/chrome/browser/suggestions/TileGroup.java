@@ -548,11 +548,15 @@ public class TileGroup implements MostVisitedSites.Observer {
         @Override
         public boolean isItemSupported(@ContextMenuItemId int menuItemId) {
             switch (menuItemId) {
-                // Personalized tiles are the only tiles that can be removed.
+                // Personalized tiles are the only tiles that can be removed.  Additionally, the
+                // Explore tile counts as a personalized tile but cannot be removed.
                 case ContextMenuItemId.REMOVE:
-                    return mSuggestion.sectionType == TileSectionType.PERSONALIZED;
+                    return mSuggestion.sectionType == TileSectionType.PERSONALIZED
+                            && mSuggestion.source != TileSource.EXPLORE;
                 case ContextMenuItemId.LEARN_MORE:
                     return SuggestionsConfig.scrollToLoad();
+                case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
+                    return mSuggestion.source != TileSource.EXPLORE;
                 default:
                     return true;
             }
