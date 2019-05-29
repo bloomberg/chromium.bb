@@ -165,7 +165,7 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.authenticator_ = new cr.login.Authenticator(this.$$('#signin-frame'));
+    this.authenticator_ = new cr.login.Authenticator(this.getSigninFrame_());
     this.authenticator_.addEventListener('ready', this.onAuthReady_.bind(this));
 
     var that = this;
@@ -312,7 +312,7 @@ Polymer({
     if (!this.canGoBack_()) {
       this.cancel();
     } else {
-      this.getSigninFrame_().back();
+      this.getActiveFrame_().back();
     }
   },
 
@@ -349,28 +349,28 @@ Polymer({
     switch (this.screenMode_) {
       case ScreenMode.DEFAULT:
         this.$['signin-frame-dialog'].hidden = false;
-        this.$$('#signin-frame').hidden = false;
+        this.getSigninFrame_().hidden = false;
         this.$['offline-gaia'].hidden = true;
         this.$['saml-interstitial'].hidden = true;
         this.$['offline-ad-auth'].hidden = true;
         break;
       case ScreenMode.OFFLINE:
         this.$['signin-frame-dialog'].hidden = true;
-        this.$$('#signin-frame').hidden = true;
+        this.getSigninFrame_().hidden = true;
         this.$['offline-gaia'].hidden = false;
         this.$['saml-interstitial'].hidden = true;
         this.$['offline-ad-auth'].hidden = true;
         break;
       case ScreenMode.AD_AUTH:
         this.$['signin-frame-dialog'].hidden = true;
-        this.$$('#signin-frame').hidden = true;
+        this.getSigninFrame_().hidden = true;
         this.$['offline-gaia'].hidden = true;
         this.$['saml-interstitial'].hidden = true;
         this.$['offline-ad-auth'].hidden = false;
         break;
       case ScreenMode.SAML_INTERSTITIAL:
         this.$['signin-frame-dialog'].hidden = true;
-        this.$$('#signin-frame').hidden = true;
+        this.getSigninFrame_().hidden = true;
         this.$['offline-gaia'].hidden = true;
         this.$['saml-interstitial'].hidden = false;
         this.$['offline-ad-auth'].hidden = true;
@@ -464,8 +464,8 @@ Polymer({
     // the 'sign-frame' webview element. Setting it on webview not only hides
     // but also affects its loading events.
     if (this.screenMode_ != ScreenMode.DEFAULT)
-      this.getSigninFrame_().hidden = show;
-    this.getSigninFrame_().classList.toggle('show', !show);
+      this.getActiveFrame_().hidden = show;
+    this.getActiveFrame_().classList.toggle('show', !show);
     this.classList.toggle('loading', show);
     this.updateControlsState();
   },
@@ -581,10 +581,24 @@ Polymer({
     this.$['signin-back-button'].disabled = value;
   },
 
+  /**
+   * @return {!Element}
+   * @private
+   */
   getSigninFrame_: function() {
+    // Note: Can't use |this.$|, since it returns cached references to elements
+    // originally present in DOM, while the signin-frame is dynamically
+    // recreated (see setSigninFramePartition_()).
+    const signinFrame = this.shadowRoot.getElementById('signin-frame');
+    assert(signinFrame);
+    return signinFrame;
+  },
+
+  /** @private */
+  getActiveFrame_: function() {
     switch (this.screenMode_) {
       case ScreenMode.DEFAULT:
-        return this.$$('#signin-frame');
+        return this.getSigninFrame_();
       case ScreenMode.OFFLINE:
         return this.$['offline-gaia'];
       case ScreenMode.AD_AUTH:
@@ -594,13 +608,15 @@ Polymer({
     }
   },
 
-  focusSigninFrame: function() {
-    this.getSigninFrame_().focus();
+  /** @private */
+  focusActiveFrame_: function() {
+    this.getActiveFrame_().focus();
   },
 
+  /** Event handler that is invoked after the screen is shown. */
   onAfterShow: function() {
     if (!this.loading)
-      this.focusSigninFrame();
+      this.focusActiveFrame_();
   },
 
   /**
@@ -634,7 +650,7 @@ Polymer({
    * @private
    */
   setSigninFramePartition_: function(newWebviewPartitionName) {
-    var signinFrame = this.$$('#signin-frame');
+    var signinFrame = this.getSigninFrame_();
 
     if (!signinFrame.src) {
       // We have not navigated anywhere yet. Note that a webview's src
@@ -880,7 +896,7 @@ Polymer({
    * @private
    */
   onBackButton_: function(e) {
-    this.getSigninFrame_().focus();
+    this.getActiveFrame_().focus();
     this.lastBackMessageValue_ = !!e.detail;
     this.updateControlsState();
   },
@@ -896,7 +912,7 @@ Polymer({
 
     this.showViewProcessed_ = true;
     this.clearLoadAnimationGuardTimer_();
-    this.getSigninFrame_().classList.toggle('show', true);
+    this.getActiveFrame_().classList.toggle('show', true);
     this.onLoginUIVisible_();
   },
 
@@ -1196,7 +1212,7 @@ Polymer({
   loadAdAuth: function(params) {
     this.loading = true;
     this.startLoadingTimer_();
-    var adAuthUI = this.getSigninFrame_();
+    var adAuthUI = this.getActiveFrame_();
     adAuthUI.realm = params['realm'];
 
     if ('emailDomain' in params)
@@ -1239,7 +1255,7 @@ Polymer({
   invalidateAd: function(username, errorState) {
     if (this.screenMode_ != ScreenMode.AD_AUTH)
       return;
-    var adAuthUI = this.getSigninFrame_();
+    var adAuthUI = this.getActiveFrame_();
     adAuthUI.userName = username;
     adAuthUI.errorState = errorState;
     this.authCompleted_ = false;
