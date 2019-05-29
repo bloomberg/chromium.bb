@@ -9,7 +9,7 @@
 
 #include "osp/impl/quic/testing/quic_test_support.h"
 #include "osp/impl/service_listener_impl.h"
-#include "osp/impl/testing/fake_clock.h"
+#include "platform/test/fake_clock.h"
 #include "osp/public/message_demuxer.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/testing/message_demuxer_test_support.h"

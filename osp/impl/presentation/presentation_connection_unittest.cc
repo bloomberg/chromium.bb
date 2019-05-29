@@ -10,7 +10,7 @@
 #include "osp/impl/quic/testing/fake_quic_connection.h"
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
 #include "osp/impl/quic/testing/quic_test_support.h"
-#include "osp/impl/testing/fake_clock.h"
+#include "platform/test/fake_clock.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/presentation/presentation_controller.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"

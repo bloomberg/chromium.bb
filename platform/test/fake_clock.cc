@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "osp/impl/testing/fake_clock.h"
+#include "platform/test/fake_clock.h"
 
 #include "platform/api/logging.h"
 

@@ -10,7 +10,7 @@
 #include "osp/impl/quic/quic_client.h"
 #include "osp/impl/quic/quic_server.h"
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
-#include "osp/impl/testing/fake_clock.h"
+#include "platform/test/fake_clock.h"
 #include "osp/public/message_demuxer.h"
 #include "osp/public/network_metrics.h"
 #include "osp/public/protocol_connection_client.h"

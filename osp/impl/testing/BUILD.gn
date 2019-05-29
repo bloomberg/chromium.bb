@@ -5,8 +5,6 @@
 source_set("testing") {
   testonly = true
   sources = [
-    "fake_clock.cc",
-    "fake_clock.h",
     "fake_mdns_platform_service.cc",
     "fake_mdns_platform_service.h",
     "fake_mdns_responder_adapter.cc",

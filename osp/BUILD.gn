@@ -44,6 +44,7 @@ source_set("osp_unittests") {
   ]
 
   deps = [
+    "../platform:test",
     "../third_party/abseil",
     "../third_party/googletest:gmock",
     "../third_party/googletest:gtest",

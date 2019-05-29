@@ -5,7 +5,7 @@
 #include <atomic>
 #include <thread>  // NOLINT
 
-#include "osp/impl/testing/fake_clock.h"
+#include "platform/test/fake_clock.h"
 #include "platform/api/task_runner_factory.h"
 #include "platform/api/time.h"
 #include "platform/base/task_runner_impl.h"

@@ -8,7 +8,7 @@
 
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
 #include "osp/impl/quic/testing/quic_test_support.h"
-#include "osp/impl/testing/fake_clock.h"
+#include "platform/test/fake_clock.h"
 #include "osp/public/network_metrics.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/testing/message_demuxer_test_support.h"
