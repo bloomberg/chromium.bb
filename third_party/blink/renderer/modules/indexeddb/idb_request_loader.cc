@@ -75,7 +75,7 @@ void IDBRequestLoader::StartNextValue() {
 
   ExecutionContext* exection_context =
       queue_item_->Request()->GetExecutionContext();
-  // The execution context was town down. The loader will eventually get a
+  // The execution context was torn down. The loader will eventually get a
   // Cancel() call.
   if (!exection_context)
     return;
