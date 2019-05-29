@@ -424,9 +424,12 @@ def main():
       # Need libc++ and compiler-rt for the bootstrap compiler on mac.
       projects += ';libcxx;compiler-rt'
 
+    bootstrap_targets = 'X86'
+    if sys.platform == 'darwin':
+      # Need ARM and AArch64 for building the ios clang_rt.
+      bootstrap_targets += ';ARM;AArch64'
     bootstrap_args = base_cmake_args + [
-        # Need ARM and AArch64 for building the ios clang_rt.
-        '-DLLVM_TARGETS_TO_BUILD=X86;ARM;AArch64',
+        '-DLLVM_TARGETS_TO_BUILD=' + bootstrap_targets,
         '-DLLVM_ENABLE_PROJECTS=' + projects,
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
@@ -474,6 +477,30 @@ def main():
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang++')
 
     print('Bootstrap compiler installed; building final compiler.')
+
+
+  compiler_rt_args = [
+    "-DCOMPILER_RT_BUILD_CRT=OFF",
+    "-DCOMPILER_RT_BUILD_LIBFUZZER=ON",
+    "-DCOMPILER_RT_BUILD_PROFILE=ON",
+    "-DCOMPILER_RT_BUILD_SANITIZERS=ON",
+    "-DCOMPILER_RT_BUILD_XRAY=OFF",
+  ]
+  if sys.platform == 'darwin':
+    compiler_rt_args.extend([
+        "-DCOMPILER_RT_BUILD_BUILTINS=ON",
+        "-DCOMPILER_RT_ENABLE_IOS=ON",
+        "-DCOMPILER_RT_ENABLE_WATCHOS=OFF",
+        "-DCOMPILER_RT_ENABLE_TVOS=OFF",
+        # armv7 is A5 and earlier, armv7s is A6+ (2012 and later, before 64-bit
+        # iPhones). armv7k is Apple Watch, which we don't need.
+        "-DDARWIN_ios_ARCHS=armv7;armv7s;arm64",
+        "-DDARWIN_iossim_ARCHS=i386;x86_64",
+        # We don't need 32-bit intel support for macOS, we only ship 64-bit.
+        "-DDARWIN_osx_ARCHS=x86_64",
+        ])
+  else:
+    compiler_rt_args.append("-DCOMPILER_RT_BUILD_BUILTINS=OFF")
 
   # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
   # needed, on OS X it requires libc++. clang only automatically links to libc++
@@ -556,7 +583,7 @@ def main():
   chrome_tools = list(set(default_tools + args.extra_tools))
   if cc is not None:  base_cmake_args.append('-DCMAKE_C_COMPILER=' + cc)
   if cxx is not None: base_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
-  cmake_args = base_cmake_args + [
+  cmake_args = base_cmake_args + compiler_rt_args + [
       '-DLLVM_ENABLE_THREADS=OFF',
       '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
       '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
@@ -619,7 +646,7 @@ def main():
       # The bootstrap compiler produces 64-bit binaries by default.
       cflags += ['-m32']
       cxxflags += ['-m32']
-    compiler_rt_args = base_cmake_args + [
+    compiler_rt_args = base_cmake_args + compiler_rt_args + [
         '-DLLVM_ENABLE_THREADS=OFF',
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags)]
@@ -640,6 +667,9 @@ def main():
   if args.with_android:
     make_toolchain = os.path.join(
         ANDROID_NDK_DIR, 'build', 'tools', 'make_standalone_toolchain.py')
+    # TODO(thakis): Now that the NDK uses clang, try to build all archs in
+    # one LLVM build instead of making 3 different toolchains and building
+    # 3 times.
     for target_arch in ['aarch64', 'arm', 'i686']:
       # Make standalone Android toolchain for target_arch.
       toolchain_dir = os.path.join(
@@ -685,6 +715,12 @@ def main():
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_ASM_FLAGS=' + ' '.join(cflags),
+        "-DCOMPILER_RT_BUILD_BUILTINS=OFF",
+        "-DCOMPILER_RT_BUILD_CRT=OFF",
+        "-DCOMPILER_RT_BUILD_LIBFUZZER=OFF",
+        "-DCOMPILER_RT_BUILD_PROFILE=ON",
+        "-DCOMPILER_RT_BUILD_SANITIZERS=ON",
+        "-DCOMPILER_RT_BUILD_XRAY=OFF",
         '-DSANITIZER_CXX_ABI=libcxxabi',
         '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-u__cxa_demangle',
         '-DANDROID=1']
@@ -730,6 +766,12 @@ def main():
         '-DCMAKE_SYSTEM_NAME=Fuchsia',
         '-DCMAKE_C_COMPILER_TARGET=%s-fuchsia' % target_arch,
         '-DCMAKE_ASM_COMPILER_TARGET=%s-fuchsia' % target_arch,
+        "-DCOMPILER_RT_BUILD_BUILTINS=ON",
+        "-DCOMPILER_RT_BUILD_CRT=OFF",
+        "-DCOMPILER_RT_BUILD_LIBFUZZER=OFF",
+        "-DCOMPILER_RT_BUILD_PROFILE=OFF",
+        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+        "-DCOMPILER_RT_BUILD_XRAY=OFF",
         '-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON',
         '-DCMAKE_SYSROOT=%s' % toolchain_dir,
         # TODO(thakis|scottmg): Use PER_TARGET_RUNTIME_DIR for all platforms.
