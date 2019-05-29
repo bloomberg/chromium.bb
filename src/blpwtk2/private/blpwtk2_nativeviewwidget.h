@@ -43,6 +43,7 @@ class NativeViewWidget : private views::WidgetDelegateView {
     NativeViewWidget(gfx::NativeView contents,
                      blpwtk2::NativeView parent,
                      NativeViewWidgetDelegate* delegate,
+                     bool activatable,
                      bool rerouteMouseWheelToAnyRelatedWindow);
     ~NativeViewWidget() final;
 
@@ -59,6 +60,7 @@ class NativeViewWidget : private views::WidgetDelegateView {
   private:
     // views::WidgetDelegate overrides
     void WindowClosing() override;
+    aura::Window* GetDefaultActivationWindow() override;
     views::View* GetContentsView() override;
 
   private:
