@@ -52,10 +52,9 @@ class AssistantFormSelectionInput extends AssistantFormInput {
         for (int i = 0; i < mChoices.size(); i++) {
             AssistantFormSelectionChoice choice = mChoices.get(i);
 
-            // Set the same style as Payment Request T&C.
             TextView choiceView = new TextView(context);
             ApiCompatibilityUtils.setTextAppearance(
-                    choiceView, org.chromium.chrome.R.style.TextAppearance_BlackCaption);
+                    choiceView, org.chromium.chrome.R.style.TextAppearance_BlackCaptionDefault);
             choiceView.setText(choice.getLabel());
 
             int index = i; // needed for the lambda.

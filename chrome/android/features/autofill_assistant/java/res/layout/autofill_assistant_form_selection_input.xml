@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:textAppearance="@style/TextAppearance.BlackTitle2"/>
+        android:textAppearance="@style/TextAppearance.BlackButtonText"/>
 
     <org.chromium.chrome.browser.autofill_assistant.payment.AssistantChoiceList
         android:id="@+id/choice_list"
