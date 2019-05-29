@@ -486,6 +486,14 @@ viz_source_set("unit_tests") {
       "//gpu/vulkan/init",
     ]
   }
+
+  # TODO(samans): Support more configurations.
+  # MSAN issue: https://crbug.com/967819
+  # CFI issue: https://crbug.com/967819
+  # x86 issue: https://crbug.com/967831
+  if (use_x11 && !is_msan && target_cpu != "x86" && !is_cfi) {
+    defines = [ "ENABLE_VIZ_VULKAN_TESTS" ]
+  }
 }
 
 viz_source_set("perf_tests") {
