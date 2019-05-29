@@ -11033,12 +11033,14 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
 
   // Compare the use of skip_mode with the best intra/inter mode obtained.
   const int skip_mode_ctx = av1_get_skip_mode_context(xd);
-  const int64_t best_intra_inter_mode_cost =
-      (rd_cost->dist < INT64_MAX && rd_cost->rate < INT32_MAX)
-          ? RDCOST(x->rdmult,
-                   rd_cost->rate + x->skip_mode_cost[skip_mode_ctx][0],
-                   rd_cost->dist)
-          : INT64_MAX;
+  int64_t best_intra_inter_mode_cost = INT64_MAX;
+  if (rd_cost->dist < INT64_MAX && rd_cost->rate < INT32_MAX) {
+    best_intra_inter_mode_cost =
+        RDCOST(x->rdmult, rd_cost->rate + x->skip_mode_cost[skip_mode_ctx][0],
+               rd_cost->dist);
+    // Account for non-skip mode rate in total rd stats
+    rd_cost->rate += x->skip_mode_cost[skip_mode_ctx][0];
+  }
 
   if (skip_mode_rd_stats.rdcost <= best_intra_inter_mode_cost &&
       (!xd->lossless[mbmi->segment_id] || skip_mode_rd_stats.dist == 0)) {
