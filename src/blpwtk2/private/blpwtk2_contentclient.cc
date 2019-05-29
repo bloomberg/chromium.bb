@@ -62,13 +62,6 @@ ContentClient::~ContentClient()
     g_contentClientInstance = nullptr;
 }
 
-std::string ContentClient::GetUserAgent() const
-{
-    // include Chrome in our user-agent because some sites actually look for
-    // this.  For example, google's "Search as you type" feature.
-    return content::BuildUserAgentFromProduct("BlpWtk/" BB_PATCH_VERSION " Chrome/" CHROMIUM_VERSION);
-}
-
 base::StringPiece ContentClient::GetDataResource(
     int             resource_id,
     ui::ScaleFactor scale_factor) const

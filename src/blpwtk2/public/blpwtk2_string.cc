@@ -27,6 +27,10 @@
 #include <third_party/blink/public/platform/web_string.h>
 
 namespace blpwtk2 {
+String::~String()
+{
+    if (d_impl) unmake(d_impl);
+}
 
 String::Impl String::make(const char* str, size_t length)
 {
@@ -81,6 +85,11 @@ size_t String::length(Impl impl)
 {
     DCHECK(impl);
     return *(reinterpret_cast<size_t*>(impl) - 1);
+}
+
+const char* String::c_str() const
+{
+    return d_impl ? d_impl : "";
 }
 
 String fromWebString(const blink::WebString& other)

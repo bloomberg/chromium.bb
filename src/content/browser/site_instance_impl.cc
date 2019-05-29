@@ -169,8 +169,8 @@ RenderProcessHost* SiteInstanceImpl::GetProcess(int affinity) {
     if (affinity != SiteInstance::kNoProcessAffinity) {
       process_ = RenderProcessHost::FromID(affinity);
       if (process_) {
-        DCHECK(RenderProcessHostImpl::IsSuitableHost(process_, browser_context,
-                                                     site_, site_));
+        DCHECK(RenderProcessHostImpl::IsSuitableHost(
+            process_, browser_context, GetIsolationContext(), site_, site_));
       }
     }
   }

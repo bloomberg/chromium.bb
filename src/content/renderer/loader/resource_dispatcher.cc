@@ -331,8 +331,9 @@ bool ResourceDispatcher::RemovePendingRequest(
   if (it == pending_requests_.end())
     return false;
 
+  bool is_external_loader = !!(it->second.get()->bridge);
   PendingRequestInfo* info = it->second.get();
-  if (info->net_error == net::ERR_IO_PENDING) {
+  if (info->net_error == net::ERR_IO_PENDING && !is_external_loader) {
     info->net_error = net::ERR_ABORTED;
     NotifyResourceLoadCanceled(info->render_frame_id,
                                std::move(info->resource_load_info),
@@ -345,7 +346,7 @@ bool ResourceDispatcher::RemovePendingRequest(
   // process.
   info->url_loader_client = nullptr;
 
-  if (it->second.get()->bridge)
+  if (is_external_loader)
     it->second.get()->bridge.reset(nullptr);
 
   // Always delete the pending_request asyncly so that cancelling the request
@@ -459,9 +460,10 @@ void ResourceDispatcher::StartSync(
     base::TimeDelta timeout,
     blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
     std::unique_ptr<RequestPeer> peer) {
+  PeerRequestInfoProvider request_info(request.get());
   std::unique_ptr<ResourceLoaderBridge> bridge(
       GetContentClient()->renderer()->OverrideResourceLoaderBridge(
-          request.get()));
+          request_info));
   if (bridge.get()) {
     bridge->SyncLoad(response);
     return;
@@ -547,16 +549,18 @@ int ResourceDispatcher::StartAsync(
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
 
-  std::unique_ptr<ResourceLoaderBridge> bridge(
+  std::unique_ptr<ResourceLoaderBridge> bridge =
       GetContentClient()->renderer()->OverrideResourceLoaderBridge(
-          request.get()));
+          PeerRequestInfoProvider(request.get()));
 
   if (bridge) {
-    bridge->Start(peer.get());
+    bridge->Start(std::make_unique<RequestPeerReceiver>(peer.get(), request_id,
+                                                        loading_task_runner));
     pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
-        std::move(peer), std::move(bridge), static_cast<ResourceType>(request->resource_type),
-        request->render_frame_id, request->url, request->method,
-        request->referrer, std::move(response_override_params));
+        std::move(peer), std::move(bridge),
+        static_cast<ResourceType>(request->resource_type),
+        request->render_frame_id, request->url,
+        std::move(response_override_params));
 
     pending_requests_[request_id]->url_loader_client =
         std::make_unique<URLLoaderClientImpl>(

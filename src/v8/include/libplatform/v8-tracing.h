@@ -279,8 +279,11 @@ class BLPV8_PLATFORM_EXPORT TracingController
   std::unique_ptr<TraceConfig> trace_config_;
   std::unique_ptr<base::Mutex> mutex_;
   std::unordered_set<v8::TracingController::TraceStateObserver*> observers_;
+#if defined(MSVC_2015_PLUS)
   std::atomic_bool recording_{false};
-
+#else
+  std::atomic_bool recording_;
+#endif
   // Disallow copy and assign
   TracingController(const TracingController&) = delete;
   void operator=(const TracingController&) = delete;

@@ -44,11 +44,23 @@
 #include <content/public/browser/web_contents.h>
 #include <content/public/common/service_names.mojom.h>
 #include <content/public/common/url_constants.h>
+#include <content/public/common/user_agent.h>
+#include "chrome/app/chrome_content_browser_overlay_manifest.h"
+#include "chrome/app/chrome_content_gpu_overlay_manifest.h"
+#include "chrome/app/chrome_content_renderer_overlay_manifest.h"
+#include "chrome/app/chrome_content_utility_overlay_manifest.h"
+#include "chrome/app/chrome_packaged_service_manifests.h"
+#include "chrome/app/chrome_renderer_manifest.h"
 #include <chrome/browser/chrome_service.h>
 #include <chrome/common/constants.mojom.h>
 #include <chrome/grit/browser_resources.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <ui/base/resource/resource_bundle.h>
+
+#include "chrome/common/constants.mojom.h"
+#include "components/spellcheck/common/spellcheck.mojom.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace blpwtk2 {
 namespace {
@@ -171,7 +183,7 @@ bool ContentBrowserClientImpl::IsHandledURL(const GURL& url)
         url::kDataScheme,
         url::kFileScheme,
     };
-    for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
+    for (size_t i = 0; i < base::size(kProtocolList); ++i) {
         if (url.scheme() == kProtocolList[i])
             return true;
     }
@@ -203,49 +215,41 @@ mojo::OutgoingInvitation* ContentBrowserClientImpl::GetClientInvitation() const
     return d_broker_client_invitation.load();
 }
 
-std::vector<content::ContentBrowserClient::ServiceManifestInfo>
+std::vector<service_manager::Manifest>
 ContentBrowserClientImpl::GetExtraServiceManifests()
 {
-    // needed for chrome services
-    return std::vector<content::ContentBrowserClient::ServiceManifestInfo>({
-      {chrome::mojom::kRendererServiceName, IDR_CHROME_RENDERER_SERVICE_MANIFEST},
-    });
+    return std::vector<service_manager::Manifest>{};
 }
 
-std::unique_ptr<base::Value>
-ContentBrowserClientImpl::GetServiceManifestOverlay(base::StringPiece name)
+base::Optional<service_manager::Manifest> ContentBrowserClientImpl::GetServiceManifestOverlay(
+        base::StringPiece name)
 {
-    // needed for chrome services
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    int id = -1;
+  if (name == content::mojom::kBrowserServiceName) {
+    return GetChromeContentBrowserOverlayManifest();
+  } else if (name == content::mojom::kGpuServiceName) {
+    return GetChromeContentGpuOverlayManifest();
+  } else if (name == content::mojom::kPackagedServicesServiceName) {
+    service_manager::Manifest overlay;
+    overlay.packaged_services = GetChromePackagedServiceManifests();
+    return overlay;
+  } else if (name == content::mojom::kRendererServiceName) {
+    return GetChromeContentRendererOverlayManifest();
+  } else if (name == content::mojom::kUtilityServiceName) {
+    return GetChromeContentUtilityOverlayManifest();
+  }
 
-    if (name == content::mojom::kBrowserServiceName)
-        id = IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY;
-    else if (name == content::mojom::kPackagedServicesServiceName)
-        id = IDR_CHROME_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY;
-    else if (name == content::mojom::kRendererServiceName)
-        id = IDR_CHROME_CONTENT_RENDERER_MANIFEST_OVERLAY;
-    else if (name == content::mojom::kUtilityServiceName)
-        id = IDR_CHROME_CONTENT_UTILITY_MANIFEST_OVERLAY;
-    if (id == -1)
-        return nullptr;
-
-    base::StringPiece manifest_contents =
-        rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
-    return base::JSONReader::Read(manifest_contents);
-}
-
-void ContentBrowserClientImpl::RegisterInProcessServices(
-        StaticServiceMap* services, content::ServiceManagerConnection* connection)
-{
-    // needed for chrome services
-    connection->AddServiceRequestHandler(
-      chrome::mojom::kServiceName,
-      ChromeService::GetInstance()->CreateChromeServiceRequestHandler());
+  return base::nullopt;
 }
 
 void ContentBrowserClientImpl::RegisterOutOfProcessServices(OutOfProcessServiceMap* services)
 {
+}
+
+std::string ContentBrowserClientImpl::GetUserAgent() const
+{
+    // include Chrome in our user-agent because some sites actually look for
+    // this.  For example, google's "Search as you type" feature.
+    return content::BuildUserAgentFromProduct("BlpWtk/" BB_PATCH_VERSION " Chrome/" CHROMIUM_VERSION);
 }
 
 }  // close namespace blpwtk2

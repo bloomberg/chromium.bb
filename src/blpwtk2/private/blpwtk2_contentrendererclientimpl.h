@@ -33,7 +33,6 @@
 #include <services/service_manager/public/cpp/local_interface_provider.h>
 
 namespace service_manager {
-class ServiceContext;
 struct BindSourceInfo;
 }
 
@@ -58,25 +57,25 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
 
     void RenderFrameCreated(content::RenderFrame *render_frame) override;
 
-    void PrepareErrorPage(
-        content::RenderFrame        *render_frame,
-        const blink::WebURLRequest&  failed_request,
-        const blink::WebURLError&    error,
-        std::string                 *error_html) override;
-        // Returns the information to display when a navigation error occurs.
-        // If |error_html| is not null then it may be set to a HTML page
-        // containing the details of the error and maybe links to more info.
-        // If |error_description| is not null it may be set to contain a brief
-        // message describing the error that has occurred.
-        // Either of the out parameters may be not written to in certain cases
-        // (lack of information on the error code) so the caller should take
-        // care to initialize the string values with safe defaults before the
-        // call.
+    void PrepareErrorPage(content::RenderFrame* render_frame,
+                          const blink::WebURLError& error,
+                          const std::string& http_method,
+                          bool ignoring_cache,
+                          std::string* error_html) override;
+    // Returns the information to display when a navigation error occurs.
+    // If |error_html| is not null then it may be set to a HTML page
+    // containing the details of the error and maybe links to more info.
+    // If |error_description| is not null it may be set to contain a brief
+    // message describing the error that has occurred.
+    // Either of the out parameters may be not written to in certain cases
+    // (lack of information on the error code) so the caller should take
+    // care to initialize the string values with safe defaults before the
+    // call.
 
-    content::ResourceLoaderBridge* OverrideResourceLoaderBridge(
-        const network::ResourceRequest *request) override;
-        // Allows the embedder to override the ResourceLoaderBridge used.
-        // If it returns NULL, the content layer will provide a bridge.
+    std::unique_ptr<content::ResourceLoaderBridge> OverrideResourceLoaderBridge(
+        const content::ResourceRequestInfoProvider& request_info) override;
+    // Allows the embedder to override the ResourceLoaderBridge used.
+    // If it returns NULL, the content layer will use the default loader.
 
     bool OverrideCreatePlugin(
         content::RenderFrame           *render_frame,
@@ -106,7 +105,6 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
     service_manager::BinderRegistry d_registry;
     std::unique_ptr<service_manager::Connector> d_connector;
     service_manager::mojom::ConnectorRequest d_connector_request;
-    std::unique_ptr<service_manager::ServiceContext> d_service_context;
 
     DISALLOW_COPY_AND_ASSIGN(ContentRendererClientImpl);
 };
@@ -125,8 +123,6 @@ class ForwardingService : public service_manager::Service {
   bool OnServiceManagerConnectionLost() override;
 
  private:
-  void SetContext(service_manager::ServiceContext* context) override;
-
   service_manager::Service* const target_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingService);

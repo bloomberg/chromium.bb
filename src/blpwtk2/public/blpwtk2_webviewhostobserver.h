@@ -36,6 +36,7 @@ class WebView;
 // from the browser thread.
 class BLPWTK2_EXPORT WebViewHostObserver {
   public:
+    WebViewHostObserver();
     virtual ~WebViewHostObserver();
 
     // Notification that a new WebView has been created.

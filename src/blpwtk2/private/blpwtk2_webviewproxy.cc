@@ -330,8 +330,8 @@ void WebViewProxy::setBackgroundColor(NativeColor color)
     d_client->proxy()->setBackgroundColor(red, green, blue);
 
     content::RenderView* rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
-    blink::WebFrameWidget* frameWidget = rv->GetWebFrameWidget();
-    frameWidget->SetBaseBackgroundColor(
+    blink::WebView* web_view = rv->GetWebView();
+    web_view->SetBaseBackgroundColor(
         SkColorSetARGB(alpha, red, green, blue));
 }
 

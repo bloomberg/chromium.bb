@@ -19,6 +19,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "base/message_loop/message_pump.h"
 
 namespace base {
 #if defined(OS_ANDROID)
@@ -139,6 +140,9 @@ class BASE_EXPORT RunLoop {
   bool BeforeRun();
   void AfterRun();
 
+  // Get the MessagePump::Delegate if it exist. Otherwise return nullptr
+  MessagePump::Delegate* GetPumpDelegate();
+
   // A NestingObserver is notified when a nested RunLoop begins. The observers
   // are notified before the current thread's RunLoop::Delegate::Run() is
   // invoked and nested work begins.
@@ -227,6 +231,11 @@ class BASE_EXPORT RunLoop {
   // once per thread before using RunLoop methods on it. |delegate| is from then
   // on forever bound to that thread (including its destruction).
   static void RegisterDelegateForCurrentThread(Delegate* delegate);
+
+  // Registers MessagePump::Delegate on the current thread. Must be called once
+  // and only once per thread. See GetPumpDelegate.
+  static void RegisterMessagePumpDelegateForCurrentThread(MessagePump::Delegate* delegate);
+
 
   // Quits the active RunLoop (when idle) -- there must be one. These were
   // introduced as prefered temporary replacements to the long deprecated

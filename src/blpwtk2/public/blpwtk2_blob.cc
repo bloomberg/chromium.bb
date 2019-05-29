@@ -28,7 +28,7 @@ namespace blpwtk2 {
 
 class Blob::Impl {
   public:
-    virtual ~Impl() {};
+    virtual ~Impl() {}
     virtual void copyTo(void *dest) const = 0;
     virtual size_t size() const = 0;
 };

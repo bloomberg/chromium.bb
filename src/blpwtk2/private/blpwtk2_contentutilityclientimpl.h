@@ -40,7 +40,6 @@ class ContentUtilityClientImpl : public content::ContentUtilityClient {
     // content::ContentUtilityClient:
     void UtilityThreadStarted() override;
     bool OnMessageReceived(const IPC::Message& message) override;
-    void RegisterServices(StaticServiceMap* services) override;
     void RegisterNetworkBinders(
         service_manager::BinderRegistry* registry) override;
 
