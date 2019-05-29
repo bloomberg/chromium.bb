@@ -317,12 +317,14 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTitle) {
                                window_title, base::CompareCase::SENSITIVE));
 
   content::WebContents* contents = browser_view()->GetActiveWebContents();
-  TestTabModalConfirmDialogDelegate* delegate =
-      new TestTabModalConfirmDialogDelegate(contents);
-  TabModalConfirmDialog::Create(delegate, contents);
-  EXPECT_EQ(browser_view()->GetAccessibleWindowTitle(), delegate->GetTitle());
+  auto delegate = std::make_unique<TestTabModalConfirmDialogDelegate>(contents);
+  TestTabModalConfirmDialogDelegate* delegate_observer = delegate.get();
+  TabModalConfirmDialog::Create(std::move(delegate), contents);
+  EXPECT_EQ(browser_view()->GetAccessibleWindowTitle(),
+            delegate_observer->GetTitle());
 
-  delegate->Close();
+  delegate_observer->Close();
+
   EXPECT_TRUE(base::StartsWith(browser_view()->GetAccessibleWindowTitle(),
                                window_title, base::CompareCase::SENSITIVE));
 }
@@ -349,9 +351,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTree) {
             nullptr);
 
   content::WebContents* contents = browser_view()->GetActiveWebContents();
-  TestTabModalConfirmDialogDelegate* delegate =
-      new TestTabModalConfirmDialogDelegate(contents);
-  TabModalConfirmDialog::Create(delegate, contents);
+  auto delegate = std::make_unique<TestTabModalConfirmDialogDelegate>(contents);
+  TabModalConfirmDialog::Create(std::move(delegate), contents);
 
   // The tab modal dialog should be in the accessibility tree; everything else
   // should be hidden. So we expect an "OK" button and no reload button.

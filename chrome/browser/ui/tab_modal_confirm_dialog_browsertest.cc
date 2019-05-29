@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/tab_modal_confirm_dialog_browsertest.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -57,10 +60,12 @@ TabModalConfirmDialogTest::TabModalConfirmDialogTest()
       closed_count_(0) {}
 
 void TabModalConfirmDialogTest::SetUpOnMainThread() {
-  delegate_ = new MockTabModalConfirmDialogDelegate(
+  auto delegate = std::make_unique<MockTabModalConfirmDialogDelegate>(
       browser()->tab_strip_model()->GetActiveWebContents(), this);
+  delegate_ = delegate.get();
   dialog_ = TabModalConfirmDialog::Create(
-      delegate_, browser()->tab_strip_model()->GetActiveWebContents());
+      std::move(delegate),
+      browser()->tab_strip_model()->GetActiveWebContents());
   content::RunAllPendingInMessageLoop();
 }
 

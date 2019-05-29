@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/tab_modal_confirm_dialog_views.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -21,25 +24,25 @@
 
 // static
 TabModalConfirmDialog* TabModalConfirmDialog::Create(
-    TabModalConfirmDialogDelegate* delegate,
+    std::unique_ptr<TabModalConfirmDialogDelegate> delegate,
     content::WebContents* web_contents) {
-  return new TabModalConfirmDialogViews(delegate, web_contents);
+  return new TabModalConfirmDialogViews(std::move(delegate), web_contents);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // TabModalConfirmDialogViews, constructor & destructor:
 
 TabModalConfirmDialogViews::TabModalConfirmDialogViews(
-    TabModalConfirmDialogDelegate* delegate,
+    std::unique_ptr<TabModalConfirmDialogDelegate> delegate,
     content::WebContents* web_contents)
-    : delegate_(delegate) {
-  views::MessageBoxView::InitParams init_params(delegate->GetDialogMessage());
+    : delegate_(std::move(delegate)) {
+  views::MessageBoxView::InitParams init_params(delegate_->GetDialogMessage());
   init_params.inter_row_vertical_spacing =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
   message_box_view_ = new views::MessageBoxView(init_params);
 
-  base::string16 link_text(delegate->GetLinkText());
+  base::string16 link_text(delegate_->GetLinkText());
   if (!link_text.empty())
     message_box_view_->SetLink(link_text, this);
 

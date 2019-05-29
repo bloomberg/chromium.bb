@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/service/xr_session_request_consent_manager_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
@@ -22,10 +23,10 @@ TabModalConfirmDialog*
 XRSessionRequestConsentManagerImpl::ShowDialogAndGetConsent(
     content::WebContents* web_contents,
     base::OnceCallback<void(bool)> response_callback) {
-  auto* delegate = new XrSessionRequestConsentDialogDelegate(
+  auto delegate = std::make_unique<XrSessionRequestConsentDialogDelegate>(
       web_contents, std::move(response_callback));
   delegate->OnShowDialog();
-  return TabModalConfirmDialog::Create(delegate, web_contents);
+  return TabModalConfirmDialog::Create(std::move(delegate), web_contents);
 }
 
 }  // namespace vr

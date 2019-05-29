@@ -66,9 +66,10 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, DisableFind) {
   // Showing constrained window should disable find.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  MockTabModalConfirmDialogDelegate* delegate =
-      new MockTabModalConfirmDialogDelegate(web_contents, NULL);
-  TabModalConfirmDialog::Create(delegate, web_contents);
+  auto delegate = std::make_unique<MockTabModalConfirmDialogDelegate>(
+      web_contents, nullptr);
+  MockTabModalConfirmDialogDelegate* delegate_ptr = delegate.get();
+  TabModalConfirmDialog::Create(std::move(delegate), web_contents);
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FIND));
 
   // Switching to a new (unblocked) tab should reenable it.
@@ -80,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, DisableFind) {
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FIND));
 
   // Closing the constrained window should reenable it.
-  delegate->Cancel();
+  delegate_ptr->Cancel();
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FIND));
 }

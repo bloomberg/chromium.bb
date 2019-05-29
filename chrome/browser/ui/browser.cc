@@ -1551,8 +1551,8 @@ bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
 }
 
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
-  TabModalConfirmDialog::Create(new RepostFormWarningController(source),
-                                source);
+  TabModalConfirmDialog::Create(
+      std::make_unique<RepostFormWarningController>(source), source);
 }
 
 bool Browser::ShouldCreateWebContents(
