@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -120,5 +121,13 @@ public class EntitySuggestionView extends RelativeLayout {
      */
     void setDescriptionText(String text) {
         mDescriptionText.setText(text);
+    }
+
+    /**
+     * Specify image bitmap to be shown beside suggestion text.
+     * @param bitmap Bitmap to be rendered.
+     */
+    void setImageBitmap(Bitmap bitmap) {
+        mEntityImageView.setImageBitmap(bitmap);
     }
 }

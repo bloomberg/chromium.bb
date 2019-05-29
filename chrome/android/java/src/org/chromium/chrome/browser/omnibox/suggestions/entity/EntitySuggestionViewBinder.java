@@ -75,6 +75,8 @@ public class EntitySuggestionViewBinder {
             view.setSubjectText(model.get(EntitySuggestionViewProperties.SUBJECT_TEXT));
         } else if (EntitySuggestionViewProperties.DESCRIPTION_TEXT.equals(propertyKey)) {
             view.setDescriptionText(model.get(EntitySuggestionViewProperties.DESCRIPTION_TEXT));
+        } else if (EntitySuggestionViewProperties.IMAGE_BITMAP.equals(propertyKey)) {
+            view.setImageBitmap(model.get(EntitySuggestionViewProperties.IMAGE_BITMAP));
         }
     }
 }

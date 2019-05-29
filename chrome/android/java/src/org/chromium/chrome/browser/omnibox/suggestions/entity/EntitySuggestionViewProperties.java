@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
+import android.graphics.Bitmap;
+
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -24,9 +26,12 @@ class EntitySuggestionViewProperties {
     /** Text content for the second line of text (description). */
     public static final WritableObjectPropertyKey<String> DESCRIPTION_TEXT =
             new WritableObjectPropertyKey<>();
+    /** Image to be presented beside entity details. */
+    public static final WritableObjectPropertyKey<Bitmap> IMAGE_BITMAP =
+            new WritableObjectPropertyKey<>();
 
     public static final PropertyKey[] ALL_UNIQUE_KEYS =
-            new PropertyKey[] {DELEGATE, SUBJECT_TEXT, DESCRIPTION_TEXT};
+            new PropertyKey[] {DELEGATE, SUBJECT_TEXT, DESCRIPTION_TEXT, IMAGE_BITMAP};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);

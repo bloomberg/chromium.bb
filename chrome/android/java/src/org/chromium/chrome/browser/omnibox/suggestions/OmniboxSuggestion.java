@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.support.annotation.Nullable;
 import android.support.v4.util.ObjectsCompat;
 import android.text.TextUtils;
 
@@ -73,6 +74,7 @@ public class OmniboxSuggestion {
     private final SuggestionAnswer mAnswer;
     private final String mFillIntoEdit;
     private final String mUrl;
+    private final String mImageUrl;
     private final int mRelevance;
     private final int mTransition;
     private final boolean mIsStarred;
@@ -81,8 +83,8 @@ public class OmniboxSuggestion {
     public OmniboxSuggestion(int nativeType, boolean isSearchType, int relevance, int transition,
             String displayText, List<MatchClassification> displayTextClassifications,
             String description, List<MatchClassification> descriptionClassifications,
-            SuggestionAnswer answer, String fillIntoEdit, String url, boolean isStarred,
-            boolean isDeletable) {
+            SuggestionAnswer answer, String fillIntoEdit, String url, String imageUrl,
+            boolean isStarred, boolean isDeletable) {
         mType = nativeType;
         mIsSearchType = isSearchType;
         mRelevance = relevance;
@@ -94,6 +96,7 @@ public class OmniboxSuggestion {
         mAnswer = answer;
         mFillIntoEdit = TextUtils.isEmpty(fillIntoEdit) ? displayText : fillIntoEdit;
         mUrl = url;
+        mImageUrl = imageUrl;
         mIsStarred = isStarred;
         mIsDeletable = isDeletable;
     }
@@ -136,6 +139,11 @@ public class OmniboxSuggestion {
 
     public String getUrl() {
         return mUrl;
+    }
+
+    @Nullable
+    public String getImageUrl() {
+        return mImageUrl;
     }
 
     /**
@@ -250,7 +258,7 @@ public class OmniboxSuggestion {
                         prefs.getBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_DELETABLE + i, false);
                 OmniboxSuggestion suggestion = new OmniboxSuggestion(nativeType, !isSearchType, 0,
                         0, displayText, classifications, description, classifications, null, "",
-                        url, isStarred, isDeletable);
+                        url, null, isStarred, isDeletable);
                 suggestions.add(suggestion);
             }
         }

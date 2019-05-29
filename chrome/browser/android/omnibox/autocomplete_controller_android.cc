@@ -557,6 +557,12 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       ConvertUTF16ToJavaString(env, match.fill_into_edit);
   ScopedJavaLocalRef<jstring> destination_url =
       ConvertUTF8ToJavaString(env, match.destination_url.spec());
+  ScopedJavaLocalRef<jstring> image_url;
+
+  if (!match.image_url.empty()) {
+    image_url = ConvertUTF8ToJavaString(env, match.image_url);
+  }
+
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile_);
   return Java_AutocompleteController_buildOmniboxSuggestion(
@@ -566,7 +572,7 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       ToJavaIntArray(env, contents_class_styles), description,
       ToJavaIntArray(env, description_class_offsets),
       ToJavaIntArray(env, description_class_styles), janswer, fill_into_edit,
-      destination_url,
+      destination_url, image_url,
       bookmark_model && bookmark_model->IsBookmarked(match.destination_url),
       match.SupportsDeletion());
 }
