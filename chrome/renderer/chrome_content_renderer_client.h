@@ -258,12 +258,11 @@ class ChromeContentRendererClient
   base::TimeTicks main_entry_time_;
 
 #if BUILDFLAG(ENABLE_NACL)
-  // Determines if a NaCl app is allowed, and modifies params to pass the app's
-  // permissions to the trusted NaCl plugin.
-  static bool IsNaClAllowed(const GURL& app_url,
-                            bool is_nacl_unrestricted,
-                            const extensions::Extension* extension,
-                            blink::WebPluginParams* params);
+  // Determines if a page/app/extension is allowed to run native (non-PNaCl)
+  // NaCl modules.
+  static bool IsNativeNaClAllowed(const GURL& app_url,
+                                  bool is_nacl_unrestricted,
+                                  const extensions::Extension* extension);
 #endif
 
   service_manager::Connector* GetConnector();

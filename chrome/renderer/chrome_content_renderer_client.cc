@@ -824,17 +824,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           const Extension* extension =
               extensions::RendererExtensionRegistry::Get()
                   ->GetExtensionOrAppByURL(manifest_url);
-          if (!IsNaClAllowed(app_url, is_nacl_unrestricted, extension,
-                             &params)) {
+          if (!IsNativeNaClAllowed(app_url, is_nacl_unrestricted, extension)) {
             WebString error_message;
             if (is_nacl_mime_type) {
               error_message =
                   "Only unpacked extensions and apps installed from the Chrome "
                   "Web Store can load NaCl modules without enabling Native "
                   "Client in about:flags.";
-            } else if (is_pnacl_mime_type) {
-              error_message =
-                  "Portable Native Client must not be disabled in about:flags.";
             }
             frame->AddMessageToConsole(WebConsoleMessage(
                 blink::mojom::ConsoleMessageLevel::kError, error_message));
@@ -1055,12 +1051,10 @@ void ChromeContentRendererClient::GetInterface(
 
 #if BUILDFLAG(ENABLE_NACL)
 //  static
-bool ChromeContentRendererClient::IsNaClAllowed(
+bool ChromeContentRendererClient::IsNativeNaClAllowed(
     const GURL& app_url,
     bool is_nacl_unrestricted,
-    const Extension* extension,
-    WebPluginParams* params) {
-  // Temporarily allow these whitelisted apps to use NaCl.
+    const Extension* extension) {
   bool is_invoked_by_webstore_installed_extension = false;
   bool is_extension_unrestricted = false;
   bool is_extension_force_installed = false;
