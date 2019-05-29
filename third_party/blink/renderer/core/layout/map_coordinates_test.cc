@@ -1621,15 +1621,12 @@ TEST_F(MapCoordinatesTest, LocalToAncestorTransform) {
 }
 
 TEST_F(MapCoordinatesTest, LocalToAbsoluteTransformFlattens) {
-  // This Page is not actually being shown by a compositor, but we act like it
-  // will in order to test behaviour.
-  GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
+  // This is required to test 3d transforms.
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div style='position: absolute; left: 0; top: 0;'>
-      <div style='transform: rotateY(45deg);
-    -webkit-transform-style:preserve-3d;'>
-        <div style='transform: rotateY(-45deg);
-    -webkit-transform-style:preserve-3d;'>
+      <div style='transform: rotateY(45deg); transform-style: preserve-3d;'>
+        <div style='transform: rotateY(-45deg); transform-style: preserve-3d;'>
           <div id='child1'></div>
         </div>
       </div>
@@ -1668,6 +1665,30 @@ TEST_F(MapCoordinatesTest, LocalToAbsoluteTransformFlattens) {
               LayoutUnit::Epsilon());
   EXPECT_NEAR(100.0, matrix.ProjectPoint(FloatPoint(50.0, 100.0)).Y(),
               LayoutUnit::Epsilon());
+}
+
+TEST_F(MapCoordinatesTest, Transform3DWithOffset) {
+  // This is required to test 3d transforms.
+  EnableCompositing();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+    </style>
+    <div style="perspective: 400px; width: 0; height: 0">
+      <div>
+        <div style="height: 100px"></div>
+        <div style="transform-style: preserve-3d; transform: rotateY(0deg)">
+          <div id="target" style="width: 100px; height: 100px;
+                                  transform: translateZ(200px)">
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* target = GetLayoutObjectByElementId("target");
+  EXPECT_EQ(FloatRect(0, 200, 200, 200),
+            MapLocalToAncestor(target, nullptr, FloatRect(0, 0, 100, 100)));
 }
 
 // This test verifies that the mapped location of a div within a scroller
