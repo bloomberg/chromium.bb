@@ -97,7 +97,7 @@ class MODULES_EXPORT ManifestParser {
   // https://w3c.github.io/manifest/#scope-member. Returns the parsed KURL if
   // any, or start URL (falling back to document URL) without filename, path,
   // and query if there is no defined scope or if the parsing failed.
-  KURL ParseScope(const JSONObject* object, base::Optional<KURL>& start_url);
+  KURL ParseScope(const JSONObject* object, const KURL& start_url);
 
   // Parses the 'start_url' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-start_url-member

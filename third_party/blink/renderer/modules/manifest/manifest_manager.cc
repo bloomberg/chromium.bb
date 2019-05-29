@@ -24,18 +24,6 @@
 
 namespace blink {
 
-namespace {
-
-mojom::blink::ManifestPtr CreateEmptyManifest() {
-  auto manifest = mojom::blink::Manifest::New();
-  manifest->start_url = KURL();
-  manifest->splash_screen_url = KURL();
-  manifest->scope = KURL();
-  return manifest;
-}
-
-}  // namespace
-
 // static
 const char ManifestManager::kSupplementName[] = "ManifestManager";
 
@@ -78,9 +66,9 @@ void ManifestManager::RequestManifest(RequestManifestCallback callback) {
       [](RequestManifestCallback callback, const KURL& manifest_url,
          const mojom::blink::ManifestPtr& manifest,
          const mojom::blink::ManifestDebugInfo* debug_info) {
-        std::move(callback).Run(manifest_url, manifest.is_null()
-                                                  ? CreateEmptyManifest()
-                                                  : manifest->Clone());
+        std::move(callback).Run(
+            manifest_url, manifest.is_null() ? mojom::blink::Manifest::New()
+                                             : manifest->Clone());
       },
       std::move(callback)));
 }

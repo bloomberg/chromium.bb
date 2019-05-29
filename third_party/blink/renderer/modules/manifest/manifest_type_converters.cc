@@ -31,16 +31,14 @@ TypeConverter<blink::Manifest, blink::mojom::blink::ManifestPtr>::Convert(
         base::NullableString16(blink::WebString(input->short_name).Utf16());
   }
 
-  if (input->start_url.has_value())
-    output.start_url = *input->start_url;
+  if (!input->start_url.IsEmpty())
+    output.start_url = input->start_url;
 
   output.display = input->display;
   output.orientation = input->orientation;
 
-  if (input->icons.has_value()) {
-    for (auto& icon : *input->icons)
-      output.icons.push_back(icon.To<blink::Manifest::ImageResource>());
-  }
+  for (auto& icon : input->icons)
+    output.icons.push_back(icon.To<blink::Manifest::ImageResource>());
 
   if (!input->share_target.is_null()) {
     output.share_target =
@@ -55,11 +53,9 @@ TypeConverter<blink::Manifest, blink::mojom::blink::ManifestPtr>::Convert(
     output.file_handler = std::move(file_handler);
   }
 
-  if (input->related_applications.has_value()) {
-    for (auto& related_application : *input->related_applications) {
-      output.related_applications.push_back(
-          related_application.To<blink::Manifest::RelatedApplication>());
-    }
+  for (auto& related_application : input->related_applications) {
+    output.related_applications.push_back(
+        related_application.To<blink::Manifest::RelatedApplication>());
   }
 
   output.prefer_related_applications = input->prefer_related_applications;
@@ -70,16 +66,16 @@ TypeConverter<blink::Manifest, blink::mojom::blink::ManifestPtr>::Convert(
   if (input->has_background_color)
     output.background_color = input->background_color;
 
-  if (input->splash_screen_url.has_value())
-    output.splash_screen_url = *input->splash_screen_url;
+  if (!input->splash_screen_url.IsEmpty())
+    output.splash_screen_url = input->splash_screen_url;
 
   if (!input->gcm_sender_id.IsEmpty()) {
     output.gcm_sender_id =
         base::NullableString16(blink::WebString(input->gcm_sender_id).Utf16());
   }
 
-  if (input->scope.has_value())
-    output.scope = *input->scope;
+  if (!input->scope.IsEmpty())
+    output.scope = input->scope;
 
   return output;
 }

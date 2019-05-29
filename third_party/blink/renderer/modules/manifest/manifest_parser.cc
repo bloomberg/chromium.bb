@@ -218,15 +218,13 @@ KURL ManifestParser::ParseStartURL(const JSONObject* object) {
 }
 
 KURL ManifestParser::ParseScope(const JSONObject* object,
-                                base::Optional<KURL>& start_url) {
+                                const KURL& start_url) {
   KURL scope = ParseURL(object, "scope", manifest_url_,
                         ParseURLOriginRestrictions::kSameOriginOnly);
 
   // This will change to remove the |document_url_| fallback in the future.
   // See https://github.com/w3c/manifest/issues/668.
-  const KURL& default_value = (!start_url.has_value() || start_url->IsEmpty())
-                                  ? document_url_
-                                  : *start_url;
+  const KURL& default_value = start_url.IsEmpty() ? document_url_ : start_url;
   DCHECK(default_value.IsValid());
 
   if (scope.IsEmpty())

@@ -98,14 +98,14 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_FALSE(IsManifestEmpty(manifest));
   ASSERT_TRUE(manifest->name.IsNull());
   ASSERT_TRUE(manifest->short_name.IsNull());
-  ASSERT_TRUE(manifest->start_url->IsEmpty());
+  ASSERT_TRUE(manifest->start_url.IsEmpty());
   ASSERT_EQ(manifest->display, kWebDisplayModeUndefined);
   ASSERT_EQ(manifest->orientation, kWebScreenOrientationLockDefault);
   ASSERT_FALSE(manifest->has_theme_color);
   ASSERT_FALSE(manifest->has_background_color);
-  ASSERT_TRUE(manifest->splash_screen_url->IsEmpty());
+  ASSERT_TRUE(manifest->splash_screen_url.IsEmpty());
   ASSERT_TRUE(manifest->gcm_sender_id.IsNull());
-  ASSERT_EQ(DefaultDocumentUrl().BaseAsString(), manifest->scope->GetString());
+  ASSERT_EQ(DefaultDocumentUrl().BaseAsString(), manifest->scope.GetString());
 }
 
 TEST_F(ManifestParserTest, MultipleErrorsReporting) {
@@ -219,7 +219,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
   // Don't parse if property isn't a string.
   {
     auto& manifest = ParseManifest("{ \"start_url\": {} }");
-    ASSERT_TRUE(manifest->start_url->IsEmpty());
+    ASSERT_TRUE(manifest->start_url.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'start_url' ignored, type string expected.",
               errors()[0]);
@@ -228,7 +228,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
   // Don't parse if property isn't a string.
   {
     auto& manifest = ParseManifest("{ \"start_url\": 42 }");
-    ASSERT_TRUE(manifest->start_url->IsEmpty());
+    ASSERT_TRUE(manifest->start_url.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'start_url' ignored, type string expected.",
               errors()[0]);
@@ -238,7 +238,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
   {
     auto& manifest =
         ParseManifest("{ \"start_url\": \"http://www.google.ca:a\" }");
-    ASSERT_TRUE(manifest->start_url->IsEmpty());
+    ASSERT_TRUE(manifest->start_url.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'start_url' ignored, URL is invalid.", errors()[0]);
   }
@@ -249,7 +249,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
         ParseManifestWithURLs("{ \"start_url\": \"http://foo.com/land.html\" }",
                               KURL("http://foo.com/manifest.json"),
                               KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->start_url->GetString(), "http://foo.com/land.html");
+    ASSERT_EQ(manifest->start_url.GetString(), "http://foo.com/land.html");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -259,7 +259,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
         ParseManifestWithURLs("{ \"start_url\": \"http://bar.com/land.html\" }",
                               KURL("http://foo.com/manifest.json"),
                               KURL("http://foo.com/index.html"));
-    ASSERT_TRUE(manifest->start_url->IsEmpty());
+    ASSERT_TRUE(manifest->start_url.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
         "property 'start_url' ignored, should "
@@ -273,7 +273,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
         ParseManifestWithURLs("{ \"start_url\": \"land.html\" }",
                               KURL("http://foo.com/landing/manifest.json"),
                               KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->start_url->GetString(),
+    ASSERT_EQ(manifest->start_url.GetString(),
               "http://foo.com/landing/land.html");
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -300,8 +300,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
   // Return the default value if the property isn't a string.
   {
     auto& manifest = ParseManifest("{ \"scope\": {} }");
-    ASSERT_EQ(manifest->scope->GetString(),
-              DefaultDocumentUrl().BaseAsString());
+    ASSERT_EQ(manifest->scope.GetString(), DefaultDocumentUrl().BaseAsString());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'scope' ignored, type string expected.", errors()[0]);
   }
@@ -323,7 +322,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
         "\"start_url\": \"http://foo.com/land/landing.html\" }",
         KURL("http://foo.com/manifest.json"),
         KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->scope->GetString(), "http://foo.com/land");
+    ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/land");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -334,8 +333,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
         "\"start_url\": \"http://foo.com/index.html\" }",
         KURL("http://foo.com/manifest.json"),
         KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->scope->GetString(),
-              DefaultDocumentUrl().BaseAsString());
+    ASSERT_EQ(manifest->scope.GetString(), DefaultDocumentUrl().BaseAsString());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
         "property 'scope' ignored. Start url should be within scope "
@@ -350,8 +348,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
         "\"start_url\": \"http://bar.com/land/landing.html\" }",
         KURL("http://foo.com/manifest.json"),
         KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->scope->GetString(),
-              DefaultDocumentUrl().BaseAsString());
+    ASSERT_EQ(manifest->scope.GetString(), DefaultDocumentUrl().BaseAsString());
     ASSERT_EQ(2u, GetErrorCount());
     EXPECT_EQ(
         "property 'start_url' ignored, should be same origin as document.",
@@ -369,7 +366,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
         "{ \"scope\": \"http://foo.com/land\", "
         "\"start_url\": \"http://foo.com/land/landing.html\" }",
         KURL("http://foo.com/manifest.json"), document_url);
-    ASSERT_EQ(manifest->scope->GetString(), document_url.BaseAsString());
+    ASSERT_EQ(manifest->scope.GetString(), document_url.BaseAsString());
     ASSERT_EQ(2u, GetErrorCount());
     EXPECT_EQ(
         "property 'start_url' ignored, should be same origin as document.",
@@ -384,7 +381,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
         ParseManifestWithURLs("{ \"scope\": \"http://foo.com/land\" }",
                               KURL("http://foo.com/manifest.json"),
                               KURL("http://foo.com/land/index.html"));
-    ASSERT_EQ(manifest->scope->GetString(), "http://foo.com/land");
+    ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/land");
     ASSERT_EQ(0u, GetErrorCount());
   }
 
@@ -395,7 +392,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
         ParseManifestWithURLs("{ \"scope\": \"http://foo.com/land\" }",
                               KURL("http://foo.com/manifest.json"),
                               KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->scope->GetString(), document_url.BaseAsString());
+    ASSERT_EQ(manifest->scope.GetString(), document_url.BaseAsString());
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
         "property 'scope' ignored. Start url should be within scope "
@@ -408,7 +405,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
     auto& manifest = ParseManifestWithURLs(
         "{ \"scope\": \"treasure\" }", KURL("http://foo.com/map/manifest.json"),
         KURL("http://foo.com/map/treasure/island/index.html"));
-    ASSERT_EQ(manifest->scope->GetString(), "http://foo.com/map/treasure");
+    ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/map/treasure");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -417,7 +414,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
     auto& manifest = ParseManifestWithURLs(
         "{ \"scope\": \"..\" }", KURL("http://foo.com/map/manifest.json"),
         KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->scope->GetString(), "http://foo.com/");
+    ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -426,7 +423,7 @@ TEST_F(ManifestParserTest, ScopeParseRules) {
     auto& manifest = ParseManifestWithURLs(
         "{ \"scope\": \"../..\" }", KURL("http://foo.com/map/manifest.json"),
         KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->scope->GetString(), "http://foo.com/");
+    ASSERT_EQ(manifest->scope.GetString(), "http://foo.com/");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -649,30 +646,30 @@ TEST_F(ManifestParserTest, IconsParseRules) {
   // Smoke test: if no icon, no value.
   {
     auto& manifest = ParseManifest("{ \"icons\": [] }");
-    EXPECT_TRUE(manifest->icons->IsEmpty());
+    EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Smoke test: if empty icon, no value.
   {
     auto& manifest = ParseManifest("{ \"icons\": [ {} ] }");
-    EXPECT_TRUE(manifest->icons->IsEmpty());
+    EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Smoke test: icon with invalid src, no value.
   {
     auto& manifest = ParseManifest("{ \"icons\": [ { \"icons\": [] } ] }");
-    EXPECT_TRUE(manifest->icons->IsEmpty());
+    EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Smoke test: if icon with empty src, it will be present in the list.
   {
     auto& manifest = ParseManifest("{ \"icons\": [ { \"src\": \"\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     EXPECT_EQ(icons.size(), 1u);
     EXPECT_EQ(icons[0]->src.GetString(), "http://foo.com/manifest.json");
     EXPECT_FALSE(IsManifestEmpty(manifest));
@@ -682,9 +679,9 @@ TEST_F(ManifestParserTest, IconsParseRules) {
   // Smoke test: if one icons with valid src, it will be present in the list.
   {
     auto& manifest = ParseManifest("{ \"icons\": [{ \"src\": \"foo.jpg\" }] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     EXPECT_EQ(icons.size(), 1u);
     EXPECT_EQ(icons[0]->src.GetString(), "http://foo.com/foo.jpg");
     EXPECT_FALSE(IsManifestEmpty(manifest));
@@ -697,9 +694,8 @@ TEST_F(ManifestParserTest, IconSrcParseRules) {
   {
     auto& manifest =
         ParseManifest("{ \"icons\": [ {\"src\": \"foo.png\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->src,
-              KURL(DefaultDocumentUrl(), "foo.png"));
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->src, KURL(DefaultDocumentUrl(), "foo.png"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -707,16 +703,15 @@ TEST_F(ManifestParserTest, IconSrcParseRules) {
   {
     auto& manifest =
         ParseManifest("{ \"icons\": [ {\"src\": \"   foo.png   \" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->src,
-              KURL(DefaultDocumentUrl(), "foo.png"));
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->src, KURL(DefaultDocumentUrl(), "foo.png"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if property isn't a string.
   {
     auto& manifest = ParseManifest("{ \"icons\": [ {\"src\": {} } ] }");
-    EXPECT_TRUE(manifest->icons->IsEmpty());
+    EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'src' ignored, type string expected.", errors()[0]);
   }
@@ -724,7 +719,7 @@ TEST_F(ManifestParserTest, IconSrcParseRules) {
   // Don't parse if property isn't a string.
   {
     auto& manifest = ParseManifest("{ \"icons\": [ {\"src\": 42 } ] }");
-    EXPECT_TRUE(manifest->icons->IsEmpty());
+    EXPECT_TRUE(manifest->icons.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'src' ignored, type string expected.", errors()[0]);
   }
@@ -734,8 +729,8 @@ TEST_F(ManifestParserTest, IconSrcParseRules) {
     auto& manifest = ParseManifestWithURLs(
         "{ \"icons\": [ {\"src\": \"icons/foo.png\" } ] }",
         KURL("http://foo.com/landing/index.html"), DefaultManifestUrl());
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->src.GetString(),
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->src.GetString(),
               "http://foo.com/landing/icons/foo.png");
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -746,8 +741,8 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   {
     auto& manifest =
         ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": \"foo\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->type, "foo");
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->type, "foo");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -756,8 +751,8 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         " \"type\": \"  foo  \" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->type, "foo");
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->type, "foo");
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -765,8 +760,8 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   {
     auto& manifest =
         ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": {} } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_TRUE(manifest->icons.value()[0]->type.IsEmpty());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_TRUE(manifest->icons[0]->type.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'type' ignored, type string expected.", errors()[0]);
   }
@@ -775,8 +770,8 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   {
     auto& manifest =
         ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": 42 } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_TRUE(manifest->icons.value()[0]->type.IsEmpty());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_TRUE(manifest->icons[0]->type.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'type' ignored, type string expected.", errors()[0]);
   }
@@ -788,8 +783,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"42x42\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->sizes.size(), 1u);
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->sizes.size(), 1u);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -798,8 +793,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"  42x42  \" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->sizes.size(), 1u);
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->sizes.size(), 1u);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -808,8 +803,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": {} } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->sizes.size(), 0u);
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'sizes' ignored, type string expected.", errors()[0]);
   }
@@ -819,8 +814,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": 42 } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->sizes.size(), 0u);
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'sizes' ignored, type string expected.", errors()[0]);
   }
@@ -830,9 +825,9 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"42x42  48x48\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     EXPECT_EQ(icons[0]->sizes[0], WebSize(42, 42));
     EXPECT_EQ(icons[0]->sizes[1], WebSize(48, 48));
     EXPECT_EQ(0u, GetErrorCount());
@@ -843,9 +838,9 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"42X42  48X48\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     EXPECT_EQ(icons[0]->sizes[0], WebSize(42, 42));
     EXPECT_EQ(icons[0]->sizes[1], WebSize(48, 48));
     EXPECT_EQ(0u, GetErrorCount());
@@ -856,9 +851,9 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"42X42  42x42\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     EXPECT_EQ(icons[0]->sizes[0], WebSize(42, 42));
     EXPECT_EQ(icons[0]->sizes[1], WebSize(42, 42));
     EXPECT_EQ(0u, GetErrorCount());
@@ -869,8 +864,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"004X007  042x00\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->sizes.size(), 0u);
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("found icon with no valid size.", errors()[0]);
   }
@@ -880,8 +875,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"e4X1.0  55ax1e10\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->sizes.size(), 0u);
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("found icon with no valid size.", errors()[0]);
   }
@@ -892,9 +887,9 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"any AnY ANY aNy\" } ] }");
     WebSize any = WebSize(0, 0);
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     EXPECT_EQ(icons[0]->sizes.size(), 4u);
     EXPECT_EQ(icons[0]->sizes[0], any);
     EXPECT_EQ(icons[0]->sizes[1], any);
@@ -908,8 +903,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"x 40xx 1x2x3 x42 42xx42\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->sizes.size(), 0u);
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->sizes.size(), 0u);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("found icon with no valid size.", errors()[0]);
   }
@@ -929,8 +924,8 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"purpose\": \"any\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->purpose.size(), 1u);
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->purpose.size(), 1u);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -939,17 +934,17 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"purpose\": \"  any  \" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
-    EXPECT_EQ(manifest->icons.value()[0]->purpose.size(), 1u);
+    EXPECT_FALSE(manifest->icons.IsEmpty());
+    EXPECT_EQ(manifest->icons[0]->purpose.size(), 1u);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // 'any' is added when property isn't present.
   {
     auto& manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     EXPECT_EQ(icons[0]->purpose.size(), 1u);
     EXPECT_EQ(icons[0]->purpose[0],
               mojom::blink::ManifestImageResource::Purpose::ANY);
@@ -962,9 +957,9 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"purpose\": 42 } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     EXPECT_EQ(icons[0]->purpose.size(), 1u);
     EXPECT_EQ(icons[0]->purpose[0],
               mojom::blink::ManifestImageResource::Purpose::ANY);
@@ -978,9 +973,9 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"purpose\": {} } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     EXPECT_EQ(icons[0]->purpose.size(), 1u);
     EXPECT_EQ(icons[0]->purpose[0],
               mojom::blink::ManifestImageResource::Purpose::ANY);
@@ -993,9 +988,9 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"purpose\": \"Any Badge Maskable\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     ASSERT_EQ(icons[0]->purpose.size(), 3u);
     EXPECT_EQ(icons[0]->purpose[0],
               mojom::blink::ManifestImageResource::Purpose::ANY);
@@ -1011,9 +1006,9 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"purpose\": \"  Any   Badge  \" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     ASSERT_EQ(icons[0]->purpose.size(), 2u);
     EXPECT_EQ(icons[0]->purpose[0],
               mojom::blink::ManifestImageResource::Purpose::ANY);
@@ -1027,9 +1022,9 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"purpose\": \"badge badge\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     ASSERT_EQ(icons[0]->purpose.size(), 2u);
     EXPECT_EQ(icons[0]->purpose[0],
               mojom::blink::ManifestImageResource::Purpose::BADGE);
@@ -1043,9 +1038,9 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"purpose\": \"badge fizzbuzz\" } ] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     ASSERT_EQ(icons[0]->purpose.size(), 1u);
     EXPECT_EQ(icons[0]->purpose[0],
               mojom::blink::ManifestImageResource::Purpose::BADGE);
@@ -1058,7 +1053,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"purpose\": \"fizzbuzz\" } ] }");
-    ASSERT_TRUE(manifest->icons->IsEmpty());
+    ASSERT_TRUE(manifest->icons.IsEmpty());
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ(kPurposeInvalidValueError, errors()[0]);
   }
@@ -1068,9 +1063,9 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\", \"purpose\": \"fizzbuzz\" }, "
         "               {\"src\": \"\" }] }");
-    EXPECT_TRUE(manifest->icons.has_value());
+    EXPECT_FALSE(manifest->icons.IsEmpty());
 
-    auto& icons = manifest->icons.value();
+    auto& icons = manifest->icons;
     ASSERT_EQ(1u, icons.size());
     ASSERT_EQ(icons[0]->purpose.size(), 1u);
     EXPECT_EQ(icons[0]->purpose[0],
@@ -2166,14 +2161,14 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   // If no application, empty list.
   {
     auto& manifest = ParseManifest("{ \"related_applications\": []}");
-    EXPECT_TRUE(manifest->related_applications->IsEmpty());
+    EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // If empty application, empty list.
   {
     auto& manifest = ParseManifest("{ \"related_applications\": [{}]}");
-    EXPECT_TRUE(manifest->related_applications->IsEmpty());
+    EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("'platform' is a required field, related application ignored.",
               errors()[0]);
@@ -2183,7 +2178,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   {
     auto& manifest =
         ParseManifest("{ \"related_applications\": [{\"platform\": 123}]}");
-    EXPECT_TRUE(manifest->related_applications->IsEmpty());
+    EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'platform' ignored, type string expected.",
               errors()[0]);
@@ -2197,7 +2192,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   {
     auto& manifest =
         ParseManifest("{ \"related_applications\": [{\"id\": \"foo\"}]}");
-    EXPECT_TRUE(manifest->related_applications->IsEmpty());
+    EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("'platform' is a required field, related application ignored.",
               errors()[0]);
@@ -2207,7 +2202,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   {
     auto& manifest = ParseManifest(
         "{ \"related_applications\": [{\"platform\": \"play\"}]}");
-    EXPECT_TRUE(manifest->related_applications->IsEmpty());
+    EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("one of 'url' or 'id' is required, related application ignored.",
               errors()[0]);
@@ -2218,7 +2213,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     auto& manifest = ParseManifest(
         "{ \"related_applications\": ["
         "{\"platform\": \"play\", \"url\": \"http://www.foo.com\"}]}");
-    auto& related_applications = *manifest->related_applications;
+    auto& related_applications = manifest->related_applications;
     EXPECT_EQ(related_applications.size(), 1u);
     EXPECT_EQ(related_applications[0]->platform, "play");
     EXPECT_TRUE(related_applications[0]->url.has_value());
@@ -2232,7 +2227,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     auto& manifest = ParseManifest(
         "{ \"related_applications\": ["
         "{\"platform\": \"play\", \"url\": \"http://www.foo.com:co&uk\"}]}");
-    EXPECT_TRUE(manifest->related_applications->IsEmpty());
+    EXPECT_TRUE(manifest->related_applications.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("property 'url' ignored, URL is invalid.", errors()[0]);
     EXPECT_EQ("one of 'url' or 'id' is required, related application ignored.",
@@ -2244,7 +2239,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
     auto& manifest = ParseManifest(
         "{ \"related_applications\": ["
         "{\"platform\": \"itunes\", \"id\": \"foo\"}]}");
-    auto& related_applications = *manifest->related_applications;
+    auto& related_applications = manifest->related_applications;
     EXPECT_EQ(related_applications.size(), 1u);
     EXPECT_EQ(related_applications[0]->platform, "itunes");
     EXPECT_EQ(related_applications[0]->id, "foo");
@@ -2258,7 +2253,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
         "{ \"related_applications\": ["
         "{\"platform\": \"play\", \"id\": \"foo\"},"
         "{\"platform\": \"itunes\", \"id\": \"bar\"}]}");
-    auto& related_applications = *manifest->related_applications;
+    auto& related_applications = manifest->related_applications;
     EXPECT_EQ(related_applications.size(), 2u);
     EXPECT_EQ(related_applications[0]->platform, "play");
     EXPECT_EQ(related_applications[0]->id, "foo");
@@ -2276,7 +2271,7 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
         "{\"platform\": \"itunes\"},"
         "{\"platform\": \"play\", \"id\": \"foo\"},"
         "{}]}");
-    auto& related_applications = *manifest->related_applications;
+    auto& related_applications = manifest->related_applications;
     EXPECT_EQ(related_applications.size(), 1u);
     EXPECT_EQ(related_applications[0]->platform, "play");
     EXPECT_EQ(related_applications[0]->id, "foo");
@@ -2698,7 +2693,7 @@ TEST_F(ManifestParserTest, SplashScreenUrlParseRules) {
   // Don't parse if property isn't a string.
   {
     auto& manifest = ParseManifest("{ \"splash_screen_url\": {} }");
-    ASSERT_TRUE(manifest->splash_screen_url->IsEmpty());
+    ASSERT_TRUE(manifest->splash_screen_url.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'splash_screen_url' ignored, type string expected.",
               errors()[0]);
@@ -2707,7 +2702,7 @@ TEST_F(ManifestParserTest, SplashScreenUrlParseRules) {
   // Don't parse if property isn't a string.
   {
     auto& manifest = ParseManifest("{ \"splash_screen_url\": 42 }");
-    ASSERT_TRUE(manifest->splash_screen_url->IsEmpty());
+    ASSERT_TRUE(manifest->splash_screen_url.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'splash_screen_url' ignored, type string expected.",
               errors()[0]);
@@ -2717,7 +2712,7 @@ TEST_F(ManifestParserTest, SplashScreenUrlParseRules) {
   {
     auto& manifest =
         ParseManifest("{ \"splash_screen_url\": \"http://www.google.ca:a\" }");
-    ASSERT_TRUE(manifest->splash_screen_url->IsEmpty());
+    ASSERT_TRUE(manifest->splash_screen_url.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'splash_screen_url' ignored, URL is invalid.",
               errors()[0]);
@@ -2729,7 +2724,7 @@ TEST_F(ManifestParserTest, SplashScreenUrlParseRules) {
         "{ \"splash_screen_url\": \"http://foo.com/splash.html\" }",
         KURL("http://foo.com/manifest.json"),
         KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->splash_screen_url->GetString(),
+    ASSERT_EQ(manifest->splash_screen_url.GetString(),
               "http://foo.com/splash.html");
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -2740,7 +2735,7 @@ TEST_F(ManifestParserTest, SplashScreenUrlParseRules) {
         "{ \"splash_screen_url\": \"http://bar.com/splash.html\" }",
         KURL("http://foo.com/manifest.json"),
         KURL("http://foo.com/index.html"));
-    ASSERT_TRUE(manifest->splash_screen_url->IsEmpty());
+    ASSERT_TRUE(manifest->splash_screen_url.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ(
         "property 'splash_screen_url' ignored, should "
@@ -2754,7 +2749,7 @@ TEST_F(ManifestParserTest, SplashScreenUrlParseRules) {
         ParseManifestWithURLs("{ \"splash_screen_url\": \"splash.html\" }",
                               KURL("http://foo.com/splashy/manifest.json"),
                               KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->splash_screen_url->GetString(),
+    ASSERT_EQ(manifest->splash_screen_url.GetString(),
               "http://foo.com/splashy/splash.html");
     EXPECT_EQ(0u, GetErrorCount());
   }

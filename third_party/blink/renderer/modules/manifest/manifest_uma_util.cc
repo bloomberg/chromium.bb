@@ -41,14 +41,14 @@ void ManifestUmaUtil::ParseSucceeded(
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.short_name",
                         !manifest->short_name.IsEmpty());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.start_url",
-                        !manifest->start_url->IsEmpty());
+                        !manifest->start_url.IsEmpty());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.display",
                         manifest->display != kWebDisplayModeUndefined);
   UMA_HISTOGRAM_BOOLEAN(
       "Manifest.HasProperty.orientation",
       manifest->orientation != kWebScreenOrientationLockDefault);
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.icons",
-                        manifest->icons.has_value());
+                        !manifest->icons.IsEmpty());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.share_target",
                         manifest->share_target.get());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.gcm_sender_id",

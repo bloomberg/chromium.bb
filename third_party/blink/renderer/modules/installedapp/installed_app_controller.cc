@@ -63,16 +63,13 @@ void InstalledAppController::OnGetManifestForRelatedApps(
     const KURL& /*url*/,
     mojom::blink::ManifestPtr manifest) {
   Vector<mojom::blink::RelatedApplicationPtr> mojo_related_apps;
-  if (manifest->related_applications.has_value()) {
-    for (const auto& related_application : *manifest->related_applications) {
-      mojom::blink::RelatedApplicationPtr converted_application(
-          mojom::blink::RelatedApplication::New());
-      converted_application->platform = related_application->platform;
-      converted_application->id = related_application->id;
-      if (related_application->url.has_value())
-        converted_application->url = related_application->url->GetString();
-      mojo_related_apps.push_back(std::move(converted_application));
-    }
+  for (const auto& related_application : manifest->related_applications) {
+    auto application = mojom::blink::RelatedApplication::New();
+    application->platform = related_application->platform;
+    application->id = related_application->id;
+    if (related_application->url.has_value())
+      application->url = related_application->url->GetString();
+    mojo_related_apps.push_back(std::move(application));
   }
 
   if (!provider_) {
