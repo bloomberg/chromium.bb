@@ -308,6 +308,12 @@ void ProfileImpl::setPacUrl(const StringRef& url)
 
 
 // patch section: diagnostics
+void ProfileImpl::dumpDiagnostics(DiagnosticInfoType type,
+                                  const StringRef&   path)
+{
+    d_hostPtr->dumpDiagnostics(static_cast<int>(type),
+                               std::string(path.data(), path.size()));
+}
 
 
 // patch section: embedder ipc
