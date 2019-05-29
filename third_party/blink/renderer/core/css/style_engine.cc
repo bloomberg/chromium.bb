@@ -1824,14 +1824,9 @@ void StyleEngine::UpdateColorScheme() {
     // darkening is enabled.
     preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
   }
-
-  if (preferred_color_scheme_ != old_preferred_color_scheme) {
+  if (preferred_color_scheme_ != old_preferred_color_scheme)
     PlatformColorsChanged();
-    if (LocalFrameView* view = GetDocument().View()) {
-      view->SetBaseBackgroundColor(use_dark_scheme ? Color::kBlack
-                                                   : Color::kWhite);
-    }
-  }
+  UpdateColorSchemeBackground();
 }
 
 void StyleEngine::ColorSchemeChanged() {
@@ -1845,6 +1840,28 @@ void StyleEngine::SetColorSchemeFromMeta(const CSSValue* color_scheme) {
       kLocalStyleChange, StyleChangeReasonForTracing::Create(
                              style_change_reason::kPlatformColorChange));
   UpdateColorScheme();
+}
+
+void StyleEngine::UpdateColorSchemeBackground() {
+  LocalFrameView* view = GetDocument().View();
+  if (!view)
+    return;
+
+  bool use_dark_background = false;
+
+  if (preferred_color_scheme_ == PreferredColorScheme::kDark) {
+    const ComputedStyle* style = nullptr;
+    if (auto* root_element = GetDocument().documentElement())
+      style = root_element->GetComputedStyle();
+    if (style) {
+      if (style->UsedColorScheme() == ColorScheme::kDark)
+        use_dark_background = true;
+    } else if (SupportsDarkColorScheme()) {
+      use_dark_background = true;
+    }
+  }
+
+  view->SetUseDarkSchemeBackground(use_dark_background);
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {

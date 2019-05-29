@@ -1651,6 +1651,8 @@ bool LocalFrameView::HasOpaqueBackground() const {
 }
 
 Color LocalFrameView::BaseBackgroundColor() const {
+  if (use_dark_scheme_background_)
+    return Color::kBlack;
   return base_background_color_;
 }
 
@@ -1659,7 +1661,6 @@ void LocalFrameView::SetBaseBackgroundColor(const Color& background_color) {
     return;
 
   base_background_color_ = background_color;
-
   if (auto* layout_view = GetLayoutView()) {
     if (layout_view->Layer()->HasCompositedLayerMapping()) {
       CompositedLayerMapping* composited_layer_mapping =
@@ -1674,6 +1675,15 @@ void LocalFrameView::SetBaseBackgroundColor(const Color& background_color) {
 
   if (!ShouldThrottleRendering())
     GetPage()->Animator().ScheduleVisualUpdate(frame_.Get());
+}
+
+void LocalFrameView::SetUseDarkSchemeBackground(bool dark_scheme) {
+  if (use_dark_scheme_background_ == dark_scheme)
+    return;
+
+  use_dark_scheme_background_ = dark_scheme;
+  if (auto* layout_view = GetLayoutView())
+    layout_view->SetBackgroundNeedsFullPaintInvalidation();
 }
 
 void LocalFrameView::UpdateBaseBackgroundColorRecursively(

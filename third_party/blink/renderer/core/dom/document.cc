@@ -2353,6 +2353,7 @@ void Document::UpdateStyle() {
   ClearChildNeedsReattachLayoutTree();
 
   PropagateStyleToViewport();
+  GetStyleEngine().UpdateColorSchemeBackground();
   View()->UpdateCountersAfterStyleChange();
   GetLayoutView()->RecalcLayoutOverflow();
 

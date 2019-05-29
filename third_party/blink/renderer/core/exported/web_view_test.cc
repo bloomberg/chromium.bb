@@ -551,6 +551,34 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   EXPECT_TRUE(GreenChannel(color));
 }
 
+TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
+  ScopedCSSColorSchemeForTest enable_color_scheme(true);
+
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  web_view->SettingsImpl()->SetPreferredColorScheme(
+      PreferredColorScheme::kLight);
+  web_view->SetBaseBackgroundColor(SK_ColorBLUE);
+
+  WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
+  frame_test_helpers::LoadHTMLString(
+      web_view->MainFrameImpl(),
+      "<style>:root { color-scheme: light dark }<style>", base_url);
+  UpdateAllLifecyclePhases();
+
+  LocalFrameView* frame_view = web_view->MainFrameImpl()->GetFrame()->View();
+  EXPECT_EQ(Color(0, 0, 255), frame_view->BaseBackgroundColor());
+
+  web_view->SettingsImpl()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
+
+  web_view->SettingsImpl()->SetPreferredColorScheme(
+      PreferredColorScheme::kLight);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color(0, 0, 255), frame_view->BaseBackgroundColor());
+}
+
 TEST_F(WebViewTest, FocusIsInactive) {
   RegisterMockedHttpURLLoad("visible_iframe.html");
   WebViewImpl* web_view =

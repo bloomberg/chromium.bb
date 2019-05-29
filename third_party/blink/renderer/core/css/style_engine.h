@@ -347,6 +347,7 @@ class CORE_EXPORT StyleEngine final
   PreferredColorScheme GetPreferredColorScheme() const {
     return preferred_color_scheme_;
   }
+  void UpdateColorSchemeBackground();
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }

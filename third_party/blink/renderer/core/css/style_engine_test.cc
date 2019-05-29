@@ -1927,4 +1927,19 @@ TEST_F(StyleEngineTest, NoCrashWhenMarkingPartiallyRemovedSubtree) {
   form->removeChild(outer);
 }
 
+TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
+  ScopedCSSColorSchemeForTest enable_color_scheme(true);
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(Color::kWhite, GetDocument().View()->BaseBackgroundColor());
+
+  GetDocument().documentElement()->SetInlineStyleProperty(
+      CSSPropertyID::kColorScheme, "dark");
+  UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(Color::kBlack, GetDocument().View()->BaseBackgroundColor());
+}
+
 }  // namespace blink

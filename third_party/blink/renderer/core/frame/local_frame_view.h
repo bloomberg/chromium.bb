@@ -245,6 +245,7 @@ class CORE_EXPORT LocalFrameView final
   Color BaseBackgroundColor() const;
   void SetBaseBackgroundColor(const Color&);
   void UpdateBaseBackgroundColorRecursively(const Color&);
+  void SetUseDarkSchemeBackground(bool dark_scheme);
 
   void AdjustViewSize();
   void AdjustViewSizeAndLayout();
@@ -871,6 +872,7 @@ class CORE_EXPORT LocalFrameView final
   TaskRunnerTimer<LocalFrameView> update_plugins_timer_;
 
   bool first_layout_;
+  bool use_dark_scheme_background_ = false;
   Color base_background_color_;
   IntSize last_viewport_size_;
   float last_zoom_factor_;
