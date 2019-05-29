@@ -35,12 +35,12 @@ bool PwaInstallView::Update() {
   if (!manager)
     return false;
 
-  bool is_probably_installable = manager->IsProbablyInstallableWebApp();
+  bool is_probably_promotable = manager->IsProbablyPromotableWebApp();
   auto* tab_helper =
       web_app::WebAppTabHelperBase::FromWebContents(web_contents);
   bool is_installed = tab_helper && tab_helper->HasAssociatedApp();
 
-  bool show_install_button = is_probably_installable && !is_installed;
+  bool show_install_button = is_probably_promotable && !is_installed;
 
   if (show_install_button && manager->MaybeConsumeInstallAnimation())
     AnimateIn(base::nullopt);

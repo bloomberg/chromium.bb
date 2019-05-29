@@ -105,9 +105,14 @@ class AppBannerManager : public content::WebContentsObserver,
     COMPLETE,
   };
 
-  // Installable describes whether a site satisifes the installablity
+  // Installable describes to what degree a site satisifes the installablity
   // requirements.
-  enum class InstallableWebAppCheckResult { kUnknown, kNo, kYes };
+  enum class InstallableWebAppCheckResult {
+    kUnknown,
+    kNo,
+    kByUserRequest,
+    kPromotable,
+  };
 
   // Retrieves the platform specific instance of AppBannerManager from
   // |web_contents|.
@@ -131,10 +136,10 @@ class AppBannerManager : public content::WebContentsObserver,
   static base::string16 GetInstallableWebAppName(
       content::WebContents* web_contents);
 
-  // Returns whether installability checks have passed (e.g. having a service
-  // worker fetch event) or have passed previously within the current manifest
-  // scope.
-  bool IsProbablyInstallableWebApp() const;
+  // Returns whether installability checks satisfy promotion requirements
+  // (e.g. having a service worker fetch event) or have passed previously within
+  // the current manifest scope.
+  bool IsProbablyPromotableWebApp() const;
 
   // Each successful installability check gets to show one animation prompt,
   // this returns and consumes the animation prompt if it is available.
@@ -167,9 +172,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // GetAppIdentifier() must return a valid value for this method to work.
   bool CheckIfShouldShowBanner();
 
-  // Called when the current site is eligible to show a banner. Returns true if
-  // the banner should not be shown because the site is already installed, and
-  // false if the banner should be shown because the site is not yet installed.
+  // Returns whether the site is already installed as a web app.
   bool CheckIfInstalled();
 
   // Return a string identifying this app for metrics.
@@ -337,7 +340,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns a status code based on the current state, to log when terminating.
   InstallableStatusCode TerminationCode() const;
 
-  bool IsInstallableWebApp() const;
   void SetInstallableWebAppCheckResult(InstallableWebAppCheckResult result);
 
   // Fetches the data required to display a banner for the current page.
@@ -361,9 +363,9 @@ class AppBannerManager : public content::WebContentsObserver,
   bool install_animation_pending_;
   InstallableWebAppCheckResult installable_web_app_check_result_;
 
-  // The scope of the most recent installability check if successful otherwise
-  // invalid.
-  GURL last_installable_web_app_scope_;
+  // The scope of the most recent installability check that passes promotability
+  // requirements, otherwise invalid.
+  GURL last_promotable_web_app_scope_;
 
   base::ObserverList<Observer, true> observer_list_;
 

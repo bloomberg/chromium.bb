@@ -1,0 +1,14 @@
+{
+  "name": "Manifest prefer related apps empty",
+  "icons": [
+    {
+      "src": "/banners/image-512px.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "scope": ".",
+  "start_url": ".",
+  "display": "standalone",
+  "prefer_related_applications": true
+}

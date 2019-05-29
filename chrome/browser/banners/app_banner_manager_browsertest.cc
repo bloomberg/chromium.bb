@@ -468,4 +468,20 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerReprompt) {
                                 SHOWING_WEB_APP_BANNER, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, PreferRelatedApplications) {
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  base::HistogramTester histograms;
+
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/manifest_test_page.html?manifest="
+      "manifest_prefer_related_apps_empty.json");
+  TriggerBannerFlowWithNavigation(browser(), manager.get(), test_url,
+                                  false /* expected_will_show */,
+                                  State::COMPLETE);
+
+  histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
+                                PREFER_RELATED_APPLICATIONS, 1);
+}
+
 }  // namespace banners

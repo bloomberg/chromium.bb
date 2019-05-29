@@ -326,3 +326,20 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, BouncedInstallMeasured) {
 IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, BouncedInstallIgnored) {
   TestInstallBounce(base::TimeDelta::FromMinutes(70), 0);
 }
+
+// Omnibox install button shouldn't show for a PWA that prefers a related app
+// over the web app.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
+                       SuppressForPreferredRelatedApp) {
+  NavigateToURL(
+      https_server_.GetURL("/banners/manifest_test_page.html?manifest="
+                           "manifest_prefer_related_apps_empty.json"));
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_FALSE(pwa_install_view_->GetVisible());
+
+  // Site should still be considered installable even if it's not promoted in
+  // the omnibox.
+  EXPECT_TRUE(base::EqualsASCII(
+      banners::AppBannerManager::GetInstallableWebAppName(web_contents_),
+      "Manifest prefer related apps empty"));
+}
