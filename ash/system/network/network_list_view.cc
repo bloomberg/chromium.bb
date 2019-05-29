@@ -27,8 +27,6 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/device_event_log/device_event_log.h"
@@ -51,9 +49,11 @@ using chromeos::network_config::mojom::DeviceStatePropertiesPtr;
 using chromeos::network_config::mojom::DeviceStateType;
 using chromeos::network_config::mojom::FilterType;
 using chromeos::network_config::mojom::NetworkFilter;
+using chromeos::network_config::mojom::NetworkStateProperties;
 using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using chromeos::network_config::mojom::NetworkType;
 using chromeos::network_config::mojom::ONCSource;
+using chromeos::network_config::mojom::ProxyMode;
 
 namespace ash {
 namespace tray {
@@ -223,15 +223,9 @@ NetworkListView::UpdateNetworkListEntries() {
   // Keep an index where the next child should be inserted.
   int index = 0;
 
-  bool using_proxy = false;
-  // TODO(https://crbug.com/718072): Create UIProxyConfigService under mash, or
-  // provide this via network_config.mojom.
-  if (!::features::IsMultiProcessMash()) {
-    using_proxy = chromeos::NetworkHandler::Get()
-                      ->ui_proxy_config_service()
-                      ->HasDefaultNetworkProxyConfigured();
-  }
-
+  const NetworkStateProperties* default_network = model_->default_network();
+  bool using_proxy = default_network &&
+                     default_network->proxy_mode == ProxyMode::kFixedServers;
   // Show a warning that the connection might be monitored if connected to a VPN
   // or if the default network has a proxy installed.
   if (vpn_connected_ || using_proxy) {

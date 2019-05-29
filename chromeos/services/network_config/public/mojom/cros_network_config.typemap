@@ -7,6 +7,7 @@ mojom =
 
 public_deps = [
   "//components/onc",
+  "//components/proxy_config",
 ]
 
 public_headers = [ "//components/onc/onc_constants.h" ]

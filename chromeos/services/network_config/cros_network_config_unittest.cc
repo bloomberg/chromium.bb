@@ -153,6 +153,7 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
         ASSERT_TRUE(result->vpn);
         EXPECT_EQ(mojom::VPNType::kL2TPIPsec, result->vpn->type);
       }));
+  // TODO(919691): Test ProxyMode once UIProxyConfigService logic is improved.
 }
 
 TEST_F(CrosNetworkConfigTest, GetNetworkStateList) {

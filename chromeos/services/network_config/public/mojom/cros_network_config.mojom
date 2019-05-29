@@ -46,15 +46,6 @@ enum DeviceStateType {
   kUnavailable,
 };
 
-// The ONC source for policy or imported networks.
-enum ONCSource {
-  kUnknown,
-  kNone,
-  kUserImport,
-  kDevicePolicy,
-  kUserPolicy,
-};
-
 // The network technology type. NOTE: 'All' and 'Wireless' are only used by
 // FilterType for requesting groups of networks.
 enum NetworkType {
@@ -69,6 +60,28 @@ enum NetworkType {
   kWireless,
   kWiFi,
   kWiMAX,
+};
+
+// The ONC source for policy or imported networks.
+enum ONCSource {
+  kUnknown,
+  kNone,
+  kUserImport,
+  kDevicePolicy,
+  kUserPolicy,
+};
+
+enum ProxyMode {
+  // Direct connection to the network.
+  kDirect,
+  // Try to retrieve a PAC script from http://wpad/wpad.dat.
+  kAutoDetect,
+  // Try to retrieve a PAC script from kProxyPacURL.
+  kPacScript,
+  // Use a specified list of servers.
+  kFixedServers,
+  // Use the system's proxy settings.
+  kSystem,
 };
 
 // The security type for WiFi Ethernet networks.
@@ -189,6 +202,9 @@ struct NetworkStateProperties {
   string name;
   // The relative priority of the network. Larger values have higher priority.
   int32 priority;
+  // The proxy mode affecting this network. Includes any settings that affect
+  // this network (i.e. global proxy settings are also considered).
+  ProxyMode proxy_mode;
   // True for visible networks that are blocked / disallowed by policy.
   bool prohibited_by_policy = false;
   ONCSource source;

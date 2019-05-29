@@ -5,10 +5,12 @@
 #include "chromeos/services/network_config/cros_network_config.h"
 
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
 #include "components/device_event_log/device_event_log.h"
@@ -142,6 +144,17 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
   result->priority = network->priority();
   result->prohibited_by_policy = network->blocked_by_policy();
   result->source = mojom::ONCSource(network->onc_source());
+
+  // NetworkHandler and UIProxyConfigService may not exist in tests.
+  UIProxyConfigService* ui_proxy_config_service =
+      NetworkHandler::IsInitialized()
+          ? NetworkHandler::Get()->ui_proxy_config_service()
+          : nullptr;
+  result->proxy_mode =
+      ui_proxy_config_service
+          ? mojom::ProxyMode(
+                ui_proxy_config_service->ProxyModeForNetwork(network))
+          : mojom::ProxyMode::kDirect;
 
   const NetworkState::CaptivePortalProviderInfo* captive_portal_provider =
       network->captive_portal_provider();

@@ -19,6 +19,7 @@ static_library("network_config") {
     "//chromeos/services/network_config/public/mojom",
     "//components/device_event_log",
     "//components/onc",
+    "//components/proxy_config",
     "//services/service_manager/public/cpp",
   ]
 }

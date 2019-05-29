@@ -7,6 +7,7 @@
 
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/onc/onc_constants.h"
+#include "components/proxy_config/proxy_prefs.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 
 namespace mojo {
@@ -18,6 +19,16 @@ class EnumTraits<chromeos::network_config::mojom::ONCSource, onc::ONCSource> {
       onc::ONCSource input);
   static bool FromMojom(chromeos::network_config::mojom::ONCSource input,
                         onc::ONCSource* out);
+};
+
+template <>
+class EnumTraits<chromeos::network_config::mojom::ProxyMode,
+                 ProxyPrefs::ProxyMode> {
+ public:
+  static chromeos::network_config::mojom::ProxyMode ToMojom(
+      ProxyPrefs::ProxyMode input);
+  static bool FromMojom(chromeos::network_config::mojom::ProxyMode input,
+                        ProxyPrefs::ProxyMode* out);
 };
 
 }  // namespace mojo
