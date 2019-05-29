@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/app/web_main_runner.h"
+#include "ios/web/public/init/web_main_runner.h"
 
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "ios/web/app/web_main_loop.h"
-#include "ios/web/public/global_state/ios_global_state.h"
+#include "ios/web/init/web_main_loop.h"
+#include "ios/web/public/init/ios_global_state.h"
 #include "ios/web/public/url_schemes.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/web_thread_impl.h"
@@ -56,7 +56,7 @@ class WebMainRunnerImpl : public WebMainRunner {
 
     mojo::core::Init();
 
-    // TODO(rohitrao): Should we instead require that all embedders call
+    // TODO(crbug.com/965894): Should we instead require that all embedders call
     // SetWebClient()?
     if (!GetWebClient())
       SetWebClient(&empty_web_client_);

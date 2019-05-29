@@ -221,7 +221,7 @@ source_set("browser_impl") {
     "//ios/chrome/common/app_group",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
-    "//ios/web/public/app",
+    "//ios/web/public/init",
     "//net",
     "//rlz/buildflags",
     "//services/network:network_service",

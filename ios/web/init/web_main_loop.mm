@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/app/web_main_loop.h"
+#include "ios/web/init/web_main_loop.h"
 
 #include <stddef.h>
 
@@ -21,8 +21,8 @@
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #import "ios/web/net/cookie_notification_bridge.h"
-#include "ios/web/public/app/web_main_parts.h"
-#include "ios/web/public/global_state/ios_global_state.h"
+#include "ios/web/public/init/ios_global_state.h"
+#include "ios/web/public/init/web_main_parts.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/service_manager_context.h"
@@ -37,7 +37,7 @@
 namespace web {
 
 // The currently-running WebMainLoop.  There can be one or zero.
-// TODO(rohitrao): Desktop uses this to implement
+// TODO(crbug.com/965889): Desktop uses this to implement
 // ImmediateShutdownAndExitProcess.  If we don't need that functionality, we can
 // remove this.
 WebMainLoop* g_current_web_main_loop = nullptr;

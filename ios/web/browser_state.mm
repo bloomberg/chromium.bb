@@ -15,7 +15,7 @@
 #include "base/process/process_handle.h"
 #include "base/task/post_task.h"
 #include "base/token.h"
-#include "ios/web/public/network_context_owner.h"
+#include "ios/web/public/init/network_context_owner.h"
 #include "ios/web/public/security/certificate_policy_cache.h"
 #include "ios/web/public/service_manager_connection.h"
 #include "ios/web/public/service_names.mojom.h"

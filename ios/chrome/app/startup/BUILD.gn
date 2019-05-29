@@ -25,7 +25,7 @@ source_set("startup_basic") {
     "//base",
     "//components/crash/core/common",
     "//ios/chrome/browser:chrome_paths",
-    "//ios/web/public/app",
+    "//ios/web/public/init",
     "//skia",
   ]
 
@@ -62,7 +62,7 @@ source_set("startup") {
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
-    "//ios/web/public/app",
+    "//ios/web/public/init",
     ios_provider_target,
   ]
 }

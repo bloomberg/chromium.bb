@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "ios/web/common/features.h"
-#include "ios/web/public/app/web_main_parts.h"
+#include "ios/web/public/init/web_main_parts.h"
 #include "services/service_manager/public/cpp/service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

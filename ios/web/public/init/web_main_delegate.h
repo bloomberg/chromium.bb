@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_APP_WEB_MAIN_DELEGATE_H_
-#define IOS_WEB_PUBLIC_APP_WEB_MAIN_DELEGATE_H_
+#ifndef IOS_WEB_PUBLIC_INIT_WEB_MAIN_DELEGATE_H_
+#define IOS_WEB_PUBLIC_INIT_WEB_MAIN_DELEGATE_H_
 
 namespace web {
 
@@ -21,10 +21,11 @@ class WebMainDelegate {
   virtual void BasicStartupComplete() {}
 
   // Called right before the process exits.
-  // TODO(rohitrao): This may not be used for anything.  Remove if useless.
+  // TODO(crbug.com/965895): This may not be used for anything.  Remove if
+  // useless.
   virtual void ProcessExiting() {}
 };
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_APP_WEB_MAIN_DELEGATE_H_
+#endif  // IOS_WEB_PUBLIC_INIT_WEB_MAIN_DELEGATE_H_

@@ -21,10 +21,13 @@ source_set("web") {
     ":service_names",
 
     # TODO(crbug.com/616244): Remove private files from public dependencies.
+    ":services",
+    ":threads",
     "//ios/web/navigation:core",
     "//ios/web/net",
     "//ios/web/public",
     "//ios/web/public/download",
+    "//ios/web/public/init",
     "//ios/web/web_state:web_state_impl_header",
     "//ios/web/web_state/ui",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
@@ -37,10 +40,12 @@ source_set("web") {
     ":js_resources",
     ":navigation_resources",
     ":resources",
-    ":service_names",
+    ":services",
+    ":threads",
     "//base",
     "//ios/web/common",
     "//ios/web/download",
+    "//ios/web/init",
     "//ios/web/navigation",
     "//ios/web/net",
     "//ios/web/public",
@@ -63,22 +68,50 @@ source_set("web") {
     "browser_url_rewriter_impl.mm",
     "crw_navigation_item_storage.mm",
     "network_context_owner.cc",
-    "service_manager_connection_impl.cc",
-    "service_manager_connection_impl.h",
-    "service_manager_context.h",
-    "service_manager_context.mm",
     "url_scheme_util.mm",
-    "web_browser_manifest.h",
-    "web_browser_manifest.mm",
     "web_client.mm",
-    "web_sub_thread.cc",
-    "web_sub_thread.h",
-    "web_thread_impl.cc",
-    "web_thread_impl.h",
     "web_view_creation_util.mm",
   ]
 
   libs = [ "WebKit.framework" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("threads") {
+  deps = [
+    "//base",
+    "//ios/web/public",
+  ]
+
+  sources = [
+    "web_sub_thread.cc",
+    "web_sub_thread.h",
+    "web_thread_impl.cc",
+    "web_thread_impl.h",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("services") {
+  deps = [
+    ":service_names",
+    "//ios/web/public",
+    "//services/network:network_service",
+    "//services/network/public/mojom",
+    "//services/service_manager",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
+  ]
+  sources = [
+    "service_manager_connection_impl.cc",
+    "service_manager_connection_impl.h",
+    "service_manager_context.h",
+    "service_manager_context.mm",
+    "web_browser_manifest.h",
+    "web_browser_manifest.mm",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -221,6 +254,7 @@ source_set("ios_web_general_unittests") {
   testonly = true
   deps = [
     ":core",
+    ":threads",
     ":web",
     "//base",
     "//base/test:test_support",

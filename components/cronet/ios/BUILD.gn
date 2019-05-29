@@ -50,7 +50,8 @@ _cronet_deps = [
   "//ios/net",
   "//ios/net:network_protocol",
   "//ios/web/public:user_agent",
-  "//ios/web/public/global_state",
+  "//ios/web/public/init:global_state",
+  "//ios/web/init:global_state",
   "//net",
   "//url",
 ]
@@ -86,7 +87,8 @@ source_set("cronet_sources") {
 source_set("cronet_sources_with_global_state") {
   deps = [
     "//base",
-    "//ios/web/public/global_state",
+    "//ios/web/init:global_state",
+    "//ios/web/public/init:global_state",
   ]
 
   public_deps = [

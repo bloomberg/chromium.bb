@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_GLOBAL_STATE_IOS_GLOBAL_STATE_H_
-#define IOS_WEB_PUBLIC_GLOBAL_STATE_IOS_GLOBAL_STATE_H_
+#ifndef IOS_WEB_PUBLIC_INIT_IOS_GLOBAL_STATE_H_
+#define IOS_WEB_PUBLIC_INIT_IOS_GLOBAL_STATE_H_
 
 #include "base/task/thread_pool/thread_pool.h"
 
@@ -70,4 +70,4 @@ base::MessageLoop* GetMainThreadMessageLoop();
 
 }  // namespace ios_global_state
 
-#endif  // IOS_WEB_PUBLIC_GLOBAL_STATE_IOS_GLOBAL_STATE_H_
+#endif  // IOS_WEB_PUBLIC_INIT_IOS_GLOBAL_STATE_H_

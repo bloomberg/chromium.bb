@@ -12,7 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
-#include "ios/web/public/app/web_main_runner.h"
+#include "ios/web/public/init/web_main_runner.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

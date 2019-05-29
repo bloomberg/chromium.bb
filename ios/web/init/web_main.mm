@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/app/web_main.h"
-#include "ios/web/public/app/web_main_runner.h"
+#include "ios/web/public/init/web_main.h"
+#include "ios/web/public/init/web_main_runner.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,10 +14,7 @@ namespace web {
 WebMainParams::WebMainParams() : WebMainParams(nullptr) {}
 
 WebMainParams::WebMainParams(WebMainDelegate* delegate)
-    : delegate(delegate),
-      register_exit_manager(true),
-      argc(0),
-      argv(nullptr) {}
+    : delegate(delegate), register_exit_manager(true), argc(0), argv(nullptr) {}
 
 WebMainParams::~WebMainParams() = default;
 

@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 #include <memory>
 
-#include "ios/web/public/app/web_main.h"
+#include "ios/web/public/init/web_main.h"
 #import "ios/web_view/internal/web_view_web_client.h"
 #import "ios/web_view/internal/web_view_web_main_delegate.h"
 

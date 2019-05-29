@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_APP_WEB_MAIN_PARTS_H_
-#define IOS_WEB_PUBLIC_APP_WEB_MAIN_PARTS_H_
-
+#ifndef IOS_WEB_PUBLIC_INIT_WEB_MAIN_PARTS_H_
+#define IOS_WEB_PUBLIC_INIT_WEB_MAIN_PARTS_H_
 
 namespace web {
 
@@ -73,4 +72,4 @@ class WebMainParts {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_APP_WEB_MAIN_PARTS_H_
+#endif  // IOS_WEB_PUBLIC_INIT_WEB_MAIN_PARTS_H_
