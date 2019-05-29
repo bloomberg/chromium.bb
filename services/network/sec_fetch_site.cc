@@ -65,7 +65,7 @@ HeaderValue CalculateHeaderValue(
   // full chain of request URLs.
   HeaderValue header_value = HeaderValue::kSameOrigin;
   url::Origin initiator = GetTrustworthyInitiator(
-      factory_params.request_initiator_site_lock, request);
+      factory_params.request_initiator_site_lock, request.initiator());
   for (const GURL& target_url : request.url_chain()) {
     header_value =
         std::max(header_value, CalculateHeaderValue(target_url, initiator));

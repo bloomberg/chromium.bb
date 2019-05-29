@@ -730,8 +730,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
-          *url_request_, *response, fetch_request_mode_,
-          factory_params_->request_initiator_site_lock)) {
+          url_request_->url(), url_request_->initiator(), response->head,
+          fetch_request_mode_, factory_params_->request_initiator_site_lock)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
     DeleteSelf();
     return;
@@ -877,8 +877,8 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
-          *url_request_, *response_, fetch_request_mode_,
-          factory_params_->request_initiator_site_lock)) {
+          url_request_->url(), url_request_->initiator(), response_->head,
+          fetch_request_mode_, factory_params_->request_initiator_site_lock)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
     DeleteSelf();
     return;
@@ -892,7 +892,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
 
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
-            *url_request_, *response_,
+            url_request_->url(), url_request_->initiator(), response_->head,
             factory_params_->request_initiator_site_lock, fetch_request_mode_);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {
@@ -1415,7 +1415,7 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   DCHECK(consumer_handle_.is_valid());
 
   // Send stripped headers to the real URLLoaderClient.
-  CrossOriginReadBlocking::SanitizeBlockedResponse(response_);
+  CrossOriginReadBlocking::SanitizeBlockedResponse(&response_->head);
   url_loader_client_->OnReceiveResponse(response_->head);
 
   // Send empty body to the real URLLoaderClient.

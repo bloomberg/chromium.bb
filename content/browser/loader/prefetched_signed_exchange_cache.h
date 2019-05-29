@@ -110,7 +110,8 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
 
   ~PrefetchedSignedExchangeCache();
   std::vector<PrefetchedSignedExchangeInfo> GetInfoListForNavigation(
-      const GURL& outer_url) const;
+      const GURL& outer_url,
+      const GURL& inner_url) const;
 
   EntryMap exchanges_;
 

@@ -1123,6 +1123,8 @@ jumbo_source_set("browser") {
     "keyboard_lock/keyboard_lock_metrics.h",
     "keyboard_lock/keyboard_lock_service_impl.cc",
     "keyboard_lock/keyboard_lock_service_impl.h",
+    "loader/cross_origin_read_blocking_checker.cc",
+    "loader/cross_origin_read_blocking_checker.h",
     "loader/cross_site_document_resource_handler.cc",
     "loader/cross_site_document_resource_handler.h",
     "loader/data_pipe_to_source_stream.cc",

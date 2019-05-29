@@ -23,13 +23,9 @@ namespace content {
 FORWARD_DECLARE_TEST(CrossSiteDocumentResourceHandlerTest, ResponseBlocking);
 }  // namespace content
 
-namespace net {
-class URLRequest;
-}
-
 namespace network {
 
-struct ResourceResponse;
+struct ResourceResponseInfo;
 
 // CrossOriginReadBlocking (CORB) implements response blocking
 // policy for Site Isolation.  CORB will monitor network responses to a
@@ -75,10 +71,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   // and deciding whether CORB should block the response.
   class COMPONENT_EXPORT(NETWORK_SERVICE) ResponseAnalyzer {
    public:
-    // Creates a ResponseAnalyzer for the |request|, |response| pair.  The
-    // ResponseAnalyzer will decide whether |response| needs to be blocked.
-    ResponseAnalyzer(const net::URLRequest& request,
-                     const ResourceResponse& response,
+    // Creates a ResponseAnalyzer for the request (|request_url| and
+    // |request_initiator|), |response| pair.  The ResponseAnalyzer will decide
+    // whether |response| needs to be blocked.
+    ResponseAnalyzer(const GURL& request_url,
+                     const base::Optional<url::Origin>& request_initiator,
+                     const ResourceResponseInfo& response,
                      base::Optional<url::Origin> request_initiator_site_lock,
                      mojom::FetchRequestMode fetch_request_mode);
 
@@ -144,8 +142,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     };
     BlockingDecision ShouldBlockBasedOnHeaders(
         mojom::FetchRequestMode fetch_request_mode,
-        const net::URLRequest& request,
-        const ResourceResponse& response);
+        const GURL& request_url,
+        const base::Optional<url::Origin>& request_initiator,
+        const ResourceResponseInfo& response);
 
     // Populates |sniffers_| container based on |canonical_mime_type_|.  Called
     // if ShouldBlockBasedOnHeaders returns kNeedToSniffMore
@@ -184,8 +183,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
   };
 
   // Used to strip response headers if a decision to block has been made.
-  static void SanitizeBlockedResponse(
-      const scoped_refptr<network::ResourceResponse>& response);
+  static void SanitizeBlockedResponse(ResourceResponseInfo* response);
 
   // This enum backs a histogram, so do not change the order of entries or
   // remove entries. When adding new entries update |kMaxValue| and enums.xml

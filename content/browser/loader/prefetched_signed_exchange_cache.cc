@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/loader/cross_origin_read_blocking_checker.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
@@ -120,25 +121,40 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   InnerResponseURLLoader(
       const network::ResourceRequest& request,
       const network::ResourceResponseHead& inner_response,
+      const url::Origin& request_initiator_site_lock,
       std::unique_ptr<const storage::BlobDataHandle> blob_data_handle,
       const network::URLLoaderCompletionStatus& completion_status,
       network::mojom::URLLoaderClientPtr client,
       bool is_navigation_request)
-      : blob_data_handle_(std::move(blob_data_handle)),
+      : response_(inner_response),
+        blob_data_handle_(std::move(blob_data_handle)),
         completion_status_(completion_status),
         client_(std::move(client)),
         weak_factory_(this) {
-    DCHECK(inner_response.headers);
+    DCHECK(response_.headers);
     DCHECK(request.request_initiator);
+
+    UpdateRequestResponseStartTime(&response_);
+    response_.encoded_data_length = 0;
+    if (is_navigation_request) {
+      client_->OnReceiveResponse(response_);
+      // When Network Service is not enabled, we need to wait
+      // ProceedWithResponse for navigation request. See
+      // https://crbug.com/791049.
+      if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+        SendResponseBody();
+      return;
+    }
+
     if (network::cors::ShouldCheckCors(request.url, request.request_initiator,
                                        request.fetch_request_mode)) {
       const auto error_status = network::cors::CheckAccess(
-          request.url, inner_response.headers->response_code(),
+          request.url, response_.headers->response_code(),
           GetHeaderString(
-              inner_response,
+              response_,
               network::cors::header_names::kAccessControlAllowOrigin),
           GetHeaderString(
-              inner_response,
+              response_,
               network::cors::header_names::kAccessControlAllowCredentials),
           request.fetch_credentials_mode, *request.request_initiator);
       if (error_status) {
@@ -147,18 +163,11 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
       }
     }
 
-    network::ResourceResponseHead response = inner_response;
-    UpdateRequestResponseStartTime(&response);
-    response.encoded_data_length = 0;
-    client_->OnReceiveResponse(response);
-    // When Network Service is not enabled, we need to wait ProceedWithResponse
-    // for navigation request.
-    // See https://crbug.com/791049.
-    if (is_navigation_request &&
-        !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      return;
-    }
-    SendResponseBody();
+    corb_checker_ = std::make_unique<CrossOriginReadBlockingChecker>(
+        request, response_, request_initiator_site_lock, *blob_data_handle_,
+        base::BindOnce(
+            &InnerResponseURLLoader::OnCrossOriginReadBlockingCheckComplete,
+            base::Unretained(this)));
   }
   ~InnerResponseURLLoader() override {}
 
@@ -171,6 +180,47 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     if (!response.headers->GetNormalizedHeader(header_name, &header_value))
       return base::nullopt;
     return header_value;
+  }
+
+  void OnCrossOriginReadBlockingCheckComplete(
+      CrossOriginReadBlockingChecker::Result result) {
+    switch (result) {
+      case CrossOriginReadBlockingChecker::Result::kAllowed:
+        client_->OnReceiveResponse(response_);
+        SendResponseBody();
+        return;
+      case CrossOriginReadBlockingChecker::Result::kNetError:
+        client_->OnComplete(
+            network::URLLoaderCompletionStatus(corb_checker_->GetNetError()));
+        return;
+      case CrossOriginReadBlockingChecker::Result::kBlocked_ShouldReport:
+        break;
+      case CrossOriginReadBlockingChecker::Result::kBlocked_ShouldNotReport:
+        break;
+    }
+
+    // Send sanitized response.
+    network::CrossOriginReadBlocking::SanitizeBlockedResponse(&response_);
+    client_->OnReceiveResponse(response_);
+
+    // Send an empty response's body.
+    mojo::ScopedDataPipeProducerHandle pipe_producer_handle;
+    mojo::ScopedDataPipeConsumerHandle pipe_consumer_handle;
+    MojoResult rv = mojo::CreateDataPipe(nullptr, &pipe_producer_handle,
+                                         &pipe_consumer_handle);
+    if (rv != MOJO_RESULT_OK) {
+      client_->OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
+      return;
+    }
+    client_->OnStartLoadingResponseBody(std::move(pipe_consumer_handle));
+
+    // Send a dummy OnComplete message.
+    network::URLLoaderCompletionStatus status =
+        network::URLLoaderCompletionStatus(net::OK);
+    status.should_report_corb_blocking =
+        result == CrossOriginReadBlockingChecker::Result::kBlocked_ShouldReport;
+    client_->OnComplete(status);
   }
 
   // network::mojom::URLLoader overrides:
@@ -236,9 +286,11 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     client_->OnComplete(status);
   }
 
+  network::ResourceResponseHead response_;
   std::unique_ptr<const storage::BlobDataHandle> blob_data_handle_;
   const network::URLLoaderCompletionStatus completion_status_;
   network::mojom::URLLoaderClientPtr client_;
+  std::unique_ptr<CrossOriginReadBlockingChecker> corb_checker_;
 
   base::WeakPtrFactory<InnerResponseURLLoader> weak_factory_;
 
@@ -252,8 +304,10 @@ class SubresourceSignedExchangeURLLoaderFactory
  public:
   SubresourceSignedExchangeURLLoaderFactory(
       network::mojom::URLLoaderFactoryRequest request,
-      std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> entry)
-      : entry_(std::move(entry)) {
+      std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> entry,
+      const url::Origin& request_initiator_site_lock)
+      : entry_(std::move(entry)),
+        request_initiator_site_lock_(request_initiator_site_lock) {
     bindings_.AddBinding(this, std::move(request));
     bindings_.set_connection_error_handler(base::BindRepeating(
         &SubresourceSignedExchangeURLLoaderFactory::OnConnectionError,
@@ -271,13 +325,14 @@ class SubresourceSignedExchangeURLLoaderFactory
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     DCHECK_EQ(request.url, entry_->inner_url());
-    mojo::MakeStrongBinding(std::make_unique<InnerResponseURLLoader>(
-                                request, *entry_->inner_response(),
-                                std::make_unique<const storage::BlobDataHandle>(
-                                    *entry_->blob_data_handle()),
-                                *entry_->completion_status(), std::move(client),
-                                false /* is_navigation_request */),
-                            std::move(loader));
+    mojo::MakeStrongBinding(
+        std::make_unique<InnerResponseURLLoader>(
+            request, *entry_->inner_response(), request_initiator_site_lock_,
+            std::make_unique<const storage::BlobDataHandle>(
+                *entry_->blob_data_handle()),
+            *entry_->completion_status(), std::move(client),
+            false /* is_navigation_request */),
+        std::move(loader));
   }
   void Clone(network::mojom::URLLoaderFactoryRequest request) override {
     bindings_.AddBinding(this, std::move(request));
@@ -291,6 +346,7 @@ class SubresourceSignedExchangeURLLoaderFactory
   }
 
   std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> entry_;
+  const url::Origin request_initiator_site_lock_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceSignedExchangeURLLoaderFactory);
@@ -372,6 +428,7 @@ class PrefetchedNavigationLoaderInterceptor
     mojo::MakeStrongBinding(
         std::make_unique<InnerResponseURLLoader>(
             resource_request, *exchange_->inner_response(),
+            url::Origin::Create(exchange_->inner_url()),
             std::make_unique<const storage::BlobDataHandle>(
                 *exchange_->blob_data_handle()),
             *exchange_->completion_status(), std::move(client),
@@ -478,15 +535,18 @@ PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
   if (it == exchanges_.end())
     return nullptr;
   return std::make_unique<PrefetchedNavigationLoaderInterceptor>(
-      it->second->Clone(), GetInfoListForNavigation(outer_url));
+      it->second->Clone(),
+      GetInfoListForNavigation(outer_url, it->second->inner_url()));
 }
 
 std::vector<PrefetchedSignedExchangeInfo>
 PrefetchedSignedExchangeCache::GetInfoListForNavigation(
-    const GURL& outer_url) const {
+    const GURL& outer_url,
+    const GURL& inner_url) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::vector<PrefetchedSignedExchangeInfo> info_list;
   const url::Origin outer_url_origin = url::Origin::Create(outer_url);
+  const url::Origin inner_url_origin = url::Origin::Create(inner_url);
 
   for (const auto& exchanges_it : exchanges_) {
     const std::unique_ptr<const Entry>& exchange = exchanges_it.second;
@@ -498,7 +558,8 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
     }
     network::mojom::URLLoaderFactoryPtrInfo loader_factory_info;
     new SubresourceSignedExchangeURLLoaderFactory(
-        mojo::MakeRequest(&loader_factory_info), exchange->Clone());
+        mojo::MakeRequest(&loader_factory_info), exchange->Clone(),
+        inner_url_origin);
     info_list.emplace_back(
         exchange->outer_url(), *exchange->header_integrity(),
         exchange->inner_url(), *exchange->inner_response(),

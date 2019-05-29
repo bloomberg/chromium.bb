@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -33,6 +34,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/network/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
@@ -123,6 +125,132 @@ class SignedExchangeSubresourcePrefetchBrowserTest
         base::BindOnce(
             &SignedExchangeSubresourcePrefetchBrowserTest::SetBlobLimitsOnIO,
             blob_context));
+  }
+
+  // Test that CORB logic works well with prefetched signed exchange
+  // subresources. This test loads a main SXG which signed by
+  // "publisher.example.com", and loads a SXG subresource using a <script> tag.
+  //
+  // When |cross_origin| is set, the SXG subresource is signed by
+  // "crossorigin.example.com", otherwise sined by "publisher.example.com".
+  // |content| is the inner body content of the SXG subresource.
+  // |mime_type| is the MIME tyepe of the inner response of the SXG subresource.
+  // When |has_nosniff| is set, the inner response header of the SXG subresource
+  // has "x-content-type-options: nosniff" header.
+  // |expected_title| is the expected title after loading the SXG page. If the
+  // content load should not be blocked, this should be the title which is set
+  // by executing |content|, otherwise this should be "original title".
+  // |expected_action| is the expected CrossOriginReadBlocking::Action which is
+  // recorded in the histogram.
+  void RunCrossOriginReadBlockingTest(
+      bool cross_origin,
+      const std::string& content,
+      const std::string& mime_type,
+      bool has_nosniff,
+      const std::string& expected_title,
+      network::CrossOriginReadBlocking::Action expected_action) {
+    int script_sxg_fetch_count = 0;
+    int script_fetch_count = 0;
+    const char* prefetch_path = "/prefetch.html";
+    const char* target_sxg_path = "/target.sxg";
+    const char* target_path = "/target.html";
+    const char* script_sxg_path = "/script_js.sxg";
+    const char* script_path = "/script.js";
+
+    base::RunLoop script_sxg_prefetch_waiter;
+    RegisterRequestMonitor(embedded_test_server(), script_sxg_path,
+                           &script_sxg_fetch_count,
+                           &script_sxg_prefetch_waiter);
+    base::RunLoop script_prefetch_waiter;
+    RegisterRequestMonitor(embedded_test_server(), script_path,
+                           &script_fetch_count, &script_prefetch_waiter);
+    RegisterRequestHandler(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    const GURL target_sxg_url = embedded_test_server()->GetURL(target_sxg_path);
+    const GURL target_url =
+        embedded_test_server()->GetURL("publisher.example.com", target_path);
+    const GURL script_sxg_url = embedded_test_server()->GetURL(script_sxg_path);
+    const GURL script_url = embedded_test_server()->GetURL(
+        cross_origin ? "crossorigin.example.com" : "publisher.example.com",
+        script_path);
+
+    const net::SHA256HashValue target_header_integrity = {{0x01}};
+    const net::SHA256HashValue script_header_integrity = {{0x02}};
+    const std::string script_header_integrity_string =
+        GetHeaderIntegrityString(script_header_integrity);
+
+    const std::string outer_link_header = base::StringPrintf(
+        "<%s>;"
+        "rel=\"alternate\";"
+        "type=\"application/signed-exchange;v=b3\";"
+        "anchor=\"%s\"",
+        script_sxg_url.spec().c_str(), script_url.spec().c_str());
+    const std::string inner_link_headers = base::StringPrintf(
+        "Link: "
+        "<%s>;rel=\"allowed-alt-sxg\";header-integrity=\"%s\","
+        "<%s>;rel=\"preload\";as=\"script\"",
+        script_url.spec().c_str(), script_header_integrity_string.c_str(),
+        script_url.spec().c_str());
+
+    RegisterResponse(
+        prefetch_path,
+        ResponseEntry(base::StringPrintf(
+            "<body><link rel='prefetch' href='%s'></body>", target_sxg_path)));
+    RegisterResponse(
+        script_path,
+        ResponseEntry("document.title=\"from server\";", "text/javascript"));
+    RegisterResponse(
+        target_sxg_path,
+        ResponseEntry(base::StringPrintf(
+                          "<head><script src=\"%s\"></script><title>original "
+                          "title</title>"
+                          "</head>",
+                          script_url.spec().c_str()),
+                      "application/signed-exchange;v=b3",
+                      {{"x-content-type-options", "nosniff"},
+                       {"link", outer_link_header}}));
+    RegisterResponse(script_sxg_path,
+                     ResponseEntry(content, "application/signed-exchange;v=b3",
+                                   {{"x-content-type-options", "nosniff"}}));
+    std::vector<std::string> script_inner_response_headers;
+    if (has_nosniff) {
+      script_inner_response_headers.emplace_back(
+          "x-content-type-options: nosniff");
+    }
+    MockSignedExchangeHandlerFactory factory(
+        {MockSignedExchangeHandlerParams(
+             target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
+             target_url, "text/html", {inner_link_headers},
+             target_header_integrity),
+         MockSignedExchangeHandlerParams(
+             script_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
+             script_url, mime_type, script_inner_response_headers,
+             script_header_integrity)});
+    ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+    NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+    script_sxg_prefetch_waiter.Run();
+    EXPECT_EQ(1, script_sxg_fetch_count);
+    EXPECT_EQ(0, script_fetch_count);
+
+    WaitUntilLoaded(target_sxg_url);
+    WaitUntilLoaded(script_sxg_url);
+
+    EXPECT_EQ(2u, GetCachedExchanges().size());
+
+    {
+      base::HistogramTester histograms;
+      NavigateToURLAndWaitTitle(target_sxg_url, expected_title);
+      histograms.ExpectBucketCount(
+          "SiteIsolation.XSD.Browser.Action",
+          network::CrossOriginReadBlocking::Action::kResponseStarted, 1);
+      histograms.ExpectBucketCount("SiteIsolation.XSD.Browser.Action",
+                                   expected_action, 1);
+    }
+
+    EXPECT_EQ(1, script_sxg_fetch_count);
+    EXPECT_EQ(0, script_fetch_count);
   }
 
  private:
@@ -1554,6 +1682,38 @@ let results = [];
         EvalJs(shell(), base::StringPrintf("results[%zu]", i)).ExtractString(),
         kTestCases[i].expected_result);
   }
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       CrossOriginReadBlocking_AllowedAfterSniffing) {
+  RunCrossOriginReadBlockingTest(
+      true /* cross_origin */, "document.title=\"done\"", "text/javascript",
+      false /* has_nosniff */, "done",
+      network::CrossOriginReadBlocking::Action::kAllowedAfterSniffing);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       CrossOriginReadBlocking_BlockedAfterSniffing) {
+  RunCrossOriginReadBlockingTest(
+      true /* cross_origin */, "<!DOCTYPE html>hello;", "text/html",
+      false /* has_nosniff */, "original title",
+      network::CrossOriginReadBlocking::Action::kBlockedAfterSniffing);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       CrossOriginReadBlocking_AllowedWithoutSniffing) {
+  RunCrossOriginReadBlockingTest(
+      false /* cross_origin */, "document.title=\"done\"", "text/javascript",
+      true /* has_nosniff */, "done",
+      network::CrossOriginReadBlocking::Action::kAllowedWithoutSniffing);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       CrossOriginReadBlocking_BlockedWithoutSniffing) {
+  RunCrossOriginReadBlockingTest(
+      true /* cross_origin */, "<!DOCTYPE html>hello;", "text/html",
+      true /* has_nosniff */, "original title",
+      network::CrossOriginReadBlocking::Action::kBlockedWithoutSniffing);
 }
 
 INSTANTIATE_TEST_SUITE_P(
