@@ -69,7 +69,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void FocusedElementChanged(Element* from_node, Element* to_node) override;
   void BeginLifecycleUpdates() override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits() override;
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   bool HadFormInteraction() const override;
   void StartDragging(LocalFrame*,
                      const WebDragData&,

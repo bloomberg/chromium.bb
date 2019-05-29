@@ -102,7 +102,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   void BeginLifecycleUpdates() override {}
   void StartDeferringCommits(base::TimeDelta timeout) override {}
-  void StopDeferringCommits() override {}
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override {}
 
   bool HadFormInteraction() const override { return false; }
 

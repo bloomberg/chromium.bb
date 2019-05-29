@@ -39,7 +39,7 @@ ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
       commit_waits_for_activation_(false),
       started_(false),
       defer_main_frame_update_(false),
-      defer_commits_(false),
+      defer_commits_(true),
       frame_sink_bound_weak_factory_(this),
       weak_factory_(this) {
   TRACE_EVENT0("cc", "ProxyMain::ProxyMain");
@@ -232,7 +232,7 @@ void ProxyMain::BeginMainFrame(
 
   // Check now if we should stop deferring commits
   if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
-    StopDeferringCommits();
+    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
   }
 
   // At this point the main frame may have deferred commits to avoid committing
@@ -475,10 +475,11 @@ void ProxyMain::StartDeferringCommits(base::TimeDelta timeout) {
   commits_restart_time_ = base::TimeTicks::Now() + timeout;
 }
 
-void ProxyMain::StopDeferringCommits() {
+void ProxyMain::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
   if (!defer_commits_)
     return;
   defer_commits_ = false;
+  UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger", trigger);
   commits_restart_time_ = base::TimeTicks();
   TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferCommits", this);
 }

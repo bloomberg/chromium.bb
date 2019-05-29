@@ -3524,9 +3524,9 @@ void WebViewImpl::StartDeferringCommits(base::TimeDelta timeout) {
     layer_tree_view_->StartDeferringCommits(timeout);
 }
 
-void WebViewImpl::StopDeferringCommits() {
+void WebViewImpl::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
   if (layer_tree_view_)
-    layer_tree_view_->StopDeferringCommits();
+    layer_tree_view_->StopDeferringCommits(trigger);
 }
 
 }  // namespace blink

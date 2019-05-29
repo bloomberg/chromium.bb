@@ -132,7 +132,7 @@ class CONTENT_EXPORT LayerTreeView
   std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
       override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits() override;
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   void ForceRecalculateRasterScales() override;
   void SetEventListenerProperties(
       cc::EventListenerClass eventClass,

@@ -247,7 +247,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void StartDeferringCommits(base::TimeDelta timeout);
 
   // Stop deferring commits immediately.
-  void StopDeferringCommits();
+  void StopDeferringCommits(PaintHoldingCommitTrigger);
 
   // Returns whether there are any outstanding ScopedDeferMainFrameUpdate,
   // though commits may be deferred also when the local_surface_id_from_parent()

@@ -36,6 +36,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/paint_holding_commit_trigger.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -4197,18 +4198,27 @@ void LocalFrameView::BeginLifecycleUpdates() {
   // This is enabled only if kAvoidFlashBetweenNavigation is enabled, and
   // the document loading is a regular HTML served over HTTP/HTTPs.
   Document* document = GetFrame().GetDocument();
-  if (document && document->DeferredCompositorCommitIsAllowed() &&
-      base::FeatureList::IsEnabled(
-          blink::features::kAvoidFlashBetweenNavigation)) {
-    GetFrame().GetPage()->GetChromeClient().StartDeferringCommits(
-        GetCommitDelayForAvoidFlashBetweenNavigation());
+  ChromeClient& chrome_client = GetFrame().GetPage()->GetChromeClient();
+  if (document && base::FeatureList::IsEnabled(
+                      blink::features::kAvoidFlashBetweenNavigation)) {
+    if (document->DeferredCompositorCommitIsAllowed()) {
+      chrome_client.StartDeferringCommits(
+          GetCommitDelayForAvoidFlashBetweenNavigation());
+    } else {
+      chrome_client.StopDeferringCommits(
+          cc::PaintHoldingCommitTrigger::kDisallowed);
+    }
+  } else {
+    chrome_client.StopDeferringCommits(
+        cc::PaintHoldingCommitTrigger::kFeatureDisabled);
   }
-  GetFrame().GetPage()->GetChromeClient().BeginLifecycleUpdates();
+  chrome_client.BeginLifecycleUpdates();
 }
 
-void LocalFrameView::StopDeferringCommits() {
+void LocalFrameView::StopDeferringCommits(
+    cc::PaintHoldingCommitTrigger trigger) {
   if (GetFrame().GetPage())
-    GetFrame().GetPage()->GetChromeClient().StopDeferringCommits();
+    GetFrame().GetPage()->GetChromeClient().StopDeferringCommits(trigger);
 }
 
 void LocalFrameView::SetInitialViewportSize(const IntSize& viewport_size) {

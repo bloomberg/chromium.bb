@@ -230,8 +230,9 @@ void LayerTreeView::StartDeferringCommits(base::TimeDelta timeout) {
   layer_tree_host_->StartDeferringCommits(timeout);
 }
 
-void LayerTreeView::StopDeferringCommits() {
-  layer_tree_host_->StopDeferringCommits();
+void LayerTreeView::StopDeferringCommits(
+    cc::PaintHoldingCommitTrigger trigger) {
+  layer_tree_host_->StopDeferringCommits(trigger);
 }
 
 int LayerTreeView::LayerTreeId() const {

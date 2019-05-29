@@ -93,6 +93,8 @@ class WebSettingsImpl;
 class WebViewClient;
 class WebWidgetClient;
 
+using PaintHoldingCommitTrigger = cc::PaintHoldingCommitTrigger;
+
 class CORE_EXPORT WebViewImpl final : public WebView,
                                       private WebWidget,
                                       public RefCounted<WebViewImpl>,
@@ -405,7 +407,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DeferMainFrameUpdateForTesting();
 
   void StartDeferringCommits(base::TimeDelta timeout);
-  void StopDeferringCommits();
+  void StopDeferringCommits(PaintHoldingCommitTrigger);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);

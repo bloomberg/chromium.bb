@@ -53,6 +53,7 @@
 namespace cc {
 class AnimationHost;
 class Layer;
+enum class PaintHoldingCommitTrigger;
 }
 
 namespace blink {
@@ -747,7 +748,7 @@ class CORE_EXPORT LocalFrameView final
   void SetupPrintContext();
   void ClearPrintContext();
 
-  void StopDeferringCommits();
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger);
 
   // Returns whether the lifecycle was succesfully updated to the
   // target state.

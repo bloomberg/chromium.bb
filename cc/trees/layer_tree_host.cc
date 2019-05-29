@@ -568,8 +568,8 @@ void LayerTreeHost::StartDeferringCommits(base::TimeDelta timeout) {
   proxy_->StartDeferringCommits(timeout);
 }
 
-void LayerTreeHost::StopDeferringCommits() {
-  proxy_->StopDeferringCommits();
+void LayerTreeHost::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
+  proxy_->StopDeferringCommits(trigger);
 }
 
 DISABLE_CFI_PERF

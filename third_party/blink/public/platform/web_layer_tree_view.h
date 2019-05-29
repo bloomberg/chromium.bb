@@ -34,6 +34,7 @@
 #include "cc/trees/element_id.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
+#include "cc/trees/paint_holding_commit_trigger.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -83,7 +84,7 @@ class WebLayerTreeView {
   virtual void StartDeferringCommits(base::TimeDelta timeout) {}
 
   // Immediately stop deferring commits.
-  virtual void StopDeferringCommits() {}
+  virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) {}
 
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp.

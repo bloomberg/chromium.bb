@@ -263,6 +263,9 @@ _CONFIG = [
             # Animation
             'cc::AnimationHost',
 
+            # UMA Enums
+            'cc::PaintHoldingCommitTrigger',
+
             # Scrolling
             'cc::MainThreadScrollingReason',
             'cc::ScrollSnapAlign',

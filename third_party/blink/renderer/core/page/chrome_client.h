@@ -29,6 +29,7 @@
 #include "base/optional.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/trees/paint_holding_commit_trigger.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
@@ -146,7 +147,7 @@ class CORE_EXPORT ChromeClient
 
   virtual void BeginLifecycleUpdates() = 0;
   virtual void StartDeferringCommits(base::TimeDelta timeout) = 0;
-  virtual void StopDeferringCommits() = 0;
+  virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) = 0;
 
   // Start a system drag and drop operation.
   virtual void StartDragging(LocalFrame*,

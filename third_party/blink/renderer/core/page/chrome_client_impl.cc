@@ -1032,8 +1032,9 @@ void ChromeClientImpl::StartDeferringCommits(base::TimeDelta timeout) {
   web_view_->StartDeferringCommits(timeout);
 }
 
-void ChromeClientImpl::StopDeferringCommits() {
-  web_view_->StopDeferringCommits();
+void ChromeClientImpl::StopDeferringCommits(
+    cc::PaintHoldingCommitTrigger trigger) {
+  web_view_->StopDeferringCommits(trigger);
 }
 
 cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(

@@ -54,7 +54,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool RequestedAnimatePending() override;
   void SetDeferMainFrameUpdate(bool defer_main_frame_update) override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits() override;
+  void StopDeferringCommits(PaintHoldingCommitTrigger) override;
   bool CommitRequested() const override;
   void Start() override;
   void Stop() override;
