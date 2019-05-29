@@ -17,7 +17,7 @@ namespace service_manager {
 // Manager instance and have each test behave like a unique service instance
 // that can connect to any of various services under test.
 //
-// Typical usage is paired with ServiceManager::RegisterServiceForTesting, for
+// Typical usage is paired with ServiceManager::RegisterTestInstance, for
 // example:
 //
 //   class MyTest : public testing::Test {
