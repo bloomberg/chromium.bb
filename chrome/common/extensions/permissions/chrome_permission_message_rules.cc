@@ -654,6 +654,9 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_ENTERPRISE_HARDWARE_PLATFORM,
        {APIPermission::kEnterpriseHardwarePlatform},
        {}},
+      {IDS_EXTENSION_PROMPT_WARNING_LOGIN_SCREEN_UI,
+       {APIPermission::kLoginScreenUi},
+       {}},
   };
 
   return std::vector<ChromePermissionMessageRule>(

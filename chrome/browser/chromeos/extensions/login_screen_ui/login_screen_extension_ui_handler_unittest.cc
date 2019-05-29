@@ -13,11 +13,13 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/version_info/version_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/features/feature_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -30,6 +32,12 @@ const char kErrorNotOnLoginOrLockScreen[] =
 
 const bool kCanBeClosedByUser = false;
 const char kUrl[] = "test.html";
+
+const char kWhitelistedExtensionID1[] =
+    "oclffehlkdgibkainkilopaalpdobkan";  // chrome.loginScreenUi test extension
+const char kWhitelistedExtensionID2[] =
+    "lpimkpkllnkdlcigdbgmabfplniahkgm";  // Imprivata (login screen)
+const char kPermissionName[] = "loginScreenUi";
 
 }  // namespace
 
@@ -83,7 +91,8 @@ class FakeLoginScreenExtensionUiWindowFactory
 class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
  public:
   LoginScreenExtensionUiHandlerUnittest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+      : scoped_current_channel_(version_info::Channel::DEV),
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~LoginScreenExtensionUiHandlerUnittest() override = default;
 
   void SetUp() override {
@@ -107,7 +116,10 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
         session_manager::SessionState::LOGIN_PRIMARY);
 
     extension_ = extensions::ExtensionBuilder("test" /*extension_name*/)
-                     .SetID("abcdefghijklmnopqrstuvwxyzabcdef")
+                     .SetID(kWhitelistedExtensionID1)
+                     .SetLocation(extensions::Manifest::EXTERNAL_POLICY)
+                     .AddPermission(kPermissionName)
+                     .AddFlags(extensions::Extension::FOR_LOGIN_SCREEN)
                      .Build();
     extension_registry_->AddEnabled(extension_);
   }
@@ -169,6 +181,7 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   content::TestServiceManagerContext context_;
+  const extensions::ScopedCurrentChannel scoped_current_channel_;
 
   session_manager::SessionManager session_manager_;
   TestingProfileManager profile_manager_;
@@ -264,7 +277,10 @@ TEST_F(LoginScreenExtensionUiHandlerUnittest, WindowClosedOnUnlock) {
 TEST_F(LoginScreenExtensionUiHandlerUnittest, TwoExtensionsInParallel) {
   scoped_refptr<const extensions::Extension> other_extension =
       extensions::ExtensionBuilder("other extension" /*extension_name*/)
-          .SetID("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+          .SetID(kWhitelistedExtensionID2)
+          .SetLocation(extensions::Manifest::EXTERNAL_POLICY)
+          .AddPermission(kPermissionName)
+          .AddFlags(extensions::Extension::FOR_LOGIN_SCREEN)
           .Build();
   extension_registry_->AddEnabled(other_extension);
 
@@ -329,16 +345,32 @@ TEST_F(LoginScreenExtensionUiHandlerUnittest,
   EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
 }
 
-TEST_F(LoginScreenExtensionUiHandlerDeathUnittest, NotFromSigninProfile) {
-  // |other_extension| is not enabled in the sign-in profile's extensions
-  // registry.
-  scoped_refptr<const extensions::Extension> other_extension =
-      extensions::ExtensionBuilder("other extension" /*extension_name*/)
-          .SetID("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+TEST_F(LoginScreenExtensionUiHandlerDeathUnittest, NotAllowed) {
+  // |other_profile_extension| is not enabled in the sign-in profile's
+  // extensions registry.
+  scoped_refptr<const extensions::Extension> other_profile_extension =
+      extensions::ExtensionBuilder("other profile" /*extension_name*/)
+          .SetID(kWhitelistedExtensionID2)  // whitelisted
+          .SetLocation(extensions::Manifest::EXTERNAL_POLICY)
+          .AddPermission(kPermissionName)
+          .AddFlags(extensions::Extension::FOR_LOGIN_SCREEN)
           .Build();
 
-  CheckCannotUseAPI(other_extension.get());
-  CheckCannotUseAPI(other_extension.get());
+  CheckCannotUseAPI(other_profile_extension.get());
+  CheckCannotUseAPI(other_profile_extension.get());
+
+  // |no_permission_extension| is enabled in the sign-in profile's extensions
+  // registry, but doesn't have the needed "loginScreenUi" permission.
+  scoped_refptr<const extensions::Extension> no_permission_extension =
+      extensions::ExtensionBuilder("no permission extension" /*extension_name*/)
+          .SetID(kWhitelistedExtensionID2)  // whitelisted
+          .SetLocation(extensions::Manifest::EXTERNAL_POLICY)
+          .AddFlags(extensions::Extension::FOR_LOGIN_SCREEN)
+          .Build();
+  extension_registry_->AddEnabled(no_permission_extension);
+
+  CheckCannotUseAPI(no_permission_extension.get());
+  CheckCannotUseAPI(no_permission_extension.get());
 }
 
 }  // namespace chromeos

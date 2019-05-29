@@ -44,6 +44,8 @@ bool IsIncognitoEnabled(const std::string& extension_id,
     // work in incognito mode.
     if (Manifest::IsComponentLocation(extension->location()))
       return true;
+    if (extension->is_login_screen_extension())
+      return true;
   }
   return ExtensionPrefs::Get(context)->IsIncognitoEnabled(extension_id);
 }

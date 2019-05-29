@@ -9,11 +9,13 @@
 #include "ash/public/cpp/login_types.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace chromeos {
 
@@ -28,10 +30,11 @@ const char kErrorNotOnLoginOrLockScreen[] =
 LoginScreenExtensionUiHandler* g_instance = nullptr;
 
 bool CanUseLoginScreenUiApi(const extensions::Extension* extension) {
-  // TODO(hendrich) also check permission in CL 1556806
   return extensions::ExtensionRegistry::Get(ProfileHelper::GetSigninProfile())
-      ->enabled_extensions()
-      .Contains(extension->id());
+             ->enabled_extensions()
+             .Contains(extension->id()) &&
+         extension->permissions_data()->HasAPIPermission(
+             extensions::APIPermission::kLoginScreenUi);
 }
 
 }  // namespace

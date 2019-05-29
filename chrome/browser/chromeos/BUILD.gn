@@ -2089,6 +2089,8 @@ source_set("chromeos") {
     "extensions/input_method_api.h",
     "extensions/login_screen_ui/login_screen_extension_ui_handler.cc",
     "extensions/login_screen_ui/login_screen_extension_ui_handler.h",
+    "extensions/login_screen_ui/login_screen_ui_api.cc",
+    "extensions/login_screen_ui/login_screen_ui_api.h",
     "extensions/media_player_api.cc",
     "extensions/media_player_api.h",
     "extensions/quick_unlock_private/quick_unlock_private_api.cc",

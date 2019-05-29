@@ -374,7 +374,7 @@ bool ExtensionCanLoadInIncognito(bool is_main_frame,
                                  bool extension_enabled_in_incognito) {
   if (!extension || !extension_enabled_in_incognito)
     return false;
-  if (!is_main_frame)
+  if (!is_main_frame || extension->is_login_screen_extension())
     return true;
 
   // Only allow incognito toplevel navigations to extension resources in
