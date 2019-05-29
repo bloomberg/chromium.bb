@@ -14724,4 +14724,47 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Bool(),
         testing::Bool()));
 
+// This checks what process is used when an iframe is navigated to about:blank.
+// The new document should be loaded in the process of its initiator.
+//
+// Test case:
+// 1. Navigate to A1(B2).
+// 2. B2 navigates itself to B3 = about:blank. Process B is used.
+// 3. A1 makes B3 to navigate to A4 = about:blank. Process A is used.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SameAndCrossProcessIframeAboutBlankNavigation) {
+  // 1. Navigate to A1(B2).
+  GURL a1_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), a1_url));
+  RenderFrameHostImpl* a1_rfh = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* b2_rfh = a1_rfh->child_at(0)->current_frame_host();
+
+  // 2. B2 navigates itself to B3 = about:blank. Process B is used.
+  {
+    scoped_refptr<SiteInstance> b2_site_instance = b2_rfh->GetSiteInstance();
+    TestNavigationManager navigation_manager(web_contents(),
+                                             GURL("about:blank"));
+    EXPECT_TRUE(ExecJs(b2_rfh, "location.href = 'about:blank';"));
+    navigation_manager.WaitForNavigationFinished();
+
+    RenderFrameHostImpl* b3_rfh = a1_rfh->child_at(0)->current_frame_host();
+    DCHECK_EQ(b3_rfh->GetSiteInstance(), b2_site_instance);
+    DCHECK_NE(a1_rfh->GetProcess(), b3_rfh->GetProcess());
+  }
+
+  // 3. A1 makes B3 to navigate to A4 = about:blank. Process A is used.
+  {
+    TestNavigationManager navigation_manager(web_contents(),
+                                             GURL("about:blank"));
+    EXPECT_TRUE(ExecJs(a1_rfh, R"(
+      document.querySelector("iframe").src = "about:blank";
+    )"));
+    navigation_manager.WaitForNavigationFinished();
+
+    RenderFrameHostImpl* b4_rfh = a1_rfh->child_at(0)->current_frame_host();
+    DCHECK_EQ(a1_rfh->GetSiteInstance(), b4_rfh->GetSiteInstance());
+  }
+}
+
 }  // namespace content
