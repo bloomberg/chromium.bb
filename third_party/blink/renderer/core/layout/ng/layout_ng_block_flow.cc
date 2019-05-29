@@ -78,7 +78,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // borders and scrollbars to compensate.
   NGBoxStrut border_scrollbar =
       ComputeBorders(constraint_space, container_node) +
-      NGBlockNode(container).GetScrollbarSizes();
+      ComputeScrollbars(constraint_space, container_node);
 
   // Calculate the border-box size of the object that's the containing block of
   // this out-of-flow positioned descendant. Note that this is not to be used as

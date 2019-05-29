@@ -138,7 +138,7 @@ NGStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
           .ToConstraintSpace();
   NGBoxStrut border_scrollbar =
       ComputeBorders(non_anonymous_space, container_node) +
-      container_node.GetScrollbarSizes();
+      ComputeScrollbars(non_anonymous_space, container_node);
 
   // Now make it relative to the left or top border edge of the containing
   // block.

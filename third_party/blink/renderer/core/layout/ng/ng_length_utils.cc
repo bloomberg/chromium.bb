@@ -881,6 +881,22 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
   return padding;
 }
 
+NGBoxStrut ComputeScrollbars(const NGConstraintSpace& constraint_space,
+                             const NGLayoutInputNode node) {
+  const ComputedStyle& style = node.Style();
+  if (constraint_space.IsAnonymous() || style.IsOverflowVisible())
+    return NGBoxStrut();
+  NGPhysicalBoxStrut sizes;
+  const LayoutBox* layout_box = node.GetLayoutBox();
+  LayoutUnit horizontal = LayoutUnit(layout_box->HorizontalScrollbarHeight());
+  sizes.bottom = horizontal;
+  LayoutUnit vertical = LayoutUnit(layout_box->VerticalScrollbarWidth());
+  if (layout_box->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+    sizes.left = vertical;
+  else
+    sizes.right = vertical;
+  return sizes.ConvertToLogical(style.GetWritingMode(), style.Direction());
+}
 
 bool NeedsInlineSizeToResolveLineLeft(const ComputedStyle& style,
                                       const ComputedStyle& container_style) {
@@ -1006,8 +1022,7 @@ NGFragmentGeometry CalculateInitialFragmentGeometry(
 
   NGBoxStrut border = ComputeBorders(constraint_space, node);
   NGBoxStrut padding = ComputePadding(constraint_space, style);
-  NGBoxStrut scrollbar =
-      constraint_space.IsAnonymous() ? NGBoxStrut() : node.GetScrollbarSizes();
+  NGBoxStrut scrollbar = ComputeScrollbars(constraint_space, node);
   NGBoxStrut border_padding = border + padding;
   NGBoxStrut border_scrollbar_padding = border_padding + scrollbar;
 
@@ -1045,8 +1060,7 @@ NGFragmentGeometry CalculateInitialMinMaxFragmentGeometry(
     const NGBlockNode& node) {
   NGBoxStrut border = ComputeBorders(constraint_space, node);
   NGBoxStrut padding = ComputePadding(constraint_space, node.Style());
-  NGBoxStrut scrollbar =
-      constraint_space.IsAnonymous() ? NGBoxStrut() : node.GetScrollbarSizes();
+  NGBoxStrut scrollbar = ComputeScrollbars(constraint_space, node);
 
   return {/* border_box_size */ LogicalSize(), border, scrollbar, padding};
 }

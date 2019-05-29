@@ -144,7 +144,8 @@ void UpdateLegacyMultiColumnFlowThread(
   if (LayoutMultiColumnSet* column_set = flow_thread->FirstMultiColumnSet()) {
     NGFragment logical_fragment(writing_mode, fragment);
     auto border_scrollbar_padding =
-        ComputeBorders(constraint_space, node) + node.GetScrollbarSizes() +
+        ComputeBorders(constraint_space, node) +
+        ComputeScrollbars(constraint_space, node) +
         ComputePadding(constraint_space, node.Style());
 
     column_set->SetLogicalLeft(border_scrollbar_padding.inline_start);
@@ -266,7 +267,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
 
   FinishLayout(block_flow, constraint_space, break_token, layout_result);
 
-  NGBoxStrut after_layout_scrollbars = GetScrollbarSizes();
+  NGBoxStrut after_layout_scrollbars =
+      ComputeScrollbars(constraint_space, *this);
   if (fragment_geometry->scrollbar != after_layout_scrollbars) {
     // If our scrollbars have changed, we need to relayout because either:
     // - Our size has changed (if shrinking to fit), or
@@ -566,21 +568,6 @@ MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy(
   return sizes;
 }
 
-NGBoxStrut NGBlockNode::GetScrollbarSizes() const {
-  NGPhysicalBoxStrut sizes;
-  const ComputedStyle& style = box_->StyleRef();
-  if (!style.IsOverflowVisible()) {
-    LayoutUnit vertical = LayoutUnit(box_->VerticalScrollbarWidth());
-    LayoutUnit horizontal = LayoutUnit(box_->HorizontalScrollbarHeight());
-    sizes.bottom = horizontal;
-    if (box_->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-      sizes.left = vertical;
-    else
-      sizes.right = vertical;
-  }
-  return sizes.ConvertToLogical(style.GetWritingMode(), style.Direction());
-}
-
 NGLayoutInputNode NGBlockNode::NextSibling() const {
   LayoutObject* next_sibling = GetLayoutObjectForNextSiblingNode(box_);
   if (next_sibling) {
@@ -668,7 +655,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   intrinsic_content_logical_height += layout_result.IntrinsicBlockSize();
 
   NGBoxStrut borders = fragment.Borders();
-  NGBoxStrut scrollbars = GetScrollbarSizes();
+  NGBoxStrut scrollbars = ComputeScrollbars(constraint_space, *this);
   NGBoxStrut padding = fragment.Padding();
   NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
 
@@ -1019,7 +1006,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
                                          box_->LogicalHeight()};
     fragment_geometry.border = {box_->BorderStart(), box_->BorderEnd(),
                                 box_->BorderBefore(), box_->BorderAfter()};
-    fragment_geometry.scrollbar = GetScrollbarSizes();
+    fragment_geometry.scrollbar = ComputeScrollbars(constraint_space, *this);
     fragment_geometry.padding = {box_->PaddingStart(), box_->PaddingEnd(),
                                  box_->PaddingBefore(), box_->PaddingAfter()};
 

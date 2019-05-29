@@ -380,6 +380,9 @@ inline NGLineBoxStrut ComputeLinePadding(
                         style.IsFlippedLinesWritingMode());
 }
 
+CORE_EXPORT NGBoxStrut ComputeScrollbars(const NGConstraintSpace&,
+                                         const NGLayoutInputNode);
+
 // Return true if we need to know the inline size of the fragment in order to
 // calculate its line-left offset. This is the case when we have auto margins,
 // or when block alignment isn't line-left (e.g. with align!=left, and always in
