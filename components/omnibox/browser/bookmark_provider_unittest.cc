@@ -232,43 +232,37 @@ TEST_F(BookmarkProviderTest, Positions) {
                                // elements in the following |positions| array.
     const size_t positions[99][9][2];
   } query_data[] = {
-    // This first set is primarily for position detection validation.
-    {"abc",                   3, {{{0, 3}, {0, 0}},
-                                  {{0, 3}, {0, 0}},
-                                  {{0, 3}, {0, 0}}}},
-    {"abcde",                 2, {{{0, 5}, {0, 0}},
-                                  {{0, 5}, {0, 0}}}},
-    {"foo bar",               0, {{{0, 0}}}},
-    {"fooey bark",            0, {{{0, 0}}}},
-    {"def",                   2, {{{2, 5}, {0, 0}},
-                                  {{4, 7}, {0, 0}}}},
-    {"ghi jkl",               2, {{{0, 3}, {4, 7}, {0, 0}},
-                                  {{0, 3}, {4, 7}, {0, 0}}}},
-    // NB: GetBookmarksMatching(...) uses exact match for "a" in title or URL.
-    {"a",                     2, {{{0, 1}, {0, 0}},
-                                  {{0, 0}}}},
-    {"a d",                   0, {{{0, 0}}}},
-    {"carry carbon",          1, {{{0, 5}, {6, 12}, {0, 0}}}},
-    // NB: GetBookmarksMatching(...) sorts the match positions.
-    {"carbon carry",          1, {{{0, 5}, {6, 12}, {0, 0}}}},
-    {"arbon",                 0, {{{0, 0}}}},
-    {"ar",                    0, {{{0, 0}}}},
-    {"arry",                  0, {{{0, 0}}}},
-    // Quoted terms are single terms.
-    {"\"carry carbon\"",      1, {{{0, 12}, {0, 0}}}},
-    {"\"carry carbon\" care", 1, {{{0, 12}, {13, 17}, {0, 0}}}},
-    // Quoted terms require complete word matches.
-    {"\"carry carbo\"",       0, {{{0, 0}}}},
-    // This set uses duplicated and/or overlaps search terms in the title.
-    {"frank",                 1, {{{0, 5}, {8, 13}, {16, 21}, {0, 0}}}},
-    {"frankly",               1, {{{0, 7}, {8, 15}, {0, 0}}}},
-    {"frankly frankly",       1, {{{0, 7}, {8, 15}, {0, 0}}}},
-    {"foobar foo",            1, {{{0, 6}, {7, 13}, {0, 0}}}},
-    {"foo foobar",            1, {{{0, 6}, {7, 13}, {0, 0}}}},
-    // This ensures that leading whitespace in the title is correctly offset.
-    {"hello",                 1, {{{0, 5}, {8, 13}, {0, 0}}}},
-    // This ensures that empty titles yield empty classifications.
-    {"emptytitle",            1, {}},
+      // This first set is primarily for position detection validation.
+      {"abc", 3, {{{0, 3}, {0, 0}}, {{0, 3}, {0, 0}}, {{0, 3}, {0, 0}}}},
+      {"abcde", 2, {{{0, 5}, {0, 0}}, {{0, 5}, {0, 0}}}},
+      {"foo bar", 0, {{{0, 0}}}},
+      {"fooey bark", 0, {{{0, 0}}}},
+      {"def", 2, {{{2, 5}, {0, 0}}, {{4, 7}, {0, 0}}}},
+      {"ghi jkl", 2, {{{0, 7}, {0, 0}}, {{0, 3}, {4, 7}, {0, 0}}}},
+      // NB: GetBookmarksMatching(...) uses exact match for "a" in title or URL.
+      {"a", 2, {{{0, 1}, {0, 0}}, {{0, 0}}}},
+      {"a d", 0, {{{0, 0}}}},
+      {"carry carbon", 1, {{{0, 12}, {0, 0}}}},
+      // NB: GetBookmarksMatching(...) sorts the match positions.
+      {"carbon carry", 1, {{{0, 5}, {6, 12}, {0, 0}}}},
+      {"arbon", 0, {{{0, 0}}}},
+      {"ar", 0, {{{0, 0}}}},
+      {"arry", 0, {{{0, 0}}}},
+      // Quoted terms are single terms.
+      {"\"carry carbon\"", 1, {{{0, 5}, {6, 12}, {0, 0}}}},
+      {"\"carry carbon\" care", 1, {{{0, 5}, {6, 12}, {13, 17}, {0, 0}}}},
+      // Quoted terms require complete word matches.
+      {"\"carry carbo\"", 0, {{{0, 0}}}},
+      // This set uses duplicated and/or overlaps search terms in the title.
+      {"frank", 1, {{{0, 5}, {0, 0}}}},
+      {"frankly", 1, {{{0, 7}, {0, 0}}}},
+      {"frankly frankly", 1, {{{0, 15}, {0, 0}}}},
+      {"foobar foo", 1, {{{0, 10}, {0, 0}}}},
+      {"foo foobar", 1, {{{0, 6}, {7, 13}, {0, 0}}}},
+      // This ensures that leading whitespace in the title is correctly offset.
+      {"hello", 1, {{{0, 5}, {0, 0}}}},
+      // This ensures that empty titles yield empty classifications.
+      {"emptytitle", 1, {}},
   };
 
   for (size_t i = 0; i < base::size(query_data); ++i) {
@@ -443,7 +437,7 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
     { "http blah", "http://blah.com",         "0:3,4:1,7:3,11:1"           },
     { "dom",       "domain.com/http/",        "0:3,3:1"                    },
     { "dom http",  "http://domain.com/http/", "0:3,4:1,7:3,10:1,18:3,22:1" },
-    { "rep",       "repeat.com/1/repeat/2/",  "0:3,3:1,13:3,16:1"          },
+    { "rep",       "repeat.com/1/repeat/2/",  "0:3,3:1"                    },
     { "versi",     "chrome://version",        "0:1,9:3,14:1"               },
       // clang-format on
   };
@@ -457,6 +451,15 @@ TEST_F(BookmarkProviderTest, StripHttpAndAdjustOffsets) {
     const ACMatches& matches(provider_->matches());
     ASSERT_EQ(1U, matches.size()) << description;
     const AutocompleteMatch& match = matches[0];
+
+    description +=
+        "\n EXPECTED classes: " + query_data[i].expected_contents_class;
+    description += "\n ACTUAL classes:  ";
+    for (auto x : match.contents_class) {
+      description += base::NumberToString(x.offset) + ":" +
+                     base::NumberToString(x.style) + ",";
+    }
+
     EXPECT_EQ(base::ASCIIToUTF16(query_data[i].expected_contents),
               match.contents) << description;
     std::vector<std::string> class_strings = base::SplitString(
