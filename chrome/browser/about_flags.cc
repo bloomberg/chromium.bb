@@ -1020,6 +1020,26 @@ const FeatureEntry::FeatureVariation
          base::size(kAutofillUseMobileLabelDisambiguationShowOne), nullptr}};
 #endif  // defined(OS_ANDROID)
 
+const FeatureEntry::FeatureParam kLazyFrameLoadingAutomatic[] = {
+    {"automatic-lazy-load-frames-enabled", "true"},
+};
+
+const FeatureEntry::FeatureVariation kLazyFrameLoadingVariations[] = {
+    {"(Automatically lazily load where safe even if not marked "
+     "'loading=lazy')",
+     kLazyFrameLoadingAutomatic, base::size(kLazyFrameLoadingAutomatic),
+     nullptr}};
+
+const FeatureEntry::FeatureParam kLazyImageLoadingAutomatic[] = {
+    {"automatic-lazy-load-images-enabled", "true"},
+};
+
+const FeatureEntry::FeatureVariation kLazyImageLoadingVariations[] = {
+    {"(Automatically lazily load where safe even if not marked "
+     "'loading=lazy')",
+     kLazyImageLoadingAutomatic, base::size(kLazyImageLoadingAutomatic),
+     nullptr}};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2952,12 +2972,16 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-lazy-image-loading",
      flag_descriptions::kEnableLazyImageLoadingName,
      flag_descriptions::kEnableLazyImageLoadingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kLazyImageLoading)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kLazyImageLoading,
+                                    kLazyImageLoadingVariations,
+                                    "LazyLoad")},
 
     {"enable-lazy-frame-loading",
      flag_descriptions::kEnableLazyFrameLoadingName,
      flag_descriptions::kEnableLazyFrameLoadingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kLazyFrameLoading)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kLazyFrameLoading,
+                                    kLazyFrameLoadingVariations,
+                                    "LazyLoad")},
 
     {"autofill-cache-query-responses",
      flag_descriptions::kAutofillCacheQueryResponsesName,

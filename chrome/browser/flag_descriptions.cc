@@ -642,12 +642,13 @@ const char kEnableLayoutNGDescription[] =
 
 const char kEnableLazyFrameLoadingName[] = "Enable lazy frame loading";
 const char kEnableLazyFrameLoadingDescription[] =
-    "Defers the loading of certain cross-origin frames until the page is "
-    "scrolled down near them.";
+    "Defers the loading of iframes marked with the attribute 'loading=lazy' "
+    "until the page is scrolled down near them.";
 
 const char kEnableLazyImageLoadingName[] = "Enable lazy image loading";
 const char kEnableLazyImageLoadingDescription[] =
-    "Defers the loading of images until the page is scrolled down near them.";
+    "Defers the loading of images marked with the attribute 'loading=lazy' "
+    "until the page is scrolled down near them.";
 
 const char kEnableMacMaterialDesignDownloadShelfName[] =
     "Enable Material Design download shelf";
