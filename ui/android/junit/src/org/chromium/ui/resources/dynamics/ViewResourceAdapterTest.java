@@ -172,6 +172,8 @@ public class ViewResourceAdapterTest {
         assertEquals(bitmap, mAdapter.getBitmap());
 
         mAdapter.dropCachedBitmap();
+        mAdapter.invalidate(null);
+        assertTrue(mAdapter.isDirty());
         assertNotEquals(bitmap, mAdapter.getBitmap());
     }
 

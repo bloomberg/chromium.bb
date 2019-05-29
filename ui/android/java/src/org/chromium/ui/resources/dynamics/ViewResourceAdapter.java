@@ -22,7 +22,7 @@ import org.chromium.ui.resources.statics.NinePatchData;
  * {@link View} are invalidated.  For {@link ViewGroup}s the easiest way to do this is to override
  * {@link View#invalidateChildInParent(int[], Rect)}.
  */
-public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListener {
+public class ViewResourceAdapter extends DynamicResource implements OnLayoutChangeListener {
     private final View mView;
     private final Rect mDirtyRect = new Rect();
 
@@ -42,12 +42,12 @@ public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListe
     /**
      * If this resource is dirty ({@link #isDirty()} returned {@code true}), it will recapture a
      * {@link Bitmap} of the {@link View}.
-     * @see {@link DynamicResource#getBitmap()}.
+     * @see DynamicResource#getBitmap()
      * @return A {@link Bitmap} representing the {@link View}.
      */
     @Override
     public Bitmap getBitmap() {
-        if (!isDirty() && mBitmap != null) return mBitmap;
+        super.getBitmap();
 
         TraceEvent.begin("ViewResourceAdapter:getBitmap");
         if (validateBitmap()) {

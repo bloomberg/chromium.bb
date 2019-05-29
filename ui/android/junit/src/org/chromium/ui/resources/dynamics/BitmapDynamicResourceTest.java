@@ -53,4 +53,16 @@ public class BitmapDynamicResourceTest {
         mResource.setBitmap(bitmap2);
         assertTrue(isGarbageCollected(bitmapWeakReference));
     }
+
+    @Test
+    public void testGetBitmapGCed() {
+        Bitmap bitmap = Bitmap.createBitmap(1, 2, Bitmap.Config.ARGB_8888);
+        WeakReference<Bitmap> bitmapWeakReference = new WeakReference<>(bitmap);
+        mResource.setBitmap(bitmap);
+        bitmap = null;
+        assertFalse(isGarbageCollected(bitmapWeakReference));
+
+        mResource.getBitmap();
+        assertTrue(isGarbageCollected(bitmapWeakReference));
+    }
 }

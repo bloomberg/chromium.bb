@@ -17,9 +17,8 @@ public interface Resource {
     /**
      * The {@link Bitmap} can only be used in
      * {@link ResourceLoader.ResourceLoaderCallback#onResourceLoaded(int, int, Resource)}, where it
-     * would be deep-copied into the CC layer, so it is encouraged to make sure we don't keep an
-     * extra copy at the Java side unnecessarily.
-     * This may be called more than once so if possible avoid doing redundant work.
+     * would be called exactly once per invocation, and deep-copied into the CC layer, so it is
+     * encouraged to make sure we don't keep an extra copy at the Java side unnecessarily.
      * @return A {@link Bitmap} representing the resource.
      */
     Bitmap getBitmap();

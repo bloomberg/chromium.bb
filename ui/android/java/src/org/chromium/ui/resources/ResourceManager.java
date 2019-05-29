@@ -130,14 +130,16 @@ public class ResourceManager implements ResourceLoaderCallback {
     @SuppressWarnings("cast")
     @Override
     public void onResourceLoaded(int resType, int resId, Resource resource) {
-        if (resource == null || resource.getBitmap() == null) return;
+        if (resource == null) return;
+        Bitmap bitmap = resource.getBitmap();
+        if (bitmap == null) return;
 
         saveMetadataForLoadedResource(resType, resId, resource);
 
         if (mNativeResourceManagerPtr == 0) return;
 
-        nativeOnResourceReady(mNativeResourceManagerPtr, resType, resId, resource.getBitmap(),
-                resource.createNativeResource());
+        nativeOnResourceReady(
+                mNativeResourceManagerPtr, resType, resId, bitmap, resource.createNativeResource());
     }
 
     @Override
