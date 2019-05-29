@@ -306,10 +306,7 @@ static void JNI_CronetUrlRequestContext_AddPkp(
           jinclude_subdomains,
           base::Time::UnixEpoch() +
               base::TimeDelta::FromMilliseconds(jexpiration_time)));
-  size_t hash_count = env->GetArrayLength(jhashes);
-  for (size_t i = 0; i < hash_count; ++i) {
-    ScopedJavaLocalRef<jbyteArray> bytes_array(
-        env, static_cast<jbyteArray>(env->GetObjectArrayElement(jhashes, i)));
+  for (auto bytes_array : jhashes.ReadElements<jbyteArray>()) {
     static_assert(std::is_pod<net::SHA256HashValue>::value,
                   "net::SHA256HashValue is not POD");
     static_assert(sizeof(net::SHA256HashValue) * CHAR_BIT == 256,

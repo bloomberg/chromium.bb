@@ -26,10 +26,7 @@ UsbServiceAndroid::UsbServiceAndroid() : UsbService(), weak_factory_(this) {
       Java_ChromeUsbService_create(env, reinterpret_cast<jlong>(this)));
   ScopedJavaLocalRef<jobjectArray> devices =
       Java_ChromeUsbService_getDevices(env, j_object_);
-  jsize length = env->GetArrayLength(devices.obj());
-  for (jsize i = 0; i < length; ++i) {
-    ScopedJavaLocalRef<jobject> usb_device(
-        env, env->GetObjectArrayElement(devices.obj(), i));
+  for (auto usb_device : devices.ReadElements<jobject>()) {
     scoped_refptr<UsbDeviceAndroid> device =
         UsbDeviceAndroid::Create(env, weak_factory_.GetWeakPtr(), usb_device);
     AddDevice(device);

@@ -33,13 +33,10 @@ UsbInterfaceDescriptor UsbInterfaceAndroid::Convert(
       Java_ChromeUsbInterface_getInterfaceSubclass(env, wrapper),
       Java_ChromeUsbInterface_getInterfaceProtocol(env, wrapper));
 
-  ScopedJavaLocalRef<jobjectArray> endpoints =
-      Java_ChromeUsbInterface_getEndpoints(env, wrapper);
-  jsize count = env->GetArrayLength(endpoints.obj());
-  interface.endpoints.reserve(count);
-  for (jsize i = 0; i < count; ++i) {
-    ScopedJavaLocalRef<jobject> endpoint(
-        env, env->GetObjectArrayElement(endpoints.obj(), i));
+  base::android::JavaObjectArrayReader<jobject> endpoints(
+      Java_ChromeUsbInterface_getEndpoints(env, wrapper));
+  interface.endpoints.reserve(endpoints.size());
+  for (auto endpoint : endpoints) {
     interface.endpoints.push_back(UsbEndpointAndroid::Convert(env, endpoint));
   }
 

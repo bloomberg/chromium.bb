@@ -24,13 +24,10 @@ UsbConfigDescriptor UsbConfigurationAndroid::Convert(
       Java_ChromeUsbConfiguration_isRemoteWakeup(env, wrapper),
       Java_ChromeUsbConfiguration_getMaxPower(env, wrapper));
 
-  ScopedJavaLocalRef<jobjectArray> interfaces =
-      Java_ChromeUsbConfiguration_getInterfaces(env, wrapper);
-  jsize count = env->GetArrayLength(interfaces.obj());
-  config.interfaces.reserve(count);
-  for (jsize i = 0; i < count; ++i) {
-    ScopedJavaLocalRef<jobject> interface(
-        env, env->GetObjectArrayElement(interfaces.obj(), i));
+  base::android::JavaObjectArrayReader<jobject> interfaces(
+      Java_ChromeUsbConfiguration_getInterfaces(env, wrapper));
+  config.interfaces.reserve(interfaces.size());
+  for (auto interface : interfaces) {
     config.interfaces.push_back(UsbInterfaceAndroid::Convert(env, interface));
   }
 

@@ -91,9 +91,7 @@ jboolean FakeServerHelperAndroid::VerifySessions(
     jlong fake_server,
     const JavaParamRef<jobjectArray>& url_array) {
   std::multiset<std::string> tab_urls;
-  for (int i = 0; i < env->GetArrayLength(url_array); i++) {
-    base::android::ScopedJavaLocalRef<jstring> j_string(
-        env, static_cast<jstring>(env->GetObjectArrayElement(url_array, i)));
+  for (auto j_string : url_array.ReadElements<jstring>()) {
     tab_urls.insert(base::android::ConvertJavaStringToUTF8(env, j_string));
   }
   fake_server::SessionsHierarchy expected_sessions;

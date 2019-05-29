@@ -154,10 +154,7 @@ void DownloadCollectionBridge::GetDisplayNamesForDownloads(
     std::move(cb).Run(std::move(result));
     return;
   }
-  jsize count = env->GetArrayLength(jdisplay_infos.obj());
-  for (jsize i = 0; i < count; ++i) {
-    base::android::ScopedJavaLocalRef<jobject> jdisplay_info(
-        env, env->GetObjectArrayElement(jdisplay_infos.obj(), i));
+  for (auto jdisplay_info : jdisplay_infos.ReadElements<jobject>()) {
     ScopedJavaLocalRef<jstring> juri =
         Java_DisplayNameInfo_getDownloadUri(env, jdisplay_info);
     ScopedJavaLocalRef<jstring> jdisplay_name =

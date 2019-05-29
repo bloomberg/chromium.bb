@@ -18,6 +18,7 @@
 #include "services/device/usb/webusb_descriptors.h"
 
 using base::android::ConvertJavaStringToUTF16;
+using base::android::JavaObjectArrayReader;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -131,13 +132,10 @@ UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
       j_object_(wrapper) {
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_LOLLIPOP) {
-    ScopedJavaLocalRef<jobjectArray> configurations =
-        Java_ChromeUsbDevice_getConfigurations(env, j_object_);
-    jsize count = env->GetArrayLength(configurations.obj());
-    descriptor_.configurations.reserve(count);
-    for (jsize i = 0; i < count; ++i) {
-      ScopedJavaLocalRef<jobject> config(
-          env, env->GetObjectArrayElement(configurations.obj(), i));
+    JavaObjectArrayReader<jobject> configurations(
+        Java_ChromeUsbDevice_getConfigurations(env, j_object_));
+    descriptor_.configurations.reserve(configurations.size());
+    for (auto config : configurations) {
       descriptor_.configurations.push_back(
           UsbConfigurationAndroid::Convert(env, config));
     }
@@ -149,13 +147,10 @@ UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
                                false,  // Remote wakeup, rbitrary default.
                                0);     // Maximum power, aitrary default.
 
-    ScopedJavaLocalRef<jobjectArray> interfaces =
-        Java_ChromeUsbDevice_getInterfaces(env, wrapper);
-    jsize count = env->GetArrayLength(interfaces.obj());
-    config.interfaces.reserve(count);
-    for (jsize i = 0; i < count; ++i) {
-      ScopedJavaLocalRef<jobject> interface(
-          env, env->GetObjectArrayElement(interfaces.obj(), i));
+    JavaObjectArrayReader<jobject> interfaces(
+        Java_ChromeUsbDevice_getInterfaces(env, wrapper));
+    config.interfaces.reserve(interfaces.size());
+    for (auto interface : interfaces) {
       config.interfaces.push_back(UsbInterfaceAndroid::Convert(env, interface));
     }
     descriptor_.configurations.push_back(config);

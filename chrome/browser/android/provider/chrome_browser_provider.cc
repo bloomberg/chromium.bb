@@ -136,22 +136,6 @@ jint JNI_ChromeBrowserProvider_ConvertJIntegerToJint(
   return env->CallIntMethod(integer_obj.obj(), int_value, NULL);
 }
 
-std::vector<base::string16> ConvertJStringArrayToString16Array(
-    JNIEnv* env,
-    const JavaRef<jobjectArray>& array) {
-  std::vector<base::string16> results;
-  if (!array.is_null()) {
-    jsize len = env->GetArrayLength(array.obj());
-    for (int i = 0; i < len; i++) {
-      ScopedJavaLocalRef<jstring> j_str(
-          env,
-          static_cast<jstring>(env->GetObjectArrayElement(array.obj(), i)));
-      results.push_back(ConvertJavaStringToUTF16(env, j_str));
-    }
-  }
-  return results;
-}
-
 // ------------- Utility methods used by tasks ------------- //
 
 // Parse the given url and return a GURL, appending the default scheme
@@ -931,8 +915,8 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QueryBookmarkFromAPI(
     }
   }
 
-  std::vector<base::string16> where_args =
-      ConvertJStringArrayToString16Array(env, selection_args);
+  std::vector<base::string16> where_args;
+  AppendJavaStringArrayToStringVector(env, selection_args, &where_args);
 
   std::string where_clause;
   if (selections) {
@@ -976,8 +960,8 @@ jint ChromeBrowserProvider::UpdateBookmarkFromAPI(
                                             date, favicon, title, visits,
                                             parent_id, &row, bookmark_model_);
 
-  std::vector<base::string16> where_args =
-      ConvertJStringArrayToString16Array(env, selection_args);
+  std::vector<base::string16> where_args;
+  AppendJavaStringArrayToStringVector(env, selection_args, &where_args);
 
   std::string where_clause;
   if (selections)
@@ -992,8 +976,8 @@ jint ChromeBrowserProvider::RemoveBookmarkFromAPI(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& selections,
     const JavaParamRef<jobjectArray>& selection_args) {
-  std::vector<base::string16> where_args =
-      ConvertJStringArrayToString16Array(env, selection_args);
+  std::vector<base::string16> where_args;
+  AppendJavaStringArrayToStringVector(env, selection_args, &where_args);
 
   std::string where_clause;
   if (selections)
@@ -1008,8 +992,8 @@ jint ChromeBrowserProvider::RemoveHistoryFromAPI(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& selections,
     const JavaParamRef<jobjectArray>& selection_args) {
-  std::vector<base::string16> where_args =
-      ConvertJStringArrayToString16Array(env, selection_args);
+  std::vector<base::string16> where_args;
+  AppendJavaStringArrayToStringVector(env, selection_args, &where_args);
 
   std::string where_clause;
   if (selections)
@@ -1069,8 +1053,8 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QuerySearchTermFromAPI(
     }
   }
 
-  std::vector<base::string16> where_args =
-      ConvertJStringArrayToString16Array(env, selection_args);
+  std::vector<base::string16> where_args;
+  AppendJavaStringArrayToStringVector(env, selection_args, &where_args);
 
   std::string where_clause;
   if (selections) {
@@ -1107,8 +1091,8 @@ jint ChromeBrowserProvider::UpdateSearchTermFromAPI(
   history::SearchRow row;
   JNI_ChromeBrowserProvider_FillSearchRow(env, obj, search_term, date, &row);
 
-  std::vector<base::string16> where_args = ConvertJStringArrayToString16Array(
-      env, selection_args);
+  std::vector<base::string16> where_args;
+  AppendJavaStringArrayToStringVector(env, selection_args, &where_args);
 
   std::string where_clause;
   if (selections)
@@ -1125,8 +1109,8 @@ jint ChromeBrowserProvider::RemoveSearchTermFromAPI(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& selections,
     const JavaParamRef<jobjectArray>& selection_args) {
-  std::vector<base::string16> where_args =
-      ConvertJStringArrayToString16Array(env, selection_args);
+  std::vector<base::string16> where_args;
+  AppendJavaStringArrayToStringVector(env, selection_args, &where_args);
 
   std::string where_clause;
   if (selections)
