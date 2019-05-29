@@ -1777,13 +1777,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   EXPECT_FALSE(ProcessManager::Get(profile())->HasServiceWorker(*worker_id));
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
-                       ChromeRuntimeOpenOptionsPage) {
-  ASSERT_TRUE(RunExtensionTestWithFlags("runtime/open_options_page",
-                                        kFlagRunAsServiceWorkerBasedExtension))
-      << message_;
-}
-
 // Tests that console messages logged by extension service workers, both via
 // the typical console.* methods and via our custom bindings console, are
 // passed through the normal ServiceWorker console messaging and are

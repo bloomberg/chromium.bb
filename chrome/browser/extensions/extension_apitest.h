@@ -61,10 +61,6 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     // Load the extension using //extensions/test/data/ as the root path instead
     // of loading from //chrome/test/data/extensions/api_test/.
     kFlagUseRootExtensionsDir = 1 << 7,
-
-    // Load the event page extension as a Service Worker based background
-    // extension.
-    kFlagRunAsServiceWorkerBasedExtension = 1 << 8,
   };
 
   ExtensionApiTest();

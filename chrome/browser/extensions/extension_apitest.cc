@@ -259,11 +259,6 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
         browser_test_flags |=
             ExtensionBrowserTest::kFlagAllowOldManifestVersions;
       }
-      if (flags & kFlagRunAsServiceWorkerBasedExtension) {
-        browser_test_flags |=
-            ExtensionBrowserTest::kFlagRunAsServiceWorkerBasedExtension;
-      }
-
       extension = LoadExtensionWithFlags(extension_path, browser_test_flags);
     }
     if (!extension) {
