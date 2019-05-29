@@ -11,35 +11,51 @@ issues]].
 - Remove memoization in ~checkAttr~. It wasn't implemented correctly,
   caused some weird bugs and probably didn't do much for performance.
   Thanks to Bert Frees.
-- Fix a buffer overflow in ~compilePassOpcode~. Thanks to Cheng Wen
-  for the report and to Christian Egli for the fix.
+- Fix multiple buffer overflows in ~compilePassOpcode~. Thanks to
+  Cheng Wen for the report and to Christian Egli for the fix.
+- Fix a build problem when building without libyaml thanks to Bert
+  Frees.
 
 ** Braille table improvements
 - Added modified letters to UEB thanks to Mike Gray.
 - Complete overhaul of the U.S. six-dot computer braille tables to
   align with the CBC standard thanks to Timothy Wynn. There is now a
-  sub-table for EBAE (en-us-compbrl.uti) and a stand-alone table
-  (en-us-comp6.ctb).
+  sub-table for EBAE (~en-us-compbrl.uti~) and a stand-alone table
+  (~en-us-comp6.ctb~).
   - Conforms to the CBC standard from BANA for character definitions
     that differ from the 8-dot ASCII braille (11 punctuation marks).
   - Added rules for braille indicators, emphasis indicators, and
     isolated lower-cell signs to the stand-alone table.
   - Uncontracted and contracted EBAE tables no longer use dot 7 when
     in computer braille mode.
-  - en-us-compbrl.ctb was deleted because it was identical to
-    en-us-comp6.ctb.
+  - ~en-us-compbrl.ctb~ was deleted because it was identical to
+    ~en-us-comp6.ctb~.
 - Update Bopomofo-based Chinese Braille thanks to Sponge Jhan
   - Correct various dot patterns of Chinese characters.
   - Add more known pattern exceptions of Chinese characters.
   - Apply "word" opcode to 倔 and 据.
   - Change dot pattern of ＆ to 456-12346.
+- ~de-de-comp8.ctb~ now has definitions for musical unicode characters
+  thanks to Daniel Mayr
+- Emphasis improvements in Unified French 6 dots Braille thanks to
+  Ludovic Oger.
+- Improvements to Unified English braille, Grade 2 thanks to James
+  Datray from Freedom Scientific.
+- Numerous back-translation fixes to Grade 2 of UK English and Unified
+  English Braille thanks to Anthony Tibbs.
 
 ** Other changes
 - Remove some code duplication in pattern.c thanks to Bert Frees
+- It is now also possible to define inline tables when a display table
+  has been defined thanks to Bert Frees
+- Nightly snapshots of liblouis are now also built for win64 thanks to
+  Bert Frees
 
 ** Deprecation notice
+None
 
 ** Backwards incompatible changes
+None
 
 ** New, renamed or removed tables
 *** New
@@ -50,7 +66,6 @@ issues]].
 
 *** Removed
 - en-us-compbrl.ctb
-
 
 * Noteworthy changes in release 3.9.0 (2019-03-04)
 This release has seen a tremendous amount of work by Bert Frees. He
