@@ -2153,7 +2153,6 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
     // mode, it is possible for renderer-intiated navigations to be allowed to
     // go cross-process. Check it first.
     bool can_renderer_initiate_transfer =
-        render_frame_host_->IsRenderFrameLive() &&
         IsURLHandledByNetworkStack(request.common_params().url) &&
         IsRendererTransferNeededForNavigation(render_frame_host_.get(),
                                               request.common_params().url);
