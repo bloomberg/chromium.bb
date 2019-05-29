@@ -74,23 +74,25 @@ AudioContext* AudioContext::Create(Document& document,
     sample_rate = context_options->sampleRate();
   }
 
+  // Validate options before trying to construct the actual context.
+  if (sample_rate.has_value() &&
+      !audio_utilities::IsValidAudioBufferSampleRate(sample_rate.value())) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        ExceptionMessages::IndexOutsideRange(
+            "hardware sample rate", sample_rate.value(),
+            audio_utilities::MinAudioBufferSampleRate(),
+            ExceptionMessages::kInclusiveBound,
+            audio_utilities::MaxAudioBufferSampleRate(),
+            ExceptionMessages::kInclusiveBound));
+    return nullptr;
+  }
+
   AudioContext* audio_context =
       MakeGarbageCollected<AudioContext>(document, latency_hint, sample_rate);
   ++g_hardware_context_count;
   audio_context->UpdateStateIfNeeded();
 
-  if (!audio_utilities::IsValidAudioBufferSampleRate(
-          audio_context->sampleRate())) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        ExceptionMessages::IndexOutsideRange(
-            "hardware sample rate", audio_context->sampleRate(),
-            audio_utilities::MinAudioBufferSampleRate(),
-            ExceptionMessages::kInclusiveBound,
-            audio_utilities::MaxAudioBufferSampleRate(),
-            ExceptionMessages::kInclusiveBound));
-    return audio_context;
-  }
   // This starts the audio thread. The destination node's
   // provideInput() method will now be called repeatedly to render
   // audio.  Each time provideInput() is called, a portion of the

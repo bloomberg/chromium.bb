@@ -136,6 +136,10 @@ void FFTFrame::Initialize(float sample_rate) {
   // need to know about how the HRTF panner uses FFTs.
   unsigned hrtf_order = static_cast<unsigned>(
       log2(HRTFPanner::FftSizeForSampleRate(sample_rate)));
+
+  DCHECK_GT(hrtf_order, kMinFFTPow2Size);
+  DCHECK_LE(hrtf_order, kMaxFFTPow2Size);
+
   InitializeFFTSetupForSize(hrtf_order);
   InitializeFFTSetupForSize(hrtf_order - 1);
 }
