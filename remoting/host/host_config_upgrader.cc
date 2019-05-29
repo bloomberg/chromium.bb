@@ -95,7 +95,7 @@ int HostConfigUpgrader::DoUpgrade() {
 
   refresh_token_ = *refresh_token;
 
-  if (config_->FindKey(kTokenUpgradedConfigPath)) {
+  if (config_->FindKey(kIsFtlTokenConfigPath)) {
     HOST_LOG << "Host config is already upgraded.";
     return 0;
   }
@@ -141,7 +141,7 @@ void HostConfigUpgrader::OnTokenExchanged(OfflineTokenExchanger::Status status,
   // Mark config as upgraded and write to disk (whether or not the token was
   // actually exchanged). The value is not important, only the presence of the
   // key is used.
-  config_->SetIntKey(kTokenUpgradedConfigPath, 1);
+  config_->SetIntKey(kIsFtlTokenConfigPath, 1);
 
   if (status == OfflineTokenExchanger::NO_EXCHANGE) {
     HOST_LOG << "No exchange needed, writing new config to mark as upgraded.";
