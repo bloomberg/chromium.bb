@@ -866,3 +866,24 @@ cca.util.openHelp = function() {
   window.open(
       'https://support.google.com/chromebook/?p=camera_usage_on_chromebook');
 };
+
+/*
+ * Sets up i18n messages on DOM subtree by i18n attributes.
+ * @param {HTMLElement} rootElement Root of DOM subtree to be set up with.
+ */
+cca.util.setupI18nElements = function(rootElement) {
+  var getElements = (attr) => rootElement.querySelectorAll('[' + attr + ']');
+  var getMessage = (element, attr) =>
+      chrome.i18n.getMessage(element.getAttribute(attr));
+  var setAriaLabel = (element, attr) =>
+      element.setAttribute('aria-label', getMessage(element, attr));
+
+  getElements('i18n-content')
+      .forEach(
+          (element) => element.textContent =
+              getMessage(element, 'i18n-content'));
+  getElements('i18n-aria')
+      .forEach((element) => setAriaLabel(element, 'i18n-aria'));
+  cca.tooltip.setup(getElements('i18n-label'))
+      .forEach((element) => setAriaLabel(element, 'i18n-label'));
+};

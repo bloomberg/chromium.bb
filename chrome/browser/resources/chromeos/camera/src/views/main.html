@@ -180,14 +180,9 @@
           </div>
           <div class="icon end"></div>
         </button>
-        <button class="menu-item circle" id="settings-resolution" tabindex="0"
-                aria-describedby="resolution-desc">
+        <button class="menu-item circle" id="settings-resolution" tabindex="0">
           <div class="icon"></div>
-          <div>
-            <div>Camera resolution</div>
-            <div class="description" id="resolution-desc" aria-hidden="true">
-              <span></span>
-            </div>
+          <div i18n-content="camera_resolution_button">
           </div>
           <div class="icon end"></div>
         </button>
@@ -247,14 +242,15 @@
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
-          <div>Camera resolutions</div>
+          <div i18n-content="camera_resolution_button"></div>
         </div>
-        <div id="builtin-photo-header" class="menu-item">Photo</div>
+        <div id="builtin-photo-header" class="menu-item"
+          i18n-content="label_switch_take_photo_button"></div>
         <button class="menu-item resol-item circle"
                 id="settings-front-photores" tabindex="0"
                 aria-describedby="front-photores-desc">
           <div>
-            <div>Front camera</div>
+            <div i18n-content="label_front_camera"></div>
             <div class="description" id="front-photores-desc"
                  aria-hidden="true">
               <span></span>
@@ -266,19 +262,20 @@
                 id="settings-back-photores" tabindex="0"
                 aria-describedby="back-photores-desc">
           <div>
-            <div>Back camera</div>
+            <div i18n-content="label_back_camera"></div>
             <div class="description" id="back-photores-desc" aria-hidden="true">
               <span></span>
             </div>
           </div>
           <div class="icon end"></div>
         </button>
-        <div id="builtin-video-header" class="menu-item">Video</div>
+        <div id="builtin-video-header" class="menu-item"
+          i18n-content="label_switch_record_video_button"></div>
         <button class="menu-item resol-item circle"
                 id="settings-front-videores" tabindex="0"
                 aria-describedby="front-videores-desc">
           <div>
-            <div>Front camera</div>
+            <div i18n-content="label_front_camera"></div>
             <div class="description" id="front-videores-desc" aria-hidden="true">
               <span></span>
             </div>
@@ -289,7 +286,7 @@
                 id="settings-back-videores" tabindex="0"
                 aria-describedby="back-videores-desc">
           <div>
-            <div>Back camera</div>
+            <div i18n-content="label_back_camera"></div>
             <div class="description" id="back-videores-desc" aria-hidden="true">
               <span></span>
             </div>
@@ -302,7 +299,7 @@
       <div class="menu" data-name="photores">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
-          <div>Photo resolution</div>
+          <div i18n-content="photo_resolution_button"></div>
         </div>
       </div>
     </div>
@@ -310,7 +307,7 @@
       <div class="menu" data-name="videores">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
-          <div>Video resolution</div>
+          <div i18n-content="video_resolution_button"></div>
         </div>
       </div>
     </div>
@@ -358,11 +355,12 @@
       </label>
     </template>
     <template id="extcam-resolution-item-template">
-        <div class="menu-item external-camera">External camera</div>
+        <div class="menu-item external-camera"
+          i18n-content="label_external_camera"></div>
         <button class="menu-item resol-item external-camera"
               tabindex="0">
           <div>
-            <div>Photo resolution</div>
+            <div i18n-content="photo_resolution_button"></div>
             <div class="description" aria-hidden="true">
               <span></span>
             </div>
@@ -372,7 +370,7 @@
         <button class="menu-item resol-item circle external-camera"
               tabindex="0">
           <div>
-            <div>Video resolution</div>
+            <div i18n-content="video_resolution_button"></div>
             <div class="description" aria-hidden="true">
               <span></span>
             </div>

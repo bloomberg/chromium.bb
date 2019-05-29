@@ -50,7 +50,7 @@ cca.App = function() {
   document.body.addEventListener('keydown', this.onKeyPressed_.bind(this));
 
   document.title = chrome.i18n.getMessage('name');
-  this.setupI18nElements_();
+  cca.util.setupI18nElements(document);
   this.setupToggles_();
 
   // Set up views navigation by their DOM z-order.
@@ -74,25 +74,6 @@ cca.App = function() {
  */
 cca.App.useGalleryApp = function() {
   return chrome.fileManagerPrivate && cca.state.get('ext-fs');
-};
-
-/**
- * Sets up i18n messages on elements by i18n attributes.
- * @private
- */
-cca.App.prototype.setupI18nElements_ = function() {
-  var getElements = (attr) => document.querySelectorAll('[' + attr + ']');
-  var getMessage = (element, attr) => chrome.i18n.getMessage(
-      element.getAttribute(attr));
-  var setAriaLabel = (element, attr) => element.setAttribute(
-      'aria-label', getMessage(element, attr));
-
-  getElements('i18n-content').forEach(
-      (element) => element.textContent = getMessage(element, 'i18n-content'));
-  getElements('i18n-aria').forEach(
-      (element) => setAriaLabel(element, 'i18n-aria'));
-  cca.tooltip.setup(getElements('i18n-label')).forEach(
-      (element) => setAriaLabel(element, 'i18n-label'));
 };
 
 /**

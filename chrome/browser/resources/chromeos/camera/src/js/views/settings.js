@@ -278,16 +278,24 @@ cca.views.ResolutionSettings.prototype = {
  * Template for generating option text from photo resolution width and height.
  * @param {number} w Resolution width.
  * @param {number} h Resolution height.
+ * @param {ResolList} resolutions All available resolutions.
  * @return {string} Text shown on resolution option item.
  * @private
  */
-cca.views.ResolutionSettings.prototype.photoOptTextTempl_ = function(w, h) {
+cca.views.ResolutionSettings.prototype.photoOptTextTempl_ = function(
+    w, h, resolutions) {
   const gcd = (a, b) => (a <= 0 ? b : gcd(b % a, a));
-  if (h * w >= 100000) {
-    return `${Math.round(w * h / 100000) / 10} megapixels (${w}:${h})`;
+  const d = gcd(w, h);
+  const toMegapixel = (w, h) => Math.round(w * h / 100000) / 10;
+  if (resolutions.find(
+          ([w2, h2]) => (w != w2 || h != h2) && w * h2 == w2 * h &&
+              toMegapixel(w, h) == toMegapixel(w2, h2))) {
+    return chrome.i18n.getMessage(
+        'label_detail_photo_resolution',
+        [w / d, h / d, w, h, toMegapixel(w, h)]);
   } else {
-    const d = gcd(w, h);
-    return `(${w / d}:${h / d}) ${w} x ${h}px`;
+    return chrome.i18n.getMessage(
+        'label_photo_resolution', [w / d, h / d, toMegapixel(w, h)]);
   }
 };
 
@@ -299,13 +307,13 @@ cca.views.ResolutionSettings.prototype.photoOptTextTempl_ = function(w, h) {
  * @private
  */
 cca.views.ResolutionSettings.prototype.videoOptTextTempl_ = function(w, h) {
-  return `HD ${h}p (${w}:${h})`;
+  return chrome.i18n.getMessage('label_video_resolution', [h, w].map(String));
 };
 
 /**
- * Finds resolution setting of target device id.
+ * Finds photo and video resolution setting of target device id.
  * @param {string} deviceId
- * @return {?DeviceIdResols}
+ * @return {?[DeviceIdResols, DeviceIdResols]}
  * @private
  */
 cca.views.ResolutionSettings.prototype.getDeviceSetting_ = function(deviceId) {
@@ -343,7 +351,8 @@ cca.views.ResolutionSettings.prototype.updateResolutions_ = function() {
   const prepItem = (item, [id, w, h, resolutions], optTextTempl) => {
     item.dataset.deviceId = id;
     item.classList.toggle('multi-option', resolutions.length > 1);
-    item.querySelector('.description>span').textContent = optTextTempl(w, h);
+    item.querySelector('.description>span').textContent =
+        optTextTempl(w, h, resolutions);
   };
 
   // Update front camera setting
@@ -388,6 +397,7 @@ cca.views.ResolutionSettings.prototype.updateResolutions_ = function() {
     const videoSetting = this.externalVideoSettings_[index];
     if (deviceId !== focusedId) {
       const extItem = document.importNode(this.extcamItemTempl_.content, true);
+      cca.util.setupI18nElements(extItem);
       var [titleItem, photoItem, videoItem] =
           extItem.querySelectorAll('.menu-item');
 
@@ -396,11 +406,15 @@ cca.views.ResolutionSettings.prototype.updateResolutions_ = function() {
           this.openPhotoResSettings_(photoSetting, photoItem);
         }
       });
+      photoItem.setAttribute('aria-describedby', `${deviceId}-photores-desc`);
+      photoItem.querySelector('.description').id = `${deviceId}-photores-desc`;
       videoItem.addEventListener('click', () => {
         if (videoItem.classList.contains('multi-option')) {
           this.openVideoResSettings_(videoSetting, videoItem);
         }
       });
+      videoItem.setAttribute('aria-describedby', `${deviceId}-videores-desc`);
+      videoItem.querySelector('.description').id = `${deviceId}-videores-desc`;
       if (index < focusIdx) {
         this.resMenu_.insertBefore(extItem, fTitle);
       } else {
@@ -445,7 +459,7 @@ cca.views.ResolutionSettings.prototype.updateSelectedPhotoResolution_ =
         `.menu-item[data-device-id="${deviceId}"]`)[1];
   }
   photoItem.querySelector('.description>span').textContent =
-      this.photoOptTextTempl_(width, height);
+      this.photoOptTextTempl_(width, height, photoSetting[3]);
 
   // Update setting option if it's opened.
   if (cca.state.get('photoresolutionsettings') &&
@@ -528,7 +542,7 @@ cca.views.ResolutionSettings.prototype.openVideoResSettings_ = function(
  * Updates resolution menu with specified resolutions.
  * @param {HTMLElement} resolItem DOM element holding selected resolution.
  * @param {HTMLElement} menu Menu holding all resolution option elements.
- * @param {function(number, number): string} optTextTempl Template
+ * @param {function(number, number, ResolList): string} optTextTempl Template
  *     generating text content for each resolution option from its
  *     width and height.
  * @param {function(number, number)} onChange Called when selected
@@ -548,15 +562,14 @@ cca.views.ResolutionSettings.prototype.updateMenu_ = function(
       .forEach((element) => element.parentNode.removeChild(element));
 
   resolutions.forEach(([w, h], index) => {
-    // TODO(inker): i18n contents in optTextTempl
     const item = document.importNode(this.resItemTempl_.content, true);
     const inputElement = item.querySelector('input');
-    item.querySelector('span').textContent = optTextTempl(w, h);
+    item.querySelector('span').textContent = optTextTempl(w, h, resolutions);
     inputElement.name = menu.dataset.name;
     inputElement.dataset.width = w;
     inputElement.dataset.height = h;
     if (w == selectedWidth && h == selectedHeight) {
-      captionText.textContent = optTextTempl(w, h);
+      captionText.textContent = optTextTempl(w, h, resolutions);
       inputElement.checked = true;
     }
     inputElement.addEventListener('click', (event) => {
@@ -566,7 +579,7 @@ cca.views.ResolutionSettings.prototype.updateMenu_ = function(
     });
     inputElement.addEventListener('change', (event) => {
       if (inputElement.checked) {
-        captionText.textContent = optTextTempl(w, h);
+        captionText.textContent = optTextTempl(w, h, resolutions);
         onChange(w, h);
       }
     });
