@@ -70,7 +70,7 @@ void RestoreTabUsingProfile(Profile* profile) {
 
 bool IsIncognitoAllowed() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  return profile && !profile->IsGuestProfile() &&
+  return profile && !profile->IsGuestSession() &&
          IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
              IncognitoModePrefs::DISABLED;
 }
