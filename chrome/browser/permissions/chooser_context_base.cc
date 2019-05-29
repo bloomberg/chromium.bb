@@ -86,7 +86,7 @@ ChooserContextBase::GetGrantedObjects(const url::Origin& requesting_origin,
     if (IsValidObject(object)) {
       results.push_back(std::make_unique<Object>(
           requesting_origin, embedding_origin, std::move(object), info.source,
-          host_content_settings_map_->is_incognito()));
+          host_content_settings_map_->IsOffTheRecord()));
     }
   }
   return results;

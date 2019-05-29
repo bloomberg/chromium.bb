@@ -289,10 +289,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   static ProviderType GetProviderTypeFromSource(const std::string& source);
 
   // Whether this settings map is for an incognito or guest session.
-  // TODO(https://crbug.com/3333): Should be renamed.
-  bool is_incognito() const {
-    return is_incognito_;
-  }
+  bool IsOffTheRecord() const { return is_off_the_record_; }
 
   // Adds/removes an observer for content settings changes.
   void AddObserver(content_settings::Observer* observer);
@@ -416,8 +413,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   PrefService* prefs_;
 
   // Whether this settings map is for an incognito or guest session.
-  // TODO(https://crbug.com/3333): Should be renamed.
-  bool is_incognito_;
+  bool is_off_the_record_;
 
   // Whether ContentSettings in the PrefProvider will store a last_modified
   // timestamp.

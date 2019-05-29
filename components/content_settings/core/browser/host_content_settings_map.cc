@@ -248,7 +248,7 @@ HostContentSettingsMap::HostContentSettingsMap(
       used_from_thread_id_(base::PlatformThread::CurrentId()),
 #endif
       prefs_(prefs),
-      is_incognito_(is_off_the_record),
+      is_off_the_record_(is_off_the_record),
       store_last_modified_(store_last_modified),
       weak_ptr_factory_(this) {
   TRACE_EVENT0("startup", "HostContentSettingsMap::HostContentSettingsMap");
@@ -259,8 +259,8 @@ HostContentSettingsMap::HostContentSettingsMap(
       base::WrapUnique(policy_provider);
   policy_provider->AddObserver(this);
 
-  pref_provider_ = new content_settings::PrefProvider(prefs_, is_incognito_,
-                                                      store_last_modified_);
+  pref_provider_ = new content_settings::PrefProvider(
+      prefs_, is_off_the_record_, store_last_modified_);
   content_settings_providers_[PREF_PROVIDER] = base::WrapUnique(pref_provider_);
   user_modifiable_providers_.push_back(pref_provider_);
   pref_provider_->AddObserver(this);
@@ -273,7 +273,7 @@ HostContentSettingsMap::HostContentSettingsMap(
   ephemeral_provider->AddObserver(this);
 
   auto default_provider = std::make_unique<content_settings::DefaultProvider>(
-      prefs_, is_incognito_);
+      prefs_, is_off_the_record_);
   default_provider->AddObserver(this);
   content_settings_providers_[DEFAULT_PROVIDER] = std::move(default_provider);
 
@@ -354,7 +354,7 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSettingInternal(
       continue;
     ContentSetting default_setting = GetDefaultContentSettingFromProvider(
         content_type, provider_pair.second.get());
-    if (is_incognito_) {
+    if (is_off_the_record_) {
       default_setting = content_settings::ValueToContentSetting(
           ProcessIncognitoInheritanceBehavior(
               content_type,
@@ -419,7 +419,7 @@ void HostContentSettingsMap::GetSettingsForOneType(
   for (const auto& provider_pair : content_settings_providers_) {
     // For each provider, iterate first the incognito-specific rules, then the
     // normal rules.
-    if (is_incognito_) {
+    if (is_off_the_record_) {
       AddSettingsForOneType(provider_pair.second.get(), provider_pair.first,
                             content_type, resource_identifier, settings, true);
     }
@@ -581,8 +581,8 @@ void HostContentSettingsMap::SetContentSettingCustomScope(
     ContentSettingsPattern temp_patterns[2];
     std::unique_ptr<base::Value> value(GetContentSettingValueAndPatterns(
         content_settings_providers_[PREF_PROVIDER].get(), url, url,
-        CONTENT_SETTINGS_TYPE_PLUGINS_DATA, resource_identifier, is_incognito_,
-        temp_patterns, temp_patterns + 1));
+        CONTENT_SETTINGS_TYPE_PLUGINS_DATA, resource_identifier,
+        is_off_the_record_, temp_patterns, temp_patterns + 1));
 
     UMA_HISTOGRAM_ENUMERATION(
         "ContentSettings.EphemeralFlashPermission",
@@ -891,7 +891,8 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
   for (; it != content_settings_providers_.end(); ++it) {
     std::unique_ptr<base::Value> value = GetContentSettingValueAndPatterns(
         it->second.get(), primary_url, secondary_url, content_type,
-        resource_identifier, is_incognito_, primary_pattern, secondary_pattern);
+        resource_identifier, is_off_the_record_, primary_pattern,
+        secondary_pattern);
     if (value) {
       if (info)
         info->source = kProviderNamesSourceMap[it->first].provider_source;
