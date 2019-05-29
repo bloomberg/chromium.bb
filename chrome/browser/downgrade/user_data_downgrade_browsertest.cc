@@ -118,7 +118,7 @@ class UserDataDowngradeBrowserNoResetTest
 // downgrade.
 IN_PROC_BROWSER_TEST_F(UserDataDowngradeBrowserCopyAndCleanTest, Test) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   EXPECT_EQ(chrome::kChromeVersion, GetLastVersion(user_data_dir_).GetString());
   ASSERT_FALSE(base::PathExists(other_file_));
 }

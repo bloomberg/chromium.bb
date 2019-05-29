@@ -527,7 +527,7 @@ TEST_F(AutofillControllerTest, KeyValueImport) {
                       CreateAutofillEntry(base::ASCIIToUTF16("overwritten"))};
   web_data_service->GetFormValuesForElementName(
       base::UTF8ToUTF16("greeting"), base::string16(), limit, &consumer);
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   WaitForBackgroundTasks();
   // No value should be returned before anything is loaded via form submission.
   ASSERT_EQ(0U, consumer.result_.size());
@@ -537,7 +537,7 @@ TEST_F(AutofillControllerTest, KeyValueImport) {
         base::UTF8ToUTF16("greeting"), base::string16(), limit, &consumer);
     return consumer.result_.size();
   });
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   WaitForBackgroundTasks();
   // One result should be returned, matching the filled value.
   ASSERT_EQ(1U, consumer.result_.size());

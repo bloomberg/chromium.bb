@@ -64,9 +64,10 @@ void SetV8FlagIfHasSwitch(const char* switch_name, const char* v8_flag) {
   }
 }
 
-std::unique_ptr<base::ThreadPool::InitParams> GetThreadPoolInitParams() {
+std::unique_ptr<base::ThreadPoolInstance::InitParams>
+GetThreadPoolInitParams() {
   constexpr int kMaxNumThreadsInForegroundPoolLowerBound = 3;
-  return std::make_unique<base::ThreadPool::InitParams>(
+  return std::make_unique<base::ThreadPoolInstance::InitParams>(
       std::max(kMaxNumThreadsInForegroundPoolLowerBound,
                content::GetMinForegroundThreadsInRendererThreadPool()));
 }

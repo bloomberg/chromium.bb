@@ -57,10 +57,10 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   // traits. Unless external tasks need to run on the same sequence as
   // JsonPrefStore tasks, keep the default value.
   // The initial read is done synchronously, the TaskPriority is thus only used
-  // for flushes to disks and BACKGROUND is therefore appropriate. Priority of
-  // remaining BACKGROUND+BLOCK_SHUTDOWN tasks is bumped by the ThreadPool on
+  // for flushes to disks and BEST_EFFORT is therefore appropriate. Priority of
+  // remaining BEST_EFFORT+BLOCK_SHUTDOWN tasks is bumped by the ThreadPool on
   // shutdown. However, some shutdown use cases happen without
-  // ThreadPool::Shutdown() (e.g. ChromeRestartRequest::Start() and
+  // ThreadPoolInstance::Shutdown() (e.g. ChromeRestartRequest::Start() and
   // BrowserProcessImpl::EndSession()) and we must thus unfortunately make this
   // USER_VISIBLE until we solve https://crbug.com/747495 to allow bumping
   // priority of a sequence on demand.

@@ -34,7 +34,7 @@ ChromotingClientRuntime* ChromotingClientRuntime::GetInstance() {
 }
 
 ChromotingClientRuntime::ChromotingClientRuntime() {
-  base::ThreadPool::CreateAndStartWithDefaultParams("Remoting");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Remoting");
 
   DCHECK(!base::MessageLoopCurrent::Get());
 
@@ -71,7 +71,7 @@ ChromotingClientRuntime::~ChromotingClientRuntime() {
   }
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   if (delegate_) {
     delegate_->RuntimeDidShutdown();

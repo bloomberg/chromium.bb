@@ -209,10 +209,9 @@ class TestLauncher {
   // Called by the delay timer when no output was made for a while.
   void OnOutputTimeout();
 
-  // Creates and starts a ThreadPool with |num_parallel_jobs| dedicated to
-  // foreground blocking tasks (corresponds to the traits used to launch and
-  // wait for child processes).
-  // virtual to mock in testing.
+  // Creates and starts a ThreadPoolInstance with |num_parallel_jobs| dedicated
+  // to foreground blocking tasks (corresponds to the traits used to launch and
+  // wait for child processes). virtual to mock in testing.
   virtual void CreateAndStartThreadPool(int num_parallel_jobs);
 
   // Make sure we don't accidentally call the wrong methods e.g. on the worker

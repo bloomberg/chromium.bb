@@ -218,7 +218,7 @@ void SpinThreads() {
 
   // This prevents HistoryBackend from accessing its databases after the
   // directory that contains them has been deleted.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 }
 
 }  // namespace

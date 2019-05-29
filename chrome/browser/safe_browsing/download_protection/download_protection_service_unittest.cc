@@ -338,7 +338,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
 
   // Flushes any pending tasks in the message loops of all threads.
   void FlushThreadMessageLoops() {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     FlushMessageLoop(BrowserThread::IO);
     RunLoop().RunUntilIdle();
   }

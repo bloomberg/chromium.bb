@@ -263,7 +263,8 @@ bool ParseAndStoreSpec(const std::string& spec_str,
 bool Main(int argc, char** argv) {
   base::AtExitManager at_exit_manager;
   base::MessageLoopForIO message_loop;
-  base::ThreadPool::CreateAndStartWithDefaultParams("disk_cache_memory_test");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "disk_cache_memory_test");
   base::CommandLine::Init(argc, argv);
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

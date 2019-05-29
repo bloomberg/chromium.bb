@@ -445,7 +445,7 @@ int MCSProbeMain(int argc, char* argv[]) {
   mojo::core::Init();
 
   base::MessageLoopForIO message_loop;
-  base::ThreadPool::CreateAndStartWithDefaultParams("MCSProbe");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("MCSProbe");
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -456,7 +456,7 @@ int MCSProbeMain(int argc, char* argv[]) {
   base::RunLoop run_loop;
   run_loop.Run();
 
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return 0;
 }

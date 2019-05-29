@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The default {@link TaskExecutor} which maps directly to base::ThreadPool.
+ * The default {@link TaskExecutor} which maps directly to base/task/post_task.h.
  */
 class DefaultTaskExecutor implements TaskExecutor {
     private final Map<TaskTraits, TaskRunner> mTraitsToRunnerMap = new HashMap<>();

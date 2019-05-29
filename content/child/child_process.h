@@ -43,8 +43,8 @@ class CONTENT_EXPORT ChildProcess {
   ChildProcess(
       base::ThreadPriority io_thread_priority = base::ThreadPriority::NORMAL,
       const std::string& thread_pool_name = "ContentChild",
-      std::unique_ptr<base::ThreadPool::InitParams> thread_pool_init_params =
-          nullptr);
+      std::unique_ptr<base::ThreadPoolInstance::InitParams>
+          thread_pool_init_params = nullptr);
   virtual ~ChildProcess();
 
   // May be NULL if the main thread hasn't been set explicitly.
@@ -97,7 +97,7 @@ class CONTENT_EXPORT ChildProcess {
   // io_thread_.
   std::unique_ptr<ChildThreadImpl> main_thread_;
 
-  // Whether this ChildProcess initialized ThreadPool.
+  // Whether this ChildProcess initialized ThreadPoolInstance.
   bool initialized_thread_pool_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcess);

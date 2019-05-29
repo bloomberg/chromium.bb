@@ -161,7 +161,7 @@ TEST(LazyTaskRunnerTest, LazySequencedTaskRunnerReset) {
     test::ScopedTaskEnvironment scoped_task_environment;
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
-    // deleted ThreadPool and crash.
+    // deleted ThreadPoolInstance and crash.
     g_sequenced_task_runner_user_visible.Get()->PostTask(FROM_HERE,
                                                          DoNothing());
   }
@@ -172,7 +172,7 @@ TEST(LazyTaskRunnerTest, LazySingleThreadTaskRunnerReset) {
     test::ScopedTaskEnvironment scoped_task_environment;
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
-    // deleted ThreadPool and crash.
+    // deleted ThreadPoolInstance and crash.
     g_single_thread_task_runner_user_visible.Get()->PostTask(FROM_HERE,
                                                              DoNothing());
   }
@@ -184,7 +184,7 @@ TEST(LazyTaskRunnerTest, LazyCOMSTATaskRunnerReset) {
     test::ScopedTaskEnvironment scoped_task_environment;
     // If the TaskRunner isn't released when the test::ScopedTaskEnvironment
     // goes out of scope, the second invocation of the line below will access a
-    // deleted ThreadPool and crash.
+    // deleted ThreadPoolInstance and crash.
     g_com_sta_task_runner_user_visible.Get()->PostTask(FROM_HERE, DoNothing());
   }
 }

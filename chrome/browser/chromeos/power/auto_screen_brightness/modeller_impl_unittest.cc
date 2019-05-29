@@ -176,7 +176,7 @@ class ModellerImplTest : public testing::Test {
   }
 
   ~ModellerImplTest() override {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
   }
 
   // Sets up |modeller_| with a FakeTrainer.

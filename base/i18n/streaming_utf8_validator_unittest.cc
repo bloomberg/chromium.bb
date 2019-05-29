@@ -110,7 +110,7 @@ class StreamingUtf8ValidatorThoroughTest : public ::testing::Test {
 };
 
 TEST_F(StreamingUtf8ValidatorThoroughTest, TestEverything) {
-  base::ThreadPool::CreateAndStartWithDefaultParams(
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
       "StreamingUtf8ValidatorThoroughTest");
   {
     base::AutoLock al(lock_);
@@ -125,9 +125,9 @@ TEST_F(StreamingUtf8ValidatorThoroughTest, TestEverything) {
       begin += kThoroughTestChunkSize;
     } while (begin != 0);
   }
-  base::ThreadPool::GetInstance()->Shutdown();
-  base::ThreadPool::GetInstance()->JoinForTesting();
-  base::ThreadPool::SetInstance(nullptr);
+  base::ThreadPoolInstance::Get()->Shutdown();
+  base::ThreadPoolInstance::Get()->JoinForTesting();
+  base::ThreadPoolInstance::Set(nullptr);
 }
 
 #endif  // BASE_I18N_UTF8_VALIDATOR_THOROUGH_TEST

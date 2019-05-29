@@ -235,7 +235,7 @@ TEST_F(MultiThreadFileSystemOperationRunnerTest, OpenAndShutdown) {
   operation_runner()->Shutdown();
 
   // Wait until the task posted on the blocking thread is done.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   // This should finish without thread assertion failure on debug build.
 }
 

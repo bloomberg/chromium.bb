@@ -4,17 +4,17 @@
 
 package org.chromium.base.test.task;
 
-/** Helpers that allow base::ThreadPool to be initialized or shutdown for testing. */
+/** Helpers that allow base::ThreadPoolInstance to be initialized or shutdown for testing. */
 public class ThreadPoolTestHelpers {
     /**
-     * Initializes base::ThreadPool with default params.
+     * Initializes base::ThreadPoolInstance with default params.
      */
     public static void enableThreadPoolExecutionForTesting() {
         nativeEnableThreadPoolExecutionForTesting();
     }
 
     /**
-     * Shuts down base::ThreadPool.
+     * Shuts down base::ThreadPoolInstance.
      */
     public static void disableThreadPoolExecutionForTesting() {
         nativeDisableThreadPoolExecutionForTesting();

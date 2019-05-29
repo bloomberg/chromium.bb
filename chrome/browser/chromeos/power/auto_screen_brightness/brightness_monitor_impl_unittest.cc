@@ -82,7 +82,7 @@ class BrightnessMonitorImplTest : public testing::Test {
     test_observer_.reset();
     monitor_.reset();
     PowerManagerClient::Shutdown();
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
   }
 
   // Creates and initializes |monitor_| and optionally sets initial brightness

@@ -40,7 +40,7 @@ std::unique_ptr<base::FieldTrialList> SetUpFieldTrialsAndFeatureList() {
 // TODO(scheduler-dev): Standardize thread pool logic and remove the need for
 // specifying thread count manually.
 void StartBrowserThreadPool() {
-  base::ThreadPool::InitParams thread_pool_init_params = {
+  base::ThreadPoolInstance::InitParams thread_pool_init_params = {
 #if defined(OS_ANDROID)
     // Mobile config, for iOS see ios/web/app/web_main_loop.cc.
     base::RecommendedMaxNumberOfThreadsInThreadGroup(6, 8, 0.6, 0)
@@ -51,8 +51,8 @@ void StartBrowserThreadPool() {
   };
 
 #if defined(OS_WIN)
-  thread_pool_init_params.common_thread_pool_environment =
-      base::ThreadPool::InitParams::CommonThreadPoolEnvironment::COM_MTA;
+  thread_pool_init_params.common_thread_pool_environment = base::
+      ThreadPoolInstance::InitParams::CommonThreadPoolEnvironment::COM_MTA;
 #endif
 
   // If a renderer lives in the browser process, adjust the number of
@@ -64,7 +64,7 @@ void StartBrowserThreadPool() {
                  thread_pool_init_params.max_num_foreground_threads);
   }
 
-  base::ThreadPool::GetInstance()->Start(thread_pool_init_params);
+  base::ThreadPoolInstance::Get()->Start(thread_pool_init_params);
 }
 
 }  // namespace content

@@ -33,7 +33,7 @@ class BrowserMainLoopTest : public testing::Test {
     base::test::ScopedCommandLine scoped_command_line;
     scoped_command_line.GetProcessCommandLine()->AppendSwitch(
         switches::kSingleProcess);
-    base::ThreadPool::Create("Browser");
+    base::ThreadPoolInstance::Create("Browser");
     StartBrowserThreadPool();
     BrowserTaskExecutor::Create();
   }
@@ -44,8 +44,8 @@ class BrowserMainLoopTest : public testing::Test {
       BrowserThreadImpl::ResetGlobalsForTesting(
           static_cast<BrowserThread::ID>(id));
     }
-    base::ThreadPool::GetInstance()->JoinForTesting();
-    base::ThreadPool::SetInstance(nullptr);
+    base::ThreadPoolInstance::Get()->JoinForTesting();
+    base::ThreadPoolInstance::Set(nullptr);
   }
 
   const base::CommandLine& GetProcessCommandLine() {
@@ -64,11 +64,11 @@ TEST_F(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
 
     BrowserMainLoop browser_main_loop(
         main_function_params,
-        std::make_unique<base::ThreadPool::ScopedExecutionFence>());
+        std::make_unique<base::ThreadPoolInstance::ScopedExecutionFence>());
     browser_main_loop.MainMessageLoopStart();
     browser_main_loop.Init();
     browser_main_loop.CreateThreads();
-    EXPECT_GE(base::ThreadPool::GetInstance()
+    EXPECT_GE(base::ThreadPoolInstance::Get()
                   ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                       {base::TaskPriority::USER_VISIBLE}),
               base::SysInfo::NumberOfProcessors() - 1);
@@ -91,7 +91,7 @@ TEST_F(BrowserMainLoopTest,
 
   BrowserMainLoop browser_main_loop(
       main_function_params,
-      std::make_unique<base::ThreadPool::ScopedExecutionFence>());
+      std::make_unique<base::ThreadPoolInstance::ScopedExecutionFence>());
   browser_main_loop.MainMessageLoopStart();
   browser_main_loop.Init();
 

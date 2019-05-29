@@ -382,7 +382,7 @@ void BrowserTestBase::SetUp() {
       delegate->PostFieldTrialInitialization();
     }
 
-    base::ThreadPool::Create("Browser");
+    base::ThreadPoolInstance::Create("Browser");
 
     delegate->PreCreateMainMessageLoop();
     BrowserTaskExecutor::Create();

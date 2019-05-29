@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
   mojo::core::Init();
 
   base::MessageLoopForUI message_loop;
-  base::ThreadPool::CreateAndStartWithDefaultParams("OzoneDemo");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("OzoneDemo");
 
   ui::OzonePlatform::InitParams params;
   params.single_process = true;

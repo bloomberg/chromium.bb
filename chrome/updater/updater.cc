@@ -53,11 +53,11 @@ const uint8_t mimo_hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
                              0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
 
 void ThreadPoolStart() {
-  base::ThreadPool::CreateAndStartWithDefaultParams("Updater");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Updater");
 }
 
 void ThreadPoolStop() {
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 }
 
 void QuitLoop(base::OnceClosure quit_closure) {

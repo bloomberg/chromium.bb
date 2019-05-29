@@ -7,8 +7,8 @@
 
 namespace base {
 
-// ThreadPoolTestHelpers is a friend of ThreadPool which grants access to
-// SetExecutionFenceEnabled.
+// ThreadPoolTestHelpers is a friend of ThreadPoolInstance which grants access
+// to SetCanRun().
 class ThreadPoolTestHelpers {
  public:
   // Enables/disables an execution fence that prevents tasks from running.
@@ -19,19 +19,19 @@ class ThreadPoolTestHelpers {
 // static
 void ThreadPoolTestHelpers::SetThreadPoolExecutionFenceEnabledForTesting(
     bool execution_fence_enabled) {
-  ThreadPool::GetInstance()->SetCanRun(!execution_fence_enabled);
+  ThreadPoolInstance::Get()->SetCanRun(!execution_fence_enabled);
 }
 
 }  // namespace base
 
 void JNI_ThreadPoolTestHelpers_EnableThreadPoolExecutionForTesting(
     JNIEnv* env) {
-  base::ThreadPoolTestHelpers::SetThreadPoolExecutionFenceEnabledForTesting(
-      false);
+  base::ThreadPoolTestHelpers::
+      SetThreadPoolExecutionFenceEnabledForTesting(false);
 }
 
 void JNI_ThreadPoolTestHelpers_DisableThreadPoolExecutionForTesting(
     JNIEnv* env) {
-  base::ThreadPoolTestHelpers::SetThreadPoolExecutionFenceEnabledForTesting(
-      true);
+  base::ThreadPoolTestHelpers::
+      SetThreadPoolExecutionFenceEnabledForTesting(true);
 }

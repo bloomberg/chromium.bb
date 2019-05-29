@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 #endif
 
   base::MessageLoop message_loop;
-  base::ThreadPool::CreateAndStartWithDefaultParams("gin");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("gin");
 
   // Initialize the base::FeatureList since IsolateHolder can depend on it.
   base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList));
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
   // gin::IsolateHolder waits for tasks running in ThreadPool in its
   // destructor and thus must be destroyed before ThreadPool starts skipping
   // CONTINUE_ON_SHUTDOWN tasks.
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return 0;
 }

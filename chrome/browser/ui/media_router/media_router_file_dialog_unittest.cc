@@ -29,7 +29,7 @@ namespace {
 
 // Clears out async tasks
 void FlushTasks() {
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 }
 

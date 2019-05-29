@@ -135,7 +135,8 @@ int StartHostMain(int argc, char** argv) {
       logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
   logging::InitLogging(settings);
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("RemotingHostSetup");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "RemotingHostSetup");
 
   mojo::core::Init();
 

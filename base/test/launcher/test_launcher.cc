@@ -666,8 +666,8 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       print_test_stdio_(AUTO) {}
 
 TestLauncher::~TestLauncher() {
-  if (base::ThreadPool::GetInstance()) {
-    base::ThreadPool::GetInstance()->Shutdown();
+  if (base::ThreadPoolInstance::Get()) {
+    base::ThreadPoolInstance::Get()->Shutdown();
   }
 }
 
@@ -1240,8 +1240,8 @@ bool TestLauncher::ValidateTests() {
 }
 
 void TestLauncher::CreateAndStartThreadPool(int num_parallel_jobs) {
-  base::ThreadPool::Create("TestLauncher");
-  base::ThreadPool::GetInstance()->Start({num_parallel_jobs});
+  base::ThreadPoolInstance::Create("TestLauncher");
+  base::ThreadPoolInstance::Get()->Start({num_parallel_jobs});
 }
 
 void TestLauncher::CombinePositiveTestFilters(

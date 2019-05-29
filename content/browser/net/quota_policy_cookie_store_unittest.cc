@@ -98,7 +98,7 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
   void DestroyStore() {
     store_ = nullptr;
     // Ensure that |store_|'s destructor has run by flushing ThreadPool.
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
   }
 
   void SetUp() override {

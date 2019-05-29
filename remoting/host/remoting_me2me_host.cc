@@ -1829,7 +1829,7 @@ int HostProcessMain() {
   base::GetLinuxDistro();
 #endif
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("Me2Me");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Me2Me");
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
@@ -1856,7 +1856,7 @@ int HostProcessMain() {
   run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return exit_code;
 }

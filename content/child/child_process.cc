@@ -24,10 +24,10 @@ base::LazyInstance<base::ThreadLocalPointer<ChildProcess>>::DestructorAtExit
     g_lazy_child_process_tls = LAZY_INSTANCE_INITIALIZER;
 }
 
-ChildProcess::ChildProcess(
-    base::ThreadPriority io_thread_priority,
-    const std::string& thread_pool_name,
-    std::unique_ptr<base::ThreadPool::InitParams> thread_pool_init_params)
+ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority,
+                           const std::string& thread_pool_name,
+                           std::unique_ptr<base::ThreadPoolInstance::InitParams>
+                               thread_pool_init_params)
     : ref_count_(0),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -35,18 +35,19 @@ ChildProcess::ChildProcess(
   DCHECK(!g_lazy_child_process_tls.Pointer()->Get());
   g_lazy_child_process_tls.Pointer()->Set(this);
 
-  // Initialize ThreadPool if not already done. A ThreadPool may already
-  // exist when ChildProcess is instantiated in the browser process or in a
-  // test process.
-  if (!base::ThreadPool::GetInstance()) {
+  // Initialize ThreadPoolInstance if not already done. A ThreadPoolInstance may
+  // already exist when ChildProcess is instantiated in the browser process or
+  // in a test process.
+  if (!base::ThreadPoolInstance::Get()) {
     if (thread_pool_init_params) {
-      base::ThreadPool::Create(thread_pool_name);
-      base::ThreadPool::GetInstance()->Start(*thread_pool_init_params.get());
+      base::ThreadPoolInstance::Create(thread_pool_name);
+      base::ThreadPoolInstance::Get()->Start(*thread_pool_init_params.get());
     } else {
-      base::ThreadPool::CreateAndStartWithDefaultParams(thread_pool_name);
+      base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+          thread_pool_name);
     }
 
-    DCHECK(base::ThreadPool::GetInstance());
+    DCHECK(base::ThreadPoolInstance::Get());
     initialized_thread_pool_ = true;
   }
 
@@ -85,8 +86,8 @@ ChildProcess::~ChildProcess() {
   io_thread_.Stop();
 
   if (initialized_thread_pool_) {
-    DCHECK(base::ThreadPool::GetInstance());
-    base::ThreadPool::GetInstance()->Shutdown();
+    DCHECK(base::ThreadPoolInstance::Get());
+    base::ThreadPoolInstance::Get()->Shutdown();
   }
 }
 

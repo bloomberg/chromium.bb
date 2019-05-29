@@ -38,10 +38,10 @@ This documentation assumes familiarity with computer science
    dedicated task queue until Quit(). You should pretty much never be creating
    your own `base::Thread`'s.
  * **Thread pool**: A pool of physical threads with a shared task queue. In
-   Chrome, this is `base::ThreadPool`. There's exactly one instance per Chrome
+   Chrome, this is `base::ThreadPoolInstance`. There's exactly one instance per Chrome
    process, it serves tasks posted through
    [`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
-   and as such you should rarely need to use the `base::ThreadPool` API
+   and as such you should rarely need to use the `base::ThreadPoolInstance` API
    directly (more on posting tasks later).
  * **Sequence** or **Virtual thread**: A chrome-managed thread of execution.
    Like a physical thread, only one task can run on a given sequence / virtual
@@ -685,7 +685,7 @@ TEST(MyTest, MyTest) {
   task_runner->PostTask(FROM_HERE, base::BindOnce(&G));
 
   // To block until all tasks posted to thread pool are done running:
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   // F and G have been executed.
 
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -702,31 +702,32 @@ TEST(MyTest, MyTest) {
 
 ## Using ThreadPool in a New Process
 
-ThreadPool needs to be initialized in a process before the functions in
+ThreadPoolInstance needs to be initialized in a process before the functions in
 [`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
-can be used. Initialization of ThreadPool in the Chrome browser process and
-child processes (renderer, GPU, utility) has already been taken care of. To use
-ThreadPool in another process, initialize ThreadPool early in the main
-function:
+can be used. Initialization of ThreadPoolInstance in the Chrome browser process
+and child processes (renderer, GPU, utility) has already been taken care of. To
+use ThreadPoolInstance in another process, initialize ThreadPoolInstance early
+in the main function:
 
 ```cpp
-// This initializes and starts ThreadPool with default params.
-base::ThreadPool::CreateAndStartWithDefaultParams(“process_name”);
-// The base/task/post_task.h API can now be used. Tasks will be // scheduled as
-// they are posted.
+// This initializes and starts ThreadPoolInstance with default params.
+base::ThreadPoolInstance::CreateAndStartWithDefaultParams(“process_name”);
+// The base/task/post_task.h API can now be used with base::ThreadPool trait.
+// Tasks will be // scheduled as they are posted.
 
-// This initializes ThreadPool.
-base::ThreadPool::Create(“process_name”);
-// The base/task/post_task.h API can now be used. No threads // will be created
-// and no tasks will be scheduled until after Start() is called.
-base::ThreadPool::GetInstance()->Start(params);
+// This initializes ThreadPoolInstance.
+base::ThreadPoolInstance::Create(“process_name”);
+// The base/task/post_task.h API can now be used with base::ThreadPool trait. No
+// threads will be created and no tasks will be scheduled until after Start() is
+// called.
+base::ThreadPoolInstance::Get()->Start(params);
 // ThreadPool can now create threads and schedule tasks.
 ```
 
-And shutdown ThreadPool late in the main function:
+And shutdown ThreadPoolInstance late in the main function:
 
 ```cpp
-base::ThreadPool::GetInstance()->Shutdown();
+base::ThreadPoolInstance::Get()->Shutdown();
 // Tasks posted with TaskShutdownBehavior::BLOCK_SHUTDOWN and
 // tasks posted with TaskShutdownBehavior::SKIP_ON_SHUTDOWN that
 // have started to run before the Shutdown() call have now completed their

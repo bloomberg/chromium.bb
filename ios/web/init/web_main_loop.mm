@@ -163,8 +163,8 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
   // Also allow waiting to join threads.
   // TODO(crbug.com/800808): Ideally this (and the above SetIOAllowed()
   // would be scoped allowances). That would be one of the first step to ensure
-  // no persistent work is being done after ThreadPool::Shutdown() in order
-  // to move towards atomic shutdown.
+  // no persistent work is being done after ThreadPoolInstance::Shutdown() in
+  // order to move towards atomic shutdown.
   base::ThreadRestrictions::SetWaitAllowed(true);
   base::PostTaskWithTraits(
       FROM_HERE, {WebThread::IO},
@@ -189,7 +189,7 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
   // slow operations pending that will block shutdown, so closing it here (which
   // will block until required operations are complete) gives more head start
   // for those operations to finish.
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   URLDataManagerIOS::DeleteDataSources();
 

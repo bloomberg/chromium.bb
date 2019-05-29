@@ -31,11 +31,11 @@ scoped_refptr<base::SingleThreadTaskRunner> InitializeAndCreateTaskRunner() {
 
   url::Initialize();
 
-  // Note that in component builds this ThreadPool will be shared with the
-  // calling process, if it also depends on //base. In particular this means
+  // Note that in component builds this ThreadPoolInstance will be shared with
+  // the calling process, if it also depends on //base. In particular this means
   // that the Cronet test binaries must avoid initializing or shutting-down the
-  // ThreadPool themselves.
-  base::ThreadPool::CreateAndStartWithDefaultParams("cronet");
+  // ThreadPoolInstance themselves.
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("cronet");
 
   return base::CreateSingleThreadTaskRunnerWithTraits({});
 }

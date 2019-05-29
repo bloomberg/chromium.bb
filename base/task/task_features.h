@@ -31,7 +31,7 @@ extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
 #endif
 
 #if HAS_NATIVE_THREAD_POOL()
-// Under this feature, ThreadPool will use a ThreadGroup backed by a
+// Under this feature, ThreadPoolImpl will use a ThreadGroup backed by a
 // native thread pool implementation. The Windows Thread Pool API and
 // libdispatch are used on Windows and macOS/iOS respectively.
 extern const BASE_EXPORT Feature kUseNativeThreadPool;

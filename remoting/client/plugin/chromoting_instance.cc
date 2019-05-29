@@ -224,11 +224,11 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Start all the threads.
   context_.Start();
 
-  // Initialize ThreadPool. ThreadPool::StartWithDefaultParams() doesn't
+  // Initialize ThreadPool. ThreadPoolInstance::StartWithDefaultParams() doesn't
   // work on NACL.
-  base::ThreadPool::Create("RemotingChromeApp");
+  base::ThreadPoolInstance::Create("RemotingChromeApp");
   constexpr int kForegroundMaxThreads = 3;
-  base::ThreadPool::GetInstance()->Start({kForegroundMaxThreads});
+  base::ThreadPoolInstance::Get()->Start({kForegroundMaxThreads});
 
   return true;
 }

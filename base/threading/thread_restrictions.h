@@ -53,8 +53,8 @@
 // Avoid using allowances outside of unit tests. In unit tests, use allowances
 // with the suffix "ForTesting".
 //
-// Prefer making blocking calls from tasks posted to base::ThreadPool with
-// base::MayBlock().
+// Prefer making blocking calls from tasks posted to base::ThreadPoolInstance
+// with base::MayBlock().
 //
 // Instead of waiting on a WaitableEvent or a ConditionVariable, prefer putting
 // the work that should happen after the wait in a continuation callback and

@@ -1378,11 +1378,11 @@ class CONTENT_EXPORT ContentBrowserClient {
                               int /* render_process_id */,
                               int /* render_frame_id */)> callback);
 
-  // Returns whether a base::ThreadPool should be created when
+  // Returns whether a base::ThreadPoolInstance should be created when
   // BrowserMainLoop starts.
   // If false, a thread pool has been created by the embedder, and
   // BrowserMainLoop should skip creating a second one.
-  // Note: the embedder should *not* start the ThreadPool for
+  // Note: the embedder should *not* start the ThreadPoolInstance for
   // BrowserMainLoop, BrowserMainLoop itself is responsible for that.
   virtual bool ShouldCreateThreadPool();
 

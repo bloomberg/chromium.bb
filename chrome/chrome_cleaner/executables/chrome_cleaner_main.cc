@@ -445,7 +445,8 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
       PLOG(ERROR) << "Can't SetPriorityClass to NORMAL_PRIORITY_CLASS";
   }
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("chrome cleanup tool");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "chrome cleanup tool");
 
   chrome_cleaner::SandboxType sandbox_type =
       is_sandbox_target ? chrome_cleaner::SandboxProcessType()

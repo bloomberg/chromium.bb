@@ -282,7 +282,7 @@ class FileNetLogObserverTest : public ::testing::TestWithParam<bool>,
     // The log files are written by a sequenced task runner. Drain all the
     // scheduled tasks to ensure that the file writing ones have run before
     // checking if they exist.
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     return base::PathExists(log_path_);
   }
 
@@ -956,7 +956,7 @@ TEST_F(FileNetLogObserverBoundedTest, PreExistingUsesSpecifiedDir) {
       scratch_dir.GetPath(), std::move(file), kLargeFileSize, nullptr);
   logger_->StartObserving(&net_log_, NetLogCaptureMode::Default());
 
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   EXPECT_TRUE(base::PathExists(log_path_));
   EXPECT_TRUE(
       base::PathExists(scratch_dir.GetPath().AppendASCII("constants.json")));

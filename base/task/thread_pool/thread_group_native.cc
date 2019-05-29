@@ -150,7 +150,7 @@ size_t ThreadGroupNative::GetMaxConcurrentNonBlockedTasksDeprecated() const {
   // Native thread pools give us no control over the number of workers that are
   // active at one time. Consequently, we cannot report a true value here.
   // Instead, the values were chosen to match
-  // ThreadPool::StartWithDefaultParams.
+  // ThreadPoolInstance::StartWithDefaultParams.
   const int num_cores = SysInfo::NumberOfProcessors();
   return std::max(3, num_cores - 1);
 }

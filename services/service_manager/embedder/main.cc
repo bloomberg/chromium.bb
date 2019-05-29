@@ -168,7 +168,8 @@ void NonEmbedderProcessInit() {
   }
 #endif
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("ServiceManagerProcess");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "ServiceManagerProcess");
 }
 
 int RunServiceManager(MainDelegate* delegate) {
@@ -192,7 +193,7 @@ int RunServiceManager(MainDelegate* delegate) {
   run_loop.Run();
 
   ipc_thread.Stop();
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return 0;
 }

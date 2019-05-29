@@ -157,7 +157,7 @@ int main(int argc, char* argv[]) {
   // Just make the main message loop the network loop.
   base::MessageLoopForIO network_loop;
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("NetWatcher");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("NetWatcher");
 
   NetWatcher net_watcher;
 

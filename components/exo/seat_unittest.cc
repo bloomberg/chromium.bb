@@ -76,7 +76,7 @@ class TestDataSourceDelegate : public DataSourceDelegate {
 };
 
 void RunReadingTask() {
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 }
 

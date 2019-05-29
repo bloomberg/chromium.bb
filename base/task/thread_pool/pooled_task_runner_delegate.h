@@ -23,7 +23,7 @@ class BASE_EXPORT PooledTaskRunnerDelegate {
 
   // Returns true if a PooledTaskRunnerDelegate instance exists in the
   // process. This is needed in case of unit tests wherein a TaskRunner
-  // outlives the ThreadPool that created it.
+  // outlives the ThreadPoolInstance that created it.
   static bool Exists();
 
   // Invoked when a |task| is posted to the PooledParallelTaskRunner or

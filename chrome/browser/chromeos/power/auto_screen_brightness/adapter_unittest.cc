@@ -154,7 +154,7 @@ class AdapterTest : public testing::Test {
 
   void TearDown() override {
     adapter_.reset();
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     chromeos::PowerManagerClient::Shutdown();
   }
 

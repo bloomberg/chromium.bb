@@ -41,7 +41,7 @@ class BASE_EXPORT ComInitCheckHook {
   // For components that cannot use COM_INIT_CHECK_HOOK_DISABLED, call
   // DisableCOMChecksForProcess() below. This should only be for code that calls
   // into Windows components that don't explicitly initialize the MTA in the
-  // Windows threadpool.
+  // Windows thread pool.
   friend class device::XrDeviceService;
 
   static void DisableCOMChecksForProcess();

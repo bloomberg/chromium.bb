@@ -888,7 +888,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
       // Create and start the ThreadPool early to allow upcoming code to use
       // the post_task.h API.
-      base::ThreadPool::Create("Browser");
+      base::ThreadPoolInstance::Create("Browser");
     }
 
     delegate_->PreCreateMainMessageLoop();

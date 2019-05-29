@@ -34,7 +34,7 @@
 //
 // To wait until there are no pending undelayed tasks in ThreadPool, without
 // running tasks from the shared MessageLoop:
-//    base::ThreadPool::GetInstance()->FlushForTesting();
+//    base::ThreadPoolInstance::Get()->FlushForTesting();
 //
 // The destructor of TestBrowserThreadBundle runs remaining UI/IO tasks and
 // remaining thread pool tasks.

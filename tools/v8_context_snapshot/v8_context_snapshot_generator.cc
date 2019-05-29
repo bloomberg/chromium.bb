@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 
   // Set up environment to make Blink and V8 workable.
   base::MessageLoop message_loop;
-  base::ThreadPool::CreateAndStartWithDefaultParams("TakeSnapshot");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("TakeSnapshot");
   mojo::core::Init();
 
   // Set predictable flag in V8 to generate identical snapshot file.

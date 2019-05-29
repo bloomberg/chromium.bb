@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
   // Build UI thread message loop. This is used by platform
   // implementations for event polling & running background tasks.
   base::MessageLoopForUI message_loop;
-  base::ThreadPool::CreateAndStartWithDefaultParams("SkiaDemo");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("SkiaDemo");
 
   ui::OzonePlatform::InitParams params;
   params.single_process = true;

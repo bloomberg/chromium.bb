@@ -150,7 +150,7 @@ void RunAllTasksUntilIdle() {
     base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
 
     base::RunLoop run_loop;
-    base::ThreadPool::GetInstance()->FlushAsyncForTesting(
+    base::ThreadPoolInstance::Get()->FlushAsyncForTesting(
         run_loop.QuitWhenIdleClosure());
     run_loop.Run();
 

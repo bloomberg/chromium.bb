@@ -243,14 +243,14 @@ class MessageLoopPerfTestDelegate : public PerfTestDelegate {
 class SingleThreadInThreadPoolPerfTestDelegate : public PerfTestDelegate {
  public:
   SingleThreadInThreadPoolPerfTestDelegate() : done_cond_(&done_lock_) {
-    ThreadPool::SetInstance(
+    ThreadPoolInstance::Set(
         std::make_unique<::base::internal::ThreadPoolImpl>("Test"));
-    ThreadPool::GetInstance()->StartWithDefaultParams();
+    ThreadPoolInstance::Get()->StartWithDefaultParams();
   }
 
   ~SingleThreadInThreadPoolPerfTestDelegate() override {
-    ThreadPool::GetInstance()->JoinForTesting();
-    ThreadPool::SetInstance(nullptr);
+    ThreadPoolInstance::Get()->JoinForTesting();
+    ThreadPoolInstance::Set(nullptr);
   }
 
   const char* GetName() const override {

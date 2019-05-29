@@ -34,7 +34,7 @@ void Create(const CreateParams& create_params) {
     }
     base::CommandLine::Init(create_params.argc, create_params.argv);
 
-    base::ThreadPool::Create("Browser");
+    base::ThreadPoolInstance::Create("Browser");
   });
 }
 
@@ -74,7 +74,7 @@ void StartThreadPool() {
     constexpr int kMaxForegroundThreads = 16;
     constexpr double kCoreMultiplierForegroundThreads = 0.6;
     constexpr int kOffsetForegroundThreads = 0;
-    base::ThreadPool::GetInstance()->Start(
+    base::ThreadPoolInstance::Get()->Start(
         {base::RecommendedMaxNumberOfThreadsInThreadGroup(
             kMinForegroundThreads, kMaxForegroundThreads,
             kCoreMultiplierForegroundThreads, kOffsetForegroundThreads)});

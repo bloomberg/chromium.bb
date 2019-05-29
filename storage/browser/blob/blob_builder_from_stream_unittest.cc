@@ -66,7 +66,7 @@ class BlobBuilderFromStreamTestWithDelayedLimits
   void TearDown() override {
     // Make sure we clean up files.
     base::RunLoop().RunUntilIdle();
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -332,7 +332,7 @@ TEST_P(BlobBuilderFromStreamTest, TooLargeForQuota) {
 
   // Make sure we clean up files.
   base::RunLoop().RunUntilIdle();
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0u, context_->memory_controller().memory_usage());

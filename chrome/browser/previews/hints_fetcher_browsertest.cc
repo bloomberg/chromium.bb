@@ -65,7 +65,7 @@ int RetryForHistogramUntilCountReached(
     int count) {
   int total = 0;
   while (true) {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
 
     total = GetTotalHistogramSamples(histogram_tester, histogram_name);

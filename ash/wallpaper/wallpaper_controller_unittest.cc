@@ -210,7 +210,7 @@ void RunAllTasksUntilIdle() {
     TaskObserver task_observer;
     base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
     // May spin message loop.
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
 
     base::RunLoop().RunUntilIdle();
     base::MessageLoopCurrent::Get()->RemoveTaskObserver(&task_observer);

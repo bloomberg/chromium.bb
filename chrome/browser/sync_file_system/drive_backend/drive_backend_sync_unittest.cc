@@ -149,7 +149,7 @@ class DriveBackendSyncTest : public testing::Test,
     local_sync_service_.reset();
     remote_sync_service_.reset();
 
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     RevokeSyncableFileSystem();
   }
 

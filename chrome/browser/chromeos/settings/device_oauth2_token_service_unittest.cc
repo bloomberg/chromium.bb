@@ -112,7 +112,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   void TearDown() override {
     oauth2_service_.reset();
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     DeviceSettingsService::Get()->UnsetSessionManager();
     SystemSaltGetter::Shutdown();
     CryptohomeClient::Shutdown();

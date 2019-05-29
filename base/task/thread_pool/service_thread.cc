@@ -38,10 +38,10 @@ void ServiceThread::SetHeartbeatIntervalForTesting(TimeDelta heartbeat) {
 }
 
 void ServiceThread::Init() {
-  // In unit tests we sometimes do not have a fully functional ThreadPool
+  // In unit tests we sometimes do not have a fully functional thread pool
   // environment, do not perform the heartbeat report in that case since it
   // relies on such an environment.
-  if (ThreadPool::GetInstance()) {
+  if (ThreadPoolInstance::Get()) {
     // Compute the histogram every hour (with a slight offset to drift if that
     // hour tick happens to line up with specific events). Once per hour per
     // user was deemed sufficient to gather a reliable metric.

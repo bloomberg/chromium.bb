@@ -108,7 +108,7 @@ TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectExistingFolder) {
   EXPECT_FALSE(file_picker.canCreateFolder());
   EXPECT_STREQ("Select Folder", file_picker.getTitle());
 
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   RunLoop().RunUntilIdle();
 }
 
@@ -123,7 +123,7 @@ TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectUploadFolder) {
   EXPECT_FALSE(file_picker.canCreateFolder());
   EXPECT_STREQ("Select Folder to Upload", file_picker.getTitle());
 
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   RunLoop().RunUntilIdle();
 }
 
@@ -138,7 +138,7 @@ TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectFolder) {
   EXPECT_TRUE(file_picker.canCreateFolder());
   EXPECT_STREQ("Select Folder", file_picker.getTitle());
 
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   RunLoop().RunUntilIdle();
 }
 

@@ -153,7 +153,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
         &AutofillWebDataService::AddObserver;
     wds_->GetDBTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(add_observer_func, wds_, &observer_));
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
   }
 
   void TearDown() override {

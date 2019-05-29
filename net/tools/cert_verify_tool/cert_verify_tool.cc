@@ -273,9 +273,9 @@ int main(int argc, char** argv) {
     std::cerr << "ERROR in CommandLine::Init\n";
     return 1;
   }
-  base::ThreadPool::CreateAndStartWithDefaultParams("cert_verify_tool");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("cert_verify_tool");
   base::ScopedClosureRunner cleanup(
-      base::BindOnce([] { base::ThreadPool::GetInstance()->Shutdown(); }));
+      base::BindOnce([] { base::ThreadPoolInstance::Get()->Shutdown(); }));
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   logging::LoggingSettings settings;
   settings.logging_dest =

@@ -67,7 +67,8 @@ int HostConfigUpgrader::UpgradeConfigFile() {
 
 HostConfigUpgrader::HostConfigUpgrader()
     : backoff_entry_(&kRetryBackoffPolicy) {
-  base::ThreadPool::CreateAndStartWithDefaultParams("HostConfigUpgrader");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "HostConfigUpgrader");
   mojo::core::Init();
 }
 
@@ -115,7 +116,7 @@ int HostConfigUpgrader::DoUpgrade() {
   run_loop_.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return exit_code_;
 }

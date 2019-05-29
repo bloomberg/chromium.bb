@@ -77,7 +77,7 @@ TestBrowserContext::~TestBrowserContext() {
   // |browser_context_dir_| and so ScopedTempDir destructor may race with cache
   // IO (see https://crbug.com/910029 for example). Let all pending IO
   // operations finish before destroying |browser_context_dir_|.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 }
 
 base::FilePath TestBrowserContext::TakePath() {

@@ -22,7 +22,7 @@ namespace base {
 
 class Clock;
 class FileDescriptorWatcher;
-class ThreadPool;
+class ThreadPoolInstance;
 class TickClock;
 
 namespace test {
@@ -80,7 +80,7 @@ class ScopedTaskEnvironment {
     // The main thread doesn't pump system messages and uses a mock clock for
     // delayed tasks (controllable via FastForward*() methods).
     // TODO(gab): Make this the default |main_thread_type|.
-    // TODO(gab): Also mock the ThreadPool's clock simultaneously (this
+    // TODO(gab): Also mock the ThreadPoolInstance's clock simultaneously (this
     // currently only mocks the main thread's clock).
     MOCK_TIME,
     // The main thread pumps UI messages.
@@ -170,7 +170,7 @@ class ScopedTaskEnvironment {
             trait_helpers::NotATraitTag()) {}
 
   // Waits until no undelayed ThreadPool tasks remain. Then, unregisters the
-  // ThreadPool and the (Thread|Sequenced)TaskRunnerHandle.
+  // ThreadPoolInstance and the (Thread|Sequenced)TaskRunnerHandle.
   virtual ~ScopedTaskEnvironment();
 
   // Returns a TaskRunner that schedules tasks on the main thread.
@@ -303,7 +303,7 @@ class ScopedTaskEnvironment {
   std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher_;
 #endif
 
-  const ThreadPool* thread_pool_ = nullptr;
+  const ThreadPoolInstance* thread_pool_ = nullptr;
 
   // Owned by |thread_pool_|.
   TestTaskTracker* task_tracker_ = nullptr;

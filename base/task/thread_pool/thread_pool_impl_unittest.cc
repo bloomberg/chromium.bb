@@ -162,7 +162,7 @@ void VerifyOrderAndTaskEnvironmentAndSignalEvent(
 }
 
 scoped_refptr<TaskRunner> CreateTaskRunnerWithTraitsAndExecutionMode(
-    ThreadPool* thread_pool,
+    ThreadPoolImpl* thread_pool,
     const TaskTraits& traits,
     TaskSourceExecutionMode execution_mode,
     SingleThreadTaskRunnerThreadMode default_single_thread_task_runner_mode =
@@ -263,7 +263,7 @@ class ThreadPoolImplTestBase : public testing::Test {
       TimeDelta reclaim_time = TimeDelta::FromSeconds(30)) {
     SetupFeatures();
 
-    ThreadPool::InitParams init_params(max_num_foreground_threads);
+    ThreadPoolInstance::InitParams init_params(max_num_foreground_threads);
     init_params.suggested_reclaim_time = reclaim_time;
 
     thread_pool_.Start(init_params, worker_thread_observer_);

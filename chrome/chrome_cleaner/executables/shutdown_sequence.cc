@@ -18,12 +18,12 @@ ShutdownSequence::~ShutdownSequence() {
   if (!mojo_task_runner)
     return;
 
-  auto* thread_pool = base::ThreadPool::GetInstance();
+  auto* thread_pool = base::ThreadPoolInstance::Get();
   if (thread_pool)
     thread_pool->Shutdown();
 
   // Objects that post messages to themselves with base::Unretained must be
-  // destroyed after ThreadPool::Shutdown, otherwise some tasks might be
+  // destroyed after ThreadPoolInstance::Shutdown, otherwise some tasks might be
   // still referencing recently destroyed objects.
 
   engine_facade.reset();

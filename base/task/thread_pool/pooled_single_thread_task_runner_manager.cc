@@ -49,9 +49,9 @@ namespace {
 // unit tests so that PooledSingleThreadTaskRunnerManager bound TaskRunners
 // can return false on PostTask, letting such callers know they should complete
 // necessary work synchronously. Note: |!g_manager_is_alive| is generally
-// equivalent to |!ThreadPool::GetInstance()| but has the advantage of being
+// equivalent to |!ThreadPoolInstance::Get()| but has the advantage of being
 // valid in thread_pool unit tests that don't instantiate a full
-// ThreadPool.
+// thread pool.
 bool g_manager_is_alive = false;
 
 size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {

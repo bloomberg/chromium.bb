@@ -62,7 +62,8 @@ ServiceExecutableEnvironment::ServiceExecutableEnvironment()
 
   mojo::core::Init();
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("StandaloneService");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "StandaloneService");
   ipc_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 

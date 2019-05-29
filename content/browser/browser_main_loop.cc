@@ -523,7 +523,7 @@ media::AudioManager* BrowserMainLoop::GetAudioManager() {
 
 BrowserMainLoop::BrowserMainLoop(
     const MainFunctionParams& parameters,
-    std::unique_ptr<base::ThreadPool::ScopedExecutionFence>
+    std::unique_ptr<base::ThreadPoolInstance::ScopedExecutionFence>
         scoped_execution_fence)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
@@ -536,7 +536,7 @@ BrowserMainLoop::BrowserMainLoop(
   g_current_browser_main_loop = this;
 
   if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
-    DCHECK(base::ThreadPool::GetInstance());
+    DCHECK(base::ThreadPoolInstance::Get());
   }
 }
 
@@ -1026,8 +1026,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // Also allow waiting to join threads.
   // TODO(https://crbug.com/800808): Ideally this (and the above SetIOAllowed()
   // would be scoped allowances). That would be one of the first step to ensure
-  // no persistent work is being done after ThreadPool::Shutdown() in order
-  // to move towards atomic shutdown.
+  // no persistent work is being done after ThreadPoolInstance::Shutdown() in
+  // order to move towards atomic shutdown.
   base::ThreadRestrictions::SetWaitAllowed(true);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
@@ -1115,7 +1115,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:ThreadPool");
-    base::ThreadPool::GetInstance()->Shutdown();
+    base::ThreadPoolInstance::Get()->Shutdown();
   }
 
   // Must happen after the IO thread is shutdown since this may be accessed from

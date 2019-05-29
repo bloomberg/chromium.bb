@@ -55,7 +55,7 @@ BrowserMainRunnerImpl::BrowserMainRunnerImpl()
     : initialization_started_(false),
       is_shutdown_(false),
       scoped_execution_fence_(
-          std::make_unique<base::ThreadPool::ScopedExecutionFence>()) {}
+          std::make_unique<base::ThreadPoolInstance::ScopedExecutionFence>()) {}
 
 BrowserMainRunnerImpl::~BrowserMainRunnerImpl() {
   if (initialization_started_ && !is_shutdown_)

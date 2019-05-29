@@ -106,7 +106,7 @@ ThreadPoolImpl::~ThreadPoolImpl() {
   background_thread_group_.reset();
 }
 
-void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
+void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
                            WorkerThreadObserver* worker_thread_observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!started_);

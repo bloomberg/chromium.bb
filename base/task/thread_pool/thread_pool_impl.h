@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
+#include "base/task/task_executor.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/delayed_task_manager.h"
 #include "base/task/thread_pool/environment_config.h"
@@ -45,8 +46,9 @@ class Thread;
 
 namespace internal {
 
-// Default ThreadPool implementation. This class is thread-safe.
-class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
+// Default ThreadPoolInstance implementation. This class is thread-safe.
+class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
+                                   public TaskExecutor,
                                    public ThreadGroup::Delegate,
                                    public PooledTaskRunnerDelegate {
  public:
@@ -67,8 +69,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
 
   ~ThreadPoolImpl() override;
 
-  // ThreadPool:
-  void Start(const ThreadPool::InitParams& init_params,
+  // ThreadPoolInstance:
+  void Start(const ThreadPoolInstance::InitParams& init_params,
              WorkerThreadObserver* worker_thread_observer) override;
   int GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
       const TaskTraits& traits) const override;

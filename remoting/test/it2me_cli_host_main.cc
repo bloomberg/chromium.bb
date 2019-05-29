@@ -33,7 +33,7 @@ int main(int argc, char const* argv[]) {
   base::MessageLoopForIO message_loop;
   remoting::It2MeCliHost cli_host;
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("It2MeCliHost");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("It2MeCliHost");
   mojo::core::Init();
   remoting::LoadResources("");
 

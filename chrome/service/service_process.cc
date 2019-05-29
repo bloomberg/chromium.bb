@@ -155,17 +155,18 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
 
   // Initialize ThreadPool.
   constexpr int kMaxForegroundThreads = 6;
-  base::ThreadPool::InitParams thread_pool_init_params(kMaxForegroundThreads);
+  base::ThreadPoolInstance::InitParams thread_pool_init_params(
+      kMaxForegroundThreads);
 #if defined(OS_WIN)
   // TODO(robliao): Remove DEPRECATED_COM_STA_IN_FOREGROUND_GROUP usage.
   // WIP: https://chromium-review.googlesource.com/c/chromium/src/+/1271099
   thread_pool_init_params.common_thread_pool_environment =
-      base::ThreadPool::InitParams::CommonThreadPoolEnvironment::
+      base::ThreadPoolInstance::InitParams::CommonThreadPoolEnvironment::
           DEPRECATED_COM_STA_IN_FOREGROUND_GROUP;
 #endif
 
-  base::ThreadPool::Create("CloudPrintServiceProcess");
-  base::ThreadPool::GetInstance()->Start(thread_pool_init_params);
+  base::ThreadPoolInstance::Create("CloudPrintServiceProcess");
+  base::ThreadPoolInstance::Get()->Start(thread_pool_init_params);
 
   // The NetworkChangeNotifier must be created after ThreadPool because it
   // posts tasks to it.
@@ -272,8 +273,8 @@ bool ServiceProcess::Teardown() {
   shutdown_event_.Signal();
   io_thread_.reset();
 
-  if (base::ThreadPool::GetInstance())
-    base::ThreadPool::GetInstance()->Shutdown();
+  if (base::ThreadPoolInstance::Get())
+    base::ThreadPoolInstance::Get()->Shutdown();
 
   // The NetworkChangeNotifier must be destroyed after all other threads that
   // might use it have been shut down.

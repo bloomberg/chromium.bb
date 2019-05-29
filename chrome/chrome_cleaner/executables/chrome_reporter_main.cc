@@ -232,7 +232,8 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
 
   // Many pieces of code below need a message loop to have been instantiated
   // before them.
-  base::ThreadPool::CreateAndStartWithDefaultParams("software reporter");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "software reporter");
   base::MessageLoopForUI ui_message_loop;
 
   shutdown_sequence.mojo_task_runner = MojoTaskRunner::Create();

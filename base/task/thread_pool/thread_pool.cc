@@ -18,33 +18,33 @@ namespace base {
 namespace {
 
 // |g_thread_pool| is intentionally leaked on shutdown.
-ThreadPool* g_thread_pool = nullptr;
+ThreadPoolInstance* g_thread_pool = nullptr;
 
 }  // namespace
 
-ThreadPool::InitParams::InitParams(int max_num_foreground_threads_in)
+ThreadPoolInstance::InitParams::InitParams(int max_num_foreground_threads_in)
     : max_num_foreground_threads(max_num_foreground_threads_in) {}
 
-ThreadPool::InitParams::~InitParams() = default;
+ThreadPoolInstance::InitParams::~InitParams() = default;
 
-ThreadPool::ScopedExecutionFence::ScopedExecutionFence() {
+ThreadPoolInstance::ScopedExecutionFence::ScopedExecutionFence() {
   DCHECK(g_thread_pool);
   g_thread_pool->SetCanRun(false);
 }
 
-ThreadPool::ScopedExecutionFence::~ScopedExecutionFence() {
+ThreadPoolInstance::ScopedExecutionFence::~ScopedExecutionFence() {
   DCHECK(g_thread_pool);
   g_thread_pool->SetCanRun(true);
 }
 
 #if !defined(OS_NACL)
 // static
-void ThreadPool::CreateAndStartWithDefaultParams(StringPiece name) {
+void ThreadPoolInstance::CreateAndStartWithDefaultParams(StringPiece name) {
   Create(name);
-  GetInstance()->StartWithDefaultParams();
+  g_thread_pool->StartWithDefaultParams();
 }
 
-void ThreadPool::StartWithDefaultParams() {
+void ThreadPoolInstance::StartWithDefaultParams() {
   // Values were chosen so that:
   // * There are few background threads.
   // * Background threads never outnumber foreground threads.
@@ -57,18 +57,18 @@ void ThreadPool::StartWithDefaultParams() {
 }
 #endif  // !defined(OS_NACL)
 
-void ThreadPool::Create(StringPiece name) {
-  SetInstance(std::make_unique<internal::ThreadPoolImpl>(name));
+void ThreadPoolInstance::Create(StringPiece name) {
+  Set(std::make_unique<internal::ThreadPoolImpl>(name));
 }
 
 // static
-void ThreadPool::SetInstance(std::unique_ptr<ThreadPool> thread_pool) {
+void ThreadPoolInstance::Set(std::unique_ptr<ThreadPoolInstance> thread_pool) {
   delete g_thread_pool;
   g_thread_pool = thread_pool.release();
 }
 
 // static
-ThreadPool* ThreadPool::GetInstance() {
+ThreadPoolInstance* ThreadPoolInstance::Get() {
   return g_thread_pool;
 }
 

@@ -22,7 +22,8 @@ int main(int argc, char const* argv[]) {
     return 0;
   }
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("FtlSignalingPlayground");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "FtlSignalingPlayground");
   mojo::core::Init();
 
   playground.StartLoop();

@@ -21,7 +21,7 @@
  * TaskRunners. */
 struct Environment {
   Environment() : message_loop() {
-    base::ThreadPool::CreateAndStartWithDefaultParams(
+    base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
         "MojoFuzzerMessageDumpProcess");
     mojo::core::Init();
   }

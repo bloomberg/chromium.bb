@@ -92,7 +92,7 @@ void PerfettoTaskRunner::SetTaskRunner(
 scoped_refptr<base::SequencedTaskRunner>
 PerfettoTaskRunner::GetOrCreateTaskRunner() {
   if (!task_runner_) {
-    DCHECK(base::ThreadPool::GetInstance());
+    DCHECK(base::ThreadPoolInstance::Get());
     task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
         {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
   }

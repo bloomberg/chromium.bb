@@ -24,12 +24,12 @@ Task::Task(const Location& posted_from, OnceClosure task, TimeDelta delay)
                   std::move(task),
                   delay.is_zero() ? TimeTicks() : TimeTicks::Now() + delay,
                   Nestable::kNonNestable) {
-  // ThreadPool doesn't use |sequence_num| but tracing (toplevel.flow) relies
-  // on it being unique. While this subtle dependency is a bit overreaching,
-  // ThreadPool is the only task system that doesn't use |sequence_num| and
-  // the dependent code rarely changes so this isn't worth a big change and
-  // faking it here isn't too bad for now (posting tasks is full of atomic ops
-  // already).
+  // ThreadPoolImpl doesn't use |sequence_num| but tracing (toplevel.flow)
+  // relies on it being unique. While this subtle dependency is a bit
+  // overreaching, ThreadPoolImpl is the only task system that doesn't use
+  // |sequence_num| and the dependent code rarely changes so this isn't worth a
+  // big change and faking it here isn't too bad for now (posting tasks is full
+  // of atomic ops already).
   this->sequence_num = g_sequence_nums_for_tracing.GetNext();
 }
 

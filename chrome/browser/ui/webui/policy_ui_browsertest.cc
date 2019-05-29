@@ -329,7 +329,7 @@ void PolicyUITest::VerifyExportingPolicies(
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::ExecuteScript(contents, javascript));
 
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   // Open the created file.
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::string file_contents;

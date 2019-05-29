@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
   WaitForDebuggerIfNecessary();
   service_manager::ServiceExecutableEnvironment environment;
   ServiceMain(environment.TakeServiceRequestFromCommandLine());
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return 0;
 }

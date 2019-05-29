@@ -37,7 +37,7 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
   }
 
   void TearDown() override {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
   }
 
  protected:

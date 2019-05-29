@@ -48,7 +48,7 @@ std::unique_ptr<quic::ProofSource> CreateProofSource(
 }
 
 int main(int argc, char* argv[]) {
-  base::ThreadPool::CreateAndStartWithDefaultParams("quic_server");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams("quic_server");
   base::AtExitManager exit_manager;
   base::MessageLoopForIO message_loop;
 

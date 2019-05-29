@@ -48,7 +48,7 @@ void FuzzMessage(const MojoFuzzerMessages& mojo_fuzzer_messages,
 // TaskRunners.
 struct Environment {
   Environment() : message_loop(base::MessageLoop::TYPE_UI) {
-    base::ThreadPool::CreateAndStartWithDefaultParams(
+    base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
         "MojoParseMessageFuzzerProcess");
     mojo::core::Init();
   }

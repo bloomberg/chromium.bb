@@ -16,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
-#include "base/task/task_executor.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
@@ -45,10 +44,10 @@ class ThreadPoolTestHelpers;
 //
 // The instance methods of this class are thread-safe.
 //
-// Note: All ThreadPool users should go through base/task/post_task.h instead
+// Note: All thread pool users should go through base/task/post_task.h instead
 // of this interface except for the one callsite per process which manages the
 // process's instance.
-class BASE_EXPORT ThreadPool : public TaskExecutor {
+class BASE_EXPORT ThreadPoolInstance {
  public:
   struct BASE_EXPORT InitParams {
     enum class CommonThreadPoolEnvironment {
@@ -82,10 +81,10 @@ class BASE_EXPORT ThreadPool : public TaskExecutor {
   };
 
   // A ScopedExecutionFence prevents any new task from being scheduled in
-  // ThreadPool within its scope. Upon its destruction, all tasks that were
-  // preeempted are released. Note: the constructor of ScopedExecutionFence will
-  // not wait for currently running tasks (as they were posted before entering
-  // this scope and do not violate the contract; some of them could be
+  // ThreadPoolInstance within its scope. Upon its destruction, all tasks that
+  // were preeempted are released. Note: the constructor of ScopedExecutionFence
+  // will not wait for currently running tasks (as they were posted before
+  // entering this scope and do not violate the contract; some of them could be
   // CONTINUE_ON_SHUTDOWN and waiting for them to complete is ill-advised).
   class BASE_EXPORT ScopedExecutionFence {
    public:
@@ -96,10 +95,10 @@ class BASE_EXPORT ThreadPool : public TaskExecutor {
     DISALLOW_COPY_AND_ASSIGN(ScopedExecutionFence);
   };
 
-  // Destroying a ThreadPool is not allowed in production; it is always
+  // Destroying a ThreadPoolInstance is not allowed in production; it is always
   // leaked. In tests, it should only be destroyed after JoinForTesting() has
   // returned.
-  ~ThreadPool() override = default;
+  virtual ~ThreadPoolInstance() = default;
 
   // Allows the thread pool to create threads and run tasks following the
   // |init_params| specification.
@@ -145,20 +144,20 @@ class BASE_EXPORT ThreadPool : public TaskExecutor {
   virtual void JoinForTesting() = 0;
 
   // CreateAndStartWithDefaultParams(), Create(), and SetInstance() register a
-  // ThreadPool to handle tasks posted through the post_task.h API for this
-  // process.
+  // ThreadPoolInstance to handle tasks posted through the post_task.h API for
+  // this process.
   //
-  // Processes that need to initialize ThreadPool with custom params or that
-  // need to allow tasks to be posted before the ThreadPool creates its
-  // threads should use Create() followed by Start(). Other processes can use
-  // CreateAndStartWithDefaultParams().
+  // Processes that need to initialize ThreadPoolInstance with custom params or
+  // that need to allow tasks to be posted before the ThreadPoolInstance creates
+  // its threads should use Create() followed by Start(). Other processes can
+  // use CreateAndStartWithDefaultParams().
   //
-  // A registered ThreadPool is only deleted when a new ThreadPool is
-  // registered. The last registered ThreadPool is leaked on shutdown. The
-  // methods below must not be called when TaskRunners created by a previous
-  // ThreadPool are still alive. The methods are not thread-safe; proper
-  // synchronization is required to use the post_task.h API after registering a
-  // new ThreadPool.
+  // A registered ThreadPoolInstance is only deleted when a new
+  // ThreadPoolInstance is registered. The last registered ThreadPoolInstance is
+  // leaked on shutdown. The methods below must not be called when TaskRunners
+  // created by a previous ThreadPoolInstance are still alive. The methods are
+  // not thread-safe; proper synchronization is required to use the post_task.h
+  // API after registering a new ThreadPoolInstance.
 
 #if !defined(OS_NACL)
   // Creates and starts a thread pool using default params. |name| is used to
@@ -173,31 +172,30 @@ class BASE_EXPORT ThreadPool : public TaskExecutor {
   void StartWithDefaultParams();
 #endif  // !defined(OS_NACL)
 
-  // Creates a ready to start thread pool. |name| is used to label
-  // histograms, it must not be empty. It should identify the component that
-  // creates the ThreadPool. The thread pool doesn't create threads until
-  // Start() is called. Tasks can be posted at any time but will not run until
-  // after Start() is called. For tests, prefer
-  // base::test::ScopedTaskEnvironment (ensures isolation).
+  // Creates a ready to start thread pool. |name| is used to label histograms,
+  // it must not be empty. It should identify the component that creates the
+  // ThreadPoolInstance. The thread pool doesn't create threads until Start() is
+  // called. Tasks can be posted at any time but will not run until after
+  // Start() is called. For tests, prefer base::test::ScopedTaskEnvironment
+  // (ensures isolation).
   static void Create(StringPiece name);
 
   // Registers |thread_pool| to handle tasks posted through the post_task.h
   // API for this process. For tests, prefer base::test::ScopedTaskEnvironment
   // (ensures isolation).
-  static void SetInstance(std::unique_ptr<ThreadPool> thread_pool);
+  static void Set(std::unique_ptr<ThreadPoolInstance> thread_pool);
 
-  // Retrieve the ThreadPool set via SetInstance() or
-  // CreateAndSet(Simple|Default)ThreadPool(). This should be used very
-  // rarely; most users of ThreadPool should use the post_task.h API. In
-  // particular, refrain from doing
-  //   if (!ThreadPool::GetInstance()) {
-  //     ThreadPool::SetInstance(...);
+  // Retrieve the ThreadPoolInstance set via SetInstance() or Create(). This
+  // should be used very rarely; most users of the thread pool should use the
+  // post_task.h API. In particular, refrain from doing
+  //   if (!ThreadPoolInstance::Get()) {
+  //     ThreadPoolInstance::Set(...);
   //     base::PostTask(...);
   //   }
   // instead make sure to SetInstance() early in one determinstic place in the
   // process' initialization phase.
   // In doubt, consult with //base/task/thread_pool/OWNERS.
-  static ThreadPool* GetInstance();
+  static ThreadPoolInstance* Get();
 
  private:
   friend class ThreadPoolTestHelpers;
@@ -205,7 +203,7 @@ class BASE_EXPORT ThreadPool : public TaskExecutor {
   friend class content::BrowserMainLoopTest_CreateThreadsInSingleProcess_Test;
 
   // Returns the maximum number of non-single-threaded non-blocked tasks posted
-  // with |traits| that can run concurrently in this ThreadPool. |traits|
+  // with |traits| that can run concurrently in this thread pool. |traits|
   // can't contain TaskPriority::BEST_EFFORT.
   //
   // Do not use this method. To process n items, post n tasks that each process

@@ -62,7 +62,7 @@ class ModelConfigLoaderImplTest : public testing::Test {
   }
 
   ~ModelConfigLoaderImplTest() override {
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
   }
 
   void Init(const std::string& model_params,

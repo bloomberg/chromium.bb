@@ -72,9 +72,10 @@ enum class TaskShutdownBehavior : uint8_t {
   // executing when shutdown is invoked will be allowed to continue and
   // will block shutdown until completion.
   //
-  // Note: Because ThreadPool::Shutdown() may block while these tasks are
-  // executing, care must be taken to ensure that they do not block on the
-  // thread that called ThreadPool::Shutdown(), as this may lead to deadlock.
+  // Note: Because ThreadPoolInstance::Shutdown() may block while these tasks
+  // are executing, care must be taken to ensure that they do not block on the
+  // thread that called ThreadPoolInstance::Shutdown(), as this may lead to
+  // deadlock.
   SKIP_ON_SHUTDOWN,
 
   // Tasks posted with this mode before shutdown is complete will block shutdown
@@ -163,9 +164,10 @@ class BASE_EXPORT TaskTraits {
   //     (1) don't block (ref. MayBlock() and WithBaseSyncPrimitives()),
   //     (2) prefer inheriting the current priority to specifying their own, and
   //     (3) can either block shutdown or be skipped on shutdown
-  //         (ThreadPool implementation is free to choose a fitting default).
+  //         (ThreadPoolInstance implementation is free to choose a fitting
+  //         default).
   //
-  // To get TaskTraits for tasks that  require stricter guarantees and/or know
+  // To get TaskTraits for tasks that require stricter guarantees and/or know
   // the specific TaskPriority appropriate for them, provide arguments of type
   // TaskPriority, TaskShutdownBehavior, ThreadPolicy, MayBlock and/or
   // WithBaseSyncPrimitives in any order to the constructor.

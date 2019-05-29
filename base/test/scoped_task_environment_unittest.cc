@@ -281,7 +281,7 @@ TEST_P(ScopedTaskEnvironmentTest, SupportsSequenceLocalStorageOnMainThread) {
 TEST_P(ScopedTaskEnvironmentTest, SingleThreadShouldNotInitializeThreadPool) {
   ScopedTaskEnvironmentForTest scoped_task_environment(
       ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY);
-  EXPECT_THAT(ThreadPool::GetInstance(), IsNull());
+  EXPECT_THAT(ThreadPoolInstance::Get(), IsNull());
 }
 
 #if defined(OS_POSIX)

@@ -264,7 +264,7 @@ TestAutomaticRebootManagerTaskRunner::~TestAutomaticRebootManagerTaskRunner() {
 }
 
 void TestAutomaticRebootManagerTaskRunner::OnBeforeSelectingTask() {
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 }
 
 void TestAutomaticRebootManagerTaskRunner::OnAfterTimePassed() {
@@ -272,7 +272,7 @@ void TestAutomaticRebootManagerTaskRunner::OnAfterTimePassed() {
 }
 
 void TestAutomaticRebootManagerTaskRunner::OnAfterTaskRun() {
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
 }
 
 MockAutomaticRebootManagerObserver::MockAutomaticRebootManagerObserver()

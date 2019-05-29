@@ -23,7 +23,7 @@ bool CanUseBackgroundPriorityForWorkerThreadImpl() {
 
 #if !defined(OS_ANDROID)
   // When thread priority can't be increased to NORMAL, run all threads with a
-  // NORMAL priority to avoid priority inversions on shutdown (ThreadPool
+  // NORMAL priority to avoid priority inversions on shutdown (ThreadPoolImpl
   // increases BACKGROUND threads priority to NORMAL on shutdown while resolving
   // remaining shutdown blocking tasks).
   //

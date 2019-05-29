@@ -49,7 +49,8 @@ int main(int argc, char** argv) {
       main_loop.task_runner(),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
-  base::ThreadPool::CreateAndStartWithDefaultParams("StandaloneService");
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "StandaloneService");
 
   GlobalState state;
   chromecast::external_service_support::ExternalConnector::Connect(
@@ -57,7 +58,7 @@ int main(int argc, char** argv) {
       base::BindOnce(&OnConnected, &state));
 
   run_loop.Run();
-  base::ThreadPool::GetInstance()->Shutdown();
+  base::ThreadPoolInstance::Get()->Shutdown();
 
   return 0;
 }

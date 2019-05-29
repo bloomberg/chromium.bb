@@ -71,8 +71,8 @@ void NativeInit() {
   base::FeatureList::InitializeInstance(std::string(), std::string());
 #endif
 
-  if (!base::ThreadPool::GetInstance())
-    base::ThreadPool::CreateAndStartWithDefaultParams("Cronet");
+  if (!base::ThreadPoolInstance::Get())
+    base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Cronet");
   url::Initialize();
 }
 
@@ -100,8 +100,8 @@ jint CronetOnLoad(JavaVM* vm, void* reserved) {
 }
 
 void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
-  if (base::ThreadPool::GetInstance())
-    base::ThreadPool::GetInstance()->Shutdown();
+  if (base::ThreadPoolInstance::Get())
+    base::ThreadPoolInstance::Get()->Shutdown();
 
   base::android::LibraryLoaderExitHook();
 }

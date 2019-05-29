@@ -278,7 +278,7 @@ void CronetEnvironment::CleanUpOnNetworkThread() {
 
   // TODO(lilyhoughton) this can only be run once, so right now leaking it.
   // Should be be called when the _last_ CronetEnvironment is destroyed.
-  // base::ThreadPool* ts = base::ThreadPool::GetInstance();
+  // base::ThreadPoolInstance* ts = base::ThreadPoolInstance::Get();
   // if (ts)
   //  ts->Shutdown();
 

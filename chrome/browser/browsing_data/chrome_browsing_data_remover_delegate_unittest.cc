@@ -1199,7 +1199,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     remover_->RemoveAndReply(
         delete_begin, delete_end, remove_mask, origin_type_mask,
         &completion_observer);
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     completion_observer.BlockUntilCompletion();
   }
 
@@ -1214,7 +1214,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
         delete_begin, delete_end, remove_mask,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
         std::move(filter_builder), &completion_observer);
-    base::ThreadPool::GetInstance()->FlushForTesting();
+    base::ThreadPoolInstance::Get()->FlushForTesting();
     completion_observer.BlockUntilCompletion();
   }
 

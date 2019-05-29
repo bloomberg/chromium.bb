@@ -168,7 +168,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
         blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
             base::MessageLoop::CreateMessagePumpForType(
                 base::MessageLoop::TYPE_DEFAULT));
-    base::ThreadPool::CreateAndStartWithDefaultParams("BlinkTestSupport");
+    base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+        "BlinkTestSupport");
   }
 
   // Initialize mojo firstly to enable Blink initialization to use it.

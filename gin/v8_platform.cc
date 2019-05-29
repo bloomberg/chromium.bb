@@ -401,11 +401,11 @@ int V8Platform::NumberOfWorkerThreads() {
   // V8Platform assumes the scheduler uses the same set of workers for default
   // and user blocking tasks.
   const int num_foreground_workers =
-      base::ThreadPool::GetInstance()
+      base::ThreadPoolInstance::Get()
           ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
               kDefaultTaskTraits);
   DCHECK_EQ(num_foreground_workers,
-            base::ThreadPool::GetInstance()
+            base::ThreadPoolInstance::Get()
                 ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                     kBlockingTaskTraits));
   return std::max(1, num_foreground_workers);

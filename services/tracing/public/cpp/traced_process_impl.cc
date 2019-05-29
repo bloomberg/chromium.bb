@@ -84,7 +84,7 @@ void TracedProcessImpl::ConnectToTracingService(
 
   // Tracing requires a running ThreadPool; disable tracing
   // for processes without it.
-  if (!base::ThreadPool::GetInstance()) {
+  if (!base::ThreadPoolInstance::Get()) {
     return;
   }
 

@@ -350,10 +350,10 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
                     MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out."))) {
   CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
       << "NowSource must be REAL_TIME unless we're using mock time";
-  CHECK(!ThreadPool::GetInstance())
-      << "Someone has already initialized ThreadPool. If nothing in your "
-         "test does so, then a test that ran earlier may have initialized one, "
-         "and leaked it. base::TestSuite will trap leaked globals, unless "
+  CHECK(!ThreadPoolInstance::Get())
+      << "Someone has already installed a ThreadPoolInstance. If nothing in "
+         "your test does so, then a test that ran earlier may have installed "
+         "one and leaked it. base::TestSuite will trap leaked globals, unless "
          "someone has explicitly disabled it with "
          "DisableCheckForLeakedGlobals().";
 
@@ -381,16 +381,16 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
 }
 
 void ScopedTaskEnvironment::InitializeThreadPool() {
-  // Instantiate a ThreadPool with 4 workers per pool. Having multiple
-  // threads prevents deadlocks should some blocking APIs not use
+  // Instantiate a ThreadPoolInstance with 4 workers per thread group. Having
+  // multiple threads prevents deadlocks should some blocking APIs not use
   // ScopedBlockingCall. It also allows enough concurrency to allow TSAN to spot
   // data races.
   constexpr int kMaxThreads = 4;
-  ThreadPool::InitParams init_params(kMaxThreads);
+  ThreadPoolInstance::InitParams init_params(kMaxThreads);
   init_params.suggested_reclaim_time = TimeDelta::Max();
 #if defined(OS_WIN)
-  // Enable the MTA in unit tests to match the browser process' ThreadPool
-  // configuration.
+  // Enable the MTA in unit tests to match the browser process's
+  // ThreadPoolInstance configuration.
   //
   // This has the adverse side-effect of enabling the MTA in non-browser unit
   // tests as well but the downside there is not as bad as not having it in
@@ -400,15 +400,15 @@ void ScopedTaskEnvironment::InitializeThreadPool() {
   // misuse will still be caught in later phases (and COM usage should already
   // be pretty much inexistent in sandboxed processes).
   init_params.common_thread_pool_environment =
-      ThreadPool::InitParams::CommonThreadPoolEnvironment::COM_MTA;
+      ThreadPoolInstance::InitParams::CommonThreadPoolEnvironment::COM_MTA;
 #endif
 
   auto task_tracker = std::make_unique<TestTaskTracker>();
   task_tracker_ = task_tracker.get();
-  ThreadPool::SetInstance(std::make_unique<internal::ThreadPoolImpl>(
+  ThreadPoolInstance::Set(std::make_unique<internal::ThreadPoolImpl>(
       "ScopedTaskEnvironment", std::move(task_tracker)));
-  thread_pool_ = ThreadPool::GetInstance();
-  ThreadPool::GetInstance()->Start(init_params);
+  thread_pool_ = ThreadPoolInstance::Get();
+  ThreadPoolInstance::Get()->Start(init_params);
 }
 
 void ScopedTaskEnvironment::CompleteInitialization() {
@@ -440,18 +440,18 @@ void ScopedTaskEnvironment::DestroyThreadPool() {
   // infinite post loop in the remaining work but this isn't possible right now
   // because base::~MessageLoop() didn't use to do this and adding it here would
   // make the migration away from MessageLoop that much harder.
-  CHECK_EQ(ThreadPool::GetInstance(), thread_pool_);
+  CHECK_EQ(ThreadPoolInstance::Get(), thread_pool_);
   // Without FlushForTesting(), DeleteSoon() and ReleaseSoon() tasks could be
   // skipped, resulting in memory leaks.
   task_tracker_->AllowRunTasks();
-  ThreadPool::GetInstance()->FlushForTesting();
-  ThreadPool::GetInstance()->Shutdown();
-  ThreadPool::GetInstance()->JoinForTesting();
-  // Destroying ThreadPool state can result in waiting on worker threads.
-  // Make sure this is allowed to avoid flaking tests that have disallowed waits
-  // on their main thread.
+  ThreadPoolInstance::Get()->FlushForTesting();
+  ThreadPoolInstance::Get()->Shutdown();
+  ThreadPoolInstance::Get()->JoinForTesting();
+  // Destroying ThreadPoolInstance state can result in waiting on worker
+  // threads. Make sure this is allowed to avoid flaking tests that have
+  // disallowed waits on their main thread.
   ScopedAllowBaseSyncPrimitivesForTesting allow_waits_to_destroy_task_tracker;
-  ThreadPool::SetInstance(nullptr);
+  ThreadPoolInstance::Set(nullptr);
 }
 
 sequence_manager::TimeDomain* ScopedTaskEnvironment::GetTimeDomain() const {
@@ -544,7 +544,8 @@ void ScopedTaskEnvironment::RunUntilIdle() {
     // tasks in ThreadPool. This increases likelihood of TSAN catching
     // threading errors and eliminates possibility of hangs should a
     // ThreadPool task synchronously block on a main thread task
-    // (ThreadPool::FlushForTesting() can't be used here for that reason).
+    // (ThreadPoolInstance::FlushForTesting() can't be used here for that
+    // reason).
     RunLoop().RunUntilIdle();
 
     // Then halt ThreadPool. DisallowRunTasks() failing indicates that there
