@@ -24,7 +24,7 @@ enum XREnvironmentBlendMode {
 ] interface XRSession : EventTarget {
   readonly attribute XREnvironmentBlendMode environmentBlendMode;
   [SameObject] readonly attribute XRRenderState renderState;
-  [MeasureAs=XRSessionGetInputSources] readonly attribute XRInputSourceArray inputSources;
+  [MeasureAs=XRSessionGetInputSources, SameObject] readonly attribute XRInputSourceArray inputSources;
 
   attribute EventHandler onblur;
   attribute EventHandler onfocus;

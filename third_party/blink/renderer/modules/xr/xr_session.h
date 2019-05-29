@@ -89,8 +89,6 @@ class XRSession final : public EventTargetWithInlineData,
   int requestAnimationFrame(V8XRFrameRequestCallback*);
   void cancelAnimationFrame(int id);
 
-  using InputSourceMap = HeapHashMap<uint32_t, Member<XRInputSource>>;
-
   XRInputSourceArray* inputSources() const;
 
   ScriptPromise requestHitTest(ScriptState* script_state,
@@ -222,7 +220,7 @@ class XRSession final : public EventTargetWithInlineData,
 
   WTF::Vector<XRViewData> views_;
 
-  InputSourceMap input_sources_;
+  Member<XRInputSourceArray> input_sources_;
   Member<ResizeObserver> resize_observer_;
   Member<XRCanvasInputProvider> canvas_input_provider_;
   bool environment_error_handler_subscribed_ = false;

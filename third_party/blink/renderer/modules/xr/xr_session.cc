@@ -123,6 +123,7 @@ XRSession::XRSession(
       environment_integration_(mode == kModeImmersiveAR),
       world_tracking_state_(MakeGarbageCollected<XRWorldTrackingState>()),
       world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
+      input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
       client_binding_(this, std::move(client_request)),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
@@ -343,19 +344,7 @@ XRInputSourceArray* XRSession::inputSources() const {
     did_log_getInputSources_ = true;
   }
 
-  XRInputSourceArray* source_array = MakeGarbageCollected<XRInputSourceArray>();
-  for (const auto& input_source : input_sources_.Values()) {
-    source_array->Add(input_source);
-  }
-
-  if (canvas_input_provider_) {
-    XRInputSource* input_source = canvas_input_provider_->GetInputSource();
-    if (input_source) {
-      source_array->Add(input_source);
-    }
-  }
-
-  return source_array;
+  return input_sources_;
 }
 
 ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
@@ -478,17 +467,25 @@ ScriptPromise XRSession::end(ScriptState* script_state) {
 }
 
 void XRSession::ForceEnd() {
+  // If we've already ended, then just abort.  Since this is called only by C++
+  // code, and predominantly just to ensure that the session is shut down, this
+  // is fine.
+  if (ended_)
+    return;
+
   // Detach this session from the XR system.
   ended_ = true;
   pending_frame_ = false;
 
+  for (unsigned i = 0; i < input_sources_->length(); i++) {
+    (*input_sources_)[i]->SetGamepadConnected(false);
+  }
+
+  input_sources_ = nullptr;
+
   if (canvas_input_provider_) {
     canvas_input_provider_->Stop();
     canvas_input_provider_ = nullptr;
-  }
-
-  for (auto& input_source : input_sources_.Values()) {
-    input_source->SetGamepadConnected(false);
   }
 
   // If this session is the active immersive session, notify the frameProvider
@@ -766,13 +763,13 @@ void XRSession::OnInputStateChange(
   // sources so we can flag the ones that are no longer active.
   for (const auto& input_state : input_states) {
     XRInputSource* stored_input_source =
-        input_sources_.at(input_state->source_id);
+        input_sources_->GetWithSourceId(input_state->source_id);
     XRInputSource* input_source = XRInputSource::CreateOrUpdateFrom(
         stored_input_source, this, input_state);
 
     // Using pointer equality to determine if the pointer needs to be set.
     if (stored_input_source != input_source) {
-      input_sources_.Set(input_state->source_id, input_source);
+      input_sources_->SetWithSourceId(input_state->source_id, input_source);
       added.push_back(input_source);
 
       // If we previously had a stored_input_source, disconnect it's gamepad
@@ -793,7 +790,8 @@ void XRSession::OnInputStateChange(
   // processing removed, because if we replaced any input sources, they would
   // also be in removed, and we'd remove our newly added source.
   std::vector<uint32_t> inactive_sources;
-  for (const auto& input_source : input_sources_.Values()) {
+  for (unsigned i = 0; i < input_sources_->length(); i++) {
+    auto* input_source = (*input_sources_)[i];
     if (input_source->activeFrameId() != frame_id) {
       inactive_sources.push_back(input_source->source_id());
       input_source->SetGamepadConnected(false);
@@ -802,7 +800,7 @@ void XRSession::OnInputStateChange(
   }
 
   for (uint32_t source_id : inactive_sources) {
-    input_sources_.erase(source_id);
+    input_sources_->RemoveWithSourceId(source_id);
   }
 
   // If there have been any changes, fire the input sources change event.
@@ -819,7 +817,8 @@ void XRSession::OnInputStateChange(
     if (ended_)
       break;
 
-    XRInputSource* input_source = input_sources_.at(input_state->source_id);
+    XRInputSource* input_source =
+        input_sources_->GetWithSourceId(input_state->source_id);
     DCHECK(input_source);
     UpdateSelectState(input_source, input_state);
   }

@@ -17,12 +17,16 @@ class XRInputSourceArray : public ScriptWrappable {
   unsigned length() const { return input_sources_.size(); }
   XRInputSource* AnonymousIndexedGetter(unsigned index) const;
 
-  void Add(XRInputSource* input_source);
+  XRInputSource* operator[](unsigned index) const;
+
+  XRInputSource* GetWithSourceId(uint32_t source_id);
+  void RemoveWithSourceId(uint32_t source_id);
+  void SetWithSourceId(uint32_t source_id, XRInputSource* input_source);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  HeapVector<Member<XRInputSource>> input_sources_;
+  HeapHashMap<uint32_t, Member<XRInputSource>> input_sources_;
 };
 
 }  // namespace blink

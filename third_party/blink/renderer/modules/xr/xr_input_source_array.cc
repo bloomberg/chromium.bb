@@ -12,11 +12,35 @@ XRInputSource* XRInputSourceArray::AnonymousIndexedGetter(
   if (index >= input_sources_.size())
     return nullptr;
 
-  return input_sources_[index];
+  auto it = input_sources_.Values().begin();
+
+  // HeapHashMap's iterators don't expose a generic + operator.  We're ensuring
+  // that this won't be past the end with the size check above.
+  for (unsigned i = 0; i < index; i++) {
+    ++it;
+  }
+
+  return *(it.Get());
 }
 
-void XRInputSourceArray::Add(XRInputSource* input_source) {
-  input_sources_.push_back(input_source);
+XRInputSource* XRInputSourceArray::operator[](unsigned index) const {
+  DCHECK(index < length());
+  return AnonymousIndexedGetter(index);
+}
+
+XRInputSource* XRInputSourceArray::GetWithSourceId(uint32_t source_id) {
+  return input_sources_.at(source_id);
+}
+
+void XRInputSourceArray::RemoveWithSourceId(uint32_t source_id) {
+  auto it = input_sources_.find(source_id);
+  if (it != input_sources_.end())
+    input_sources_.erase(it);
+}
+
+void XRInputSourceArray::SetWithSourceId(uint32_t source_id,
+                                         XRInputSource* input_source) {
+  input_sources_.Set(source_id, input_source);
 }
 
 void XRInputSourceArray::Trace(blink::Visitor* visitor) {
