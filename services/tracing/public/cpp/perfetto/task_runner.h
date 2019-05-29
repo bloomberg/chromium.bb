@@ -38,6 +38,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
 
   void SetTaskRunner(scoped_refptr<base::SequencedTaskRunner> task_runner);
   scoped_refptr<base::SequencedTaskRunner> GetOrCreateTaskRunner();
+  bool HasTaskRunner() const { return !!task_runner_; }
 
   // Not used in Chrome.
   void AddFileDescriptorWatch(int fd, std::function<void()>) override;

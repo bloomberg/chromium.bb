@@ -182,6 +182,7 @@ class TraceEventDataSourceTest : public testing::Test {
  public:
   void SetUp() override {
     PerfettoTracedProcess::ResetTaskRunnerForTesting();
+    PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner();
     auto perfetto_wrapper = std::make_unique<PerfettoTaskRunner>(
         scoped_task_environment_.GetMainThreadTaskRunner());
     producer_client_ =
