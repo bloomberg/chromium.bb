@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -126,7 +127,7 @@ KeyDerivationParams KeyDerivationParams::CreateWithUnsupportedMethod() {
 Nigori::Keys::Keys() = default;
 Nigori::Keys::~Keys() = default;
 
-bool Nigori::Keys::InitByDerivationUsingPbkdf2(const std::string& password) {
+void Nigori::Keys::InitByDerivationUsingPbkdf2(const std::string& password) {
   // Previously (<=M70) this value has been recalculated every time based on a
   // constant hostname (hardcoded to "localhost") and username (hardcoded to
   // "dummy") as PBKDF2_HMAC_SHA1(Ns("dummy") + Ns("localhost"), "saltsalt",
@@ -158,11 +159,9 @@ bool Nigori::Keys::InitByDerivationUsingPbkdf2(const std::string& password) {
       SymmetricKey::HMAC_SHA1, password, salt, kSigningIterations,
       kDerivedKeySizeInBits);
   DCHECK(mac_key);
-
-  return user_key && encryption_key && mac_key;
 }
 
-bool Nigori::Keys::InitByDerivationUsingScrypt(const std::string& salt,
+void Nigori::Keys::InitByDerivationUsingScrypt(const std::string& salt,
                                                const std::string& password) {
   const size_t kCostParameter = 8192;  // 2^13.
   const size_t kBlockSize = 8;
@@ -174,6 +173,7 @@ bool Nigori::Keys::InitByDerivationUsingScrypt(const std::string& salt,
   // failure on those clients.
   user_key = SymmetricKey::Import(SymmetricKey::AES,
                                   std::string(kDerivedKeySizeInBytes, '\0'));
+  DCHECK(user_key);
 
   // Derive a master key twice as long as the required key size, and split it
   // into two to get the encryption and MAC keys.
@@ -188,63 +188,52 @@ bool Nigori::Keys::InitByDerivationUsingScrypt(const std::string& salt,
       master_key_str.substr(0, kDerivedKeySizeInBytes);
   DCHECK_EQ(encryption_key_str.length(), kDerivedKeySizeInBytes);
   encryption_key = SymmetricKey::Import(SymmetricKey::AES, encryption_key_str);
+  DCHECK(encryption_key);
 
   std::string mac_key_str = master_key_str.substr(kDerivedKeySizeInBytes);
   DCHECK_EQ(mac_key_str.length(), kDerivedKeySizeInBytes);
   mac_key = SymmetricKey::Import(SymmetricKey::HMAC_SHA1, mac_key_str);
-
-  return user_key && encryption_key && mac_key;
+  DCHECK(mac_key);
 }
 
 bool Nigori::Keys::InitByImport(const std::string& user_key_str,
                                 const std::string& encryption_key_str,
                                 const std::string& mac_key_str) {
+  // |user_key| is not used anymore so we tolerate a failed import.
   user_key = SymmetricKey::Import(SymmetricKey::AES, user_key_str);
 
   encryption_key = SymmetricKey::Import(SymmetricKey::AES, encryption_key_str);
-  DCHECK(encryption_key);
+  if (!encryption_key)
+    return false;
 
   mac_key = SymmetricKey::Import(SymmetricKey::HMAC_SHA1, mac_key_str);
-  DCHECK(mac_key);
+  if (!mac_key)
+    return false;
 
-  return encryption_key && mac_key;
+  return true;
 }
-
-Nigori::Nigori() : tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
 Nigori::~Nigori() {}
 
-bool Nigori::InitByDerivation(const KeyDerivationParams& key_derivation_params,
-                              const std::string& password) {
-  base::TimeTicks begin_time = tick_clock_->NowTicks();
-  bool result = false;
-  switch (key_derivation_params.method()) {
-    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      result = keys_.InitByDerivationUsingPbkdf2(password);
-      break;
-    case KeyDerivationMethod::SCRYPT_8192_8_11:
-      DCHECK(!base::FeatureList::IsEnabled(
-          switches::kSyncForceDisableScryptForCustomPassphrase));
-      result = keys_.InitByDerivationUsingScrypt(
-          key_derivation_params.scrypt_salt(), password);
-      break;
-    case KeyDerivationMethod::UNSUPPORTED:
-      return false;
-  }
-
-  UmaHistogramTimes(
-      base::StringPrintf("Sync.Crypto.NigoriKeyDerivationDuration.%s",
-                         GetHistogramSuffixForKeyDerivationMethod(
-                             key_derivation_params.method())),
-      tick_clock_->NowTicks() - begin_time);
-
-  return result;
+// static
+std::unique_ptr<Nigori> Nigori::CreateByDerivation(
+    const KeyDerivationParams& key_derivation_params,
+    const std::string& password) {
+  return CreateByDerivationImpl(key_derivation_params, password,
+                                base::DefaultTickClock::GetInstance());
 }
 
-bool Nigori::InitByImport(const std::string& user_key,
-                          const std::string& encryption_key,
-                          const std::string& mac_key) {
-  return keys_.InitByImport(user_key, encryption_key, mac_key);
+// static
+std::unique_ptr<Nigori> Nigori::CreateByImport(
+    const std::string& user_key,
+    const std::string& encryption_key,
+    const std::string& mac_key) {
+  // base::WrapUnique() is used because the constructor is private.
+  auto nigori = base::WrapUnique(new Nigori());
+  if (!nigori->keys_.InitByImport(user_key, encryption_key, mac_key)) {
+    return nullptr;
+  }
+  return nigori;
 }
 
 // Permute[Kenc,Kmac](type || name)
@@ -371,6 +360,45 @@ std::string Nigori::GenerateScryptSalt() {
   salt.resize(kSaltSizeInBytes);
   crypto::RandBytes(base::data(salt), salt.size());
   return salt;
+}
+
+std::unique_ptr<Nigori> Nigori::CreateByDerivationForTesting(
+    const KeyDerivationParams& key_derivation_params,
+    const std::string& password,
+    const base::TickClock* tick_clock) {
+  return CreateByDerivationImpl(key_derivation_params, password, tick_clock);
+}
+
+Nigori::Nigori() = default;
+
+// static
+std::unique_ptr<Nigori> Nigori::CreateByDerivationImpl(
+    const KeyDerivationParams& key_derivation_params,
+    const std::string& password,
+    const base::TickClock* tick_clock) {
+  auto nigori = base::WrapUnique(new Nigori());
+  base::TimeTicks begin_time = tick_clock->NowTicks();
+  switch (key_derivation_params.method()) {
+    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
+      nigori->keys_.InitByDerivationUsingPbkdf2(password);
+      break;
+    case KeyDerivationMethod::SCRYPT_8192_8_11:
+      DCHECK(!base::FeatureList::IsEnabled(
+          switches::kSyncForceDisableScryptForCustomPassphrase));
+      nigori->keys_.InitByDerivationUsingScrypt(
+          key_derivation_params.scrypt_salt(), password);
+      break;
+    case KeyDerivationMethod::UNSUPPORTED:
+      NOTREACHED();
+  }
+
+  UmaHistogramTimes(
+      base::StringPrintf("Sync.Crypto.NigoriKeyDerivationDuration.%s",
+                         GetHistogramSuffixForKeyDerivationMethod(
+                             key_derivation_params.method())),
+      tick_clock->NowTicks() - begin_time);
+
+  return nigori;
 }
 
 }  // namespace syncer

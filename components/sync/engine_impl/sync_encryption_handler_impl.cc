@@ -1100,12 +1100,13 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
       KeyDerivationParams::CreateForPbkdf2();
   if (*passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
     key_derivation_params = GetKeyDerivationParamsFromNigori(nigori);
-    custom_passphrase_key_derivation_params_ = key_derivation_params;
 
     if (key_derivation_params.method() == KeyDerivationMethod::UNSUPPORTED) {
       DLOG(WARNING) << "Updating from a Nigori node with an unsupported key "
-                       "derivation method. Decryption will fail.";
+                       "derivation method.";
     }
+
+    custom_passphrase_key_derivation_params_ = key_derivation_params;
   }
 
   // If we've completed a sync cycle and the cryptographer isn't ready
@@ -1371,6 +1372,8 @@ void SyncEncryptionHandlerImpl::DecryptPendingKeysWithExplicitPassphrase(
       KeyDerivationParams::CreateForPbkdf2();
   if (passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
     DCHECK(custom_passphrase_key_derivation_params_.has_value());
+    DCHECK_NE(custom_passphrase_key_derivation_params_->method(),
+              KeyDerivationMethod::UNSUPPORTED);
     key_derivation_params = custom_passphrase_key_derivation_params_.value();
   }
   KeyParams key_params = {key_derivation_params, passphrase};

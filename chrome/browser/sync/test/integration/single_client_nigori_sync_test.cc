@@ -24,11 +24,11 @@ syncer::KeyParams KeystoreKeyParams(const std::string& key) {
 
 MATCHER_P(IsDataEncryptedWith, key_params, "") {
   const sync_pb::EncryptedData& encrypted_data = arg;
-  syncer::Nigori nigori;
-  nigori.InitByDerivation(key_params.derivation_params, key_params.password);
+  std::unique_ptr<syncer::Nigori> nigori = syncer::Nigori::CreateByDerivation(
+      key_params.derivation_params, key_params.password);
   std::string nigori_name;
-  EXPECT_TRUE(nigori.Permute(syncer::Nigori::Type::Password,
-                             syncer::kNigoriKeyName, &nigori_name));
+  EXPECT_TRUE(nigori->Permute(syncer::Nigori::Type::Password,
+                              syncer::kNigoriKeyName, &nigori_name));
   return encrypted_data.key_name() == nigori_name;
 }
 

@@ -63,18 +63,21 @@ class Nigori {
     Password = 1,
   };
 
-  Nigori();
   virtual ~Nigori();
 
   // Initialize by deriving keys based on the given |key_derivation_params| and
-  // |password|.
-  bool InitByDerivation(const KeyDerivationParams& key_derivation_params,
-                        const std::string& password);
+  // |password|. The key derivation method must not be UNSUPPORTED. The return
+  // value is guaranteed to be non-null.
+  static std::unique_ptr<Nigori> CreateByDerivation(
+      const KeyDerivationParams& key_derivation_params,
+      const std::string& password);
 
   // Initialize by importing the given keys instead of deriving new ones.
-  bool InitByImport(const std::string& user_key,
-                    const std::string& encryption_key,
-                    const std::string& mac_key);
+  // Returns null in case of failure.
+  static std::unique_ptr<Nigori> CreateByImport(
+      const std::string& user_key,
+      const std::string& encryption_key,
+      const std::string& mac_key);
 
   // Derives a secure lookup name from |type| and |name|. If |hostname|,
   // |username| and |password| are kept constant, a given |type| and |name| pair
@@ -95,11 +98,13 @@ class Nigori {
                   std::string* encryption_key,
                   std::string* mac_key) const;
 
-  static std::string GenerateScryptSalt();
+  // Same as CreateByDerivation() but allows overriding the clock.
+  static std::unique_ptr<Nigori> CreateByDerivationForTesting(
+      const KeyDerivationParams& key_derivation_params,
+      const std::string& password,
+      const base::TickClock* tick_clock);
 
-  void SetTickClockForTesting(const base::TickClock* tick_clock) {
-    tick_clock_ = tick_clock;
-  }
+  static std::string GenerateScryptSalt();
 
   // Exposed for tests.
   static const size_t kIvSize = 16;
@@ -117,16 +122,22 @@ class Nigori {
     std::unique_ptr<crypto::SymmetricKey> encryption_key;
     std::unique_ptr<crypto::SymmetricKey> mac_key;
 
-    bool InitByDerivationUsingPbkdf2(const std::string& password);
-    bool InitByDerivationUsingScrypt(const std::string& salt,
+    void InitByDerivationUsingPbkdf2(const std::string& password);
+    void InitByDerivationUsingScrypt(const std::string& salt,
                                      const std::string& password);
     bool InitByImport(const std::string& user_key_str,
                       const std::string& encryption_key_str,
                       const std::string& mac_key_str);
   };
 
+  Nigori();
+
+  static std::unique_ptr<Nigori> CreateByDerivationImpl(
+      const KeyDerivationParams& key_derivation_params,
+      const std::string& password,
+      const base::TickClock* tick_clock);
+
   Keys keys_;
-  const base::TickClock* tick_clock_;
 };
 
 }  // namespace syncer

@@ -478,10 +478,10 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       const KeyDerivationParams& key_derivation_params,
       const std::string& passphrase) {
     sync_pb::NigoriKey key;
-    Nigori nigori;
-    nigori.InitByDerivation(key_derivation_params, passphrase);
-    nigori.ExportKeys(key.mutable_user_key(), key.mutable_encryption_key(),
-                      key.mutable_mac_key());
+    std::unique_ptr<Nigori> nigori =
+        Nigori::CreateByDerivation(key_derivation_params, passphrase);
+    nigori->ExportKeys(key.mutable_user_key(), key.mutable_encryption_key(),
+                       key.mutable_mac_key());
     return key.SerializeAsString();
   }
 

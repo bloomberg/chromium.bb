@@ -109,12 +109,11 @@ bool CheckPassphraseAgainstPendingKeys(
     return false;
   }
 
-  Nigori nigori;
-  bool derivation_result =
-      nigori.InitByDerivation(key_derivation_params, passphrase);
-  DCHECK(derivation_result);
+  std::unique_ptr<Nigori> nigori =
+      Nigori::CreateByDerivation(key_derivation_params, passphrase);
+  DCHECK(nigori);
   std::string plaintext;
-  bool decrypt_result = nigori.Decrypt(pending_keys.blob(), &plaintext);
+  bool decrypt_result = nigori->Decrypt(pending_keys.blob(), &plaintext);
   DVLOG_IF(1, !decrypt_result) << "Passphrase failed to decrypt pending keys.";
   return decrypt_result;
 }

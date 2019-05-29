@@ -127,24 +127,16 @@ bool Cryptographer::GetKeys(sync_pb::EncryptedData* encrypted) const {
 }
 
 bool Cryptographer::AddKey(const KeyParams& params) {
-  // Create the new Nigori and make it the default encryptor.
-  std::unique_ptr<Nigori> nigori(new Nigori);
-  if (!nigori->InitByDerivation(params.derivation_params, params.password)) {
-    NOTREACHED();  // Invalid username or password.
-    return false;
-  }
-  return AddKeyImpl(std::move(nigori), true);
+  return AddKeyImpl(
+      Nigori::CreateByDerivation(params.derivation_params, params.password),
+      /*set_as_default=*/true);
 }
 
 bool Cryptographer::AddNonDefaultKey(const KeyParams& params) {
   DCHECK(is_initialized());
-  // Create the new Nigori and add it to the keybag.
-  std::unique_ptr<Nigori> nigori(new Nigori);
-  if (!nigori->InitByDerivation(params.derivation_params, params.password)) {
-    NOTREACHED();  // Invalid username or password.
-    return false;
-  }
-  return AddKeyImpl(std::move(nigori), false);
+  return AddKeyImpl(
+      Nigori::CreateByDerivation(params.derivation_params, params.password),
+      /*set_as_default=*/false);
 }
 
 bool Cryptographer::AddKeyFromBootstrapToken(
@@ -155,9 +147,10 @@ bool Cryptographer::AddKeyFromBootstrapToken(
   return ImportNigoriKey(serialized_nigori_key);
 }
 
-bool Cryptographer::AddKeyImpl(std::unique_ptr<Nigori> initialized_nigori,
+bool Cryptographer::AddKeyImpl(std::unique_ptr<Nigori> nigori,
                                bool set_as_default) {
-  std::string key_name = key_bag_.AddKey(std::move(initialized_nigori));
+  DCHECK(nigori);
+  std::string key_name = key_bag_.AddKey(std::move(nigori));
   if (key_name.empty()) {
     NOTREACHED();
     return false;
@@ -209,14 +202,14 @@ const sync_pb::EncryptedData& Cryptographer::GetPendingKeys() const {
 }
 
 bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
-  Nigori nigori;
-  if (!nigori.InitByDerivation(params.derivation_params, params.password)) {
-    NOTREACHED();
-    return false;
-  }
+  DCHECK_NE(KeyDerivationMethod::UNSUPPORTED,
+            params.derivation_params.method());
+
+  std::unique_ptr<Nigori> nigori =
+      Nigori::CreateByDerivation(params.derivation_params, params.password);
 
   std::string plaintext;
-  if (!nigori.Decrypt(pending_keys_->blob(), &plaintext))
+  if (!nigori->Decrypt(pending_keys_->blob(), &plaintext))
     return false;
 
   sync_pb::NigoriKeyBag bag;
@@ -311,10 +304,11 @@ bool Cryptographer::ImportNigoriKey(const std::string& serialized_nigori_key) {
   if (!key.ParseFromString(serialized_nigori_key))
     return false;
 
-  std::unique_ptr<Nigori> nigori(new Nigori);
-  if (!nigori->InitByImport(key.user_key(), key.encryption_key(),
-                            key.mac_key())) {
-    NOTREACHED();
+  std::unique_ptr<Nigori> nigori = Nigori::CreateByImport(
+      key.user_key(), key.encryption_key(), key.mac_key());
+
+  if (!nigori) {
+    DLOG(ERROR) << "Ignoring invalid Nigori when importing";
     return false;
   }
 

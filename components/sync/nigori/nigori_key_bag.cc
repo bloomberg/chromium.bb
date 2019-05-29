@@ -32,24 +32,15 @@ sync_pb::NigoriKey NigoriToProto(const Nigori& nigori,
   return proto;
 }
 
-std::unique_ptr<Nigori> NigoriFromProto(const sync_pb::NigoriKey& proto) {
-  auto nigori = std::make_unique<Nigori>();
-  if (!nigori->InitByImport(proto.user_key(), proto.encryption_key(),
-                            proto.mac_key())) {
-    return nullptr;
-  }
-  return nigori;
-}
-
 std::unique_ptr<Nigori> CloneNigori(const Nigori& nigori) {
   std::string user_key;
   std::string encryption_key;
   std::string mac_key;
   nigori.ExportKeys(&user_key, &encryption_key, &mac_key);
 
-  auto nigori_copy = std::make_unique<Nigori>();
-  bool success = nigori_copy->InitByImport(user_key, encryption_key, mac_key);
-  DCHECK(success);
+  std::unique_ptr<Nigori> nigori_copy =
+      Nigori::CreateByImport(user_key, encryption_key, mac_key);
+  DCHECK(nigori_copy);
   return nigori_copy;
 }
 
@@ -64,11 +55,16 @@ NigoriKeyBag NigoriKeyBag::CreateEmpty() {
 NigoriKeyBag NigoriKeyBag::CreateFromProto(const sync_pb::NigoriKeyBag& proto) {
   NigoriKeyBag output;
   for (const sync_pb::NigoriKey& key : proto.key()) {
-    auto nigori = NigoriFromProto(key);
+    std::unique_ptr<Nigori> nigori = Nigori::CreateByImport(
+        key.user_key(), key.encryption_key(), key.mac_key());
     if (!nigori) {
-      NOTREACHED();
+      // TODO(crbug.com/922900): Consider propagating this error to callers such
+      // that they can do smarter handling.
+      DLOG(ERROR) << "Invalid NigoriKey protocol buffer message.";
       continue;
     }
+    // TODO(crbug.com/967417): We shouldn't trust the name in the proto and
+    // instead should compute ComputeNigoriName(*nigori).
     output.nigori_map_[key.name()] = std::move(nigori);
   }
   return output;

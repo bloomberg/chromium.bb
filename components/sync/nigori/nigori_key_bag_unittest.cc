@@ -17,9 +17,8 @@ using testing::Ne;
 using testing::SizeIs;
 
 std::unique_ptr<Nigori> CreateTestNigori(const std::string& password) {
-  auto nigori = std::make_unique<Nigori>();
-  nigori->InitByDerivation(KeyDerivationParams::CreateForPbkdf2(), password);
-  return nigori;
+  return Nigori::CreateByDerivation(KeyDerivationParams::CreateForPbkdf2(),
+                                    password);
 }
 
 TEST(NigoriKeyBagTest, ShouldCreateEmpty) {
@@ -80,6 +79,25 @@ TEST(NigoriKeyBagTest, ShouldCreateNonEmptyFromProto) {
   EXPECT_THAT(restored_key_bag, SizeIs(2));
   EXPECT_TRUE(restored_key_bag.HasKey(key_name1));
   EXPECT_TRUE(restored_key_bag.HasKey(key_name2));
+}
+
+TEST(NigoriKeyBagTest, ShouldCreateNonEmptyFromPartiallyInvalidProto) {
+  NigoriKeyBag original_key_bag = NigoriKeyBag::CreateEmpty();
+  const std::string key_name1 =
+      original_key_bag.AddKey(CreateTestNigori("password1"));
+  const std::string key_name2 =
+      original_key_bag.AddKey(CreateTestNigori("password2"));
+
+  sync_pb::NigoriKeyBag malformed_proto = original_key_bag.ToProto();
+  ASSERT_THAT(malformed_proto.key(), SizeIs(2));
+  malformed_proto.mutable_key(1)->set_encryption_key("malformed-key");
+
+  NigoriKeyBag restored_key_bag =
+      NigoriKeyBag::CreateFromProto(malformed_proto);
+
+  EXPECT_THAT(restored_key_bag, SizeIs(1));
+  EXPECT_TRUE(restored_key_bag.HasKey(key_name1));
+  EXPECT_FALSE(restored_key_bag.HasKey(key_name2));
 }
 
 TEST(NigoriKeyBagTest, ShouldClone) {
