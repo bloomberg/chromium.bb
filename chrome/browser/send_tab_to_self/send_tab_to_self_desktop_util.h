@@ -25,11 +25,13 @@ class ImageSkia;
 enum class SendTabToSelfClickResult {
   kShowItem = 0,
   kClickItem = 1,
-  kMaxValue = kClickItem,
+  kShowDeviceList = 2,
+  kMaxValue = kShowDeviceList,
 };
 
 namespace send_tab_to_self {
 
+const char kOmniboxIcon[] = "OmniboxIcon";
 const char kContentMenu[] = "ContentMenu";
 const char kLinkMenu[] = "LinkMenu";
 const char kOmniboxMenu[] = "OmniboxMenu";
@@ -49,8 +51,8 @@ gfx::ImageSkia* GetImageSkia();
 const gfx::Image GetImageForNotification();
 
 // Record whether the user click to send a tab or link when send tab to self
-// entry point is shown in the context menu.
-void RecordSendTabToSelfClickResult(std::string context_menu,
+// entry point is shown.
+void RecordSendTabToSelfClickResult(const std::string& entry_point,
                                     SendTabToSelfClickResult state);
 
 }  // namespace send_tab_to_self

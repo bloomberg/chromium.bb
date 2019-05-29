@@ -111,10 +111,10 @@ const gfx::Image GetImageForNotification() {
 
   return gfx::Image();
 }
-void RecordSendTabToSelfClickResult(std::string context_menu,
+void RecordSendTabToSelfClickResult(const std::string& entry_point,
                                     SendTabToSelfClickResult state) {
-  base::UmaHistogramEnumeration(
-      "SendTabToSelf." + context_menu + ".ClickResult", state);
+  base::UmaHistogramEnumeration("SendTabToSelf." + entry_point + ".ClickResult",
+                                state);
 }
 
 }  // namespace send_tab_to_self

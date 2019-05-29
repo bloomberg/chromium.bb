@@ -51100,8 +51100,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SendTabToSelfClickResult">
-  <int value="0" label="SendTabToSelf menu item is shown."/>
-  <int value="1" label="SendTabToSelf menu item is clicked."/>
+  <int value="0" label="SendTabToSelf entry point is shown."/>
+  <int value="1" label="SendTabToSelf target device is clicked."/>
+  <int value="2" label="SendTabToSelf device list is shown."/>
 </enum>
 
 <enum name="SendTabToSelfNotification">

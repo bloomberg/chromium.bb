@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -48,6 +49,10 @@ void SendTabToSelfBubbleController::ShowBubble() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   send_tab_to_self_bubble_view_ =
       browser->window()->ShowSendTabToSelfBubble(web_contents_, this, true);
+  RecordSendTabToSelfClickResult(kOmniboxIcon,
+                                 SendTabToSelfClickResult::kShowDeviceList);
+  UMA_HISTOGRAM_COUNTS_100("SendTabToSelf.OmniboxIcon.DeviceCount",
+                           GetValidDevices().size());
 }
 
 SendTabToSelfBubbleView*
@@ -74,6 +79,8 @@ Profile* SendTabToSelfBubbleController::GetProfile() const {
 void SendTabToSelfBubbleController::OnDeviceSelected(
     const std::string& target_device_name,
     const std::string& target_device_guid) {
+  RecordSendTabToSelfClickResult(kOmniboxIcon,
+                                 SendTabToSelfClickResult::kClickItem);
   CreateNewEntry(web_contents_, target_device_name, target_device_guid);
 }
 
@@ -89,13 +96,12 @@ SendTabToSelfBubbleController::SendTabToSelfBubbleController(
 
 void SendTabToSelfBubbleController::FetchDeviceInfo() {
   valid_devices_.clear();
-  send_tab_to_self::SendTabToSelfSyncService* service =
+  SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile());
   if (!service) {
     return;
   }
-  send_tab_to_self::SendTabToSelfModel* model =
-      service->GetSendTabToSelfModel();
+  SendTabToSelfModel* model = service->GetSendTabToSelfModel();
   if (!model) {
     return;
   }

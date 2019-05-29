@@ -373,7 +373,7 @@ class LocationBarView : public LocationBar,
   void OnKeywordFaviconFetched(const gfx::Image& icon);
 
   // Updates the visibility of the send tab to self icon.
-  void UpdateSendTabToSelfIcon();
+  bool UpdateSendTabToSelfIcon();
 
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser

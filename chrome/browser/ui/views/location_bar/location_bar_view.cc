@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -1013,9 +1014,14 @@ void LocationBarView::UpdateBookmarkStarVisibility() {
   }
 }
 
-inline void LocationBarView::UpdateSendTabToSelfIcon() {
-  this->omnibox_page_action_icon_container_view()->UpdatePageActionIcon(
-      PageActionIconType::kSendTabToSelf);
+inline bool LocationBarView::UpdateSendTabToSelfIcon() {
+  PageActionIconView* icon =
+      this->omnibox_page_action_icon_container_view()->GetPageActionIconView(
+          PageActionIconType::kSendTabToSelf);
+  if (icon) {
+    return icon->Update();
+  }
+  return false;
 }
 
 void LocationBarView::SaveStateToContents(WebContents* contents) {
@@ -1184,7 +1190,10 @@ void LocationBarView::OnOmniboxFocused() {
   // the omnibox is intentional, snapping is better than transitioning here.
   hover_animation_.Reset();
 
-  UpdateSendTabToSelfIcon();
+  if (UpdateSendTabToSelfIcon()) {
+    send_tab_to_self::RecordSendTabToSelfClickResult(
+        send_tab_to_self::kOmniboxIcon, SendTabToSelfClickResult::kShowItem);
+  }
   RefreshBackground();
 }
 
