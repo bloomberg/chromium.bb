@@ -47,21 +47,15 @@ using chromeos::PrinterClass;
 // We only support sending username for named users but just in case.
 const char kUsernamePlaceholder[] = "chronos";
 
-// Store the name used in CUPS, Printer#id in |printer_name|, the description
-// as the system_driverinfo option value, and the Printer#display_name in
-// the |printer_description| field.  This will match how Mac OS X presents
-// printer information.
 PrinterBasicInfo ToBasicInfo(const chromeos::Printer& printer) {
   PrinterBasicInfo basic_info;
 
-  // TODO(skau): Unify Mac with the other platforms for display name
-  // presentation so I can remove this strange code.
-  basic_info.options[kDriverInfoTagName] = printer.description();
   basic_info.options[kCUPSEnterprisePrinter] =
       (printer.source() == chromeos::Printer::SRC_POLICY) ? kValueTrue
                                                           : kValueFalse;
   basic_info.printer_name = printer.id();
-  basic_info.printer_description = printer.display_name();
+  basic_info.display_name = printer.display_name();
+  basic_info.printer_description = printer.description();
   return basic_info;
 }
 

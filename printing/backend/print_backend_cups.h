@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend.h"
+#include "printing/printing_export.h"
 #include "url/gurl.h"
 
 namespace printing {
@@ -19,6 +20,11 @@ class PrintBackendCUPS : public PrintBackend {
   PrintBackendCUPS(const GURL& print_server_url,
                    http_encryption_t encryption,
                    bool blocking);
+
+  // This static function is exposed here for use in the tests.
+  PRINTING_EXPORT static bool PrinterBasicInfoFromCUPS(
+      const cups_dest_t& printer,
+      PrinterBasicInfo* printer_info);
 
  private:
   ~PrintBackendCUPS() override {}

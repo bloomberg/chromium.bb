@@ -347,6 +347,12 @@ bool InitBasicPrinterInfo(HANDLE printer, PrinterBasicInfo* printer_info) {
     return false;
 
   printer_info->printer_name = base::WideToUTF8(info_2.get()->pPrinterName);
+  if (g_get_display_name_func) {
+    printer_info->display_name =
+        g_get_display_name_func(printer_info->printer_name);
+  } else {
+    printer_info->display_name = printer_info->printer_name;
+  }
   if (info_2.get()->pComment) {
     printer_info->printer_description =
         base::WideToUTF8(info_2.get()->pComment);

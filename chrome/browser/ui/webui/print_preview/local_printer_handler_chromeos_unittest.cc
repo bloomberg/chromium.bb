@@ -59,16 +59,20 @@ void RecordGetCapability(std::unique_ptr<base::Value>* capabilities_out,
   capabilities_out->reset(capability.DeepCopy());
 }
 
-Printer CreateTestPrinter(const std::string& id, const std::string& name) {
+Printer CreateTestPrinter(const std::string& id,
+                          const std::string& name,
+                          const std::string& description) {
   Printer printer;
   printer.set_id(id);
   printer.set_display_name(name);
+  printer.set_description(description);
   return printer;
 }
 
 Printer CreateEnterprisePrinter(const std::string& id,
-                                const std::string& name) {
-  Printer printer = CreateTestPrinter(id, name);
+                                const std::string& name,
+                                const std::string& description) {
+  Printer printer = CreateTestPrinter(id, name, description);
   printer.set_source(Printer::SRC_POLICY);
   return printer;
 }
@@ -152,10 +156,12 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
   std::unique_ptr<base::ListValue> printers;
   bool is_done = false;
 
-  Printer saved_printer = CreateTestPrinter("printer1", "saved");
+  Printer saved_printer =
+      CreateTestPrinter("printer1", "saved", "description1");
   Printer enterprise_printer =
-      CreateEnterprisePrinter("printer2", "enterprise");
-  Printer automatic_printer = CreateTestPrinter("printer3", "automatic");
+      CreateEnterprisePrinter("printer2", "enterprise", "description2");
+  Printer automatic_printer =
+      CreateTestPrinter("printer3", "automatic", "description3");
 
   printers_manager_.AddPrinter(saved_printer, PrinterClass::kSaved);
   printers_manager_.AddPrinter(enterprise_printer, PrinterClass::kEnterprise);
@@ -174,31 +180,28 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
       {
         "cupsEnterprisePrinter": false,
         "deviceName": "printer1",
-        "printerDescription": "",
+        "printerDescription": "description1",
         "printerName": "saved",
         "printerOptions": {
-          "cupsEnterprisePrinter": "false",
-          "system_driverinfo": ""
+          "cupsEnterprisePrinter": "false"
         }
       },
       {
         "cupsEnterprisePrinter": true,
         "deviceName": "printer2",
-        "printerDescription": "",
+        "printerDescription": "description2",
         "printerName": "enterprise",
         "printerOptions": {
-          "cupsEnterprisePrinter": "true",
-          "system_driverinfo": ""
+          "cupsEnterprisePrinter": "true"
         }
       },
       {
         "cupsEnterprisePrinter": false,
         "deviceName": "printer3",
-        "printerDescription": "",
+        "printerDescription": "description3",
         "printerName": "automatic",
         "printerOptions": {
-          "cupsEnterprisePrinter": "false",
-          "system_driverinfo": ""
+          "cupsEnterprisePrinter": "false"
         }
       }
     ]
@@ -213,7 +216,8 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
 // Tests that fetching capabilities for an existing installed printer is
 // successful.
 TEST_F(LocalPrinterHandlerChromeosTest, StartGetCapabilityValidPrinter) {
-  Printer saved_printer = CreateTestPrinter("printer1", "saved");
+  Printer saved_printer =
+      CreateTestPrinter("printer1", "saved", "description1");
   printers_manager_.AddPrinter(saved_printer, PrinterClass::kSaved);
   printers_manager_.InstallPrinter("printer1");
 
@@ -238,7 +242,8 @@ TEST_F(LocalPrinterHandlerChromeosTest, StartGetCapabilityValidPrinter) {
 // Test that printers which have not yet been installed are installed with
 // SetUpPrinter before their capabilities are fetched.
 TEST_F(LocalPrinterHandlerChromeosTest, StartGetCapabilityPrinterNotInstalled) {
-  Printer discovered_printer = CreateTestPrinter("printer1", "discovered");
+  Printer discovered_printer =
+      CreateTestPrinter("printer1", "discovered", "description1");
   // NOTE: The printer |discovered_printer| is not installed using
   // InstallPrinter.
   printers_manager_.AddPrinter(discovered_printer, PrinterClass::kDiscovered);
