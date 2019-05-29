@@ -69,6 +69,13 @@ void FakeKerberosClient::RemoveAccount(
   PostResponse(std::move(callback), error);
 }
 
+void FakeKerberosClient::ClearAccounts(
+    const kerberos::ClearAccountsRequest& request,
+    ClearAccountsCallback callback) {
+  accounts_.clear();
+  PostResponse(std::move(callback), kerberos::ERROR_NONE);
+}
+
 void FakeKerberosClient::ListAccounts(
     const kerberos::ListAccountsRequest& request,
     ListAccountsCallback callback) {
