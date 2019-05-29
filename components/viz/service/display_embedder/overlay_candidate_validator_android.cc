@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
 
 #include <memory>
 
@@ -12,13 +12,11 @@
 
 namespace viz {
 
-CompositorOverlayCandidateValidatorAndroid::
-    CompositorOverlayCandidateValidatorAndroid() {}
+OverlayCandidateValidatorAndroid::OverlayCandidateValidatorAndroid() {}
 
-CompositorOverlayCandidateValidatorAndroid::
-    ~CompositorOverlayCandidateValidatorAndroid() {}
+OverlayCandidateValidatorAndroid::~OverlayCandidateValidatorAndroid() {}
 
-void CompositorOverlayCandidateValidatorAndroid::GetStrategies(
+void OverlayCandidateValidatorAndroid::GetStrategies(
     OverlayProcessor::StrategyList* strategies) {
   // For Android, we do not have the ability to skip an overlay, since the
   // texture is already in a SurfaceView.  Ideally, we would honor a 'force
@@ -31,7 +29,7 @@ void CompositorOverlayCandidateValidatorAndroid::GetStrategies(
       this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
 }
 
-void CompositorOverlayCandidateValidatorAndroid::CheckOverlaySupport(
+void OverlayCandidateValidatorAndroid::CheckOverlaySupport(
     OverlayCandidateList* candidates) {
   // There should only be at most a single overlay candidate: the video quad.
   // There's no check that the presented candidate is really a video frame for
@@ -59,16 +57,15 @@ void CompositorOverlayCandidateValidatorAndroid::CheckOverlaySupport(
   }
 }
 
-bool CompositorOverlayCandidateValidatorAndroid::AllowCALayerOverlays() const {
+bool OverlayCandidateValidatorAndroid::AllowCALayerOverlays() const {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorAndroid::AllowDCLayerOverlays() const {
+bool OverlayCandidateValidatorAndroid::AllowDCLayerOverlays() const {
   return false;
 }
 
-bool CompositorOverlayCandidateValidatorAndroid::
-    NeedsSurfaceOccludingDamageRect() const {
+bool OverlayCandidateValidatorAndroid::NeedsSurfaceOccludingDamageRect() const {
   return false;
 }
 

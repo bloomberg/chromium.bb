@@ -4,7 +4,7 @@
 
 #include "components/viz/service/display_embedder/gl_output_surface_android.h"
 
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
 
 namespace viz {
 
@@ -14,7 +14,7 @@ GLOutputSurfaceAndroid::GLOutputSurfaceAndroid(
     : GLOutputSurface(context_provider) {
   if (allow_overlays) {
     overlay_candidate_validator_ =
-        std::make_unique<CompositorOverlayCandidateValidatorAndroid>();
+        std::make_unique<OverlayCandidateValidatorAndroid>();
   }
 }
 

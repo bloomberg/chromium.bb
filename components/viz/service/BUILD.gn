@@ -250,12 +250,12 @@ viz_component("service") {
 
   if (is_android) {
     sources += [
-      "display_embedder/compositor_overlay_candidate_validator_android.cc",
-      "display_embedder/compositor_overlay_candidate_validator_android.h",
       "display_embedder/gl_output_surface_android.cc",
       "display_embedder/gl_output_surface_android.h",
       "display_embedder/gl_output_surface_buffer_queue_android.cc",
       "display_embedder/gl_output_surface_buffer_queue_android.h",
+      "display_embedder/overlay_candidate_validator_android.cc",
+      "display_embedder/overlay_candidate_validator_android.h",
       "display_embedder/overlay_candidate_validator_surface_control.cc",
       "display_embedder/overlay_candidate_validator_surface_control.h",
       "frame_sinks/external_begin_frame_source_android.cc",

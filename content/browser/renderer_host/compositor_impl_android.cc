@@ -57,7 +57,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
+#include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -428,7 +428,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
       : viz::OutputSurface(std::move(context_provider)),
         swap_buffers_callback_(std::move(swap_buffers_callback)),
         overlay_candidate_validator_(
-            new viz::CompositorOverlayCandidateValidatorAndroid()),
+            new viz::OverlayCandidateValidatorAndroid()),
         weak_ptr_factory_(this) {
     capabilities_.max_frames_pending = kMaxDisplaySwapBuffers;
   }

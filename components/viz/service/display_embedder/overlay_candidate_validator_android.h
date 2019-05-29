@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
 
 #include "base/macros.h"
 #include "components/viz/service/display/overlay_candidate_validator.h"
@@ -19,11 +19,11 @@ namespace viz {
 // the reasons that only fullscreen is supported: we have to be sure that
 // nothing will cause the overlay to be rejected, because there's no fallback to
 // gl compositing.
-class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorAndroid
+class VIZ_SERVICE_EXPORT OverlayCandidateValidatorAndroid
     : public OverlayCandidateValidator {
  public:
-  CompositorOverlayCandidateValidatorAndroid();
-  ~CompositorOverlayCandidateValidatorAndroid() override;
+  OverlayCandidateValidatorAndroid();
+  ~OverlayCandidateValidatorAndroid() override;
 
   // OverlayCandidateValidator implementation.
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
@@ -33,9 +33,9 @@ class VIZ_SERVICE_EXPORT CompositorOverlayCandidateValidatorAndroid
   bool NeedsSurfaceOccludingDamageRect() const override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CompositorOverlayCandidateValidatorAndroid);
+  DISALLOW_COPY_AND_ASSIGN(OverlayCandidateValidatorAndroid);
 };
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_COMPOSITOR_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OVERLAY_CANDIDATE_VALIDATOR_ANDROID_H_
