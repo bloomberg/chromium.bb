@@ -80,6 +80,10 @@ class SearchController {
   // The query associated with the most recent search.
   base::string16 last_query_;
 
+  // The ID of the most recently launched app. This is used for app list launch
+  // recording.
+  std::string last_launched_app_id_;
+
   std::unique_ptr<Mixer> mixer_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;

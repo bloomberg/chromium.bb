@@ -38,6 +38,8 @@ namespace {
 constexpr char kLogDisplayTypeClickedResultZeroState[] =
     "Apps.LogDisplayTypeClickedResultZeroState";
 
+// TODO(931149): Move the string manipulation utilities into a helper class.
+
 // Normalizes training targets by removing any scheme prefix and trailing slash:
 // "arc://[id]/" to "[id]". This is necessary because apps launched from
 // different parts of the launcher have differently formatted IDs.
@@ -49,6 +51,16 @@ std::string NormalizeId(const std::string& id) {
     result.erase(0, delimiter_index + 3);
   if (!result.empty() && result.back() == '/')
     result.pop_back();
+  return result;
+}
+
+// Remove the Arc app shortcut label from an app ID, if it exists, so that
+// "[app]/[label]" becomes "[app]".
+std::string RemoveAppShortcutLabel(const std::string& id) {
+  std::string result(id);
+  std::size_t delimiter_index = result.find_last_of('/');
+  if (delimiter_index != std::string::npos)
+    result.erase(delimiter_index);
   return result;
 }
 
@@ -189,10 +201,18 @@ void SearchController::Train(const std::string& id, RankingItemType type) {
       launch_type = ChromeOSAppListLaunchEventProto::RESULTS_LIST;
     }
 
-    // TODO(951287): Record the last-used domain and app.
+    // TODO(951287): Record the last-used domain.
     AppListLaunchRecorder::GetInstance()->Record(
         {launch_type, NormalizeId(id), base::UTF16ToUTF8(last_query_),
-         std::string(), std::string()});
+         std::string(), last_launched_app_id_});
+
+    // Only record the last launched app if the hashed logging feature flag is
+    // enabled, because it is only used by hashed logging.
+    if (type == RankingItemType::kApp) {
+      last_launched_app_id_ = NormalizeId(id);
+    } else if (type == RankingItemType::kArcAppShortcut) {
+      last_launched_app_id_ = RemoveAppShortcutLabel(NormalizeId(id));
+    }
   }
 
   for (const auto& provider : providers_)
