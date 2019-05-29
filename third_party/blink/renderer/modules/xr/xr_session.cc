@@ -811,9 +811,14 @@ void XRSession::OnInputStateChange(
         event_type_names::kInputsourceschange, this, added, removed));
   }
 
-  // Now that we've fired the input sources change event (if needed), update and
-  // fire events for any select state changes.
+  // Now that we've fired the input sources change event (if needed), update
+  // and fire events for any select state changes.
   for (const auto& input_state : input_states) {
+    // If anything during the process of updating the select state caused us
+    // to end our session, we should stop processing select state updates.
+    if (ended_)
+      break;
+
     XRInputSource* input_source = input_sources_.at(input_state->source_id);
     DCHECK(input_source);
     UpdateSelectState(input_source, input_state);
@@ -821,8 +826,8 @@ void XRSession::OnInputStateChange(
 }
 
 void XRSession::OnSelectStart(XRInputSource* input_source) {
-  // Discard duplicate events
-  if (input_source->primaryInputPressed())
+  // Discard duplicate events, or events after the session has ended.
+  if (input_source->primaryInputPressed() || ended_)
     return;
 
   input_source->setPrimaryInputPressed(true);
@@ -840,8 +845,8 @@ void XRSession::OnSelectStart(XRInputSource* input_source) {
 }
 
 void XRSession::OnSelectEnd(XRInputSource* input_source) {
-  // Discard duplicate events
-  if (!input_source->primaryInputPressed())
+  // Discard duplicate events, or events after the session has ended.
+  if (!input_source->primaryInputPressed() || ended_)
     return;
 
   input_source->setPrimaryInputPressed(false);
@@ -872,7 +877,9 @@ void XRSession::OnSelect(XRInputSource* input_source) {
     OnSelectStart(input_source);
   }
 
-  if (!input_source->selectionCancelled()) {
+  // If SelectStart caused the session to end, we shouldn't try to fire the
+  // select event.
+  if (!input_source->selectionCancelled() && !ended_) {
     XRInputSourceEvent* event =
         CreateInputSourceEvent(event_type_names::kSelect, input_source);
     DispatchEvent(*event);

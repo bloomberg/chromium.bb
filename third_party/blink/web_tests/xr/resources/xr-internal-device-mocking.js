@@ -140,6 +140,10 @@ class MockXRInputSource {
     this.primary_input_pressed_ = value;
   }
 
+  set primaryInputClicked(value) {
+    this.primary_input_clicked_ = value;
+  }
+
   get grip() {
     if (this.grip_) {
       return this.grip_.matrix;
