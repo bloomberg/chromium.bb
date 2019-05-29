@@ -67,6 +67,7 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_REMOVE_FAILED = 32;
   CRYPTOHOME_ERROR_INVALID_ARGUMENT = 33;
   CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_GET_FAILED = 34;
+  CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_SET_FAILED = 35;
 }
 
 // This is used by MountRequest to store details about the mount to create
