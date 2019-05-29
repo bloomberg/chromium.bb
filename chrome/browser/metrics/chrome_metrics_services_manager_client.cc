@@ -174,8 +174,8 @@ void ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
   static const char kTrialName[] = "MetricsAndCrashSampling";
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
-          kTrialName, 1000, "Default", base::FieldTrialList::kNoExpirationYear,
-          1, 1, base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
+          kTrialName, 1000, "Default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+          nullptr));
 
   // On all channels except stable, we sample out at a minimal rate to ensure
   // the code paths are exercised in the wild before hitting stable.

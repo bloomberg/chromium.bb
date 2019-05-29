@@ -43,7 +43,7 @@ namespace {
 // Default group name used by several tests.
 const char kDefaultGroupName[] = "DefaultGroup";
 
-// Call FieldTrialList::FactoryGetFieldTrial() with a future expiry date.
+// Call FieldTrialList::FactoryGetFieldTrial().
 scoped_refptr<FieldTrial> CreateFieldTrial(
     const std::string& trial_name,
     int total_probability,
@@ -51,15 +51,7 @@ scoped_refptr<FieldTrial> CreateFieldTrial(
     int* default_group_number) {
   return FieldTrialList::FactoryGetFieldTrial(
       trial_name, total_probability, default_group_name,
-      FieldTrialList::kNoExpirationYear, 1, 1, FieldTrial::SESSION_RANDOMIZED,
-      default_group_number);
-}
-
-int OneYearBeforeBuildTime() {
-  Time one_year_before_build_time = GetBuildTime() - TimeDelta::FromDays(365);
-  Time::Exploded exploded;
-  one_year_before_build_time.LocalExplode(&exploded);
-  return exploded.year;
+      FieldTrial::SESSION_RANDOMIZED, default_group_number);
 }
 
 // FieldTrialList::Observer implementation for testing.
@@ -290,12 +282,12 @@ TEST_F(FieldTrialTest, DisableProbability) {
   const std::string loser = "Loser";
   const std::string name = "Trial";
 
-  // Create a field trail that has expired.
+  // Create a field trail that is disabled.
   int default_group_number = -1;
   FieldTrial* trial = FieldTrialList::FactoryGetFieldTrial(
-      name, 1000000000, default_group_name, OneYearBeforeBuildTime(), 1, 1,
-      FieldTrial::SESSION_RANDOMIZED,
+      name, 1000000000, default_group_name, FieldTrial::SESSION_RANDOMIZED,
       &default_group_number);
+  trial->Disable();
   trial->AppendGroup(loser, 999999999);  // 99.9999999% chance of being chosen.
 
   // Because trial has expired, we should always be in the default group.
@@ -506,14 +498,14 @@ TEST_F(FieldTrialTest, SaveAll) {
   EXPECT_EQ("Some name/Default some name/*trial2/Winner/*xxx/yyyy/zzz/default/",
             save_string);
 
-  // Create expired study.
+  // Create disabled study.
   int default_group_number = -1;
-  scoped_refptr<FieldTrial> expired_trial =
+  scoped_refptr<FieldTrial> disabled_trial =
       FieldTrialList::FactoryGetFieldTrial(
-          "Expired trial name", 1000000000, "Default group",
-          OneYearBeforeBuildTime(), 1, 1, FieldTrial::SESSION_RANDOMIZED,
-          &default_group_number);
-  expired_trial->AppendGroup("Expired trial group name", 999999999);
+          "Disabled trial name", 1000000000, "Default group",
+          FieldTrial::SESSION_RANDOMIZED, &default_group_number);
+  disabled_trial->AppendGroup("Disabled trial group name", 999999999);
+  disabled_trial->Disable();
 
   save_string.clear();
   FieldTrialList::AllStatesToString(&save_string, false);
@@ -522,7 +514,7 @@ TEST_F(FieldTrialTest, SaveAll) {
   save_string.clear();
   FieldTrialList::AllStatesToString(&save_string, true);
   EXPECT_EQ(
-      "Expired trial name/Default group/"
+      "Disabled trial name/Default group/"
       "Some name/Default some name/*trial2/Winner/*xxx/yyyy/zzz/default/",
       save_string);
 }
@@ -1053,8 +1045,8 @@ TEST_F(FieldTrialTest, DisabledTrialNotActive) {
   EXPECT_TRUE(states.empty());
 }
 
-TEST_F(FieldTrialTest, ExpirationYearNotExpired) {
-  const char kTrialName[] = "NotExpired";
+TEST_F(FieldTrialTest, NotDisabled) {
+  const char kTrialName[] = "NotDisabled";
   const char kGroupName[] = "Group2";
   const int kProbability = 100;
   ASSERT_FALSE(FieldTrialList::TrialExists(kTrialName));
@@ -1178,7 +1170,6 @@ TEST(FieldTrialDeathTest, OneTimeRandomizedTrialWithoutFieldTrialList) {
   EXPECT_DEATH_IF_SUPPORTED(
       FieldTrialList::FactoryGetFieldTrial(
           "OneTimeRandomizedTrialWithoutFieldTrialList", 100, kDefaultGroupName,
-          FieldTrialList::kNoExpirationYear, 1, 1,
           FieldTrial::ONE_TIME_RANDOMIZED, nullptr),
       "");
 }

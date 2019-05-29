@@ -198,7 +198,6 @@ void UkmRecorderImpl::CreateFallbackSamplingTrial(
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           kUkmSamplingRateFeature.name, 100, sampled_group,
-          base::FieldTrialList::kNoExpirationYear, 1, 1,
           base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
 
   // Everybody (100%) should have a sampling configuration.

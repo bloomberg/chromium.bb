@@ -93,8 +93,7 @@ void ActivateHideShortcutsOnNtpFieldTrial(base::FeatureList* feature_list,
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           config.trial_name(), kTotalProbability, kDefaultGroup,
-          config.expire_year(), config.expire_month(),
-          config.expire_day_of_month(), base::FieldTrial::ONE_TIME_RANDOMIZED,
+          base::FieldTrial::ONE_TIME_RANDOMIZED,
           /*default_group_number=*/nullptr));
   for (const auto& group : config.groups()) {
     variations::AssociateGoogleVariationID(variations::GOOGLE_WEB_PROPERTIES,

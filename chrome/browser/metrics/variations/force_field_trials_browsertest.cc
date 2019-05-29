@@ -50,8 +50,8 @@ class ForceFieldTrialsBrowserTest : public InProcessBrowserTest,
   // Creates a 50/50 trial with ONE_TIME_RANDOMIZED consistency.
   void CreateFiftyPercentTrial(const std::string& trial_name) {
     auto* trial = base::FieldTrialList::FactoryGetFieldTrial(
-        trial_name, 100, "Default", base::FieldTrialList::kNoExpirationYear, 1,
-        1, base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr);
+        trial_name, 100, "Default", base::FieldTrial::ONE_TIME_RANDOMIZED,
+        nullptr);
     trial->AppendGroup(kEnabledGroupName, 50);
     trial->AppendGroup(kDisabledGroupName, 50);
   }

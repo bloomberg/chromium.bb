@@ -33,6 +33,7 @@
 #include "build/build_config.h"
 #include "sandbox/constants.h"
 #include "sandbox/linux/services/credentials.h"
+#include "sandbox/linux/services/libc_interceptor.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/resource_limits.h"
@@ -381,6 +382,8 @@ bool SandboxLinux::InitializeSandbox(SandboxType sandbox_type,
   CHECK(!HasOpenDirectories())
       << "InitializeSandbox() called after unexpected directories have been "
       << "opened. This breaks the security of the setuid sandbox.";
+
+  sandbox::InitLibcLocaltimeFunctions();
 
   // Attempt to limit the future size of the address space of the process.
   int error = 0;

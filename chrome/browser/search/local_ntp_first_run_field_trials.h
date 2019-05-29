@@ -51,16 +51,10 @@ class LocalNtpFirstRunFieldTrialConfig {
   }
   // Accessors for this FieldTrial.
   const std::string& trial_name() { return trial_name_; }
-  int expire_year() { return expire_year_; }
-  int expire_month() { return expire_month_; }
-  int expire_day_of_month() { return expire_day_of_month_; }
 
  private:
   std::string trial_name_;
   std::vector<LocalNtpFirstRunFieldTrialGroup> groups_;
-  int expire_year_;
-  int expire_month_;
-  int expire_day_of_month_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalNtpFirstRunFieldTrialConfig);
 };
