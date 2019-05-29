@@ -124,33 +124,6 @@ WARN_UNUSED_RESULT bool ParseVersion(const der::Input& in,
   return !parser.HasMore();
 }
 
-// Consumes a "Time" value (as defined by RFC 5280) from |parser|. On success
-// writes the result to |*out| and returns true. On failure no guarantees are
-// made about the state of |parser|.
-//
-// From RFC 5280:
-//
-//     Time ::= CHOICE {
-//          utcTime        UTCTime,
-//          generalTime    GeneralizedTime }
-WARN_UNUSED_RESULT bool ReadTime(der::Parser* parser,
-                                 der::GeneralizedTime* out) {
-  der::Input value;
-  der::Tag tag;
-
-  if (!parser->ReadTagAndValue(&tag, &value))
-    return false;
-
-  if (tag == der::kUtcTime)
-    return der::ParseUTCTime(value, out);
-
-  if (tag == der::kGeneralizedTime)
-    return der::ParseGeneralizedTime(value, out);
-
-  // Unrecognized tag.
-  return false;
-}
-
 // Parses a DER-encoded "Validity" as specified by RFC 5280. Returns true on
 // success and sets the results in |not_before| and |not_after|:
 //
@@ -170,11 +143,11 @@ bool ParseValidity(const der::Input& validity_tlv,
     return false;
 
   //          notBefore      Time,
-  if (!ReadTime(&validity_parser, not_before))
+  if (!ReadUTCOrGeneralizedTime(&validity_parser, not_before))
     return false;
 
   //          notAfter       Time }
-  if (!ReadTime(&validity_parser, not_after))
+  if (!ReadUTCOrGeneralizedTime(&validity_parser, not_after))
     return false;
 
   // By definition the input was a single Validity sequence, so there shouldn't
@@ -351,6 +324,23 @@ bool VerifySerialNumber(const der::Input& value,
   }
 
   return true;
+}
+
+bool ReadUTCOrGeneralizedTime(der::Parser* parser, der::GeneralizedTime* out) {
+  der::Input value;
+  der::Tag tag;
+
+  if (!parser->ReadTagAndValue(&tag, &value))
+    return false;
+
+  if (tag == der::kUtcTime)
+    return der::ParseUTCTime(value, out);
+
+  if (tag == der::kGeneralizedTime)
+    return der::ParseGeneralizedTime(value, out);
+
+  // Unrecognized tag.
+  return false;
 }
 
 bool ParseCertificate(const der::Input& certificate_tlv,
