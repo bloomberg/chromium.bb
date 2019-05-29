@@ -558,6 +558,7 @@ struct drv_array *drv_query_kms(struct driver *drv)
 		goto out;
 
 	for (i = 0; i < resources->count_planes; i++) {
+		plane_type = UINT64_MAX;
 		plane = drmModeGetPlane(drv->fd, resources->planes[i]);
 		if (!plane)
 			goto out;
