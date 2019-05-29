@@ -541,13 +541,13 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // IAccessible2_3 methods.
   //
 
-  IFACEMETHODIMP get_selectionRanges(IA2Range** ranges, LONG* nRanges);
+  IFACEMETHODIMP get_selectionRanges(IA2Range** ranges, LONG* nRanges) override;
 
   //
   // IAccessible2_4 methods.
   //
 
-  IFACEMETHODIMP setSelectionRanges(LONG nRanges, IA2Range* ranges);
+  IFACEMETHODIMP setSelectionRanges(LONG nRanges, IA2Range* ranges) override;
 
   //
   // IAccessibleEx methods.
