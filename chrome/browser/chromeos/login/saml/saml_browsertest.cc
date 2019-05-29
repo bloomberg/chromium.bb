@@ -401,7 +401,8 @@ class SamlTest : public OobeBaseTest {
         "      $('gaia-signin').authenticator_.removeEventListener("
         "          'authFlowChange', f);"
         "      window.domAutomationController.send("
-        "          $('gaia-signin').isSAML() ? 'SamlLoaded' : 'GaiaLoaded');"
+        "          $('gaia-signin').isSamlForTesting() ?"
+        "              'SamlLoaded' : 'GaiaLoaded');"
         "    });");
   }
 
@@ -1373,7 +1374,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
   WaitForSigninScreen();
 
   ShowSAMLInterstitial();
-  test::OobeJS().ExpectHiddenPath({"gaia-signin", "signin-frame"});
+  test::OobeJS().ExpectHiddenPath({"gaia-signin", "signin-frame-dialog"});
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "offline-gaia"});
   test::OobeJS().ExpectVisiblePath({"gaia-signin", "saml-interstitial"});
 
@@ -1381,8 +1382,9 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
   ClickChangeAccountOnSAMLInterstitialPage();
 
   // Expects that only the gaia signin frame is visible and shown.
-  test::OobeJS().ExpectHasClass("show", {"gaia-signin", "signin-frame"});
-  test::OobeJS().ExpectVisiblePath({"gaia-signin", "signin-frame"});
+  test::OobeJS().ExpectVisiblePath({"gaia-signin", "signin-frame-dialog"});
+  test::OobeJS().ExpectHasClass("non-transparent",
+                                {"gaia-signin", "signin-frame-container"});
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "offline-gaia"});
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "saml-interstitial"});
 }

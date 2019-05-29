@@ -65,7 +65,44 @@ Polymer({
     'invalidateAd',
   ],
 
-  properties: {},
+  properties: {
+    /**
+     * Current mode of this screen.
+     * @private
+     */
+    screenMode_: {
+      type: Number,
+      value: ScreenMode.DEFAULT,
+      observer: 'screenModeChanged_',
+    },
+
+    /**
+     * Whether the loading UI is shown.
+     * @private
+     */
+    isLoadingUiShown_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Whether the navigation controls are enabled.
+     * @private
+     */
+    navigationEnabled_: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
+     * Whether the authenticator is currently in the |SAML| AuthFlow.
+     * @private
+     */
+    isSaml_: {
+      type: Boolean,
+      value: false,
+    },
+  },
 
   /**
    * Saved authenticator load params.
@@ -73,13 +110,6 @@ Polymer({
    * @private
    */
   authenticatorParams_: null,
-
-  /**
-   * Current mode of this screen.
-   * @type {ScreenMode}
-   * @private
-   */
-  screenMode_: ScreenMode.DEFAULT,
 
   /**
    * Email of the user, which is logging in using offline mode.
@@ -251,7 +281,7 @@ Polymer({
     // Register handlers for the saml interstitial page events.
     this.$['saml-interstitial'].addEventListener(
         'samlPageNextClicked', function() {
-          this.setScreenMode_(ScreenMode.DEFAULT);
+          this.screenMode_ = ScreenMode.DEFAULT;
           this.loadAuthenticator_(true /* doSamlRedirect */);
         }.bind(this));
     this.$['saml-interstitial'].addEventListener(
@@ -259,7 +289,7 @@ Polymer({
           // The user requests to change the account. We must clear the email
           // field of the auth params.
           this.authenticatorParams_.email = '';
-          this.setScreenMode_(ScreenMode.DEFAULT);
+          this.screenMode_ = ScreenMode.DEFAULT;
           this.loadAuthenticator_(false /* doSamlRedirect */);
         }.bind(this));
 
@@ -290,7 +320,7 @@ Polymer({
    * @private
    */
   isAtTheBeginning_: function() {
-    return !this.canGoBack_() && !this.isSAML() &&
+    return !this.canGoBack_() && !this.isSaml_ &&
         !this.classList.contains('whitelist-error') && !this.authCompleted_;
   },
 
@@ -314,7 +344,7 @@ Polymer({
   canGoBack_: function() {
     const isWhitelistError = this.classList.contains('whitelist-error');
     return this.lastBackMessageValue_ && !isWhitelistError &&
-        !this.authCompleted_ && !this.isLoadingUiShown_() && !this.isSAML();
+        !this.authCompleted_ && !this.isLoadingUiShown_ && !this.isSaml_;
   },
 
   /**
@@ -337,7 +367,7 @@ Polymer({
    * @private
    */
   loadAuthenticator_: function(doSamlRedirect) {
-    this.showLoadingUi_(true);
+    this.isLoadingUiShown_ = true;
     this.startLoadingTimer_();
 
     this.authenticatorParams_.doSamlRedirect = doSamlRedirect;
@@ -355,45 +385,79 @@ Polymer({
   },
 
   /**
-   * Sets the current screen mode and updates the visible elements accordingly.
-   * @param {ScreenMode} value The screen mode.
+   * Observer that is called when the |screenMode_| property gets changed.
+   * @param {number} newValue
+   * @param {number} oldValue
    * @private
    */
-  setScreenMode_: function(value) {
-    this.screenMode_ = value;
-    switch (this.screenMode_) {
-      case ScreenMode.DEFAULT:
-        this.$['signin-frame-dialog'].hidden = false;
-        this.getSigninFrame_().hidden = false;
-        this.$['offline-gaia'].hidden = true;
-        this.$['saml-interstitial'].hidden = true;
-        this.$['offline-ad-auth'].hidden = true;
-        break;
-      case ScreenMode.OFFLINE:
-        this.$['signin-frame-dialog'].hidden = true;
-        this.getSigninFrame_().hidden = true;
-        this.$['offline-gaia'].hidden = false;
-        this.$['saml-interstitial'].hidden = true;
-        this.$['offline-ad-auth'].hidden = true;
-        break;
-      case ScreenMode.AD_AUTH:
-        this.$['signin-frame-dialog'].hidden = true;
-        this.getSigninFrame_().hidden = true;
-        this.$['offline-gaia'].hidden = true;
-        this.$['saml-interstitial'].hidden = true;
-        this.$['offline-ad-auth'].hidden = false;
-        break;
-      case ScreenMode.SAML_INTERSTITIAL:
-        this.$['signin-frame-dialog'].hidden = true;
-        this.getSigninFrame_().hidden = true;
-        this.$['offline-gaia'].hidden = true;
-        this.$['saml-interstitial'].hidden = false;
-        this.$['offline-ad-auth'].hidden = true;
-        break;
+  screenModeChanged_: function(newValue, oldValue) {
+    if (oldValue === undefined) {
+      // Ignore the first call, triggered by the assignment of the initial
+      // value.
+      return;
     }
     this.updateSigninFrameContainers_();
     chrome.send('updateOfflineLogin', [this.isOffline_()]);
     this.updateGuestButtonVisibility_();
+  },
+
+  /**
+   * Whether the signin-frame-dialog element should be visible.
+   * @param {number} screenMode
+   * @return {boolean}
+   * @private
+   */
+  isSigninFrameDialogVisible_: function(screenMode) {
+    // See the comment in getSigninFrameContainerClass_() for the explanation on
+    // why our element shouldn't be hidden during loading.
+    return screenMode == ScreenMode.DEFAULT;
+  },
+
+  /**
+   * Calculates the dynamically updatable classes for the signin-frame-container
+   * element.
+   * @param {boolean} isLoadingUiShown
+   * @return {string}
+   * @private
+   */
+  getSigninFrameContainerClass_: function(isLoadingUiShown) {
+    // Use the CSS class in order to make the signin-frame webview invisible
+    // (completely transparent) during loading, since setting the "hidden"
+    // attribute would affect its loading events.
+    return isLoadingUiShown ? 'transparent' : 'non-transparent';
+  },
+
+  /**
+   * Whether the offline-gaia element should be visible.
+   * @param {number} screenMode
+   * @param {boolean} isLoadingUiShown
+   * @return {boolean}
+   * @private
+   */
+  isOfflineGaiaVisible_: function(screenMode, isLoadingUiShown) {
+    return screenMode == ScreenMode.OFFLINE && !isLoadingUiShown;
+  },
+
+  /**
+   * Whether the saml-interstitial element should be visible.
+   * @param {number} screenMode
+   * @param {boolean} isLoadingUiShown
+   * @return {boolean}
+   * @private
+   */
+  isSamlInterstitialVisible_: function(screenMode, isLoadingUiShown) {
+    return screenMode == ScreenMode.SAML_INTERSTITIAL && !isLoadingUiShown;
+  },
+
+  /**
+   * Whether the offline-ad-auth element should be visible.
+   * @param {number} screenMode
+   * @param {boolean} isLoadingUiShown
+   * @return {boolean}
+   * @private
+   */
+  isOfflineAdAuthVisible_: function(screenMode, isLoadingUiShown) {
+    return screenMode == ScreenMode.AD_AUTH && !isLoadingUiShown;
   },
 
   /**
@@ -469,35 +533,6 @@ Polymer({
   },
 
   /**
-   * Returns whether the loading UI is currently displayed.
-   * @return {boolean}
-   * @private
-   */
-  isLoadingUiShown_() {
-    return !this.$['gaia-loading'].hidden;
-  },
-
-  /**
-   * Shows/hides loading UI.
-   * @param {boolean} show True to show loading UI.
-   * @private
-   */
-  showLoadingUi_: function(show) {
-    if (show == this.isLoadingUiShown_())
-      return;
-    this.$['gaia-loading'].hidden = !show;
-
-    // Only set hidden for offline-gaia or saml-interstitial and not set it on
-    // the 'sign-frame' webview element. Setting it on webview not only hides
-    // but also affects its loading events.
-    if (this.screenMode_ != ScreenMode.DEFAULT)
-      this.getActiveFrame_().hidden = show;
-    this.getActiveFrame_().classList.toggle('show', !show);
-    this.classList.toggle('loading', show);
-    this.updateGuestButtonVisibility_();
-  },
-
-  /**
    * Handler for Gaia loading timeout.
    * @private
    */
@@ -569,8 +604,8 @@ Polymer({
         behavior.onBeforeShow.call(this);
     });
 
-    this.setScreenMode_(ScreenMode.DEFAULT);
-    this.showLoadingUi_(true);
+    this.screenMode_ = ScreenMode.DEFAULT;
+    this.isLoadingUiShown_ = true;
     chrome.send('loginUIStateChanged', ['gaia-signin', true]);
     Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
 
@@ -580,23 +615,13 @@ Polymer({
     });
 
     // Re-enable navigation in case it was disabled before refresh.
-    this.enableNavigation_(true);
+    this.navigationEnabled_ = true;
 
     this.lastBackMessageValue_ = false;
     this.updateGuestButtonVisibility_();
 
     this.$['offline-ad-auth'].onBeforeShow();
     this.$['signin-frame-dialog'].onBeforeShow();
-  },
-
-  /**
-   * Sets whether the navigation controls are visible and enabled.
-   * @param {boolean} value
-   * @private
-   */
-  enableNavigation_: function(value) {
-    this.$['gaia-screen-buttons-overlay'].hidden = value;
-    this.$['signin-back-button'].disabled = !value;
   },
 
   /**
@@ -633,7 +658,7 @@ Polymer({
 
   /** Event handler that is invoked after the screen is shown. */
   onAfterShow: function() {
-    if (!this.isLoadingUiShown_())
+    if (!this.isLoadingUiShown_)
       this.focusActiveFrame_();
   },
 
@@ -707,13 +732,13 @@ Polymer({
     this.setSigninFramePartition_(data.webviewPartitionName);
 
     // This triggers updateSigninFrameContainers_()
-    this.setScreenMode_(data.screenMode);
+    this.screenMode_ = data.screenMode;
     this.email_ = '';
     this.authCompleted_ = false;
     this.lastBackMessageValue_ = false;
 
     // Reset SAML
-    this.$['saml-notice-container'].hidden = true;
+    this.isSaml_ = false;
     this.samlPasswordConfirmAttempt_ = 0;
 
     this.updateSigninFrameContainers_();
@@ -750,7 +775,7 @@ Polymer({
 
       case ScreenMode.SAML_INTERSTITIAL:
         this.$['saml-interstitial'].domain = data.enterpriseDisplayDomain;
-        this.showLoadingUi_(false);
+        this.isLoadingUiShown_ = false;
         // This event is for the browser tests.
         this.samlInterstitialPageReady = true;
         this.$['saml-interstitial'].fire('samlInterstitialPageReady');
@@ -784,8 +809,8 @@ Polymer({
    * Whether the current auth flow is SAML.
    * @return {boolean}
    */
-  isSAML: function() {
-    return this.authenticator_.authFlow == cr.login.Authenticator.AuthFlow.SAML;
+  isSamlForTesting: function() {
+    return this.isSaml_;
   },
 
   /**
@@ -844,10 +869,10 @@ Polymer({
    * @private
    */
   onAuthFlowChange_: function() {
-    const isSaml = this.isSAML();
+    this.isSaml_ =
+        this.authenticator_.authFlow == cr.login.Authenticator.AuthFlow.SAML;
 
-    this.$['saml-notice-container'].hidden = !isSaml;
-    this.classList.toggle('saml', isSaml);
+    this.classList.toggle('saml', this.isSaml_);
 
     if (Oobe.getInstance().currentScreen.id == 'gaia-signin') {
       Oobe.getInstance().updateScreenSize(this);
@@ -865,7 +890,7 @@ Polymer({
     this.showViewProcessed_ = false;
     this.startLoadAnimationGuardTimer_();
     this.clearLoadingTimer_();
-    this.showLoadingUi_(false);
+    this.isLoadingUiShown_ = false;
 
     if (!this.$['offline-gaia'].hidden)
       this.$['offline-gaia'].focus();
@@ -876,7 +901,7 @@ Polymer({
    * @private
    */
   onDialogShown_: function() {
-    this.enableNavigation_(false);
+    this.navigationEnabled_ = false;
   },
 
   /**
@@ -884,7 +909,7 @@ Polymer({
    * @private
    */
   onDialogHidden_: function() {
-    this.enableNavigation_(true);
+    this.navigationEnabled_ = true;
   },
 
   /**
@@ -937,7 +962,6 @@ Polymer({
 
     this.showViewProcessed_ = true;
     this.clearLoadAnimationGuardTimer_();
-    this.getActiveFrame_().classList.toggle('show', true);
     this.onLoginUIVisible_();
   },
 
@@ -965,7 +989,7 @@ Polymer({
    * @private
    */
   onAuthConfirmPassword_: function(email, passwordCount) {
-    this.showLoadingUi_(true);
+    this.isLoadingUiShown_ = true;
 
     if (this.samlPasswordConfirmAttempt_ == 0)
       chrome.send('scrapedPasswordCount', [passwordCount]);
@@ -1088,7 +1112,7 @@ Polymer({
       ]);
     }
 
-    this.showLoadingUi_(true);
+    this.isLoadingUiShown_ = true;
     // Hide the back button and the border line as they are not useful when
     // the loading screen is shown.
     this.$['signin-back-button'].hidden = true;
@@ -1160,7 +1184,7 @@ Polymer({
     if (this.screenMode_ != ScreenMode.DEFAULT)
       return;
     this.authenticator_.reload();
-    this.showLoadingUi_(true);
+    this.isLoadingUiShown_ = true;
     this.startLoadingTimer_();
     this.lastBackMessageValue_ = false;
     this.authCompleted_ = false;
@@ -1177,7 +1201,7 @@ Polymer({
       // Reload offline version of the sign-in extension, which will show
       // error itself.
       chrome.send('offlineLogin', [this.email_]);
-    } else if (!this.isLoadingUiShown_()) {
+    } else if (!this.isLoadingUiShown_) {
       $('bubble').showContentForElement(
           this, cr.ui.Bubble.Attachment.BOTTOM, error,
           BUBBLE_HORIZONTAL_PADDING, BUBBLE_VERTICAL_PADDING);
@@ -1238,7 +1262,7 @@ Polymer({
    * @private
    */
   loadOffline_: function(params) {
-    this.showLoadingUi_(true);
+    this.isLoadingUiShown_ = true;
     this.startLoadingTimer_();
     const offlineLogin = this.$['offline-gaia'];
     if ('enterpriseDisplayDomain' in params)
@@ -1251,7 +1275,7 @@ Polymer({
 
   /** @private */
   loadAdAuth_: function(params) {
-    this.showLoadingUi_(true);
+    this.isLoadingUiShown_ = true;
     this.startLoadingTimer_();
     const adAuthUI = this.getActiveFrame_();
     adAuthUI.realm = params['realm'];
@@ -1283,7 +1307,7 @@ Polymer({
     }
 
     this.classList.toggle('whitelist-error', show);
-    this.showLoadingUi_(!show);
+    this.isLoadingUiShown_ = !show;
 
     if (show)
       this.$['gaia-whitelist-error'].submitButton.focus();
@@ -1304,7 +1328,7 @@ Polymer({
     adAuthUI.userName = username;
     adAuthUI.errorState = errorState;
     this.authCompleted_ = false;
-    this.showLoadingUi_(false);
+    this.isLoadingUiShown_ = false;
   },
 
 });

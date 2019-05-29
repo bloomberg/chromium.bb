@@ -104,7 +104,7 @@ void OfflineGaiaTestMixin::SubmitGaiaAuthOfflineForm(
     const std::string& user_email,
     const std::string& password) {
   test::OobeJS().ExpectVisiblePath({"gaia-signin", "offline-gaia"});
-  test::OobeJS().ExpectHiddenPath({"gaia-signin", "signin-frame"});
+  test::OobeJS().ExpectHiddenPath({"gaia-signin", "signin-frame-dialog"});
   test::OobeJS()
       .CreateDisplayedWaiter(true,
                              {"gaia-signin", "offline-gaia", "email-section"})

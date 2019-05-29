@@ -31,21 +31,24 @@
   width: 100%;
 }
 
+.transparent {
+  opacity: 0;
+  transition: opacity 500ms ease-in;
+}
+
+.non-transparent {
+  opacity: 1;
+  transition: opacity 500ms ease-out;
+}
+
 #signin-frame {
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
   display: block;
   height: 560px;
-  opacity: 0;
   overflow: hidden;
   position: static;
-  transition: opacity 500ms ease-in;
   width: 768px;
-}
-
-#signin-frame.show {
-  opacity: 1;
-  transition: opacity 500ms ease-out;
 }
 
 :host .step-contents {
@@ -110,12 +113,6 @@
 
 :host(.whitelist-error) #gaia-whitelist-error {
   visibility: visible;
-}
-
-:host(.loading) .step-contents,
-:host(.loading) .step-controls,
-:host(.loading) .step-extra-controls {
-  visibility: hidden;
 }
 
 :host(.v2) #gaia-step-contents {
