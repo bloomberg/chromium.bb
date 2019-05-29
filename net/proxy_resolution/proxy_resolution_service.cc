@@ -1059,8 +1059,10 @@ ProxyResolutionService::ProxyResolutionService(
     std::unique_ptr<ProxyConfigService> config_service,
     std::unique_ptr<ProxyResolverFactory> resolver_factory,
     NetLog* net_log)
-    : resolver_factory_(std::move(resolver_factory)),
+    : config_service_(std::move(config_service)),
+      resolver_factory_(std::move(resolver_factory)),
       current_state_(STATE_NONE),
+      permanent_error_(OK),
       net_log_(net_log),
       stall_proxy_auto_config_delay_(
           TimeDelta::FromMilliseconds(kDelayAfterNetworkChangesMs)),
@@ -1068,7 +1070,7 @@ ProxyResolutionService::ProxyResolutionService(
       weak_ptr_factory_(this) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
-  ResetConfigService(std::move(config_service));
+  config_service_->AddObserver(this);
 }
 
 // static
@@ -1543,23 +1545,6 @@ ProxyResolutionService::State ProxyResolutionService::ResetProxyConfig(
   current_state_ = STATE_NONE;
 
   return previous_state;
-}
-
-void ProxyResolutionService::ResetConfigService(
-    std::unique_ptr<ProxyConfigService> new_proxy_config_service) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  State previous_state = ResetProxyConfig(true);
-
-  // Release the old configuration service.
-  if (config_service_.get())
-    config_service_->RemoveObserver(this);
-
-  // Set the new configuration service.
-  config_service_ = std::move(new_proxy_config_service);
-  config_service_->AddObserver(this);
-
-  if (previous_state != STATE_NONE)
-    ApplyProxyConfigIfAvailable();
 }
 
 void ProxyResolutionService::ForceReloadProxyConfig() {
