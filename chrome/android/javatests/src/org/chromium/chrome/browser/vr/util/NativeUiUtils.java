@@ -220,10 +220,10 @@ public class NativeUiUtils {
                 clickElement(UserFriendlyElementName.CONTENT_QUAD, clickCoordinates);
                 // Rarely, sending clicks back to back can cause the web contents to miss a click.
                 // So, if we're going to be sending more, introduce a few input-less frames to avoid
-                // this issue. 3 appears to currently be the magic number that lets the web contents
+                // this issue. 5 appears to currently be the magic number that lets the web contents
                 // reliably pick up all clicks.
                 if (i < numClicks - 1) {
-                    for (int j = 0; j < 3; ++j) {
+                    for (int j = 0; j < 5; ++j) {
                         hoverElement(UserFriendlyElementName.CONTENT_QUAD, clickCoordinates);
                     }
                 }
