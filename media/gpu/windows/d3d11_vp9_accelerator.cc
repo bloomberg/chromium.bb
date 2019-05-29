@@ -151,7 +151,7 @@ void D3D11VP9Accelerator::CopyReferenceFrames(
     DXVA_PicParams_VP9* pic_params,
     const Vp9ReferenceFrameVector& ref_frames) {
   D3D11_TEXTURE2D_DESC texture_descriptor;
-  pic.picture_buffer()->texture()->GetDesc(&texture_descriptor);
+  pic.picture_buffer()->Texture()->GetDesc(&texture_descriptor);
 
   for (size_t i = 0; i < base::size(pic_params->ref_frame_map); i++) {
     auto ref_pic = ref_frames.GetFrame(i);

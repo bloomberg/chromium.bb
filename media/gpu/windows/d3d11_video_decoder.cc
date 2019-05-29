@@ -671,11 +671,12 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   // Create each picture buffer.
   const int textures_per_picture = 2;  // From the VDA
   for (size_t i = 0; i < TextureSelector::BUFFER_COUNT; i++) {
-    picture_buffers_.push_back(
-        new D3D11PictureBuffer(GL_TEXTURE_EXTERNAL_OES, size, i));
-    if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_, out_texture,
+    auto processor = std::make_unique<DefaultTexture2DWrapper>(out_texture);
+    picture_buffers_.push_back(new D3D11PictureBuffer(
+        GL_TEXTURE_EXTERNAL_OES, std::move(processor), size, i));
+    if (!picture_buffers_[i]->Init(get_helper_cb_, video_device_,
                                    texture_selector_->decoder_guid,
-                                   textures_per_picture)) {
+                                   textures_per_picture, media_log_->Clone())) {
       NotifyError("Unable to allocate PictureBuffer");
       return;
     }
@@ -713,7 +714,7 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
 
   base::TimeDelta timestamp = picture_buffer->timestamp_;
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-      texture_selector_->pixel_format, picture_buffer->mailbox_holders(),
+      texture_selector_->pixel_format, picture_buffer->ProcessTexture(),
       VideoFrame::ReleaseMailboxCB(), picture_buffer->size(), visible_rect,
       GetNaturalSize(visible_rect, pixel_aspect_ratio), timestamp);
 
