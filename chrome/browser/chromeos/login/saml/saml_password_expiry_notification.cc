@@ -78,15 +78,6 @@ const base::NoDestructor<RichNotificationData> kRichNotificationData;
 const base::NoDestructor<base::string16> kLineSeparator(
     base::string16(1, '\n'));
 
-// Callback called when notification is clicked - opens password-change page.
-void OnNotificationClicked() {
-  PasswordChangeDialog::Show();
-}
-
-const base::NoDestructor<scoped_refptr<HandleNotificationClickDelegate>>
-    kClickDelegate(base::MakeRefCounted<HandleNotificationClickDelegate>(
-        base::BindRepeating(&OnNotificationClicked)));
-
 base::string16 GetTitleText(int less_than_n_days) {
   const bool hasExpired = (less_than_n_days <= 0);
   return hasExpired ? l10n_util::GetStringUTF16(IDS_PASSWORD_HAS_EXPIRED_TITLE)
@@ -293,9 +284,12 @@ void ShowSamlPasswordExpiryNotification(Profile* profile,
   const base::string16 title = GetTitleText(less_than_n_days);
   const base::string16 body = GetBodyText(less_than_n_days);
 
+  auto click_delegate = base::MakeRefCounted<HandleNotificationClickDelegate>(
+      base::BindRepeating(&PasswordChangeDialog::Show, profile));
+
   std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
       kNotificationType, kNotificationId, title, body, *kDisplaySource,
-      *kOriginUrl, *kNotifierId, *kRichNotificationData, *kClickDelegate, kIcon,
+      *kOriginUrl, *kNotifierId, *kRichNotificationData, click_delegate, kIcon,
       kWarningLevel);
 
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
