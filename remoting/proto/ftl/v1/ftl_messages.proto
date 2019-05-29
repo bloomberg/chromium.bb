@@ -60,6 +60,14 @@ message SignInGaiaMode {
   }
 }
 
+message ChromotingCapability {
+  enum Feature {
+    UNKNOWN = 0;
+    SERIALIZED_XMPP_SIGNALING = 256;
+    WEBRTC_SIGNALING = 257;
+  }
+}
+
 message FtlCapability {
   enum Feature {
     UNKNOWN = 0;

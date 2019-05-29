@@ -20,6 +20,13 @@ namespace remoting {
 
 namespace {
 
+constexpr remoting::ftl::ChromotingCapability::Feature
+    kChromotingCapabilities[] = {
+        remoting::ftl::ChromotingCapability_Feature_SERIALIZED_XMPP_SIGNALING};
+constexpr size_t kChromotingCapabilityCount =
+    sizeof(kChromotingCapabilities) /
+    sizeof(ftl::ChromotingCapability::Feature);
+
 constexpr remoting::ftl::FtlCapability::Feature kFtlCapabilities[] = {
     remoting::ftl::FtlCapability_Feature_RECEIVE_CALLS_FROM_GAIA,
     remoting::ftl::FtlCapability_Feature_GAIA_REACHABLE};
@@ -80,6 +87,10 @@ void FtlRegistrationManager::DoSignInGaia(DoneCallback on_done) {
 
   *request.mutable_register_data()->mutable_device_id() =
       device_id_provider_->GetDeviceId();
+
+  for (size_t i = 0; i < kChromotingCapabilityCount; i++) {
+    request.mutable_register_data()->add_caps(kChromotingCapabilities[i]);
+  }
 
   for (size_t i = 0; i < kFtlCapabilityCount; i++) {
     request.mutable_register_data()->add_caps(kFtlCapabilities[i]);
