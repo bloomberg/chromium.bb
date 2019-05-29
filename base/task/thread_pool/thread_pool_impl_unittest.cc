@@ -523,13 +523,13 @@ TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, FlushAsyncForTestingSimple) {
   flush_event.Wait();
 }
 
-// Verifies that tasks only run when allowed by SetCanRun().
-TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetCanRun) {
+// Verifies that tasks only run when allowed by SetHasFence().
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetHasFence) {
   StartThreadPool();
 
   AtomicFlag can_run;
   WaitableEvent did_run;
-  thread_pool_.SetCanRun(false);
+  thread_pool_.SetHasFence(true);
 
   CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetTraits(),
                                              GetExecutionMode())
@@ -541,13 +541,13 @@ TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetCanRun) {
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
 
   can_run.Set();
-  thread_pool_.SetCanRun(true);
+  thread_pool_.SetHasFence(false);
   did_run.Wait();
 }
 
-// Verifies that a call to SetCanRun(false) before Start() is honored.
-TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetCanRunBeforeStart) {
-  thread_pool_.SetCanRun(false);
+// Verifies that a call to SetHasFence(true) before Start() is honored.
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetHasFenceBeforeStart) {
+  thread_pool_.SetHasFence(true);
   StartThreadPool();
 
   AtomicFlag can_run;
@@ -563,18 +563,18 @@ TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetCanRunBeforeStart) {
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
 
   can_run.Set();
-  thread_pool_.SetCanRun(true);
+  thread_pool_.SetHasFence(false);
   did_run.Wait();
 }
 
 // Verifies that BEST_EFFORT tasks only run when allowed by
-// SetCanRunBestEffort().
-TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetCanRunBestEffort) {
+// SetHasBestEffortFence().
+TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetHasBestEffortFence) {
   StartThreadPool();
 
   AtomicFlag can_run;
   WaitableEvent did_run;
-  thread_pool_.SetCanRunBestEffort(false);
+  thread_pool_.SetHasBestEffortFence(true);
 
   CreateTaskRunnerWithTraitsAndExecutionMode(&thread_pool_, GetTraits(),
                                              GetExecutionMode())
@@ -587,7 +587,7 @@ TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, SetCanRunBestEffort) {
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
 
   can_run.Set();
-  thread_pool_.SetCanRunBestEffort(true);
+  thread_pool_.SetHasBestEffortFence(false);
   did_run.Wait();
 }
 
@@ -1156,10 +1156,10 @@ TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceNotScheduled) {
   auto task_runners_and_events = CreateTaskRunnersAndEvents(&thread_pool_);
 
   // Prevent tasks from running.
-  thread_pool_.SetCanRun(false);
+  thread_pool_.SetHasFence(true);
 
   // Post tasks to multiple task runners while they are at initial priority.
-  // They won't run immediately because of the call to SetCanRun(false) above.
+  // They won't run immediately because of the call to SetHasFence(true) above.
   for (auto& task_runner_and_events : task_runners_and_events) {
     task_runner_and_events->task_runner->PostTask(
         FROM_HERE,
@@ -1185,7 +1185,7 @@ TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceNotScheduled) {
   }
 
   // Allow tasks to run.
-  thread_pool_.SetCanRun(true);
+  thread_pool_.SetHasFence(false);
 
   for (auto& task_runner_and_events : task_runners_and_events)
     test::WaitWithoutBlockingObserver(&task_runner_and_events->task_ran);

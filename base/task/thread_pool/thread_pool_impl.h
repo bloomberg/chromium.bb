@@ -78,8 +78,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   void FlushForTesting() override;
   void FlushAsyncForTesting(OnceClosure flush_callback) override;
   void JoinForTesting() override;
-  void SetCanRun(bool can_run) override;
-  void SetCanRunBestEffort(bool can_run_best_effort) override;
+  void SetHasFence(bool has_fence) override;
+  void SetHasBestEffortFence(bool has_best_effort_fence) override;
 
   // TaskExecutor:
   bool PostDelayedTaskWithTraits(const Location& from_here,
@@ -103,7 +103,7 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
       const TaskTraits& traits);
 
  private:
-  // Invoked after |can_run_| or |can_run_best_effort_| is updated. Sets the
+  // Invoked after |has_fence_| or |has_best_effort_fence_| is updated. Sets the
   // CanRunPolicy in TaskTracker and wakes up workers as appropriate.
   void UpdateCanRunPolicy();
 
@@ -150,10 +150,14 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // |sequence_checker_|.
   bool started_ = false;
 
-  // Whether starting to run a Task with any/BEST_EFFORT priority is currently
-  // allowed. Access controlled by |sequence_checker_|.
-  bool can_run_ = true;
-  bool can_run_best_effort_;
+  // Whether the --disable-best-effort-tasks switch is preventing execution of
+  // BEST_EFFORT tasks until shutdown.
+  const bool has_disable_best_effort_switch_;
+
+  // Whether a fence is preventing execution of tasks of any/BEST_EFFORT
+  // priority. Access controlled by |sequence_checker_|.
+  bool has_fence_ = false;
+  bool has_best_effort_fence_ = false;
 
 #if DCHECK_IS_ON()
   // Set once JoinForTesting() has returned.

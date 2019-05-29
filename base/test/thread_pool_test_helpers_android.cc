@@ -12,14 +12,13 @@ namespace base {
 class ThreadPoolTestHelpers {
  public:
   // Enables/disables an execution fence that prevents tasks from running.
-  static void SetThreadPoolExecutionFenceEnabledForTesting(
-      bool execution_fence_enabled);
+  static void SetThreadPoolExecutionFenceEnabledForTesting(bool has_fence);
 };
 
 // static
 void ThreadPoolTestHelpers::SetThreadPoolExecutionFenceEnabledForTesting(
-    bool execution_fence_enabled) {
-  ThreadPoolInstance::Get()->SetCanRun(!execution_fence_enabled);
+    bool has_fence) {
+  ThreadPoolInstance::Get()->SetHasFence(has_fence);
 }
 
 }  // namespace base

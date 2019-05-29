@@ -74,7 +74,7 @@ ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
                         Unretained(this)))),
       single_thread_task_runner_manager_(task_tracker_->GetTrackedRef(),
                                          &delayed_task_manager_),
-      can_run_best_effort_(!HasDisableBestEffortTasksSwitch()),
+      has_disable_best_effort_switch_(HasDisableBestEffortTasksSwitch()),
       tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
 
@@ -279,8 +279,6 @@ void ThreadPoolImpl::Shutdown() {
   // Allow all tasks to run. Done after initiating shutdown to ensure that non-
   // BLOCK_SHUTDOWN tasks don't get a chance to run and that BLOCK_SHUTDOWN
   // tasks run with a normal thread priority.
-  can_run_ = true;
-  can_run_best_effort_ = true;
   UpdateCanRunPolicy();
 
   task_tracker_->CompleteShutdown();
@@ -312,17 +310,17 @@ void ThreadPoolImpl::JoinForTesting() {
 #endif
 }
 
-void ThreadPoolImpl::SetCanRun(bool can_run) {
+void ThreadPoolImpl::SetHasFence(bool has_fence) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(can_run_, can_run);
-  can_run_ = can_run;
+  DCHECK_NE(has_fence_, has_fence);
+  has_fence_ = has_fence;
   UpdateCanRunPolicy();
 }
 
-void ThreadPoolImpl::SetCanRunBestEffort(bool can_run_best_effort) {
+void ThreadPoolImpl::SetHasBestEffortFence(bool has_best_effort_fence) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(can_run_best_effort_, can_run_best_effort);
-  can_run_best_effort_ = can_run_best_effort;
+  DCHECK_NE(has_best_effort_fence_, has_best_effort_fence);
+  has_best_effort_fence_ = has_best_effort_fence;
   UpdateCanRunPolicy();
 }
 
@@ -427,10 +425,17 @@ ThreadGroup* ThreadPoolImpl::GetThreadGroupForTraits(const TaskTraits& traits) {
 void ThreadPoolImpl::UpdateCanRunPolicy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const CanRunPolicy can_run_policy =
-      can_run_ ? (can_run_best_effort_ ? CanRunPolicy::kAll
-                                       : CanRunPolicy::kForegroundOnly)
-               : CanRunPolicy::kNone;
+  CanRunPolicy can_run_policy;
+  if ((!has_fence_ && !has_best_effort_fence_) ||
+      task_tracker_->HasShutdownStarted()) {
+    can_run_policy = CanRunPolicy::kAll;
+  } else if (has_fence_) {
+    can_run_policy = CanRunPolicy::kNone;
+  } else {
+    DCHECK(has_best_effort_fence_);
+    can_run_policy = CanRunPolicy::kForegroundOnly;
+  }
+
   task_tracker_->SetCanRunPolicy(can_run_policy);
   foreground_thread_group_->DidUpdateCanRunPolicy();
   if (background_thread_group_)

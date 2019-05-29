@@ -80,12 +80,13 @@ class BASE_EXPORT ThreadPoolInstance {
     TimeDelta suggested_reclaim_time = TimeDelta::FromSeconds(30);
   };
 
-  // A ScopedExecutionFence prevents any new task from being scheduled in
-  // ThreadPoolInstance within its scope. Upon its destruction, all tasks that
-  // were preeempted are released. Note: the constructor of ScopedExecutionFence
-  // will not wait for currently running tasks (as they were posted before
-  // entering this scope and do not violate the contract; some of them could be
-  // CONTINUE_ON_SHUTDOWN and waiting for them to complete is ill-advised).
+  // A Scoped(BestEffort)ExecutionFence prevents new tasks of any/BEST_EFFORT
+  // priority from being scheduled in ThreadPoolInstance within its scope. Upon
+  // its destruction, tasks that were preeempted are released. Note: the
+  // constructor of Scoped(BestEffort)ExecutionFence will not wait for currently
+  // running tasks (as they were posted before entering this scope and do not
+  // violate the contract; some of them could be CONTINUE_ON_SHUTDOWN and
+  // waiting for them to complete is ill-advised).
   class BASE_EXPORT ScopedExecutionFence {
    public:
     ScopedExecutionFence();
@@ -93,6 +94,15 @@ class BASE_EXPORT ThreadPoolInstance {
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ScopedExecutionFence);
+  };
+
+  class BASE_EXPORT ScopedBestEffortExecutionFence {
+   public:
+    ScopedBestEffortExecutionFence();
+    ~ScopedBestEffortExecutionFence();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScopedBestEffortExecutionFence);
   };
 
   // Destroying a ThreadPoolInstance is not allowed in production; it is always
@@ -215,9 +225,10 @@ class BASE_EXPORT ThreadPoolInstance {
   virtual int GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
       const TaskTraits& traits) const = 0;
 
-  // Sets whether tasks of any / BEST_EFFORT priority are allowed to run.
-  virtual void SetCanRun(bool can_run) = 0;
-  virtual void SetCanRunBestEffort(bool can_run) = 0;
+  // Sets whether a fence prevents execution of tasks of any / BEST_EFFORT
+  // priority.
+  virtual void SetHasFence(bool can_run) = 0;
+  virtual void SetHasBestEffortFence(bool can_run) = 0;
 };
 
 }  // namespace base
