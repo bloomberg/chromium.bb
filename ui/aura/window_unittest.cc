@@ -3295,6 +3295,37 @@ TEST_F(WindowTest, LocalSurfaceIdChanges) {
   EXPECT_NE(local_surface_id5, local_surface_id6);
 }
 
+TEST_F(WindowTest, CreateLayerTreeFrameSink) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.SetBounds(gfx::Rect(300, 300));
+
+  root_window()->AddChild(&window);
+
+  // The window shouldn't have FrameSinkId before CreateLayerTreeFrameSink() is
+  // called.
+  EXPECT_FALSE(window.GetFrameSinkId().is_valid());
+
+  std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink =
+      window.CreateLayerTreeFrameSink();
+
+  // Calling CreateLayerTreeFrameSink() should return a LayerTreeFrameSink and
+  // the window should now have a FrameSinkId.
+  EXPECT_NE(layer_tree_frame_sink.get(), nullptr);
+  EXPECT_TRUE(window.GetFrameSinkId().is_valid());
+
+  viz::FrameSinkId frame_sink_id = window.GetFrameSinkId();
+
+  // Reset and recreate the LayerTreeFrameSink. This would typically happen
+  // after a GPU crash.
+  layer_tree_frame_sink.reset();
+  layer_tree_frame_sink = window.CreateLayerTreeFrameSink();
+
+  // A new LayerTreeFrameSink should be created for the same FrameSinkId.
+  EXPECT_NE(layer_tree_frame_sink.get(), nullptr);
+  EXPECT_EQ(frame_sink_id, window.GetFrameSinkId());
+}
+
 // This delegate moves its parent window to the specified one when the gesture
 // ends.
 class HandleGestureEndDelegate : public TestWindowDelegate {

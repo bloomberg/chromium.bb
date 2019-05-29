@@ -175,9 +175,9 @@ Window::~Window() {
   layer()->set_delegate(NULL);
   DestroyLayer();
 
-  // If SetEmbedFrameSinkId() was called by client code (not internally), then
-  // we assume client code is taking care of unregistering.
-  if (frame_sink_id_.is_valid() && frame_sink_id_internally_allocated_) {
+  // If SetEmbedFrameSinkId() was called by client code, then we assume client
+  // code is taking care of invalidating.
+  if (frame_sink_id_.is_valid() && !embeds_external_client_) {
     auto* context_factory_private =
         Env::GetInstance()->context_factory_private();
     auto* host_frame_sink_manager =
@@ -821,14 +821,11 @@ void Window::AfterPropertyChange(const void* key, int64_t old_value) {
 ///////////////////////////////////////////////////////////////////////////////
 // Window, private:
 
-void Window::SetEmbedFrameSinkIdImpl(const viz::FrameSinkId& frame_sink_id,
-                                     bool called_internally) {
+void Window::SetEmbedFrameSinkIdImpl(const viz::FrameSinkId& frame_sink_id) {
   UnregisterFrameSinkId();
 
   DCHECK(frame_sink_id.is_valid());
   frame_sink_id_ = frame_sink_id;
-  embeds_external_client_ = true;
-  frame_sink_id_internally_allocated_ = called_internally;
   RegisterFrameSinkId();
 }
 
@@ -994,7 +991,7 @@ void Window::OnStackingChanged() {
 }
 
 void Window::NotifyRemovingFromRootWindow(Window* new_root) {
-  if (IsEmbeddingClient())
+  if (frame_sink_id_.is_valid())
     UnregisterFrameSinkId();
   for (WindowObserver& observer : observers_)
     observer.OnWindowRemovingFromRootWindow(this, new_root);
@@ -1005,7 +1002,7 @@ void Window::NotifyRemovingFromRootWindow(Window* new_root) {
 }
 
 void Window::NotifyAddedToRootWindow() {
-  if (IsEmbeddingClient())
+  if (frame_sink_id_.is_valid())
     RegisterFrameSinkId();
   for (WindowObserver& observer : observers_)
     observer.OnWindowAddedToRootWindow(this);
@@ -1145,7 +1142,7 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
     auto frame_sink_id = context_factory_private->AllocateFrameSinkId();
     host_frame_sink_manager->RegisterFrameSinkId(
         frame_sink_id, this, viz::ReportFirstSurfaceActivation::kYes);
-    SetEmbedFrameSinkIdImpl(frame_sink_id, /* called_internally */ true);
+    SetEmbedFrameSinkIdImpl(frame_sink_id);
   }
 
   // For creating a async frame sink which connects to the viz display
@@ -1242,11 +1239,8 @@ const viz::FrameSinkId& Window::GetFrameSinkId() const {
 }
 
 void Window::SetEmbedFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
-  SetEmbedFrameSinkIdImpl(frame_sink_id, /* called_internally */ false);
-}
-
-bool Window::IsEmbeddingClient() const {
-  return embeds_external_client_;
+  SetEmbedFrameSinkIdImpl(frame_sink_id);
+  embeds_external_client_ = true;
 }
 
 void Window::TrackOcclusionState() {
@@ -1478,7 +1472,6 @@ void Window::UpdateLayerName() {
 
 void Window::RegisterFrameSinkId() {
   DCHECK(frame_sink_id_.is_valid());
-  DCHECK(IsEmbeddingClient());
   if (registered_frame_sink_id_ || disable_frame_sink_id_registration_)
     return;
   if (auto* compositor = layer()->GetCompositor()) {

@@ -453,9 +453,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     frame_sink_id_ = frame_sink_id;
   }
 
-  // Returns whether this window is embedding another client.
-  bool IsEmbeddingClient() const;
-
   // Starts occlusion state tracking.
   void TrackOcclusionState();
 
@@ -514,11 +511,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   friend class WindowTargeter;
   friend class test::WindowTestApi;
 
-  // Called by SetEmbedFrameSinkId(). |called_internally| is true if this was
-  // not called from SetEmbedFrameSinkId(), but rather internally; false if
-  // called from client code.
-  void SetEmbedFrameSinkIdImpl(const viz::FrameSinkId& frame_sink_id,
-                               bool called_internally);
+  // Handles registering FrameSinkId hierarchy for SetEmbedFrameSinkId() and
+  // CreateLayerTreeFrameSink().
+  void SetEmbedFrameSinkIdImpl(const viz::FrameSinkId& frame_sink_id);
 
   // Returns true if the mouse pointer at relative-to-this-Window's-origin
   // |local_point| can trigger an event for this Window.
@@ -707,10 +702,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Set to true if SetEmbedFrameSinkId() has been called.
   bool embeds_external_client_ = false;
-
-  // Set to true if |frame_sink_id_| was allocated as the result of an internal
-  // call, false if SetEmbedFrameSinkId() was called by client. code.
-  bool frame_sink_id_internally_allocated_ = false;
 
   // Used to allocate LocalSurfaceIds when this is embedding external content.
   std::unique_ptr<viz::ParentLocalSurfaceIdAllocator>
