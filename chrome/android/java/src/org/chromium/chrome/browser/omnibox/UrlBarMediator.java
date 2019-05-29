@@ -78,7 +78,7 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
         }
 
         // Do not scroll to the end of the host for URLs such as data:, javascript:, etc...
-        if (data.url != null && data.originEndIndex == data.url.length()) {
+        if (data.url != null && data.originEndIndex == data.displayText.length()) {
             Uri uri = Uri.parse(data.url);
             String scheme = uri.getScheme();
             if (!TextUtils.isEmpty(scheme)

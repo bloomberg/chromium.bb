@@ -22,6 +22,9 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable.PropertyObserver;
 
+/**
+ * Unit tests for {@link UrlBarMediator}.
+ */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class UrlBarMediatorUnitTest {
@@ -76,6 +79,22 @@ public class UrlBarMediatorUnitTest {
         Assert.assertFalse(mediator.setUrlBarData(data2, UrlBar.ScrollType.SCROLL_TO_TLD, 4));
 
         Mockito.verifyZeroInteractions(observer);
+    }
+
+    @Test
+    public void setUrlData_ScrollStateForNonHttpOrHttps() {
+        PropertyModel model = new PropertyModel(UrlBarProperties.ALL_KEYS);
+        UrlBarMediator mediator = new UrlBarMediator(model);
+
+        String displayText = "data:text/html,blah";
+        UrlBarData data = UrlBarData.create(
+                "data:text/html,blah,blah", spannable(displayText), 0, displayText.length(), null);
+        Assert.assertTrue(mediator.setUrlBarData(data, UrlBar.ScrollType.SCROLL_TO_TLD,
+                UrlBarCoordinator.SelectionState.SELECT_ALL));
+
+        // The scroll state should be overridden to SCROLL_TO_BEGINNING for file-type schemes.
+        Assert.assertEquals(UrlBar.ScrollType.SCROLL_TO_BEGINNING,
+                model.get(UrlBarProperties.TEXT_STATE).scrollType);
     }
 
     @Test
