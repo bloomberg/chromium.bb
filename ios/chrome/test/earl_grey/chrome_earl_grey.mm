@@ -240,6 +240,18 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 #pragma mark - Sync Utilities
 
+- (void)clearSyncServerData {
+  [ChromeEarlGreyAppInterface clearSyncServerData];
+}
+
+- (void)startSync {
+  [ChromeEarlGreyAppInterface startSync];
+}
+
+- (void)stopSync {
+  [ChromeEarlGreyAppInterface stopSync];
+}
+
 - (void)clearAutofillProfileWithGUID:(const std::string&)GUID {
   NSString* nsGUID = base::SysUTF8ToNSString(GUID);
   [ChromeEarlGreyAppInterface clearAutofillProfileWithGUID:nsGUID];
@@ -500,18 +512,6 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 #pragma mark - Sync Utilities
-
-- (void)clearSyncServerData {
-  chrome_test_util::ClearSyncServerData();
-}
-
-- (void)startSync {
-  chrome_test_util::StartSync();
-}
-
-- (void)stopSync {
-  chrome_test_util::StopSync();
-}
 
 - (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
                                          name:(const std::string&)name

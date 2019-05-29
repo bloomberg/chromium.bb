@@ -187,6 +187,18 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 #pragma mark - Sync Utilities (EG2)
 
++ (void)clearSyncServerData {
+  chrome_test_util::ClearSyncServerData();
+}
+
++ (void)startSync {
+  chrome_test_util::StartSync();
+}
+
++ (void)stopSync {
+  chrome_test_util::StopSync();
+}
+
 + (NSError*)waitForSyncInitialized:(BOOL)isInitialized
                        syncTimeout:(NSTimeInterval)timeout {
   bool success = WaitUntilConditionOrTimeout(timeout, ^{

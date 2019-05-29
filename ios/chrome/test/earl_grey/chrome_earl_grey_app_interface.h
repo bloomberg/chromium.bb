@@ -116,6 +116,15 @@
 
 #pragma mark - Sync Utilities (EG2)
 
+// Clears fake sync server data.
++ (void)clearSyncServerData;
+
+// Starts the sync server. The server should not be running when calling this.
++ (void)startSync;
+
+// Stops the sync server. The server should be running when calling this.
++ (void)stopSync;
+
 // Waits for sync to be initialized or not.
 // Returns nil on success, or else an NSError indicating why the
 // operation failed.

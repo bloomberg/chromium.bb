@@ -112,6 +112,15 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 #pragma mark - Sync Utilities
 
+// Clears fake sync server data.
+- (void)clearSyncServerData;
+
+// Starts the sync server. The server should not be running when calling this.
+- (void)startSync;
+
+// Stops the sync server. The server should be running when calling this.
+- (void)stopSync;
+
 // Clears the autofill profile for the given |GUID|.
 - (void)clearAutofillProfileWithGUID:(const std::string&)GUID;
 
@@ -283,15 +292,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
     (std::string)imageID WARN_UNUSED_RESULT;
 
 #pragma mark - Sync Utilities
-
-// Clears fake sync server data.
-- (void)clearSyncServerData;
-
-// Starts the sync server. The server should not be running when calling this.
-- (void)startSync;
-
-// Stops the sync server. The server should be running when calling this.
-- (void)stopSync;
 
 // Verifies that |count| entities of the given |type| and |name| exist on the
 // sync FakeServer. Folders are not included in this count. Returns nil on

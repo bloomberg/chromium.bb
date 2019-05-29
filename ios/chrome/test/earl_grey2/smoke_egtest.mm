@@ -164,4 +164,11 @@
       waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
 }
 
+// Tests sync server converted helpers in chrome_earl_grey.h.
+- (void)testSyncServerHelpers {
+  [ChromeEarlGrey startSync];
+  [ChromeEarlGrey stopSync];
+  [ChromeEarlGrey clearSyncServerData];
+}
+
 @end
