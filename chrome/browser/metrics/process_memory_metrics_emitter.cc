@@ -390,6 +390,35 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
 #endif
 }
 
+void EmitSummedGpuMemory(const GlobalMemoryDump::ProcessDump& pmd,
+                         Memory_Experimental* builder,
+                         bool record_uma) {
+  // Combine several categories together to sum up Chrome-reported gpu memory.
+  static const char* gpu_categories[] = {
+      "gpu/gl",
+      "gpu/shared-images",
+      "skia/gpu_resources",
+  };
+  Metric synthetic_metric = {nullptr,
+                             "GpuMemory",
+                             kLargeMetric,
+                             kEffectiveSize,
+                             EmitTo::kSizeInUkmAndUma,
+                             &Memory_Experimental::SetGpuMemory};
+
+  uint64_t total = 0;
+  for (size_t i = 0; i < base::size(gpu_categories); ++i) {
+    total +=
+        pmd.GetMetric(gpu_categories[i], synthetic_metric.metric).value_or(0);
+  }
+
+  // Always use "Gpu" as the process name for this even for the in process
+  // command buffer case.
+  EmitProcessUkm(synthetic_metric, total, builder);
+  if (record_uma)
+    EmitProcessUma("Gpu", synthetic_metric, total);
+}
+
 void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
                               ukm::SourceId ukm_source_id,
                               ukm::UkmRecorder* ukm_recorder,
@@ -399,6 +428,7 @@ void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::BROWSER));
   EmitProcessUmaAndUkm(pmd, "Browser", uptime, record_uma, &builder);
+  EmitSummedGpuMemory(pmd, &builder, record_uma);
 
   builder.Record(ukm_recorder);
 }
@@ -440,7 +470,7 @@ void EmitGpuMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   builder.SetProcessType(
       static_cast<int64_t>(memory_instrumentation::mojom::ProcessType::GPU));
   EmitProcessUmaAndUkm(pmd, "Gpu", uptime, record_uma, &builder);
-
+  EmitSummedGpuMemory(pmd, &builder, record_uma);
   builder.Record(ukm_recorder);
 }
 

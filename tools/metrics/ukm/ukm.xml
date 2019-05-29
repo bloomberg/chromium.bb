@@ -3856,6 +3856,11 @@ be describing additional metrics about the same event.
       process.
     </summary>
   </metric>
+  <metric name="GpuMemory">
+    <summary>
+      Measure of GPU memory used by Chrome.
+    </summary>
+  </metric>
   <metric name="History">
     <summary>
       Approximate measure of memory consumed by History service.
