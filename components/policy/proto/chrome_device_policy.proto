@@ -265,14 +265,6 @@ message AutoUpdateSettingsProto {
     // including network credentials during the rollback process.
     // If that is not possible, rolls back with a full powerwash.
     ROLLBACK_AND_RESTORE_IF_POSSIBLE = 3;
-    // If |target_version_prefix| specifies an older version than the currently
-    // installed Chrome OS version and it's possible to carry over device-level
-    // configuration such as network credentials during the rollback process
-    // and skipping OOBE after the rollback, the device rolls back to a Chrome
-    // OS version starting with |target_version_prefix|.
-    // If this is not possible, the device will stay on the current version
-    // (same as ROLLBACK_DISABLED).
-    ROLLBACK_ONLY_IF_RESTORE_POSSIBLE = 4;
   }
 
   // Specifies what should happen if |target_version_prefix| specifies an older

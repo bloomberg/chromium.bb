@@ -7501,7 +7501,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 1, 2, 3, 4 ],
+        'enum': [ 1, 2, 3 ],
       },
       'items': [
         {
@@ -7518,13 +7518,7 @@
           'name': 'RollbackAndRestoreIfPossible',
           'value': 3,
           'caption': '''Roll back and stay on target version if OS version is newer than target. Try to carry over device-level configuration (including network credentials) through the rollback process, if possible, but do the rollback with full powerwash even if restoring the data is not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
-          Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 70 and higher. For older clients, this value means that rollback is disabled.''',
-        },
-        {
-          'name': 'RollbackOnlyIfRestorePossible',
-          'value': 4,
-          'caption': '''Roll back and stay on target version if OS version is newer than target and it's possible to carry over device-level configuration (including network credentials) through rollback, also skipping OOBE after rollback. Don't do or abort rollback if that's not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
-          Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 70 and higher. For older clients, this value means that rollback is disabled.''',
+          Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 75 and higher. For older clients, this value means that rollback is disabled.''',
         },
       ],
       'supported_on': ['chrome_os:67-'],
