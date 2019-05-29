@@ -384,7 +384,7 @@ and hopefully someone else will be able to help you figure it out.
 [CI console page]: https://ci.chromium.org/p/chromium/g/chromium/console
 [SlowTests]: https://cs.chromium.org/chromium/src/third_party/blink/web_tests/SlowTests
 [TBRs]: https://chromium.googlesource.com/chromium/src/+/master/docs/code_reviews.md#TBR-To-Be-Reviewed
-[bug-a-trooper](https://goto.google.com/bugatrooper)
+[bug-a-trooper]: https://goto.google.com/bugatrooper
 [contacting-troopers]: https://chromium.googlesource.com/infra/infra/+/master/doc/users/contacting_troopers.md
 [get-the-code]: https://www.chromium.org/developers/how-tos/get-the-code
 [goma]: http://shortn/_Iox00npQJW
