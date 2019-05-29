@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "net/cert/ct_policy_enforcer.h"
 
@@ -42,6 +43,8 @@ class ChromeCTPolicyEnforcer : public net::CTPolicyEnforcer {
       const net::ct::SCTList& verified_scts,
       const net::NetLogWithSource& net_log) override;
 
+  void SetClockForTesting(const base::Clock* clock) { clock_ = clock; }
+
  private:
   // Returns true if the log identified by |log_id| (the SHA-256 hash of the
   // log's DER-encoded SPKI) has been disqualified, and sets
@@ -67,6 +70,8 @@ class ChromeCTPolicyEnforcer : public net::CTPolicyEnforcer {
 
   // List of SHA-256(SPKI) for logs operated by Google.
   std::vector<std::string> operated_by_google_logs_;
+
+  const base::Clock* clock_;
 
   // The time at which |disqualified_logs_| and |operated_by_google_logs_| were
   // generated.

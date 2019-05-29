@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -109,6 +110,7 @@ ChromeCTPolicyEnforcer::ChromeCTPolicyEnforcer(
     std::vector<std::string> operated_by_google_logs)
     : disqualified_logs_(disqualified_logs),
       operated_by_google_logs_(operated_by_google_logs),
+      clock_(base::DefaultClock::GetInstance()),
       log_list_date_(log_list_date) {}
 
 ChromeCTPolicyEnforcer::~ChromeCTPolicyEnforcer() {}
@@ -163,7 +165,7 @@ bool ChromeCTPolicyEnforcer::IsLogOperatedByGoogle(
 
 bool ChromeCTPolicyEnforcer::IsLogDataTimely() const {
   // We consider built-in information to be timely for 10 weeks.
-  return (base::Time::Now() - log_list_date_).InDays() < 70 /* 10 weeks */;
+  return (clock_->Now() - log_list_date_).InDays() < 70 /* 10 weeks */;
 }
 
 // Evaluates against the policy specified at
