@@ -93,7 +93,7 @@ for more about how this works.
 ```shell
 $ # Start 8 emulators. Press Ctrl-C to stop them all.
 $ ( for i in $(seq 8); do ~/Android/Sdk/emulator/emulator @EMULATOR_ID -read-only & done; wait )
-$ # Start 12 emulators. More than 10 requires disabling audio on some OS's. Reducing cores increases paralellism.
+$ # Start 12 emulators. More than 10 requires disabling audio on some OS's. Reducing cores increases parallelism.
 $ ( for i in $(seq 12); do ~/Android/Sdk/emulator/emulator @EMULATOR_ID -read-only -no-audio -cores 2 & done; wait )
 ```
 
