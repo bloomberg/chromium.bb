@@ -423,7 +423,7 @@ BUILDERS = {
       }
     ],
     'platform': 'android-chrome',
-      'browser': 'bin/monochrome_64_32_bundle',
+    'browser': 'bin/monochrome_64_32_bundle',
     'dimension': {
       'pool': 'chrome.tests.perf',
       'os': 'Android',
