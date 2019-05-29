@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/predictors/resource_prefetch_common.h"
+#include "chrome/browser/predictors/navigation_id.h"
 
 #include <string>
 #include <tuple>

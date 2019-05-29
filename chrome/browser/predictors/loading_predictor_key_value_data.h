@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREDICTORS_GLOWPLUG_KEY_VALUE_DATA_H_
-#define CHROME_BROWSER_PREDICTORS_GLOWPLUG_KEY_VALUE_DATA_H_
+#ifndef CHROME_BROWSER_PREDICTORS_LOADING_PREDICTOR_KEY_VALUE_DATA_H_
+#define CHROME_BROWSER_PREDICTORS_LOADING_PREDICTOR_KEY_VALUE_DATA_H_
 
 #include <algorithm>
 #include <map>
@@ -16,7 +16,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/predictors/glowplug_key_value_table.h"
+#include "chrome/browser/predictors/loading_predictor_key_value_table.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -25,20 +25,21 @@ class PredictorsHandler;
 namespace predictors {
 
 // The class provides a synchronous access to the data backed by
-// GlowplugKeyValueTable<T>. The current implementation caches all the data in
-// the memory. The cache size is limited by max_size parameter using Compare
-// function to decide which entry should be evicted.
+// LoadingPredictorKeyValueTable<T>. The current implementation caches all the
+// data in the memory. The cache size is limited by max_size parameter using
+// Compare function to decide which entry should be evicted.
 //
 // InitializeOnDBSequence() must be called on the DB sequence of the
 // ResourcePrefetchPredictorTables. All other methods must be called on UI
 // thread.
 template <typename T, typename Compare>
-class GlowplugKeyValueData {
+class LoadingPredictorKeyValueData {
  public:
-  GlowplugKeyValueData(scoped_refptr<ResourcePrefetchPredictorTables> tables,
-                       GlowplugKeyValueTable<T>* backend,
-                       size_t max_size,
-                       base::TimeDelta flush_delay);
+  LoadingPredictorKeyValueData(
+      scoped_refptr<ResourcePrefetchPredictorTables> tables,
+      LoadingPredictorKeyValueTable<T>* backend,
+      size_t max_size,
+      base::TimeDelta flush_delay);
 
   // Must be called on the DB sequence of the ResourcePrefetchPredictorTables
   // before calling all other methods.
@@ -74,7 +75,7 @@ class GlowplugKeyValueData {
   void FlushDataToDisk();
 
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
-  GlowplugKeyValueTable<T>* backend_table_;
+  LoadingPredictorKeyValueTable<T>* backend_table_;
   std::unique_ptr<std::map<std::string, T>> data_cache_;
   std::unordered_map<std::string, DeferredOperation> deferred_updates_;
   base::RepeatingTimer flush_timer_;
@@ -82,13 +83,13 @@ class GlowplugKeyValueData {
   const size_t max_size_;
   EntryCompare entry_compare_;
 
-  DISALLOW_COPY_AND_ASSIGN(GlowplugKeyValueData);
+  DISALLOW_COPY_AND_ASSIGN(LoadingPredictorKeyValueData);
 };
 
 template <typename T, typename Compare>
-GlowplugKeyValueData<T, Compare>::GlowplugKeyValueData(
+LoadingPredictorKeyValueData<T, Compare>::LoadingPredictorKeyValueData(
     scoped_refptr<ResourcePrefetchPredictorTables> tables,
-    GlowplugKeyValueTable<T>* backend,
+    LoadingPredictorKeyValueTable<T>* backend,
     size_t max_size,
     base::TimeDelta flush_delay)
     : tables_(tables),
@@ -99,11 +100,11 @@ GlowplugKeyValueData<T, Compare>::GlowplugKeyValueData(
 }
 
 template <typename T, typename Compare>
-void GlowplugKeyValueData<T, Compare>::InitializeOnDBSequence() {
+void LoadingPredictorKeyValueData<T, Compare>::InitializeOnDBSequence() {
   DCHECK(tables_->GetTaskRunner()->RunsTasksInCurrentSequence());
   auto data_map = std::make_unique<std::map<std::string, T>>();
   tables_->ExecuteDBTaskOnDBSequence(
-      base::BindOnce(&GlowplugKeyValueTable<T>::GetAllData,
+      base::BindOnce(&LoadingPredictorKeyValueTable<T>::GetAllData,
                      base::Unretained(backend_table_), data_map.get()));
 
   // To ensure invariant that data_cache_.size() <= max_size_.
@@ -115,17 +116,19 @@ void GlowplugKeyValueData<T, Compare>::InitializeOnDBSequence() {
     data_map->erase(entry_to_delete);
   }
   if (keys_to_delete.size() > 0) {
-    tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
-        &GlowplugKeyValueTable<T>::DeleteData, base::Unretained(backend_table_),
-        std::vector<std::string>(keys_to_delete)));
+    tables_->ExecuteDBTaskOnDBSequence(
+        base::BindOnce(&LoadingPredictorKeyValueTable<T>::DeleteData,
+                       base::Unretained(backend_table_),
+                       std::vector<std::string>(keys_to_delete)));
   }
 
   data_cache_ = std::move(data_map);
 }
 
 template <typename T, typename Compare>
-bool GlowplugKeyValueData<T, Compare>::TryGetData(const std::string& key,
-                                                  T* data) const {
+bool LoadingPredictorKeyValueData<T, Compare>::TryGetData(
+    const std::string& key,
+    T* data) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(data_cache_);
   auto it = data_cache_->find(key);
@@ -138,8 +141,9 @@ bool GlowplugKeyValueData<T, Compare>::TryGetData(const std::string& key,
 }
 
 template <typename T, typename Compare>
-void GlowplugKeyValueData<T, Compare>::UpdateData(const std::string& key,
-                                                  const T& data) {
+void LoadingPredictorKeyValueData<T, Compare>::UpdateData(
+    const std::string& key,
+    const T& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(data_cache_);
   auto it = data_cache_->find(key);
@@ -161,12 +165,12 @@ void GlowplugKeyValueData<T, Compare>::UpdateData(const std::string& key,
     FlushDataToDisk();
   } else if (!flush_timer_.IsRunning()) {
     flush_timer_.Start(FROM_HERE, flush_delay_, this,
-                       &GlowplugKeyValueData::FlushDataToDisk);
+                       &LoadingPredictorKeyValueData::FlushDataToDisk);
   }
 }
 
 template <typename T, typename Compare>
-void GlowplugKeyValueData<T, Compare>::DeleteData(
+void LoadingPredictorKeyValueData<T, Compare>::DeleteData(
     const std::vector<std::string>& keys) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(data_cache_);
@@ -181,7 +185,7 @@ void GlowplugKeyValueData<T, Compare>::DeleteData(
 }
 
 template <typename T, typename Compare>
-void GlowplugKeyValueData<T, Compare>::DeleteAllData() {
+void LoadingPredictorKeyValueData<T, Compare>::DeleteAllData() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(data_cache_);
   data_cache_->clear();
@@ -189,12 +193,13 @@ void GlowplugKeyValueData<T, Compare>::DeleteAllData() {
   // Delete all the content of the database immediately because it was requested
   // by user.
   tables_->ScheduleDBTask(
-      FROM_HERE, base::BindOnce(&GlowplugKeyValueTable<T>::DeleteAllData,
-                                base::Unretained(backend_table_)));
+      FROM_HERE,
+      base::BindOnce(&LoadingPredictorKeyValueTable<T>::DeleteAllData,
+                     base::Unretained(backend_table_)));
 }
 
 template <typename T, typename Compare>
-void GlowplugKeyValueData<T, Compare>::FlushDataToDisk() {
+void LoadingPredictorKeyValueData<T, Compare>::FlushDataToDisk() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (deferred_updates_.empty())
     return;
@@ -207,9 +212,10 @@ void GlowplugKeyValueData<T, Compare>::FlushDataToDisk() {
         auto it = data_cache_->find(key);
         if (it != data_cache_->end()) {
           tables_->ScheduleDBTask(
-              FROM_HERE, base::BindOnce(&GlowplugKeyValueTable<T>::UpdateData,
-                                        base::Unretained(backend_table_), key,
-                                        it->second));
+              FROM_HERE,
+              base::BindOnce(&LoadingPredictorKeyValueTable<T>::UpdateData,
+                             base::Unretained(backend_table_), key,
+                             it->second));
         }
         break;
       }
@@ -221,7 +227,7 @@ void GlowplugKeyValueData<T, Compare>::FlushDataToDisk() {
   if (!keys_to_delete.empty()) {
     tables_->ScheduleDBTask(
         FROM_HERE,
-        base::BindOnce(&GlowplugKeyValueTable<T>::DeleteData,
+        base::BindOnce(&LoadingPredictorKeyValueTable<T>::DeleteData,
                        base::Unretained(backend_table_), keys_to_delete));
   }
 
@@ -230,4 +236,4 @@ void GlowplugKeyValueData<T, Compare>::FlushDataToDisk() {
 
 }  // namespace predictors
 
-#endif  // CHROME_BROWSER_PREDICTORS_GLOWPLUG_KEY_VALUE_DATA_H_
+#endif  // CHROME_BROWSER_PREDICTORS_LOADING_PREDICTOR_KEY_VALUE_DATA_H_

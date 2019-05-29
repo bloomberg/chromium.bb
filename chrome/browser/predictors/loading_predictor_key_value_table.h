@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREDICTORS_GLOWPLUG_KEY_VALUE_TABLE_H_
-#define CHROME_BROWSER_PREDICTORS_GLOWPLUG_KEY_VALUE_TABLE_H_
+#ifndef CHROME_BROWSER_PREDICTORS_LOADING_PREDICTOR_KEY_VALUE_TABLE_H_
+#define CHROME_BROWSER_PREDICTORS_LOADING_PREDICTOR_KEY_VALUE_TABLE_H_
 
 #include <map>
 #include <string>
@@ -15,7 +15,7 @@ namespace google {
 namespace protobuf {
 class MessageLite;
 }
-}
+}  // namespace google
 
 namespace predictors {
 
@@ -45,14 +45,14 @@ std::string GetDeleteAllSql(const std::string& table_name);
 // Example:
 // tables_->ScheduleDBTask(
 //     FROM_HERE,
-//     base::BindOnce(&GlowplugKeyValueTable<PrefetchData>::UpdateData,
+//     base::BindOnce(&LoadingPredictorKeyValueTable<PrefetchData>::UpdateData,
 //                    base::Unretained(table_), key, data));
 template <typename T>
-class GlowplugKeyValueTable {
+class LoadingPredictorKeyValueTable {
  public:
-  explicit GlowplugKeyValueTable(const std::string& table_name);
+  explicit LoadingPredictorKeyValueTable(const std::string& table_name);
   // Virtual for testing.
-  virtual ~GlowplugKeyValueTable() {}
+  virtual ~LoadingPredictorKeyValueTable() {}
   virtual void GetAllData(std::map<std::string, T>* data_map,
                           sql::Database* db) const;
   virtual void UpdateData(const std::string& key,
@@ -65,16 +65,18 @@ class GlowplugKeyValueTable {
  private:
   const std::string table_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(GlowplugKeyValueTable);
+  DISALLOW_COPY_AND_ASSIGN(LoadingPredictorKeyValueTable);
 };
 
 template <typename T>
-GlowplugKeyValueTable<T>::GlowplugKeyValueTable(const std::string& table_name)
+LoadingPredictorKeyValueTable<T>::LoadingPredictorKeyValueTable(
+    const std::string& table_name)
     : table_name_(table_name) {}
 
 template <typename T>
-void GlowplugKeyValueTable<T>::GetAllData(std::map<std::string, T>* data_map,
-                                          sql::Database* db) const {
+void LoadingPredictorKeyValueTable<T>::GetAllData(
+    std::map<std::string, T>* data_map,
+    sql::Database* db) const {
   sql::Statement reader(db->GetUniqueStatement(
       ::predictors::internal::GetSelectAllSql(table_name_).c_str()));
   while (reader.Step()) {
@@ -87,9 +89,9 @@ void GlowplugKeyValueTable<T>::GetAllData(std::map<std::string, T>* data_map,
 }
 
 template <typename T>
-void GlowplugKeyValueTable<T>::UpdateData(const std::string& key,
-                                          const T& data,
-                                          sql::Database* db) {
+void LoadingPredictorKeyValueTable<T>::UpdateData(const std::string& key,
+                                                  const T& data,
+                                                  sql::Database* db) {
   sql::Statement inserter(db->GetUniqueStatement(
       ::predictors::internal::GetReplaceSql(table_name_).c_str()));
   ::predictors::internal::BindDataToStatement(key, data, &inserter);
@@ -97,8 +99,9 @@ void GlowplugKeyValueTable<T>::UpdateData(const std::string& key,
 }
 
 template <typename T>
-void GlowplugKeyValueTable<T>::DeleteData(const std::vector<std::string>& keys,
-                                          sql::Database* db) {
+void LoadingPredictorKeyValueTable<T>::DeleteData(
+    const std::vector<std::string>& keys,
+    sql::Database* db) {
   sql::Statement deleter(db->GetUniqueStatement(
       ::predictors::internal::GetDeleteSql(table_name_).c_str()));
   for (const auto& key : keys) {
@@ -109,7 +112,7 @@ void GlowplugKeyValueTable<T>::DeleteData(const std::vector<std::string>& keys,
 }
 
 template <typename T>
-void GlowplugKeyValueTable<T>::DeleteAllData(sql::Database* db) {
+void LoadingPredictorKeyValueTable<T>::DeleteAllData(sql::Database* db) {
   sql::Statement deleter(db->GetUniqueStatement(
       ::predictors::internal::GetDeleteAllSql(table_name_).c_str()));
   deleter.Run();
@@ -117,4 +120,4 @@ void GlowplugKeyValueTable<T>::DeleteAllData(sql::Database* db) {
 
 }  // namespace predictors
 
-#endif  // CHROME_BROWSER_PREDICTORS_GLOWPLUG_KEY_VALUE_TABLE_H_
+#endif  // CHROME_BROWSER_PREDICTORS_LOADING_PREDICTOR_KEY_VALUE_TABLE_H_

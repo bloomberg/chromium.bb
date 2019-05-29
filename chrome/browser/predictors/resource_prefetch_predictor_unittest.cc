@@ -38,9 +38,10 @@ using RedirectDataMap = std::map<std::string, RedirectData>;
 using OriginDataMap = std::map<std::string, OriginData>;
 
 template <typename T>
-class FakeGlowplugKeyValueTable : public GlowplugKeyValueTable<T> {
+class FakeLoadingPredictorKeyValueTable
+    : public LoadingPredictorKeyValueTable<T> {
  public:
-  FakeGlowplugKeyValueTable() : GlowplugKeyValueTable<T>("") {}
+  FakeLoadingPredictorKeyValueTable() : LoadingPredictorKeyValueTable<T>("") {}
   void GetAllData(std::map<std::string, T>* data_map,
                   sql::Database* db) const override {
     *data_map = data_;
@@ -75,16 +76,16 @@ class MockResourcePrefetchPredictorTables
     std::move(task).Run(nullptr);
   }
 
-  GlowplugKeyValueTable<RedirectData>* host_redirect_table() override {
+  LoadingPredictorKeyValueTable<RedirectData>* host_redirect_table() override {
     return &host_redirect_table_;
   }
 
-  GlowplugKeyValueTable<OriginData>* origin_table() override {
+  LoadingPredictorKeyValueTable<OriginData>* origin_table() override {
     return &origin_table_;
   }
 
-  FakeGlowplugKeyValueTable<RedirectData> host_redirect_table_;
-  FakeGlowplugKeyValueTable<OriginData> origin_table_;
+  FakeLoadingPredictorKeyValueTable<RedirectData> host_redirect_table_;
+  FakeLoadingPredictorKeyValueTable<OriginData> origin_table_;
 
  protected:
   ~MockResourcePrefetchPredictorTables() override = default;
