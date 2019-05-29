@@ -99,6 +99,25 @@ MediaValues* CreateMediaValues(
   return media_values;
 }
 
+bool MediaMatches(const String& media, MediaValues* media_values) {
+  scoped_refptr<MediaQuerySet> media_queries = MediaQuerySet::Create(media);
+  MediaQueryEvaluator evaluator(*media_values);
+  return evaluator.Eval(*media_queries);
+}
+
+KURL GetBestFitImageURL(const Document& document,
+                        const KURL& base_url,
+                        MediaValues* media_values,
+                        const KURL& href,
+                        const String& image_srcset,
+                        const String& image_sizes) {
+  float source_size = SizesAttributeParser(media_values, image_sizes).length();
+  ImageCandidate candidate = BestFitSourceForImageAttributes(
+      media_values->DevicePixelRatio(), source_size, href, image_srcset);
+  return base_url.IsNull() ? document.CompleteURL(candidate.ToString())
+                           : KURL(base_url, candidate.ToString());
+}
+
 }  // namespace
 
 void PreloadHelper::DnsPrefetchIfNeeded(
@@ -195,12 +214,6 @@ base::Optional<ResourceType> PreloadHelper::GetResourceTypeFromAsAttribute(
   return base::nullopt;
 }
 
-static bool MediaMatches(const String& media, MediaValues* media_values) {
-  scoped_refptr<MediaQuerySet> media_queries = MediaQuerySet::Create(media);
-  MediaQueryEvaluator evaluator(*media_values);
-  return evaluator.Eval(*media_queries);
-}
-
 // |base_url| is used in Link HTTP Header based preloads to resolve relative
 // URLs in srcset, which should be based on the resource's URL, not the
 // document's base URL. If |base_url| is a null URL, relative URLs are resolved
@@ -223,13 +236,8 @@ Resource* PreloadHelper::PreloadIfNeeded(
   if (resource_type == ResourceType::kImage && !params.image_srcset.IsEmpty()) {
     UseCounter::Count(document, WebFeature::kLinkRelPreloadImageSrcset);
     media_values = CreateMediaValues(document, viewport_description);
-    float source_size =
-        SizesAttributeParser(media_values, params.image_sizes).length();
-    ImageCandidate candidate = BestFitSourceForImageAttributes(
-        media_values->DevicePixelRatio(), source_size, params.href,
-        params.image_srcset);
-    url = base_url.IsNull() ? document.CompleteURL(candidate.ToString())
-                            : KURL(base_url, candidate.ToString());
+    url = GetBestFitImageURL(document, base_url, media_values, params.href,
+                             params.image_srcset, params.image_sizes);
   } else {
     url = params.href;
   }
@@ -486,9 +494,23 @@ void PreloadHelper::LoadLinksFromHeader(
     if (alternate_resource_info && params.rel.IsLinkPreload()) {
       DCHECK(
           RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
-      // TODO(crbug.com/935267): Support image_srcset and image_sizes.
+      KURL url = params.href;
+      base::Optional<ResourceType> resource_type =
+          PreloadHelper::GetResourceTypeFromAsAttribute(params.as);
+      if (document && resource_type == ResourceType::kImage &&
+          !params.image_srcset.IsEmpty()) {
+        // |media_values| is created based on the viewport dimensions of the
+        // current page that prefetched SXGs, not on the viewport of the SXG
+        // content.
+        // TODO(crbug/935267): Consider supporting Viewport HTTP response
+        // header. https://discourse.wicg.io/t/proposal-viewport-http-header/
+        MediaValues* media_values =
+            CreateMediaValues(*document, viewport_description);
+        url = GetBestFitImageURL(*document, base_url, media_values, params.href,
+                                 params.image_srcset, params.image_sizes);
+      }
       const auto* alternative_resource =
-          alternate_resource_info->FindMatchingEntry(params.href);
+          alternate_resource_info->FindMatchingEntry(url);
       if (alternative_resource &&
           alternative_resource->alternative_url().IsValid()) {
         params.href = alternative_resource->alternative_url();

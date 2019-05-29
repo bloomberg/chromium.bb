@@ -5,12 +5,16 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -22,6 +26,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -473,6 +478,157 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
 
   EXPECT_EQ(1, script_sxg_fetch_count);
   EXPECT_EQ(0, script_fetch_count);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       PrefetchAlternativeSubresourceSXG_ImageSrcsetAndSizes) {
+  int image1_sxg_fetch_count = 0;
+  int image1_fetch_count = 0;
+  int image2_sxg_fetch_count = 0;
+  int image2_fetch_count = 0;
+  const char* prefetch_path = "/prefetch.html";
+  const char* target_sxg_path = "/target.sxg";
+  const char* target_path = "/target.html";
+  const char* image1_sxg_path = "/image1_png.sxg";
+  const char* image1_path = "/image1.png";
+  const char* image2_sxg_path = "/image2_png.sxg";
+  const char* image2_path = "/image2.png";
+
+  base::RunLoop image1_sxg_prefetch_waiter;
+  RegisterRequestMonitor(embedded_test_server(), image1_sxg_path,
+                         &image1_sxg_fetch_count, &image1_sxg_prefetch_waiter);
+  base::RunLoop image1_prefetch_waiter;
+  RegisterRequestMonitor(embedded_test_server(), image1_path,
+                         &image1_fetch_count, &image1_prefetch_waiter);
+  base::RunLoop image2_sxg_prefetch_waiter;
+  RegisterRequestMonitor(embedded_test_server(), image2_sxg_path,
+                         &image2_sxg_fetch_count, &image2_sxg_prefetch_waiter);
+  base::RunLoop image2_prefetch_waiter;
+  RegisterRequestMonitor(embedded_test_server(), image2_path,
+                         &image2_fetch_count, &image2_prefetch_waiter);
+  RegisterRequestHandler(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL target_sxg_url = embedded_test_server()->GetURL(target_sxg_path);
+  const GURL target_url = embedded_test_server()->GetURL(target_path);
+  const GURL image1_sxg_url = embedded_test_server()->GetURL(image1_sxg_path);
+  const GURL image1_url = embedded_test_server()->GetURL(image1_path);
+  const GURL image2_sxg_url = embedded_test_server()->GetURL(image2_sxg_path);
+  const GURL image2_url = embedded_test_server()->GetURL(image2_path);
+
+  std::string image_contents;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath path;
+    ASSERT_TRUE(base::PathService::Get(content::DIR_TEST_DATA, &path));
+    path = path.AppendASCII("loader/empty16x16.png");
+    ASSERT_TRUE(base::PathExists(path));
+    ASSERT_TRUE(base::ReadFileToString(path, &image_contents));
+  }
+
+  const net::SHA256HashValue target_header_integrity = {{0x01}};
+  const net::SHA256HashValue image1_header_integrity = {{0x02}};
+  const net::SHA256HashValue image2_header_integrity = {{0x03}};
+  const std::string image1_header_integrity_string =
+      GetHeaderIntegrityString(image1_header_integrity);
+  const std::string image2_header_integrity_string =
+      GetHeaderIntegrityString(image2_header_integrity);
+
+  const std::string outer_link_header = base::StringPrintf(
+      "<%s>;"
+      "rel=\"alternate\";"
+      "type=\"application/signed-exchange;v=b3\";"
+      "anchor=\"%s\","
+      "<%s>;"
+      "rel=\"alternate\";"
+      "type=\"application/signed-exchange;v=b3\";"
+      "anchor=\"%s\"",
+      image1_sxg_url.spec().c_str(), image1_url.spec().c_str(),
+      image2_sxg_url.spec().c_str(), image2_url.spec().c_str());
+  const std::string inner_link_headers = base::StringPrintf(
+      "Link: "
+      "<%s>;rel=\"allowed-alt-sxg\";header-integrity=\"%s\","
+      "<%s>;rel=\"allowed-alt-sxg\";header-integrity=\"%s\","
+      "<%s>;rel=\"preload\";as=\"image\";"
+      // imagesrcset says the size of image1 is 320, and the size of image2 is
+      // 160.
+      "imagesrcset=\"%s 320w, %s 160w\";"
+      // imagesizes says the size of the image is 320. So image1 is selected.
+      "imagesizes=\"320px\"",
+      image1_url.spec().c_str(), image1_header_integrity_string.c_str(),
+      image2_url.spec().c_str(), image2_header_integrity_string.c_str(),
+      image2_url.spec().c_str(), image1_url.spec().c_str(),
+      image2_url.spec().c_str());
+
+  RegisterResponse(
+      prefetch_path,
+      ResponseEntry(base::StringPrintf(
+          "<body><link rel='prefetch' href='%s'></body>", target_sxg_path)));
+  RegisterResponse(image1_path, ResponseEntry(image_contents, "image/png"));
+  RegisterResponse(image2_path, ResponseEntry(image_contents, "image/png"));
+  RegisterResponse(
+      target_sxg_path,
+      // We mock the SignedExchangeHandler, so just return a HTML
+      // content as "application/signed-exchange;v=b3".
+      ResponseEntry(base::StringPrintf(
+                        "<head>"
+                        "<title>Prefetch Target (SXG)</title>"
+                        "</head>"
+                        "<img src=\"%s\" onload=\"document.title='done'\">",
+                        image1_url.spec().c_str()),
+                    "application/signed-exchange;v=b3",
+                    {{"x-content-type-options", "nosniff"},
+                     {"link", outer_link_header}}));
+  RegisterResponse(
+      image1_sxg_path,
+      // We mock the SignedExchangeHandler, so just return a JS
+      // content as "application/signed-exchange;v=b3".
+      ResponseEntry(image_contents, "application/signed-exchange;v=b3",
+                    {{"x-content-type-options", "nosniff"}}));
+  MockSignedExchangeHandlerFactory factory(
+      {MockSignedExchangeHandlerParams(
+           target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
+           target_url, "text/html", {inner_link_headers},
+           target_header_integrity),
+       MockSignedExchangeHandlerParams(
+           image1_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
+           image1_url, "image/png", {}, image1_header_integrity),
+       MockSignedExchangeHandlerParams(
+           image2_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
+           image2_url, "image/png", {}, image2_header_integrity)});
+  ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  image1_sxg_prefetch_waiter.Run();
+  EXPECT_EQ(1, image1_sxg_fetch_count);
+  EXPECT_EQ(0, image1_fetch_count);
+  EXPECT_EQ(0, image2_sxg_fetch_count);
+  EXPECT_EQ(0, image2_fetch_count);
+
+  WaitUntilLoaded(target_sxg_url);
+  WaitUntilLoaded(image1_sxg_url);
+
+  const auto cached_exchanges = GetCachedExchanges();
+  EXPECT_EQ(2u, cached_exchanges.size());
+
+  const auto target_it = cached_exchanges.find(target_sxg_url);
+  ASSERT_TRUE(target_it != cached_exchanges.end());
+  EXPECT_EQ(target_sxg_url, target_it->second->outer_url());
+  EXPECT_EQ(target_url, target_it->second->inner_url());
+  EXPECT_EQ(target_header_integrity, *target_it->second->header_integrity());
+
+  const auto image1_it = cached_exchanges.find(image1_sxg_url);
+  ASSERT_TRUE(image1_it != cached_exchanges.end());
+  EXPECT_EQ(image1_sxg_url, image1_it->second->outer_url());
+  EXPECT_EQ(image1_url, image1_it->second->inner_url());
+  EXPECT_EQ(image1_header_integrity, *image1_it->second->header_integrity());
+
+  NavigateToURLAndWaitTitle(target_sxg_url, "done");
+
+  EXPECT_EQ(1, image1_sxg_fetch_count);
+  EXPECT_EQ(0, image1_fetch_count);
+  EXPECT_EQ(0, image2_sxg_fetch_count);
+  EXPECT_EQ(0, image2_fetch_count);
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
