@@ -22,7 +22,8 @@
         android:layout_toStartOf="@+id/omnibox_answer_refine_icon"
         android:layout_width="0dp">
 
-        <ImageView
+        <org.chromium.ui.widget.RoundedCornerImageView
+            style="@style/RoundedCornerImageViewDefault"
             android:contentDescription="@null"
             android:id="@+id/omnibox_answer_icon"
             android:layout_centerVertical="true"
