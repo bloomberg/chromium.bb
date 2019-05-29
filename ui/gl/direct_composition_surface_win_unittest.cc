@@ -600,6 +600,48 @@ class DirectCompositionPixelTest : public DirectCompositionSurfaceTest {
     DirectCompositionSurfaceTest::TearDown();
   }
 
+  void InitializeForPixelTest(const gfx::Size& window_size,
+                              const gfx::Size& texture_size,
+                              const gfx::Rect& content_rect,
+                              const gfx::Rect& quad_rect) {
+    EXPECT_TRUE(surface_->Resize(window_size, 1.0,
+                                 GLSurface::ColorSpace::UNSPECIFIED, true));
+    EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
+
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+        QueryD3D11DeviceObjectFromANGLE();
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
+        CreateNV12Texture(d3d11_device, texture_size, true);
+    Microsoft::WRL::ComPtr<IDXGIResource1> resource;
+    texture.As(&resource);
+    HANDLE handle = 0;
+    resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
+                                 &handle);
+    // The format doesn't matter, since we aren't binding.
+    scoped_refptr<GLImageDXGI> image_dxgi(
+        new GLImageDXGI(texture_size, nullptr));
+    ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
+                                             gfx::BufferFormat::RGBA_8888));
+
+    // Pass content rect with odd with and height.  Surface should round up
+    // width and height when creating swap chain.
+    ui::DCRendererLayerParams params;
+    params.y_image = image_dxgi;
+    params.uv_image = image_dxgi;
+    params.content_rect = content_rect;
+    params.quad_rect = quad_rect;
+    surface_->ScheduleDCLayer(params);
+
+    EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+              surface_->SwapBuffers(base::DoNothing()));
+
+    Sleep(1000);
+  }
+
   void PixelTestSwapChain(bool layers_enabled) {
     if (!surface_)
       return;
@@ -782,36 +824,10 @@ TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
     return;
 
   gfx::Size window_size(100, 100);
-  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
-
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
-
   gfx::Size texture_size(50, 50);
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
-      CreateNV12Texture(d3d11_device, texture_size, true);
-  Microsoft::WRL::ComPtr<IDXGIResource1> resource;
-  texture.As(&resource);
-  HANDLE handle = 0;
-  resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
-                               &handle);
-  // The format doesn't matter, since we aren't binding.
-  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
-  ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
-                                           gfx::BufferFormat::RGBA_8888));
-
-  ui::DCRendererLayerParams params;
-  params.y_image = image_dxgi;
-  params.uv_image = image_dxgi;
-  params.content_rect = gfx::Rect(texture_size);
-  params.quad_rect = gfx::Rect(window_size);
-  surface_->ScheduleDCLayer(params);
-
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
-            surface_->SwapBuffers(base::DoNothing()));
-
-  Sleep(1000);
+  gfx::Rect content_rect(texture_size);
+  gfx::Rect quad_rect(window_size);
+  InitializeForPixelTest(window_size, texture_size, content_rect, quad_rect);
 
   SkColor expected_color = SkColorSetRGB(0xe1, 0x90, 0xeb);
   SkColor actual_color =
@@ -826,40 +842,10 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyBoundsRect) {
     return;
 
   gfx::Size window_size(100, 100);
-  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
-  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
-
-  glClearColor(0.0, 0.0, 0.0, 1.0);
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
-
   gfx::Size texture_size(50, 50);
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
-      CreateNV12Texture(d3d11_device, texture_size, true);
-  Microsoft::WRL::ComPtr<IDXGIResource1> resource;
-  texture.As(&resource);
-  HANDLE handle = 0;
-  resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
-                               &handle);
-  // The format doesn't matter, since we aren't binding.
-  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
-  ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
-                                           gfx::BufferFormat::RGBA_8888));
-
-  // Layer with empty bounds rect.
-  ui::DCRendererLayerParams params;
-  params.y_image = image_dxgi;
-  params.uv_image = image_dxgi;
-  params.content_rect = gfx::Rect(texture_size);
-  surface_->ScheduleDCLayer(params);
-
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
-            surface_->SwapBuffers(base::DoNothing()));
-
-  Sleep(1000);
+  gfx::Rect content_rect(texture_size);
+  gfx::Rect quad_rect;  // Layer with empty bounds rect.
+  InitializeForPixelTest(window_size, texture_size, content_rect, quad_rect);
 
   // No color is written since the visual committed to DirectComposition has no
   // content.
@@ -927,45 +913,14 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
 TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
   if (!surface_)
     return;
-  DirectCompositionSurfaceWin::SetPreferNV12OverlaysForTesting();
 
   gfx::Size window_size(100, 100);
-  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
-  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
-
-  glClearColor(0.0, 0.0, 0.0, 1.0);
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
-
   gfx::Size texture_size(50, 50);
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
-      CreateNV12Texture(d3d11_device, texture_size, true);
-  Microsoft::WRL::ComPtr<IDXGIResource1> resource;
-  texture.As(&resource);
-  HANDLE handle = 0;
-  resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
-                               &handle);
-  // The format doesn't matter, since we aren't binding.
-  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
-  ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
-                                           gfx::BufferFormat::RGBA_8888));
-
-  // Pass content rect with odd with and height.  Surface should round up width
-  // and height when creating swap chain.
-  ui::DCRendererLayerParams params;
-  params.y_image = image_dxgi;
-  params.uv_image = image_dxgi;
-  params.content_rect = gfx::Rect(0, 0, 49, 49);
-  params.quad_rect = gfx::Rect(window_size);
-  surface_->ScheduleDCLayer(params);
-
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
-            surface_->SwapBuffers(base::DoNothing()));
-
-  Sleep(1000);
+  // Pass content rect with odd with and height.  Surface should round up
+  // width and height when creating swap chain.
+  gfx::Rect content_rect(0, 0, 49, 49);
+  gfx::Rect quad_rect(window_size);
+  InitializeForPixelTest(window_size, texture_size, content_rect, quad_rect);
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
       surface_->GetLayerSwapChainForTesting(0);
@@ -993,40 +948,10 @@ TEST_F(DirectCompositionPixelTest, NonZeroBoundsOffset) {
   DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
 
   gfx::Size window_size(100, 100);
-  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                               GLSurface::ColorSpace::UNSPECIFIED, true));
-  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
-
-  glClearColor(0.0, 0.0, 0.0, 1.0);
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
-
   gfx::Size texture_size(50, 50);
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
-      CreateNV12Texture(d3d11_device, texture_size, true);
-  Microsoft::WRL::ComPtr<IDXGIResource1> resource;
-  texture.As(&resource);
-  HANDLE handle = 0;
-  resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
-                               &handle);
-  // The format doesn't matter, since we aren't binding.
-  scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
-  ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
-                                           gfx::BufferFormat::RGBA_8888));
-
-  ui::DCRendererLayerParams params;
-  params.y_image = image_dxgi;
-  params.uv_image = image_dxgi;
-  params.content_rect = gfx::Rect(texture_size);
-  params.quad_rect = gfx::Rect(gfx::Point(25, 25), texture_size);
-  surface_->ScheduleDCLayer(params);
-
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
-            surface_->SwapBuffers(base::DoNothing()));
-
-  Sleep(1000);
+  gfx::Rect content_rect(texture_size);
+  gfx::Rect quad_rect(gfx::Point(25, 25), texture_size);
+  InitializeForPixelTest(window_size, texture_size, content_rect, quad_rect);
 
   SkColor video_color = SkColorSetRGB(0xe1, 0x90, 0xeb);
   struct {

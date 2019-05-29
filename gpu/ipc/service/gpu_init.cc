@@ -71,6 +71,16 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info,
   return success;
 }
 
+#if defined(OS_WIN)
+OverlaySupport FlagsToOverlaySupport(UINT flags) {
+  if (flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING)
+    return OverlaySupport::kScaling;
+  if (flags & DXGI_OVERLAY_SUPPORT_FLAG_DIRECT)
+    return OverlaySupport::kDirect;
+  return OverlaySupport::kNone;
+}
+#endif  // OS_WIN
+
 void InitializePlatformOverlaySettings(GPUInfo* gpu_info) {
 #if defined(OS_WIN)
 // This has to be called after a context is created, active GPU is identified,
@@ -84,19 +94,12 @@ void InitializePlatformOverlaySettings(GPUInfo* gpu_info) {
         gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported();
     gpu_info->supports_overlays =
         gl::DirectCompositionSurfaceWin::AreOverlaysSupported();
-    bool supports_scaling = false;
-    if (gl::DirectCompositionSurfaceWin::SupportsOverlayFormat(
-            DXGI_FORMAT_YUY2, &supports_scaling)) {
-      gpu_info->yuy2_overlay_support = supports_scaling
-                                           ? gpu::OverlaySupport::kScaling
-                                           : gpu::OverlaySupport::kDirect;
-    }
-    if (gl::DirectCompositionSurfaceWin::SupportsOverlayFormat(
-            DXGI_FORMAT_NV12, &supports_scaling)) {
-      gpu_info->nv12_overlay_support = supports_scaling
-                                           ? gpu::OverlaySupport::kScaling
-                                           : gpu::OverlaySupport::kDirect;
-    }
+    gpu_info->nv12_overlay_support = FlagsToOverlaySupport(
+        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
+            DXGI_FORMAT_NV12));
+    gpu_info->yuy2_overlay_support = FlagsToOverlaySupport(
+        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
+            DXGI_FORMAT_YUY2));
   }
 #elif defined(OS_ANDROID)
   if (gpu_info->gpu.vendor_string == "Qualcomm")

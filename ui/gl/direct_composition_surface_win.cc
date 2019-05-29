@@ -31,11 +31,6 @@
 
 namespace gl {
 namespace {
-struct OverlaySupportInfo {
-  DXGI_FORMAT format;
-  UINT flags;
-};
-
 // Indicates support for either NV12 or YUY2 hardware overlays.
 bool g_supports_overlays = false;
 
@@ -47,12 +42,15 @@ gfx::Size g_overlay_monitor_size;
 // overlays using command line flags.
 DXGI_FORMAT g_overlay_format_used = DXGI_FORMAT_NV12;
 
-// This is the raw support info, which shouldn't depend on field trial state, or
-// command line flags. Ordered by most preferred to least preferred format.
-OverlaySupportInfo g_overlay_support_info[] = {
-    {DXGI_FORMAT_NV12, 0},
-    {DXGI_FORMAT_YUY2, 0},
-};
+// These are the raw support info, which shouldn't depend on field trial state,
+// or command line flags.
+UINT g_nv12_overlay_support_flags = 0;
+UINT g_yuy2_overlay_support_flags = 0;
+
+bool FlagsSupportsOverlays(UINT flags) {
+  return (flags & (DXGI_OVERLAY_SUPPORT_FLAG_DIRECT |
+                   DXGI_OVERLAY_SUPPORT_FLAG_SCALING));
+}
 
 void InitializeHardwareOverlaySupport() {
   static bool overlay_support_initialized = false;
@@ -95,7 +93,6 @@ void InitializeHardwareOverlaySupport() {
     return;
   }
 
-  bool supports_nv12_rec709 = false;
   unsigned int i = 0;
   while (true) {
     Microsoft::WRL::ComPtr<IDXGIOutput> output;
@@ -106,62 +103,47 @@ void InitializeHardwareOverlaySupport() {
     if (FAILED(output.As(&output3)))
       continue;
     DCHECK(output3);
+    output3->CheckOverlaySupport(DXGI_FORMAT_NV12, d3d11_device.Get(),
+                                 &g_nv12_overlay_support_flags);
+    output3->CheckOverlaySupport(DXGI_FORMAT_YUY2, d3d11_device.Get(),
+                                 &g_yuy2_overlay_support_flags);
+    if (FlagsSupportsOverlays(g_nv12_overlay_support_flags) &&
+        base::FeatureList::IsEnabled(
+            features::kDirectCompositionPreferNV12Overlays)) {
+      // NV12 format is preferred if it's supported.
 
-    // TODO(zmo): Get rid of the loop and just set two global vars for NV12
-    // and YUY2.
-    for (auto& info : g_overlay_support_info) {
-      if (FAILED(output3->CheckOverlaySupport(info.format, d3d11_device.Get(),
-                                              &info.flags))) {
-        continue;
-      }
       // Per Intel's request, use NV12 only when
       // COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 is also supported. Rec 709 is
       // commonly used for H.264 and HEVC. At least one Intel Gen9 SKU will not
       // support NV12 overlays.
-      if (info.format == DXGI_FORMAT_NV12) {
-        UINT color_space_support_flags = 0;
-        Microsoft::WRL::ComPtr<IDXGIOutput4> output4;
-        if (FAILED(output.As(&output4)))
-          continue;
-
-        if (FAILED(output4->CheckOverlayColorSpaceSupport(
-                info.format, DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709,
-                d3d11_device.Get(), &color_space_support_flags))) {
-          continue;
-        }
-        supports_nv12_rec709 =
-            !!(color_space_support_flags &
-               DXGI_OVERLAY_COLOR_SPACE_SUPPORT_FLAG_PRESENT);
-      }
-
-      // Formats are ordered by most preferred to least preferred. Don't choose
-      // a less preferred format, but keep going so that we can record overlay
-      // support for all formats in UMA.
-      if (g_supports_overlays)
-        continue;
-      // Overlays are supported for NV12 only if the feature flag to prefer NV12
-      // over YUY2 is enabled.
-      bool prefer_nv12 = base::FeatureList::IsEnabled(
-          features::kDirectCompositionPreferNV12Overlays);
-      if (info.format == DXGI_FORMAT_NV12 &&
-          (!prefer_nv12 || !supports_nv12_rec709))
-        continue;
-      // Some new Intel drivers only claim to support unscaled overlays, but
-      // scaled overlays still work. It's possible DWM works around it by
-      // performing an extra scaling Blt before calling the driver. Even when
-      // scaled overlays aren't actually supported, presentation using the
-      // overlay path should be relatively efficient.
-      if (info.flags & (DXGI_OVERLAY_SUPPORT_FLAG_DIRECT |
-                        DXGI_OVERLAY_SUPPORT_FLAG_SCALING)) {
-        g_overlay_format_used = info.format;
-
+      UINT color_space_support_flags = 0;
+      Microsoft::WRL::ComPtr<IDXGIOutput4> output4;
+      if (SUCCEEDED(output.As(&output4)) &&
+          SUCCEEDED(output4->CheckOverlayColorSpaceSupport(
+              DXGI_FORMAT_NV12, DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709,
+              d3d11_device.Get(), &color_space_support_flags)) &&
+          (color_space_support_flags &
+           DXGI_OVERLAY_COLOR_SPACE_SUPPORT_FLAG_PRESENT)) {
+        // Some new Intel drivers only claim to support unscaled overlays, but
+        // scaled overlays still work. It's possible DWM works around it by
+        // performing an extra scaling Blt before calling the driver. Even when
+        // scaled overlays aren't actually supported, presentation using the
+        // overlay path should be relatively efficient.
+        g_overlay_format_used = DXGI_FORMAT_NV12;
         g_supports_overlays = true;
-
-        DXGI_OUTPUT_DESC monitor_desc = {};
-        if (SUCCEEDED(output3->GetDesc(&monitor_desc))) {
-          g_overlay_monitor_size =
-              gfx::Rect(monitor_desc.DesktopCoordinates).size();
-        }
+      }
+    }
+    if (!g_supports_overlays &&
+        FlagsSupportsOverlays(g_yuy2_overlay_support_flags)) {
+      // If NV12 isn't supported, fallback to YUY2 if it's supported.
+      g_overlay_format_used = DXGI_FORMAT_YUY2;
+      g_supports_overlays = true;
+    }
+    if (g_supports_overlays) {
+      DXGI_OUTPUT_DESC monitor_desc = {};
+      if (SUCCEEDED(output3->GetDesc(&monitor_desc))) {
+        g_overlay_monitor_size =
+            gfx::Rect(monitor_desc.DesktopCoordinates).size();
       }
     }
     // Early out after the first output that reports overlay support. All
@@ -278,30 +260,20 @@ void DirectCompositionSurfaceWin::DisableOverlays() {
 
 // static
 bool DirectCompositionSurfaceWin::AreScaledOverlaysSupported() {
-  for (const auto& info : g_overlay_support_info) {
-    if (info.format == g_overlay_format_used)
-      return !!(info.flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
-  }
-  NOTREACHED();
-  return false;
+  InitializeHardwareOverlaySupport();
+  if (g_overlay_format_used == DXGI_FORMAT_NV12)
+    return !!(g_nv12_overlay_support_flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
+  DCHECK_EQ(DXGI_FORMAT_YUY2, g_overlay_format_used);
+  return !!(g_yuy2_overlay_support_flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
 }
 
 // static
-bool DirectCompositionSurfaceWin::SupportsOverlayFormat(
-    DXGI_FORMAT format,
-    bool* supports_scaling) {
+UINT DirectCompositionSurfaceWin::GetOverlaySupportFlags(DXGI_FORMAT format) {
   InitializeHardwareOverlaySupport();
-  DCHECK(supports_scaling);
-  *supports_scaling = false;
-  for (const auto& info : g_overlay_support_info) {
-    if (info.flags) {
-      if (format == info.format) {
-        *supports_scaling = !!(info.flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
-        return true;
-      }
-    }
-  }
-  return false;
+  if (format == DXGI_FORMAT_NV12)
+    return g_nv12_overlay_support_flags;
+  DCHECK_EQ(DXGI_FORMAT_YUY2, format);
+  return g_yuy2_overlay_support_flags;
 }
 
 // static
@@ -317,17 +289,18 @@ DXGI_FORMAT DirectCompositionSurfaceWin::GetOverlayFormatUsed() {
 // static
 void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
     bool supported) {
-  for (auto& info : g_overlay_support_info) {
-    if (supported)
-      info.flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
-    else
-      info.flags &= ~DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
+  if (supported) {
+    g_nv12_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
+    g_yuy2_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
+  } else {
+    g_nv12_overlay_support_flags &= ~DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
+    g_yuy2_overlay_support_flags &= ~DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
   }
 }
 
 // static
-void DirectCompositionSurfaceWin::SetPreferNV12OverlaysForTesting() {
-  g_overlay_format_used = DXGI_FORMAT_NV12;
+void DirectCompositionSurfaceWin::SetPreferYUY2OverlaysForTesting() {
+  g_overlay_format_used = DXGI_FORMAT_YUY2;
 }
 
 // static
