@@ -86,6 +86,51 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
+#pragma mark - Tab Utilities
+
+- (void)selectTabAtIndex:(NSUInteger)index {
+  [ChromeEarlGreyAppInterface selectTabAtIndex:index];
+}
+
+- (BOOL)isIncognitoMode {
+  return [ChromeEarlGreyAppInterface isIncognitoMode];
+}
+
+- (void)closeTabAtIndex:(NSUInteger)index {
+  [ChromeEarlGreyAppInterface closeTabAtIndex:index];
+}
+
+- (NSUInteger)mainTabCount {
+  return [ChromeEarlGreyAppInterface mainTabCount];
+}
+
+- (NSUInteger)incognitoTabCount {
+  return [ChromeEarlGreyAppInterface incognitoTabCount];
+}
+
+- (NSUInteger)evictedMainTabCount {
+  return [ChromeEarlGreyAppInterface evictedMainTabCount];
+}
+
+- (void)evictOtherTabModelTabs {
+  [ChromeEarlGreyAppInterface evictOtherTabModelTabs];
+}
+
+- (void)simulateTabsBackgrounding {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface simulateTabsBackgrounding]);
+}
+
+- (void)setCurrentTabsToBeColdStartTabs {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface setCurrentTabsToBeColdStartTabs]);
+}
+
+- (void)resetTabUsageRecorder {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface resetTabUsageRecorder]);
+}
+
 - (NSError*)openNewTab {
   [ChromeEarlGreyAppInterface openNewTab];
   [self waitForPageToFinishLoading];
@@ -154,6 +199,11 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 - (NSError*)loadURL:(const GURL&)URL {
   return [self loadURL:URL waitForCompletion:YES];
 }
+
+- (BOOL)isLoading {
+  return [ChromeEarlGreyAppInterface isLoading];
+}
+
 - (NSError*)waitForSufficientlyVisibleElementWithMatcher:
     (id<GREYMatcher>)matcher {
   NSString* errorDescription = [NSString
@@ -392,10 +442,6 @@ id ExecuteJavaScript(NSString* javascript,
 
 #pragma mark - Navigation Utilities
 
-- (BOOL)isLoading {
-  return chrome_test_util::IsLoading();
-}
-
 - (NSError*)waitForErrorPage {
   NSString* const kErrorPageText =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
@@ -610,52 +656,6 @@ id ExecuteJavaScript(NSString* javascript,
         @"Error occurred during verification sessions.");
   }
   return nil;
-}
-
-#pragma mark - Tab Utilities
-
-- (void)selectTabAtIndex:(NSUInteger)index {
-  chrome_test_util::SelectTabAtIndexInCurrentMode(index);
-}
-
-- (BOOL)isIncognitoMode {
-  return chrome_test_util::IsIncognitoMode();
-}
-
-- (void)closeTabAtIndex:(NSUInteger)index {
-  chrome_test_util::CloseTabAtIndex(index);
-}
-
-- (NSUInteger)mainTabCount {
-  return chrome_test_util::GetMainTabCount();
-}
-
-- (NSUInteger)incognitoTabCount {
-  return chrome_test_util::GetIncognitoTabCount();
-}
-
-- (NSUInteger)evictedMainTabCount {
-  return chrome_test_util::GetEvictedMainTabCount();
-}
-
-- (void)evictOtherTabModelTabs {
-  chrome_test_util::EvictOtherTabModelTabs();
-}
-
-- (void)simulateTabsBackgrounding {
-  EG_TEST_HELPER_ASSERT_TRUE(chrome_test_util::SimulateTabsBackgrounding(),
-                             @"Fail to simulate tab backgrounding.");
-}
-
-- (void)setCurrentTabsToBeColdStartTabs {
-  EG_TEST_HELPER_ASSERT_TRUE(
-      chrome_test_util::SetCurrentTabsToBeColdStartTabs(),
-      @"Fail to state tabs as cold start tabs");
-}
-
-- (void)resetTabUsageRecorder {
-  EG_TEST_HELPER_ASSERT_TRUE(chrome_test_util::ResetTabUsageRecorder(),
-                             @"Fail to reset the TabUsageRecorder");
 }
 
 @end

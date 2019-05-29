@@ -36,6 +36,46 @@
 // Reloads the page without waiting for the page to load.
 + (void)startReloading;
 
+#pragma mark - Tab Utilities
+
+// Selects tab with given index in current mode (incognito or main
+// (non-incognito)).
++ (void)selectTabAtIndex:(NSUInteger)index;
+
+// Closes tab with the given index in current mode (incognito or main
+// (non-incognito)).
++ (void)closeTabAtIndex:(NSUInteger)index;
+
+// Returns YES if the browser is in incognito mode, and NO otherwise.
++ (BOOL)isIncognitoMode WARN_UNUSED_RESULT;
+
+// Returns the number of open non-incognito tabs.
++ (NSUInteger)mainTabCount WARN_UNUSED_RESULT;
+
+// Returns the number of open incognito tabs.
++ (NSUInteger)incognitoTabCount WARN_UNUSED_RESULT;
+
+// Simulates a backgrounding.
+// If not succeed returns an NSError indicating  why the
+// operation failed, otherwise nil.
++ (NSError*)simulateTabsBackgrounding;
+
+// Returns the number of main (non-incognito) tabs currently evicted.
++ (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;
+
+// Evicts the tabs associated with the non-current browser mode.
++ (void)evictOtherTabModelTabs;
+
+// Sets the normal tabs as 'cold start' tabs
+// If not succeed returns an NSError indicating  why the
+// operation failed, otherwise nil.
++ (NSError*)setCurrentTabsToBeColdStartTabs;
+
+// Resets the tab usage recorder on current mode.
+// If not succeed returns an NSError indicating  why the
+// operation failed, otherwise nil.
++ (NSError*)resetTabUsageRecorder;
+
 // Opens a new tab, and does not wait for animations to complete.
 + (void)openNewTab;
 
@@ -75,12 +115,6 @@
 // If not succeed returns an NSError indicating  why the operation failed,
 // otherwise nil.
 + (NSError*)waitForWebStateNotContainingText:(NSString*)text;
-
-// Returns the number of open non-incognito tabs.
-+ (NSUInteger)mainTabCount;
-
-// Returns the number of open incognito tabs.
-+ (NSUInteger)incognitoTabCount;
 
 // Sets value for content setting.
 + (void)setContentSettings:(ContentSetting)setting;

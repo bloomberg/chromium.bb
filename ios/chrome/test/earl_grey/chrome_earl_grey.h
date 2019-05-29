@@ -61,6 +61,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)loadURL:(const GURL&)URL;
 
+// Returns YES if the current WebState is loading.
+- (BOOL)isLoading WARN_UNUSED_RESULT;
+
 // Reloads the page and waits for the loading to complete within a timeout, or a
 // GREYAssert is induced.
 // TODO(crbug.com/963613): Change return type to void when
@@ -143,7 +146,7 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // the real one.
 - (void)tearDownFakeSyncServer;
 
-#pragma mark - Tab Utilities
+#pragma mark - Tab Utilities (EG2)
 
 // Opens a new tab and waits for the new tab animation to complete within a
 // timeout, or a GREYAssert is induced.
@@ -174,6 +177,41 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // does not wait for the UI to complete. If current mode is Incognito, mode will
 // be switched to main (non-incognito) after closing the incognito tabs.
 - (void)closeAllTabs;
+
+// Selects tab with given index in current mode (incognito or main
+// (non-incognito)).
+- (void)selectTabAtIndex:(NSUInteger)index;
+
+// Closes tab with the given index in current mode (incognito or main
+// (non-incognito)).
+- (void)closeTabAtIndex:(NSUInteger)index;
+
+// Returns YES if the browser is in incognito mode, and NO otherwise.
+- (BOOL)isIncognitoMode WARN_UNUSED_RESULT;
+
+// Returns the number of main (non-incognito) tabs.
+- (NSUInteger)mainTabCount WARN_UNUSED_RESULT;
+
+// Returns the number of incognito tabs.
+- (NSUInteger)incognitoTabCount WARN_UNUSED_RESULT;
+
+// Simulates a backgrounding and raises an EarlGrey exception if simulation not
+// succeeded.
+- (void)simulateTabsBackgrounding;
+
+// Returns the number of main (non-incognito) tabs currently evicted.
+- (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;
+
+// Evicts the tabs associated with the non-current browser mode.
+- (void)evictOtherTabModelTabs;
+
+// Sets the normal tabs as 'cold start' tabs and raises an EarlGrey exception if
+// operation not succeeded.
+- (void)setCurrentTabsToBeColdStartTabs;
+
+// Resets the tab usage recorder on current mode and raises an EarlGrey
+// exception if operation not succeeded.
+- (void)resetTabUsageRecorder;
 
 #pragma mark - SignIn Utilities
 
@@ -244,9 +282,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 - (NSDictionary*)cookies;
 
 #pragma mark - Navigation Utilities
-
-// Checks whether current WebState is loading.
-- (BOOL)isLoading WARN_UNUSED_RESULT;
 
 // Waits for a static html view containing |text|. If the condition is not met
 // within a timeout, a GREYAssert is induced.
@@ -345,43 +380,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // the SessionsHierarchy class for documentation regarding the verification.
 - (NSError*)verifySyncServerURLs:(const std::multiset<std::string>&)URLs
     WARN_UNUSED_RESULT;
-
-#pragma mark - Tab Utilities
-
-// Selects tab with given index in current mode (incognito or main
-// (non-incognito)).
-- (void)selectTabAtIndex:(NSUInteger)index;
-
-// Closes tab with the given index in current mode (incognito or main
-// (non-incognito)).
-- (void)closeTabAtIndex:(NSUInteger)index;
-
-// Returns YES if the browser is in incognito mode, and NO otherwise.
-- (BOOL)isIncognitoMode WARN_UNUSED_RESULT;
-
-// Returns the number of main (non-incognito) tabs.
-- (NSUInteger)mainTabCount WARN_UNUSED_RESULT;
-
-// Returns the number of incognito tabs.
-- (NSUInteger)incognitoTabCount WARN_UNUSED_RESULT;
-
-// Simulates a backgrounding and raises an EarlGrey exception if simulation not
-// succeeded.
-- (void)simulateTabsBackgrounding;
-
-// Returns the number of main (non-incognito) tabs currently evicted.
-- (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;
-
-// Evicts the tabs associated with the non-current browser mode.
-- (void)evictOtherTabModelTabs;
-
-// Sets the normal tabs as 'cold start' tabs and raises an EarlGrey exception if
-// operation not succeeded.
-- (void)setCurrentTabsToBeColdStartTabs;
-
-// Resets the tab usage recorder on current mode and raises an EarlGrey
-// exception if operation not succeeded.
-- (void)resetTabUsageRecorder;
 
 @end
 

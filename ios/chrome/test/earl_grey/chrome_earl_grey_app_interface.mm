@@ -63,6 +63,60 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   [BrowserCommandDispatcherForMainBVC() reload];
 }
 
+#pragma mark - Tab Utilities
+
++ (void)selectTabAtIndex:(NSUInteger)index {
+  chrome_test_util::SelectTabAtIndexInCurrentMode(index);
+}
+
++ (BOOL)isIncognitoMode {
+  return chrome_test_util::IsIncognitoMode();
+}
+
++ (void)closeTabAtIndex:(NSUInteger)index {
+  chrome_test_util::CloseTabAtIndex(index);
+}
+
++ (NSUInteger)mainTabCount {
+  return chrome_test_util::GetMainTabCount();
+}
+
++ (NSUInteger)incognitoTabCount {
+  return chrome_test_util::GetIncognitoTabCount();
+}
+
++ (NSUInteger)evictedMainTabCount {
+  return chrome_test_util::GetEvictedMainTabCount();
+}
+
++ (void)evictOtherTabModelTabs {
+  chrome_test_util::EvictOtherTabModelTabs();
+}
+
++ (NSError*)simulateTabsBackgrounding {
+  if (!chrome_test_util::SimulateTabsBackgrounding()) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Fail to simulate tab backgrounding.");
+  }
+  return nil;
+}
+
++ (NSError*)setCurrentTabsToBeColdStartTabs {
+  if (!chrome_test_util::SetCurrentTabsToBeColdStartTabs()) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Fail to state tabs as cold start tabs");
+  }
+  return nil;
+}
+
++ (NSError*)resetTabUsageRecorder {
+  if (!chrome_test_util::ResetTabUsageRecorder()) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Fail to reset the TabUsageRecorder");
+  }
+  return nil;
+}
+
 + (void)openNewTab {
   chrome_test_util::OpenNewTab();
 }
@@ -123,14 +177,6 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
     return testing::NSErrorWithLocalizedDescription(NSErrorDescription);
   }
   return nil;
-}
-
-+ (NSUInteger)mainTabCount {
-  return chrome_test_util::GetMainTabCount();
-}
-
-+ (NSUInteger)incognitoTabCount {
-  return chrome_test_util::GetIncognitoTabCount();
 }
 
 + (void)setContentSettings:(ContentSetting)setting {
