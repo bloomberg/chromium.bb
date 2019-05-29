@@ -2547,6 +2547,14 @@ void WebContentsImpl::UpdateUserGestureCarryoverInfo() {
 }
 #endif
 
+bool WebContentsImpl::ShouldSetKeyboardFocusOnMouseDown() {
+  return !delegate_ || delegate_->ShouldSetKeyboardFocusOnMouseDown();
+}
+
+bool WebContentsImpl::ShouldSetLogicalFocusOnMouseDown() {
+  return !delegate_ || delegate_->ShouldSetLogicalFocusOnMouseDown();
+}
+
 bool WebContentsImpl::IsFullscreenForCurrentTab() {
   return delegate_ ? delegate_->IsFullscreenForTabOrPending(this) : false;
 }
