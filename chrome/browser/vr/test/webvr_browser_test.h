@@ -41,9 +41,9 @@ class WebVrBrowserTestBase : public WebXrVrBrowserTestBase {
 };
 
 // Test class with OpenVR support disabled.
-class WebVrBrowserTestOpenVrDisabled : public WebVrBrowserTestBase {
+class WebVrRuntimelessBrowserTest : public WebVrBrowserTestBase {
  public:
-  WebVrBrowserTestOpenVrDisabled() {
+  WebVrRuntimelessBrowserTest() {
     append_switches_.push_back(switches::kEnableWebVR);
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
@@ -55,9 +55,9 @@ class WebVrBrowserTestOpenVrDisabled : public WebVrBrowserTestBase {
 // OpenVR feature only defined on Windows.
 #ifdef OS_WIN
 // Test class with standard features enabled: WebVR and OpenVR support.
-class WebVrBrowserTestStandard : public WebVrBrowserTestBase {
+class WebVrOpenVrBrowserTest : public WebVrBrowserTestBase {
  public:
-  WebVrBrowserTestStandard() {
+  WebVrOpenVrBrowserTest() {
     append_switches_.push_back(switches::kEnableWebVR);
     enable_features_.push_back(features::kOpenVR);
 
@@ -70,9 +70,9 @@ class WebVrBrowserTestStandard : public WebVrBrowserTestBase {
 };
 
 // Test class with WebVR disabled.
-class WebVrBrowserTestWebVrDisabled : public WebVrBrowserTestBase {
+class WebVrOpenVrBrowserTestWebVrDisabled : public WebVrBrowserTestBase {
  public:
-  WebVrBrowserTestWebVrDisabled() {
+  WebVrOpenVrBrowserTestWebVrDisabled() {
     enable_features_.push_back(features::kOpenVR);
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)

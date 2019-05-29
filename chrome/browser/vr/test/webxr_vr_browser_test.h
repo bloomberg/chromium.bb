@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/vr/test/conditional_skipping.h"
+#include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/webxr_browser_test.h"
 #include "chrome/browser/vr/test/xr_browser_test.h"
 #include "chrome/common/chrome_features.h"
@@ -22,9 +23,10 @@
 
 namespace vr {
 
-// WebXR for VR-specific test base class.
+// WebXR for VR-specific test base class without any particular runtime.
 class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
  public:
+  WebXrVrBrowserTestBase() { enable_features_.push_back(features::kWebXr); }
   void EnterSessionWithUserGesture(content::WebContents* web_contents) override;
   void EnterSessionWithUserGestureOrFail(
       content::WebContents* web_contents) override;
@@ -45,11 +47,9 @@ class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
 };
 
 // Test class with OpenVR disabled.
-class WebXrVrBrowserTestOpenVrDisabled : public WebXrVrBrowserTestBase {
+class WebXrVrRuntimelessBrowserTest : public WebXrVrBrowserTestBase {
  public:
-  WebXrVrBrowserTestOpenVrDisabled() {
-    enable_features_.push_back(features::kWebXr);
-
+  WebXrVrRuntimelessBrowserTest() {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
     disable_features_.push_back(features::kWindowsMixedReality);
 #endif
@@ -58,18 +58,14 @@ class WebXrVrBrowserTestOpenVrDisabled : public WebXrVrBrowserTestBase {
 
 // WebXrOrientationSensorDevice is only defined when the enable_vr flag is set.
 #if BUILDFLAG(ENABLE_VR)
-class WebXrVrBrowserTestSensorless : public WebXrVrBrowserTestBase {
+class WebXrVrRuntimelessBrowserTestSensorless
+    : public WebXrVrRuntimelessBrowserTest {
  public:
-  WebXrVrBrowserTestSensorless() {
-    enable_features_.push_back(features::kWebXr);
+  WebXrVrRuntimelessBrowserTestSensorless() {
     disable_features_.push_back(device::kWebXrOrientationSensorDevice);
-
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-    disable_features_.push_back(features::kWindowsMixedReality);
-#endif
   }
 };
-#endif
+#endif  // BUILDFLAG(ENABLE_VR)
 
 // OpenVR and WMR feature only defined on Windows.
 #ifdef OS_WIN
@@ -78,46 +74,61 @@ class WebXrVrOpenVrBrowserTestBase : public WebXrVrBrowserTestBase {
  public:
   WebXrVrOpenVrBrowserTestBase() {
     enable_features_.push_back(features::kOpenVR);
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    disable_features_.push_back(features::kWindowsMixedReality);
+#endif
   }
   XrBrowserTestBase::RuntimeType GetRuntimeType() const override;
 };
 
 // WMR-specific subclass of WebXrVrBrowserTestBase.
-class WebXrVrWMRBrowserTestBase : public WebXrVrBrowserTestBase {
+class WebXrVrWmrBrowserTestBase : public WebXrVrBrowserTestBase {
  public:
+  WebXrVrWmrBrowserTestBase();
+  ~WebXrVrWmrBrowserTestBase() override;
+  void PreRunTestOnMainThread() override;
   // WMR enabled by default, so no need to add anything in the constructor.
   XrBrowserTestBase::RuntimeType GetRuntimeType() const override;
+
+ private:
+  // We create this before the test starts so that a test hook is always
+  // registered, and thus the mock WMR wrappers are always used in tests. If a
+  // test needs to actually use the test hook for input, then the one the test
+  // creates will simply be registered over this one.
+  std::unique_ptr<MockXRDeviceHookBase> dummy_hook_;
 };
 
 // Test class with standard features enabled: WebXR and OpenVR.
-class WebXrVrBrowserTestStandard : public WebXrVrOpenVrBrowserTestBase {
+class WebXrVrOpenVrBrowserTest : public WebXrVrOpenVrBrowserTestBase {
  public:
-  WebXrVrBrowserTestStandard() {
-    enable_features_.push_back(features::kWebXr);
-
+  WebXrVrOpenVrBrowserTest() {
+    // We know at this point that we're going to be running with both OpenVR and
+    // WebXR enabled, so enforce the DirectX 11.1 requirement.
     runtime_requirements_.push_back(XrTestRequirement::DIRECTX_11_1);
-
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-    disable_features_.push_back(features::kWindowsMixedReality);
-#endif
   }
 };
 
-class WebXrVrBrowserTestWMR : public WebXrVrWMRBrowserTestBase {
+class WebXrVrWmrBrowserTest : public WebXrVrWmrBrowserTestBase {
  public:
-  WebXrVrBrowserTestWMR() {
+  WebXrVrWmrBrowserTest() {
     // WMR already enabled by default.
-    enable_features_.push_back(features::kWebXr);
+    runtime_requirements_.push_back(XrTestRequirement::DIRECTX_11_1);
   }
 };
 
-// Test class with WebXR disabled.
-class WebXrVrBrowserTestWebXrDisabled : public WebXrVrOpenVrBrowserTestBase {
+// Test classes with WebXR disabled.
+class WebXrVrOpenVrBrowserTestWebXrDisabled
+    : public WebXrVrOpenVrBrowserTestBase {
  public:
-  WebXrVrBrowserTestWebXrDisabled() {
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-    disable_features_.push_back(features::kWindowsMixedReality);
-#endif
+  WebXrVrOpenVrBrowserTestWebXrDisabled() {
+    disable_features_.push_back(features::kWebXr);
+  }
+};
+
+class WebXrVrWmrBrowserTestWebXrDisabled : public WebXrVrWmrBrowserTestBase {
+ public:
+  WebXrVrWmrBrowserTestWebXrDisabled() {
+    disable_features_.push_back(features::kWebXr);
   }
 };
 #endif  // OS_WIN

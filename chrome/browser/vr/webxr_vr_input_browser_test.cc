@@ -27,11 +27,11 @@ void TestPresentationLocksFocusImpl(WebXrVrBrowserTestBase* t,
   t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard, TestPresentationLocksFocus) {
+IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestPresentationLocksFocus) {
   TestPresentationLocksFocusImpl(this, "test_presentation_locks_focus");
 }
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestPresentationLocksFocus) {
-  TestPresentationLocksFocusImpl(this, "webxr_test_presentation_locks_focus");
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationLocksFocus) {
+  TestPresentationLocksFocusImpl(t, "webxr_test_presentation_locks_focus");
 }
 
 class WebXrControllerInputMock : public MockXRDeviceHookBase {
@@ -206,39 +206,42 @@ void WebXrControllerInputMock::OnFrameSubmitted(
 
 // Ensure that when an input source's handedness changes, an input source change
 // event is fired and a new input source is created.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestInputHandednessChange) {
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestInputHandednessChange) {
   WebXrControllerInputMock my_mock;
   unsigned int controller_index =
-      my_mock.CreateAndConnectMinimalGamepad(GetPrimaryAxisType());
+      my_mock.CreateAndConnectMinimalGamepad(t->GetPrimaryAxisType());
 
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
-  EnterSessionWithUserGestureOrFail();
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
+  t->EnterSessionWithUserGestureOrFail();
 
   // We should only have seen the first change indicating we have input sources.
-  PollJavaScriptBooleanOrFail("inputChangeEvents === 1", kPollTimeoutShort);
+  t->PollJavaScriptBooleanOrFail("inputChangeEvents === 1",
+                                 WebXrVrBrowserTestBase::kPollTimeoutShort);
 
   // We only expect one input source, cache it.
-  RunJavaScriptOrFail("validateInputSourceLength(1)");
-  RunJavaScriptOrFail("updateCachedInputSource(0)");
+  t->RunJavaScriptOrFail("validateInputSourceLength(1)");
+  t->RunJavaScriptOrFail("updateCachedInputSource(0)");
 
   // Change the handedness from right to left and verify that we get a change
   // event.  Then cache the new input source.
   my_mock.UpdateControllerRole(controller_index,
                                device::ControllerRole::kControllerRoleLeft);
-  PollJavaScriptBooleanOrFail("inputChangeEvents === 2", kPollTimeoutShort);
-  RunJavaScriptOrFail("validateCachedSourcePresence(false)");
-  RunJavaScriptOrFail("validateInputSourceLength(1)");
-  RunJavaScriptOrFail("updateCachedInputSource(0)");
+  t->PollJavaScriptBooleanOrFail("inputChangeEvents === 2",
+                                 WebXrVrBrowserTestBase::kPollTimeoutShort);
+  t->RunJavaScriptOrFail("validateCachedSourcePresence(false)");
+  t->RunJavaScriptOrFail("validateInputSourceLength(1)");
+  t->RunJavaScriptOrFail("updateCachedInputSource(0)");
 
   // Switch back to the right hand and confirm that we get the change.
   my_mock.UpdateControllerRole(controller_index,
                                device::ControllerRole::kControllerRoleRight);
-  PollJavaScriptBooleanOrFail("inputChangeEvents === 3", kPollTimeoutShort);
-  RunJavaScriptOrFail("validateCachedSourcePresence(false)");
-  RunJavaScriptOrFail("validateInputSourceLength(1)");
-  RunJavaScriptOrFail("done()");
-  EndTest();
+  t->PollJavaScriptBooleanOrFail("inputChangeEvents === 3",
+                                 WebXrVrBrowserTestBase::kPollTimeoutShort);
+  t->RunJavaScriptOrFail("validateCachedSourcePresence(false)");
+  t->RunJavaScriptOrFail("validateInputSourceLength(1)");
+  t->RunJavaScriptOrFail("done()");
+  t->EndTest();
 }
 
 // Test that inputsourceschange events contain only the expected added/removed
@@ -246,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestInputHandednessChange) {
 // Also validates that if an input source changes substantially we get an event
 // containing both the removal of the old one and the additon of the new one,
 // rather than two events.
-void TestInputSourcesChangeImpl(WebXrVrBrowserTestBase* t) {
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestInputSourcesChange) {
   WebXrControllerInputMock my_mock;
 
   // TODO(crbug.com/963676): Figure out if the race is a product or test bug.
@@ -315,20 +318,12 @@ void TestInputSourcesChangeImpl(WebXrVrBrowserTestBase* t) {
   t->EndTest();
 }
 
-// OpenVR version of TestInputSourcesChange.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestInputSourcesChange) {
-  TestInputSourcesChangeImpl(this);
-}
-
-// WMR version of TestInputSourcesChange.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWMR, TestInputSourcesChange) {
-  TestInputSourcesChangeImpl(this);
-}
-
 // Ensure that changes to a gamepad object respect that it is the same object
 // and that if whether or not an input source has a gamepad changes that the
 // input source change event is fired and a new input source is created.
-void TestInputGamepadSameObjectImpl(WebXrVrBrowserTestBase* t) {
+// OpenVR-only since WMR doesn't support the notion of an incomplete gamepad
+// except if using voice input, which is currently not supported in tests.
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestInputGamepadSameObject) {
   WebXrControllerInputMock my_mock;
 
   // Create a set of buttons and axes that don't have enough data to be made
@@ -356,65 +351,52 @@ void TestInputGamepadSameObjectImpl(WebXrVrBrowserTestBase* t) {
       device::ControllerRole::kControllerRoleRight, insufficient_axis_types,
       insufficient_buttons);
 
-  t->LoadUrlAndAwaitInitialization(
-      t->GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
-  t->EnterSessionWithUserGestureOrFail();
+  LoadUrlAndAwaitInitialization(
+      GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
+  EnterSessionWithUserGestureOrFail();
 
   // We should only have seen the first change indicating we have input sources.
-  t->PollJavaScriptBooleanOrFail("inputChangeEvents === 1",
-                                 WebXrVrBrowserTestBase::kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 1", kPollTimeoutShort);
 
   // We only expect one input source, cache it.
-  t->RunJavaScriptOrFail("validateInputSourceLength(1)");
-  t->RunJavaScriptOrFail("updateCachedInputSource(0)");
+  RunJavaScriptOrFail("validateInputSourceLength(1)");
+  RunJavaScriptOrFail("updateCachedInputSource(0)");
 
   // Toggle a button and confirm that the controller is still the same.
   my_mock.PressReleasePrimaryTrigger(controller_index);
-  t->RunJavaScriptOrFail("validateCachedSourcePresence(true)");
-  t->RunJavaScriptOrFail("validateCurrentAndCachedGamepadMatch()");
+  RunJavaScriptOrFail("validateCachedSourcePresence(true)");
+  RunJavaScriptOrFail("validateCurrentAndCachedGamepadMatch()");
 
   // Update the controller to now support a gamepad and verify that we get a
   // change event and that the old controller isn't present.  Then cache the new
   // one.
   my_mock.UpdateControllerSupport(controller_index, sufficient_axis_types,
                                   sufficient_buttons);
-  t->PollJavaScriptBooleanOrFail("inputChangeEvents === 2",
-                                 WebXrVrBrowserTestBase::kPollTimeoutShort);
-  t->RunJavaScriptOrFail("validateCachedSourcePresence(false)");
-  t->RunJavaScriptOrFail("validateInputSourceLength(1)");
-  t->RunJavaScriptOrFail("updateCachedInputSource(0)");
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 2", kPollTimeoutShort);
+  RunJavaScriptOrFail("validateCachedSourcePresence(false)");
+  RunJavaScriptOrFail("validateInputSourceLength(1)");
+  RunJavaScriptOrFail("updateCachedInputSource(0)");
 
   // Toggle a button and confirm that the controller is still the same.
   my_mock.PressReleasePrimaryTrigger(controller_index);
-  t->RunJavaScriptOrFail("validateCachedSourcePresence(true)");
-  t->RunJavaScriptOrFail("validateCurrentAndCachedGamepadMatch()");
+  RunJavaScriptOrFail("validateCachedSourcePresence(true)");
+  RunJavaScriptOrFail("validateCurrentAndCachedGamepadMatch()");
 
   // Switch back to the insufficient gamepad and confirm that we get the change.
   my_mock.UpdateControllerSupport(controller_index, insufficient_axis_types,
                                   insufficient_buttons);
-  t->PollJavaScriptBooleanOrFail("inputChangeEvents === 3",
-                                 WebXrVrBrowserTestBase::kPollTimeoutShort);
-  t->RunJavaScriptOrFail("validateCachedSourcePresence(false)");
-  t->RunJavaScriptOrFail("validateInputSourceLength(1)");
-  t->RunJavaScriptOrFail("done()");
-  t->EndTest();
-}
-
-// OpenVR version of TestInputGamepadSameObject.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestInputGamepadSameObject) {
-  TestInputSourcesChangeImpl(this);
-}
-
-// WMR version of TestInputGamepadSameObject.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWMR, TestInputGamepadSameObject) {
-  TestInputSourcesChangeImpl(this);
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 3", kPollTimeoutShort);
+  RunJavaScriptOrFail("validateCachedSourcePresence(false)");
+  RunJavaScriptOrFail("validateInputSourceLength(1)");
+  RunJavaScriptOrFail("done()");
+  EndTest();
 }
 
 // Ensure that if the controller lacks enough data to be considered a Gamepad
 // that the input source that it is associated with does not have a Gamepad.
 // OpenVR-only because WMR does not currently support the notion of incomplete
 // gamepads other than voice input.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadIncompleteData) {
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadIncompleteData) {
   WebXrControllerInputMock my_mock;
 
   // Create a controller that only supports select, i.e. it lacks enough data
@@ -432,7 +414,10 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadIncompleteData) {
   EndTest();
 }
 
-void TestGamepadMinimumDataImpl(WebXrVrBrowserTestBase* t) {
+// Ensure that if a Gamepad has the minimum required number of axes/buttons to
+// be considered an xr-standard Gamepad, that it is exposed as such, and that
+// we can check the state of it's priamry axes/button.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestGamepadMinimumData) {
   WebXrControllerInputMock my_mock;
 
   unsigned int controller_index =
@@ -472,21 +457,10 @@ void TestGamepadMinimumDataImpl(WebXrVrBrowserTestBase* t) {
   t->EndTest();
 }
 
-// Ensure that if a Gamepad has the minimum required number of axes/buttons to
-// be considered an xr-standard Gamepad, that it is exposed as such, and that
-// we can check the state of it's priamry axes/button.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadMinimumData) {
-  TestGamepadMinimumDataImpl(this);
-}
-
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWMR, TestGamepadMinimumData) {
-  TestGamepadMinimumDataImpl(this);
-}
-
 // Ensure that if a Gamepad has all of the required and optional buttons as
 // specified by the xr-standard mapping, that those buttons are plumbed up
 // in their required places.
-void TestGamepadCompleteDataImpl(WebXrVrBrowserTestBase* t) {
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestGamepadCompleteData) {
   WebXrControllerInputMock my_mock;
 
   // Create a controller that supports all reserved buttons.
@@ -552,20 +526,12 @@ void TestGamepadCompleteDataImpl(WebXrVrBrowserTestBase* t) {
   t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadCompleteData) {
-  TestGamepadCompleteDataImpl(this);
-}
-
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWMR, TestGamepadCompleteData) {
-  TestGamepadCompleteDataImpl(this);
-}
-
 // Ensure that if a Gamepad has all required buttons, an extra button not
 // mapped in the xr-standard specification, and is missing reserved buttons
 // from the XR Standard specification, that the extra button does not appear
 // in either of the reserved button slots. OpenVR-only since WMR only supports
 // one controller type.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadReservedData) {
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadReservedData) {
   WebXrControllerInputMock my_mock;
 
   // Create a controller that is missing reserved buttons, but supports an
@@ -619,7 +585,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadReservedData) {
 // get sent up.  Note that since WMR always builds the WMR controller which
 // supports all required and optional buttons specified by the xr-standard
 // mapping, this test is OpenVR-only.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadOptionalData) {
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadOptionalData) {
   WebXrControllerInputMock my_mock;
 
   // Create a controller that supports the trigger, primary axis, and grip
@@ -651,7 +617,10 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadOptionalData) {
   EndTest();
 }
 
-void TestControllerInputRegisteredImpl(WebXrVrBrowserTestBase* t) {
+// Test that controller input is registered via WebXR's input method.
+// Equivalent to
+// WebXrVrInputTest#testControllerClicksRegisteredOnDaydream_WebXr.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestControllerInputRegistered) {
   WebXrControllerInputMock my_mock;
 
   unsigned int controller_index =
@@ -677,25 +646,10 @@ void TestControllerInputRegisteredImpl(WebXrVrBrowserTestBase* t) {
   t->EndTest();
 }
 
-// Test that OpenVR controller input is registered via WebXR's input method.
-// Equivalent to
-// WebXrVrInputTest#testControllerClicksRegisteredOnDaydream_WebXr.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       TestControllerInputRegistered) {
-  TestControllerInputRegisteredImpl(this);
-}
-// Test that WMR controller input is registered via WebXR's input method.
-// Equivalent to
-// WebXrVrInputTest#testControllerClicksRegisteredOnDaydream_WebXr.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestWMR, TestControllerInputRegistered) {
-  TestControllerInputRegisteredImpl(this);
-}
-
 // Test that OpenVR controller input is registered via the Gamepad API.
 // Equivalent to
 // WebXrVrInputTest#testControllerClicksRegisteredOnDaydream
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
-                       TestControllerInputRegistered) {
+IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestControllerInputRegistered) {
   WebXrControllerInputMock my_mock;
 
   // Connect a controller.
@@ -767,10 +721,7 @@ std::string TransformToColMajorString(gfx::Transform& t) {
 
 // Test that head pose changes are properly reflected in the viewer pose
 // provided by WebXR.
-IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrBrowserTestStandard,
-                                    WebXrVrBrowserTestWMR,
-                                    WebXrVrBrowserTestBase,
-                                    TestHeadPosesUpdate) {
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestHeadPosesUpdate) {
   WebXrHeadPoseMock my_mock;
 
   t->LoadUrlAndAwaitInitialization(

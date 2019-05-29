@@ -419,7 +419,7 @@ void TestVRSystem::GetRecommendedRenderTargetSize(uint32_t* width,
 }
 
 void TestVRSystem::GetDXGIOutputInfo(int32_t* adapter_index) {
-  GetD3D11_1Adapter(adapter_index);
+  GetD3D11_1AdapterIndex(adapter_index);
 }
 
 void TestVRSystem::GetProjectionRaw(EVREye eye,

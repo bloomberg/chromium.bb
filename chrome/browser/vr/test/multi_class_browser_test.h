@@ -63,4 +63,12 @@
   void MULTI_CLASS_RUNNER_NAME_(test_name)::ActuallyRunTestOnMainThread( \
       base_class* t)
 
+// Helper macro to cut down on duplicate code since most uses of
+// IN_PROC_MULTI_CLASS_BROWSER_TEST_F2 are passed the same OpenVR and WMR
+// classes and the same base class
+#define WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(test_name)         \
+  IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest, \
+                                      WebXrVrWmrBrowserTest,    \
+                                      WebXrVrBrowserTestBase, test_name)
+
 #endif  // CHROME_BROWSER_VR_TEST_MULTI_CLASS_BROWSER_TEST_H_

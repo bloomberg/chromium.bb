@@ -62,7 +62,16 @@ XrBrowserTestBase::RuntimeType WebXrVrOpenVrBrowserTestBase::GetRuntimeType()
   return XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR;
 }
 
-XrBrowserTestBase::RuntimeType WebXrVrWMRBrowserTestBase::GetRuntimeType()
+WebXrVrWmrBrowserTestBase::WebXrVrWmrBrowserTestBase() {}
+
+WebXrVrWmrBrowserTestBase::~WebXrVrWmrBrowserTestBase() = default;
+
+void WebXrVrWmrBrowserTestBase::PreRunTestOnMainThread() {
+  dummy_hook_ = std::make_unique<MockXRDeviceHookBase>();
+  WebXrVrBrowserTestBase::PreRunTestOnMainThread();
+}
+
+XrBrowserTestBase::RuntimeType WebXrVrWmrBrowserTestBase::GetRuntimeType()
     const {
   return XrBrowserTestBase::RuntimeType::RUNTIME_WMR;
 }

@@ -232,7 +232,9 @@ void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
   t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestPresentationPoses) {
+// TODO(https://crbug.com/926048): Port to WMR as well. Submitted frame data
+// is not yet provided back to the test when using WMR.
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestPresentationPoses) {
   TestPresentationPosesImpl(this, "test_webxr_poses");
 }
 

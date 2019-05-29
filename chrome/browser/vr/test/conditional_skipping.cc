@@ -20,7 +20,7 @@ std::string CheckDirectX_11_1() {
   return "DirectX 11.1 required, but not on Windows";
 #else
   int32_t adapter_index;
-  GetD3D11_1Adapter(&adapter_index);
+  GetD3D11_1AdapterIndex(&adapter_index);
   if (adapter_index == -1) {
     return "DirectX 11.1 required, but no suitable device found";
   }

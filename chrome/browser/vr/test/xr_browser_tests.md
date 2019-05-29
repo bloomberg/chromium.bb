@@ -90,8 +90,34 @@ These macros help cut down on boilerplate code, but if you need either:
 2. Different test logic in the implementation depending on the provided class
 
 You should consider using the standard IN_PROC_BROWSER_TEST_F macros instead.
+Small snippets of runtime-specific code are acceptable, but if it affects
+readability significantly, the tests should probably remain separate.
+
+Most tests simply use the standard `WebXrVrOpenVrBrowserTest` and
+`WebXrVrWmrBrowserTest` classes. In this case, you can instead use the
+`WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F` macro, which only needs to take the test
+name, further cutting down on boilerplate code.
 
 [multi class macros]: https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/vr/test/multi_class_browser_test.h
+
+## Test Class Names
+
+The test classes that are used to provide feature and runtime-specific setup and
+functions are named in the following order:
+
+1. Feature
+2. Runtime
+3. "BrowserTest"
+4. Optional Descriptor/special flags
+
+For example, `WebXrVrOpenVrBrowserTest` is meant for testing the WebXR for VR
+feature using the OpenVR runtime with standard flags enabled, i.e. the flags
+required for using WebXR and the OpenVR runtime with other runtimes disabled.
+`WebXrVrRuntimelessBrowserTestSensorless` on the other hand would be for
+testing WebVR for VR without any runtimes and with the orientation sensor
+device explicitly disabled.
+
+In general, classes ending in "Base" should not be used directly.
 
 ## Controller and Head Input
 

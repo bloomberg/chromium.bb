@@ -12,7 +12,7 @@ namespace vr {
 
 // Tests that WebXR can still get an inline identity reference space when there
 // are no runtimes available.
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
+IN_PROC_BROWSER_TEST_F(WebXrVrRuntimelessBrowserTest,
                        TestInlineIdentityAlwaysAvailable) {
   LoadUrlAndAwaitInitialization(
       GetFileUrlForHtmlTestFile("test_inline_viewer_available"));
@@ -21,7 +21,8 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
 }
 
 #if BUILDFLAG(ENABLE_VR)
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestSensorless, TestSensorlessRejections) {
+IN_PROC_BROWSER_TEST_F(WebXrVrRuntimelessBrowserTestSensorless,
+                       TestSensorlessRejections) {
   LoadUrlAndAwaitInitialization(
       GetFileUrlForHtmlTestFile("test_local_floor_reference_space_rejects"));
   WaitOnJavaScriptStep();

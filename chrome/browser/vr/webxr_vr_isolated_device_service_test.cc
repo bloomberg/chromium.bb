@@ -11,9 +11,10 @@
 
 namespace vr {
 
+// TODO(https://crbug.com/926048): Figure out why/fix the WMR version of this
+// causes the real Mixed Reality Portal to open if it's installed.
 // Tests that we can recover from a crash/disconnect on the DeviceService
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       TestDeviceServiceDisconnect) {
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestDeviceServiceDisconnect) {
   LoadUrlAndAwaitInitialization(
       GetFileUrlForHtmlTestFile("test_isolated_device_service_disconnect"));
 

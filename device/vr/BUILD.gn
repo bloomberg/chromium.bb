@@ -141,6 +141,8 @@ if (enable_vr) {
         "windows/geometry_shader.h",
         "windows/vertex_shader.h",
       ]
+
+      deps += [ ":directx_helpers" ]
     }
 
     if (is_win && enable_windows_mr) {
@@ -266,7 +268,6 @@ if (enable_vr) {
 
   if (is_win) {
     static_library("directx_helpers") {
-      testonly = true
       sources = [
         "windows/d3d11_device_helpers.cc",
         "windows/d3d11_device_helpers.h",
