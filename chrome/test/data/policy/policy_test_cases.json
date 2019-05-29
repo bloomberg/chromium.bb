@@ -993,7 +993,8 @@
     "os": ["chromeos"],
     "test_policy": { "KerberosRememberPasswordEnabled": false },
     "pref_mappings": [
-      { "pref": "kerberos.remember_password_enabled" }
+      { "pref": "kerberos.remember_password_enabled",
+        "local_state": true }
     ]
   },
 
@@ -1001,7 +1002,8 @@
     "os": ["chromeos"],
     "test_policy": { "KerberosAddAccountsAllowed": false },
     "pref_mappings": [
-      { "pref": "kerberos.add_accounts_allowed" }
+      { "pref": "kerberos.add_accounts_allowed",
+        "local_state": true }
     ]
   },
 
@@ -1024,7 +1026,8 @@
       ]
     },
     "pref_mappings": [
-      { "pref": "kerberos.accounts" }
+      { "pref": "kerberos.accounts",
+        "local_state": true }
     ]
   },
 

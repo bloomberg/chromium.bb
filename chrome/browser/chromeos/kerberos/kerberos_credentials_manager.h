@@ -15,12 +15,14 @@
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 
 class PrefRegistrySimple;
+class PrefService;
+class PrefChangeRegistrar;
 
 namespace chromeos {
 
 class KerberosAddAccountRunner;
 
-class KerberosCredentialsManager {
+class KerberosCredentialsManager final {
  public:
   using ResultCallback = base::OnceCallback<void(kerberos::ErrorType)>;
   using ListAccountsCallback =
@@ -39,14 +41,11 @@ class KerberosCredentialsManager {
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  KerberosCredentialsManager();
+  explicit KerberosCredentialsManager(PrefService* local_state);
   ~KerberosCredentialsManager();
 
-  // Singleton accessor.
+  // Singleton accessor. DCHECKs if the instance has not been created yet.
   static KerberosCredentialsManager& Get();
-
-  // Registers prefs stored in the user profile.
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Registers prefs stored in local state.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -67,6 +66,10 @@ class KerberosCredentialsManager {
   // Removes the Kerberos account for the account with given |principal_name|.
   // On success, calls OnAccountsChanged() for observers.
   void RemoveAccount(std::string principal_name, ResultCallback callback);
+
+  // Removes all Kerberos accounts.
+  // On success, calls OnAccountsChanged() for observers.
+  void ClearAccounts(ResultCallback callback);
 
   // Returns a list of all existing accounts, including current status like
   // remaining Kerberos ticket lifetime.
@@ -101,6 +104,10 @@ class KerberosCredentialsManager {
                        ResultCallback callback,
                        const kerberos::RemoveAccountResponse& response);
 
+  // Callback for ClearAccounts().
+  void OnClearAccounts(ResultCallback callback,
+                       const kerberos::ClearAccountsResponse& response);
+
   // Callback for RemoveAccount().
   void OnListAccounts(ListAccountsCallback callback,
                       const kerberos::ListAccountsResponse& response);
@@ -127,8 +134,20 @@ class KerberosCredentialsManager {
   // Calls OnAccountsChanged() on all observers.
   void NotifyAccountsChanged();
 
+  // Pref change handlers.
+  void UpdateEnabledFromPref();
+  void UpdateRememberPasswordEnabledFromPref();
+  void UpdateAddAccountsAllowedFromPref();
+  void UpdateAccountsFromPref();
+
+  // Local state prefs, not owned.
+  PrefService* local_state_ = nullptr;
+
   // Called by OnSignalConnected(), puts Kerberos files where GSSAPI finds them.
   KerberosFilesHandler kerberos_files_handler_;
+
+  // Observer for Kerberos-related prefs.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   // Handles the steps to add a Kerberos account.
   std::unique_ptr<KerberosAddAccountRunner> add_account_runner_;
