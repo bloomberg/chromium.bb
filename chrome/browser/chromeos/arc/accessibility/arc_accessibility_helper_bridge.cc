@@ -588,11 +588,14 @@ void ArcAccessibilityHelperBridge::OnGetTextLocationDataResult(
 
 void ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged(
     const chromeos::AccessibilityStatusEventDetails& event_details) {
-  // TODO(yawano): Add case for select to speak and switch access.
   if (event_details.notification_type !=
+          chromeos::ACCESSIBILITY_TOGGLE_FOCUS_HIGHLIGHT &&
+      event_details.notification_type !=
+          chromeos::ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK &&
+      event_details.notification_type !=
           chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK &&
       event_details.notification_type !=
-          chromeos::ACCESSIBILITY_TOGGLE_FOCUS_HIGHLIGHT) {
+          chromeos::ACCESSIBILITY_TOGGLE_SWITCH_ACCESS) {
     return;
   }
 
