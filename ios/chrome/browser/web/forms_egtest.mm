@@ -220,7 +220,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // WKBasedNavigationManager presents repost confirmation dialog before loading
   // stops.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [ChromeEarlGrey reload];
+    [ChromeEarlGrey reloadAndWaitForCompletion:NO];
   } else {
     // Legacy navigation manager presents repost confirmation dialog after
     // loading stops.
@@ -257,7 +257,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // [ChromeEarlGrey reload] because WKBasedNavigationManager presents repost
   // confirmation dialog before loading stops.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [ChromeEarlGrey reload];
+    [ChromeEarlGrey reloadAndWaitForCompletion:NO];
   }
 
   [self confirmResendWarning];
@@ -289,7 +289,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // [ChromeEarlGrey reload] because WKBasedNavigationManager presents repost
   // confirmation dialog before loading stops.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [ChromeEarlGrey reload];
+    [ChromeEarlGrey reloadAndWaitForCompletion:NO];
   }
 
   [self confirmResendWarning];
@@ -355,7 +355,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // [ChromeEarlGrey reload] because WKBasedNavigationManager presents repost
   // confirmation dialog before loading stops.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [ChromeEarlGrey reload];
+    [ChromeEarlGrey reloadAndWaitForCompletion:NO];
   }
 
   [[EarlGrey selectElementWithMatcher:ElementToDismissAlert(@"Cancel")]
@@ -403,7 +403,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // WKBasedNavigationManager presents repost confirmation dialog before loading
   // stops.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [ChromeEarlGrey reload];
+    [ChromeEarlGrey reloadAndWaitForCompletion:NO];
   } else {
     // Legacy navigation manager presents repost confirmation dialog after
     // loading stops.

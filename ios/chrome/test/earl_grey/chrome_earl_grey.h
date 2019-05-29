@@ -64,6 +64,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns YES if the current WebState is loading.
 - (BOOL)isLoading WARN_UNUSED_RESULT;
 
+// If |wait| is YES, waits for the loading to complete within a timeout, or a
+// GREYAssert is induced.
+- (void)reloadAndWaitForCompletion:(BOOL)wait;
+
 // Reloads the page and waits for the loading to complete within a timeout, or a
 // GREYAssert is induced.
 // TODO(crbug.com/963613): Change return type to void when
