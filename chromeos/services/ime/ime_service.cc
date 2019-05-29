@@ -15,16 +15,17 @@
 namespace chromeos {
 namespace ime {
 
-ImeService::ImeService(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)) {}
+ImeService::ImeService(
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+    : service_binding_(this, std::move(receiver)) {}
 
 ImeService::~ImeService() = default;
 
 void ImeService::OnStart() {
-  binder_registry_.AddInterface<mojom::InputEngineManager>(base::BindRepeating(
-      &ImeService::BindInputEngineManagerRequest, base::Unretained(this)));
+  binders_.Add(base::BindRepeating(&ImeService::AddInputEngineManagerReceiver,
+                                   base::Unretained(this)));
 
-  engine_manager_bindings_.set_connection_error_handler(base::BindRepeating(
+  manager_receivers_.set_disconnect_handler(base::BindRepeating(
       &ImeService::OnConnectionLost, base::Unretained(this)));
 
 #if BUILDFLAG(ENABLE_CROS_IME_DECODER)
@@ -38,14 +39,14 @@ void ImeService::OnStart() {
 void ImeService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  binder_registry_.BindInterface(interface_name, std::move(interface_pipe));
+    mojo::ScopedMessagePipeHandle receiver_pipe) {
+  binders_.TryBind(interface_name, &receiver_pipe);
 }
 
 void ImeService::ConnectToImeEngine(
     const std::string& ime_spec,
-    mojom::InputChannelRequest to_engine_request,
-    mojom::InputChannelPtr from_engine,
+    mojo::PendingReceiver<mojom::InputChannel> to_engine_request,
+    mojo::PendingRemote<mojom::InputChannel> from_engine,
     const std::vector<uint8_t>& extra,
     ConnectToImeEngineCallback callback) {
   DCHECK(input_engine_);
@@ -54,14 +55,14 @@ void ImeService::ConnectToImeEngine(
   std::move(callback).Run(bound);
 }
 
-void ImeService::BindInputEngineManagerRequest(
-    mojom::InputEngineManagerRequest request) {
-  engine_manager_bindings_.AddBinding(this, std::move(request));
+void ImeService::AddInputEngineManagerReceiver(
+    mojo::PendingReceiver<mojom::InputEngineManager> receiver) {
+  manager_receivers_.Add(this, std::move(receiver));
   // TODO(https://crbug.com/837156): Reset the cleanup timer.
 }
 
 void ImeService::OnConnectionLost() {
-  if (engine_manager_bindings_.empty()) {
+  if (manager_receivers_.empty()) {
     service_binding_.RequestClose();
     // TODO(https://crbug.com/837156): Set a timer to start a cleanup.
   }

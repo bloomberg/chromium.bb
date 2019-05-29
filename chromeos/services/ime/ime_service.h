@@ -7,8 +7,10 @@
 
 #include "chromeos/services/ime/input_engine.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "services/service_manager/public/cpp/binder_map.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -19,7 +21,8 @@ namespace ime {
 class ImeService : public service_manager::Service,
                    public mojom::InputEngineManager {
  public:
-  explicit ImeService(service_manager::mojom::ServiceRequest request);
+  explicit ImeService(
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
   ~ImeService() override;
 
  private:
@@ -30,14 +33,16 @@ class ImeService : public service_manager::Service,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   // mojom::InputEngineManager overrides:
-  void ConnectToImeEngine(const std::string& ime_spec,
-                          mojom::InputChannelRequest to_engine_request,
-                          mojom::InputChannelPtr from_engine,
-                          const std::vector<uint8_t>& extra,
-                          ConnectToImeEngineCallback callback) override;
+  void ConnectToImeEngine(
+      const std::string& ime_spec,
+      mojo::PendingReceiver<mojom::InputChannel> to_engine_request,
+      mojo::PendingRemote<mojom::InputChannel> from_engine,
+      const std::vector<uint8_t>& extra,
+      ConnectToImeEngineCallback callback) override;
 
-  // Binds the mojom::InputEngineManager interface to this object.
-  void BindInputEngineManagerRequest(mojom::InputEngineManagerRequest request);
+  // Adds a mojom::InputEngineManager receiver to this object.
+  void AddInputEngineManagerReceiver(
+      mojo::PendingReceiver<mojom::InputEngineManager> receiver);
 
   void OnConnectionLost();
 
@@ -47,9 +52,9 @@ class ImeService : public service_manager::Service,
   // input engine instance.
   std::unique_ptr<InputEngine> input_engine_;
 
-  mojo::BindingSet<mojom::InputEngineManager> engine_manager_bindings_;
+  mojo::ReceiverSet<mojom::InputEngineManager> manager_receivers_;
 
-  service_manager::BinderRegistry binder_registry_;
+  service_manager::BinderMap binders_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeService);
 };
