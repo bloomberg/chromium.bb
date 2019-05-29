@@ -243,6 +243,13 @@ CrostiniImpl.prototype.canSharePath = function(vmName, entry, persist) {
     return false;
   }
 
+  // TODO(crbug.com/958840): Sharing Play files root is disallowed until
+  // we can ensure it will not also share Downloads.
+  if (root === VolumeManagerCommon.RootType.ANDROID_FILES &&
+      entry.fullPath === '/') {
+    return false;
+  }
+
   return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(root) ||
       (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
        CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(root));

@@ -255,10 +255,15 @@ shareBase.testSharePathShown = async (vmName, vmNameSelector, done) => {
       'right-click photos');
   await test.waitForElement(menuShareWith);
 
-  // Reset Linux files back to unmounted.
+  // Verify share with dialog for MyDrive.
+  await shareBase.verifyShareWithDialog(
+      'My Drive', googleDrive, menuShareWithVolumeRoot, shareWithVolumeRoot,
+      givePermission + 'files in your Google Drive. ' +
+          'Changes will sync to your other devices.');
+
+  // Reset Linux files and Play files back to unmounted.
   chrome.fileManagerPrivate.removeMount('crostini');
-  await test.waitForElement(
-      '#directory-tree .tree-item [root-type-icon="crostini"]');
+  await test.waitForElement(fakeLinuxFiles);
 
   // Unset DRIVE_FS_ENABLED.
   loadTimeData.data_['DRIVE_FS_ENABLED'] = false;
