@@ -281,7 +281,7 @@ cr.define('print_preview', function() {
 
       addListenerCallback('printers-added', this.onPrintersAdded_.bind(this));
       addListenerCallback(
-          'reload-printer-list', this.onDestinationsReload.bind(this));
+          'user-accounts-updated', this.onDestinationsReload.bind(this));
     }
 
     /**

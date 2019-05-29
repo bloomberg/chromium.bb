@@ -44,6 +44,7 @@ cr.define('destination_select_test', function() {
     /** @override */
     setup(function() {
       initialSettings = print_preview_test_utils.getDefaultInitialSettings();
+      initialSettings.userAccounts = [];
       nativeLayer = new print_preview.NativeLayerStub();
       localDestinations = [];
       destinations = print_preview_test_utils.getDestinations(

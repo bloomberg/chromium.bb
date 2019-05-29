@@ -37,7 +37,8 @@ cr.define('print_preview_app_test', function() {
       printerName: 'FooDevice',
       serializedAppStateStr: null,
       serializedDefaultDestinationSelectionRulesStr: null,
-      cloudPrintURL: 'cloudprint URL'
+      cloudPrintURL: 'cloudprint URL',
+      userAccounts: ['foo@chromium.org'],
     };
 
     /** @override */

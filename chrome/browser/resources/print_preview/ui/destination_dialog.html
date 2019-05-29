@@ -25,7 +25,6 @@
 <link rel="import" href="../data/destination_store.html">
 <link rel="import" href="../data/invitation.html">
 <link rel="import" href="../data/invitation_store.html">
-<link rel="import" href="../data/user_info.html">
 <link rel="import" href="destination_list.html">
 <link rel="import" href="print_preview_search_box.html">
 <link rel="import" href="print_preview_shared_css.html">
@@ -189,10 +188,9 @@
         </paper-button>
       </div>
       <div id="promos" slot="footer" hidden="[[!shouldShowFooter_(
-          cloudPrintPromoDismissed_, cloudPrintState, invitation_)]]">
+          shouldShowCloudPrintPromo_, invitation_)]]">
         <div class="promo" id="cloudprintPromo"
-            hidden$="[[!shouldShowCloudPrintPromo_(
-                cloudPrintPromoDismissed_, cloudPrintState)]]">
+            hidden$="[[!shouldShowCloudPrintPromo_]]">
           <iron-icon icon="print-preview:cloud-queue" alt=""></iron-icon>
           <div class="promo-text"></div>
           <cr-icon-button id="cloudPrintClose" class="icon-clear"

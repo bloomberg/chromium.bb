@@ -115,11 +115,11 @@
       <structure name="IDR_PRINT_PREVIEW_DATA_MARGINS_JS"
                  file="data/margins.js"
                  type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_DATA_USER_INFO_HTML"
-                 file="data/user_info.html"
+      <structure name="IDR_PRINT_PREVIEW_DATA_USER_MANAGER_HTML"
+                 file="data/user_manager.html"
                  type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_DATA_USER_INFO_JS"
-                 file="data/user_info.js"
+      <structure name="IDR_PRINT_PREVIEW_DATA_USER_MANAGER_JS"
+                 file="data/user_manager.js"
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_METRICS_HTML"
                  file="metrics.html"

@@ -12,9 +12,6 @@ Polymer({
 
     appKioskMode: Boolean,
 
-    /** @type {!print_preview.CloudPrintState} */
-    cloudPrintState: Number,
-
     dark: Boolean,
 
     /** @type {!print_preview.Destination} */
@@ -26,10 +23,6 @@ Polymer({
 
     /** @type {!Array<!print_preview.RecentDestination>} */
     recentDestinationList: Array,
-
-    /** @private {boolean} */
-    showGoogleDrive_:
-        {type: Boolean, computed: 'computeShowGoogleDrive_(cloudPrintState)'},
   },
 
   /** @private {!IronMetaElement} */
@@ -43,14 +36,6 @@ Polymer({
   /** Sets the select to the current value of |destination|. */
   updateDestination: function() {
     this.selectedValue = this.destination.key;
-  },
-
-  /**
-   * @return {boolean} Whether to show the Google Drive option.
-   * @private
-   */
-  computeShowGoogleDrive_: function() {
-    return this.cloudPrintState === print_preview.CloudPrintState.SIGNED_IN;
   },
 
   /**

@@ -144,12 +144,13 @@ js_library("coordinate2d") {
   ]
 }
 
-js_library("user_info") {
+js_library("user_manager") {
   deps = [
     ":destination_store",
     ":invitation_store",
     "..:cloud_print_interface",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:event_tracker",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }

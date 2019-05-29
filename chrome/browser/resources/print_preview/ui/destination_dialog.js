@@ -20,7 +20,10 @@ Polymer({
       observer: 'onInvitationStoreSet_',
     },
 
-    activeUser: String,
+    activeUser: {
+      type: String,
+      observer: 'updateDestinationsAndInvitations_',
+    },
 
     currentDestinationAccount: String,
 
@@ -33,11 +36,7 @@ Polymer({
       value: null,
     },
 
-    /** @type {!print_preview.CloudPrintState} */
-    cloudPrintState: {
-      type: Number,
-      observer: 'onCloudPrintStateChanged_',
-    },
+    cloudPrintDisabled: Boolean,
 
     /** @private */
     cloudPrintPromoDismissed_: {
@@ -62,6 +61,14 @@ Polymer({
       type: Object,
       value: null,
     },
+
+    /** @private {boolean} */
+    shouldShowCloudPrintPromo_: {
+      type: Boolean,
+      computed: 'computeShouldShowCloudPrintPromo_(' +
+          'cloudPrintDisabled, activeUser, cloudPrintPromoDismissed_)',
+      observer: 'onShouldShowCloudPrintPromoChanged_',
+    },
   },
 
   listeners: {
@@ -78,6 +85,9 @@ Polymer({
   /** @private {?print_preview.Destination} */
   destinationInConfiguring_: null,
   // </if>
+
+  /** @private {boolean} */
+  initialized_: false,
 
   /** @override */
   ready: function() {
@@ -133,7 +143,8 @@ Polymer({
     this.tracker_.add(
         destinationStore,
         print_preview.DestinationStore.EventType.DESTINATION_SEARCH_DONE,
-        this.onDestinationSearchDone_.bind(this));
+        this.updateDestinationsAndInvitations_.bind(this));
+    this.initialized_ = true;
   },
 
   /** @private */
@@ -150,9 +161,13 @@ Polymer({
   },
 
   /** @private */
-  onDestinationSearchDone_: function() {
+  updateDestinationsAndInvitations_: function() {
+    if (!this.initialized_) {
+      return;
+    }
+
     this.updateDestinations_();
-    if (this.activeUser) {
+    if (this.activeUser && !!this.invitationStore) {
       this.invitationStore.startLoadingInvitations(this.activeUser);
     }
   },
@@ -371,7 +386,6 @@ Polymer({
     const select = this.$$('select');
     const account = select.value;
     if (account) {
-      this.showCloudPrintPromo = false;
       this.loadingDestinations_ = true;
       this.destinations_ = [];
       this.fire('account-change', account);
@@ -391,22 +405,21 @@ Polymer({
     }
   },
 
-  /** @private */
-  onCloudPrintStateChanged_: function() {
-    if (this.cloudPrintState === print_preview.CloudPrintState.NOT_SIGNED_IN) {
-      this.metrics_.record(
-          print_preview.Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
-    }
-  },
-
   /**
    * @return {boolean} Whether to show the cloud print promo.
    * @private
    */
-  shouldShowCloudPrintPromo_: function() {
-    return this.cloudPrintState ===
-        print_preview.CloudPrintState.NOT_SIGNED_IN &&
+  computeShouldShowCloudPrintPromo_: function() {
+    return !this.activeUser && !this.cloudPrintDisabled &&
         !this.cloudPrintPromoDismissed_;
+  },
+
+  /** @private */
+  onShouldShowCloudPrintPromoChanged_: function() {
+    if (this.shouldShowCloudPrintPromo_) {
+      this.metrics_.record(
+          print_preview.Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
+    }
   },
 
   /**
@@ -414,7 +427,7 @@ Polymer({
    * @private
    */
   shouldShowFooter_: function() {
-    return this.shouldShowCloudPrintPromo_() || !!this.invitation_;
+    return this.shouldShowCloudPrintPromo_ || !!this.invitation_;
   },
 
   /** @private */

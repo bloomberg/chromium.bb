@@ -1592,3 +1592,26 @@ TEST_F('PrintPreviewPinSettingsTest', 'All', function() {
   mocha.run();
 });
 GEN('#endif');
+
+PrintPreviewUserManagerTest = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/data/user_manager.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      '../test_browser_proxy.js',
+      'cloud_print_interface_stub.js',
+      'native_layer_stub.js',
+      'print_preview_test_utils.js',
+      'user_manager_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewUserManagerTest', 'All', function() {
+  mocha.run();
+});

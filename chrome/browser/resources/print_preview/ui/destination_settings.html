@@ -12,7 +12,7 @@
 <link rel="import" href="../data/destination_store.html">
 <link rel="import" href="../data/invitation_store.html">
 <link rel="import" href="../data/state.html">
-<link rel="import" href="../data/user_info.html">
+<link rel="import" href="../data/user_manager.html">
 <link rel="import" href="destination_dialog.html">
 <link rel="import" href="destination_select.html">
 <link rel="import" href="print_preview_shared_css.html">
@@ -58,10 +58,13 @@
         min-height: 0;
       }
     </style>
-    <print-preview-user-info id="userInfo" active-user="{{activeUser_}}"
+    <print-preview-user-manager id="userManager" active-user="{{activeUser_}}"
+        app-kiosk-mode="[[appKioskMode]]"
+        cloud-print-disabled="{{cloudPrintDisabled_}}"
         users="{{users_}}" destination-store="[[destinationStore_]]"
-        invitation-store="[[invitationStore_]]">
-    </print-preview-user-info>
+        invitation-store="[[invitationStore_]]"
+        should-reload-cookies="[[isDialogOpen_]]">
+    </print-preview-user-manager>
     <print-preview-settings-section>
       <span slot="title">$i18n{destinationLabel}</span>
       <div slot="controls">
@@ -71,8 +74,7 @@
         <print-preview-destination-select id="destinationSelect"
             hidden$="[[!shouldHideSpinner_]]"
             active-user="[[activeUser_]]"
-            app-kiosk-mode="[[appKioskMode]]"
-            cloud-print-state="[[cloudPrintState_]]" dark="[[dark]]"
+            app-kiosk-mode="[[appKioskMode]]" dark="[[dark]]"
             destination="[[destination]]"
             disabled="[[shouldDisableDropdown_(
                             destinationState, state, disabled)]]"
@@ -92,7 +94,7 @@
     <cr-lazy-render id="destinationDialog">
       <template>
         <print-preview-destination-dialog
-            cloud-print-state="[[cloudPrintState_]]"
+            cloud-print-disabled="[[cloudPrintDisabled_]]"
             destination-store="[[destinationStore_]]"
             invitation-store="[[invitationStore_]]"
             recent-destination-list="[[recentDestinationList_]]"

@@ -72,11 +72,8 @@ Polymer({
       observer: 'onActiveUserChanged_',
     },
 
-    /** @private {!print_preview.CloudPrintState} */
-    cloudPrintState_: {
-      type: Number,
-      value: print_preview.CloudPrintState.DISABLED,
-    },
+    /** @private {boolean} */
+    cloudPrintDisabled_: Boolean,
 
     /** @private {?print_preview.DestinationStore} */
     destinationStore_: {
@@ -96,6 +93,12 @@ Polymer({
     invitationStore_: {
       type: Object,
       value: null,
+    },
+
+    /** @private {boolean} */
+    isDialogOpen_: {
+      type: Boolean,
+      value: false,
     },
 
     /** @private {boolean} */
@@ -164,18 +167,9 @@ Polymer({
   /** @private */
   onCloudPrintInterfaceSet_: function() {
     const cloudPrintInterface = assert(this.cloudPrintInterface);
-    [cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
-     cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
-    ].forEach(eventType => {
-      this.tracker_.add(
-          cloudPrintInterface.getEventTarget(), eventType,
-          this.checkCloudPrintStatus_.bind(this));
-    });
-    this.$.userInfo.setCloudPrintInterface(cloudPrintInterface);
+    this.$.userManager.setCloudPrintInterface(cloudPrintInterface);
     this.destinationStore_.setCloudPrintInterface(cloudPrintInterface);
     this.invitationStore_.setCloudPrintInterface(cloudPrintInterface);
-    assert(this.cloudPrintState_ === print_preview.CloudPrintState.DISABLED);
-    this.cloudPrintState_ = print_preview.CloudPrintState.ENABLED;
   },
 
   /**
@@ -186,13 +180,7 @@ Polymer({
    */
   init: function(
       defaultPrinter, serializedDefaultDestinationRulesStr, userAccounts) {
-    if (!!userAccounts && userAccounts.length > 0) {
-      this.$.userInfo.updateActiveUser(userAccounts[0], false);
-      this.$.userInfo.updateUsers(userAccounts);
-    } else if (userAccounts) {
-      this.cloudPrintState_ = print_preview.CloudPrintState.NOT_SIGNED_IN;
-    }
-
+    this.$.userManager.initUserAccounts(userAccounts);
     this.destinationStore_.init(
         this.appKioskMode, defaultPrinter, serializedDefaultDestinationRulesStr,
         /** @type {!Array<print_preview.RecentDestination>} */
@@ -201,12 +189,9 @@ Polymer({
 
   /** @private */
   onActiveUserChanged_: function() {
-    if (!this.activeUser_) {
+    if (!this.activeUser_ || !this.destination) {
       return;
     }
-
-    assert(this.cloudPrintState_ !== print_preview.CloudPrintState.DISABLED);
-    this.cloudPrintState_ = print_preview.CloudPrintState.SIGNED_IN;
 
     if (this.destinationState === print_preview.DestinationState.SELECTED &&
         this.destination.origin === print_preview.DestinationOrigin.COOKIES) {
@@ -225,7 +210,7 @@ Polymer({
       return;
     }
     const destination = this.destinationStore_.selectedDestination;
-    if (this.cloudPrintState_ === print_preview.CloudPrintState.SIGNED_IN ||
+    if (!!this.activeUser_ ||
         destination.origin !== print_preview.DestinationOrigin.COOKIES) {
       this.destinationState = print_preview.DestinationState.SET;
     } else {
@@ -278,25 +263,6 @@ Polymer({
         this.error == print_preview.Error.NO_DESTINATIONS) {
       this.destinationState = print_preview.DestinationState.ERROR;
     }
-  },
-
-  /**
-   * Updates the cloud print status to NOT_SIGNED_IN if there is an
-   * authentication error.
-   * @param {!CustomEvent<!cloudprint.CloudPrintInterfaceErrorEventDetail>}
-   *     event Contains the error status
-   * @private
-   */
-  checkCloudPrintStatus_: function(event) {
-    if (event.detail.status != 403 || this.appKioskMode) {
-      return;
-    }
-
-    // Should not have sent a message to Cloud Print if cloud print is
-    // disabled.
-    assert(this.cloudPrintState_ !== print_preview.CloudPrintState.DISABLED);
-    this.cloudPrintState_ = print_preview.CloudPrintState.NOT_SIGNED_IN;
-    console.warn('Google Cloud Print Error: HTTP status 403');
   },
 
   /**
@@ -422,6 +388,7 @@ Polymer({
         this.invitationStore_.startLoadingInvitations(this.activeUser_);
       }
       this.$.destinationDialog.get().show();
+      this.isDialogOpen_ = true;
     } else {
       const success = this.destinationStore_.selectRecentDestinationByKey(
           value, this.displayedDestinations_);
@@ -437,7 +404,7 @@ Polymer({
    * @private
    */
   onAccountChange_: function(e) {
-    this.$.userInfo.updateActiveUser(e.detail, true);
+    this.$.userManager.updateActiveUser(e.detail, true);
   },
 
   /** @private */
@@ -446,6 +413,7 @@ Polymer({
     // selecting a new destination.
     this.updateDestinationSelect_();
     this.$.destinationSelect.focus();
+    this.isDialogOpen_ = false;
   },
 
   /** @private */

@@ -78,6 +78,7 @@ cr.define('destination_settings_test', function() {
       // Initial state: No destination store means that there is no destination
       // yet, so the dropdown is hidden.
       assertTrue(dropdown.hidden);
+      destinationSettings.cloudPrintInterface = cloudPrintInterface;
 
       // Set up the destination store, but no destination yet. Dropdown is still
       // hidden.
@@ -175,11 +176,9 @@ cr.define('destination_settings_test', function() {
 
     /** Simulates a user signing in to Chrome. */
     function signIn() {
-      destinationSettings.$.userInfo.updateActiveUser(defaultUser, false);
-      destinationSettings.$.userInfo.updateUsers([defaultUser]);
       cloudPrintInterface.setPrinter(
           print_preview_test_utils.getGoogleDriveDestination(defaultUser));
-      cr.webUIListenerCallback('reload-printer-list');
+      cr.webUIListenerCallback('user-accounts-updated', [defaultUser]);
       Polymer.dom.flush();
     }
 
@@ -570,10 +569,13 @@ cr.define('destination_settings_test', function() {
             const dialog =
                 destinationSettings.$$('print-preview-destination-dialog');
             assertTrue(dialog.isOpen());
+            const whenAdded = test_util.eventToPromise(
+                print_preview.DestinationStore.EventType.DESTINATIONS_INSERTED,
+                destinationSettings.destinationStore_);
             // Simulate setting a new account.
             dialog.fire('account-change', account2);
             Polymer.dom.flush();
-            return test_util.waitForRender(destinationSettings);
+            return whenAdded;
           })
           .then(() => {
             assertDropdownItems([

@@ -198,7 +198,11 @@ cr.define('print_preview', function() {
     /** @override */
     signIn(addAccount) {
       this.methodCalled('signIn', addAccount);
-      cr.webUIListenerCallback('reload-printer-list');
+      const accounts = ['foo@chromium.org'];
+      if (addAccount) {
+        accounts.push('bar@chromium.org');
+      }
+      cr.webUIListenerCallback('user-accounts-updated', accounts);
     }
 
     /**
