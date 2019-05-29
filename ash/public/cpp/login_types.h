@@ -49,6 +49,10 @@ enum class OobeDialogState {
 
   // Oobe UI dialog is currently hidden.
   HIDDEN = 10,
+
+  // Showing login UI provided by a Chrome extension using chrome.loginScreenUi
+  // API.
+  EXTENSION_LOGIN = 11,
 };
 
 // Supported multi-profile user behavior values.

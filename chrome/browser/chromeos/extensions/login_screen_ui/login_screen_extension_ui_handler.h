@@ -62,6 +62,7 @@ class LoginScreenExtensionUiHandler
   bool RemoveWindowForExtension(const std::string& extension_id);
 
   bool HasOpenWindow(const std::string& extension_id) const;
+  bool HasOpenWindow() const;
 
   // session_manager::SessionManagerObserver
   void OnSessionStateChanged() override;

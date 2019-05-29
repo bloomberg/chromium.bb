@@ -659,8 +659,8 @@ void LoginShelfView::UpdateUi() {
   // 1. It's in login screen or OOBE. Note: In OOBE, the guest button visibility
   // is manually controlled by the WebUI.
   // 2. Guest login is allowed.
-  // 3. OOBE UI dialog is not currently showing wrong HWID warning screen or
-  // SAML password confirmation screen.
+  // 3. OOBE UI dialog is not currently showing wrong HWID warning screen, SAML
+  // password confirmation screen or login UI provided by an extension.
   // 4. OOBE UI dialog is not currently showing gaia signin screen, or if there
   // are no user views available. If there are no user pods (i.e. Gaia is the
   // only signin option), the guest button should be shown if allowed.
@@ -671,6 +671,7 @@ void LoginShelfView::UpdateUi() {
                    allow_guest_ &&
                    dialog_state_ != OobeDialogState::WRONG_HWID_WARNING &&
                    dialog_state_ != OobeDialogState::SAML_PASSWORD_CONFIRM &&
+                   dialog_state_ != OobeDialogState::EXTENSION_LOGIN &&
                    (dialog_state_ != OobeDialogState::GAIA_SIGNIN ||
                     !login_screen_has_users_) &&
                    !user_session_started);

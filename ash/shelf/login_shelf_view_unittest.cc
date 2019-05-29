@@ -364,6 +364,11 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
   login_shelf_view_->SetKioskApps({}, {});
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kAddUser}));
+
+  // Only shutdown button is visible when state ==
+  // OobeDialogState::EXTENSION_LOGIN.
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::EXTENSION_LOGIN);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 }
 
 TEST_F(LoginShelfViewTest, ShouldShowGuestButtonWhenNoUserPods) {

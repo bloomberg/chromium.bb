@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/login_screen_ui/login_screen_extension_ui_handler.h"
 
+#include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/login_screen_model.h"
+#include "ash/public/cpp/login_types.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/session_manager/core/session_manager.h"
@@ -79,6 +82,11 @@ bool LoginScreenExtensionUiHandler::Show(const extensions::Extension* extension,
     return false;
   }
 
+  if (!HasOpenWindow()) {
+    ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(
+        ash::OobeDialogState::EXTENSION_LOGIN);
+  }
+
   LoginScreenExtensionUiWindow::CreateOptions create_options(
       extension->short_name(), extension->GetResourceURL(resource_path),
       can_be_closed_by_user,
@@ -110,12 +118,22 @@ bool LoginScreenExtensionUiHandler::RemoveWindowForExtension(
   if (it == windows_.end())
     return false;
   windows_.erase(it);
+
+  if (!HasOpenWindow()) {
+    ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(
+        ash::OobeDialogState::HIDDEN);
+  }
+
   return true;
 }
 
 bool LoginScreenExtensionUiHandler::HasOpenWindow(
     const std::string& extension_id) const {
   return windows_.find(extension_id) != windows_.end();
+}
+
+bool LoginScreenExtensionUiHandler::HasOpenWindow() const {
+  return !windows_.empty();
 }
 
 void LoginScreenExtensionUiHandler::UpdateSessionState() {

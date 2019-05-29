@@ -8,11 +8,13 @@
 
 #include "base/test/gtest_util.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
+#include "chrome/browser/ui/ash/test_login_screen.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -166,11 +168,14 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
+  content::TestServiceManagerContext context_;
 
   session_manager::SessionManager session_manager_;
   TestingProfileManager profile_manager_;
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
   scoped_refptr<const extensions::Extension> extension_;
+
+  TestLoginScreen test_login_screen_;
 
   FakeLoginScreenExtensionUiWindowFactory* fake_window_factory_ = nullptr;
 
