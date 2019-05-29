@@ -53,13 +53,19 @@ public class WebApkShareTargetUtilTest {
     }
 
     private static void assertPostData(WebApkShareTargetUtil.PostData postData, String[] names,
-            String[] values, String[] fileNames, String[] types) {
+            boolean[] isValueFileUris, String[] values, String[] fileNames, String[] types) {
         Assert.assertNotNull(postData);
 
         Assert.assertNotNull(postData.names);
         Assert.assertEquals(postData.names.size(), names.length);
         for (int i = 0; i < names.length; i++) {
             Assert.assertEquals(postData.names.get(i), names[i]);
+        }
+
+        Assert.assertNotNull(postData.isValueFileUri);
+        Assert.assertEquals(postData.isValueFileUri.size(), isValueFileUris.length);
+        for (int i = 0; i < isValueFileUris.length; i++) {
+            Assert.assertEquals(postData.isValueFileUri.get(i), isValueFileUris[i]);
         }
 
         Assert.assertNotNull(postData.values);
@@ -85,7 +91,7 @@ public class WebApkShareTargetUtilTest {
     public static class WebApkShareTargetUtilShadow extends WebApkShareTargetUtil {
         @Implementation
         public static byte[] readStringFromContentUri(Uri uri) {
-            return "content".getBytes();
+            return String.format("content-for-%s", uri.toString()).getBytes();
         }
 
         @Implementation
@@ -95,7 +101,7 @@ public class WebApkShareTargetUtilTest {
 
         @Implementation
         public static String getFileNameFromContentUri(Uri uri) {
-            return "filename";
+            return String.format("file-name-for-%s", uri.toString());
         }
     }
 
@@ -157,7 +163,7 @@ public class WebApkShareTargetUtilTest {
                 WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
                 info.shareData());
 
-        assertPostData(postData, new String[] {"title", "text"},
+        assertPostData(postData, new String[] {"title", "text"}, new boolean[] {false, false},
                 new String[] {"extra_subject", "extra_text"}, new String[] {"", ""},
                 new String[] {"text/plain", "text/plain"});
     }
@@ -177,7 +183,7 @@ public class WebApkShareTargetUtilTest {
 
         Intent intent = createBasicShareIntent();
         ArrayList<Uri> uris = new ArrayList<>();
-        uris.add(null);
+        uris.add(Uri.parse("mock-uri-1"));
         intent.putExtra(Intent.EXTRA_STREAM, uris);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -186,8 +192,8 @@ public class WebApkShareTargetUtilTest {
                 WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
                 info.shareData());
 
-        assertPostData(
-                postData, new String[] {}, new String[] {}, new String[] {}, new String[] {});
+        assertPostData(postData, new String[] {}, new boolean[] {}, new String[] {},
+                new String[] {}, new String[] {});
     }
 
     /**
@@ -212,8 +218,8 @@ public class WebApkShareTargetUtilTest {
                 WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
                 info.shareData());
 
-        assertPostData(
-                postData, new String[] {}, new String[] {}, new String[] {}, new String[] {});
+        assertPostData(postData, new String[] {}, new boolean[] {}, new String[] {},
+                new String[] {}, new String[] {});
     }
 
     @Test
@@ -228,7 +234,7 @@ public class WebApkShareTargetUtilTest {
 
         Intent intent = createBasicShareIntent();
         ArrayList<Uri> uris = new ArrayList<>();
-        uris.add(null);
+        uris.add(Uri.parse("mock-uri-2"));
         intent.putExtra(Intent.EXTRA_STREAM, uris);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -237,8 +243,9 @@ public class WebApkShareTargetUtilTest {
                 WebApkTestHelper.getGeneratedShareTargetActivityClassName(0), info.shareTarget(),
                 info.shareData());
 
-        assertPostData(postData, new String[] {"name"}, new String[] {"content"},
-                new String[] {"filename"}, new String[] {"image/gif"});
+        assertPostData(postData, new String[] {"name"}, new boolean[] {true},
+                new String[] {"mock-uri-2"}, new String[] {"file-name-for-mock-uri-2"},
+                new String[] {"image/gif"});
     }
 
     @Test
@@ -266,6 +273,7 @@ public class WebApkShareTargetUtilTest {
                 info.shareData());
 
         assertPostData(postData, new String[] {"share-title", "share-text"},
+                new boolean[] {false, false},
                 new String[] {"shared_subject_value", "shared_text_value"}, new String[] {"", ""},
                 new String[] {"text/plain", "text/plain"});
     }
@@ -295,6 +303,7 @@ public class WebApkShareTargetUtilTest {
                 info.shareData());
 
         assertPostData(postData, new String[] {"share-title", "share-text"},
+                new boolean[] {false, false},
                 new String[] {"shared_subject_value", "shared_text_value"}, new String[] {"", ""},
                 new String[] {"text/plain", "text/plain"});
     }
@@ -318,7 +327,7 @@ public class WebApkShareTargetUtilTest {
         intent.putExtra(Intent.EXTRA_TEXT, "shared_text_value");
 
         ArrayList<Uri> uris = new ArrayList<>();
-        uris.add(null);
+        uris.add(Uri.parse("mock-uri-3"));
         intent.putExtra(Intent.EXTRA_STREAM, uris);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -328,8 +337,9 @@ public class WebApkShareTargetUtilTest {
                 info.shareData());
 
         assertPostData(postData, new String[] {"share-title", "share-text", "name"},
-                new String[] {"shared_subject_value", "shared_text_value", "content"},
-                new String[] {"", "", "filename"},
+                new boolean[] {false, false, true},
+                new String[] {"shared_subject_value", "shared_text_value", "mock-uri-3"},
+                new String[] {"", "", "file-name-for-mock-uri-3"},
                 new String[] {"text/plain", "text/plain", "image/gif"});
     }
 
@@ -363,6 +373,7 @@ public class WebApkShareTargetUtilTest {
 
         // with invalid name parameter from Android manifest, we ignore the file sharing part.
         assertPostData(postData, new String[] {"share-title", "share-text"},
+                new boolean[] {false, false},
                 new String[] {"shared_subject_value", "shared_text_value"}, new String[] {"", ""},
                 new String[] {"text/plain", "text/plain"});
     }

@@ -13,16 +13,12 @@ import android.text.TextUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.FileUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.net.MimeTypeFilter;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
@@ -37,33 +33,34 @@ public class WebApkShareTargetUtil {
     protected static class PostData {
         public boolean isMultipartEncoding;
         public ArrayList<String> names;
-        public ArrayList<byte[]> values;
+        public ArrayList<Boolean> isValueFileUri;
+        public ArrayList<String> values;
         public ArrayList<String> filenames;
         public ArrayList<String> types;
 
         public PostData(boolean isMultipartEncoding) {
             this.isMultipartEncoding = isMultipartEncoding;
             names = new ArrayList<>();
+            isValueFileUri = new ArrayList<>();
             values = new ArrayList<>();
             filenames = new ArrayList<>();
             types = new ArrayList<>();
         }
 
-        private void add(String name, byte[] value, String fileName, String type) {
+        private void addPlainText(String name, String value) {
             names.add(name);
+            isValueFileUri.add(false);
             values.add(value);
+            filenames.add("");
+            types.add("text/plain");
+        }
+
+        private void addFileUri(String name, String fileUri, String fileName, String type) {
+            names.add(name);
+            isValueFileUri.add(true);
+            values.add(fileUri);
             filenames.add(fileName);
             types.add(type);
-        }
-    }
-
-    private static byte[] readStringFromContentUri(Uri uri) {
-        try (InputStream inputStream =
-                        ContextUtils.getApplicationContext().getContentResolver().openInputStream(
-                                uri)) {
-            return FileUtils.readStream(inputStream);
-        } catch (IOException e) {
-            return null;
         }
     }
 
@@ -131,13 +128,15 @@ public class WebApkShareTargetUtil {
         return method != null && "POST".equals(method.toUpperCase(Locale.ENGLISH));
     }
 
-    protected static void addFilesToMultipartPostData(PostData postData, String[] fileNames,
-            String[][] fileAccepts, ArrayList<Uri> shareFiles) {
-        if (fileNames == null || fileAccepts == null || shareFiles == null) {
+    protected static void addFilesToMultipartPostData(PostData postData,
+            String[] shareTargetParamsFileNames, String[][] shareTargetParamsFileAccepts,
+            ArrayList<Uri> shareFiles) {
+        if (shareTargetParamsFileNames == null || shareTargetParamsFileAccepts == null
+                || shareFiles == null) {
             return;
         }
 
-        if (fileNames.length != fileAccepts.length) {
+        if (shareTargetParamsFileNames.length != shareTargetParamsFileAccepts.length) {
             return;
         }
 
@@ -150,15 +149,13 @@ public class WebApkShareTargetUtil {
                     continue;
                 }
 
-                for (int i = 0; i < fileNames.length; i++) {
-                    String[] mimeTypeList = fileAccepts[i];
+                for (int i = 0; i < shareTargetParamsFileNames.length; i++) {
+                    String[] mimeTypeList = shareTargetParamsFileAccepts[i];
                     MimeTypeFilter mimeTypeFilter =
                             new MimeTypeFilter(Arrays.asList(mimeTypeList), false);
                     if (mimeTypeFilter.accept(fileUri, fileType)) {
-                        byte[] fileContent = readStringFromContentUri(fileUri);
-                        if (fileContent != null) {
-                            postData.add(fileNames[i], fileContent, fileName, fileType);
-                        }
+                        postData.addFileUri(shareTargetParamsFileNames[i], fileUri.toString(),
+                                fileName, fileType);
                         break;
                     }
                 }
@@ -176,13 +173,11 @@ public class WebApkShareTargetUtil {
         PostData postData = new PostData(shareTarget.isShareEncTypeMultipart());
 
         if (!TextUtils.isEmpty(shareTarget.getParamTitle()) && shareData.subject != null) {
-            postData.add(shareTarget.getParamTitle(),
-                    ApiCompatibilityUtils.getBytesUtf8(shareData.subject), "", "text/plain");
+            postData.addPlainText(shareTarget.getParamTitle(), shareData.subject);
         }
 
         if (!TextUtils.isEmpty(shareTarget.getParamText()) && shareData.text != null) {
-            postData.add(shareTarget.getParamText(),
-                    ApiCompatibilityUtils.getBytesUtf8(shareData.text), "", "text/plain");
+            postData.addPlainText(shareTarget.getParamText(), shareData.text);
         }
 
         if (!postData.isMultipartEncoding) {

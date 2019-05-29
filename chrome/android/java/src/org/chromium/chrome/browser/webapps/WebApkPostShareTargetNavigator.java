@@ -18,14 +18,20 @@ public class WebApkPostShareTargetNavigator {
         if (postData == null) {
             return false;
         }
+
+        boolean[] isValueFileUris = new boolean[postData.isValueFileUri.size()];
+        for (int i = 0; i < isValueFileUris.length; i++) {
+            isValueFileUris[i] = postData.isValueFileUri.get(i);
+        }
+
         nativeLoadViewForShareTargetPost(postData.isMultipartEncoding,
-                postData.names.toArray(new String[0]), postData.values.toArray(new byte[0][]),
-                postData.filenames.toArray(new String[0]), postData.types.toArray(new String[0]),
-                webApkInfo.uri().toString(), webContents);
+                postData.names.toArray(new String[0]), postData.values.toArray(new String[0]),
+                isValueFileUris, postData.filenames.toArray(new String[0]),
+                postData.types.toArray(new String[0]), webApkInfo.uri().toString(), webContents);
         return true;
     }
 
     private static native void nativeLoadViewForShareTargetPost(boolean isMultipartEncoding,
-            String[] names, byte[][] values, String[] filenames, String[] types, String startUrl,
-            WebContents webContents);
+            String[] names, String[] values, boolean[] isValueFileUris, String[] filenames,
+            String[] types, String startUrl, WebContents webContents);
 }
