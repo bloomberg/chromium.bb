@@ -647,6 +647,13 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
   return static_cast<EmphasizeTitlesCondition>(value);
 }
 
+size_t OmniboxFieldTrial::GetMaxURLMatches() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kOmniboxCapURLMatches,
+      OmniboxFieldTrial::kOmniboxMaxURLMatchesParam,
+      0);  // default
+}
+
 bool OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled() {
   return base::FeatureList::IsEnabled(
       omnibox::kOmniboxPreserveDefaultMatchScore);
@@ -709,6 +716,10 @@ bool OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() {
       omnibox::kOmniboxGroupSuggestionsBySearchVsUrl);
 }
 
+bool OmniboxFieldTrial::IsCapURLMatchesFeatureEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxCapURLMatches);
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -744,6 +755,9 @@ const char OmniboxFieldTrial::kKeywordRequiresPrefixMatchRule[] =
 const char OmniboxFieldTrial::kKeywordScoreForSufficientlyCompleteMatchRule[] =
     "KeywordScoreForSufficientlyCompleteMatch";
 const char OmniboxFieldTrial::kEmphasizeTitlesRule[] = "EmphasizeTitles";
+
+const char OmniboxFieldTrial::kOmniboxMaxURLMatchesParam[] =
+    "OmniboxMaxURLMatches";
 
 const char OmniboxFieldTrial::kHUPNewScoringTypedCountRelevanceCapParam[] =
     "TypedCountRelevanceCap";
