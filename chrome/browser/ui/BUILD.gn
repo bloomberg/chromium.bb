@@ -2352,6 +2352,14 @@ jumbo_split_static_library("ui") {
       "//ui/events:dom_keycode_converter",
     ]
 
+    if (use_dbus) {
+      sources += [
+        "views/status_icons/status_icon_linux_dbus.cc",
+        "views/status_icons/status_icon_linux_dbus.h",
+      ]
+      defines += [ "USE_DBUS" ]
+    }
+
     if (use_x11) {
       sources += [
         "views/frame/browser_desktop_window_tree_host_x11.cc",
@@ -2367,6 +2375,8 @@ jumbo_split_static_library("ui") {
         "views/javascript_app_modal_dialog_views_x11.h",
         "views/javascript_app_modal_event_blocker_x11.cc",
         "views/javascript_app_modal_event_blocker_x11.h",
+        "views/status_icons/status_icon_linux_x11.cc",
+        "views/status_icons/status_icon_linux_x11.h",
       ]
       configs += [ "//build/config/linux:x11" ]
       deps += [
