@@ -140,6 +140,8 @@ void ExtensionsGuestViewMessageFilter::ReadyToCreateMimeHandlerView(
   }
   auto* rfh =
       content::RenderFrameHost::FromID(render_process_id_, render_frame_id);
+  if (!rfh)
+    return;
   if (auto* mhve = MimeHandlerViewEmbedder::Get(rfh->GetFrameTreeNodeId()))
     mhve->ReadyToCreateMimeHandlerView(success);
 }
