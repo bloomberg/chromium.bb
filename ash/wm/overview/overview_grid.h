@@ -135,11 +135,16 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
       const base::flat_set<OverviewItem*>& ignored_items);
 
   // Updates overview bounds and hides the drop target when a preview area is
-  // shown. Updates the appearance of the drop target to visually indicate when
-  // |dragged_window| is being dragged over it.
+  // shown.
   void RearrangeDuringDrag(aura::Window* dragged_window,
-                           const gfx::PointF& location_in_screen,
                            IndicatorState indicator_state);
+
+  // Updates the appearance of the drop target to visually indicate when the
+  // dragged window is being dragged over it. For dragging from the top, pass
+  // null for |dragged_item|.
+  void UpdateDropTargetBackgroundVisibility(
+      OverviewItem* dragged_item,
+      const gfx::PointF& location_in_screen);
 
   // Shows or hides the selection widget. To be called by an overview item when
   // it is dragged.

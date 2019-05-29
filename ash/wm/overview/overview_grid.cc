@@ -660,7 +660,6 @@ void OverviewGrid::SetBoundsAndUpdatePositions(
 }
 
 void OverviewGrid::RearrangeDuringDrag(aura::Window* dragged_window,
-                                       const gfx::PointF& location_in_screen,
                                        IndicatorState indicator_state) {
   OverviewItem* drop_target = GetDropTarget();
 
@@ -676,12 +675,11 @@ void OverviewGrid::RearrangeDuringDrag(aura::Window* dragged_window,
     drop_target->SetOpacity(wanted_drop_target_visibility ? 1.f : 0.f);
   }
 
-  OverviewItem* dragged_item = GetOverviewItemContaining(dragged_window);
-
   // Update the grid's bounds.
   const gfx::Rect wanted_grid_bounds =
       GetGridBoundsInScreenDuringDragging(dragged_window, indicator_state);
   if (update_drop_target_visibility || bounds_ != wanted_grid_bounds) {
+    OverviewItem* dragged_item = GetOverviewItemContaining(dragged_window);
     base::flat_set<OverviewItem*> ignored_items;
     if (dragged_item)
       ignored_items.insert(dragged_item);
@@ -689,12 +687,12 @@ void OverviewGrid::RearrangeDuringDrag(aura::Window* dragged_window,
       ignored_items.insert(drop_target);
     SetBoundsAndUpdatePositions(wanted_grid_bounds, ignored_items);
   }
+}
 
-  // If the drop target is on another grid, let that grid handle what follows.
-  if (!drop_target)
-    return;
-
-  // Visually indicate when |dragged_window| is dragged over the drop target.
+void OverviewGrid::UpdateDropTargetBackgroundVisibility(
+    OverviewItem* dragged_item,
+    const gfx::PointF& location_in_screen) {
+  DCHECK(drop_target_widget_);
   aura::Window* target_window =
       GetTargetWindowOnLocation(location_in_screen, dragged_item);
   DropTargetView* drop_target_view =
@@ -749,7 +747,8 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
                                          IndicatorState indicator_state) {
   DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
 
-  RearrangeDuringDrag(dragged_window, location_in_screen, indicator_state);
+  RearrangeDuringDrag(dragged_window, indicator_state);
+  UpdateDropTargetBackgroundVisibility(nullptr, location_in_screen);
 
   aura::Window* target_window =
       GetTargetWindowOnLocation(location_in_screen, /*ignored_item=*/nullptr);
