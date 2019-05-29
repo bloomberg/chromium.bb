@@ -61,6 +61,8 @@ class TestSyncedTabDelegate : public SyncedTabDelegate {
   bool ShouldSync(SyncSessionsClient* sessions_client) override;
   SessionID GetSourceTabID() const override;
   int64_t GetTaskIdForNavigationId(int nav_id) const override;
+  int64_t GetParentTaskIdForNavigationId(int nav_id) const override;
+  int64_t GetRootTaskIdForNavigationId(int nav_id) const override;
 
  private:
   const SessionID window_id_;
@@ -108,6 +110,8 @@ class PlaceholderTabDelegate : public SyncedTabDelegate {
   bool ShouldSync(SyncSessionsClient* sessions_client) override;
   SessionID GetSourceTabID() const override;
   int64_t GetTaskIdForNavigationId(int nav_id) const override;
+  int64_t GetParentTaskIdForNavigationId(int nav_id) const override;
+  int64_t GetRootTaskIdForNavigationId(int nav_id) const override;
 
  private:
   const SessionID tab_id_;

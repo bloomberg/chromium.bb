@@ -42,6 +42,8 @@ class IOSChromeSyncedTabDelegate
   bool IsPlaceholderTab() const override;
   bool ShouldSync(sync_sessions::SyncSessionsClient* sessions_client) override;
   int64_t GetTaskIdForNavigationId(int nav_id) const override;
+  int64_t GetParentTaskIdForNavigationId(int nav_id) const override;
+  int64_t GetRootTaskIdForNavigationId(int nav_id) const override;
 
  private:
   explicit IOSChromeSyncedTabDelegate(web::WebState* web_state);

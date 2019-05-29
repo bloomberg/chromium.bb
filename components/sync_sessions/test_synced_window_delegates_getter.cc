@@ -158,6 +158,19 @@ int64_t TestSyncedTabDelegate::GetTaskIdForNavigationId(int nav_id) const {
   return -1;
 }
 
+int64_t TestSyncedTabDelegate::GetParentTaskIdForNavigationId(
+    int nav_id) const {
+  // Task IDs are currently not used in the tests. -1 signals an unknown Task
+  // ID.
+  return -1;
+}
+
+int64_t TestSyncedTabDelegate::GetRootTaskIdForNavigationId(int nav_id) const {
+  // Task IDs are currently not used in the tests. -1 signals an unknown Task
+  // ID.
+  return -1;
+}
+
 PlaceholderTabDelegate::PlaceholderTabDelegate(SessionID tab_id)
     : tab_id_(tab_id) {}
 
@@ -243,6 +256,21 @@ SessionID PlaceholderTabDelegate::GetSourceTabID() const {
 }
 
 int64_t PlaceholderTabDelegate::GetTaskIdForNavigationId(int nav_id) const {
+  // Task IDs are currently not used in the tests. -1 signals an unknown Task
+  // ID.
+  NOTREACHED() << "Task IDs are not used for Placeholder Tabs";
+  return -1;
+}
+
+int64_t PlaceholderTabDelegate::GetParentTaskIdForNavigationId(
+    int nav_id) const {
+  // Task IDs are currently not used in the tests. -1 signals an unknown Task
+  // ID.
+  NOTREACHED() << "Task IDs are not used for Placeholder Tabs";
+  return -1;
+}
+
+int64_t PlaceholderTabDelegate::GetRootTaskIdForNavigationId(int nav_id) const {
   // Task IDs are currently not used in the tests. -1 signals an unknown Task
   // ID.
   NOTREACHED() << "Task IDs are not used for Placeholder Tabs";

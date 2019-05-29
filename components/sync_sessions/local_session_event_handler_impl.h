@@ -99,7 +99,8 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
   void UpdateTaskTracker(SyncedTabDelegate* const tab_delegate);
 
   // Update |tab_specifics| with the corresponding task ids.
-  void WriteTasksIntoSpecifics(sync_pb::SessionTab* tab_specifics);
+  void WriteTasksIntoSpecifics(sync_pb::SessionTab* tab_specifics,
+                               SyncedTabDelegate* tab_delegate);
 
   // Injected dependencies (not owned).
   Delegate* const delegate_;

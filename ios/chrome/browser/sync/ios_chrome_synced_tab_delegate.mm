@@ -136,7 +136,22 @@ bool IOSChromeSyncedTabDelegate::ShouldSync(
 }
 
 int64_t IOSChromeSyncedTabDelegate::GetTaskIdForNavigationId(int nav_id) const {
-  // TODO: (davidjm) Implement for iOS - bug 964356
+  // TODO(davidjm) https://crbug.com/946356 - new task track implementation
+  // doesn't support iOS yet.
+  return -1;
+}
+
+int64_t IOSChromeSyncedTabDelegate::GetParentTaskIdForNavigationId(
+    int nav_id) const {
+  // TODO(davidjm) https://crbug.com/946356 - new task track implementation
+  // doesn't support iOS yet.
+  return -1;
+}
+
+int64_t IOSChromeSyncedTabDelegate::GetRootTaskIdForNavigationId(
+    int nav_id) const {
+  // TODO(davidjm) https://crbug.com/946356 - new task track implementation
+  // doesn't support iOS yet.
   return -1;
 }
 

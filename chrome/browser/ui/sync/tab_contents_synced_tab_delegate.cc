@@ -160,6 +160,27 @@ int64_t TabContentsSyncedTabDelegate::GetTaskIdForNavigationId(
   return -1;
 }
 
+int64_t TabContentsSyncedTabDelegate::GetParentTaskIdForNavigationId(
+    int nav_id) const {
+  const tasks::TaskTabHelper* task_tab_helper = this->task_tab_helper();
+  if (task_tab_helper &&
+      task_tab_helper->get_context_record_task_id(nav_id) != nullptr) {
+    return task_tab_helper->get_context_record_task_id(nav_id)
+        ->parent_task_id();
+  }
+  return -1;
+}
+
+int64_t TabContentsSyncedTabDelegate::GetRootTaskIdForNavigationId(
+    int nav_id) const {
+  const tasks::TaskTabHelper* task_tab_helper = this->task_tab_helper();
+  if (task_tab_helper &&
+      task_tab_helper->get_context_record_task_id(nav_id) != nullptr) {
+    return task_tab_helper->get_context_record_task_id(nav_id)->root_task_id();
+  }
+  return -1;
+}
+
 const content::WebContents* TabContentsSyncedTabDelegate::web_contents() const {
   return web_contents_;
 }
