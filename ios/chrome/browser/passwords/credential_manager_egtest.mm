@@ -120,7 +120,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   passwordCredentialForm.origin =
       chrome_test_util::GetCurrentWebState()->GetLastCommittedURL().GetOrigin();
   passwordCredentialForm.signon_realm = passwordCredentialForm.origin.spec();
-  passwordCredentialForm.scheme = autofill::PasswordForm::SCHEME_HTML;
+  passwordCredentialForm.scheme = autofill::PasswordForm::Scheme::kHtml;
   passwordStore->AddLogin(passwordCredentialForm);
 }
 

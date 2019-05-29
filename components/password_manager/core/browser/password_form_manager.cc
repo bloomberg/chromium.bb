@@ -134,7 +134,7 @@ PasswordFormManager::PasswordFormManager(
   // Non-HTML forms should not need any interaction with the renderer, and hence
   // no driver. Note that cloned PasswordFormManager instances can have HTML
   // forms without drivers as well.
-  DCHECK((observed_form.scheme == PasswordForm::SCHEME_HTML) ||
+  DCHECK((observed_form.scheme == PasswordForm::Scheme::kHtml) ||
          (driver == nullptr))
       << observed_form.scheme;
   if (driver)
@@ -176,8 +176,8 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
     const PasswordForm& form,
     const password_manager::PasswordManagerDriver* driver) const {
   // Non-HTML form case.
-  if (observed_form_.scheme != PasswordForm::SCHEME_HTML ||
-      form.scheme != PasswordForm::SCHEME_HTML) {
+  if (observed_form_.scheme != PasswordForm::Scheme::kHtml ||
+      form.scheme != PasswordForm::Scheme::kHtml) {
     const bool forms_match = observed_form_.signon_realm == form.signon_realm &&
                              observed_form_.scheme == form.scheme;
     return forms_match ? RESULT_COMPLETE_MATCH : RESULT_NO_MATCH;
@@ -291,17 +291,17 @@ void PasswordFormManager::Save() {
       submitted_form_->submission_event);
 
   if (password_overridden_ &&
-      pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
+      pending_credentials_.type == PasswordForm::Type::kGenerated &&
       !HasGeneratedPassword()) {
     metrics_util::LogPasswordGenerationSubmissionEvent(
         metrics_util::PASSWORD_OVERRIDDEN);
-    pending_credentials_.type = PasswordForm::TYPE_MANUAL;
+    pending_credentials_.type = PasswordForm::Type::kManual;
   }
 
   if (is_new_login_) {
     UMA_HISTOGRAM_BOOLEAN(
         "PasswordManager.NewlySavedPasswordIsGenerated",
-        pending_credentials_.type == PasswordForm::TYPE_GENERATED);
+        pending_credentials_.type == PasswordForm::Type::kGenerated);
     password_form_manager_helpers::SanitizePossibleUsernames(
         &pending_credentials_);
     pending_credentials_.date_created = base::Time::Now();
@@ -314,7 +314,7 @@ void PasswordFormManager::Save() {
   }
 
   if (pending_credentials_.times_used == 1 &&
-      pending_credentials_.type == PasswordForm::TYPE_GENERATED) {
+      pending_credentials_.type == PasswordForm::Type::kGenerated) {
     // This also includes PSL matched credentials.
     metrics_util::LogPasswordGenerationSubmissionEvent(
         metrics_util::PASSWORD_USED);
@@ -520,13 +520,13 @@ void PasswordFormManager::OnFetchCompleted() {
 
   for (auto const& driver : drivers_)
     ProcessFrameInternal(driver);
-  if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
+  if (observed_form_.scheme != PasswordForm::Scheme::kHtml)
     ProcessLoginPrompt();
 }
 
 void PasswordFormManager::ProcessFrame(
     const base::WeakPtr<PasswordManagerDriver>& driver) {
-  DCHECK_EQ(PasswordForm::SCHEME_HTML, observed_form_.scheme);
+  DCHECK_EQ(PasswordForm::Scheme::kHtml, observed_form_.scheme);
 
   // Don't keep processing the same form.
   if (autofills_left_ <= 0)
@@ -560,7 +560,7 @@ void PasswordFormManager::ProcessFrameInternal(
 }
 
 void PasswordFormManager::ProcessLoginPrompt() {
-  DCHECK_NE(PasswordForm::SCHEME_HTML, observed_form_.scheme);
+  DCHECK_NE(PasswordForm::Scheme::kHtml, observed_form_.scheme);
   if (!preferred_match_) {
     DCHECK(best_matches_.empty());
     metrics_recorder_->RecordFillEvent(
@@ -671,7 +671,7 @@ void PasswordFormManager::CreatePendingCredentials() {
       is_new_login_ = false;
     }
   } else if (!best_matches_.empty() &&
-             submitted_form_->type != autofill::PasswordForm::TYPE_API &&
+             submitted_form_->type != autofill::PasswordForm::Type::kApi &&
              submitted_form_->username_value.empty()) {
     // This branch deals with the case that the submitted form has no username
     // element and needs to decide whether to offer to update any credentials.
@@ -739,7 +739,7 @@ void PasswordFormManager::CreatePendingCredentials() {
   // If we're dealing with an API-driven provisionally saved form, then take
   // the server provided values. We don't do this for non-API forms, as
   // those will never have those members set.
-  if (submitted_form_->type == autofill::PasswordForm::TYPE_API) {
+  if (submitted_form_->type == autofill::PasswordForm::Type::kApi) {
     pending_credentials_.skip_zero_click = submitted_form_->skip_zero_click;
     pending_credentials_.display_name = submitted_form_->display_name;
     pending_credentials_.federation_origin = submitted_form_->federation_origin;
@@ -751,7 +751,7 @@ void PasswordFormManager::CreatePendingCredentials() {
   }
 
   if (HasGeneratedPassword())
-    pending_credentials_.type = PasswordForm::TYPE_GENERATED;
+    pending_credentials_.type = PasswordForm::Type::kGenerated;
 }
 
 const PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
@@ -788,7 +788,7 @@ const PasswordForm* PasswordFormManager::FindBestSavedMatch(
 
   // Match Credential API forms only by username. Stop here if nothing was found
   // above.
-  if (submitted_form->type == autofill::PasswordForm::TYPE_API)
+  if (submitted_form->type == autofill::PasswordForm::Type::kApi)
     return nullptr;
 
   // Verify that the submitted form has no username and no "new password"

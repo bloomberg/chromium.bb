@@ -216,18 +216,20 @@ void VotesUploader::SendVoteOnCredentialsReuse(
       if (UploadPasswordVote(*pending, submitted_form,
                              autofill::ACCOUNT_CREATION_PASSWORD,
                              observed_structure.FormSignatureAsStr())) {
-        pending->generation_upload_status = PasswordForm::POSITIVE_SIGNAL_SENT;
+        pending->generation_upload_status =
+            PasswordForm::GenerationUploadStatus::kPositiveSignalSent;
       }
     }
   } else if (pending->generation_upload_status ==
-             PasswordForm::POSITIVE_SIGNAL_SENT) {
+             PasswordForm::GenerationUploadStatus::kPositiveSignalSent) {
     // A signal was sent that this was an account creation form, but the
     // credential is now being used on the same form again. This cancels out
     // the previous vote.
     if (UploadPasswordVote(*pending, submitted_form,
                            autofill::NOT_ACCOUNT_CREATION_PASSWORD,
                            std::string())) {
-      pending->generation_upload_status = PasswordForm::NEGATIVE_SIGNAL_SENT;
+      pending->generation_upload_status =
+          PasswordForm::GenerationUploadStatus::kNegativeSignalSent;
     }
   } else if (generation_popup_was_shown_) {
     // Even if there is no autofill vote to be sent, send the vote about the

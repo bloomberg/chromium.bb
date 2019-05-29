@@ -743,28 +743,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 // Tests that the password login is autocompleted as expected when the browser
 // sends back the password info.
 TEST_F(PasswordAutofillAgentTest, InitialAutocomplete) {
-  /*
-   * Right now we are not sending the message to the browser because we are
-   * loading a data URL and the security origin canAccessPasswordManager()
-   * returns false.  May be we should mock URL loading to cirmcuvent this?
-   TODO(jcivelli): find a way to make the security origin not deny access to the
-                   password manager and then reenable this code.
-
-  // The form has been loaded, we should have sent the browser a message about
-  // the form.
-  const IPC::Message* msg = render_thread_.sink().GetFirstMessageMatching(
-      AutofillHostMsg_PasswordFormsParsed::ID);
-  ASSERT_TRUE(msg != NULL);
-
-  std::tuple<std::vector<PasswordForm> > forms;
-  AutofillHostMsg_PasswordFormsParsed::Read(msg, &forms);
-  ASSERT_EQ(1U, forms.a.size());
-  PasswordForm password_form = forms.a[0];
-  EXPECT_EQ(PasswordForm::SCHEME_HTML, password_form.scheme);
-  EXPECT_EQ(ASCIIToUTF16(kUsernameName), password_form.username_element);
-  EXPECT_EQ(ASCIIToUTF16(kPasswordName), password_form.password_element);
-  */
-
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.
   SimulateOnFillPasswordForm(fill_data_);

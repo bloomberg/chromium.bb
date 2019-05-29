@@ -117,7 +117,7 @@ class CredentialManagerTest : public CredentialManagerBaseTest {
     password_credential_form_1_.password_value = base::ASCIIToUTF16("secret1");
     password_credential_form_1_.origin = GURL(kHttpsWebOrigin);
     password_credential_form_1_.signon_realm = kHttpsWebOrigin;
-    password_credential_form_1_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    password_credential_form_1_.scheme = autofill::PasswordForm::Scheme::kHtml;
 
     password_credential_form_2_.username_value = base::ASCIIToUTF16("id2");
     password_credential_form_2_.display_name = base::ASCIIToUTF16("Name Two");
@@ -125,7 +125,7 @@ class CredentialManagerTest : public CredentialManagerBaseTest {
     password_credential_form_2_.password_value = base::ASCIIToUTF16("secret2");
     password_credential_form_2_.origin = GURL(kHttpsWebOrigin);
     password_credential_form_2_.signon_realm = kHttpsWebOrigin;
-    password_credential_form_2_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    password_credential_form_2_.scheme = autofill::PasswordForm::Scheme::kHtml;
 
     federated_credential_form_.username_value = base::ASCIIToUTF16("id");
     federated_credential_form_.display_name = base::ASCIIToUTF16("name");
@@ -136,7 +136,7 @@ class CredentialManagerTest : public CredentialManagerBaseTest {
     federated_credential_form_.origin = GURL(kHttpsWebOrigin);
     federated_credential_form_.signon_realm =
         "federation://www.example.com/www.federation.com";
-    federated_credential_form_.scheme = autofill::PasswordForm::SCHEME_HTML;
+    federated_credential_form_.scheme = autofill::PasswordForm::Scheme::kHtml;
   }
 
   void TearDown() override {

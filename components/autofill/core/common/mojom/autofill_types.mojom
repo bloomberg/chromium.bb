@@ -11,30 +11,6 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-// autofill::PasswordForm::GenerationUploadStatus
-enum GenerationUploadStatus {
-  NO_SIGNAL_SENT,
-  POSITIVE_SIGNAL_SENT,
-  NEGATIVE_SIGNAL_SENT,
-  UNKNOWN_STATUS = 10
-};
-
-// autofill::PasswordForm::Type
-enum PasswordFormType {
-  TYPE_MANUAL,
-  TYPE_GENERATED,
-  TYPE_API
-};
-
-// autofill::PasswordForm::Scheme
-enum PasswordFormScheme {
-  SCHEME_HTML,
-  SCHEME_BASIC,
-  SCHEME_DIGEST,
-  SCHEME_OTHER,
-  SCHEME_USERNAME_ONLY
-};
-
 // autofill::SubmissionIndicatorEvent
 enum SubmissionIndicatorEvent {
     NONE,
@@ -248,7 +224,40 @@ struct ValueElementPair {
 
 // autofill::PasswordForm
 struct PasswordForm {
-  PasswordFormScheme scheme;
+  // Enum to differentiate between HTML form based authentication, and dialogs
+  // using basic or digest schemes. Default is kHtml. Only PasswordForms of the
+  // same Scheme will be matched/autofilled against each other.
+  enum Scheme {
+    kHtml,
+    kBasic,
+    kDigest,
+    kOther,
+    kUsernameOnly,
+  };
+
+  // Enum to differentiate between manually filled forms, forms with auto-
+  // generated passwords, and forms generated from the DOM API.
+  //
+  // Always append new types at the end. This enum is converted to int and
+  // stored in password store backends, so it is important to keep each
+  // value assigned to the same integer.
+  enum Type {
+    kManual,
+    kGenerated,
+    kApi,
+  };
+
+  // Enum to keep track of what information has been sent to the server about
+  // this form regarding password generation.
+  enum GenerationUploadStatus {
+    kNoSignalSent,
+    kPositiveSignalSent,
+    kNegativeSignalSent,
+    // Reserve a few values for future use.
+    kUnknownStatus = 10,
+  };
+
+  Scheme scheme;
   string signon_realm;
   url.mojom.Url origin_with_path;
   url.mojom.Url action;
@@ -270,7 +279,7 @@ struct PasswordForm {
   mojo_base.mojom.Time date_created;
   mojo_base.mojom.Time date_synced;
   bool blacklisted_by_user;
-  PasswordFormType type;
+  Type type;
   int32 times_used;
   FormData form_data;
   GenerationUploadStatus generation_upload_status;

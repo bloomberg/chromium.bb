@@ -64,7 +64,7 @@ void CreateTestPasswordFormFillData(PasswordFormFillData* fill_data) {
 }
 
 void CreateTestPasswordForm(PasswordForm* form) {
-  form->scheme = PasswordForm::Scheme::SCHEME_HTML;
+  form->scheme = PasswordForm::Scheme::kHtml;
   form->signon_realm = "https://foo.com/";
   form->origin = GURL("https://foo.com/");
   form->action = GURL("https://foo.com/login");
@@ -92,11 +92,11 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->date_created = base::Time::Now();
   form->date_synced = base::Time::Now();
   form->blacklisted_by_user = false;
-  form->type = PasswordForm::Type::TYPE_GENERATED;
+  form->type = PasswordForm::Type::kGenerated;
   form->times_used = 999;
   test::CreateTestAddressFormData(&form->form_data);
   form->generation_upload_status =
-      PasswordForm::GenerationUploadStatus::POSITIVE_SIGNAL_SENT;
+      PasswordForm::GenerationUploadStatus::kPositiveSignalSent;
   form->display_name = base::ASCIIToUTF16("test display name");
   form->icon_url = GURL("https://foo.com/icon.png");
   form->federation_origin = url::Origin::Create(GURL("http://wwww.google.com"));

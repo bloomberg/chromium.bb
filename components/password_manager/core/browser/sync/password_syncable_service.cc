@@ -43,30 +43,30 @@ namespace {
 bool AreLocalAndSyncPasswordsEqual(
     const sync_pb::PasswordSpecificsData& password_specifics,
     const autofill::PasswordForm& password_form) {
-  return (password_form.scheme == password_specifics.scheme() &&
-          password_form.signon_realm == password_specifics.signon_realm() &&
-          password_form.origin.spec() == password_specifics.origin() &&
-          password_form.action.spec() == password_specifics.action() &&
-          base::UTF16ToUTF8(password_form.username_element) ==
-              password_specifics.username_element() &&
-          base::UTF16ToUTF8(password_form.password_element) ==
-              password_specifics.password_element() &&
-          base::UTF16ToUTF8(password_form.username_value) ==
-              password_specifics.username_value() &&
-          base::UTF16ToUTF8(password_form.password_value) ==
-              password_specifics.password_value() &&
-          password_form.preferred == password_specifics.preferred() &&
-          password_form.date_created.ToInternalValue() ==
-              password_specifics.date_created() &&
-          password_form.blacklisted_by_user ==
-              password_specifics.blacklisted() &&
-          password_form.type == password_specifics.type() &&
-          password_form.times_used == password_specifics.times_used() &&
-          base::UTF16ToUTF8(password_form.display_name) ==
-              password_specifics.display_name() &&
-          password_form.icon_url.spec() == password_specifics.avatar_url() &&
-          url::Origin::Create(GURL(password_specifics.federation_url()))
-                  .Serialize() == password_form.federation_origin.Serialize());
+  return (
+      static_cast<int>(password_form.scheme) == password_specifics.scheme() &&
+      password_form.signon_realm == password_specifics.signon_realm() &&
+      password_form.origin.spec() == password_specifics.origin() &&
+      password_form.action.spec() == password_specifics.action() &&
+      base::UTF16ToUTF8(password_form.username_element) ==
+          password_specifics.username_element() &&
+      base::UTF16ToUTF8(password_form.password_element) ==
+          password_specifics.password_element() &&
+      base::UTF16ToUTF8(password_form.username_value) ==
+          password_specifics.username_value() &&
+      base::UTF16ToUTF8(password_form.password_value) ==
+          password_specifics.password_value() &&
+      password_form.preferred == password_specifics.preferred() &&
+      password_form.date_created.ToInternalValue() ==
+          password_specifics.date_created() &&
+      password_form.blacklisted_by_user == password_specifics.blacklisted() &&
+      static_cast<int>(password_form.type) == password_specifics.type() &&
+      password_form.times_used == password_specifics.times_used() &&
+      base::UTF16ToUTF8(password_form.display_name) ==
+          password_specifics.display_name() &&
+      password_form.icon_url.spec() == password_specifics.avatar_url() &&
+      url::Origin::Create(GURL(password_specifics.federation_url()))
+              .Serialize() == password_form.federation_origin.Serialize());
 }
 
 syncer::SyncChange::SyncChangeType GetSyncChangeType(
@@ -456,10 +456,12 @@ syncer::SyncData SyncDataFromPassword(
   sync_pb::EntitySpecifics password_data;
   sync_pb::PasswordSpecificsData* password_specifics =
       password_data.mutable_password()->mutable_client_only_encrypted_data();
+#define CopyEnumField(field) \
+  password_specifics->set_##field(static_cast<int>(password_form.field))
 #define CopyField(field) password_specifics->set_##field(password_form.field)
 #define CopyStringField(field) \
   password_specifics->set_##field(base::UTF16ToUTF8(password_form.field))
-  CopyField(scheme);
+  CopyEnumField(scheme);
   CopyField(signon_realm);
   password_specifics->set_origin(password_form.origin.spec());
   password_specifics->set_action(password_form.action.spec());
@@ -471,7 +473,7 @@ syncer::SyncData SyncDataFromPassword(
   password_specifics->set_date_created(
       password_form.date_created.ToInternalValue());
   password_specifics->set_blacklisted(password_form.blacklisted_by_user);
-  CopyField(type);
+  CopyEnumField(type);
   CopyField(times_used);
   CopyStringField(display_name);
   password_specifics->set_avatar_url(password_form.icon_url.spec());
@@ -481,6 +483,7 @@ syncer::SyncData SyncDataFromPassword(
           : password_form.federation_origin.Serialize());
 #undef CopyStringField
 #undef CopyField
+#undef CopyEnumField
 
   std::string tag = MakePasswordSyncTag(*password_specifics);
   return syncer::SyncData::CreateLocalData(tag, tag, password_data);

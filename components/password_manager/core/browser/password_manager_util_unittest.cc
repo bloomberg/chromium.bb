@@ -39,7 +39,7 @@ constexpr char kTestPassword[] = "12345";
 
 autofill::PasswordForm GetTestAndroidCredential() {
   autofill::PasswordForm form;
-  form.scheme = autofill::PasswordForm::SCHEME_HTML;
+  form.scheme = autofill::PasswordForm::Scheme::kHtml;
   form.origin = GURL(kTestAndroidRealm);
   form.signon_realm = kTestAndroidRealm;
   form.username_value = base::ASCIIToUTF16(kTestUsername);
@@ -49,7 +49,7 @@ autofill::PasswordForm GetTestAndroidCredential() {
 
 autofill::PasswordForm GetTestCredential() {
   autofill::PasswordForm form;
-  form.scheme = autofill::PasswordForm::SCHEME_HTML;
+  form.scheme = autofill::PasswordForm::Scheme::kHtml;
   form.origin = GURL(kTestURL);
   form.signon_realm = form.origin.GetOrigin().spec();
   form.username_value = base::ASCIIToUTF16(kTestUsername);
@@ -59,7 +59,7 @@ autofill::PasswordForm GetTestCredential() {
 
 autofill::PasswordForm GetTestProxyCredential() {
   autofill::PasswordForm form;
-  form.scheme = autofill::PasswordForm::SCHEME_BASIC;
+  form.scheme = autofill::PasswordForm::Scheme::kBasic;
   form.origin = GURL(kTestProxyOrigin);
   form.signon_realm = kTestProxySignonRealm;
   form.username_value = base::ASCIIToUTF16(kTestUsername);
@@ -93,7 +93,7 @@ TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
       std::make_unique<autofill::PasswordForm>(GetTestAndroidCredential()));
 
   autofill::PasswordForm username_only;
-  username_only.scheme = autofill::PasswordForm::SCHEME_USERNAME_ONLY;
+  username_only.scheme = autofill::PasswordForm::Scheme::kUsernameOnly;
   username_only.signon_realm = kTestAndroidRealm;
   username_only.username_value = base::ASCIIToUTF16(kTestUsername2);
   forms.push_back(std::make_unique<autofill::PasswordForm>(username_only));
@@ -338,7 +338,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameCMAPI) {
   autofill::PasswordForm stored = GetTestCredential();
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.username_value.clear();
-  parsed.type = PasswordForm::TYPE_API;
+  parsed.type = PasswordForm::Type::kApi;
 
   // In case of the Credential Management API we know for sure that the site
   // meant empty username. Don't try any other heuristics.
@@ -370,7 +370,7 @@ TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Android) {
   autofill::PasswordForm blacklisted_credential = MakeNormalizedBlacklistedForm(
       password_manager::PasswordStore::FormDigest(GetTestAndroidCredential()));
   EXPECT_TRUE(blacklisted_credential.blacklisted_by_user);
-  EXPECT_EQ(PasswordForm::SCHEME_HTML, blacklisted_credential.scheme);
+  EXPECT_EQ(PasswordForm::Scheme::kHtml, blacklisted_credential.scheme);
   EXPECT_EQ(kTestAndroidRealm, blacklisted_credential.signon_realm);
   EXPECT_EQ(GURL(kTestAndroidRealm), blacklisted_credential.origin);
 }
@@ -379,7 +379,7 @@ TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Html) {
   autofill::PasswordForm blacklisted_credential = MakeNormalizedBlacklistedForm(
       password_manager::PasswordStore::FormDigest(GetTestCredential()));
   EXPECT_TRUE(blacklisted_credential.blacklisted_by_user);
-  EXPECT_EQ(PasswordForm::SCHEME_HTML, blacklisted_credential.scheme);
+  EXPECT_EQ(PasswordForm::Scheme::kHtml, blacklisted_credential.scheme);
   EXPECT_EQ(GURL(kTestURL).GetOrigin().spec(),
             blacklisted_credential.signon_realm);
   EXPECT_EQ(GURL(kTestURL).GetOrigin(), blacklisted_credential.origin);
@@ -389,7 +389,7 @@ TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Proxy) {
   autofill::PasswordForm blacklisted_credential = MakeNormalizedBlacklistedForm(
       password_manager::PasswordStore::FormDigest(GetTestProxyCredential()));
   EXPECT_TRUE(blacklisted_credential.blacklisted_by_user);
-  EXPECT_EQ(PasswordForm::SCHEME_BASIC, blacklisted_credential.scheme);
+  EXPECT_EQ(PasswordForm::Scheme::kBasic, blacklisted_credential.scheme);
   EXPECT_EQ(kTestProxySignonRealm, blacklisted_credential.signon_realm);
   EXPECT_EQ(GURL(kTestProxyOrigin), blacklisted_credential.origin);
 }

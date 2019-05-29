@@ -62,7 +62,7 @@ class BadLoginDatabase : public LoginDatabase {
 };
 
 PasswordFormData CreateTestPasswordFormData() {
-  PasswordFormData data = {PasswordForm::SCHEME_HTML,
+  PasswordFormData data = {PasswordForm::Scheme::kHtml,
                            "http://bar.example.com",
                            "http://bar.example.com/origin",
                            "http://bar.example.com/action",
@@ -168,7 +168,7 @@ TEST(PasswordStoreDefaultTest, NonASCIIData) {
 
   // Some non-ASCII password form data.
   static const PasswordFormData form_data[] = {
-      {PasswordForm::SCHEME_HTML, "http://foo.example.com",
+      {PasswordForm::Scheme::kHtml, "http://foo.example.com",
        "http://foo.example.com/origin", "http://foo.example.com/action",
        L"มีสีสัน", L"お元気ですか?", L"盆栽", L"أحب كرة", L"£éä국수çà", true, 1},
   };

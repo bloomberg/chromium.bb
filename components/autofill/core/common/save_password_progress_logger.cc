@@ -35,15 +35,15 @@ bool IsUnwantedInElementID(char c) {
 SavePasswordProgressLogger::StringID FormSchemeToStringID(
     PasswordForm::Scheme scheme) {
   switch (scheme) {
-    case PasswordForm::SCHEME_HTML:
+    case PasswordForm::Scheme::kHtml:
       return SavePasswordProgressLogger::STRING_SCHEME_HTML;
-    case PasswordForm::SCHEME_BASIC:
+    case PasswordForm::Scheme::kBasic:
       return SavePasswordProgressLogger::STRING_SCHEME_BASIC;
-    case PasswordForm::SCHEME_DIGEST:
+    case PasswordForm::Scheme::kDigest:
       return SavePasswordProgressLogger::STRING_SCHEME_DIGEST;
-    case PasswordForm::SCHEME_OTHER:
+    case PasswordForm::Scheme::kOther:
       return SavePasswordProgressLogger::STRING_OTHER;
-    case PasswordForm::SCHEME_USERNAME_ONLY:
+    case PasswordForm::Scheme::kUsernameOnly:
       return SavePasswordProgressLogger::STRING_SCHEME_USERNAME_ONLY;
   }
   NOTREACHED();
@@ -96,7 +96,7 @@ void SavePasswordProgressLogger::LogPasswordForm(
     }
   }
   log.SetBoolean(GetStringFromID(STRING_PASSWORD_GENERATED),
-                 form.type == PasswordForm::TYPE_GENERATED);
+                 form.type == PasswordForm::Type::kGenerated);
   log.SetInteger(GetStringFromID(STRING_TIMES_USED), form.times_used);
   log.SetBoolean(GetStringFromID(STRING_PSL_MATCH),
                  form.is_public_suffix_match);

@@ -57,7 +57,7 @@ PasswordForm CreateGenerated() {
   form.username_value = ASCIIToUTF16("MyName");
   form.password_value = ASCIIToUTF16("Strong password");
   form.preferred = true;
-  form.type = autofill::PasswordForm::TYPE_GENERATED;
+  form.type = autofill::PasswordForm::Type::kGenerated;
   return form;
 }
 

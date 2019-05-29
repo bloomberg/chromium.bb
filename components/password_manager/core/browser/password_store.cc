@@ -98,7 +98,7 @@ PasswordStore::FormDigest::FormDigest(const PasswordForm& form)
       origin(form.origin) {}
 
 PasswordStore::FormDigest::FormDigest(const autofill::FormData& form)
-    : scheme(PasswordForm::SCHEME_HTML),
+    : scheme(PasswordForm::Scheme::kHtml),
       signon_realm(form.url.GetOrigin().spec()),
       origin(form.url) {}
 
@@ -228,7 +228,7 @@ void PasswordStore::GetLogins(const FormDigest& form,
   // security feature to help minimize damage that can be done by XSS attacks.
   // TODO(mdm): actually delete them at some point, say M24 or so.
   base::Time cutoff;  // the null time
-  if (form.scheme == PasswordForm::SCHEME_HTML &&
+  if (form.scheme == PasswordForm::Scheme::kHtml &&
       (form.signon_realm == "http://www.google.com" ||
        form.signon_realm == "http://www.google.com/" ||
        form.signon_realm == "https://www.google.com" ||
@@ -862,7 +862,7 @@ PasswordStore::GetLoginsWithAffiliationsImpl(
   std::vector<std::unique_ptr<PasswordForm>> results(FillMatchingLogins(form));
   for (const std::string& realm : additional_android_realms) {
     std::vector<std::unique_ptr<PasswordForm>> more_results(
-        FillMatchingLogins({PasswordForm::SCHEME_HTML, realm, GURL()}));
+        FillMatchingLogins({PasswordForm::Scheme::kHtml, realm, GURL()}));
     for (auto& result : more_results)
       result->is_affiliation_based_match = true;
     password_manager_util::TrimUsernameOnlyCredentials(&more_results);
@@ -939,7 +939,7 @@ void PasswordStore::UpdateAffiliatedWebLoginsImpl(
   PasswordStoreChangeList all_changes;
   for (const std::string& affiliated_web_realm : affiliated_web_realms) {
     std::vector<std::unique_ptr<PasswordForm>> web_logins(FillMatchingLogins(
-        {PasswordForm::SCHEME_HTML, affiliated_web_realm, GURL()}));
+        {PasswordForm::Scheme::kHtml, affiliated_web_realm, GURL()}));
     for (auto& web_login : web_logins) {
       // Do not update HTTP logins, logins saved under insecure conditions, and
       // non-HTML login forms; PSL matches; logins with a different username;

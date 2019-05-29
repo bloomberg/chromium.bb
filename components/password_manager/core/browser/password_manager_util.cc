@@ -113,14 +113,14 @@ void TrimUsernameOnlyCredentials(
   // Remove username-only credentials which are not federated.
   base::EraseIf(*android_credentials,
                 [](const std::unique_ptr<PasswordForm>& form) {
-                  return form->scheme == PasswordForm::SCHEME_USERNAME_ONLY &&
+                  return form->scheme == PasswordForm::Scheme::kUsernameOnly &&
                          form->federation_origin.opaque();
                 });
 
   // Set "skip_zero_click" on federated credentials.
   std::for_each(android_credentials->begin(), android_credentials->end(),
                 [](const std::unique_ptr<PasswordForm>& form) {
-                  if (form->scheme == PasswordForm::SCHEME_USERNAME_ONLY)
+                  if (form->scheme == PasswordForm::Scheme::kUsernameOnly)
                     form->skip_zero_click = true;
                 });
 }
@@ -291,7 +291,7 @@ const PasswordForm* GetMatchForUpdating(
 
   // Next attempt is to find a match by password value. It should not be tried
   // when the username was actually detected.
-  if (submitted_form.type == PasswordForm::TYPE_API ||
+  if (submitted_form.type == PasswordForm::Type::kApi ||
       !submitted_form.username_value.empty())
     return nullptr;
 

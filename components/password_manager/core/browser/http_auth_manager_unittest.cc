@@ -135,7 +135,7 @@ TEST_F(HttpAuthManagerTest, HttpAuthFilling) {
         .WillRepeatedly(Return(filling_enabled));
 
     PasswordForm observed_form;
-    observed_form.scheme = PasswordForm::SCHEME_BASIC;
+    observed_form.scheme = PasswordForm::Scheme::kBasic;
     observed_form.origin = GURL("http://proxy.com/");
     observed_form.signon_realm = "proxy.com/realm";
 
@@ -169,7 +169,7 @@ TEST_F(HttpAuthManagerTest, HttpAuthSaving) {
     EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
         .WillRepeatedly(Return(filling_and_saving_enabled));
     PasswordForm observed_form;
-    observed_form.scheme = PasswordForm::SCHEME_BASIC;
+    observed_form.scheme = PasswordForm::Scheme::kBasic;
     observed_form.origin = GURL("http://proxy.com/");
     observed_form.signon_realm = "proxy.com/realm";
 

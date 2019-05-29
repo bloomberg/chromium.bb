@@ -55,7 +55,7 @@ namespace {
 
 // PasswordForm values for tests.
 constexpr autofill::PasswordForm::Type kArbitraryType =
-    autofill::PasswordForm::TYPE_GENERATED;
+    autofill::PasswordForm::Type::kGenerated;
 constexpr char kIconUrl[] = "https://fb.com/Icon";
 constexpr char kDisplayName[] = "Agent Smith";
 constexpr char kFederationUrl[] = "https://fb.com/";
@@ -134,7 +134,8 @@ SyncData CreateSyncData(const std::string& signon_realm) {
   sync_pb::PasswordSpecificsData* password_specifics =
       password_data.mutable_password()->mutable_client_only_encrypted_data();
   password_specifics->set_signon_realm(signon_realm);
-  password_specifics->set_type(autofill::PasswordForm::TYPE_GENERATED);
+  password_specifics->set_type(
+      static_cast<int>(autofill::PasswordForm::Type::kGenerated));
   password_specifics->set_times_used(3);
   password_specifics->set_display_name("Mr. X");
   password_specifics->set_avatar_url("https://accounts.google.com/Icon");
@@ -724,7 +725,7 @@ TEST_F(PasswordSyncableServiceTest, SerializeEmptyPasswordForm) {
 // Sync representation is matching the expectations.
 TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   autofill::PasswordForm form;
-  form.scheme = autofill::PasswordForm::SCHEME_USERNAME_ONLY;
+  form.scheme = autofill::PasswordForm::Scheme::kUsernameOnly;
   form.signon_realm = "http://google.com/";
   form.origin = GURL("https://google.com/origin");
   form.action = GURL("https://google.com/action");
@@ -735,7 +736,7 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   form.preferred = true;
   form.date_created = base::Time::FromInternalValue(100);
   form.blacklisted_by_user = true;
-  form.type = autofill::PasswordForm::TYPE_LAST;
+  form.type = autofill::PasswordForm::Type::kMaxValue;
   form.times_used = 11;
   form.display_name = base::ASCIIToUTF16("Great Peter");
   form.icon_url = GURL("https://google.com/icon");
@@ -744,7 +745,8 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   syncer::SyncData data = SyncDataFromPassword(form);
   const sync_pb::PasswordSpecificsData& specifics = GetPasswordSpecifics(data);
   EXPECT_TRUE(specifics.has_scheme());
-  EXPECT_EQ(autofill::PasswordForm::SCHEME_USERNAME_ONLY, specifics.scheme());
+  EXPECT_EQ(static_cast<int>(autofill::PasswordForm::Scheme::kUsernameOnly),
+            specifics.scheme());
   EXPECT_TRUE(specifics.has_signon_realm());
   EXPECT_EQ("http://google.com/", specifics.signon_realm());
   EXPECT_TRUE(specifics.has_origin());
@@ -766,7 +768,8 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   EXPECT_TRUE(specifics.has_blacklisted());
   EXPECT_TRUE(specifics.blacklisted());
   EXPECT_TRUE(specifics.has_type());
-  EXPECT_EQ(autofill::PasswordForm::TYPE_LAST, specifics.type());
+  EXPECT_EQ(static_cast<int>(autofill::PasswordForm::Type::kMaxValue),
+            specifics.type());
   EXPECT_TRUE(specifics.has_times_used());
   EXPECT_EQ(11, specifics.times_used());
   EXPECT_TRUE(specifics.has_display_name());

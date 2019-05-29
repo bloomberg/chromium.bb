@@ -112,13 +112,13 @@ TestPasswordStore::FillMatchingLogins(const FormDigest& form) {
     const bool realm_psl_matches =
         IsPublicSuffixDomainMatch(elements.first, form.signon_realm);
     if (realm_matches || realm_psl_matches ||
-        (form.scheme == autofill::PasswordForm::SCHEME_HTML &&
+        (form.scheme == autofill::PasswordForm::Scheme::kHtml &&
          password_manager::IsFederatedRealm(elements.first, form.origin))) {
       const bool is_psl = !realm_matches && realm_psl_matches;
       for (const auto& stored_form : elements.second) {
         // Repeat the condition above with an additional check for origin.
         if (realm_matches || realm_psl_matches ||
-            (form.scheme == autofill::PasswordForm::SCHEME_HTML &&
+            (form.scheme == autofill::PasswordForm::Scheme::kHtml &&
              stored_form.origin.GetOrigin() == form.origin.GetOrigin() &&
              password_manager::IsFederatedRealm(stored_form.signon_realm,
                                                 form.origin))) {

@@ -377,12 +377,12 @@ PasswordForm LoginHandler::MakeInputForPasswordManager(
     const net::AuthChallengeInfo& auth_info) {
   PasswordForm dialog_form;
   if (base::LowerCaseEqualsASCII(auth_info.scheme, net::kBasicAuthScheme)) {
-    dialog_form.scheme = PasswordForm::SCHEME_BASIC;
+    dialog_form.scheme = PasswordForm::Scheme::kBasic;
   } else if (base::LowerCaseEqualsASCII(auth_info.scheme,
                                         net::kDigestAuthScheme)) {
-    dialog_form.scheme = PasswordForm::SCHEME_DIGEST;
+    dialog_form.scheme = PasswordForm::Scheme::kDigest;
   } else {
-    dialog_form.scheme = PasswordForm::SCHEME_OTHER;
+    dialog_form.scheme = PasswordForm::Scheme::kOther;
   }
   dialog_form.origin = auth_info.challenger.GetURL();
   DCHECK(auth_info.is_proxy || auth_info.challenger.IsSameOriginWith(

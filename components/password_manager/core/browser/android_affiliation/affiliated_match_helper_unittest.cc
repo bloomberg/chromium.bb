@@ -149,7 +149,7 @@ AffiliatedFacets GetTestEquivalenceClassBeta() {
 
 autofill::PasswordForm GetTestAndroidCredentials(const char* signon_realm) {
   autofill::PasswordForm form;
-  form.scheme = autofill::PasswordForm::SCHEME_HTML;
+  form.scheme = autofill::PasswordForm::Scheme::kHtml;
   form.signon_realm = signon_realm;
   form.username_value = base::ASCIIToUTF16(kTestUsername);
   form.password_value = base::ASCIIToUTF16(kTestPassword);
@@ -165,7 +165,7 @@ autofill::PasswordForm GetTestBlacklistedAndroidCredentials(
 
 PasswordStore::FormDigest GetTestObservedWebForm(const char* signon_realm,
                                                  const char* origin) {
-  return {autofill::PasswordForm::SCHEME_HTML, signon_realm,
+  return {autofill::PasswordForm::Scheme::kHtml, signon_realm,
           origin ? GURL(origin) : GURL()};
 }
 
@@ -395,7 +395,7 @@ TEST_F(AffiliatedMatchHelperTest,
        GetAffiliatedAndroidRealmsYieldsEmptyResultsForHTTPBasicAuthForms) {
   PasswordStore::FormDigest http_auth_observed_form(
       GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr));
-  http_auth_observed_form.scheme = autofill::PasswordForm::SCHEME_BASIC;
+  http_auth_observed_form.scheme = autofill::PasswordForm::Scheme::kBasic;
   EXPECT_THAT(GetAffiliatedAndroidRealms(http_auth_observed_form),
               testing::IsEmpty());
 }
@@ -404,7 +404,7 @@ TEST_F(AffiliatedMatchHelperTest,
        GetAffiliatedAndroidRealmsYieldsEmptyResultsForHTTPDigestAuthForms) {
   PasswordStore::FormDigest http_auth_observed_form(
       GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr));
-  http_auth_observed_form.scheme = autofill::PasswordForm::SCHEME_DIGEST;
+  http_auth_observed_form.scheme = autofill::PasswordForm::Scheme::kDigest;
   EXPECT_THAT(GetAffiliatedAndroidRealms(http_auth_observed_form),
               testing::IsEmpty());
 }

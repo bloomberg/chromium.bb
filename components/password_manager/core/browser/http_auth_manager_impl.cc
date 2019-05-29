@@ -73,7 +73,7 @@ void HttpAuthManagerImpl::ProvisionallySaveForm(
 void HttpAuthManagerImpl::Autofill(
     const PasswordForm& preferred_match,
     const PasswordFormManagerForUI* form_manager) const {
-  DCHECK_NE(PasswordForm::SCHEME_HTML, preferred_match.scheme);
+  DCHECK_NE(PasswordForm::Scheme::kHtml, preferred_match.scheme);
   if (observer_ && (form_manager_.get() == form_manager) &&
       client_->IsFillingEnabled(form_manager_->GetOrigin())) {
     observer_->OnAutofillDataAvailable(preferred_match.username_value,

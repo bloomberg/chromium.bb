@@ -272,17 +272,17 @@ TEST(HttpPasswordStoreMigrator, MigrateHttpFormToHttpsTestSignonRealm) {
     PasswordForm http_html_form;
     http_html_form.origin = kOrigins[origin_has_paths];
     http_html_form.signon_realm = "http://example.org/";
-    http_html_form.scheme = PasswordForm::Scheme::SCHEME_HTML;
+    http_html_form.scheme = PasswordForm::Scheme::kHtml;
 
     PasswordForm non_html_empty_realm_form;
     non_html_empty_realm_form.origin = kOrigins[origin_has_paths];
     non_html_empty_realm_form.signon_realm = "http://example.org/";
-    non_html_empty_realm_form.scheme = PasswordForm::Scheme::SCHEME_BASIC;
+    non_html_empty_realm_form.scheme = PasswordForm::Scheme::kBasic;
 
     PasswordForm non_html_form;
     non_html_form.origin = kOrigins[origin_has_paths];
     non_html_form.signon_realm = "http://example.org/realm";
-    non_html_form.scheme = PasswordForm::Scheme::SCHEME_BASIC;
+    non_html_form.scheme = PasswordForm::Scheme::kBasic;
 
     EXPECT_EQ(HttpPasswordStoreMigrator::MigrateHttpFormToHttps(http_html_form)
                   .signon_realm,

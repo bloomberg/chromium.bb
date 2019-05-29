@@ -2927,7 +2927,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, BasicAuthSeparateRealms) {
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
               .get());
   autofill::PasswordForm creds;
-  creds.scheme = autofill::PasswordForm::SCHEME_BASIC;
+  creds.scheme = autofill::PasswordForm::Scheme::kBasic;
   creds.signon_realm = http_test_server.base_url().spec() + "test realm";
   creds.password_value = base::ASCIIToUTF16("pw");
   creds.username_value = base::ASCIIToUTF16("temp");
@@ -2976,7 +2976,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ProxyAuthFilling) {
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
               .get());
   autofill::PasswordForm creds;
-  creds.scheme = autofill::PasswordForm::SCHEME_BASIC;
+  creds.scheme = autofill::PasswordForm::Scheme::kBasic;
   creds.origin = test_page;
   creds.signon_realm = embedded_test_server()->base_url().spec() + "testrealm";
   creds.password_value = base::ASCIIToUTF16("pw");
@@ -3756,7 +3756,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                 .get());
 
     autofill::PasswordForm blacklisted_form;
-    blacklisted_form.scheme = autofill::PasswordForm::SCHEME_HTML;
+    blacklisted_form.scheme = autofill::PasswordForm::Scheme::kHtml;
     blacklisted_form.signon_realm = http_test_server.base_url().spec();
     blacklisted_form.blacklisted_by_user = true;
     password_store->AddLogin(blacklisted_form);
@@ -3821,7 +3821,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                 .get());
 
     autofill::PasswordForm blacklisted_form;
-    blacklisted_form.scheme = autofill::PasswordForm::SCHEME_BASIC;
+    blacklisted_form.scheme = autofill::PasswordForm::Scheme::kBasic;
     blacklisted_form.signon_realm = embedded_test_server()->base_url().spec();
     if (!is_realm_empty)
       blacklisted_form.signon_realm += "test realm";

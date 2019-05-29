@@ -1098,7 +1098,7 @@ void PasswordManager::OnPasswordFormsRendered(
 
   // If we see the login form again, then the login failed.
   if (submitted_manager->GetPendingCredentials().scheme ==
-      PasswordForm::SCHEME_HTML) {
+      PasswordForm::Scheme::kHtml) {
     for (const PasswordForm& form : all_visible_forms_) {
       if (IsPasswordFormReappeared(
               form, submitted_manager->GetPendingCredentials())) {

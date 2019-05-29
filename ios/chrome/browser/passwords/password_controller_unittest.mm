@@ -131,7 +131,7 @@ PasswordForm CreatePasswordForm(const char* origin_url,
                                 const char* username_value,
                                 const char* password_value) {
   PasswordForm form;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
   form.origin = GURL(origin_url);
   form.signon_realm = origin_url;
   form.username_value = ASCIIToUTF16(username_value);
@@ -1206,7 +1206,7 @@ TEST_F(PasswordControllerTest, SendingToStoreDynamicallyAddedFormsOnFocus) {
   bool* p_get_logins_called = &get_logins_called;
 
   password_manager::PasswordStore::FormDigest expected_form_digest(
-      autofill::PasswordForm::SCHEME_HTML, "https://chromium.test/",
+      autofill::PasswordForm::Scheme::kHtml, "https://chromium.test/",
       GURL("https://chromium.test/"));
   // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the old
   // parser is gone.

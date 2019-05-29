@@ -146,7 +146,7 @@ bool CredentialManagerImpl::IsZeroClickAllowed() const {
 
 PasswordStore::FormDigest CredentialManagerImpl::GetSynthesizedFormForOrigin()
     const {
-  PasswordStore::FormDigest digest = {autofill::PasswordForm::SCHEME_HTML,
+  PasswordStore::FormDigest digest = {autofill::PasswordForm::Scheme::kHtml,
                                       std::string(),
                                       GetLastCommittedURL().GetOrigin()};
   digest.signon_realm = digest.origin.spec();

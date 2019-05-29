@@ -255,7 +255,7 @@ void SerializeValue(const std::vector<std::unique_ptr<PasswordForm>>& forms,
   pickle->WriteInt(kPickleVersion);
   pickle->WriteUInt64(forms.size());
   for (const auto& form : forms) {
-    pickle->WriteInt(form->scheme);
+    pickle->WriteInt(static_cast<int>(form->scheme));
     pickle->WriteString(form->origin.spec());
     pickle->WriteString(form->action.spec());
     pickle->WriteString16(form->username_element);
@@ -266,7 +266,7 @@ void SerializeValue(const std::vector<std::unique_ptr<PasswordForm>>& forms,
     pickle->WriteBool(form->preferred);
     pickle->WriteBool(form->blacklisted_by_user);
     pickle->WriteInt64(form->date_created.ToInternalValue());
-    pickle->WriteInt(form->type);
+    pickle->WriteInt(static_cast<int>(form->type));
     pickle->WriteInt(form->times_used);
     autofill::SerializeFormData(form->form_data, pickle);
     pickle->WriteInt64(form->date_synced.ToInternalValue());
@@ -278,7 +278,7 @@ void SerializeValue(const std::vector<std::unique_ptr<PasswordForm>>& forms,
                             ? std::string()
                             : form->federation_origin.Serialize());
     pickle->WriteBool(form->skip_zero_click);
-    pickle->WriteInt(form->generation_upload_status);
+    pickle->WriteInt(static_cast<int>(form->generation_upload_status));
   }
 }
 

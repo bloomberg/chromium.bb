@@ -245,7 +245,7 @@ TEST_P(PasswordStoreMacTest, OperationsOnABadDatabaseSilentlyFail) {
 
   // Add a new autofillable login + a blacklisted login.
   password_manager::PasswordFormData www_form_data = {
-      PasswordForm::SCHEME_HTML,
+      PasswordForm::Scheme::kHtml,
       "http://www.facebook.com/",
       "http://www.facebook.com/index.html",
       "login",

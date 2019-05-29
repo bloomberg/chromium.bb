@@ -358,10 +358,10 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         EXPECT_FALSE(parsed_form) << "Expected no parsed results";
       } else {
         ASSERT_TRUE(parsed_form) << "Expected successful parsing";
-        EXPECT_EQ(PasswordForm::SCHEME_HTML, parsed_form->scheme);
+        EXPECT_EQ(PasswordForm::Scheme::kHtml, parsed_form->scheme);
         EXPECT_FALSE(parsed_form->preferred);
         EXPECT_FALSE(parsed_form->blacklisted_by_user);
-        EXPECT_EQ(PasswordForm::TYPE_MANUAL, parsed_form->type);
+        EXPECT_EQ(PasswordForm::Type::kManual, parsed_form->type);
 #if defined(OS_IOS)
         EXPECT_FALSE(parsed_form->has_renderer_ids);
 #else

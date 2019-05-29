@@ -904,10 +904,10 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   // TODO(crbug.com/881346) Rename PasswordForm::other_possible_usernames to
   // all_possible_usernames once the old parser is gone.
   result->other_possible_usernames = std::move(all_possible_usernames);
-  result->scheme = PasswordForm::SCHEME_HTML;
+  result->scheme = PasswordForm::Scheme::kHtml;
   result->preferred = false;
   result->blacklisted_by_user = false;
-  result->type = PasswordForm::TYPE_MANUAL;
+  result->type = PasswordForm::Type::kManual;
   result->username_may_use_prefilled_placeholder =
       GetMayUsePrefilledPlaceholder(form_predictions, significant_fields);
   result->is_new_password_reliable =

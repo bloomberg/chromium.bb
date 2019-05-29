@@ -31,33 +31,6 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<autofill::mojom::GenerationUploadStatus,
-                  autofill::PasswordForm::GenerationUploadStatus> {
-  static autofill::mojom::GenerationUploadStatus ToMojom(
-      autofill::PasswordForm::GenerationUploadStatus input);
-  static bool FromMojom(autofill::mojom::GenerationUploadStatus input,
-                        autofill::PasswordForm::GenerationUploadStatus* output);
-};
-
-template <>
-struct EnumTraits<autofill::mojom::PasswordFormType,
-                  autofill::PasswordForm::Type> {
-  static autofill::mojom::PasswordFormType ToMojom(
-      autofill::PasswordForm::Type input);
-  static bool FromMojom(autofill::mojom::PasswordFormType input,
-                        autofill::PasswordForm::Type* output);
-};
-
-template <>
-struct EnumTraits<autofill::mojom::PasswordFormScheme,
-                  autofill::PasswordForm::Scheme> {
-  static autofill::mojom::PasswordFormScheme ToMojom(
-      autofill::PasswordForm::Scheme input);
-  static bool FromMojom(autofill::mojom::PasswordFormScheme input,
-                        autofill::PasswordForm::Scheme* output);
-};
-
-template <>
 struct EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
                   autofill::PasswordFormFieldPredictionType> {
   static autofill::mojom::PasswordFormFieldPredictionType ToMojom(

@@ -36,7 +36,7 @@ const base::Time kTestCreationDate =
 
 PasswordForm GetTestCredential() {
   PasswordForm form;
-  form.scheme = PasswordForm::SCHEME_HTML;
+  form.scheme = PasswordForm::Scheme::kHtml;
   form.signon_realm = GURL(kTestURL).GetOrigin().spec();
   form.origin = GURL(kTestURL);
   form.username_element = base::ASCIIToUTF16(kTestUsernameElement);
@@ -118,7 +118,7 @@ TEST_F(BlacklistedCredentialsCleanerTest, CleanerNormalizesData) {
 
   PasswordForm blacklisted_form;
   blacklisted_form.blacklisted_by_user = true;
-  blacklisted_form.scheme = PasswordForm::SCHEME_HTML;
+  blacklisted_form.scheme = PasswordForm::Scheme::kHtml;
   blacklisted_form.signon_realm = GURL(kTestURL).GetOrigin().spec();
   blacklisted_form.origin = GURL(kTestURL).GetOrigin();
   blacklisted_form.date_created = kTestCreationDate;
@@ -164,7 +164,7 @@ TEST_F(BlacklistedCredentialsCleanerTest, CleanerDeduplicatesForms) {
   // Only one credential for the signon realm is left.
   PasswordForm blacklisted_form;
   blacklisted_form.blacklisted_by_user = true;
-  blacklisted_form.scheme = PasswordForm::SCHEME_HTML;
+  blacklisted_form.scheme = PasswordForm::Scheme::kHtml;
   blacklisted_form.signon_realm = GURL(kTestURL).GetOrigin().spec();
   blacklisted_form.origin = GURL(kTestURL).GetOrigin();
   blacklisted_form.date_created = kTestCreationDate;

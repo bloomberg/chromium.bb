@@ -100,7 +100,7 @@ void UpdateLogin(PasswordStore* store, const PasswordForm& form) {
 std::vector<std::unique_ptr<PasswordForm>> GetLogins(PasswordStore* store) {
   EXPECT_TRUE(store);
   password_manager::PasswordStore::FormDigest matcher_form = {
-      PasswordForm::SCHEME_HTML, kFakeSignonRealm, GURL()};
+      PasswordForm::Scheme::kHtml, kFakeSignonRealm, GURL()};
   PasswordStoreConsumerHelper consumer;
   store->GetLogins(matcher_form, &consumer);
   return consumer.WaitForResult();

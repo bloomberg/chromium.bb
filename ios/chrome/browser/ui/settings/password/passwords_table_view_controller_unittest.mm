@@ -96,7 +96,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
     form->submit_element = base::ASCIIToUTF16("signIn");
     form->signon_realm = "http://www.example.com/";
     form->preferred = false;
-    form->scheme = autofill::PasswordForm::SCHEME_HTML;
+    form->scheme = autofill::PasswordForm::Scheme::kHtml;
     form->blacklisted_by_user = false;
     AddPasswordForm(std::move(form));
   }
@@ -113,7 +113,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
     form->submit_element = base::ASCIIToUTF16("signIn");
     form->signon_realm = "http://www.example2.com/";
     form->preferred = false;
-    form->scheme = autofill::PasswordForm::SCHEME_HTML;
+    form->scheme = autofill::PasswordForm::Scheme::kHtml;
     form->blacklisted_by_user = false;
     AddPasswordForm(std::move(form));
   }
@@ -131,7 +131,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
     form->submit_element = base::ASCIIToUTF16("signIn");
     form->signon_realm = "http://www.secret.com/";
     form->preferred = false;
-    form->scheme = autofill::PasswordForm::SCHEME_HTML;
+    form->scheme = autofill::PasswordForm::Scheme::kHtml;
     form->blacklisted_by_user = true;
     AddPasswordForm(std::move(form));
   }
@@ -149,7 +149,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
     form->submit_element = base::ASCIIToUTF16("signIn");
     form->signon_realm = "http://www.secret2.com/";
     form->preferred = false;
-    form->scheme = autofill::PasswordForm::SCHEME_HTML;
+    form->scheme = autofill::PasswordForm::Scheme::kHtml;
     form->blacklisted_by_user = true;
     AddPasswordForm(std::move(form));
   }
@@ -391,7 +391,7 @@ TEST_F(PasswordsTableViewControllerTest, PropagateDeletionToStore) {
   form.password_value = base::ASCIIToUTF16("test");
   form.submit_element = base::ASCIIToUTF16("signIn");
   form.signon_realm = "http://www.example.com/";
-  form.scheme = autofill::PasswordForm::SCHEME_HTML;
+  form.scheme = autofill::PasswordForm::Scheme::kHtml;
   form.blacklisted_by_user = false;
 
   AddPasswordForm(std::make_unique<autofill::PasswordForm>(form));

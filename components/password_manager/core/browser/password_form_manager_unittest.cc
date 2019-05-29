@@ -1813,9 +1813,9 @@ TEST_F(PasswordFormManagerTest, EmptyActionURLsDoNotMatchNonEmpty) {
 }
 
 TEST_F(PasswordFormManagerTest, NonHTMLFormsDoNotMatchHTMLForms) {
-  ASSERT_EQ(PasswordForm::SCHEME_HTML, observed_form()->scheme);
+  ASSERT_EQ(PasswordForm::Scheme::kHtml, observed_form()->scheme);
   PasswordForm non_html_form(*observed_form());
-  non_html_form.scheme = PasswordForm::SCHEME_DIGEST;
+  non_html_form.scheme = PasswordForm::Scheme::kDigest;
   EXPECT_EQ(PasswordFormManager::RESULT_NO_MATCH,
             form_manager()->DoesManage(non_html_form, nullptr));
 
@@ -2037,26 +2037,31 @@ TEST_F(PasswordFormManagerTest, UploadPasswordForm) {
   // Form data is different than saved form data, account creation signal should
   // be sent.
   autofill::ServerFieldType field_type = autofill::ACCOUNT_CREATION_PASSWORD;
-  AccountCreationUploadTest(observed_form_data, 0, PasswordForm::NO_SIGNAL_SENT,
+  AccountCreationUploadTest(observed_form_data, 0,
+                            PasswordForm::GenerationUploadStatus::kNoSignalSent,
                             &field_type);
 
   // Non-zero times used will not upload since we only upload a positive signal
   // at most once.
-  AccountCreationUploadTest(observed_form_data, 1, PasswordForm::NO_SIGNAL_SENT,
+  AccountCreationUploadTest(observed_form_data, 1,
+                            PasswordForm::GenerationUploadStatus::kNoSignalSent,
                             nullptr);
 
   // Same form data as saved match and POSITIVE_SIGNAL_SENT means there should
   // be a negative autofill ping sent.
   field_type = autofill::NOT_ACCOUNT_CREATION_PASSWORD;
-  AccountCreationUploadTest(saved_match()->form_data, 2,
-                            PasswordForm::POSITIVE_SIGNAL_SENT, &field_type);
+  AccountCreationUploadTest(
+      saved_match()->form_data, 2,
+      PasswordForm::GenerationUploadStatus::kPositiveSignalSent, &field_type);
 
   // For any other GenerationUploadStatus, no autofill upload should occur
   // if the observed form data matches the saved form data.
   AccountCreationUploadTest(saved_match()->form_data, 3,
-                            PasswordForm::NO_SIGNAL_SENT, nullptr);
-  AccountCreationUploadTest(saved_match()->form_data, 3,
-                            PasswordForm::NEGATIVE_SIGNAL_SENT, nullptr);
+                            PasswordForm::GenerationUploadStatus::kNoSignalSent,
+                            nullptr);
+  AccountCreationUploadTest(
+      saved_match()->form_data, 3,
+      PasswordForm::GenerationUploadStatus::kNegativeSignalSent, nullptr);
 }
 
 TEST_F(PasswordFormManagerTest, CorrectlySavePasswordWithoutUsernameFields) {
@@ -2121,7 +2126,7 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
   form.preferred = false;
 
   PasswordForm generated_form = form;
-  generated_form.type = PasswordForm::TYPE_GENERATED;
+  generated_form.type = PasswordForm::Type::kGenerated;
   generated_form.password_value = ASCIIToUTF16("password2");
   generated_form.preferred = true;
 
@@ -2696,7 +2701,7 @@ TEST_F(PasswordFormManagerTest, TestSelectPasswordMethod) {
 
 TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
   PasswordForm generated_form = *observed_form();
-  generated_form.type = PasswordForm::TYPE_GENERATED;
+  generated_form.type = PasswordForm::Type::kGenerated;
   generated_form.username_value = ASCIIToUTF16("username");
   generated_form.password_value = ASCIIToUTF16("password2");
   generated_form.preferred = true;
@@ -2713,14 +2718,14 @@ TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
       .WillOnce(testing::SaveArg<0>(&new_credentials));
   form_manager()->Save();
 
-  EXPECT_EQ(PasswordForm::TYPE_MANUAL, new_credentials.type);
+  EXPECT_EQ(PasswordForm::Type::kManual, new_credentials.type);
 }
 
 TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
   base::HistogramTester histogram_tester;
 
   PasswordForm generated_form = *observed_form();
-  generated_form.type = PasswordForm::TYPE_GENERATED;
+  generated_form.type = PasswordForm::Type::kGenerated;
   generated_form.username_value = ASCIIToUTF16("username");
   generated_form.password_value = ASCIIToUTF16("password2");
   generated_form.preferred = true;
@@ -2736,7 +2741,7 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
       .WillOnce(testing::SaveArg<0>(&new_credentials));
   form_manager()->Save();
 
-  EXPECT_EQ(PasswordForm::TYPE_GENERATED, new_credentials.type);
+  EXPECT_EQ(PasswordForm::Type::kGenerated, new_credentials.type);
   histogram_tester.ExpectBucketCount("PasswordGeneration.SubmissionEvent",
                                      metrics_util::PASSWORD_USED, 1);
 
@@ -2754,7 +2759,7 @@ TEST_F(PasswordFormManagerTest, GeneratedPasswordIsOverridden) {
   base::HistogramTester histogram_tester;
 
   PasswordForm generated_form = *observed_form();
-  generated_form.type = PasswordForm::TYPE_GENERATED;
+  generated_form.type = PasswordForm::Type::kGenerated;
   generated_form.username_value = ASCIIToUTF16("username");
   generated_form.password_value = ASCIIToUTF16("password2");
   generated_form.preferred = true;
@@ -2771,7 +2776,7 @@ TEST_F(PasswordFormManagerTest, GeneratedPasswordIsOverridden) {
       .WillOnce(testing::SaveArg<0>(&new_credentials));
   form_manager()->Save();
 
-  EXPECT_EQ(PasswordForm::TYPE_MANUAL, new_credentials.type);
+  EXPECT_EQ(PasswordForm::Type::kManual, new_credentials.type);
   EXPECT_EQ(ASCIIToUTF16("another_password"), new_credentials.password_value);
   histogram_tester.ExpectBucketCount("PasswordGeneration.SubmissionEvent",
                                      metrics_util::PASSWORD_OVERRIDDEN, 1);
@@ -3339,9 +3344,9 @@ TEST_F(PasswordFormManagerTest, FieldPropertiesMasksUpload) {
 TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
   // Turn |observed_form| and |saved_match| to API created forms.
   observed_form()->username_element.clear();
-  observed_form()->type = autofill::PasswordForm::TYPE_API;
+  observed_form()->type = autofill::PasswordForm::Type::kApi;
   saved_match()->username_element.clear();
-  saved_match()->type = autofill::PasswordForm::TYPE_API;
+  saved_match()->type = autofill::PasswordForm::Type::kApi;
 
   FakeFormFetcher fetcher;
   fetcher.Fetch();
@@ -3373,7 +3378,7 @@ TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
             new_credentials.username_value);
   EXPECT_EQ(saved_match()->password_value, new_credentials.password_value);
   EXPECT_EQ(base::string16(), new_credentials.username_element);
-  EXPECT_EQ(autofill::PasswordForm::TYPE_API, new_credentials.type);
+  EXPECT_EQ(autofill::PasswordForm::Type::kApi, new_credentials.type);
 }
 
 TEST_F(PasswordFormManagerTest, SkipZeroClickIntact) {
@@ -3440,8 +3445,9 @@ TEST_F(PasswordFormManagerTest, ProcessMatches_Empty) {
 // For all combinations of PasswordForm schemes, test that OnFetchCompleted
 // filters out forms with schemes not matching the observed form.
 TEST_F(PasswordFormManagerTest, RemoveResultsWithWrongScheme_ObservingHTML) {
-  for (int correct = 0; correct <= PasswordForm::SCHEME_LAST; ++correct) {
-    for (int wrong = 0; wrong <= PasswordForm::SCHEME_LAST; ++wrong) {
+  constexpr int kMaxValue = static_cast<int>(PasswordForm::Scheme::kMaxValue);
+  for (int correct = 0; correct <= kMaxValue; ++correct) {
+    for (int wrong = 0; wrong <= kMaxValue; ++wrong) {
       if (correct == wrong)
         continue;
 
@@ -3458,8 +3464,8 @@ TEST_F(PasswordFormManagerTest, RemoveResultsWithWrongScheme_ObservingHTML) {
       fetcher.Fetch();
       PasswordFormManager form_manager(
           password_manager(), client(),
-          (kCorrectScheme == PasswordForm::SCHEME_HTML ? client()->driver()
-                                                       : nullptr),
+          (kCorrectScheme == PasswordForm::Scheme::kHtml ? client()->driver()
+                                                         : nullptr),
           observed, std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
       form_manager.Init(nullptr);
 
@@ -3880,7 +3886,7 @@ TEST_F(PasswordFormManagerTest, Clone_SurvivesOriginal) {
 // into forms and HTTP Basic auth.
 TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
   PasswordForm scheme_basic_form = *observed_form();
-  scheme_basic_form.scheme = PasswordForm::SCHEME_BASIC;
+  scheme_basic_form.scheme = PasswordForm::Scheme::kBasic;
 
   const struct {
     // Whether the login is doing HTTP Basic Auth instead of form based login.

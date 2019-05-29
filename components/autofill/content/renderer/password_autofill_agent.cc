@@ -1207,7 +1207,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
         HasPasswordField(*frame)) {
       // Set everything that |FormDigest| needs.
       password_forms.push_back(PasswordForm());
-      password_forms.back().scheme = PasswordForm::SCHEME_HTML;
+      password_forms.back().scheme = PasswordForm::Scheme::kHtml;
       password_forms.back().origin =
           form_util::GetCanonicalOriginForDocument(frame->GetDocument());
       password_forms.back().signon_realm =

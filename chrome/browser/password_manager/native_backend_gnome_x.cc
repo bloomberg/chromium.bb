@@ -377,7 +377,7 @@ void GKRMethod::GetLogins(const PasswordStore::FormDigest& form,
   if (!password_manager::ShouldPSLDomainMatchingApply(
           password_manager::GetRegistryControlledDomain(
               GURL(form.signon_realm))) &&
-      form.scheme != PasswordForm::SCHEME_HTML) {
+      form.scheme != PasswordForm::Scheme::kHtml) {
     // Don't retrieve the PSL matched and federated credentials.
     AppendString(&attrs, "signon_realm", form.signon_realm);
   }

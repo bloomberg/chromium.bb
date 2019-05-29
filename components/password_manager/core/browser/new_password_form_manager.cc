@@ -261,11 +261,11 @@ void NewPasswordFormManager::Save() {
 
   // TODO(https://crbug.com/831123): Implement indicator event metrics.
   if (password_overridden_ &&
-      pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
+      pending_credentials_.type == PasswordForm::Type::kGenerated &&
       !HasGeneratedPassword()) {
     metrics_util::LogPasswordGenerationSubmissionEvent(
         metrics_util::PASSWORD_OVERRIDDEN);
-    pending_credentials_.type = PasswordForm::TYPE_MANUAL;
+    pending_credentials_.type = PasswordForm::Type::kManual;
   }
 
   if (is_new_login_) {
@@ -280,7 +280,7 @@ void NewPasswordFormManager::Save() {
   }
 
   if (pending_credentials_.times_used == 1 &&
-      pending_credentials_.type == PasswordForm::TYPE_GENERATED) {
+      pending_credentials_.type == PasswordForm::Type::kGenerated) {
     // This also includes PSL matched credentials.
     metrics_util::LogPasswordGenerationSubmissionEvent(
         metrics_util::PASSWORD_USED);
@@ -397,7 +397,7 @@ void NewPasswordFormManager::PermanentlyBlacklist() {
     } else {
       new_blacklisted_->origin = observed_form_.url;
       new_blacklisted_->signon_realm = GetSignonRealm(observed_form_.url);
-      new_blacklisted_->scheme = PasswordForm::SCHEME_HTML;
+      new_blacklisted_->scheme = PasswordForm::Scheme::kHtml;
     }
     blacklisted_matches_.push_back(new_blacklisted_.get());
   }
@@ -565,7 +565,7 @@ void NewPasswordFormManager::OnFetchCompleted() {
   std::vector<const PasswordForm*> matches;
   PasswordForm::Scheme observed_form_scheme =
       observed_http_auth_digest_ ? observed_http_auth_digest_->scheme
-                                 : PasswordForm::SCHEME_HTML;
+                                 : PasswordForm::Scheme::kHtml;
   for (const auto* match : form_fetcher_->GetNonFederatedMatches()) {
     if (match->scheme == observed_form_scheme)
       matches.push_back(match);
@@ -893,7 +893,7 @@ void NewPasswordFormManager::CreatePendingCredentials() {
   // If we're dealing with an API-driven provisionally saved form, then take
   // the server provided values. We don't do this for non-API forms, as
   // those will never have those members set.
-  if (parsed_submitted_form_->type == PasswordForm::TYPE_API) {
+  if (parsed_submitted_form_->type == PasswordForm::Type::kApi) {
     pending_credentials_.skip_zero_click =
         parsed_submitted_form_->skip_zero_click;
     pending_credentials_.display_name = parsed_submitted_form_->display_name;
@@ -907,7 +907,7 @@ void NewPasswordFormManager::CreatePendingCredentials() {
   }
 
   if (HasGeneratedPassword())
-    pending_credentials_.type = PasswordForm::TYPE_GENERATED;
+    pending_credentials_.type = PasswordForm::Type::kGenerated;
 }
 
 void NewPasswordFormManager::CreatePendingCredentialsForNewCredentials(
@@ -1074,7 +1074,7 @@ std::vector<const PasswordForm*> NewPasswordFormManager::GetAllMatches() const {
       form_fetcher_->GetNonFederatedMatches();
   PasswordForm::Scheme observed_form_scheme =
       observed_http_auth_digest_ ? observed_http_auth_digest_->scheme
-                                 : PasswordForm::SCHEME_HTML;
+                                 : PasswordForm::Scheme::kHtml;
   base::EraseIf(result, [observed_form_scheme](const auto* form) {
     return form->scheme != observed_form_scheme;
   });

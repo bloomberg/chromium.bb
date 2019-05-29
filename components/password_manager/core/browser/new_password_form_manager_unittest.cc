@@ -309,7 +309,7 @@ class NewPasswordFormManagerTest : public testing::Test {
     saved_match_.password_value = ASCIIToUTF16("test1");
     saved_match_.password_element = ASCIIToUTF16("field2");
     saved_match_.is_public_suffix_match = false;
-    saved_match_.scheme = PasswordForm::SCHEME_HTML;
+    saved_match_.scheme = PasswordForm::Scheme::kHtml;
 
     psl_saved_match_ = saved_match_;
     psl_saved_match_.origin = psl_origin;
@@ -1866,7 +1866,7 @@ TEST_F(NewPasswordFormManagerTest, SaveHttpAuthNoHttpAuthStored) {
     SCOPED_TRACE(testing::Message("html_credentials_saved=")
                  << html_credentials_saved);
     PasswordForm http_auth_form = parsed_observed_form_;
-    http_auth_form.scheme = PasswordForm::SCHEME_BASIC;
+    http_auth_form.scheme = PasswordForm::Scheme::kBasic;
 
     // Check that no filling because no http auth credentials are stored.
     EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
@@ -1902,7 +1902,7 @@ TEST_F(NewPasswordFormManagerTest, SaveHttpAuthNoHttpAuthStored) {
 TEST_F(NewPasswordFormManagerTest, HTTPAuthAlreadySaved) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   PasswordForm http_auth_form = parsed_observed_form_;
-  http_auth_form.scheme = PasswordForm::SCHEME_BASIC;
+  http_auth_form.scheme = PasswordForm::Scheme::kBasic;
 
   CreateFormManagerForHttpAuthForm(http_auth_form);
 
@@ -1923,7 +1923,7 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthAlreadySaved) {
 TEST_F(NewPasswordFormManagerTest, HTTPAuthPasswordOverridden) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   PasswordForm http_auth_form = parsed_observed_form_;
-  http_auth_form.scheme = PasswordForm::SCHEME_BASIC;
+  http_auth_form.scheme = PasswordForm::Scheme::kBasic;
 
   CreateFormManagerForHttpAuthForm(http_auth_form);
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
@@ -1962,7 +1962,7 @@ TEST_F(NewPasswordFormManagerTest, HTTPAuthPasswordOverridden) {
 TEST_F(NewPasswordFormManagerTest, BlacklistHttpAuthCredentials) {
   PasswordForm http_auth_form = parsed_observed_form_;
   http_auth_form.signon_realm += "my-auth-realm";
-  http_auth_form.scheme = PasswordForm::SCHEME_BASIC;
+  http_auth_form.scheme = PasswordForm::Scheme::kBasic;
 
   CreateFormManagerForHttpAuthForm(http_auth_form);
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
