@@ -36,6 +36,7 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
 
   // Platform methods (partial implementation):
   blink::WebThemeEngine* ThemeEngine() override;
+  bool IsURLSupportedForAppCache(const blink::WebURL& url) override;
   base::File DatabaseOpenFile(const blink::WebString& vfs_file_name,
                               int desired_flags) override;
   int DatabaseDeleteFile(const blink::WebString& vfs_file_name,

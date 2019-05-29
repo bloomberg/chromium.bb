@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_APPLICATION_CACHE_HOST_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_APPLICATION_CACHE_HOST_H_
 
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-shared.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-shared.h"
@@ -37,9 +37,14 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
+namespace WTF {
+class String;
+}
+
 namespace blink {
 
-class WebString;
+class WebApplicationCacheHostClient;
+class WebLocalFrame;
 class WebURL;
 class WebURLResponse;
 
@@ -50,10 +55,26 @@ class WebApplicationCacheHost {
  public:
   virtual ~WebApplicationCacheHost() = default;
 
+  // TODO(crbug.com/950159): Remove
+  // CreateWebApplicationCacheHostFor{SharedWorker,Frame}.
+  // Instantiate a WebApplicationCacheHost that interacts with the frame or the
+  // shared worker.
+  BLINK_EXPORT static std::unique_ptr<WebApplicationCacheHost>
+  CreateWebApplicationCacheHostForFrame(
+      WebLocalFrame* frame,
+      WebApplicationCacheHostClient* client,
+      const base::UnguessableToken& appcache_host_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  BLINK_EXPORT static std::unique_ptr<WebApplicationCacheHost>
+  CreateWebApplicationCacheHostForSharedWorker(
+      WebApplicationCacheHostClient* client,
+      const base::UnguessableToken& appcache_host_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   // Called for every request made within the context.
   virtual void WillStartMainResourceRequest(
       const WebURL& url,
-      const WebString& method,
+      const WTF::String& method,
       const WebApplicationCacheHost* spawning_host) {}
 
   // One or the other selectCache methods is called after having parsed the
@@ -119,8 +140,13 @@ class WebApplicationCacheHost {
   virtual const base::UnguessableToken& GetHostID() const {
     return base::UnguessableToken::Null();
   }
+  // TODO(crbug.com/950159): Remove this API once
+  // ApplicationCacheHostForSharedWorker is created in WebSharedWorkerImpl.
+  virtual void SelectCacheForSharedWorker(
+      int64_t app_cache_id,
+      base::OnceClosure completion_callback) {}
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_APPLICATION_CACHE_HOST_H_

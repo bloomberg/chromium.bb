@@ -20,7 +20,6 @@
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
-#include "content/renderer/worker/application_cache_host_for_shared_worker.h"
 #include "content/renderer/worker/service_worker_network_provider_for_worker.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/features.h"
@@ -38,6 +37,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/public/web/web_shared_worker.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "url/origin.h"
@@ -189,12 +189,12 @@ void EmbeddedSharedWorkerStub::SelectAppCacheID(
 std::unique_ptr<blink::WebApplicationCacheHost>
 EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
     blink::WebApplicationCacheHostClient* client) {
-  std::unique_ptr<WebApplicationCacheHostImpl> host =
-      std::make_unique<ApplicationCacheHostForSharedWorker>(
+  auto host = blink::WebApplicationCacheHost::
+      CreateWebApplicationCacheHostForSharedWorker(
           client, appcache_host_id_,
           impl_->GetTaskRunner(blink::TaskType::kNetworking));
   app_cache_host_ = host.get();
-  return std::move(host);
+  return host;
 }
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>

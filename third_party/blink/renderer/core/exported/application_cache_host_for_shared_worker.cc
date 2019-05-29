@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/worker/application_cache_host_for_shared_worker.h"
+#include "third_party/blink/renderer/core/exported/application_cache_host_for_shared_worker.h"
 
-namespace content {
+namespace blink {
 
 ApplicationCacheHostForSharedWorker::ApplicationCacheHostForSharedWorker(
-    blink::WebApplicationCacheHostClient* client,
+    WebApplicationCacheHostClient* client,
     const base::UnguessableToken& appcache_host_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : WebApplicationCacheHostImpl(nullptr /* interface_broker */,
+    : WebApplicationCacheHostImpl(nullptr /* WebLocalFrame* */,
                                   client,
                                   appcache_host_id,
                                   std::move(task_runner)) {}
@@ -19,25 +19,36 @@ ApplicationCacheHostForSharedWorker::~ApplicationCacheHostForSharedWorker() =
     default;
 
 void ApplicationCacheHostForSharedWorker::WillStartMainResourceRequest(
-    const blink::WebURL& url,
-    const blink::WebString& method,
+    const WebURL& url,
+    const String& method,
     const WebApplicationCacheHost* spawning_host) {}
 
 void ApplicationCacheHostForSharedWorker::DidReceiveResponseForMainResource(
-    const blink::WebURLResponse&) {}
+    const WebURLResponse&) {}
 
 void ApplicationCacheHostForSharedWorker::SelectCacheWithoutManifest() {}
 
 bool ApplicationCacheHostForSharedWorker::SelectCacheWithManifest(
-    const blink::WebURL& manifestURL) {
+    const WebURL& manifestURL) {
   return true;
 }
 
 void ApplicationCacheHostForSharedWorker::LogMessage(
-    blink::mojom::ConsoleMessageLevel log_level,
-    const std::string& message) {}
+    mojom::blink::ConsoleMessageLevel log_level,
+    const String& message) {}
 
 void ApplicationCacheHostForSharedWorker::SetSubresourceFactory(
-    network::mojom::URLLoaderFactoryPtr url_loader_factory) {}
+    network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) {}
 
-}  // namespace content
+std::unique_ptr<WebApplicationCacheHost>
+WebApplicationCacheHost::CreateWebApplicationCacheHostForSharedWorker(
+    WebApplicationCacheHostClient* client,
+    const base::UnguessableToken& appcache_host_id,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  auto application_cache_host_for_shared_worker =
+      std::make_unique<ApplicationCacheHostForSharedWorker>(
+          client, appcache_host_id, std::move(task_runner));
+  return std::move(application_cache_host_for_shared_worker);
+}
+
+}  // namespace blink

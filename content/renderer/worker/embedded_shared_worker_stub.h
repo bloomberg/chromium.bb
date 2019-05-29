@@ -32,7 +32,6 @@
 
 namespace blink {
 class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
 class WebSharedWorker;
 }  // namespace blink
 
@@ -44,7 +43,6 @@ class URLLoaderFactoryBundleInfo;
 namespace content {
 
 class ChildURLLoaderFactoryBundle;
-class WebApplicationCacheHostImpl;
 struct NavigationResponseOverrideParameters;
 
 // A stub class to receive IPC from browser process and talk to
@@ -124,7 +122,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   std::vector<PendingChannel> pending_channels_;
 
   const base::UnguessableToken appcache_host_id_;
-  WebApplicationCacheHostImpl* app_cache_host_ = nullptr;  // Not owned.
+  blink::WebApplicationCacheHost* app_cache_host_ = nullptr;  // Not owned.
 
   // The info needed to connect to the ServiceWorkerProviderHost on the browser.
   blink::mojom::ServiceWorkerProviderInfoForWorkerPtr

@@ -1363,6 +1363,9 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebElement& plugin_element,
       v8::Isolate* isolate) override;
 
+  void UpdateSubresourceFactory(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
+
   // Updates the state of this frame when asked to commit a navigation.
   void PrepareFrameForCommit(const GURL& url,
                              const CommitNavigationParams& commit_params);

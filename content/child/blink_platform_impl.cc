@@ -33,6 +33,7 @@
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/child_thread_impl.h"
+#include "content/common/appcache_interfaces.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -649,6 +650,10 @@ const char* BlinkPlatformImpl::GetBrowserServiceName() const {
 
 WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {
   return native_theme_engine_.get();
+}
+
+bool BlinkPlatformImpl::IsURLSupportedForAppCache(const blink::WebURL& url) {
+  return IsSchemeSupportedForAppCache(url);
 }
 
 base::File BlinkPlatformImpl::DatabaseOpenFile(

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_CLIENT_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_CLIENT_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_APPLICATION_CACHE_HOST_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_APPLICATION_CACHE_HOST_CLIENT_H_
 
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-shared.h"
-#include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class WebApplicationCacheHostClient {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_CLIENT_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_APPLICATION_CACHE_HOST_CLIENT_H_

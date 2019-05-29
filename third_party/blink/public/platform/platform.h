@@ -187,6 +187,10 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
+  // AppCache  ----------------------------------------------------------
+
+  virtual bool IsURLSupportedForAppCache(const WebURL& url) { return false; }
+
   // Audio --------------------------------------------------------------
 
   virtual double AudioHardwareSampleRate() { return 0; }

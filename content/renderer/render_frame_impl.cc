@@ -139,7 +139,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
-#include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/service_worker/service_worker_network_provider_for_frame.h"
@@ -3981,6 +3980,13 @@ v8::Local<v8::Object> RenderFrameImpl::GetScriptableObject(
 #endif
 }
 
+void RenderFrameImpl::UpdateSubresourceFactory(
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {
+  auto child_info =
+      std::make_unique<ChildURLLoaderFactoryBundleInfo>(std::move(info));
+  GetLoaderFactoryBundle()->Update(std::move(child_info));
+}
+
 void RenderFrameImpl::BindToFrame(blink::WebNavigationControl* frame) {
   DCHECK(!frame_);
 
@@ -4056,8 +4062,8 @@ RenderFrameImpl::CreateApplicationCacheHost(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame_->GetTaskRunner(blink::TaskType::kNetworking);
 
-  return std::make_unique<RendererWebApplicationCacheHostImpl>(
-      this, client,
+  return blink::WebApplicationCacheHost::CreateWebApplicationCacheHostForFrame(
+      frame_, client,
       navigation_state->commit_params().appcache_host_id.value_or(
           base::UnguessableToken()),
       std::move(task_runner));
