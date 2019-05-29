@@ -3694,6 +3694,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCupsPrintersUiOverhaulName,
      flag_descriptions::kCupsPrintersUiOverhaulDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCupsPrintersUiOverhaul)},
+
+    {"use-search-click-for-right-click",
+     flag_descriptions::kUseSearchClickForRightClickName,
+     flag_descriptions::kUseSearchClickForRightClickDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kUseSearchClickForRightClick)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

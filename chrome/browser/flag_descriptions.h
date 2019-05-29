@@ -1113,6 +1113,9 @@ extern const char kUsePdfCompositorServiceDescription[];
 extern const char kUserActivationV2Name[];
 extern const char kUserActivationV2Description[];
 
+extern const char kUseSearchClickForRightClickName[];
+extern const char kUseSearchClickForRightClickDescription[];
+
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
 

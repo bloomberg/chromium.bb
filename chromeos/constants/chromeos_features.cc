@@ -131,6 +131,11 @@ const base::Feature kUseMessagesStagingUrl{"UseMessagesStagingUrl",
 const base::Feature kUserActivityPrediction{"UserActivityPrediction",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Remap search+click to right click instead of the legacy alt+click on
+// Chrome OS.
+const base::Feature kUseSearchClickForRightClick{
+    "UseSearchClickForRightClick", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable native controls in video player on Chrome OS.
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};

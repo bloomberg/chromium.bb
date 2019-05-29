@@ -2942,6 +2942,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "use-search-click-for-right-click",
+    "owners": [ "zentaro" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "use-sync-sandbox",
     "owners": [ "//components/sync/OWNERS" ],
     // This flag is required for testing with the related

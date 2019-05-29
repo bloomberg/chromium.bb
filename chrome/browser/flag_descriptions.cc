@@ -1878,6 +1878,13 @@ const char kUserActivationV2Description[] =
     "Enable simple user activation for APIs that are otherwise controlled by "
     "user gesture tokens.";
 
+const char kUseSearchClickForRightClickName[] =
+    "Use Search+Click for right click";
+const char kUseSearchClickForRightClickDescription[] =
+    "When enabled search+click will be remapped to right click, allowing "
+    "webpages and apps to consume alt+click. When disabled the legacy "
+    "behavior of remapping alt+click to right click will remain unchanged.";
+
 const char kV8VmFutureName[] = "Future V8 VM features";
 const char kV8VmFutureDescription[] =
     "This enables upcoming and experimental V8 VM features. "
