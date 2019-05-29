@@ -197,15 +197,8 @@ chrome.autofillPrivate.migrateCreditCards = function() {};
 chrome.autofillPrivate.logServerCardLinkClicked = function() {};
 
 /**
- * Fired when the address list has changed, meaning that an entry has been
+ * Fired when the perosnal data has changed, meaning that an entry has been
  * added, removed, or changed. |entries| The updated list of entries.
  * @type {!ChromeEvent}
  */
-chrome.autofillPrivate.onAddressListChanged;
-
-/**
- * Fired when the credit card list has changed, meaning that an entry has been
- * added, removed, or changed. |entries| The updated list of entries.
- * @type {!ChromeEvent}
- */
-chrome.autofillPrivate.onCreditCardListChanged;
+chrome.autofillPrivate.onPersonalDataChanged;
