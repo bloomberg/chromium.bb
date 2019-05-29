@@ -21,6 +21,7 @@ blink_platform_sources("instrumentation") {
     "tracing/web_memory_allocator_dump.h",
     "tracing/web_process_memory_dump.cc",
     "tracing/web_process_memory_dump.h",
+    "use_counter.h",
   ]
 
   deps = [
