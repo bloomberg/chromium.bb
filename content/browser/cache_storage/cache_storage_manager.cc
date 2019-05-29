@@ -159,7 +159,8 @@ scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
     scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
-    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+    scoped_refptr<CacheStorageContextImpl::ObserverList> observers) {
   base::FilePath root_path = path;
   if (!path.empty()) {
     root_path = path.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
@@ -168,18 +169,16 @@ scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
 
   return base::WrapRefCounted(new CacheStorageManager(
       root_path, std::move(cache_task_runner), std::move(scheduler_task_runner),
-      std::move(quota_manager_proxy)));
+      std::move(quota_manager_proxy), std::move(observers)));
 }
 
 // static
-scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
+scoped_refptr<CacheStorageManager> CacheStorageManager::CreateForTesting(
     CacheStorageManager* old_manager) {
   scoped_refptr<CacheStorageManager> manager(new CacheStorageManager(
       old_manager->root_path(), old_manager->cache_task_runner(),
       old_manager->scheduler_task_runner(),
-      old_manager->quota_manager_proxy_.get()));
-  // These values may be NULL, in which case this will be called again later by
-  // the dispatcher host per usual.
+      old_manager->quota_manager_proxy_.get(), old_manager->observers_));
   manager->SetBlobParametersForCache(old_manager->blob_storage_context());
   return manager;
 }
@@ -220,26 +219,17 @@ void CacheStorageManager::SetBlobParametersForCache(
   blob_context_ = blob_storage_context;
 }
 
-void CacheStorageManager::AddObserver(
-    CacheStorageContextImpl::Observer* observer) {
-  DCHECK(!observers_.HasObserver(observer));
-  observers_.AddObserver(observer);
-}
-
-void CacheStorageManager::RemoveObserver(
-    CacheStorageContextImpl::Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void CacheStorageManager::NotifyCacheListChanged(const url::Origin& origin) {
-  for (auto& observer : observers_)
-    observer.OnCacheListChanged(origin);
+  observers_->Notify(FROM_HERE,
+                     &CacheStorageContextImpl::Observer::OnCacheListChanged,
+                     origin);
 }
 
 void CacheStorageManager::NotifyCacheContentChanged(const url::Origin& origin,
                                                     const std::string& name) {
-  for (auto& observer : observers_)
-    observer.OnCacheContentChanged(origin, name);
+  observers_->Notify(FROM_HERE,
+                     &CacheStorageContextImpl::Observer::OnCacheContentChanged,
+                     origin, name);
 }
 
 void CacheStorageManager::CacheStorageUnreferenced(
@@ -448,11 +438,13 @@ CacheStorageManager::CacheStorageManager(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
     scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
-    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy)
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+    scoped_refptr<CacheStorageContextImpl::ObserverList> observers)
     : root_path_(path),
       cache_task_runner_(std::move(cache_task_runner)),
       scheduler_task_runner_(std::move(scheduler_task_runner)),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
+      observers_(std::move(observers)),
       weak_ptr_factory_(this) {
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->RegisterClient(new CacheStorageQuotaClient(

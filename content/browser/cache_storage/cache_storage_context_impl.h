@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/threading/sequence_bound.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/cache_storage_context.h"
@@ -54,6 +55,8 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
     virtual ~Observer() {}
   };
 
+  using ObserverList = base::ObserverListThreadSafe<Observer>;
+
   // Init and Shutdown are for use on the UI thread when the profile,
   // storagepartition is being setup and torn down.
   void Init(const base::FilePath& user_data_directory,
@@ -80,7 +83,7 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
   void DeleteForOrigin(const GURL& origin) override;
 
-  // Only callable on the IO thread.
+  // Callable on any sequence.
   void AddObserver(CacheStorageContextImpl::Observer* observer);
   void RemoveObserver(CacheStorageContextImpl::Observer* observer);
 
@@ -100,6 +103,7 @@ class CONTENT_EXPORT CacheStorageContextImpl : public CacheStorageContext {
 
   // Initialized at construction.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const scoped_refptr<ObserverList> observers_;
 
   // Initialized in Init(); true if the user data directory is empty.
   bool is_incognito_ = false;

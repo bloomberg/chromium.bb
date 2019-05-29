@@ -25,7 +25,8 @@ namespace content {
 CacheStorageContextImpl::CacheStorageContextImpl(
     BrowserContext* browser_context)
     : task_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})) {
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
+      observers_(base::MakeRefCounted<ObserverList>()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -136,16 +137,14 @@ void CacheStorageContextImpl::DeleteForOrigin(const GURL& origin) {
 
 void CacheStorageContextImpl::AddObserver(
     CacheStorageContextImpl::Observer* observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (cache_manager_)
-    cache_manager_->AddObserver(observer);
+  // Any sequence
+  observers_->AddObserver(observer);
 }
 
 void CacheStorageContextImpl::RemoveObserver(
     CacheStorageContextImpl::Observer* observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (cache_manager_)
-    cache_manager_->RemoveObserver(observer);
+  // Any sequence
+  observers_->RemoveObserver(observer);
 }
 
 void CacheStorageContextImpl::CreateCacheStorageManager(
@@ -157,7 +156,7 @@ void CacheStorageContextImpl::CreateCacheStorageManager(
   DCHECK(!cache_manager_);
   cache_manager_ = CacheStorageManager::Create(
       user_data_directory, std::move(cache_task_runner), task_runner_,
-      std::move(quota_manager_proxy));
+      std::move(quota_manager_proxy), observers_);
 }
 
 void CacheStorageContextImpl::ShutdownOnTaskRunner() {

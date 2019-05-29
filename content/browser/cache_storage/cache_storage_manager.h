@@ -65,9 +65,13 @@ class CONTENT_EXPORT CacheStorageManager
       const base::FilePath& path,
       scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
       scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
-      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      scoped_refptr<CacheStorageContextImpl::ObserverList> observers);
 
-  static scoped_refptr<CacheStorageManager> Create(
+  // Create a new manager using the underlying configuration of the given
+  // manager, but with its own list of storage objects.  This is only used
+  // for testing.
+  static scoped_refptr<CacheStorageManager> CreateForTesting(
       CacheStorageManager* old_manager);
 
   // Map a database identifier (computed from an origin) to the path.
@@ -84,9 +88,6 @@ class CONTENT_EXPORT CacheStorageManager
   // above.
   void SetBlobParametersForCache(
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
-
-  void AddObserver(CacheStorageContextImpl::Observer* observer);
-  void RemoveObserver(CacheStorageContextImpl::Observer* observer);
 
   void NotifyCacheListChanged(const url::Origin& origin);
   void NotifyCacheContentChanged(const url::Origin& origin,
@@ -122,7 +123,8 @@ class CONTENT_EXPORT CacheStorageManager
       const base::FilePath& path,
       scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
       scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
-      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      scoped_refptr<CacheStorageContextImpl::ObserverList> observers);
 
   virtual ~CacheStorageManager();
 
@@ -179,7 +181,7 @@ class CONTENT_EXPORT CacheStorageManager
   // |cache_task_runner_|.
   CacheStorageMap cache_storage_map_;
 
-  base::ObserverList<CacheStorageContextImpl::Observer>::Unchecked observers_;
+  scoped_refptr<CacheStorageContextImpl::ObserverList> observers_;
 
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
 
