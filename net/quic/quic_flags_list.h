@@ -377,3 +377,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_do_not_override_connection_id,
           false)
+
+// Do not send STOP_WAITING if no_stop_waiting_frame_ is true.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, false)
+
+// If true, export number of packets written per write operation histogram.")
+QUIC_FLAG(bool, FLAGS_quic_export_server_num_packets_per_write_histogram, false)
