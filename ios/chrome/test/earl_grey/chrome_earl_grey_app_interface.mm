@@ -15,6 +15,7 @@
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/testing/nserror_util.h"
+#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -23,8 +24,9 @@
 #error "This file requires ARC support."
 #endif
 
-using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::kWaitForActionTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
@@ -223,6 +225,36 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 + (void)tearDownFakeSyncServer {
   chrome_test_util::TearDownFakeSyncServer();
+}
+
++ (id)executeJavaScript:(NSString*)javaScript error:(NSError**)outError {
+  __block bool handlerCalled = false;
+  __block id blockResult = nil;
+  __block NSError* blockError = nil;
+  [chrome_test_util::GetCurrentWebState()->GetJSInjectionReceiver()
+      executeJavaScript:javaScript
+      completionHandler:^(id result, NSError* error) {
+        handlerCalled = true;
+        blockResult = [result copy];
+        blockError = [error copy];
+      }];
+
+  bool completed = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return handlerCalled;
+  });
+
+  if (completed) {
+    NSError* __autoreleasing autoreleasedError = blockError;
+    *outError = autoreleasedError;
+  } else {
+    NSString* errorDescription = [NSString
+        stringWithFormat:@"Did not complete execution of JavaScript: %@",
+                         javaScript];
+    NSError* __autoreleasing autoreleasedError =
+        testing::NSErrorWithLocalizedDescription(errorDescription);
+    *outError = autoreleasedError;
+  }
+  return blockResult;
 }
 
 @end

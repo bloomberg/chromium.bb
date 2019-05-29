@@ -318,6 +318,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
+- (id)executeJavaScript:(NSString*)JS {
+  NSError* error = nil;
+  id result = [ChromeEarlGreyAppInterface executeJavaScript:JS error:&error];
+  EG_TEST_HELPER_ASSERT_NO_ERROR(error);
+  return result;
+}
+
 @end
 
 // The helpers below only compile under EarlGrey1.

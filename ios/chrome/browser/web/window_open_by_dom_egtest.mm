@@ -28,7 +28,6 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::ExecuteJavaScript;
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OmniboxText;
 using web::test::HttpServer;
@@ -89,9 +88,7 @@ id<GREYMatcher> PopupBlocker() {
 // Tests that sessionStorage content is available for windows opened by DOM via
 // target="_blank" links.
 - (void)testLinkWithBlankTargetSessionStorage {
-  NSError* error = nil;
-  ExecuteJavaScript(@"sessionStorage.setItem('key', 'value');", &error);
-  GREYAssert(!error, @"Error during script execution: %@", error);
+  [ChromeEarlGrey executeJavaScript:@"sessionStorage.setItem('key', 'value');"];
   const char ID[] = "webScenarioWindowOpenSameURLWithBlankTarget";
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:web::WebViewTapElement(
@@ -102,8 +99,8 @@ id<GREYMatcher> PopupBlocker() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebStateContainingText:"Expected result"]);
 
-  id value = ExecuteJavaScript(@"sessionStorage.getItem('key');", &error);
-  GREYAssert(!error, @"Error during script execution: %@", error);
+  id value =
+      [ChromeEarlGrey executeJavaScript:@"sessionStorage.getItem('key');"];
   GREYAssert([value isEqual:@"value"], @"sessionStorage is not shared");
 }
 
@@ -121,11 +118,9 @@ id<GREYMatcher> PopupBlocker() {
 - (void)testLinkWithBlankTargetWithoutUserGesture {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey setContentSettings:CONTENT_SETTING_BLOCK]);
-  NSError* error = nil;
-  ExecuteJavaScript(
-      @"document.getElementById('webScenarioWindowOpenRegularLink').click()",
-      &error);
-  GREYAssert(!error, @"Failed to tap 'webScenarioWindowOpenRegularLink'");
+  [ChromeEarlGrey
+      executeJavaScript:@"document.getElementById('"
+                        @"webScenarioWindowOpenRegularLink').click()"];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
       waitForSufficientlyVisibleElementWithMatcher:PopupBlocker()]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);

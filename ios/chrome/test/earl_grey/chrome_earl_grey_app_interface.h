@@ -142,6 +142,14 @@
 // the real one.
 + (void)tearDownFakeSyncServer;
 
+#pragma mark - JavaScript Utilities (EG2)
+
+// Executes JavaScript on current WebState, and waits for either the completion
+// or timeout. If execution does not complete within a timeout or JavaScript
+// exception is thrown, returns an NSError indicating why the operation failed,
+// otherwise returns object representing execution result.
++ (id)executeJavaScript:(NSString*)javaScript error:(NSError**)error;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_APP_INTERFACE_H_

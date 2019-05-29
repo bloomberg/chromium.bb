@@ -221,6 +221,13 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // bookmarks can not be cleared.
 - (NSError*)clearBookmarks;
 
+#pragma mark - JavaScript Utilities (EG2)
+
+// Executes JavaScript on current WebState, and waits for either the completion
+// or timeout. If execution does not complete within a timeout a GREYAssert is
+// induced.
+- (id)executeJavaScript:(NSString*)javaScript;
+
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"

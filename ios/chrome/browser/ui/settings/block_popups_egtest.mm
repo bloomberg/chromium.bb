@@ -133,10 +133,9 @@ class ScopedBlockPopupsException {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:blockPopupsURL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
-  // Request popup and make sure the popup opened in a new tab.
-  NSError* error = nil;
-  chrome_test_util::ExecuteJavaScript(kOpenPopupScript, &error);
-  GREYAssert(!error, @"Error during script execution: %@", error);
+  // Request popup (execute script without using a user gesture) and make sure
+  // the popup opened in a new tab.
+  [ChromeEarlGrey executeJavaScript:kOpenPopupScript];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 
   // No infobar should be displayed.
@@ -164,12 +163,10 @@ class ScopedBlockPopupsException {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:blockPopupsURL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
-  // Request popup, then make sure it was blocked and an infobar was displayed.
-  // The window.open() call is run via async JS, so the infobar may not open
-  // immediately.
-  NSError* error = nil;
-  chrome_test_util::ExecuteJavaScript(kOpenPopupScript, &error);
-  GREYAssert(!error, @"Error during script execution: %@", error);
+  // Request popup (execute script without using a user gesture), then make sure
+  // it was blocked and an infobar was displayed. The window.open() call is run
+  // via async JS, so the infobar may not open immediately.
+  [ChromeEarlGrey executeJavaScript:kOpenPopupScript];
 
   [[GREYCondition
       conditionWithName:@"Wait for blocked popups infobar to show"
