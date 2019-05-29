@@ -2303,6 +2303,7 @@ enum WebFeature {
   kV8XRInputSource_Gamepad_AttributeGetter = 2910,
   kV8XRSession_End_Method = 2911,
   kV8XRWebGLLayer_Constructor = 2912,
+  kFetchKeepalive = 2913,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

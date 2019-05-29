@@ -23405,6 +23405,7 @@ Called by update_net_error_codes.py.-->
   <int value="2910" label="V8XRInputSource_Gamepad_AttributeGetter"/>
   <int value="2911" label="V8XRSession_End_Method"/>
   <int value="2912" label="V8XRWebGLLayer_Constructor"/>
+  <int value="2913" label="FetchKeepalive"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
