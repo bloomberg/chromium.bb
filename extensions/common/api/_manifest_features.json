@@ -51,7 +51,7 @@
   "background.persistent": {
     "channel": "stable",
     "extension_types": [
-      "extension", "legacy_packaged_app"
+      "extension", "legacy_packaged_app", "login_screen_extension"
     ],
     "min_manifest_version": 2
   },
