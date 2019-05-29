@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_ADD_SUPERVISION_ADD_SUPERVISION_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_ADD_SUPERVISION_ADD_SUPERVISION_HANDLER_H_
 
-#include <string>
-#include <vector>
-
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -37,8 +34,6 @@ class AddSupervisionHandler
   // add_supervision::mojom::AddSupervisionHandler overrides:
   void LogOut(LogOutCallback callback) override;
   void GetInstalledArcApps(GetInstalledArcAppsCallback callback) override;
-  void UninstallArcApps(const std::vector<std::string>& apps,
-                        UninstallArcAppsCallback callback) override;
   void GetOAuthToken(GetOAuthTokenCallback callback) override;
 
  private:

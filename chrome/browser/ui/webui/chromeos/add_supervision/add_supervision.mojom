@@ -18,9 +18,6 @@ interface AddSupervisionHandler {
   // Returns an array of package names of installed ARC apps.
   GetInstalledArcApps() => (array<string> package_names);
 
-  // Uninstalls the ARC apps specified by the list of package names.
-  UninstallArcApps(array<string> package_names) => ();
-
   // Returns the oauth token to be passed to the server.
   GetOAuthToken() => (OAuthTokenFetchStatus status, string oauth_token);
 };

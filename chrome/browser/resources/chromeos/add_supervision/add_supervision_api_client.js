@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const METHOD_LIST = ['logOut', 'getInstalledArcApps', 'uninstallArcApps'];
+const METHOD_LIST = ['logOut', 'getInstalledArcApps'];
 
 /**
  * Class that implements the client side of the AddSupervision postMessage API.

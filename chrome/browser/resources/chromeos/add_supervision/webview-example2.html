@@ -33,19 +33,6 @@
             console.error(err);
           })
        });
-
-      const uninstallArcAppsBtn = document.querySelector('#uninstall_arc_apps');
-
-      uninstallArcAppsBtn.addEventListener('click', () => {
-        api.uninstallArcApps(
-          ['com.netflix.mediaclient', 'com.google.android.videos'])
-          .then(() => {
-            console.log('uninstalled arc apps');
-          }, (error) => {
-            console.error(error.message);
-          });
-        });
-      });
   </script>
 </head>
 <body>
@@ -56,9 +43,6 @@
   </div>
   <div>
   <button id="get_arc_apps">Get ARC Apps</button>
-  </div>
-  <div>
-  <button id="uninstall_arc_apps">Uninstall ARC Apps</button>
   </div>
   <div>
   <input type="text" id="arc_apps"

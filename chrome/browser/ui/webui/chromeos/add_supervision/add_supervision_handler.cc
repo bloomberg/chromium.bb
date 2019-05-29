@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/stl_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -58,31 +60,6 @@ void AddSupervisionHandler::GetInstalledArcApps(
       });
 
   std::move(callback).Run(installed_arc_apps);
-}
-
-void AddSupervisionHandler::UninstallArcApps(
-    const std::vector<std::string>& package_names,
-    UninstallArcAppsCallback callback) {
-  Profile* profile = Profile::FromWebUI(web_ui_);
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
-
-  for (const std::string& package_name : package_names) {
-    proxy->AppRegistryCache().ForOneApp(
-        arc::ArcPackageNameToAppId(package_name, profile),
-        [proxy, package_names, profile](const apps::AppUpdate& update) {
-          // We don't include "sticky" ARC apps because they are
-          // system-required apps that should not be uninstalled.
-          // TODO(danan): check for stickyness via the App Service instead
-          // when that is available. (https://crbug.com/948408).
-          if (ShouldIncludeAppUpdate(update) &&
-              !arc::IsArcAppSticky(update.AppId(), profile)) {
-            proxy->Uninstall(update.AppId());
-          }
-        });
-  }
-
-  std::move(callback).Run();
 }
 
 void AddSupervisionHandler::GetOAuthToken(GetOAuthTokenCallback callback) {

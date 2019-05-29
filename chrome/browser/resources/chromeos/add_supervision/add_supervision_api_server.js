@@ -5,7 +5,7 @@
 /**
  * The methods to expose to the client.
  */
-const METHOD_LIST = ['logOut', 'getInstalledArcApps', 'uninstallArcApps'];
+const METHOD_LIST = ['logOut', 'getInstalledArcApps'];
 
 /**
  * Class that implements the server side of the AddSupervision postMessage
@@ -31,7 +31,6 @@ class AddSupervisionAPIServer extends PostMessageAPIServer {
     this.registerMethod('logOut', this.logOut.bind(this));
     this.registerMethod(
         'getInstalledArcApps', this.getInstalledArcApps.bind(this));
-    this.registerMethod('uninstallArcApps', this.uninstallArcApps.bind(this));
   }
 
   /**
@@ -52,15 +51,5 @@ class AddSupervisionAPIServer extends PostMessageAPIServer {
    */
   getInstalledArcApps(unused) {
     return this.proxy_.getInstalledArcApps();
-  }
-
-  /**
-   * Uninstall the specified ARC apps.
-   * @param {!Array<!string>} apps List of app package names to uninstall.
-   * @return {Promise} a promise whose successful result indicates the apps were
-   *     uninstalled.
-   */
-  uninstallArcApps(apps) {
-    return this.proxy_.uninstallArcApps(apps);
   }
 }
