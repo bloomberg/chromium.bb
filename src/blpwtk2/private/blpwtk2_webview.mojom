@@ -141,6 +141,9 @@ interface WebViewHost {
         // Apply a region data onto the webview.  This region data can be
         // created by using the GetRegionData() function from gdi32.dll.
 
+    activateKeyboardLayout(uint32 hkl);
+        // Change Keyboard layout (IME)
+
     clearTooltip();
         // Force clears the tooltip.
 
