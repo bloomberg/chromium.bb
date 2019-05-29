@@ -92,6 +92,7 @@ void ProducerClient::NewDataSourceAdded(
   new_registration.set_name(data_source->name());
   new_registration.set_will_notify_on_start(true);
   new_registration.set_will_notify_on_stop(true);
+  new_registration.set_handles_incremental_state_clear(true);
   producer_host_->RegisterDataSource(std::move(new_registration));
 }
 
@@ -172,6 +173,12 @@ void ProducerClient::Flush(uint64_t flush_request_id,
           },
           weak_ptr_factory_.GetWeakPtr(), flush_request_id));
     }
+  }
+}
+
+void ProducerClient::ClearIncrementalState() {
+  for (auto* data_source : PerfettoTracedProcess::Get()->data_sources()) {
+    data_source->ClearIncrementalState();
   }
 }
 

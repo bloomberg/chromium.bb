@@ -25,6 +25,4 @@ ThreadLocalEventSink::~ThreadLocalEventSink() {
       std::move(trace_writer_));
 }
 
-void ThreadLocalEventSink::ResetIncrementalState() {}
-
 }  // namespace tracing

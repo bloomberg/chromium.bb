@@ -48,6 +48,8 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
     // Flush the data source.
     virtual void Flush(base::RepeatingClosure flush_complete_callback) = 0;
 
+    virtual void ClearIncrementalState() {}
+
     const std::string& name() const { return name_; }
     uint64_t data_source_id() const { return data_source_id_; }
 

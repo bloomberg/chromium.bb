@@ -51,6 +51,10 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   builtin_data_sources->set_disable_trace_config(privacy_filtering_enabled);
   builtin_data_sources->set_disable_system_info(privacy_filtering_enabled);
 
+  // Clear incremental state every 5 seconds, so that we lose at most the first
+  // 5 seconds of the trace (if we wrap around perfetto's central buffer).
+  perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(5000);
+
   // We strip the process filter from the config string we send to Perfetto,
   // so perfetto doesn't reject it from a future
   // TracingService::ChangeTraceConfig call due to being an unsupported

@@ -112,11 +112,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // Called from the PerfettoProducer.
   void StopTracing(base::OnceClosure stop_complete_callback) override;
   void Flush(base::RepeatingClosure flush_complete_callback) override;
-
-  // Resets emitted incremental state on the current thread and causes
-  // incremental data (e.g. interning index entries and a ThreadDescriptor) to
-  // be emitted again.
-  void ResetIncrementalStateForTesting();
+  void ClearIncrementalState() override;
 
   // Deletes TraceWriter safely on behalf of a ThreadLocalEventSink.
   void ReturnTraceWriter(

@@ -90,6 +90,7 @@ struct DataSourceRegistration {
   string name;
   bool will_notify_on_start;
   bool will_notify_on_stop;
+  bool handles_incremental_state_clear;
 };
 
 // This is implemented by the tracing service and represents the service-
@@ -127,6 +128,7 @@ interface ProducerClient {
   // sent in the StartDataSource call.
   StopDataSource(uint64 id) => ();
   Flush(uint64 flush_request_id, array<uint64> data_source_ids);
+  ClearIncrementalState();
 };
 
 // This is implemented by the tracing service, and is essentially a singleton

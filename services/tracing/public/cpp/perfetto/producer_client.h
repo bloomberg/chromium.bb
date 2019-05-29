@@ -61,6 +61,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void StopDataSource(uint64_t id, StopDataSourceCallback callback) override;
   void Flush(uint64_t flush_request_id,
              const std::vector<uint64_t>& data_source_ids) override;
+  void ClearIncrementalState() override;
 
   // perfetto::TracingService::ProducerEndpoint implementation.
   // Used by the TraceWriters
