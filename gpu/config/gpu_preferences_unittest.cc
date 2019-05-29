@@ -21,8 +21,6 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.gpu_startup_dialog, right.gpu_startup_dialog);
   EXPECT_EQ(left.disable_gpu_watchdog, right.disable_gpu_watchdog);
   EXPECT_EQ(left.gpu_sandbox_start_early, right.gpu_sandbox_start_early);
-  EXPECT_EQ(left.enable_accelerated_vpx_decode,
-            right.enable_accelerated_vpx_decode);
   EXPECT_EQ(left.enable_low_latency_dxva, right.enable_low_latency_dxva);
   EXPECT_EQ(left.enable_zero_copy_dxgi_video,
             right.enable_zero_copy_dxgi_video);
@@ -113,8 +111,6 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(gpu_startup_dialog, true)
     GPU_PREFERENCES_FIELD(disable_gpu_watchdog, true)
     GPU_PREFERENCES_FIELD(gpu_sandbox_start_early, true)
-    GPU_PREFERENCES_FIELD(enable_accelerated_vpx_decode,
-                          GpuPreferences::VPX_VENDOR_AMD)
     GPU_PREFERENCES_FIELD(enable_low_latency_dxva, false)
     GPU_PREFERENCES_FIELD(enable_zero_copy_dxgi_video, true)
     GPU_PREFERENCES_FIELD(enable_nv12_dxgi_video, true)

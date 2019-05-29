@@ -74,14 +74,6 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   gpu_preferences.disable_accelerated_video_encode =
       command_line->HasSwitch(switches::kDisableAcceleratedVideoEncode);
 #if defined(OS_WIN)
-  uint32_t enable_accelerated_vpx_decode_val =
-      gpu::GpuPreferences::VPX_VENDOR_MICROSOFT;
-  if (GetUintFromSwitch(command_line, switches::kEnableAcceleratedVpxDecode,
-                        &enable_accelerated_vpx_decode_val)) {
-    gpu_preferences.enable_accelerated_vpx_decode =
-        static_cast<gpu::GpuPreferences::VpxDecodeVendors>(
-            enable_accelerated_vpx_decode_val);
-  }
   gpu_preferences.enable_low_latency_dxva =
       !command_line->HasSwitch(switches::kDisableLowLatencyDxva);
   gpu_preferences.enable_zero_copy_dxgi_video =

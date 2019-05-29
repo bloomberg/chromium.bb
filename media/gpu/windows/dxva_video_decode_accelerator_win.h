@@ -559,8 +559,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Set to true if we are sharing ANGLE's device.
   bool using_angle_device_;
 
-  // Enables experimental hardware acceleration for VP8/VP9 video decoding.
-  const gpu::GpuPreferences::VpxDecodeVendors enable_accelerated_vpx_decode_;
+  // Enables hardware acceleration for VP9 video decoding.
+  const bool enable_accelerated_vpx_decode_;
 
   // The media foundation H.264 decoder has problems handling changes like
   // resolution change, bitrate change etc. If we reinitialize the decoder

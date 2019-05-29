@@ -44,15 +44,6 @@ struct GPU_EXPORT GpuPreferences {
   // If return false, |this| won't be touched.
   bool FromSwitchValue(const std::string& data);
 
-  // Support for accelerated vpx decoding for various vendors,
-  // intended to be used as a bitfield.
-  // VPX_VENDOR_ALL should be updated whenever a new entry is added.
-  enum VpxDecodeVendors {
-    VPX_VENDOR_NONE = 0x00,
-    VPX_VENDOR_MICROSOFT = 0x01,
-    VPX_VENDOR_AMD = 0x02,
-    VPX_VENDOR_ALL = 0x03,
-  };
   // ===================================
   // Settings from //content/public/common/content_switches.h
 
@@ -71,10 +62,6 @@ struct GPU_EXPORT GpuPreferences {
 
   // Starts the GPU sandbox before creating a GL context.
   bool gpu_sandbox_start_early = false;
-
-  // Enables experimental hardware acceleration for VP8/VP9 video decoding.
-  // Bitmask - 0x1=Microsoft, 0x2=AMD, 0x03=Try all. Windows only.
-  VpxDecodeVendors enable_accelerated_vpx_decode = VPX_VENDOR_MICROSOFT;
 
   // Enables using CODECAPI_AVLowLatencyMode. Windows only.
   bool enable_low_latency_dxva = true;

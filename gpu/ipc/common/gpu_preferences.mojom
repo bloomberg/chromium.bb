@@ -7,14 +7,6 @@ module gpu.mojom;
 
 import "ui/gfx/mojo/buffer_types.mojom";
 
-// gpu::GpuPreferences::VpxDecodeVendors
-enum VpxDecodeVendors {
-  VPX_VENDOR_NONE = 0,
-  VPX_VENDOR_MICROSOFT = 1,
-  VPX_VENDOR_AMD = 2,
-  VPX_VENDOR_ALL = 3,
-};
-
 // gpu::GpuPreferences
 struct GpuPreferences {
   bool disable_accelerated_video_decode;
@@ -25,7 +17,6 @@ struct GpuPreferences {
 
   // TODO(http://crbug.com/676224) Support preprocessing of mojoms. Following
   // variables should be used on Windows only.
-  VpxDecodeVendors enable_accelerated_vpx_decode;
   bool enable_low_latency_dxva;
   bool enable_zero_copy_dxgi_video;
   bool enable_nv12_dxgi_video;

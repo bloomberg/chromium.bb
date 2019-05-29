@@ -66,28 +66,6 @@
 
 namespace {
 
-#if defined(ARCH_CPU_X86_FAMILY)
-// AMD
-// Path is appended on to the PROGRAM_FILES base path.
-const wchar_t kAMDVPXDecoderDLLPath[] =
-    L"Common Files\\ATI Technologies\\Multimedia\\";
-
-const wchar_t kAMDVP9DecoderDLLName[] =
-#if defined(ARCH_CPU_X86)
-    L"amf-mft-decvp9-decoder32.dll";
-#elif defined(ARCH_CPU_X86_64)
-    L"amf-mft-decvp9-decoder64.dll";
-#else
-#error Unsupported Windows CPU Architecture
-#endif
-
-const CLSID CLSID_AMDWebmMfVp9Dec = {
-    0x2d2d728a,
-    0x67d6,
-    0x48ab,
-    {0x89, 0xfb, 0xa6, 0xec, 0x65, 0x55, 0x49, 0x70}};
-#endif
-
 const wchar_t kMSVP9DecoderDLLName[] = L"MSVP9DEC.dll";
 
 const CLSID MEDIASUBTYPE_VP90 = {
@@ -717,9 +695,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       use_keyed_mutex_(false),
       using_angle_device_(false),
       enable_accelerated_vpx_decode_(
-          workarounds.disable_accelerated_vpx_decode
-              ? gpu::GpuPreferences::VpxDecodeVendors::VPX_VENDOR_NONE
-              : gpu_preferences.enable_accelerated_vpx_decode),
+          !workarounds.disable_accelerated_vpx_decode),
       processing_config_changed_(false),
       weak_this_factory_(this) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
@@ -1459,8 +1435,7 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
             {gfx::Size(2560, 1440), gfx::Size(3840, 2160),
              gfx::Size(4096, 2160), gfx::Size(4096, 2304)});
 
-        if (preferences.enable_accelerated_vpx_decode &&
-            !workarounds.disable_accelerated_vpx_decode) {
+        if (!workarounds.disable_accelerated_vpx_decode) {
           max_vp9_profile0_resolutions = GetMaxResolutionsForGUIDs(
               max_vp9_profile0_resolutions.first, video_device.Get(),
               {D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0},
@@ -1574,38 +1549,11 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
   } else if (enable_accelerated_vpx_decode_ &&
              (profile >= VP9PROFILE_PROFILE0 &&
               profile <= VP9PROFILE_PROFILE3)) {
-    if (enable_accelerated_vpx_decode_ &
-        gpu::GpuPreferences::VPX_VENDOR_MICROSOFT) {
-      codec_ = kCodecVP9;
-      clsid = CLSID_MSVPxDecoder;
-      decoder_dll = ::LoadLibrary(kMSVP9DecoderDLLName);
-      if (decoder_dll)
-        using_ms_vp9_mft_ = true;
-    }
-
-// Avoid loading AMD VP9 decoder on Windows ARM64.
-#if defined(ARCH_CPU_X86_FAMILY)
-    // AMD
-    if (!decoder_dll &&
-        enable_accelerated_vpx_decode_ & gpu::GpuPreferences::VPX_VENDOR_AMD &&
-        profile == VP9PROFILE_PROFILE0) {
-      int program_files_key = base::DIR_PROGRAM_FILES;
-      if (base::win::OSInfo::GetInstance()->wow64_status() ==
-          base::win::OSInfo::WOW64_ENABLED) {
-        program_files_key = base::DIR_PROGRAM_FILES6432;
-      }
-
-      base::FilePath dll_path;
-      if (base::PathService::Get(program_files_key, &dll_path)) {
-        codec_ = media::kCodecVP9;
-        dll_path = dll_path.Append(kAMDVPXDecoderDLLPath);
-        dll_path = dll_path.Append(kAMDVP9DecoderDLLName);
-        clsid = CLSID_AMDWebmMfVp9Dec;
-        decoder_dll = ::LoadLibraryEx(dll_path.value().data(), NULL,
-                                      LOAD_WITH_ALTERED_SEARCH_PATH);
-      }
-    }
-#endif
+    codec_ = kCodecVP9;
+    clsid = CLSID_MSVPxDecoder;
+    decoder_dll = ::LoadLibrary(kMSVP9DecoderDLLName);
+    if (decoder_dll)
+      using_ms_vp9_mft_ = true;
   }
 
   if (!decoder_dll) {

@@ -972,10 +972,6 @@ const char kDeviceScaleFactor[]     = "device-scale-factor";
 // Disable the Legacy Window which corresponds to the size of the WebContents.
 const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
 
-// Enables experimental hardware acceleration for VP8/VP9 video decoding.
-// Bitmask - 0x1=Microsoft, 0x2=AMD, 0x03=Try all.
-const char kEnableAcceleratedVpxDecode[] = "enable-accelerated-vpx-decode";
-
 // Enables H264 HW decode acceleration for WebRtc on Win 7.
 const char kEnableWin7WebRtcHWH264Decoding[] =
     "enable-win7-webrtc-hw-h264-decoding";

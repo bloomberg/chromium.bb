@@ -209,9 +209,6 @@ static const char* const kSwitchNames[] = {
     switches::kDisableShaderNameHashing,
     switches::kDisableSkiaRuntimeOpts,
     switches::kDisableWebRtcHWEncoding,
-#if defined(OS_WIN)
-    switches::kEnableAcceleratedVpxDecode,
-#endif
     switches::kEnableGpuRasterization,
     switches::kEnableLogging,
     switches::kEnableVizDevTools,
