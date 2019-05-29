@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -228,10 +229,18 @@ bool PluginVmLauncherView::Accept() {
 }
 
 bool PluginVmLauncherView::Cancel() {
-  if (state_ == State::DOWNLOADING || state_ == State::START_DOWNLOADING)
+  if (state_ == State::DOWNLOADING || state_ == State::START_DOWNLOADING) {
     plugin_vm_image_manager_->CancelDownload();
-  if (state_ == State::IMPORTING)
+
+    plugin_vm::RecordPluginVmSetupResultHistogram(
+        plugin_vm::PluginVmSetupResult::kUserCancelledDownloadingPluginVmImage);
+  }
+  if (state_ == State::IMPORTING) {
     plugin_vm_image_manager_->CancelImport();
+
+    plugin_vm::RecordPluginVmSetupResultHistogram(
+        plugin_vm::PluginVmSetupResult::kUserCancelledImportingPluginVmImage);
+  }
 
   return true;
 }
@@ -288,6 +297,9 @@ void PluginVmLauncherView::OnDownloadFailed() {
 
   state_ = State::ERROR;
   OnStateUpdated();
+
+  plugin_vm::RecordPluginVmSetupResultHistogram(
+      plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage);
 }
 
 void PluginVmLauncherView::OnImportProgressUpdated(
@@ -318,6 +330,9 @@ void PluginVmLauncherView::OnImportFailed() {
 
   state_ = State::ERROR;
   OnStateUpdated();
+
+  plugin_vm::RecordPluginVmSetupResultHistogram(
+      plugin_vm::PluginVmSetupResult::kErrorImportingPluginVmImage);
 }
 
 void PluginVmLauncherView::OnImported() {
@@ -326,6 +341,9 @@ void PluginVmLauncherView::OnImported() {
 
   state_ = State::FINISHED;
   OnStateUpdated();
+
+  plugin_vm::RecordPluginVmSetupResultHistogram(
+      plugin_vm::PluginVmSetupResult::kSuccess);
 }
 
 base::string16 PluginVmLauncherView::GetBigMessage() const {
@@ -375,6 +393,8 @@ void PluginVmLauncherView::AddedToWidget() {
   if (!plugin_vm::IsPluginVmAllowedForProfile(profile_)) {
     LOG(ERROR) << "PluginVm is disallowed by policy. Showing error screen.";
     state_ = State::NOT_ALLOWED;
+    plugin_vm::RecordPluginVmSetupResultHistogram(
+        plugin_vm::PluginVmSetupResult::kPluginVmIsNotAllowed);
   }
 
   if (state_ == State::START_DOWNLOADING)

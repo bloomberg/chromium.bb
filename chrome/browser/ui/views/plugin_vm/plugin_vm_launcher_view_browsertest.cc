@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -101,6 +103,8 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
     fake_concierge_client_->set_disk_image_progress_signal_connected(true);
+
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   // DialogBrowserTest:
@@ -119,6 +123,7 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
   SetupObserver* setup_observer_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   bool HasAcceptButton() {
     return view_->GetDialogClientView()->ok_button() != nullptr;
@@ -222,6 +227,10 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
   setup_observer_->WaitForSetupToFinish();
 
   CheckSetupIsFinishedSuccessfully();
+
+  histogram_tester_->ExpectUniqueSample(
+      plugin_vm::kPluginVmSetupResultHistogram,
+      plugin_vm::PluginVmSetupResult::kSuccess, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
@@ -237,10 +246,14 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
   setup_observer_->WaitForSetupToFinish();
 
   CheckSetupFailed();
+
+  histogram_tester_->ExpectUniqueSample(
+      plugin_vm::kPluginVmSetupResultHistogram,
+      plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
-                       SetupShouldFailAsUnzippingFails) {
+                       SetupShouldFailAsImportingFails) {
   AllowPluginVm();
   SetPluginVmImagePref(embedded_test_server()->GetURL(kJpgFile).spec(),
                        kJpgFileHash);
@@ -251,6 +264,10 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
   setup_observer_->WaitForSetupToFinish();
 
   CheckSetupFailed();
+
+  histogram_tester_->ExpectUniqueSample(
+      plugin_vm::kPluginVmSetupResultHistogram,
+      plugin_vm::PluginVmSetupResult::kErrorImportingPluginVmImage, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
@@ -277,6 +294,13 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
   setup_observer_->WaitForSetupToFinish();
 
   CheckSetupIsFinishedSuccessfully();
+
+  histogram_tester_->ExpectBucketCount(
+      plugin_vm::kPluginVmSetupResultHistogram,
+      plugin_vm::PluginVmSetupResult::kErrorDownloadingPluginVmImage, 1);
+  histogram_tester_->ExpectBucketCount(plugin_vm::kPluginVmSetupResultHistogram,
+                                       plugin_vm::PluginVmSetupResult::kSuccess,
+                                       1);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -288,4 +312,8 @@ IN_PROC_BROWSER_TEST_F(
   // We do not have to wait for setup to finish since the NOT_ALLOWED state
   // is set during dialogue construction.
   CheckSetupNotAllowed();
+
+  histogram_tester_->ExpectUniqueSample(
+      plugin_vm::kPluginVmSetupResultHistogram,
+      plugin_vm::PluginVmSetupResult::kPluginVmIsNotAllowed, 1);
 }
