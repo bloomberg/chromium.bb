@@ -234,7 +234,7 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
           std::move(authenticator_data),
           std::make_unique<OpaqueAttestationStatement>(
               "packed", cbor::Value(std::move(attestation_map)))));
-  return GetSerializedCtapDeviceResponse(make_credential_response);
+  return AsCTAPStyleCBORBytes(make_credential_response);
 }
 
 bool IsMakeCredentialOptionMapFormatCorrect(
@@ -1322,13 +1322,11 @@ void VirtualCtap2Device::InitPendingRegistrations(
     cbor::Value::MapValue response_map;
     response_map.emplace(
         static_cast<int>(CredentialManagementResponseKey::kUser),
-        PublicKeyCredentialUserEntity::ConvertToCBOR(
-            *registration.second.user));
+        AsCBOR(*registration.second.user));
     response_map.emplace(
         static_cast<int>(CredentialManagementResponseKey::kCredentialID),
-        PublicKeyCredentialDescriptor(CredentialType::kPublicKey,
-                                      registration.first)
-            .ConvertToCBOR());
+        AsCBOR(PublicKeyCredentialDescriptor(CredentialType::kPublicKey,
+                                             registration.first)));
     std::string public_key;
     EC_KEY* ec_key =
         EVP_PKEY_get0_EC_KEY(registration.second.private_key->key());
@@ -1344,8 +1342,7 @@ void VirtualCtap2Device::InitPendingRegistrations(
 void VirtualCtap2Device::GetNextRP(cbor::Value::MapValue* response_map) {
   DCHECK(!mutable_state()->pending_rps.empty());
   response_map->emplace(static_cast<int>(CredentialManagementResponseKey::kRP),
-                        PublicKeyCredentialRpEntity::ConvertToCBOR(
-                            mutable_state()->pending_rps.front()));
+                        AsCBOR(mutable_state()->pending_rps.front()));
   response_map->emplace(
       static_cast<int>(CredentialManagementResponseKey::kRPIDHash),
       fido_parsing_utils::CreateSHA256Hash(

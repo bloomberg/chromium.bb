@@ -44,20 +44,6 @@ PublicKeyCredentialRpEntity::CreateFromCBORValue(const cbor::Value& cbor) {
   return rp;
 }
 
-// static
-cbor::Value PublicKeyCredentialRpEntity::ConvertToCBOR(
-    const PublicKeyCredentialRpEntity& rp) {
-  cbor::Value::MapValue rp_map;
-  rp_map.emplace(kEntityIdMapKey, rp.id);
-  if (rp.name) {
-    rp_map.emplace(kEntityNameMapKey, *rp.name);
-  }
-  if (rp.icon_url) {
-    rp_map.emplace(kIconUrlMapKey, rp.icon_url->spec());
-  }
-  return cbor::Value(std::move(rp_map));
-}
-
 PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(std::string rp_id)
     : id(std::move(rp_id)) {}
 
@@ -74,5 +60,17 @@ PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::operator=(
     PublicKeyCredentialRpEntity&& other) = default;
 
 PublicKeyCredentialRpEntity::~PublicKeyCredentialRpEntity() = default;
+
+cbor::Value AsCBOR(const PublicKeyCredentialRpEntity& entity) {
+  cbor::Value::MapValue rp_map;
+  rp_map.emplace(kEntityIdMapKey, entity.id);
+  if (entity.name)
+    rp_map.emplace(kEntityNameMapKey, *entity.name);
+
+  if (entity.icon_url)
+    rp_map.emplace(kIconUrlMapKey, entity.icon_url->spec());
+
+  return cbor::Value(std::move(rp_map));
+}
 
 }  // namespace device

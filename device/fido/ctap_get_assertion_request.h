@@ -40,12 +40,6 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   CtapGetAssertionRequest& operator=(CtapGetAssertionRequest&& other);
   ~CtapGetAssertionRequest();
 
-  // Serializes GetAssertion request parameter into CBOR encoded map with
-  // integer keys and CBOR encoded values as defined by the CTAP spec.
-  // https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20180305.html#authenticatorGetAssertion
-  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-  EncodeAsCBOR(const CtapGetAssertionRequest& request);
-
   std::string rp_id;
   std::string client_data_json;
   std::array<uint8_t, kClientDataHashLength> client_data_hash;
@@ -65,10 +59,18 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
 };
 
 struct CtapGetNextAssertionRequest {
- public:
-  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-  EncodeAsCBOR(const CtapGetNextAssertionRequest&);
 };
+
+// Serializes GetAssertion request parameter into CBOR encoded map with
+// integer keys and CBOR encoded values as defined by the CTAP spec.
+// https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20180305.html#authenticatorGetAssertion
+COMPONENT_EXPORT(DEVICE_FIDO)
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const CtapGetAssertionRequest&);
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const CtapGetNextAssertionRequest&);
 
 }  // namespace device
 

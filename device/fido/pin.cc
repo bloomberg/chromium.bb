@@ -74,12 +74,6 @@ EncodePINCommand(
                         cbor::Value(std::move(map)));
 }
 
-// static
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-RetriesRequest::EncodeAsCBOR(const RetriesRequest&) {
-  return EncodePINCommand(Subcommand::kGetRetries);
-}
-
 RetriesResponse::RetriesResponse() = default;
 
 // static
@@ -106,11 +100,6 @@ base::Optional<RetriesResponse> RetriesResponse::Parse(
   return ret;
 }
 
-// static
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-KeyAgreementRequest::EncodeAsCBOR(const KeyAgreementRequest&) {
-  return EncodePINCommand(Subcommand::kGetKeyAgreement);
-}
 
 KeyAgreementResponse::KeyAgreementResponse() = default;
 
@@ -285,36 +274,6 @@ void Encrypt(const uint8_t key[SHA256_DIGEST_LENGTH],
   EVP_CIPHER_CTX_cleanup(&aes_ctx);
 }
 
-// static
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-SetRequest::EncodeAsCBOR(const SetRequest& request) {
-  // See
-  // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#settingNewPin
-  uint8_t shared_key[SHA256_DIGEST_LENGTH];
-  auto cose_key = GenerateSharedKey(request.peer_key_, shared_key);
-
-  static_assert((sizeof(pin_) % AES_BLOCK_SIZE) == 0,
-                "pin_ is not a multiple of the AES block size");
-  uint8_t encrypted_pin[sizeof(pin_)];
-  Encrypt(shared_key, request.pin_, encrypted_pin);
-
-  std::vector<uint8_t> pin_auth =
-      MakePinAuth(base::make_span(shared_key, sizeof(shared_key)),
-                  base::make_span(encrypted_pin, sizeof(encrypted_pin)));
-
-  return EncodePINCommand(
-      Subcommand::kSetPIN,
-      [&cose_key, &encrypted_pin, &pin_auth](cbor::Value::MapValue* map) {
-        map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
-                     std::move(cose_key));
-        map->emplace(
-            static_cast<int>(RequestKey::kNewPINEnc),
-            base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
-        map->emplace(static_cast<int>(RequestKey::kPINAuth),
-                     std::move(pin_auth));
-      });
-}
-
 ChangeRequest::ChangeRequest(const std::string& old_pin,
                              const std::string& new_pin,
                              const KeyAgreementResponse& peer_key)
@@ -342,90 +301,6 @@ base::Optional<EmptyResponse> EmptyResponse::Parse(
 
   EmptyResponse ret;
   return ret;
-}
-
-// static
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-ChangeRequest::EncodeAsCBOR(const ChangeRequest& request) {
-  // See
-  // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#changingExistingPin
-  uint8_t shared_key[SHA256_DIGEST_LENGTH];
-  auto cose_key = GenerateSharedKey(request.peer_key_, shared_key);
-
-  static_assert((sizeof(new_pin_) % AES_BLOCK_SIZE) == 0,
-                "new_pin_ is not a multiple of the AES block size");
-  uint8_t encrypted_pin[sizeof(new_pin_)];
-  Encrypt(shared_key, request.new_pin_, encrypted_pin);
-
-  static_assert((sizeof(old_pin_hash_) % AES_BLOCK_SIZE) == 0,
-                "old_pin_hash_ is not a multiple of the AES block size");
-  uint8_t old_pin_hash_enc[sizeof(old_pin_hash_)];
-  Encrypt(shared_key, request.old_pin_hash_, old_pin_hash_enc);
-
-  uint8_t ciphertexts_concat[sizeof(encrypted_pin) + sizeof(old_pin_hash_enc)];
-  memcpy(ciphertexts_concat, encrypted_pin, sizeof(encrypted_pin));
-  memcpy(ciphertexts_concat + sizeof(encrypted_pin), old_pin_hash_enc,
-         sizeof(old_pin_hash_enc));
-  std::vector<uint8_t> pin_auth = MakePinAuth(
-      base::make_span(shared_key, sizeof(shared_key)),
-      base::make_span(ciphertexts_concat, sizeof(ciphertexts_concat)));
-
-  return EncodePINCommand(
-      Subcommand::kChangePIN, [&cose_key, &encrypted_pin, &old_pin_hash_enc,
-                               &pin_auth](cbor::Value::MapValue* map) {
-        map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
-                     std::move(cose_key));
-        map->emplace(static_cast<int>(RequestKey::kPINHashEnc),
-                     base::span<const uint8_t>(old_pin_hash_enc,
-                                               sizeof(old_pin_hash_enc)));
-        map->emplace(
-            static_cast<int>(RequestKey::kNewPINEnc),
-            base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
-        map->emplace(static_cast<int>(RequestKey::kPINAuth),
-                     std::move(pin_auth));
-      });
-}
-
-// static
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-ResetRequest::EncodeAsCBOR(const ResetRequest&) {
-  return std::make_pair(CtapRequestCommand::kAuthenticatorReset, base::nullopt);
-}
-
-TokenRequest::TokenRequest(const std::string& pin,
-                           const KeyAgreementResponse& peer_key)
-    : cose_key_(GenerateSharedKey(peer_key, shared_key_.data())) {
-  DCHECK_EQ(static_cast<size_t>(SHA256_DIGEST_LENGTH), shared_key_.size());
-  uint8_t digest[SHA256_DIGEST_LENGTH];
-  SHA256(reinterpret_cast<const uint8_t*>(pin.data()), pin.size(), digest);
-  memcpy(pin_hash_, digest, sizeof(pin_hash_));
-}
-
-TokenRequest::~TokenRequest() = default;
-
-TokenRequest::TokenRequest(TokenRequest&& other) = default;
-
-const std::array<uint8_t, 32>& TokenRequest::shared_key() const {
-  return shared_key_;
-}
-
-// static
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-TokenRequest::EncodeAsCBOR(const TokenRequest& request) {
-  static_assert((sizeof(pin_hash_) % AES_BLOCK_SIZE) == 0,
-                "pin_hash_ is not a multiple of the AES block size");
-  uint8_t encrypted_pin[sizeof(request.pin_hash_)];
-  Encrypt(request.shared_key_.data(), request.pin_hash_, encrypted_pin);
-
-  return EncodePINCommand(
-      Subcommand::kGetPINToken,
-      [&request, &encrypted_pin](cbor::Value::MapValue* map) {
-        map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
-                     std::move(request.cose_key_));
-        map->emplace(
-            static_cast<int>(RequestKey::kPINHashEnc),
-            base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
-      });
 }
 
 TokenResponse::TokenResponse() = default;
@@ -480,5 +355,132 @@ std::vector<uint8_t> TokenResponse::PinAuth(
   return MakePinAuth(token_, client_data_hash);
 }
 
+// static
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const RetriesRequest&) {
+  return EncodePINCommand(Subcommand::kGetRetries);
+}
+
+// static
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const KeyAgreementRequest&) {
+  return EncodePINCommand(Subcommand::kGetKeyAgreement);
+}
+
+// static
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const SetRequest& request) {
+  // See
+  // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#settingNewPin
+  uint8_t shared_key[SHA256_DIGEST_LENGTH];
+  auto cose_key = GenerateSharedKey(request.peer_key_, shared_key);
+
+  static_assert((sizeof(request.pin_) % AES_BLOCK_SIZE) == 0,
+                "pin_ is not a multiple of the AES block size");
+  uint8_t encrypted_pin[sizeof(request.pin_)];
+  Encrypt(shared_key, request.pin_, encrypted_pin);
+
+  std::vector<uint8_t> pin_auth =
+      MakePinAuth(base::make_span(shared_key, sizeof(shared_key)),
+                  base::make_span(encrypted_pin, sizeof(encrypted_pin)));
+
+  return EncodePINCommand(
+      Subcommand::kSetPIN,
+      [&cose_key, &encrypted_pin, &pin_auth](cbor::Value::MapValue* map) {
+        map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
+                     std::move(cose_key));
+        map->emplace(
+            static_cast<int>(RequestKey::kNewPINEnc),
+            base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
+        map->emplace(static_cast<int>(RequestKey::kPINAuth),
+                     std::move(pin_auth));
+      });
+}
+
+// static
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const ChangeRequest& request) {
+  // See
+  // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#changingExistingPin
+  uint8_t shared_key[SHA256_DIGEST_LENGTH];
+  auto cose_key = GenerateSharedKey(request.peer_key_, shared_key);
+
+  static_assert((sizeof(request.new_pin_) % AES_BLOCK_SIZE) == 0,
+                "new_pin_ is not a multiple of the AES block size");
+  uint8_t encrypted_pin[sizeof(request.new_pin_)];
+  Encrypt(shared_key, request.new_pin_, encrypted_pin);
+
+  static_assert((sizeof(request.old_pin_hash_) % AES_BLOCK_SIZE) == 0,
+                "old_pin_hash_ is not a multiple of the AES block size");
+  uint8_t old_pin_hash_enc[sizeof(request.old_pin_hash_)];
+  Encrypt(shared_key, request.old_pin_hash_, old_pin_hash_enc);
+
+  uint8_t ciphertexts_concat[sizeof(encrypted_pin) + sizeof(old_pin_hash_enc)];
+  memcpy(ciphertexts_concat, encrypted_pin, sizeof(encrypted_pin));
+  memcpy(ciphertexts_concat + sizeof(encrypted_pin), old_pin_hash_enc,
+         sizeof(old_pin_hash_enc));
+  std::vector<uint8_t> pin_auth = MakePinAuth(
+      base::make_span(shared_key, sizeof(shared_key)),
+      base::make_span(ciphertexts_concat, sizeof(ciphertexts_concat)));
+
+  return EncodePINCommand(
+      Subcommand::kChangePIN, [&cose_key, &encrypted_pin, &old_pin_hash_enc,
+                               &pin_auth](cbor::Value::MapValue* map) {
+        map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
+                     std::move(cose_key));
+        map->emplace(static_cast<int>(RequestKey::kPINHashEnc),
+                     base::span<const uint8_t>(old_pin_hash_enc,
+                                               sizeof(old_pin_hash_enc)));
+        map->emplace(
+            static_cast<int>(RequestKey::kNewPINEnc),
+            base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
+        map->emplace(static_cast<int>(RequestKey::kPINAuth),
+                     std::move(pin_auth));
+      });
+}
+
+// static
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const ResetRequest&) {
+  return std::make_pair(CtapRequestCommand::kAuthenticatorReset, base::nullopt);
+}
+
+TokenRequest::TokenRequest(const std::string& pin,
+                           const KeyAgreementResponse& peer_key)
+    : cose_key_(GenerateSharedKey(peer_key, shared_key_.data())) {
+  DCHECK_EQ(static_cast<size_t>(SHA256_DIGEST_LENGTH), shared_key_.size());
+  uint8_t digest[SHA256_DIGEST_LENGTH];
+  SHA256(reinterpret_cast<const uint8_t*>(pin.data()), pin.size(), digest);
+  memcpy(pin_hash_, digest, sizeof(pin_hash_));
+}
+
+TokenRequest::~TokenRequest() = default;
+
+TokenRequest::TokenRequest(TokenRequest&& other) = default;
+
+const std::array<uint8_t, 32>& TokenRequest::shared_key() const {
+  return shared_key_;
+}
+
+// static
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const TokenRequest& request) {
+  static_assert((sizeof(request.pin_hash_) % AES_BLOCK_SIZE) == 0,
+                "pin_hash_ is not a multiple of the AES block size");
+  uint8_t encrypted_pin[sizeof(request.pin_hash_)];
+  Encrypt(request.shared_key_.data(), request.pin_hash_, encrypted_pin);
+
+  return EncodePINCommand(
+      Subcommand::kGetPINToken,
+      [&request, &encrypted_pin](cbor::Value::MapValue* map) {
+        map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
+                     std::move(request.cose_key_));
+        map->emplace(
+            static_cast<int>(RequestKey::kPINHashEnc),
+            base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
+      });
+}
+
 }  // namespace pin
+
 }  // namespace device

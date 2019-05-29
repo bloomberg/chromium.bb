@@ -205,6 +205,9 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AggregatedEnumerateCredentialsResponse {
 
 using DeleteCredentialResponse = pin::EmptyResponse;
 
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const CredentialManagementRequest&);
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_CREDENTIAL_MANAGEMENT_H_

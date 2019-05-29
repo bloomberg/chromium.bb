@@ -47,33 +47,6 @@ CredentialManagementRequest& CredentialManagementRequest::operator=(
 CredentialManagementRequest::~CredentialManagementRequest() = default;
 
 // static
-std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-CredentialManagementRequest::EncodeAsCBOR(
-    const CredentialManagementRequest& request) {
-  cbor::Value::MapValue request_map;
-  request_map.emplace(
-      static_cast<int>(CredentialManagementRequestKey::kSubCommand),
-      static_cast<int>(request.subcommand));
-  if (request.params) {
-    request_map.emplace(
-        static_cast<int>(CredentialManagementRequestKey::kSubCommandParams),
-        *request.params);
-  }
-  if (request.pin_auth) {
-    request_map.emplace(
-        static_cast<int>(CredentialManagementRequestKey::kPinProtocol),
-        static_cast<int>(pin::kProtocolVersion));
-    request_map.emplace(
-        static_cast<int>(CredentialManagementRequestKey::kPinAuth),
-        *request.pin_auth);
-  }
-  return {request.version == kPreview
-              ? CtapRequestCommand::kAuthenticatorCredentialManagementPreview
-              : CtapRequestCommand::kAuthenticatorCredentialManagement,
-          cbor::Value(std::move(request_map))};
-}
-
-// static
 CredentialManagementRequest CredentialManagementRequest::ForGetCredsMetadata(
     Version version,
     base::span<const uint8_t> pin_token) {
@@ -351,5 +324,30 @@ AggregatedEnumerateCredentialsResponse& AggregatedEnumerateCredentialsResponse::
 operator=(AggregatedEnumerateCredentialsResponse&&) = default;
 AggregatedEnumerateCredentialsResponse::
     ~AggregatedEnumerateCredentialsResponse() = default;
+
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const CredentialManagementRequest& request) {
+  cbor::Value::MapValue request_map;
+  request_map.emplace(
+      static_cast<int>(CredentialManagementRequestKey::kSubCommand),
+      static_cast<int>(request.subcommand));
+  if (request.params) {
+    request_map.emplace(
+        static_cast<int>(CredentialManagementRequestKey::kSubCommandParams),
+        *request.params);
+  }
+  if (request.pin_auth) {
+    request_map.emplace(
+        static_cast<int>(CredentialManagementRequestKey::kPinProtocol),
+        static_cast<int>(pin::kProtocolVersion));
+    request_map.emplace(
+        static_cast<int>(CredentialManagementRequestKey::kPinAuth),
+        *request.pin_auth);
+  }
+  return {request.version == CredentialManagementRequest::kPreview
+              ? CtapRequestCommand::kAuthenticatorCredentialManagementPreview
+              : CtapRequestCommand::kAuthenticatorCredentialManagement,
+          cbor::Value(std::move(request_map))};
+}
 
 }  // namespace device

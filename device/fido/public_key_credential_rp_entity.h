@@ -24,7 +24,6 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialRpEntity {
  public:
   static base::Optional<PublicKeyCredentialRpEntity> CreateFromCBORValue(
       const cbor::Value& cbor);
-  static cbor::Value ConvertToCBOR(const PublicKeyCredentialRpEntity&);
 
   explicit PublicKeyCredentialRpEntity(std::string rp_id);
   PublicKeyCredentialRpEntity(const PublicKeyCredentialRpEntity& other);
@@ -38,6 +37,8 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialRpEntity {
   base::Optional<std::string> name;
   base::Optional<GURL> icon_url;
 };
+
+cbor::Value AsCBOR(const PublicKeyCredentialRpEntity&);
 
 }  // namespace device
 

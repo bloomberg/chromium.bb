@@ -37,9 +37,8 @@ CtapGetAssertionRequest& CtapGetAssertionRequest::operator=(
 
 CtapGetAssertionRequest::~CtapGetAssertionRequest() = default;
 
-// static
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-CtapGetAssertionRequest::EncodeAsCBOR(const CtapGetAssertionRequest& request) {
+AsCTAPRequestValuePair(const CtapGetAssertionRequest& request) {
   cbor::Value::MapValue cbor_map;
   cbor_map[cbor::Value(1)] = cbor::Value(request.rp_id);
   cbor_map[cbor::Value(2)] = cbor::Value(request.client_data_hash);
@@ -47,7 +46,7 @@ CtapGetAssertionRequest::EncodeAsCBOR(const CtapGetAssertionRequest& request) {
   if (!request.allow_list.empty()) {
     cbor::Value::ArrayValue allow_list_array;
     for (const auto& descriptor : request.allow_list) {
-      allow_list_array.push_back(descriptor.ConvertToCBOR());
+      allow_list_array.push_back(AsCBOR(descriptor));
     }
     cbor_map[cbor::Value(3)] = cbor::Value(std::move(allow_list_array));
   }
@@ -81,9 +80,8 @@ CtapGetAssertionRequest::EncodeAsCBOR(const CtapGetAssertionRequest& request) {
                         cbor::Value(std::move(cbor_map)));
 }
 
-// static
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-CtapGetNextAssertionRequest::EncodeAsCBOR(const CtapGetNextAssertionRequest&) {
+AsCTAPRequestValuePair(const CtapGetNextAssertionRequest&) {
   return std::make_pair(CtapRequestCommand::kAuthenticatorGetNextAssertion,
                         base::nullopt);
 }

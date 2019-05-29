@@ -71,7 +71,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)
-cbor::Value ConvertToCBOR(const AuthenticatorSupportedOptions& options);
+cbor::Value AsCBOR(const AuthenticatorSupportedOptions& options);
 
 }  // namespace device
 

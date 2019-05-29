@@ -242,7 +242,7 @@ TEST_F(FidoMakeCredentialHandlerTest, UserVerificationRequirementNotMet) {
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
       test_data::kTestGetInfoResponseWithoutUvSupport);
   device->ExpectRequestAndRespondWith(
-      MockFidoDevice::EncodeCBORRequest(CtapMakeCredentialRequest::EncodeAsCBOR(
+      MockFidoDevice::EncodeCBORRequest(AsCTAPRequestValuePair(
           MakeCredentialTask::GetTouchRequest(device.get()))),
       test_data::kTestMakeCredentialResponse);
   discovery()->AddDevice(std::move(device));
@@ -329,7 +329,7 @@ TEST_F(FidoMakeCredentialHandlerTest, ResidentKeyRequirementNotMet) {
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
       test_data::kTestGetInfoResponseWithoutResidentKeySupport);
   device->ExpectRequestAndRespondWith(
-      MockFidoDevice::EncodeCBORRequest(CtapMakeCredentialRequest::EncodeAsCBOR(
+      MockFidoDevice::EncodeCBORRequest(AsCTAPRequestValuePair(
           MakeCredentialTask::GetTouchRequest(device.get()))),
       test_data::kTestMakeCredentialResponse);
 

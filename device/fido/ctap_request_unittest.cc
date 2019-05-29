@@ -36,7 +36,7 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
   make_credential_param.user_verification =
       UserVerificationRequirement::kRequired;
   auto serialized_data = MockFidoDevice::EncodeCBORRequest(
-      CtapMakeCredentialRequest::EncodeAsCBOR(make_credential_param));
+      AsCTAPRequestValuePair(make_credential_param));
   EXPECT_THAT(serialized_data, ::testing::ElementsAreArray(
                                    test_data::kCtapMakeCredentialRequest));
 }
@@ -67,7 +67,7 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
   get_assertion_req.user_verification = UserVerificationRequirement::kRequired;
 
   auto serialized_data = MockFidoDevice::EncodeCBORRequest(
-      CtapGetAssertionRequest::EncodeAsCBOR(get_assertion_req));
+      AsCTAPRequestValuePair(get_assertion_req));
   EXPECT_THAT(serialized_data,
               ::testing::ElementsAreArray(
                   test_data::kTestComplexCtapGetAssertionRequest));

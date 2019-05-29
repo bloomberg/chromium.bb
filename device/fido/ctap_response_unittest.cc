@@ -438,8 +438,7 @@ TEST(CTAPResponseTest, TestParseU2fAttestationStatementCBOR) {
       FidoAttestationStatement::CreateFromU2fRegisterResponse(
           test_data::kTestU2fRegisterResponse);
   ASSERT_TRUE(fido_attestation_statement);
-  auto cbor = cbor::Writer::Write(
-      cbor::Value(fido_attestation_statement->GetAsCBORMap()));
+  auto cbor = cbor::Writer::Write(AsCBOR(*fido_attestation_statement));
   ASSERT_TRUE(cbor);
   EXPECT_THAT(*cbor, ::testing::ElementsAreArray(
                          test_data::kU2fAttestationStatementCBOR));
@@ -500,7 +499,8 @@ TEST(CTAPResponseTest, TestSerializeU2fAttestationObject) {
 
   ASSERT_TRUE(attestation_object);
   EXPECT_EQ(GetTestAttestationObjectBytes(),
-            attestation_object->SerializeToCBOREncodedBytes());
+            cbor::Writer::Write(AsCBOR(*attestation_object))
+                .value_or(std::vector<uint8_t>()));
 }
 
 // Tests that U2F authenticator data is properly serialized.
@@ -703,7 +703,7 @@ TEST(CTAPResponseTest, TestSerializeMakeCredentialResponse) {
           std::make_unique<OpaqueAttestationStatement>(
               "packed", cbor::Value(std::move(attestation_map)))));
   EXPECT_THAT(
-      GetSerializedCtapDeviceResponse(response),
+      AsCTAPStyleCBORBytes(response),
       ::testing::ElementsAreArray(
           base::make_span(test_data::kTestMakeCredentialResponse).subspan(1)));
 }

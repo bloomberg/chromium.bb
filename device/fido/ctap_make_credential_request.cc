@@ -41,22 +41,17 @@ CtapMakeCredentialRequest& CtapMakeCredentialRequest::operator=(
 
 CtapMakeCredentialRequest::~CtapMakeCredentialRequest() = default;
 
-// static
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-CtapMakeCredentialRequest::EncodeAsCBOR(
-    const CtapMakeCredentialRequest& request) {
+AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
   cbor::Value::MapValue cbor_map;
   cbor_map[cbor::Value(1)] = cbor::Value(request.client_data_hash);
-  cbor_map[cbor::Value(2)] =
-      PublicKeyCredentialRpEntity::ConvertToCBOR(request.rp);
-  cbor_map[cbor::Value(3)] =
-      PublicKeyCredentialUserEntity::ConvertToCBOR(request.user);
-  cbor_map[cbor::Value(4)] =
-      request.public_key_credential_params.ConvertToCBOR();
+  cbor_map[cbor::Value(2)] = AsCBOR(request.rp);
+  cbor_map[cbor::Value(3)] = AsCBOR(request.user);
+  cbor_map[cbor::Value(4)] = AsCBOR(request.public_key_credential_params);
   if (request.exclude_list) {
     cbor::Value::ArrayValue exclude_list_array;
     for (const auto& descriptor : *request.exclude_list) {
-      exclude_list_array.push_back(descriptor.ConvertToCBOR());
+      exclude_list_array.push_back(AsCBOR(descriptor));
     }
     cbor_map[cbor::Value(5)] = cbor::Value(std::move(exclude_list_array));
   }

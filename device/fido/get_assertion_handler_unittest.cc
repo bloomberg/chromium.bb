@@ -245,7 +245,7 @@ TEST_F(FidoGetAssertionHandlerTest, TestIncompatibleUserVerificationSetting) {
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
       test_data::kTestGetInfoResponseWithoutUvSupport);
   device->ExpectRequestAndRespondWith(
-      MockFidoDevice::EncodeCBORRequest(CtapMakeCredentialRequest::EncodeAsCBOR(
+      MockFidoDevice::EncodeCBORRequest(AsCTAPRequestValuePair(
           MakeCredentialTask::GetTouchRequest(device.get()))),
       test_data::kTestMakeCredentialResponse);
 

@@ -45,12 +45,6 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   CtapMakeCredentialRequest& operator=(CtapMakeCredentialRequest&& that);
   ~CtapMakeCredentialRequest();
 
-  // Serializes MakeCredential request parameter into CBOR encoded map with
-  // integer keys and CBOR encoded values as defined by the CTAP spec.
-  // https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20180305.html#authenticatorMakeCredential
-  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-  EncodeAsCBOR(const CtapMakeCredentialRequest& request);
-
   std::string client_data_json;
   ClientDataHash client_data_hash;
   PublicKeyCredentialRpEntity rp;
@@ -83,6 +77,13 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   // sent.
   base::Optional<std::pair<CredProtect, bool>> cred_protect;
 };
+
+// Serializes MakeCredential request parameter into CBOR encoded map with
+// integer keys and CBOR encoded values as defined by the CTAP spec.
+// https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20180305.html#authenticatorMakeCredential
+COMPONENT_EXPORT(DEVICE_FIDO)
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request);
 
 }  // namespace device
 

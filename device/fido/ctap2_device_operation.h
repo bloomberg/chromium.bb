@@ -76,7 +76,7 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
 
   void Start() override {
     std::pair<CtapRequestCommand, base::Optional<cbor::Value>> request(
-        Request::EncodeAsCBOR(this->request()));
+        AsCTAPRequestValuePair(this->request()));
     std::vector<uint8_t> request_bytes;
 
     // TODO: it would be nice to see which device each request is going to, but

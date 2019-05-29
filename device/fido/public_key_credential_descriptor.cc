@@ -71,11 +71,11 @@ PublicKeyCredentialDescriptor& PublicKeyCredentialDescriptor::operator=(
 
 PublicKeyCredentialDescriptor::~PublicKeyCredentialDescriptor() = default;
 
-cbor::Value PublicKeyCredentialDescriptor::ConvertToCBOR() const {
+cbor::Value AsCBOR(const PublicKeyCredentialDescriptor& desc) {
   cbor::Value::MapValue cbor_descriptor_map;
-  cbor_descriptor_map[cbor::Value(kCredentialIdKey)] = cbor::Value(id_);
+  cbor_descriptor_map[cbor::Value(kCredentialIdKey)] = cbor::Value(desc.id());
   cbor_descriptor_map[cbor::Value(kCredentialTypeKey)] =
-      cbor::Value(CredentialTypeToString(credential_type_));
+      cbor::Value(CredentialTypeToString(desc.credential_type()));
   return cbor::Value(std::move(cbor_descriptor_map));
 }
 
