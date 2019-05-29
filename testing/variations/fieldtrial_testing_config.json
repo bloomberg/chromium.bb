@@ -493,6 +493,21 @@
             ]
         }
     ],
+    "AppListLaunchRecorder": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AppListLaunchRecorder",
+                    "enable_features": [
+                        "EnableAppListLaunchRecording"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppleScriptExecuteJavaScript": [
         {
             "platforms": [
