@@ -4,6 +4,12 @@
 
 # Pin resolved versions in the repo, to reduce trust in the CIPD backend.
 #
+# Most of these tools are generated via builders at
+# https://ci.chromium.org/p/infra/g/infra/console
+#
+# For these, the git revision is the one of
+# https://chromium.googlesource.com/infra/infra.git.
+#
 # To regenerate them (after modifying this file):
 #   cipd ensure-file-resolve -ensure-file cipd_manifest.txt
 $ResolvedVersions cipd_manifest.versions
@@ -25,7 +31,7 @@ infra/tools/luci/vpython/${platform} git_revision:7c436dff846e5ad40ead55e392ce03
 infra/tools/luci/led/${platform} git_revision:201038605be27025b386bfa5e7c9b4945aa6027d
 
 # LUCI config generator
-infra/tools/luci/lucicfg/${platform} git_revision:b6dff7d89b29f8ad77e01730129798e69f0ed5eb
+infra/tools/luci/lucicfg/${platform} git_revision:5c680a8bc6144835384b71f923f74f7142f4aaff
 
 # Mac toolchain installer
 infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:47354a337f7eb444f2cb1e1b5d30ac3940f1d097
