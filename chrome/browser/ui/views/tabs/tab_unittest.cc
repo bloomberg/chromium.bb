@@ -13,6 +13,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_data.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/tabs/alert_indicator.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
@@ -116,7 +117,7 @@ class FakeTabController : public TabController {
     return 1.0f;
   }
   float GetHoverOpacityForRadialHighlight() const override { return 1.0f; }
-  const TabGroupData* GetDataForGroup(int group) const override {
+  const TabGroupData* GetDataForGroup(TabGroupId group) const override {
     return nullptr;
   }
 

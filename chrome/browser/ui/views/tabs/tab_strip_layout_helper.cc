@@ -69,21 +69,32 @@ struct TabSlot {
   static TabSlot CreateForTab(int tab, bool pinned) {
     TabSlot slot;
     slot.type = TabSlotType::kTab;
-    slot.index = tab;
+    slot.tab = tab;
     slot.pinned = pinned;
     return slot;
   }
 
-  static TabSlot CreateForGroupHeader(int group, bool pinned) {
+  static TabSlot CreateForGroupHeader(TabGroupId group, bool pinned) {
     TabSlot slot;
     slot.type = TabSlotType::kGroupHeader;
-    slot.index = group;
+    slot.group = group;
     slot.pinned = pinned;
     return slot;
+  }
+
+  int GetTab() const {
+    DCHECK(tab.has_value());
+    return tab.value();
+  }
+
+  TabGroupId GetGroup() const {
+    DCHECK(group.has_value());
+    return group.value();
   }
 
   TabSlotType type;
-  int index;
+  base::Optional<int> tab;
+  base::Optional<TabGroupId> group;
   bool pinned;
 };
 
@@ -92,11 +103,12 @@ struct TabSlot {
 void TabStripLayoutHelper::UpdateIdealBounds(
     TabStripController* controller,
     views::ViewModelT<Tab>* tabs,
-    std::map<int, TabGroupHeader*> group_headers,
+    std::map<TabGroupId, TabGroupHeader*> group_headers,
     int available_width) {
-  std::vector<base::Optional<int>> tab_to_group_mapping(tabs->view_size());
+  std::vector<base::Optional<TabGroupId>> tab_to_group_mapping(
+      tabs->view_size());
   for (const auto& header_pair : group_headers) {
-    const int group = header_pair.first;
+    const TabGroupId group = header_pair.first;
     std::vector<int> tabs = controller->ListTabsInGroup(group);
     for (int tab : tabs)
       tab_to_group_mapping[tab] = group;
@@ -106,11 +118,11 @@ void TabStripLayoutHelper::UpdateIdealBounds(
   const int active_tab_index = controller->GetActiveIndex();
 
   std::vector<TabSlot> slots;
-  std::set<int> headers_already_added;
+  std::set<TabGroupId> headers_already_added;
   int active_index_in_slots = TabStripModel::kNoTab;
   for (int i = 0; i < tabs->view_size(); ++i) {
     const bool pinned = i < num_pinned_tabs;
-    base::Optional<int> group = tab_to_group_mapping[i];
+    base::Optional<TabGroupId> group = tab_to_group_mapping[i];
     if (group.has_value() &&
         !base::ContainsKey(headers_already_added, group.value())) {
       // Start of a group.
@@ -143,10 +155,10 @@ void TabStripLayoutHelper::UpdateIdealBounds(
     const TabSlot& slot = slots[i];
     switch (slot.type) {
       case TabSlotType::kTab:
-        tabs->set_ideal_bounds(slot.index, bounds[i]);
+        tabs->set_ideal_bounds(slot.GetTab(), bounds[i]);
         break;
       case TabSlotType::kGroupHeader:
-        group_headers[slot.index]->SetBoundsRect(bounds[i]);
+        group_headers[slot.GetGroup()]->SetBoundsRect(bounds[i]);
         break;
     }
   }

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "ui/base/models/list_selection_model.h"
 
 class TabStripModel;
@@ -152,8 +153,8 @@ class TabStripModelChange {
 
     content::WebContents* contents;
     int index;
-    base::Optional<int> old_group;
-    base::Optional<int> new_group;
+    base::Optional<TabGroupId> old_group;
+    base::Optional<TabGroupId> new_group;
   };
 
   TabStripModelChange();

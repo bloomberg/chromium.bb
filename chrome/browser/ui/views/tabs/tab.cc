@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -621,7 +622,7 @@ void Tab::SetClosing(bool closing) {
   }
 }
 
-void Tab::SetGroup(base::Optional<int> group) {
+void Tab::SetGroup(base::Optional<TabGroupId> group) {
   if (group_ == group)
     return;
   group_ = group;

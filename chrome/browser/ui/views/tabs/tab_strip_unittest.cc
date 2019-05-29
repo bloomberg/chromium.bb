@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -979,7 +980,7 @@ TEST_P(TabStripTest, GroupHeaderBasics) {
   Tab* tab = tab_strip_->tab_at(0);
   const int first_slot_x = tab->x();
 
-  base::Optional<int> group = controller_->CreateTabGroup();
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
 
   std::vector<TabGroupHeader*> headers = ListGroupHeaders();
@@ -999,7 +1000,7 @@ TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
 
   const int second_slot_x = tab_strip_->tab_at(1)->x();
 
-  base::Optional<int> group = controller_->CreateTabGroup();
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(1, group);
 
   TabGroupHeader* header = ListGroupHeaders()[0];
@@ -1017,7 +1018,7 @@ TEST_P(TabStripTest, DiscontinuousGroup) {
 
   const int first_slot_x = tab_strip_->tab_at(0)->x();
 
-  base::Optional<int> group = controller_->CreateTabGroup();
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
   controller_->MoveTabIntoGroup(2, group);
 
@@ -1029,7 +1030,7 @@ TEST_P(TabStripTest, DiscontinuousGroup) {
 TEST_P(TabStripTest, DeleteTabGroupHeaderWhenEmpty) {
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   tab_strip_->AddTabAt(1, TabRendererData(), false);
-  base::Optional<int> group = controller_->CreateTabGroup();
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
   controller_->MoveTabIntoGroup(1, group);
   controller_->MoveTabIntoGroup(0, base::nullopt);

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "ui/views/view.h"
 
 class TabController;
@@ -15,13 +16,13 @@ class TabGroupData;
 // the tab strip flow and positioned left of the leftmost tab in the group.
 class TabGroupHeader : public views::View {
  public:
-  TabGroupHeader(TabController* controller, int group);
+  TabGroupHeader(TabController* controller, TabGroupId group);
 
  private:
   const TabGroupData* GetGroupData();
 
   TabController* const controller_;
-  const int group_;
+  const TabGroupId group_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGroupHeader);
 };

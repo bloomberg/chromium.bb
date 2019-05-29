@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -118,7 +119,7 @@ class Tab : public gfx::AnimationDelegate,
   void set_detached() { detached_ = true; }
   bool detached() const { return detached_; }
 
-  void SetGroup(base::Optional<int> group);
+  void SetGroup(base::Optional<TabGroupId> group);
 
   // Returns the color for the tab's group, if any.
   base::Optional<SkColor> GetGroupColor() const;
@@ -234,7 +235,7 @@ class Tab : public gfx::AnimationDelegate,
   bool detached_ = false;
 
   // Defined when the tab is part of a group.
-  base::Optional<int> group_;
+  base::Optional<TabGroupId> group_;
 
   TabIcon* icon_ = nullptr;
   AlertIndicator* alert_indicator_ = nullptr;

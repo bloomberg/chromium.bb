@@ -393,11 +393,12 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
 }
 
 const TabGroupData* BrowserTabStripController::GetDataForGroup(
-    int group) const {
+    TabGroupId group) const {
   return model_->GetDataForGroup(group);
 }
 
-std::vector<int> BrowserTabStripController::ListTabsInGroup(int group) const {
+std::vector<int> BrowserTabStripController::ListTabsInGroup(
+    TabGroupId group) const {
   return model_->ListTabsInGroup(group);
 }
 

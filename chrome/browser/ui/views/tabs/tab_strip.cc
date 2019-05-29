@@ -1208,8 +1208,8 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
 }
 
 void TabStrip::ChangeTabGroup(int model_index,
-                              base::Optional<int> old_group,
-                              base::Optional<int> new_group) {
+                              base::Optional<TabGroupId> old_group,
+                              base::Optional<TabGroupId> new_group) {
   tab_at(model_index)->SetGroup(new_group);
   if (new_group.has_value() && !group_headers_[new_group.value()]) {
     auto header = std::make_unique<TabGroupHeader>(this, new_group.value());
@@ -1784,7 +1784,7 @@ float TabStrip::GetHoverOpacityForRadialHighlight() const {
   return radial_highlight_opacity_;
 }
 
-const TabGroupData* TabStrip::GetDataForGroup(int group) const {
+const TabGroupData* TabStrip::GetDataForGroup(TabGroupId group) const {
   return controller_->GetDataForGroup(group);
 }
 
@@ -2649,9 +2649,11 @@ void TabStrip::UpdateIdealBounds() {
 
   if (!touch_layout_) {
     // Transform |group_headers_| to raw pointers to avoid exposing unique_ptrs.
-    std::map<int, TabGroupHeader*> group_headers;
-    for (const auto& header_pair : group_headers_)
-      group_headers[header_pair.first] = header_pair.second.get();
+    std::map<TabGroupId, TabGroupHeader*> group_headers;
+    for (const auto& header_pair : group_headers_) {
+      group_headers.insert(
+          std::make_pair(header_pair.first, header_pair.second.get()));
+    }
 
     const int available_width = (available_width_for_tabs_ < 0)
                                     ? GetTabAreaWidth()

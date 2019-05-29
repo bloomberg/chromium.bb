@@ -1054,6 +1054,8 @@ jumbo_split_static_library("ui") {
       "tabs/tab_change_type.h",
       "tabs/tab_group_data.cc",
       "tabs/tab_group_data.h",
+      "tabs/tab_group_id.cc",
+      "tabs/tab_group_id.h",
       "tabs/tab_menu_model.cc",
       "tabs/tab_menu_model.h",
       "tabs/tab_network_state.cc",

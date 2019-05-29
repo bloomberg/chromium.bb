@@ -26,7 +26,7 @@
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_provider.h"
 
-TabGroupHeader::TabGroupHeader(TabController* controller, int group)
+TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
     : controller_(controller), group_(group) {
   DCHECK(controller);
 

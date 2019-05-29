@@ -16,6 +16,7 @@
 
 class Tab;
 class TabGroupData;
+class TabGroupId;
 class TabStrip;
 
 namespace gfx {
@@ -111,10 +112,10 @@ class TabStripController {
   virtual void OnStoppedDraggingTabs() = 0;
 
   // Returns the TabGroupData instance for the given |group|.
-  virtual const TabGroupData* GetDataForGroup(int group) const = 0;
+  virtual const TabGroupData* GetDataForGroup(TabGroupId group) const = 0;
 
   // Returns the list of tabs in the given |group|.
-  virtual std::vector<int> ListTabsInGroup(int group) const = 0;
+  virtual std::vector<int> ListTabsInGroup(TabGroupId group) const = 0;
 
   // Determines whether the top frame is condensed vertically, as when the
   // window is maximized. If true, the top frame is just the height of a tab,

@@ -42,6 +42,7 @@ class NewTabButton;
 class StackedTabStripLayout;
 class Tab;
 class TabGroupHeader;
+class TabGroupId;
 class TabHoverCardBubbleView;
 class TabStripAnimator;
 class TabStripController;
@@ -160,8 +161,8 @@ class TabStrip : public views::AccessiblePaneView,
   // Changes the group of the tab at |model_index| from |old_group| to
   // |new_group|.
   void ChangeTabGroup(int model_index,
-                      base::Optional<int> old_group,
-                      base::Optional<int> new_group);
+                      base::Optional<TabGroupId> old_group,
+                      base::Optional<TabGroupId> new_group);
 
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab
@@ -270,7 +271,7 @@ class TabStrip : public views::AccessiblePaneView,
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;
-  const TabGroupData* GetDataForGroup(int group) const override;
+  const TabGroupData* GetDataForGroup(TabGroupId group) const override;
 
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;
@@ -560,7 +561,7 @@ class TabStrip : public views::AccessiblePaneView,
   TabsClosingMap tabs_closing_map_;
 
   // Map associating each group to its TabGroupHeader instance.
-  std::map<int, std::unique_ptr<TabGroupHeader>> group_headers_;
+  std::map<TabGroupId, std::unique_ptr<TabGroupHeader>> group_headers_;
 
   // The view tracker is used to keep track of if the hover card has been
   // destroyed by its widget.

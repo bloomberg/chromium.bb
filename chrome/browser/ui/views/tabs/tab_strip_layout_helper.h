@@ -15,6 +15,7 @@
 
 class Tab;
 class TabGroupHeader;
+class TabGroupId;
 class TabStripController;
 
 // Helper class for TabStrip, that is responsible for calculating the tabs'
@@ -39,7 +40,7 @@ class TabStripLayoutHelper {
   // TODO(958173): The notion of ideal bounds is going away. Delete this.
   void UpdateIdealBounds(TabStripController* controller,
                          views::ViewModelT<Tab>* tabs,
-                         std::map<int, TabGroupHeader*> group_headers,
+                         std::map<TabGroupId, TabGroupHeader*> group_headers,
                          int available_width);
 
   // Generates and sets the ideal bounds for |tabs|. Updates

@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_group_data.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_switch_event_latency_recorder.h"
@@ -32,6 +33,7 @@
 #endif
 
 class Profile;
+class TabGroupData;
 class TabStripModelDelegate;
 
 namespace content {
@@ -180,7 +182,7 @@ class TabStripModel {
   int InsertWebContentsAt(int index,
                           std::unique_ptr<content::WebContents> contents,
                           int add_types,
-                          base::Optional<int> group = base::nullopt);
+                          base::Optional<TabGroupId> group = base::nullopt);
   // Closes the WebContents at the specified index. This causes the
   // WebContents to be destroyed, but it may not happen immediately.
   // |close_types| is a bitmask of CloseTypes. Returns true if the
@@ -314,19 +316,19 @@ class TabStripModel {
   // Returns the group that contains the tab at |index|, or nullopt if it is not
   // grouped. This feature is in development and gated behind a feature flag
   // (see https://crbug.com/915956).
-  base::Optional<int> GetTabGroupForTab(int index) const;
+  base::Optional<TabGroupId> GetTabGroupForTab(int index) const;
 
   // Returns the TabGroupData instance for the given |group|.
-  const TabGroupData* GetDataForGroup(int group) const;
+  const TabGroupData* GetDataForGroup(TabGroupId group) const;
 
   // Returns a list of tab groups that contain at least one tab in this strip.
-  std::vector<int> ListTabGroups() const;
+  std::vector<TabGroupId> ListTabGroups() const;
 
   // Returns the list of tabs in the given |group|.
-  std::vector<int> ListTabsInGroup(int group) const;
+  std::vector<int> ListTabsInGroup(TabGroupId group) const;
 
   // Returns true if the tabs in the given |group| are pinned.
-  bool IsGroupPinned(int group) const;
+  bool IsGroupPinned(TabGroupId group) const;
 
   // Returns the index of the first tab that is not a pinned tab. This returns
   // |count()| if all of the tabs are pinned tabs, and 0 if none of the tabs are
@@ -363,7 +365,7 @@ class TabStripModel {
                       int index,
                       ui::PageTransition transition,
                       int add_types,
-                      base::Optional<int> group = base::nullopt);
+                      base::Optional<TabGroupId> group = base::nullopt);
 
   // Closes the selected tabs.
   void CloseSelectedTabs();
@@ -394,7 +396,7 @@ class TabStripModel {
   // moved to immediately follow the tabs already in the group. |indices| must
   // be sorted in ascending order. This feature is in development and gated
   // behind a feature flag (see https://crbug.com/915956).
-  void AddToExistingGroup(const std::vector<int>& indices, int group);
+  void AddToExistingGroup(const std::vector<int>& indices, TabGroupId group);
 
   // Removes the set of tabs pointed to by |indices| from the the groups they
   // are in, if any. The tabs are moved out of the group if necessary. |indices|
@@ -439,7 +441,7 @@ class TabStripModel {
 
   // Adds the tab at |context_index| to the given tab group |group|. If
   // |context_index| is selected the command applies to all selected tabs.
-  void ExecuteAddToExistingGroupCommand(int context_index, int group);
+  void ExecuteAddToExistingGroupCommand(int context_index, TabGroupId group);
 
   // Returns true if 'CommandToggleSiteMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.
@@ -542,7 +544,7 @@ class TabStripModel {
   int InsertWebContentsAtImpl(int index,
                               std::unique_ptr<content::WebContents> contents,
                               int add_types,
-                              base::Optional<int> group);
+                              base::Optional<TabGroupId> group);
 
   // Closes the WebContentses at the specified indices. This causes the
   // WebContentses to be destroyed, but it may not happen immediately. If
@@ -605,22 +607,24 @@ class TabStripModel {
   // being moved, and adds them to the tab group |group|.
   void MoveTabsIntoGroup(const std::vector<int>& indices,
                          int destination_index,
-                         int group);
+                         TabGroupId group);
 
   // Moves the tab at |index| to |new_index| and sets its group to |new_group|.
   // Notifies any observers that group affiliation has changed for the tab.
-  void MoveAndSetGroup(int index, int new_index, base::Optional<int> new_group);
+  void MoveAndSetGroup(int index,
+                       int new_index,
+                       base::Optional<TabGroupId> new_group);
 
   // Notifies observers that the tab at |index| was moved from |old_group| to
   // |new_group|.
   void NotifyGroupChange(int index,
-                         base::Optional<int> old_group,
-                         base::Optional<int> new_group);
+                         base::Optional<TabGroupId> old_group,
+                         base::Optional<TabGroupId> new_group);
 
   // Helper function for MoveAndSetGroup. Removes the tab at |index| from the
   // group that contains it, if any. Also deletes that group, if it now contains
   // no tabs. Returns that group.
-  base::Optional<int> UngroupTab(int index);
+  base::Optional<TabGroupId> UngroupTab(int index);
 
   // Changes the pinned state of the tab at |index|.
   void SetTabPinnedImpl(int index, bool pinned);
@@ -642,7 +646,7 @@ class TabStripModel {
 
   // The data for tab groups hosted within this TabStripModel, indexed by the
   // group ID.
-  std::map<int, std::unique_ptr<TabGroupData>> group_data_;
+  std::map<TabGroupId, std::unique_ptr<TabGroupData>> group_data_;
 
   TabStripModelDelegate* delegate_;
 

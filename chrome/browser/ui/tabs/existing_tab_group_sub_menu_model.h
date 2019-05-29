@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
+class TabGroupId;
 class TabStripModel;
 
 class ExistingTabGroupSubMenuModel : public ui::SimpleMenuModel,
@@ -41,7 +42,7 @@ class ExistingTabGroupSubMenuModel : public ui::SimpleMenuModel,
   // one tab that would be affected by the command is not in |group|.
   static bool ShouldShowGroup(TabStripModel* model,
                               int context_index,
-                              int group);
+                              TabGroupId group);
 
   DISALLOW_COPY_AND_ASSIGN(ExistingTabGroupSubMenuModel);
 };
