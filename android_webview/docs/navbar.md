@@ -8,6 +8,7 @@
 * [WebView Shell](/android_webview/docs/webview-shell.md)
 * [Commandline flags](/android_webview/docs/commandline-flags.md)
 * [Net debugging](/android_webview/docs/net-debugging.md)
+* [FAQ (for users)](/android_webview/docs/faq.md)
 
 [home]: /android_webview/docs/README.md
 [logo]: /android_webview/docs/images/webview_logo.png
