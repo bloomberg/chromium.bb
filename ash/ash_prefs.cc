@@ -23,7 +23,7 @@
 #include "ash/system/power/power_prefs.h"
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/touch/touch_devices_controller.h"
-#include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 
 namespace ash {
 
@@ -53,7 +53,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry, bool for_test) {
   PaletteTray::RegisterLocalStatePrefs(registry);
-  WallpaperControllerImpl::RegisterLocalStatePrefs(registry);
+  WallpaperController::RegisterLocalStatePrefs(registry);
   BluetoothPowerController::RegisterLocalStatePrefs(registry);
   DetachableBaseHandler::RegisterPrefs(registry);
   PowerPrefs::RegisterLocalStatePrefs(registry);

@@ -153,7 +153,8 @@ class ProfileManagerTest : public testing::Test {
     cl->AppendSwitch(switches::kTestType);
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
-    wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
+    wallpaper_controller_client_->InitForTesting(
+        test_wallpaper_controller_.CreateInterfacePtr());
 
     // Have to manually reset the session type in between test runs because
     // some tests log in users.
@@ -599,7 +600,8 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
 
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
-    wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
+    wallpaper_controller_client_->InitForTesting(
+        test_wallpaper_controller_.CreateInterfacePtr());
 
     // Have to manually reset the session type in between test runs because
     // RegisterUser() changes it.

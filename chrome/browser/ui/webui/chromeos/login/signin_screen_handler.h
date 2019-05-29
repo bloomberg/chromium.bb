@@ -10,7 +10,7 @@
 #include <set>
 #include <string>
 
-#include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/net_errors.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -185,7 +186,7 @@ class SigninScreenHandler
       public input_method::ImeKeyboard::Observer,
       public TabletModeClientObserver,
       public OobeUI::Observer,
-      public ash::WallpaperControllerObserver {
+      public ash::mojom::WallpaperObserver {
  public:
   SigninScreenHandler(
       JSCallsContainer* js_calls_container,
@@ -224,9 +225,11 @@ class SigninScreenHandler
                               OobeScreenId new_screen) override;
   void OnDestroyingOobeUI() override {}
 
-  // ash::WallpaperControllerObserver implementation:
-  void OnWallpaperColorsChanged() override;
-  void OnWallpaperBlurChanged() override;
+  // ash::mojom::WallpaperObserver implementation:
+  void OnWallpaperChanged(uint32_t image_id) override;
+  void OnWallpaperColorsChanged(
+      const std::vector<SkColor>& prominent_colors) override;
+  void OnWallpaperBlurChanged(bool blurred) override;
 
   void SetFocusPODCallbackForTesting(base::Closure callback);
 
@@ -502,6 +505,9 @@ class SigninScreenHandler
   std::unique_ptr<LoginFeedback> login_feedback_;
 
   std::unique_ptr<AccountId> focused_pod_account_id_;
+
+  // The binding this instance uses to implement ash::mojom::WallpaperObserver.
+  mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 

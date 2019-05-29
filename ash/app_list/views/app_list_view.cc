@@ -23,6 +23,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/wallpaper_types.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -130,20 +131,21 @@ class SearchBoxFocusHost : public views::View {
   DISALLOW_COPY_AND_ASSIGN(SearchBoxFocusHost);
 };
 
-SkColor GetBackgroundShieldColor(const std::vector<SkColor>& colors,
+SkColor GetBackgroundShieldColor(const std::vector<SkColor>& prominent_colors,
                                  float color_opacity) {
   const U8CPU sk_opacity_value = static_cast<U8CPU>(255 * color_opacity);
 
   const SkColor default_color = SkColorSetA(
       app_list::AppListView::kDefaultBackgroundColor, sk_opacity_value);
 
-  if (colors.empty())
+  if (prominent_colors.empty())
     return default_color;
 
   DCHECK_EQ(static_cast<size_t>(ColorProfileType::NUM_OF_COLOR_PROFILES),
-            colors.size());
+            prominent_colors.size());
+
   const SkColor dark_muted =
-      colors[static_cast<int>(ColorProfileType::DARK_MUTED)];
+      prominent_colors[static_cast<int>(ColorProfileType::DARK_MUTED)];
   if (SK_ColorTRANSPARENT == dark_muted)
     return default_color;
 
@@ -1989,6 +1991,11 @@ float AppListView::GetAppListBackgroundOpacityDuringDragging() {
   return coefficient * shield_opacity + (1 - coefficient) * shelf_opacity;
 }
 
+void AppListView::GetWallpaperProminentColors(
+    AppListViewDelegate::GetWallpaperProminentColorsCallback callback) {
+  delegate_->GetWallpaperProminentColors(std::move(callback));
+}
+
 void AppListView::SetBackgroundShieldColor() {
   // There is a chance when AppListView::OnWallpaperColorsChanged is called
   // from AppListViewDelegate, the |app_list_background_shield_| is not
@@ -2011,8 +2018,13 @@ void AppListView::SetBackgroundShieldColor() {
     color_opacity = kAppListOpacityWithBlur;
   }
 
-  app_list_background_shield_->UpdateColor(GetBackgroundShieldColor(
-      delegate_->GetWallpaperProminentColors(), color_opacity));
+  GetWallpaperProminentColors(base::BindOnce(
+      [](base::WeakPtr<AppListView> self, float color_opacity,
+         const std::vector<SkColor>& prominent_colors) {
+        self->app_list_background_shield_->UpdateColor(
+            GetBackgroundShieldColor(prominent_colors, color_opacity));
+      },
+      weak_ptr_factory_.GetWeakPtr(), color_opacity));
 }
 
 void AppListView::RecordFolderMetrics() {

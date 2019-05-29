@@ -5,16 +5,17 @@
 #ifndef CHROME_BROWSER_UI_ASH_TEST_WALLPAPER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_TEST_WALLPAPER_CONTROLLER_H_
 
-#include "ash/public/cpp/wallpaper_controller.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
-#include "ui/gfx/image/image_skia.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 // Simulates WallpaperController in ash.
-class TestWallpaperController : public ash::WallpaperController {
+class TestWallpaperController : ash::mojom::WallpaperController {
  public:
   TestWallpaperController();
-  ~TestWallpaperController();
+
+  ~TestWallpaperController() override;
 
   // Simulates showing the wallpaper on screen by updating |current_wallpaper|
   // and notifying the observers.
@@ -36,76 +37,98 @@ class TestWallpaperController : public ash::WallpaperController {
     return remove_always_on_top_wallpaper_count_;
   }
 
-  // ash::WallpaperController:
-  void Init(ash::WallpaperControllerClient* client,
+  // Returns a mojo interface pointer bound to this object.
+  ash::mojom::WallpaperControllerPtr CreateInterfacePtr();
+
+  // ash::mojom::WallpaperController:
+  void Init(ash::mojom::WallpaperControllerClientPtr client,
             const base::FilePath& user_data_path,
             const base::FilePath& chromeos_wallpapers_path,
             const base::FilePath& chromeos_custom_wallpapers_path,
             const base::FilePath& device_policy_wallpaper_path) override;
-  void SetCustomWallpaper(const ash::WallpaperUserInfo& user_info,
+  void SetCustomWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
                           ash::WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode) override;
   void SetOnlineWallpaperIfExists(
-      const ash::WallpaperUserInfo& user_info,
+      ash::mojom::WallpaperUserInfoPtr user_info,
       const std::string& url,
       ash::WallpaperLayout layout,
       bool preview_mode,
-      SetOnlineWallpaperIfExistsCallback callback) override;
+      ash::mojom::WallpaperController::SetOnlineWallpaperIfExistsCallback
+          callback) override;
   void SetOnlineWallpaperFromData(
-      const ash::WallpaperUserInfo& user_info,
+      ash::mojom::WallpaperUserInfoPtr user_info,
       const std::string& image_data,
       const std::string& url,
       ash::WallpaperLayout layout,
       bool preview_mode,
       SetOnlineWallpaperFromDataCallback callback) override;
-  void SetDefaultWallpaper(const ash::WallpaperUserInfo& user_info,
+  void SetDefaultWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,
       const base::FilePath& customized_default_large_path) override;
-  void SetPolicyWallpaper(const ash::WallpaperUserInfo& user_info,
+  void SetPolicyWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
   void SetDevicePolicyWallpaperPath(
       const base::FilePath& device_policy_wallpaper_path) override;
-  bool SetThirdPartyWallpaper(const ash::WallpaperUserInfo& user_info,
-                              const std::string& wallpaper_files_id,
-                              const std::string& file_name,
-                              ash::WallpaperLayout layout,
-                              const gfx::ImageSkia& image) override;
+  void SetThirdPartyWallpaper(
+      ash::mojom::WallpaperUserInfoPtr user_info,
+      const std::string& wallpaper_files_id,
+      const std::string& file_name,
+      ash::WallpaperLayout layout,
+      const gfx::ImageSkia& image,
+      ash::mojom::WallpaperController::SetThirdPartyWallpaperCallback callback)
+      override;
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
-  void UpdateCustomWallpaperLayout(const ash::WallpaperUserInfo& user_info,
+  void UpdateCustomWallpaperLayout(ash::mojom::WallpaperUserInfoPtr user_info,
                                    ash::WallpaperLayout layout) override;
-  void ShowUserWallpaper(const ash::WallpaperUserInfo& user_info) override;
+  void ShowUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info) override;
   void ShowSigninWallpaper() override;
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
   void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
   void RemoveAlwaysOnTopWallpaper() override;
-  void RemoveUserWallpaper(const ash::WallpaperUserInfo& user_info,
+  void RemoveUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id) override;
-  void RemovePolicyWallpaper(const ash::WallpaperUserInfo& user_info,
+  void RemovePolicyWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                              const std::string& wallpaper_files_id) override;
   void GetOfflineWallpaperList(
-      GetOfflineWallpaperListCallback callback) override;
+      ash::mojom::WallpaperController::GetOfflineWallpaperListCallback callback)
+      override;
   void SetAnimationDuration(base::TimeDelta animation_duration) override;
   void OpenWallpaperPickerIfAllowed() override;
   void MinimizeInactiveWindows(const std::string& user_id_hash) override;
   void RestoreMinimizedWindows(const std::string& user_id_hash) override;
-  void AddObserver(ash::WallpaperControllerObserver* observer) override;
-  void RemoveObserver(ash::WallpaperControllerObserver* observer) override;
-  gfx::ImageSkia GetWallpaperImage() override;
-  const std::vector<SkColor>& GetWallpaperColors() override;
-  bool IsWallpaperBlurred() override;
-  bool IsActiveUserWallpaperControlledByPolicy() override;
-  ash::WallpaperInfo GetActiveUserWallpaperInfo() override;
-  bool ShouldShowWallpaperSetting() override;
+  void AddObserver(
+      ash::mojom::WallpaperObserverAssociatedPtrInfo observer) override;
+  void GetWallpaperImage(
+      ash::mojom::WallpaperController::GetWallpaperImageCallback callback)
+      override;
+  void GetWallpaperColors(
+      ash::mojom::WallpaperController::GetWallpaperColorsCallback callback)
+      override;
+  void IsWallpaperBlurred(
+      ash::mojom::WallpaperController::IsWallpaperBlurredCallback callback)
+      override;
+  void IsActiveUserWallpaperControlledByPolicy(
+      ash::mojom::WallpaperController::
+          IsActiveUserWallpaperControlledByPolicyCallback callback) override;
+  void GetActiveUserWallpaperInfo(
+      ash::mojom::WallpaperController::GetActiveUserWallpaperInfoCallback
+          callback) override;
+  void ShouldShowWallpaperSetting(
+      ash::mojom::WallpaperController::ShouldShowWallpaperSettingCallback
+          callback) override;
 
  private:
+  mojo::Binding<ash::mojom::WallpaperController> binding_;
+
   bool was_client_set_ = false;
   int remove_user_wallpaper_count_ = 0;
   int set_default_wallpaper_count_ = 0;
@@ -113,7 +136,8 @@ class TestWallpaperController : public ash::WallpaperController {
   int show_always_on_top_wallpaper_count_ = 0;
   int remove_always_on_top_wallpaper_count_ = 0;
 
-  base::ObserverList<ash::WallpaperControllerObserver>::Unchecked observers_;
+  mojo::AssociatedInterfacePtrSet<ash::mojom::WallpaperObserver>
+      test_observers_;
 
   gfx::ImageSkia current_wallpaper;
 

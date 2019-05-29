@@ -8,7 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_utils.h"
@@ -210,7 +210,7 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
                                      int blur,
                                      float opacity,
                                      WallpaperView** out_wallpaper_view) {
-  auto* controller = Shell::Get()->wallpaper_controller();
+  WallpaperController* controller = Shell::Get()->wallpaper_controller();
 
   views::Widget* wallpaper_widget = new views::Widget;
   views::Widget::InitParams params(

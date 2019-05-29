@@ -16,13 +16,12 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "components/user_manager/user_names.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/image/image_skia.h"
 #endif  // OS_CHROMEOS
 
 static const char kTraceDir[] = "trace-dir";
@@ -31,22 +30,30 @@ namespace {
 
 #if defined(OS_CHROMEOS)
 // Watches if the wallpaper has been changed and runs a passed callback if so.
-class TestWallpaperObserver : public ash::WallpaperControllerObserver {
+class TestWallpaperObserver : public ash::mojom::WallpaperObserver {
  public:
   explicit TestWallpaperObserver(base::OnceClosure closure)
-      : closure_(std::move(closure)) {
-    WallpaperControllerClient::Get()->AddObserver(this);
+      : closure_(std::move(closure)), observer_binding_(this) {
+    ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
+    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
+    WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
   }
 
-  ~TestWallpaperObserver() override {
-    WallpaperControllerClient::Get()->RemoveObserver(this);
-  }
+  ~TestWallpaperObserver() override = default;
 
-  // ash::WallpaperControllerObserver:
-  void OnWallpaperChanged() override { std::move(closure_).Run(); }
+  // ash::mojom::WallpaperObserver:
+  void OnWallpaperChanged(uint32_t image_id) override {
+    std::move(closure_).Run();
+  }
+  void OnWallpaperColorsChanged(
+      const std::vector<uint32_t>& prominent_colors) override {}
+  void OnWallpaperBlurChanged(bool blurred) override {}
 
  private:
   base::OnceClosure closure_;
+
+  // The binding this instance uses to implement ash::mojom::WallpaperObserver.
+  mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperObserver);
 };

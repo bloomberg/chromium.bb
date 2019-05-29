@@ -11,7 +11,7 @@
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/touch/touch_devices_controller.h"
-#include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -126,7 +126,8 @@ gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
 
 void HandleToggleWallpaperMode() {
   static int index = 0;
-  auto* wallpaper_controller = Shell::Get()->wallpaper_controller();
+  WallpaperController* wallpaper_controller =
+      Shell::Get()->wallpaper_controller();
   WallpaperInfo info("", WALLPAPER_LAYOUT_STRETCH, DEFAULT,
                      base::Time::Now().LocalMidnight());
   switch (++index % 4) {

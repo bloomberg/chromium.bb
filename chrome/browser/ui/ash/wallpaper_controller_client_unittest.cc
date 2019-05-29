@@ -30,7 +30,8 @@ class WallpaperControllerClientTest : public testing::Test {
 TEST_F(WallpaperControllerClientTest, Construction) {
   WallpaperControllerClient client;
   TestWallpaperController controller;
-  client.InitForTesting(&controller);
+  client.InitForTesting(controller.CreateInterfacePtr());
+  client.FlushForTesting();
 
   // Singleton was initialized.
   EXPECT_EQ(&client, WallpaperControllerClient::Get());

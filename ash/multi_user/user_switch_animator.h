@@ -10,7 +10,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/wallpaper_user_info.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -39,7 +39,7 @@ class ASH_EXPORT UserSwitchAnimator {
   // Creates a UserSwitchAnimator to animate between the current user and
   // |user_info|.
   UserSwitchAnimator(MultiUserWindowManagerImpl* owner,
-                     const WallpaperUserInfo& user_info,
+                     mojom::WallpaperUserInfoPtr user_info,
                      base::TimeDelta animation_speed);
   ~UserSwitchAnimator();
 
@@ -103,7 +103,7 @@ class ASH_EXPORT UserSwitchAnimator {
 
   // Contains the wallpaper configuration for the user switching to. This is
   // passed to the WallpaperController at the right time.
-  WallpaperUserInfo wallpaper_user_info_;
+  mojom::WallpaperUserInfoPtr wallpaper_user_info_;
 
   // The new user to set.
   AccountId new_account_id_;

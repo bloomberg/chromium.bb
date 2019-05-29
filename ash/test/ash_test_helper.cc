@@ -26,7 +26,7 @@
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test_shell_delegate.h"
-#include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
 #include "base/run_loop.h"

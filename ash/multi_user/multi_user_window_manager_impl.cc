@@ -12,7 +12,6 @@
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/wallpaper_user_info.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -59,18 +58,20 @@ bool HasSystemModalTransientChildWindow(aura::Window* window) {
   return false;
 }
 
-WallpaperUserInfo WallpaperUserInfoForAccount(const AccountId& account_id) {
+mojom::WallpaperUserInfoPtr WallpaperUserInfoForAccount(
+    const AccountId& account_id) {
   DCHECK(account_id.is_valid());
-  WallpaperUserInfo wallpaper_user_info;
+  mojom::WallpaperUserInfoPtr wallpaper_user_info =
+      mojom::WallpaperUserInfo::New();
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
   for (const std::unique_ptr<UserSession>& user_session :
        session_controller->GetUserSessions()) {
     if (user_session->user_info.account_id == account_id) {
-      wallpaper_user_info.account_id = account_id;
-      wallpaper_user_info.type = user_session->user_info.type;
-      wallpaper_user_info.is_ephemeral = user_session->user_info.is_ephemeral;
-      wallpaper_user_info.has_gaia_account =
+      wallpaper_user_info->account_id = account_id;
+      wallpaper_user_info->type = user_session->user_info.type;
+      wallpaper_user_info->is_ephemeral = user_session->user_info.is_ephemeral;
+      wallpaper_user_info->has_gaia_account =
           user_session->user_info.has_gaia_account;
       return wallpaper_user_info;
     }

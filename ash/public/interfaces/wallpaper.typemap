@@ -1,0 +1,20 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mojom = "//ash/public/interfaces/wallpaper.mojom"
+public_headers = [
+  "//ash/public/cpp/wallpaper_types.h",
+  "//components/user_manager/user_type.h",
+]
+traits_headers = [
+  "//ash/public/cpp/wallpaper_struct_traits.h",
+  "//ash/public/interfaces/user_info_traits.h",
+]
+public_deps = [
+  "//components/user_manager",
+]
+type_mappings = [
+  "ash.mojom.WallpaperLayout=ash::WallpaperLayout",
+  "ash.mojom.UserType=user_manager::UserType",
+]

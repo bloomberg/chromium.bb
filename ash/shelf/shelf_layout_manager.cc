@@ -30,7 +30,7 @@
 #include "ash/shell.h"
 #include "ash/system/locale/locale_update_controller.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"

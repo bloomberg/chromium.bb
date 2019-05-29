@@ -411,7 +411,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Gets app list background opacity during dragging.
   float GetAppListBackgroundOpacityDuringDragging();
 
-  const std::vector<SkColor>& GetWallpaperProminentColors();
+  void GetWallpaperProminentColors(
+      AppListViewDelegate::GetWallpaperProminentColorsCallback callback);
   void SetBackgroundShieldColor();
 
   // Records the number of folders, and the number of items in folders for UMA

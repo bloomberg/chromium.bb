@@ -58,6 +58,8 @@ namespace set_custom_wallpaper_layout =
     wallpaper_private::SetCustomWallpaperLayout;
 namespace get_thumbnail = wallpaper_private::GetThumbnail;
 namespace save_thumbnail = wallpaper_private::SaveThumbnail;
+namespace get_offline_wallpaper_list =
+    wallpaper_private::GetOfflineWallpaperList;
 namespace record_wallpaper_uma = wallpaper_private::RecordWallpaperUMA;
 namespace get_collections_info = wallpaper_private::GetCollectionsInfo;
 namespace get_images_info = wallpaper_private::GetImagesInfo;
@@ -241,12 +243,20 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
                   wallpaper_api_util::kCancelWallpaperMessage);
   dict->SetString("highResolutionSuffix", GetBackdropWallpaperSuffix());
 
-  auto info = WallpaperControllerClient::Get()->GetActiveUserWallpaperInfo();
-  dict->SetString("currentWallpaper", info.location);
-  dict->SetString("currentWallpaperLayout",
-                  wallpaper_api_util::GetLayoutString(info.layout));
+  WallpaperControllerClient::Get()->GetActiveUserWallpaperInfo(base::BindOnce(
+      &WallpaperPrivateGetStringsFunction::OnWallpaperInfoReturned, this,
+      std::move(dict)));
+  return RespondLater();
+}
 
-  return RespondNow(OneArgument(std::move(dict)));
+void WallpaperPrivateGetStringsFunction::OnWallpaperInfoReturned(
+    std::unique_ptr<base::DictionaryValue> dict,
+    const std::string& location,
+    ash::WallpaperLayout layout) {
+  dict->SetString("currentWallpaper", location);
+  dict->SetString("currentWallpaperLayout",
+                  wallpaper_api_util::GetLayoutString(layout));
+  Respond(OneArgument(std::move(dict)));
 }
 
 ExtensionFunction::ResponseAction
@@ -806,12 +816,20 @@ WallpaperPrivateGetCurrentWallpaperThumbnailFunction::Run() {
       get_current_wallpaper_thumbnail::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  auto image = WallpaperControllerClient::Get()->GetWallpaperImage();
-  gfx::Size thumbnail_size(params->thumbnail_width, params->thumbnail_height);
+  WallpaperControllerClient::Get()->GetWallpaperImage(base::BindOnce(
+      &WallpaperPrivateGetCurrentWallpaperThumbnailFunction::
+          OnWallpaperImageReturned,
+      this, gfx::Size(params->thumbnail_width, params->thumbnail_height)));
+  return RespondLater();
+}
+
+void WallpaperPrivateGetCurrentWallpaperThumbnailFunction::
+    OnWallpaperImageReturned(const gfx::Size& thumbnail_size,
+                             const gfx::ImageSkia& image) {
   image.EnsureRepsForSupportedScales();
   scoped_refptr<base::RefCountedBytes> thumbnail_data;
   GenerateThumbnail(image, thumbnail_size, &thumbnail_data);
-  return RespondNow(OneArgument(std::make_unique<Value>(
+  Respond(OneArgument(std::make_unique<Value>(
       Value::BlobStorage(thumbnail_data->front(),
                          thumbnail_data->front() + thumbnail_data->size()))));
 }

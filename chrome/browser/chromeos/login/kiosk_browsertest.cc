@@ -8,8 +8,8 @@
 #include "apps/test/app_window_waiter.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
-#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/public/interfaces/login_screen_test_api.test-mojom-test-utils.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
@@ -92,6 +92,7 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "media/audio/test_audio_thread.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/audio/public/cpp/fake_system_info.h"
 #include "services/audio/public/cpp/sounds/audio_stream_handler.h"
@@ -2476,19 +2477,20 @@ IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
 // Specialized test fixture for testing kiosk mode on the
 // hidden WebUI initialization flow for slow hardware.
 class KioskHiddenWebUITest : public KioskTest,
-                             public ash::WallpaperControllerObserver {
+                             public ash::mojom::WallpaperObserver {
  public:
-  KioskHiddenWebUITest() = default;
+  KioskHiddenWebUITest() : wallpaper_loaded_(false), observer_binding_(this) {}
 
-  // KioskTest:
   void SetUpOnMainThread() override {
     LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
 
     KioskTest::SetUpOnMainThread();
-    WallpaperControllerClient::Get()->AddObserver(this);
+    ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
+    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
+    WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
   }
+
   void TearDownOnMainThread() override {
-    WallpaperControllerClient::Get()->RemoveObserver(this);
     KioskTest::TearDownOnMainThread();
   }
 
@@ -2501,16 +2503,24 @@ class KioskHiddenWebUITest : public KioskTest,
 
   bool wallpaper_loaded() const { return wallpaper_loaded_; }
 
-  // ash::WallpaperControllerObserver:
-  void OnWallpaperChanged() override {
+  // ash::mojom::WallpaperObserver:
+  void OnWallpaperChanged(uint32_t image_id) override {
     wallpaper_loaded_ = true;
     if (runner_.get())
       runner_->Quit();
   }
 
- private:
-  bool wallpaper_loaded_ = false;
+  void OnWallpaperColorsChanged(
+      const std::vector<SkColor>& prominent_colors) override {}
+
+  void OnWallpaperBlurChanged(bool blurred) override {}
+
+  bool wallpaper_loaded_;
   scoped_refptr<content::MessageLoopRunner> runner_;
+
+ private:
+  // The binding this instance uses to implement ash::mojom::WallpaperObserver.
+  mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskHiddenWebUITest);
 };

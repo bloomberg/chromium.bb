@@ -11,14 +11,14 @@
 
 namespace ash {
 
-class WallpaperControllerImpl;
+class WallpaperController;
 
 class ASH_EXPORT WallpaperControllerTestApi {
  public:
-  explicit WallpaperControllerTestApi(WallpaperControllerImpl* controller);
+  explicit WallpaperControllerTestApi(WallpaperController* controller);
   virtual ~WallpaperControllerTestApi();
 
-  // Creates and sets a new wallpaper that causes the prominent color of the
+  // Creates and sets a new wallpaper that cause the prominent color of the
   // |controller_| to be a valid (i.e. not kInvalidWallpaperColor) color. The
   // WallpaperControllerObservers should be notified as well. This assumes the
   // default DARK-MUTED luma-saturation ranges are in effect.
@@ -35,7 +35,7 @@ class ASH_EXPORT WallpaperControllerTestApi {
   void EndWallpaperPreview(bool confirm_preview_wallpaper);
 
  private:
-  WallpaperControllerImpl* controller_;
+  WallpaperController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperControllerTestApi);
 };

@@ -35,7 +35,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
-#include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -1019,9 +1019,9 @@ void AppListControllerImpl::ViewClosed() {
     client_->StartSearch(base::string16());
 }
 
-const std::vector<SkColor>&
-AppListControllerImpl::GetWallpaperProminentColors() {
-  return Shell::Get()->wallpaper_controller()->GetWallpaperColors();
+void AppListControllerImpl::GetWallpaperProminentColors(
+    GetWallpaperProminentColorsCallback callback) {
+  Shell::Get()->wallpaper_controller()->GetWallpaperColors(std::move(callback));
 }
 
 void AppListControllerImpl::ActivateItem(const std::string& id,

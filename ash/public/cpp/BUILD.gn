@@ -149,14 +149,7 @@ component("cpp") {
     "tablet_mode.h",
     "touch_uma.cc",
     "touch_uma.h",
-    "wallpaper_controller.cc",
-    "wallpaper_controller.h",
-    "wallpaper_controller_client.h",
-    "wallpaper_controller_observer.cc",
-    "wallpaper_controller_observer.h",
-    "wallpaper_info.h",
     "wallpaper_types.h",
-    "wallpaper_user_info.h",
     "window_animation_types.h",
     "window_properties.cc",
     "window_properties.h",
@@ -192,7 +185,6 @@ component("cpp") {
     "//ash/public/interfaces:interfaces_internal",
     "//base",
     "//components/session_manager:base",
-    "//components/user_manager",
     "//ui/gfx",
   ]
 

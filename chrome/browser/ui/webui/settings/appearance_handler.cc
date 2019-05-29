@@ -71,16 +71,17 @@ void AppearanceHandler::HandleUseSystemTheme(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
 void AppearanceHandler::IsWallpaperSettingVisible(const base::ListValue* args) {
   CHECK_EQ(args->GetSize(), 1U);
-  bool result = WallpaperControllerClient::Get()->ShouldShowWallpaperSetting();
-  ResolveCallback(args->GetList()[0], result);
+  WallpaperControllerClient::Get()->ShouldShowWallpaperSetting(
+      base::Bind(&AppearanceHandler::ResolveCallback,
+                 weak_ptr_factory_.GetWeakPtr(), args->GetList()[0].Clone()));
 }
 
 void AppearanceHandler::IsWallpaperPolicyControlled(
     const base::ListValue* args) {
   CHECK_EQ(args->GetSize(), 1U);
-  bool result = WallpaperControllerClient::Get()
-                    ->IsActiveUserWallpaperControlledByPolicy();
-  ResolveCallback(args->GetList()[0], result);
+  WallpaperControllerClient::Get()->IsActiveUserWallpaperControlledByPolicy(
+      base::Bind(&AppearanceHandler::ResolveCallback,
+                 weak_ptr_factory_.GetWeakPtr(), args->GetList()[0].Clone()));
 }
 
 void AppearanceHandler::HandleOpenWallpaperManager(
