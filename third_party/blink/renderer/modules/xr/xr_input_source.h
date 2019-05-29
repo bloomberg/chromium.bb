@@ -49,6 +49,15 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   XRInputSource(const XRInputSource& other);
   ~XRInputSource() override = default;
 
+  int16_t activeFrameId() const { return active_frame_id_; }
+  void setActiveFrameId(int16_t id) { active_frame_id_ = id; }
+
+  bool primaryInputPressed() const { return primary_input_pressed_; }
+  void setPrimaryInputPressed(bool value) { primary_input_pressed_ = value; }
+
+  bool selectionCancelled() const { return selection_cancelled_; }
+  void setSelectionCancelled(bool value) { selection_cancelled_ = value; }
+
   XRSession* session() const { return session_; }
 
   const String& handedness() const { return handedness_string_; }
@@ -74,10 +83,6 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
 
   void Trace(blink::Visitor*) override;
 
-  int16_t active_frame_id = -1;
-  bool primary_input_pressed = false;
-  bool selection_cancelled = false;
-
  private:
   friend class XRGripSpace;
   friend class XRTargetRaySpace;
@@ -94,6 +99,9 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
       const device::mojom::blink::XRInputSourceStatePtr& state);
   void UpdateGamepad(const device::Gamepad& gamepad);
 
+  int16_t active_frame_id_ = -1;
+  bool primary_input_pressed_ = false;
+  bool selection_cancelled_ = false;
   const Member<XRSession> session_;
   const uint32_t source_id_;
   Member<XRTargetRaySpace> target_ray_space_;

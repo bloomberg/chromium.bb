@@ -134,9 +134,9 @@ XRInputSource::XRInputSource(
 
 // Deep copy because of the unique_ptrs
 XRInputSource::XRInputSource(const XRInputSource& other)
-    : active_frame_id(other.active_frame_id),
-      primary_input_pressed(other.primary_input_pressed),
-      selection_cancelled(other.selection_cancelled),
+    : active_frame_id_(other.active_frame_id_),
+      primary_input_pressed_(other.primary_input_pressed_),
+      selection_cancelled_(other.selection_cancelled_),
       session_(other.session_),
       source_id_(other.source_id_),
       target_ray_space_(other.target_ray_space_),

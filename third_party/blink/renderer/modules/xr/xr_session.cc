@@ -783,7 +783,7 @@ void XRSession::OnInputStateChange(
       }
     }
 
-    input_source->active_frame_id = frame_id;
+    input_source->setActiveFrameId(frame_id);
   }
 
   // Remove any input sources that are inactive, and disconnect their gamepad.
@@ -794,7 +794,7 @@ void XRSession::OnInputStateChange(
   // also be in removed, and we'd remove our newly added source.
   std::vector<uint32_t> inactive_sources;
   for (const auto& input_source : input_sources_.Values()) {
-    if (input_source->active_frame_id != frame_id) {
+    if (input_source->activeFrameId() != frame_id) {
       inactive_sources.push_back(input_source->source_id());
       input_source->SetGamepadConnected(false);
       removed.push_back(input_source);
@@ -822,18 +822,18 @@ void XRSession::OnInputStateChange(
 
 void XRSession::OnSelectStart(XRInputSource* input_source) {
   // Discard duplicate events
-  if (input_source->primary_input_pressed)
+  if (input_source->primaryInputPressed())
     return;
 
-  input_source->primary_input_pressed = true;
-  input_source->selection_cancelled = false;
+  input_source->setPrimaryInputPressed(true);
+  input_source->setSelectionCancelled(false);
 
   XRInputSourceEvent* event =
       CreateInputSourceEvent(event_type_names::kSelectstart, input_source);
   DispatchEvent(*event);
 
   if (event->defaultPrevented())
-    input_source->selection_cancelled = true;
+    input_source->setSelectionCancelled(true);
 
   // Ensure the frame cannot be used outside of the event handler.
   event->frame()->Deactivate();
@@ -841,10 +841,10 @@ void XRSession::OnSelectStart(XRInputSource* input_source) {
 
 void XRSession::OnSelectEnd(XRInputSource* input_source) {
   // Discard duplicate events
-  if (!input_source->primary_input_pressed)
+  if (!input_source->primaryInputPressed())
     return;
 
-  input_source->primary_input_pressed = false;
+  input_source->setPrimaryInputPressed(false);
 
   LocalFrame* frame = xr_->GetFrame();
   if (!frame)
@@ -858,7 +858,7 @@ void XRSession::OnSelectEnd(XRInputSource* input_source) {
   DispatchEvent(*event);
 
   if (event->defaultPrevented())
-    input_source->selection_cancelled = true;
+    input_source->setSelectionCancelled(true);
 
   // Ensure the frame cannot be used outside of the event handler.
   event->frame()->Deactivate();
@@ -868,11 +868,11 @@ void XRSession::OnSelect(XRInputSource* input_source) {
   // If a select was fired but we had not previously started the selection it
   // indictes a sub-frame or instantanous select event, and we should fire a
   // selectstart prior to the selectend.
-  if (!input_source->primary_input_pressed) {
+  if (!input_source->primaryInputPressed()) {
     OnSelectStart(input_source);
   }
 
-  if (!input_source->selection_cancelled) {
+  if (!input_source->selectionCancelled()) {
     XRInputSourceEvent* event =
         CreateInputSourceEvent(event_type_names::kSelect, input_source);
     DispatchEvent(*event);
@@ -902,7 +902,7 @@ void XRSession::UpdateSelectState(
 
   if (state->primary_input_pressed) {
     OnSelectStart(input_source);
-  } else if (input_source->primary_input_pressed) {
+  } else if (input_source->primaryInputPressed()) {
     // May get here if the input source was previously pressed but now isn't,
     // but the input source did not set primary_input_clicked to true. We will
     // treat this as a cancelled selection, firing the selectend event so the
