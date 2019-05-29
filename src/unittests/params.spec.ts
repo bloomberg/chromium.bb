@@ -17,13 +17,13 @@ import {
 export const group = new TestGroup();
 
 class ParamsTest extends DefaultFixture {
-  public test(act: ParamSpecIterable, exp: IParamsSpec[]) {
+  public expectSpecEqual(act: ParamSpecIterable, exp: IParamsSpec[]) {
     this.expect(objectEquals(Array.from(act), exp));
   }
 }
 
 group.test('options', ParamsTest, (t) => {
-  t.test(
+  t.expectSpecEqual(
     poptions('hello', [1, 2, 3]),
     [{ hello: 1 }, { hello: 2 }, { hello: 3 }]);
 });
@@ -31,20 +31,20 @@ group.test('options', ParamsTest, (t) => {
 // TODO: somehow "subgroup" the combine tests
 
 group.test('combine, none', ParamsTest, (t) => {
-  t.test(
+  t.expectSpecEqual(
     pcombine([]),
     []);
 });
 
 group.test('combine, zeroes and ones', ParamsTest, (t) => {
-  t.test(pcombine([[], []]), []);
-  t.test(pcombine([[], [{}]]), []);
-  t.test(pcombine([[{}], []]), []);
-  t.test(pcombine([[{}], [{}]]), [{}]);
+  t.expectSpecEqual(pcombine([[], []]), []);
+  t.expectSpecEqual(pcombine([[], [{}]]), []);
+  t.expectSpecEqual(pcombine([[{}], []]), []);
+  t.expectSpecEqual(pcombine([[{}], [{}]]), [{}]);
 });
 
 group.test('combine, mixed', ParamsTest, (t) => {
-  t.test(
+  t.expectSpecEqual(
     pcombine([ poptions('x', [1, 2]), poptions('y', ['a', 'b']), [{p: 4}, {q: 5}], [{}] ]),
     [
       { p: 4, x: 1, y: 'a' }, { q: 5, x: 1, y: 'a' },
@@ -55,7 +55,7 @@ group.test('combine, mixed', ParamsTest, (t) => {
 });
 
 group.test('filter', ParamsTest, (t) => {
-  t.test(
+  t.expectSpecEqual(
     pfilter(
       [{ a: true, x: 1 }, { a: false, y: 2 }],
       (p) => p.a),
@@ -63,7 +63,7 @@ group.test('filter', ParamsTest, (t) => {
 });
 
 group.test('exclude', ParamsTest, (t) => {
-  t.test(
+  t.expectSpecEqual(
     pexclude(
       [{ a: true, x: 1 }, { a: false, y: 2 }],
       [{ a: true }, { a: false, y: 2 }]),
