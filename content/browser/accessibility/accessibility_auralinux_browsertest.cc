@@ -244,36 +244,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(atk_text);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
-                       TestAtkTextGetTextCrash) {
-  LoadInitialAccessibilityTreeFromHtml(
-      R"HTML(<!DOCTYPE html>
-      <html>
-      <body>
-        <ul><li>Text</li></ul>
-      </body>
-      </html>)HTML");
-
-  // Retrieve the AtkObject interface for the document node.
-  AtkObject* document = GetRendererAccessible();
-  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
-  AtkObject* list = atk_object_ref_accessible_child(document, 0);
-
-  EXPECT_TRUE(ATK_IS_TEXT(list));
-
-  // There should be no crash when atk_text_get_text_at_offset returns an
-  // empty value.
-  int start_offset = -1, end_offset = -1;
-  gchar* text = atk_text_get_text_at_offset(ATK_TEXT(list), 0,
-                                            ATK_TEXT_BOUNDARY_WORD_START,
-                                            &start_offset, &end_offset);
-  ASSERT_EQ(text, nullptr);
-  ASSERT_EQ(start_offset, -1);
-  ASSERT_EQ(end_offset, -1);
-
-  g_object_unref(list);
-}
-
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)
 #define ATK_230
 #endif
@@ -754,24 +724,40 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {
       R"HTML(<!DOCTYPE html>
       <html>
       <body>
-        <li>Text</li>
+        <li>Text 1</li>
+        <li>Text 2</li>
+        <li>Text 3</li>
       </body>
       </html>)HTML");
 
   // Retrieve the AtkObject interface for the document node.
   AtkObject* document = GetRendererAccessible();
-  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
-  AtkObject* list_item = atk_object_ref_accessible_child(document, 0);
+  EXPECT_EQ(3, atk_object_get_n_accessible_children(document));
+  AtkObject* list_item_1 = atk_object_ref_accessible_child(document, 0);
+  AtkObject* list_item_2 = atk_object_ref_accessible_child(document, 1);
 
-  EXPECT_TRUE(ATK_IS_TEXT(list_item));
+  EXPECT_TRUE(ATK_IS_TEXT(list_item_1));
 
-  // The text of the list item should include the list marker and the text of
-  // the item itself.
-  gchar* text = atk_text_get_text(ATK_TEXT(list_item), 0, -1);
-  ASSERT_STREQ(text, "\xE2\x80\xA2 Text");
+  const base::string16 string16_embed(
+      1, ui::AXPlatformNodeAuraLinux::kEmbeddedCharacter);
+  std::string expected_string = base::UTF16ToUTF8(string16_embed) + "Text 1";
+
+  // The text of the list item should include the list marker as an embedded
+  // object.
+  gchar* text = atk_text_get_text(ATK_TEXT(list_item_1), 0, -1);
+  ASSERT_STREQ(text, expected_string.c_str());
+  g_free(text);
+  text = atk_text_get_text_at_offset(
+      ATK_TEXT(list_item_2), 0, ATK_TEXT_BOUNDARY_WORD_START, nullptr, nullptr);
+  ASSERT_STREQ(text, base::UTF16ToUTF8(string16_embed).c_str());
   g_free(text);
 
-  g_object_unref(list_item);
+  text = atk_text_get_text_at_offset(
+      ATK_TEXT(list_item_2), 1, ATK_TEXT_BOUNDARY_WORD_START, nullptr, nullptr);
+  ASSERT_STREQ(text, "Text ");
+  g_free(text);
+
+  g_object_unref(list_item_1);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,

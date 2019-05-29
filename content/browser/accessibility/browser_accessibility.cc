@@ -39,6 +39,27 @@ BrowserAccessibility::BrowserAccessibility()
 
 BrowserAccessibility::~BrowserAccessibility() {}
 
+namespace {
+
+int GetBoundaryTextOffsetInsideBaseAnchor(
+    ui::TextBoundaryDirection direction,
+    const BrowserAccessibilityPosition::AXPositionInstance& base,
+    const BrowserAccessibilityPosition::AXPositionInstance& position) {
+  if (base->GetAnchor() == position->GetAnchor())
+    return position->text_offset();
+
+  // If the position is outside the anchor of the base position, then return
+  // the first or last position in the same direction.
+  switch (direction) {
+    case ui::BACKWARDS_DIRECTION:
+      return base->CreatePositionAtStartOfAnchor()->text_offset();
+    case ui::FORWARDS_DIRECTION:
+      return base->CreatePositionAtEndOfAnchor()->text_offset();
+  }
+}
+
+}  // namespace
+
 void BrowserAccessibility::Init(BrowserAccessibilityManager* manager,
                                 ui::AXNode* node) {
   manager_ = manager;
@@ -1229,15 +1250,15 @@ base::Optional<int> BrowserAccessibility::FindTextBoundary(
           CreatePositionAt(static_cast<int>(offset), affinity);
       switch (direction) {
         case ui::BACKWARDS_DIRECTION:
-          return position
-              ->CreatePreviousWordStartPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary)
-              ->text_offset();
+          return GetBoundaryTextOffsetInsideBaseAnchor(
+              direction, position,
+              position->CreatePreviousWordStartPosition(
+                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
         case ui::FORWARDS_DIRECTION:
-          return position
-              ->CreateNextWordStartPosition(
-                  ui::AXBoundaryBehavior::StopAtAnchorBoundary)
-              ->text_offset();
+          return GetBoundaryTextOffsetInsideBaseAnchor(
+              direction, position,
+              position->CreateNextWordStartPosition(
+                  ui::AXBoundaryBehavior::StopAtAnchorBoundary));
       }
     }
     case ui::AXTextBoundary::kWordStartOrEnd: {
@@ -1245,15 +1266,15 @@ base::Optional<int> BrowserAccessibility::FindTextBoundary(
           CreatePositionAt(static_cast<int>(offset), affinity);
       switch (direction) {
         case ui::BACKWARDS_DIRECTION:
-          return position
-              ->CreatePreviousWordStartPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary)
-              ->text_offset();
+          return GetBoundaryTextOffsetInsideBaseAnchor(
+              direction, position,
+              position->CreatePreviousWordStartPosition(
+                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
         case ui::FORWARDS_DIRECTION:
-          return position
-              ->CreateNextWordEndPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary)
-              ->text_offset();
+          return GetBoundaryTextOffsetInsideBaseAnchor(
+              direction, position,
+              position->CreateNextWordEndPosition(
+                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
       }
     }
     case ui::AXTextBoundary::kLineStart: {
@@ -1261,15 +1282,15 @@ base::Optional<int> BrowserAccessibility::FindTextBoundary(
           CreatePositionAt(static_cast<int>(offset), affinity);
       switch (direction) {
         case ui::BACKWARDS_DIRECTION:
-          return position
-              ->CreatePreviousLineStartPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary)
-              ->text_offset();
+          return GetBoundaryTextOffsetInsideBaseAnchor(
+              direction, position,
+              position->CreatePreviousLineStartPosition(
+                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
         case ui::FORWARDS_DIRECTION:
-          return position
-              ->CreateNextLineStartPosition(
-                  ui::AXBoundaryBehavior::StopAtAnchorBoundary)
-              ->text_offset();
+          return GetBoundaryTextOffsetInsideBaseAnchor(
+              direction, position,
+              position->CreateNextLineStartPosition(
+                  ui::AXBoundaryBehavior::StopAtAnchorBoundary));
       }
     }
     default:

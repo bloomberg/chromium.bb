@@ -143,7 +143,6 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   base::Optional<base::OffsetAdjuster::Adjustments> text_unicode_adjustments_ =
       base::nullopt;
 
-  bool IsTextOnlyObject() const override;
   void AddAttributeToList(const char* name,
                           const char* value,
                           PlatformAttributeList* attributes) override;
