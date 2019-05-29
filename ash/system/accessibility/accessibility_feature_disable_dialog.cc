@@ -80,7 +80,7 @@ base::string16 AccessibilityFeatureDisableDialog::GetWindowTitle() const {
 base::string16 AccessibilityFeatureDisableDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_ASH_DISABLE_BUTTON);
+    return l10n_util::GetStringUTF16(IDS_ASH_YES_BUTTON);
   return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
