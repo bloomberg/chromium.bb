@@ -628,11 +628,6 @@ bool PaymentRequest::IsIncognito() const {
   return delegate_->IsIncognito();
 }
 
-void PaymentRequest::SetSkipUiForNonUrlPaymentMethodIdentifiersForTest() {
-  journey_logger_.set_skip_ui_for_non_url_payment_method_identifiers_for_test();
-  skip_ui_for_non_url_payment_method_identifiers_for_test_ = true;
-}
-
 void PaymentRequest::RecordFirstAbortReason(
     JourneyLogger::AbortReason abort_reason) {
   if (!has_recorded_completion_) {

@@ -841,7 +841,7 @@ void PaymentRequestBrowserTestBase::EnableSkipUIForForBasicCard() {
       GetPaymentRequests(GetActiveWebContents());
   ASSERT_EQ(1U, requests.size());
   requests.front()
-      ->SetSkipUiForNonUrlPaymentMethodIdentifiersForTest();
+      ->set_skip_ui_for_non_url_payment_method_identifiers_for_test();
 }
 
 }  // namespace payments

@@ -185,10 +185,6 @@ class JourneyLogger {
   // reason.
   void SetNotShown(NotShownReason reason);
 
-  void set_skip_ui_for_non_url_payment_method_identifiers_for_test() {
-    skip_ui_for_non_url_payment_method_identifiers_for_test_ = true;
-  }
-
  private:
   static const int NUMBER_OF_SECTIONS = 3;
 
@@ -241,7 +237,6 @@ class JourneyLogger {
   SectionStats sections_[NUMBER_OF_SECTIONS];
   bool has_recorded_ = false;
   bool is_incognito_;
-  bool skip_ui_for_non_url_payment_method_identifiers_for_test_ = false;
 
   // Accumulates the many events that have happened during the Payment Request.
   int events_;

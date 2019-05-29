@@ -319,12 +319,21 @@ void JourneyLogger::ValidateEventBits() const {
     bit_vector.clear();
   }
 
-  // Basic card flow should not skip UI show unless explicitly specified for
-  // tests.
-  if (events_ & EVENT_SELECTED_CREDIT_CARD) {
-    DCHECK((events_ & EVENT_SHOWN) ||
-           skip_ui_for_non_url_payment_method_identifiers_for_test_);
+  // Validate skipped UI show.
+  if (events_ & EVENT_SKIPPED_SHOW) {
+    // Built in autofill payment handler for basic card should not skip UI show.
+    DCHECK(!(events_ & EVENT_SELECTED_CREDIT_CARD));
+    // Payment sheet should not get skipped when any of the following info is
+    // required.
+    DCHECK(!(events_ & EVENT_REQUEST_SHIPPING));
+    DCHECK(!(events_ & EVENT_REQUEST_PAYER_NAME));
+    DCHECK(!(events_ & EVENT_REQUEST_PAYER_EMAIL));
+    DCHECK(!(events_ & EVENT_REQUEST_PAYER_PHONE));
   }
+
+  // Check that the two bits are not set at the same time.
+  DCHECK(!(events_ & EVENT_CAN_MAKE_PAYMENT_TRUE) ||
+         !(events_ & EVENT_CAN_MAKE_PAYMENT_FALSE));
 }
 
 bool JourneyLogger::WasPaymentRequestTriggered() {
