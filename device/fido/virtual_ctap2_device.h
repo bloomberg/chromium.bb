@@ -44,6 +44,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     bool internal_uv_support = false;
     bool resident_key_support = false;
     bool credential_management_support = false;
+    bool bio_enrollment_support = false;
     bool cred_protect_support = false;
     // resident_credential_storage is the number of resident credentials that
     // the device will store before returning KEY_STORE_FULL.
@@ -91,6 +92,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   CtapDeviceResponseCode OnCredentialManagement(
       base::span<const uint8_t> request,
       std::vector<uint8_t>* response);
+  CtapDeviceResponseCode OnBioEnrollment(base::span<const uint8_t> request,
+                                         std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnAuthenticatorGetInfo(
       std::vector<uint8_t>* response) const;
 

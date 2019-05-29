@@ -83,6 +83,14 @@ void FidoAuthenticator::DeleteCredential(
   NOTREACHED();
 }
 
+void FidoAuthenticator::GetModality(GetBioEnrollmentInfoCallback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::GetSensorInfo(GetBioEnrollmentInfoCallback) {
+  NOTREACHED();
+}
+
 void FidoAuthenticator::Reset(ResetCallback callback) {
   std::move(callback).Run(CtapDeviceResponseCode::kCtap1ErrInvalidCommand,
                           base::nullopt);

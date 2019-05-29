@@ -32,6 +32,12 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
     kNotSupported,
   };
 
+  enum class BioEnrollmentAvailability {
+    kSupportedAndProvisioned,
+    kSupportedButUnprovisioned,
+    kNotSupported
+  };
+
   AuthenticatorSupportedOptions();
   AuthenticatorSupportedOptions(const AuthenticatorSupportedOptions& other);
   AuthenticatorSupportedOptions& operator=(
@@ -60,6 +66,10 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   // Indicates whether the authenticator supports the vendor-specific preview of
   // the CTAP2 authenticatorCredentialManagement command.
   bool supports_credential_management_preview = false;
+  // Indicates whether the authenticator supports the vendor-specific preview of
+  // the CTAP 2.1 authenticatorBioEnrollment command
+  BioEnrollmentAvailability bio_enrollment_availability_preview =
+      BioEnrollmentAvailability::kNotSupported;
   // supports_cred_protect is true if the authenticator supports the
   // `credProtect` extension. See CTAP2 draft for details.
   bool supports_cred_protect = false;

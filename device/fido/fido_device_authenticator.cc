@@ -488,6 +488,34 @@ void FidoDeviceAuthenticator::DeleteCredential(
   operation_->Start();
 }
 
+void FidoDeviceAuthenticator::GetModality(
+    GetBioEnrollmentInfoCallback callback) {
+  DCHECK(
+      Options()->bio_enrollment_availability_preview !=
+      AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
+      device_.get(), BioEnrollmentRequest::ForGetModality(),
+      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse),
+      nullptr);
+  operation_->Start();
+}
+
+void FidoDeviceAuthenticator::GetSensorInfo(
+    GetBioEnrollmentInfoCallback callback) {
+  DCHECK(
+      Options()->bio_enrollment_availability_preview !=
+      AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported);
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<BioEnrollmentRequest, BioEnrollmentResponse>>(
+      device_.get(), BioEnrollmentRequest::ForGetSensorInfo(),
+      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse),
+      nullptr);
+  operation_->Start();
+}
+
 void FidoDeviceAuthenticator::Reset(ResetCallback callback) {
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";

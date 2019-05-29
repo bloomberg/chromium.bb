@@ -58,6 +58,20 @@ cbor::Value AsCBOR(const AuthenticatorSupportedOptions& options) {
     option_map.emplace(kCredentialManagementPreviewMapKey, true);
   }
 
+  using BioEnrollmentAvailability =
+      AuthenticatorSupportedOptions::BioEnrollmentAvailability;
+
+  switch (options.bio_enrollment_availability_preview) {
+    case BioEnrollmentAvailability::kSupportedAndProvisioned:
+      option_map.emplace(kBioEnrollmentPreviewMapKey, true);
+      break;
+    case BioEnrollmentAvailability::kSupportedButUnprovisioned:
+      option_map.emplace(kBioEnrollmentPreviewMapKey, false);
+      break;
+    case BioEnrollmentAvailability::kNotSupported:
+      break;
+  }
+
   return cbor::Value(std::move(option_map));
 }
 

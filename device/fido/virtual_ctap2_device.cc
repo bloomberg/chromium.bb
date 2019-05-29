@@ -19,6 +19,7 @@
 #include "crypto/ec_private_key.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/bio/bio_enrollment.h"
 #include "device/fido/credential_management.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -493,6 +494,19 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     options.supports_credential_management = true;
   }
 
+  if (config.bio_enrollment_support) {
+    options_updated = true;
+    if (mutable_state()->bio_enrollment_provisioned) {
+      options.bio_enrollment_availability_preview =
+          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+              kSupportedAndProvisioned;
+    } else {
+      options.bio_enrollment_availability_preview =
+          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+              kSupportedButUnprovisioned;
+    }
+  }
+
   if (options_updated) {
     device_info_->options = std::move(options);
   }
@@ -553,6 +567,9 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
       break;
     case CtapRequestCommand::kAuthenticatorCredentialManagement:
       response_code = OnCredentialManagement(request_bytes, &response_data);
+      break;
+    case CtapRequestCommand::kAuthenticatorBioEnrollmentPreview:
+      response_code = OnBioEnrollment(request_bytes, &response_data);
       break;
     default:
       break;
@@ -1287,6 +1304,69 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       return CtapDeviceResponseCode::kSuccess;
     }
   }
+  NOTREACHED();
+  return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+}
+
+CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
+    base::span<const uint8_t> request_bytes,
+    std::vector<uint8_t>* response) {
+  // Check to ensure that device supports bio enrollment.
+  if (device_info_->options.bio_enrollment_availability_preview ==
+      AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported) {
+    return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
+  }
+
+  // Read request bytes into |cbor::Value::MapValue|.
+  const auto& cbor_request = cbor::Reader::Read(request_bytes);
+  if (!cbor_request || !cbor_request->is_map()) {
+    return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+  }
+  const auto& request_map = cbor_request->GetMap();
+
+  cbor::Value::MapValue response_map;
+
+  // Check for the get-modality command.
+  auto it = request_map.find(
+      cbor::Value(static_cast<int>(BioEnrollmentRequestKey::kGetModality)));
+  if (it != request_map.end() && it->second.GetBool()) {
+    response_map.emplace(static_cast<int>(BioEnrollmentResponseKey::kModality),
+                         static_cast<int>(BioEnrollmentModality::kFingerprint));
+    *response =
+        cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+    return CtapDeviceResponseCode::kSuccess;
+  }
+
+  // Check for the get-sensor-info command.
+  it = request_map.find(
+      cbor::Value(static_cast<int>(BioEnrollmentRequestKey::kSubCommand)));
+  if (it != request_map.end() &&
+      it->second.GetUnsigned() ==
+          static_cast<int>(
+              BioEnrollmentSubCommand::kGetFingerprintSensorInfo)) {
+    response_map.emplace(static_cast<int>(BioEnrollmentResponseKey::kModality),
+                         static_cast<int>(BioEnrollmentModality::kFingerprint));
+
+    response_map.emplace(
+        static_cast<int>(BioEnrollmentResponseKey::kFingerprintKind),
+        static_cast<int>(BioEnrollmentFingerprintKind::kTouch));
+    response_map.emplace(
+        static_cast<int>(
+            BioEnrollmentResponseKey::kMaxCaptureSamplesRequiredForEnroll),
+        7);
+
+    *response =
+        cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+    return CtapDeviceResponseCode::kSuccess;
+  }
+
+  // Handle all other commands as if they were unsupported (will change when
+  // support is added).
+  if (it != request_map.end()) {
+    return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
+  }
+
+  // Could not find a valid command, so return an error.
   NOTREACHED();
   return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
 }

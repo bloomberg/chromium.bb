@@ -17,6 +17,7 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_supported_options.h"
+#include "device/fido/bio/bio_enrollment.h"
 #include "device/fido/credential_management.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -68,6 +69,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using DeleteCredentialCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<DeleteCredentialResponse>)>;
+  using GetBioEnrollmentInfoCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              base::Optional<BioEnrollmentResponse>)>;
 
   FidoAuthenticator() = default;
   virtual ~FidoAuthenticator() = default;
@@ -162,6 +166,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual void DeleteCredential(base::span<const uint8_t> pin_token,
                                 base::span<const uint8_t> credential_id,
                                 DeleteCredentialCallback callback);
+
+  // bio enrollment
+  virtual void GetModality(GetBioEnrollmentInfoCallback callback);
+  virtual void GetSensorInfo(GetBioEnrollmentInfoCallback callback);
 
   // Reset triggers a reset operation on the authenticator. This erases all
   // stored resident keys and any configured PIN.

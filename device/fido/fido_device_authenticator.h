@@ -79,6 +79,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                         base::span<const uint8_t> credential_id,
                         DeleteCredentialCallback callback) override;
 
+  void GetModality(GetBioEnrollmentInfoCallback callback) override;
+  void GetSensorInfo(GetBioEnrollmentInfoCallback callback) override;
+
   void Reset(ResetCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;

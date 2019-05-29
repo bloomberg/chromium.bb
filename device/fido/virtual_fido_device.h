@@ -119,6 +119,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // Whether a device with internal-UV support has fingerprints enrolled.
     bool fingerprints_enrolled = false;
 
+    // Whether a device with bio enrollment support has been provisioned.
+    bool bio_enrollment_provisioned = false;
+
     // pending_assertions contains the second and subsequent assertions
     // resulting from a GetAssertion call. These values are awaiting a
     // GetNextAssertion request.
