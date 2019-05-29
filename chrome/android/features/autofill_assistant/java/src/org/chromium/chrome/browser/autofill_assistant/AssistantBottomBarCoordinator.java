@@ -7,6 +7,10 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.transition.ChangeBounds;
+import android.transition.Fade;
+import android.transition.TransitionManager;
+import android.transition.TransitionSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +33,7 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -40,6 +45,10 @@ import org.chromium.ui.modelutil.ListModel;
  */
 class AssistantBottomBarCoordinator
         implements CompositorViewResizer, AssistantPeekHeightCoordinator.Delegate {
+    private static final int FADE_OUT_TRANSITION_TIME_MS = 150;
+    private static final int FADE_IN_TRANSITION_TIME_MS = 150;
+    private static final int CHANGE_BOUNDS_TRANSITION_TIME_MS = 250;
+
     private final AssistantModel mModel;
     private final BottomSheetController mBottomSheetController;
     private final AssistantBottomSheetContent mContent;
@@ -54,6 +63,14 @@ class AssistantBottomBarCoordinator
     private AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
 
+    // The transition triggered whenever the layout of the BottomSheet content changes.
+    private final TransitionSet mLayoutTransition =
+            new TransitionSet()
+                    .setOrdering(TransitionSet.ORDERING_SEQUENTIAL)
+                    .addTransition(new Fade(Fade.OUT).setDuration(FADE_OUT_TRANSITION_TIME_MS))
+                    .addTransition(new ChangeBounds().setDuration(CHANGE_BOUNDS_TRANSITION_TIME_MS))
+                    .addTransition(new Fade(Fade.IN).setDuration(FADE_IN_TRANSITION_TIME_MS));
+
     private final ObserverList<CompositorViewResizer.Observer> mSizeObservers =
             new ObserverList<>();
     private boolean mResizeViewport;
@@ -63,6 +80,14 @@ class AssistantBottomBarCoordinator
         mModel = model;
         mBottomSheetController = controller;
         mContent = new AssistantBottomSheetContent(activity);
+
+        // Set up animations. We need to setup them before initializing the child coordinators as we
+        // want our observers to be triggered before the coordinators/view binders observers.
+        // TODO(crbug.com/806868): We should only animate our BottomSheetContent instead of the root
+        // view. However, it looks like doing that is not well supported by the BottomSheet, so the
+        // BottomSheet offset is wrong during the animation.
+        ViewGroup rootView = (ViewGroup) controller.getBottomSheet().getRootView();
+        setupAnimations(model, rootView);
 
         // Instantiate child components.
         mHeaderCoordinator = new AssistantHeaderCoordinator(
@@ -80,6 +105,11 @@ class AssistantBottomBarCoordinator
         mPeekHeightCoordinator = new AssistantPeekHeightCoordinator(activity, this, bottomSheet,
                 mContent.mToolbarView, mContent.mBottomBarView, mSuggestionsCoordinator.getView(),
                 mActionsCoordinator.getView(), AssistantPeekHeightCoordinator.PeekMode.HANDLE);
+
+        // We don't want to animate the carousels children views as they are already animated by the
+        // recyclers ItemAnimator, so we exclude them to avoid a clash between the animations.
+        mLayoutTransition.excludeChildren(mSuggestionsCoordinator.getView(), /* exclude= */ true);
+        mLayoutTransition.excludeChildren(mActionsCoordinator.getView(), /* exclude= */ true);
 
         // Add child views to bottom bar container. We put all child views in the scrollable
         // container, except the actions and suggestions.
@@ -169,6 +199,41 @@ class AssistantBottomBarCoordinator
                     mContent.mScrollableContent.setClipChildren(canScroll);
                     mContent.mBottomBarView.setClipChildren(canScroll);
                 });
+    }
+
+    private void setupAnimations(AssistantModel model, ViewGroup rootView) {
+        // Animate when the chip in the header changes.
+        model.getHeaderModel().addObserver((source, propertyKey) -> {
+            if (propertyKey == AssistantHeaderModel.CHIP
+                    || propertyKey == AssistantHeaderModel.CHIP_VISIBLE) {
+                animateChildren(rootView);
+            }
+        });
+
+        // Animate when info box changes.
+        model.getInfoBoxModel().addObserver((source, propertyKey) -> animateChildren(rootView));
+
+        // Animate when details change.
+        model.getDetailsModel().addObserver((source, propertyKey) -> animateChildren(rootView));
+
+        // Animate when a PR section is expanded.
+        model.getPaymentRequestModel().addObserver((source, propertyKey) -> {
+            if (propertyKey == AssistantPaymentRequestModel.EXPANDED_SECTION) {
+                animateChildren(rootView);
+            }
+        });
+
+        // Animate when form inputs change.
+        model.getFormModel().getInputsModel().addObserver(new AbstractListObserver<Void>() {
+            @Override
+            public void onDataSetChanged() {
+                animateChildren(rootView);
+            }
+        });
+    }
+
+    private void animateChildren(ViewGroup rootView) {
+        TransitionManager.beginDelayedTransition(rootView, mLayoutTransition);
     }
 
     private void maybeShowHeaderChip() {

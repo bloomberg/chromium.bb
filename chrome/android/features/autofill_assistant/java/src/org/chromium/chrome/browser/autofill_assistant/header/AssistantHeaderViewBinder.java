@@ -6,10 +6,6 @@ package org.chromium.chrome.browser.autofill_assistant.header;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.transition.ChangeBounds;
-import android.transition.Fade;
-import android.transition.TransitionManager;
-import android.transition.TransitionSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
@@ -31,11 +27,6 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 class AssistantHeaderViewBinder
         implements PropertyModelChangeProcessor.ViewBinder<AssistantHeaderModel,
                 AssistantHeaderViewBinder.ViewHolder, PropertyKey> {
-    private final TransitionSet mTransition = new TransitionSet()
-                                                      .addTransition(new Fade(Fade.OUT))
-                                                      .addTransition(new ChangeBounds())
-                                                      .addTransition(new Fade(Fade.IN));
-
     /**
      * A wrapper class that holds the different views of the header.
      */
@@ -90,7 +81,6 @@ class AssistantHeaderViewBinder
     }
 
     private void maybeShowChip(AssistantHeaderModel model, ViewHolder view) {
-        TransitionManager.beginDelayedTransition(view.mHeader, mTransition);
         if (model.get(AssistantHeaderModel.CHIP_VISIBLE)
                 && model.get(AssistantHeaderModel.CHIP) != null) {
             view.mChip.getView().setVisibility(View.VISIBLE);
@@ -108,8 +98,6 @@ class AssistantHeaderViewBinder
         if (chip == null) {
             return;
         }
-
-        TransitionManager.beginDelayedTransition(view.mHeader, mTransition);
 
         int viewType = AssistantChipViewHolder.getViewType(chip);
 

@@ -17,7 +17,7 @@ import java.util.List;
 public class AssistantFormModel {
     private final ListModel<AssistantFormInput> mInputsModel = new ListModel<>();
 
-    ListModel<AssistantFormInput> getInputsModel() {
+    public ListModel<AssistantFormInput> getInputsModel() {
         return mInputsModel;
     }
 

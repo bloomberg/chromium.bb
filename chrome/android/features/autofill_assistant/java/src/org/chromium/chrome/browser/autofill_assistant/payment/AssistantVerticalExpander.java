@@ -5,10 +5,6 @@
 package org.chromium.chrome.browser.autofill_assistant.payment;
 
 import android.content.Context;
-import android.transition.ChangeBounds;
-import android.transition.Fade;
-import android.transition.TransitionManager;
-import android.transition.TransitionSet;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -29,14 +25,10 @@ import org.chromium.chrome.browser.widget.TintedDrawable;
  * parameters for disambiguation, otherwise the child won't be added at all!
  */
 public class AssistantVerticalExpander extends LinearLayout {
-    private static final int FADE_OUT_TRANSITION_TIME_MS = 150;
-    private static final int FADE_IN_TRANSITION_TIME_MS = 150;
-    private static final int CHANGE_BOUNDS_TRANSITION_TIME_MS = 250;
     private final ViewGroup mTitleContainer;
     private final ViewGroup mCollapsedContainer;
     private final ViewGroup mExpandedContainer;
     private final View mChevronButton;
-    private final TransitionSet mLayoutTransition;
 
     private Callback<Boolean> mOnExpansionStateChangedListener;
     private View mTitleView;
@@ -48,14 +40,6 @@ public class AssistantVerticalExpander extends LinearLayout {
     public AssistantVerticalExpander(Context context, AttributeSet attrs) {
         super(context, attrs);
         setOrientation(VERTICAL);
-
-        mLayoutTransition = new TransitionSet();
-        mLayoutTransition.setOrdering(TransitionSet.ORDERING_SEQUENTIAL);
-        mLayoutTransition.addTransition(
-                new Fade(Fade.OUT).setDuration(FADE_OUT_TRANSITION_TIME_MS));
-        mLayoutTransition.addTransition(
-                new ChangeBounds().setDuration(CHANGE_BOUNDS_TRANSITION_TIME_MS));
-        mLayoutTransition.addTransition(new Fade(Fade.IN).setDuration(FADE_IN_TRANSITION_TIME_MS));
 
         mTitleContainer = createChildContainer();
         mChevronButton = createChevron();
@@ -123,7 +107,6 @@ public class AssistantVerticalExpander extends LinearLayout {
             return;
         }
 
-        TransitionManager.beginDelayedTransition((ViewGroup) getRootView(), mLayoutTransition);
         mExpanded = expanded;
         mChevronButton.setScaleY(mExpanded ? -1 : 1);
         update();
