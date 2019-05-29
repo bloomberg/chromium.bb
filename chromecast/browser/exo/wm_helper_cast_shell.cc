@@ -19,6 +19,25 @@
 #include "ui/wm/public/activation_client.h"
 
 namespace exo {
+namespace {
+
+// Returns the native location of the display. Removes any rotations and scales.
+gfx::Rect GetNativeBounds(const display::Display& display) {
+  gfx::Point origin = gfx::ScaleToFlooredPoint(display.bounds().origin(),
+                                               display.device_scale_factor());
+  gfx::Size size_in_pixels = display.GetSizeInPixel();
+  switch (display.rotation()) {
+    case display::Display::ROTATE_0:
+    case display::Display::ROTATE_180:
+      return gfx::Rect(origin, size_in_pixels);
+    case display::Display::ROTATE_90:
+    case display::Display::ROTATE_270:
+      return gfx::Rect(
+          origin, gfx::Size(size_in_pixels.height(), size_in_pixels.width()));
+  }
+}
+
+}  // namespace
 
 WMHelperCastShell::WMHelperCastShell(
     chromecast::CastWindowManagerAura* cast_window_manager_aura,
@@ -179,7 +198,9 @@ void WMHelperCastShell::CastDisplayObserver::OnDidProcessDisplayChanges() {}
 void WMHelperCastShell::CastDisplayObserver::OnDisplayAdded(
     const display::Display& new_display) {
   display::ManagedDisplayInfo md(new_display.id(), "CastDisplayInfo", true);
-  md.SetBounds(new_display.bounds());
+  md.SetRotation(new_display.rotation(),
+                 display::Display::RotationSource::ACTIVE);
+  md.SetBounds(GetNativeBounds(new_display));
   display_info_.emplace(new_display.id(), md);
 }
 
@@ -191,15 +212,12 @@ void WMHelperCastShell::CastDisplayObserver::OnDisplayRemoved(
 void WMHelperCastShell::CastDisplayObserver::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  if (display_info_.find(display.id()) == display_info_.end()) {
-    display::ManagedDisplayInfo md(display.id(), "CastDisplayInfo", true);
-    md.SetBounds(display.bounds());
-    display_info_.emplace(display.id(), md);
-  }
+  if (display_info_.find(display.id()) == display_info_.end())
+    OnDisplayAdded(display);
 
   // Currently only updates bounds
   if ((DISPLAY_METRIC_BOUNDS & changed_metrics) == DISPLAY_METRIC_BOUNDS)
-    display_info_[display.id()].SetBounds(display.bounds());
+    display_info_[display.id()].SetBounds(GetNativeBounds(display));
 }
 
 const display::ManagedDisplayInfo&
