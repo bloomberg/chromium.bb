@@ -97,15 +97,11 @@ void ContentMockCertVerifier::SetUpCommandLine(
 }
 
 void ContentMockCertVerifier::SetUpInProcessBrowserTestFixture() {
-  if (IsInProcessNetworkService()) {
-    network::NetworkContext::SetCertVerifierForTesting(
-        mock_cert_verifier_.get());
-  }
+  network::NetworkContext::SetCertVerifierForTesting(mock_cert_verifier_.get());
 }
 
 void ContentMockCertVerifier::TearDownInProcessBrowserTestFixture() {
-  if (IsInProcessNetworkService())
-    network::NetworkContext::SetCertVerifierForTesting(nullptr);
+  network::NetworkContext::SetCertVerifierForTesting(nullptr);
 }
 
 ContentMockCertVerifier::CertVerifier*
