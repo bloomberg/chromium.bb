@@ -31,14 +31,6 @@ namespace autofill_assistant {
 
 namespace {
 
-// Time between two periodic script checks.
-static constexpr base::TimeDelta kPeriodicScriptCheckInterval =
-    base::TimeDelta::FromSeconds(1);
-
-// Number of script checks to run after a call to StartPeriodicScriptChecks.
-// This limit does not apply when in autostart mode.
-static constexpr int kPeriodicScriptCheckCount = 10;
-
 // The initial progress to set when autostarting and showing the "Loading..."
 // message.
 static constexpr int kAutostartInitialProgress = 5;
@@ -68,6 +60,10 @@ Controller::Controller(content::WebContents* web_contents,
       weak_ptr_factory_(this) {}
 
 Controller::~Controller() = default;
+
+const ClientSettings& Controller::GetSettings() {
+  return settings_;
+}
 
 const GURL& Controller::GetCurrentURL() {
   const GURL& last_committed = web_contents()->GetLastCommittedURL();
@@ -101,7 +97,8 @@ UiController* Controller::GetUiController() {
 
 WebController* Controller::GetWebController() {
   if (!web_controller_) {
-    web_controller_ = WebController::CreateForWebContents(web_contents());
+    web_controller_ =
+        WebController::CreateForWebContents(web_contents(), &settings_);
   }
   return web_controller_.get();
 }
@@ -474,7 +471,7 @@ void Controller::GetOrCheckScripts() {
 }
 
 void Controller::StartPeriodicScriptChecks() {
-  periodic_script_check_count_ = kPeriodicScriptCheckCount;
+  periodic_script_check_count_ = settings_.periodic_script_check_count;
   // If periodic checks are running, setting periodic_script_check_count_ keeps
   // them running longer.
   if (periodic_script_check_scheduled_)
@@ -484,7 +481,7 @@ void Controller::StartPeriodicScriptChecks() {
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&Controller::OnPeriodicScriptCheck,
                      weak_ptr_factory_.GetWeakPtr()),
-      kPeriodicScriptCheckInterval);
+      settings_.periodic_script_check_interval);
 }
 
 void Controller::StopPeriodicScriptChecks() {
@@ -517,7 +514,7 @@ void Controller::OnPeriodicScriptCheck() {
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&Controller::OnPeriodicScriptCheck,
                      weak_ptr_factory_.GetWeakPtr()),
-      kPeriodicScriptCheckInterval);
+      settings_.periodic_script_check_interval);
 }
 
 void Controller::OnGetScripts(const GURL& url,
@@ -546,6 +543,8 @@ void Controller::OnGetScripts(const GURL& url,
                  Metrics::GET_SCRIPTS_UNPARSABLE);
     return;
   }
+  if (response_proto.has_client_settings())
+    settings_.UpdateFromProto(response_proto.client_settings());
 
   std::vector<std::unique_ptr<Script>> scripts;
   for (const auto& script_proto : response_proto.scripts()) {

@@ -16,12 +16,6 @@
 
 namespace autofill_assistant {
 
-namespace {
-// Waiting period between two checks.
-static constexpr base::TimeDelta kCheckDelay =
-    base::TimeDelta::FromMilliseconds(100);
-}  // namespace
-
 ElementArea::ElementArea(ScriptExecutorDelegate* delegate)
     : delegate_(delegate), scheduled_update_(false), weak_ptr_factory_(this) {
   DCHECK(delegate_);
@@ -142,7 +136,7 @@ void ElementArea::KeepUpdatingElementPositions() {
       FROM_HERE,
       base::BindOnce(&ElementArea::KeepUpdatingElementPositions,
                      weak_ptr_factory_.GetWeakPtr()),
-      kCheckDelay);
+      delegate_->GetSettings().element_position_update_interval);
 }
 
 void ElementArea::OnGetElementPosition(const Selector& selector,

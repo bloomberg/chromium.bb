@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/selector.h"
 
@@ -21,7 +22,8 @@ class ScriptExecutorDelegate;
 // changeable set of elements.
 class ElementArea {
  public:
-  // |delegate| must remain valid for the lifetime of this instance.
+  // |delegate| and |settings| must remain valid for the lifetime of this
+  // instance.
   explicit ElementArea(ScriptExecutorDelegate* delegate);
   ~ElementArea();
 

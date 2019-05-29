@@ -62,6 +62,44 @@ message SupportsScriptResponseProto {
   // Defines what should happen if no scripts in [scripts] becomes runnable,
   // because of preconditions.
   optional ScriptTimeoutError script_timeout_error = 2;
+
+  optional ClientSettingsProto client_settings = 3;
+}
+
+message ClientSettingsProto {
+  // Time between two periodic script precondition checks.
+  optional int32 periodic_script_check_interval_ms = 1;
+
+  // Time between two element checks in the script executor.
+  optional int32 periodic_element_check_interval_ms = 2;
+
+  // Run that many periodic checks before giving up unless something happens to
+  // wake it up, such as the user touching the screen.
+  optional int32 periodic_script_check_count = 3;
+
+  // Time between two element position refreshes, when displaying highlighted
+  // areas in prompt state.
+  optional int32 element_position_update_interval_ms = 4;
+
+  // Maximum amount of time normal actions should implicitly wait for a selector
+  // to show up.
+  optional int32 short_wait_for_element_deadline_ms = 5;
+
+  // Time to wait between two checks of the box model, when waiting for an
+  // element to become stable, such as before clicking.
+  optional int32 box_model_check_interval_ms = 6;
+
+  // Maximum number of checks to run while waiting for the element position to
+  // become stable.
+  optional int32 box_model_check_count = 7;
+
+  // Time to wait between two checks of the document state, when waiting for the
+  // document to become ready.
+  optional int32 document_ready_check_interval_ms = 8;
+
+  // Maximum number of checks to run while waiting for the document to become
+  // ready.
+  optional int32 document_ready_check_count = 9;
 }
 
 message ScriptTimeoutError {

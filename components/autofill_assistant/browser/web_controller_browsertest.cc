@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/web_controller.h"
@@ -37,8 +38,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     ASSERT_TRUE(http_server_->Start());
     ASSERT_TRUE(
         NavigateToURL(shell(), http_server_->GetURL(kTargetWebsitePath)));
-    web_controller_ =
-        WebController::CreateForWebContents(shell()->web_contents());
+    web_controller_ = WebController::CreateForWebContents(
+        shell()->web_contents(), &settings_);
     Observe(shell()->web_contents());
   }
 
@@ -417,6 +418,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   bool paint_occurred_during_last_loop_ = false;
+  ClientSettings settings_;
 
   DISALLOW_COPY_AND_ASSIGN(WebControllerBrowserTest);
 };

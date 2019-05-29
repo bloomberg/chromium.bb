@@ -12,16 +12,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_precondition.h"
 #include "url/gurl.h"
 
 namespace autofill_assistant {
-
-namespace {
-// Time between two chip precondition checks.
-static constexpr base::TimeDelta kPreconditionChipCheckInterval =
-    base::TimeDelta::FromSeconds(1);
-}  // namespace
 
 PromptAction::PromptAction(const ActionProto& proto)
     : Action(proto), weak_ptr_factory_(this) {
@@ -48,7 +43,8 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
   if (HasNonemptyPreconditions() || HasAutoSelect()) {
     RunPeriodicChecks();
     timer_ = std::make_unique<base::RepeatingTimer>();
-    timer_->Start(FROM_HERE, kPreconditionChipCheckInterval,
+    timer_->Start(FROM_HERE,
+                  delegate->GetSettings().periodic_script_check_interval,
                   base::BindRepeating(&PromptAction::RunPeriodicChecks,
                                       weak_ptr_factory_.GetWeakPtr()));
   }

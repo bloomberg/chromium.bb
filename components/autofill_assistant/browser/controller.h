@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/element_area.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/payment_request.h"
@@ -66,6 +67,7 @@ class Controller : public ScriptExecutorDelegate,
   void WillShutdown(Metrics::DropOutReason reason);
 
   // Overrides ScriptExecutorDelegate:
+  const ClientSettings& GetSettings() override;
   const GURL& GetCurrentURL() override;
   Service* GetService() override;
   UiController* GetUiController() override;
@@ -215,6 +217,7 @@ class Controller : public ScriptExecutorDelegate,
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
 
+  ClientSettings settings_;
   Client* const client_;
   const base::TickClock* const tick_clock_;
 

@@ -18,6 +18,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/retry_timer.h"
@@ -179,6 +180,7 @@ class ScriptExecutor : public ActionDelegate,
   void SetProgressVisible(bool visible) override;
   void SetResizeViewport(bool resize_viewport) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
+  const ClientSettings& GetSettings() override;
   bool SetForm(std::unique_ptr<FormProto> form,
                base::RepeatingCallback<void(const FormProto::Result*)> callback)
       override;
@@ -326,7 +328,7 @@ class ScriptExecutor : public ActionDelegate,
   const std::string initial_script_payload_;
   std::string last_script_payload_;
   ScriptExecutor::Listener* const listener_;
-  ScriptExecutorDelegate* delegate_;
+  ScriptExecutorDelegate* const delegate_;
   RunScriptCallback callback_;
 
   std::vector<std::unique_ptr<Action>> actions_;

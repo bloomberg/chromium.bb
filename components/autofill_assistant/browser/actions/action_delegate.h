@@ -34,6 +34,7 @@ class WebContents;
 namespace autofill_assistant {
 class ClientMemory;
 class ClientStatus;
+struct ClientSettings;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -247,6 +248,9 @@ class ActionDelegate {
 
   // Set the peek mode.
   virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
+
+  // Returns the current client settings.
+  virtual const ClientSettings& GetSettings() = 0;
 
   // Show a form to the user and call |callback| with its values whenever there
   // is a change. |callback| will be called directly with the initial values of

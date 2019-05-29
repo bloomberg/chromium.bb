@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -166,6 +167,10 @@ class MockActionDelegate : public ActionDelegate {
       SetForm,
       bool(std::unique_ptr<FormProto> form,
            base::RepeatingCallback<void(const FormProto::Result*)> callback));
+
+  const ClientSettings& GetSettings() override { return client_settings_; }
+
+  ClientSettings client_settings_;
 };
 
 }  // namespace autofill_assistant

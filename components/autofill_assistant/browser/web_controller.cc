@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -35,13 +36,6 @@ namespace autofill_assistant {
 using autofill::ContentAutofillDriver;
 
 namespace {
-// Time between two periodic box model and document ready state checks.
-static constexpr base::TimeDelta kPeriodicCheckInterval =
-    base::TimeDelta::FromMilliseconds(200);
-
-// Timeout after roughly 10 seconds (50*200ms).
-constexpr int kPeriodicCheckRounds = 50;
-
 // Expiration time for the Autofill Assistant cookie.
 constexpr int kCookieExpiresSeconds = 600;
 
@@ -346,7 +340,7 @@ WebController::Worker::~Worker() = default;
 
 class WebController::ElementPositionGetter : public WebController::Worker {
  public:
-  ElementPositionGetter();
+  ElementPositionGetter(const ClientSettings& settings);
   ~ElementPositionGetter() override;
 
   // |devtools_client| must be valid for the lifetime of the instance, which is
@@ -365,6 +359,11 @@ class WebController::ElementPositionGetter : public WebController::Worker {
   void OnResult(int x, int y);
   void OnError();
 
+  // Time to wait between two box model checks.
+  const base::TimeDelta check_interval_;
+  // Maximum number of checks to run.
+  const int max_rounds_;
+
   DevtoolsClient* devtools_client_ = nullptr;
   std::string object_id_;
   int remaining_rounds_ = 0;
@@ -382,8 +381,12 @@ class WebController::ElementPositionGetter : public WebController::Worker {
   base::WeakPtrFactory<ElementPositionGetter> weak_ptr_factory_;
 };
 
-WebController::ElementPositionGetter::ElementPositionGetter()
-    : weak_ptr_factory_(this) {}
+WebController::ElementPositionGetter::ElementPositionGetter(
+    const ClientSettings& settings)
+    : check_interval_(settings.box_model_check_interval),
+      max_rounds_(settings.box_model_check_count),
+      weak_ptr_factory_(this) {}
+
 WebController::ElementPositionGetter::~ElementPositionGetter() = default;
 
 void WebController::ElementPositionGetter::Start(
@@ -394,7 +397,7 @@ void WebController::ElementPositionGetter::Start(
   devtools_client_ = devtools_client;
   object_id_ = element_object_id;
   callback_ = std::move(callback);
-  remaining_rounds_ = kPeriodicCheckRounds;
+  remaining_rounds_ = max_rounds_;
   // TODO(crbug/806868): Consider using autofill_assistant::RetryTimer
 
   // Wait for a roundtrips through the renderer and compositor pipeline,
@@ -442,18 +445,18 @@ void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
   int new_point_y =
       round((round((*content_box)[3]) + round((*content_box)[5])) * 0.5);
 
-  // Wait for at least three rounds (~600ms =
-  // 3*kPeriodicCheckInterval) for visual state update callback since
-  // it might take longer time to return or never return if no updates.
-  DCHECK(kPeriodicCheckRounds > 2 && kPeriodicCheckRounds >= remaining_rounds_);
+  // Wait for at least three rounds (~600ms = 3*check_interval_) for visual
+  // state update callback since it might take longer time to return or never
+  // return if no updates.
+  DCHECK(max_rounds_ > 2 && max_rounds_ >= remaining_rounds_);
   if (has_point_ && new_point_x == point_x_ && new_point_y == point_y_ &&
-      (visual_state_updated_ || remaining_rounds_ + 2 < kPeriodicCheckRounds)) {
+      (visual_state_updated_ || remaining_rounds_ + 2 < max_rounds_)) {
     // Note that there is still a chance that the element's position has been
-    // changed after the last call of GetBoxModel, however, it might be safe
-    // to assume the element's position will not be changed before issuing
-    // click or tap event after stable for kPeriodicCheckInterval. In
-    // addition, checking again after issuing click or tap event doesn't help
-    // since the change may be expected.
+    // changed after the last call of GetBoxModel, however, it might be safe to
+    // assume the element's position will not be changed before issuing click or
+    // tap event after stable for check_interval_. In addition, checking again
+    // after issuing click or tap event doesn't help since the change may be
+    // expected.
     OnResult(new_point_x, new_point_y);
     return;
   }
@@ -492,7 +495,7 @@ void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
       base::BindOnce(
           &WebController::ElementPositionGetter::GetAndWaitBoxModelStable,
           weak_ptr_factory_.GetWeakPtr()),
-      kPeriodicCheckInterval);
+      check_interval_);
 }
 
 void WebController::ElementPositionGetter::OnScrollIntoView(
@@ -510,7 +513,7 @@ void WebController::ElementPositionGetter::OnScrollIntoView(
       base::BindOnce(
           &WebController::ElementPositionGetter::GetAndWaitBoxModelStable,
           weak_ptr_factory_.GetWeakPtr()),
-      kPeriodicCheckInterval);
+      check_interval_);
 }
 
 void WebController::ElementPositionGetter::OnResult(int x, int y) {
@@ -870,17 +873,21 @@ WebController::ElementFinder::FindCorrespondingRenderFrameHost(
 
 // static
 std::unique_ptr<WebController> WebController::CreateForWebContents(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    const ClientSettings* settings) {
   return std::make_unique<WebController>(
       web_contents,
       std::make_unique<DevtoolsClient>(
-          content::DevToolsAgentHost::GetOrCreateFor(web_contents)));
+          content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
+      settings);
 }
 
 WebController::WebController(content::WebContents* web_contents,
-                             std::unique_ptr<DevtoolsClient> devtools_client)
+                             std::unique_ptr<DevtoolsClient> devtools_client,
+                             const ClientSettings* settings)
     : web_contents_(web_contents),
       devtools_client_(std::move(devtools_client)),
+      settings_(settings),
       weak_ptr_factory_(this) {}
 
 WebController::~WebController() {}
@@ -922,7 +929,7 @@ void WebController::OnFindElementForClickOrTap(
 
   std::string element_object_id = result->object_id;
   WaitForDocumentToBecomeInteractive(
-      kPeriodicCheckRounds, element_object_id,
+      settings_->document_ready_check_count, element_object_id,
       base::BindOnce(
           &WebController::OnWaitDocumentToBecomeInteractiveForClickOrTap,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback), click_type,
@@ -992,7 +999,7 @@ void WebController::OnScrollIntoView(
   }
 
   std::unique_ptr<ElementPositionGetter> getter =
-      std::make_unique<ElementPositionGetter>();
+      std::make_unique<ElementPositionGetter>(*settings_);
   ElementPositionGetter* getter_ptr = getter.get();
   pending_workers_[getter_ptr] = std::move(getter);
   getter_ptr->Start(target_element->container_frame_host,
@@ -1166,7 +1173,7 @@ void WebController::OnFindElementForFocusElement(
 
   std::string element_object_id = element_result->object_id;
   WaitForDocumentToBecomeInteractive(
-      kPeriodicCheckRounds, element_object_id,
+      settings_->document_ready_check_count, element_object_id,
       base::BindOnce(
           &WebController::OnWaitDocumentToBecomeInteractiveForFocusElement,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
@@ -1930,7 +1937,7 @@ void WebController::OnWaitForDocumentToBecomeInteractive(
       base::BindOnce(&WebController::WaitForDocumentToBecomeInteractive,
                      weak_ptr_factory_.GetWeakPtr(), --remaining_rounds,
                      object_id, std::move(callback)),
-      kPeriodicCheckInterval);
+      settings_->document_ready_check_interval);
 }
 
 }  // namespace autofill_assistant

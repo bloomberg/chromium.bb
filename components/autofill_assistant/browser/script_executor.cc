@@ -30,15 +30,6 @@
 namespace autofill_assistant {
 namespace {
 
-// Maximum amount of time normal actions should implicitly wait for a selector
-// to show up.
-constexpr base::TimeDelta kShortWaitForElementDeadline =
-    base::TimeDelta::FromSeconds(2);
-
-// Time between two element checks.
-static constexpr base::TimeDelta kPeriodicElementCheck =
-    base::TimeDelta::FromSeconds(1);
-
 std::ostream& operator<<(std::ostream& out,
                          const ScriptExecutor::AtEnd& at_end) {
 #ifdef NDEBUG
@@ -165,7 +156,7 @@ void ScriptExecutor::ShortWaitForElement(
     const Selector& selector,
     base::OnceCallback<void(bool)> callback) {
   wait_for_dom_ = std::make_unique<WaitForDomOperation>(
-      this, delegate_, kShortWaitForElementDeadline,
+      this, delegate_, delegate_->GetSettings().short_wait_for_element_deadline,
       /* allow_interrupt= */ false,
       base::BindRepeating(&ScriptExecutor::CheckElementMatches,
                           weak_ptr_factory_.GetWeakPtr(), selector),
@@ -470,6 +461,10 @@ void ScriptExecutor::SetPeekMode(
   delegate_->SetPeekMode(peek_mode);
 }
 
+const ClientSettings& ScriptExecutor::GetSettings() {
+  return delegate_->GetSettings();
+}
+
 bool ScriptExecutor::SetForm(
     std::unique_ptr<FormProto> form,
     base::RepeatingCallback<void(const FormProto::Result*)> callback) {
@@ -684,7 +679,8 @@ ScriptExecutor::WaitForDomOperation::WaitForDomOperation(
       allow_interrupt_(allow_interrupt),
       check_elements_(std::move(check_elements)),
       callback_(std::move(callback)),
-      retry_timer_(kPeriodicElementCheck),
+      retry_timer_(main_script->delegate_->GetSettings()
+                       .periodic_element_check_interval),
       weak_ptr_factory_(this) {}
 
 ScriptExecutor::WaitForDomOperation::~WaitForDomOperation() {

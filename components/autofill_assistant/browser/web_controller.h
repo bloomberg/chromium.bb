@@ -42,6 +42,7 @@ struct FormFieldData;
 }
 
 namespace autofill_assistant {
+struct ClientSettings;
 
 // Controller to interact with the web pages.
 //
@@ -54,13 +55,16 @@ namespace autofill_assistant {
 // multiple operations, whether in sequence or in parallel.
 class WebController {
  public:
-  // Create web controller for a given |web_contents|.
+  // Create web controller for a given |web_contents|. |settings| must be valid
+  // for the lifetime of the controller.
   static std::unique_ptr<WebController> CreateForWebContents(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      const ClientSettings* settings);
 
-  // |web_contents| must outlive this web controller.
+  // |web_contents| and |settings| must outlive this web controller.
   WebController(content::WebContents* web_contents,
-                std::unique_ptr<DevtoolsClient> devtools_client);
+                std::unique_ptr<DevtoolsClient> devtools_client,
+                const ClientSettings* settings);
   virtual ~WebController();
 
   // Load |url| in the current tab. Returns immediately, before the new page has
@@ -428,6 +432,7 @@ class WebController {
   // is guaranteed by the owner of this object.
   content::WebContents* web_contents_;
   std::unique_ptr<DevtoolsClient> devtools_client_;
+  const ClientSettings* const settings_;
 
   // Workers currently running and using |devtools_client_|.
   std::map<Worker*, std::unique_ptr<Worker>> pending_workers_;

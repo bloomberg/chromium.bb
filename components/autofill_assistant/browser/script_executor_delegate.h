@@ -31,6 +31,7 @@ class Service;
 class UiController;
 class WebController;
 class ClientMemory;
+struct ClientSettings;
 struct TriggerContext;
 
 class ScriptExecutorDelegate {
@@ -42,6 +43,7 @@ class ScriptExecutorDelegate {
     virtual void OnNavigationStateChanged() = 0;
   };
 
+  virtual const ClientSettings& GetSettings() = 0;
   virtual const GURL& GetCurrentURL() = 0;
   virtual Service* GetService() = 0;
   virtual UiController* GetUiController() = 0;

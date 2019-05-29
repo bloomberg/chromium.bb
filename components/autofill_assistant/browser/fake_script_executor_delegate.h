@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 
@@ -24,6 +25,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   FakeScriptExecutorDelegate();
   ~FakeScriptExecutorDelegate() override;
 
+  const ClientSettings& GetSettings() override;
   const GURL& GetCurrentURL() override;
   Service* GetService() override;
   UiController* GetUiController() override;
@@ -53,6 +55,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   bool IsNavigatingToNewDocument() override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
+
+  ClientSettings* GetMutableSettings() { return &client_settings_; }
 
   void SetCurrentURL(const GURL& url) { current_url_ = url; }
 
@@ -92,6 +96,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   bool HasListeners() { return !listeners_.empty(); }
 
  private:
+  ClientSettings client_settings_;
   GURL current_url_;
   Service* service_ = nullptr;
   UiController* ui_controller_ = nullptr;
