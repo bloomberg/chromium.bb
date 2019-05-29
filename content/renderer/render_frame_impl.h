@@ -464,7 +464,6 @@ class CONTENT_EXPORT RenderFrameImpl
   int ShowContextMenu(ContextMenuClient* client,
                       const ContextMenuParams& params) override;
   void CancelContextMenu(int request_id) override;
-  void BindToFrame(blink::WebNavigationControl* frame) override;
   blink::WebPlugin* CreatePlugin(
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
@@ -660,6 +659,7 @@ class CONTENT_EXPORT RenderFrameImpl
                         SerializeAsMHTMLCallback callback) override;
 
   // blink::WebLocalFrameClient implementation:
+  void BindToFrame(blink::WebNavigationControl* frame) override;
   blink::WebPlugin* CreatePlugin(const blink::WebPluginParams& params) override;
   blink::WebMediaPlayer* CreateMediaPlayer(
       const blink::WebMediaPlayerSource& source,
