@@ -291,6 +291,7 @@ EditableCombobox::EditableCombobox(
 }
 
 EditableCombobox::~EditableCombobox() {
+  CloseMenu();
   textfield_->set_controller(nullptr);
   textfield_->RemoveObserver(this);
 }

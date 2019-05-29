@@ -110,6 +110,10 @@ class EditableComboboxTest : public ViewsTestBase {
 };
 
 void EditableComboboxTest::TearDown() {
+  if (IsMenuOpen()) {
+    combobox_->GetMenuRunnerForTest()->Cancel();
+    WaitForMenuClosureAnimation();
+  }
   if (widget_)
     widget_->Close();
   ViewsTestBase::TearDown();
@@ -142,8 +146,6 @@ void EditableComboboxTest::InitEditableCombobox(
   dummy_focusable_view_->SetID(2);
 
   InitWidget();
-  combobox_->GetTextfieldForTest()->RequestFocus();
-  combobox_->RequestFocus();
 }
 
 // Initializes the widget where the combobox and the dummy control live.
@@ -237,8 +239,6 @@ void EditableComboboxTest::SendKeyEvent(ui::KeyboardCode key_code,
 
 TEST_F(EditableComboboxTest, FocusOnTextfieldOpensMenu) {
   InitEditableCombobox();
-  dummy_focusable_view_->RequestFocus();
-  WaitForMenuClosureAnimation();
   EXPECT_FALSE(IsMenuOpen());
   combobox_->GetTextfieldForTest()->RequestFocus();
   EXPECT_TRUE(IsMenuOpen());
