@@ -574,10 +574,11 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           site_config.templates.moblab_vm_tests,
           site_config.templates.tast_vm_paladin_tests,
       ),
-      'moblab-generic-vm-pre-cq': config_lib.BuildConfig().apply(
-          site_config.templates.moblab_vm_tests,
-          site_config.templates.tast_vm_paladin_tests,
-      ),
+      # Disabled due to https://crbug.com/968271
+      # 'moblab-generic-vm-pre-cq': config_lib.BuildConfig().apply(
+      #    site_config.templates.moblab_vm_tests,
+      #    site_config.templates.tast_vm_paladin_tests,
+      # ),
 
       'reef-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
