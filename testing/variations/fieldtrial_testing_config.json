@@ -6153,7 +6153,7 @@
             ]
         }
     ],
-    "WebRTC-Audio-SendSideBWE": [
+    "WebRTC-Audio-SendSideBwe": [
         {
             "platforms": [
                 "windows",
