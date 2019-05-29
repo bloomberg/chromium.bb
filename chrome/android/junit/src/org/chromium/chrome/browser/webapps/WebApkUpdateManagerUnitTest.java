@@ -542,7 +542,7 @@ public class WebApkUpdateManagerUnitTest {
     public void testMarkUpdateAsSucceededIfUpdateNoLongerNeeded() {
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         storage.updateDidLastWebApkUpdateRequestSucceed(false);
-        mClockRule.advance(WebappDataStorage.RETRY_UPDATE_DURATION);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
