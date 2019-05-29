@@ -170,6 +170,9 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
       case ::syncer::SECURITY_EVENTS:                            \
         PER_DATA_TYPE_MACRO("SecurityEvents");                   \
         break;                                                   \
+      case ::syncer::WIFI_CONFIGURATIONS:                        \
+        PER_DATA_TYPE_MACRO("WifiConfigurations");               \
+        break;                                                   \
       default:                                                   \
         NOTREACHED() << "Unknown datatype "                      \
                      << ::syncer::ModelTypeToString(datatype);   \

@@ -55,6 +55,7 @@ extern const char kSyncThemes[];
 extern const char kSyncTypedUrls[];
 extern const char kSyncUserConsents[];
 extern const char kSyncUserEvents[];
+extern const char kSyncWifiConfigurations[];
 extern const char kSyncWifiCredentials[];
 
 extern const char kSyncManaged[];

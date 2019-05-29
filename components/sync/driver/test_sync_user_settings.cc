@@ -108,8 +108,8 @@ void TestSyncUserSettings::EnableEncryptEverything() {}
 
 ModelTypeSet TestSyncUserSettings::GetEncryptedDataTypes() const {
   if (!IsUsingSecondaryPassphrase()) {
-    // PASSWORDS are always encrypted.
-    return ModelTypeSet(PASSWORDS);
+    // PASSWORDS and WIFI_CONFIGURATIONS are always encrypted.
+    return ModelTypeSet(PASSWORDS, WIFI_CONFIGURATIONS);
   }
   // Some types can never be encrypted, e.g. DEVICE_INFO and
   // AUTOFILL_WALLET_DATA, so make sure we don't report them as encrypted.
