@@ -3457,13 +3457,20 @@ static AOM_INLINE void block_rd_txfm(int plane, int block, int blk_row,
   else
     set_blk_skip(x, plane, blk_idx, 0);
 
-  const int64_t rd1 = RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
-  const int64_t rd2 = RDCOST(x->rdmult, 0, this_rd_stats.sse);
+  int64_t rd;
+  if (is_inter) {
+    const int64_t rd1 =
+        RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
+    const int64_t rd2 = RDCOST(x->rdmult, 0, this_rd_stats.sse);
 
-  // TODO(jingning): temporarily enabled only for luma component
-  const int64_t rd = AOMMIN(rd1, rd2);
-
-  this_rd_stats.skip &= !x->plane[plane].eobs[block];
+    // TODO(jingning): temporarily enabled only for luma component
+    rd = AOMMIN(rd1, rd2);
+    this_rd_stats.skip &= !x->plane[plane].eobs[block];
+  } else {
+    // Signal non-skip for Intra blocks
+    rd = RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
+    this_rd_stats.skip = 0;
+  }
 
   av1_merge_rd_stats(&args->rd_stats, &this_rd_stats);
 
@@ -3553,16 +3560,10 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   s0 = x->skip_cost[skip_ctx][0];
   s1 = x->skip_cost[skip_ctx][1];
 
-  int64_t skip_rd;
-  int64_t this_rd;
+  int64_t skip_rd = INT64_MAX;
+  int64_t this_rd = RDCOST(x->rdmult, s0 + r_tx_size * tx_select, 0);
 
-  if (is_inter) {
-    skip_rd = RDCOST(x->rdmult, s1, 0);
-    this_rd = RDCOST(x->rdmult, s0 + r_tx_size * tx_select, 0);
-  } else {
-    skip_rd = RDCOST(x->rdmult, s1 + r_tx_size * tx_select, 0);
-    this_rd = RDCOST(x->rdmult, s0 + r_tx_size * tx_select, 0);
-  }
+  if (is_inter) skip_rd = RDCOST(x->rdmult, s1, 0);
 
   mbmi->tx_size = tx_size;
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOMMIN(this_rd, skip_rd),
@@ -3574,14 +3575,10 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   // same is accounted in the caller functions after rd evaluation of all
   // planes. However the decisions should be done after considering the
   // skip/non-skip header cost
-  if (rd_stats->skip) {
-    if (is_inter) {
-      rd = RDCOST(x->rdmult, s1, rd_stats->sse);
-    } else {
-      rd = RDCOST(x->rdmult, s1 + r_tx_size * tx_select, rd_stats->sse);
-      rd_stats->rate += r_tx_size * tx_select;
-    }
+  if (rd_stats->skip && is_inter) {
+    rd = RDCOST(x->rdmult, s1, rd_stats->sse);
   } else {
+    // Intra blocks are always signalled as non-skip
     rd = RDCOST(x->rdmult, rd_stats->rate + s0 + r_tx_size * tx_select,
                 rd_stats->dist);
     rd_stats->rate += r_tx_size * tx_select;
@@ -3638,8 +3635,11 @@ static AOM_INLINE void choose_largest_tx_size(const AV1_COMP *const cpi,
   s0 = x->skip_cost[skip_ctx][0];
   s1 = x->skip_cost[skip_ctx][1];
 
-  int64_t skip_rd = RDCOST(x->rdmult, s1, 0);
+  int64_t skip_rd = INT64_MAX;
   int64_t this_rd = RDCOST(x->rdmult, s0, 0);
+
+  // Skip RDcost is used only for Inter blocks
+  if (is_inter_block(xd->mi[0])) skip_rd = RDCOST(x->rdmult, s1, 0);
 
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOMMIN(this_rd, skip_rd),
                    AOM_PLANE_Y, bs, mbmi->tx_size,
@@ -10923,16 +10923,12 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
                                 &uv_skip, bsize, max_uv_tx_size);
     }
 
-    if (y_skip && (uv_skip || x->skip_chroma_rd)) {
-      rd_cost->rate = rate_y + rate_uv - rate_y_tokenonly - rate_uv_tokenonly +
-                      x->skip_cost[av1_get_skip_context(xd)][1];
-      rd_cost->dist = dist_y + dist_uv;
-    } else {
-      rd_cost->rate =
-          rate_y + rate_uv + x->skip_cost[av1_get_skip_context(xd)][0];
-      rd_cost->dist = dist_y + dist_uv;
-    }
+    // Intra block is always coded as non-skip
+    rd_cost->rate =
+        rate_y + rate_uv + x->skip_cost[av1_get_skip_context(xd)][0];
+    rd_cost->dist = dist_y + dist_uv;
     rd_cost->rdcost = RDCOST(x->rdmult, rd_cost->rate, rd_cost->dist);
+    rd_cost->skip = 0;
   } else {
     rd_cost->rate = INT_MAX;
   }
@@ -12104,22 +12100,16 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
   if (mode != DC_PRED && mode != PAETH_PRED) {
     rd_stats->rate += intra_cost_penalty;
   }
-  rd_stats->dist = rd_stats_y->dist + rd_stats_uv->dist;
 
   // Estimate the reference frame signaling cost and add it
   // to the rolling cost variable.
   rd_stats->rate += ref_frame_cost;
-  if (rd_stats->skip) {
-    // Back out the coefficient coding costs
-    rd_stats->rate -= (rd_stats_y->rate + rd_stats_uv->rate);
-    rd_stats_y->rate = 0;
-    rd_stats_uv->rate = 0;
-    // Cost the skip mb case
-    rd_stats->rate += x->skip_cost[skip_ctx][1];
-  } else {
-    // Add in the cost of the no skip flag.
-    rd_stats->rate += x->skip_cost[skip_ctx][0];
-  }
+
+  // Intra block is always coded as non-skip
+  rd_stats->skip = 0;
+  rd_stats->dist = rd_stats_y->dist + rd_stats_uv->dist;
+  // Add in the cost of the no skip flag.
+  rd_stats->rate += x->skip_cost[skip_ctx][0];
   // Calculate the final RD estimate for this mode.
   const int64_t this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
   // Keep record of best intra rd
