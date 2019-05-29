@@ -133,4 +133,11 @@ Polymer({
         loadTimeData.getString('lessApps') :
         loadTimeData.getStringF('moreApps', numApps - this.collapsedSize);
   },
+
+  onClickBack_: function() {
+    this.dispatchEvent(new CustomEvent('click-back-button', {
+      bubbles: true,
+      composed: true,
+    }));
+  }
 });

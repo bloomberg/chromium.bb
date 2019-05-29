@@ -37,6 +37,10 @@ Polymer({
     },
   },
 
+  listeners: {
+    'click-back-button': 'onClickBackButton',
+  },
+
   attached: function() {
     this.watch('apps_', state => state.apps);
     this.watch('notificationAppIds_', state => state.notifications.allowedIds);
@@ -52,6 +56,11 @@ Polymer({
                         .sort(
                             (a, b) => app_management.util.alphabeticalSort(
                                 assert(a.title), assert(b.title)));
+  },
+
+  /** @private */
+  onClickBackButton: function() {
+    window.location.href = `chrome://settings`;
   },
 
   /** @private */

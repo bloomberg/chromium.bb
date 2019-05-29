@@ -12,11 +12,6 @@ Polymer({
 
   /** @private */
   onManageAppsClick_: function() {
-    const host = window.location.hostname;
-    if (host.includes('settings')) {
-      window.location.href = `chrome://app-management?ref=${host}`;
-    } else {
-      window.location.href = 'chrome://app-management';
-    }
+    window.location.href = 'chrome://app-management';
   },
 });
