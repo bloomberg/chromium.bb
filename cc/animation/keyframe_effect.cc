@@ -650,6 +650,15 @@ void KeyframeEffect::PurgeKeyframeModelsMarkedForDeletion(bool impl_only) {
       });
 }
 
+void KeyframeEffect::PurgeDeletedKeyframeModels() {
+  base::EraseIf(keyframe_models_,
+                [](const std::unique_ptr<KeyframeModel>& keyframe_model) {
+                  return keyframe_model->run_state() ==
+                             KeyframeModel::WAITING_FOR_DELETION &&
+                         !keyframe_model->affects_pending_elements();
+                });
+}
+
 void KeyframeEffect::PushNewKeyframeModelsToImplThread(
     KeyframeEffect* keyframe_effect_impl) const {
   // Any new KeyframeModels owned by the main thread's Animation are
@@ -715,22 +724,15 @@ void KeyframeEffect::RemoveKeyframeModelsCompletedOnMainThread(
   // elements, and should stop affecting active elements after the next call
   // to ActivateKeyframeEffects. If already WAITING_FOR_DELETION, they can be
   // removed immediately.
-  auto& keyframe_models = keyframe_effect_impl->keyframe_models_;
-  for (const auto& keyframe_model : keyframe_models) {
+  for (const std::unique_ptr<KeyframeModel>& keyframe_model :
+       keyframe_effect_impl->keyframe_models_) {
     if (IsCompleted(keyframe_model.get(), this)) {
       keyframe_model->set_affects_pending_elements(false);
       keyframe_model_completed = true;
     }
   }
-  auto affects_active_only_and_is_waiting_for_deletion =
-      [](const std::unique_ptr<KeyframeModel>& keyframe_model) {
-        return keyframe_model->run_state() ==
-                   KeyframeModel::WAITING_FOR_DELETION &&
-               !keyframe_model->affects_pending_elements();
-      };
-  base::EraseIf(keyframe_models,
-                affects_active_only_and_is_waiting_for_deletion);
 
+  keyframe_effect_impl->PurgeDeletedKeyframeModels();
   if (has_bound_element_animations() && keyframe_model_completed)
     element_animations_->SetNeedsPushProperties();
 }

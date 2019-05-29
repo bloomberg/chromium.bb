@@ -167,6 +167,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
  private:
   void StartKeyframeModels(base::TimeTicks monotonic_time);
   void PromoteStartedKeyframeModels(AnimationEvents* events);
+  void PurgeDeletedKeyframeModels();
 
   void MarkKeyframeModelsForDeletion(base::TimeTicks, AnimationEvents* events);
   void MarkFinishedKeyframeModels(base::TimeTicks monotonic_time);
