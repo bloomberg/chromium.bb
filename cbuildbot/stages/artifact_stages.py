@@ -12,6 +12,7 @@ import glob
 import itertools
 import json
 import multiprocessing
+import re
 import os
 import shutil
 
@@ -945,6 +946,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
 
   category = constants.CI_INFRA_STAGE
   PROFDATA_TAR = 'llvm_profdata.tar.xz'
+  LLVM_METADATA = 'llvm_metadata.json'
   PROFDATA = 'llvm.profdata'
   SYS_DEVEL_DIR = 'var/tmp/portage/sys-devel'
 
@@ -952,6 +954,56 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
     super(CollectPGOProfilesStage, self).__init__(*args, **kwargs)
     self._upload_queue = multiprocessing.Queue()
     self._merge_cmd = ''
+
+  @staticmethod
+  def _ParseUseFlagState(use_flags):
+    """Converts the textual output of equery to a +/- USE flag list."""
+    # Equery prints out a large header. The lines we're interested in look
+    # like:
+    # " + - use_flag : foo", where `use_flag` is the name of the use flag, the
+    # initial - or + says whether the flag is enabled by default, and the
+    # second one says whether the flag was enabled upon installation. `foo` is
+    # the description, but that's unimportant to us.
+    matcher = re.compile(r'^\s+[+-]\s+([+-])\s+(\S+)\s+:', re.MULTILINE)
+    matches = matcher.findall(use_flags)
+    return [state + flag_name for state, flag_name in matches]
+
+  @staticmethod
+  def _ParseLLVMHeadSHA(version_string):
+    # The first line of clang's version string looks something like:
+    # Chromium OS 9.0_pre353983_p20190325-r13 clang version 9.0.0 \
+    # (/var/cache/chromeos-cache/distfiles/host/egit-src/llvm-project \
+    # de7a0a152648d1a74cf4319920b1848aa00d1ca3) (based on LLVM 9.0.0svn)
+    #
+    # The SHA after llvm-project is the SHA we're looking for.
+    # Note that len('de7a0a152648d1a74cf4319920b1848aa00d1ca3') == 40.
+    sha_re = re.compile(r'([A-Fa-f0-9]{40})\)\s+\(based on LLVM [\d+.]+svn\)$')
+    first_line = version_string.splitlines()[0].strip()
+    match = sha_re.search(first_line)
+    if not match:
+      raise ValueError('Can\'t recognize the version string %r' % first_line)
+    return match.group(1)
+
+  def _CollectLLVMMetadata(self):
+    def check_chroot_output(command):
+      cmd = cros_build_lib.RunCommand(command, enter_chroot=True,
+                                      redirect_stdout=True)
+      return cmd.output
+
+    # The baked-in clang should be the one we're looking for. If not, yell.
+    llvm_uses = check_chroot_output(
+        ['equery', '-C', '-N', 'uses', 'sys-devel/llvm'])
+    use_vars = self._ParseUseFlagState(llvm_uses)
+    if '+llvm_pgo_generate' not in use_vars:
+      raise ValueError('The pgo_generate flag isn\'t enabled; USE flags: %r' %
+                       sorted(use_vars))
+
+    clang_version_str = check_chroot_output(['clang', '--version'])
+    head_sha = self._ParseLLVMHeadSHA(clang_version_str)
+    metadata_output_path = os.path.join(self.archive_path, self.LLVM_METADATA)
+    osutils.WriteFile(metadata_output_path, json.dumps({'head_sha': head_sha}))
+    # This is a tiny JSON file, so it doesn't need to be tarred/compressed.
+    self._upload_queue.put([metadata_output_path])
 
   def _CollectPGOProfiles(self):
     """Collect and upload PGO profiles for the board."""
@@ -999,6 +1051,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     with self.ArtifactUploader(self._upload_queue, archive=False):
       self._CollectPGOProfiles()
+      self._CollectLLVMMetadata()
 
 
 # This stage generates and uploads the orderfile files for Chrome build.

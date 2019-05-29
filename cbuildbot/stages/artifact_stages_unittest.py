@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import json
 import mock
 import os
 import sys
@@ -532,6 +533,16 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   RELEASE_TAG = ''
 
+  _VALID_CLANG_VERSION_SHA = 'de7a0a152648d1a74cf4319920b1848aa00d1ca3'
+  _VALID_CLANG_VERSION_STRING = (
+      'Chromium OS 9.0_pre353983_p20190325-r13 clang version 9.0.0 '
+      '(/var/cache/chromeos-cache/distfiles/host/egit-src/llvm-project '
+      'de7a0a152648d1a74cf4319920b1848aa00d1ca3) (based on LLVM 9.0.0svn)\n'
+      'Target: x86_64-pc-linux-gnu\n'
+      'Thread model: posix\n'
+      'InstalledDir: /usr/bin\n'
+  )
+
   # pylint: disable=protected-access
 
   def setUp(self):
@@ -544,6 +555,102 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._run.GetArchive().SetupArchivePath()
     return artifact_stages.CollectPGOProfilesStage(self._run, self.buildstore,
                                                    self._current_board)
+
+  def testParseLLVMHeadSHA(self):
+    stage = self.ConstructStage()
+    actual_sha = stage._ParseLLVMHeadSHA(self._VALID_CLANG_VERSION_STRING)
+    self.assertEqual(actual_sha, self._VALID_CLANG_VERSION_SHA)
+
+  def _MetadataMultiDispatch(self, equery_uses_fn, clang_version_fn):
+    def result(command, enter_chroot, redirect_stdout):
+      self.assertTrue(enter_chroot)
+      self.assertTrue(redirect_stdout)
+
+      if command == ['equery', '-C', '-N', 'uses', 'sys-devel/llvm']:
+        stdout = equery_uses_fn()
+      elif command == ['clang', '--version']:
+        stdout = clang_version_fn()
+      else:
+        raise ValueError('Unexpected command: %s' % command)
+
+      return cros_build_lib.CommandResult(output=stdout)
+
+    return result
+
+  def testCollectLLVMMetadataRaisesOnAnInvalidVersionString(self):
+    stage = self.ConstructStage()
+
+    def equery_uses():
+      return ' - + llvm_pgo_generate :'
+
+    def clang_version():
+      valid_version_lines = self._VALID_CLANG_VERSION_STRING.splitlines()
+      valid_version_lines[0] = 'clang version 8.0.1\n'
+      return ''.join(valid_version_lines)
+
+    with patch(cros_build_lib, 'RunCommand') as run_command:
+      run_command.side_effect = self._MetadataMultiDispatch(
+          equery_uses_fn=equery_uses,
+          clang_version_fn=clang_version)
+
+      with self.assertRaises(ValueError) as raised:
+        stage._CollectLLVMMetadata()
+
+      self.assertIn('version string', raised.exception.message)
+
+  def testCollectLLVMMetadataRaisesIfClangIsntPGOGenerated(self):
+    stage = self.ConstructStage()
+
+    def clang_version():
+      return self._VALID_CLANG_VERSION_STRING
+
+    with patch(cros_build_lib, 'RunCommand') as run_command:
+      for uses in ['', ' - - llvm_pgo_generate :']:
+        def equery_uses():
+          # We're using a loop var on purpose; this function should die by the
+          # end of the current iteration.
+          # pylint: disable=cell-var-from-loop
+          return uses
+
+        run_command.side_effect = self._MetadataMultiDispatch(
+            equery_uses_fn=equery_uses,
+            clang_version_fn=clang_version)
+
+        with self.assertRaises(ValueError) as raised:
+          stage._CollectLLVMMetadata()
+
+        self.assertIn('pgo_generate flag', raised.exception.message)
+
+  def testCollectLLVMMetadataFunctionsInASimpleCase(self):
+    def clang_version():
+      return self._VALID_CLANG_VERSION_STRING
+
+    def equery_uses():
+      return ' - + llvm_pgo_generate :'
+
+    stage = self.ConstructStage()
+
+    run_command = self.PatchObject(cros_build_lib, 'RunCommand')
+    run_command.side_effect = self._MetadataMultiDispatch(equery_uses,
+                                                          clang_version)
+    write_file = self.PatchObject(osutils, 'WriteFile')
+    upload_queue_put = self.PatchObject(stage._upload_queue, 'put')
+    stage._CollectLLVMMetadata()
+
+    write_file.assert_called_once()
+    upload_queue_put.assert_called_once()
+
+    (written_file, metadata_json), kwargs = write_file.call_args
+    self.assertEqual(kwargs, {})
+
+    expected_metadata = {
+        'head_sha': self._VALID_CLANG_VERSION_SHA,
+    }
+
+    given_metadata = json.loads(metadata_json)
+    self.assertEqual(given_metadata, expected_metadata)
+
+    upload_queue_put.assert_called_with([written_file])
 
   def testCollectPGOProfiles(self):
     """Test that the sysroot generation was called correctly."""
