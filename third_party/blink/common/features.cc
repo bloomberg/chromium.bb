@@ -36,6 +36,10 @@ const base::Feature kEnableGpuRasterizationViewportRestriction{
 const base::Feature kScriptStreaming{"ScriptStreaming",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Allow streaming small (<30kB) scripts.
+const base::Feature kSmallScriptStreaming{"SmallScriptStreaming",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables user level memory pressure signal generation on Android.
 const base::Feature kUserLevelMemoryPressureSignal{
     "UserLevelMemoryPressureSignal", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -11,6 +11,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "mojo/public/cpp/system/wait.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -24,7 +25,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/response_body_loader.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
@@ -354,8 +354,12 @@ void RunScriptStreamingTask(
 }  // namespace
 
 bool ScriptStreamer::HasEnoughDataForStreaming(size_t resource_buffer_size) {
-  // Only stream larger scripts.
-  return resource_buffer_size >= small_script_threshold_;
+  if (base::FeatureList::IsEnabled(features::kSmallScriptStreaming)) {
+    return resource_buffer_size >= kMaximumLengthOfBOM;
+  } else {
+    // Only stream larger scripts.
+    return resource_buffer_size >= small_script_threshold_;
+  }
 }
 
 // Try to start streaming the script from the given datapipe, taking ownership
