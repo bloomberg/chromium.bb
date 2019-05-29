@@ -8,7 +8,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 
-import org.chromium.base.ObserverList;
 import org.chromium.base.UserData;
 import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -29,18 +28,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      */
     private static final int MAX_CONTROLS_ANIMATION_DURATION_MS = 200;
 
-    /**
-     * An interface for notification about browser controls offset updates.
-     */
-    public interface Observer {
-        /**
-         * Called when the browser controls are fully visible on screen.
-         */
-        void onBrowserControlsFullyVisible(Tab tab);
-    }
-
     private final Tab mTab;
-    private final ObserverList<Observer> mObservers = new ObserverList<>();
     private final TabObserver mTabObserver;
 
     private int mPreviousTopControlsOffsetY;
@@ -97,30 +85,6 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      */
     public boolean isControlsOffsetOverridden() {
         return mIsControlsOffsetOverridden;
-    }
-
-    /**
-     * @return Whether the browser controls are fully visible on screen.
-     * TODO(jinsukkim): Have clients listen to ChromFullscreenManager directly
-     *         and remove this method.
-     */
-    public boolean areBrowserControlsFullyVisible() {
-        final FullscreenManager manager = FullscreenManager.from(mTab);
-        return Float.compare(0f, manager.getBrowserControlHiddenRatio()) == 0;
-    }
-
-    /**
-     * @param observer The observer to be added to get notifications from this class.
-     */
-    public void addObserver(Observer observer) {
-        mObservers.addObserver(observer);
-    }
-
-    /**
-     * @param observer The observer to be removed to cancel notifications from this class.
-     */
-    public void removeObserver(Observer observer) {
-        mObservers.removeObserver(observer);
     }
 
     /**
@@ -215,11 +179,6 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
             manager.setPositionsForTabToNonFullscreen();
         } else {
             manager.setPositionsForTab(topControlsOffset, bottomControlsOffset, topContentOffset);
-        }
-
-        if (!areBrowserControlsFullyVisible()) return;
-        for (Observer observer : mObservers) {
-            observer.onBrowserControlsFullyVisible(mTab);
         }
     }
 
