@@ -343,6 +343,11 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    public void clearNativeReference() {
+        if (mNativeWebContentsAndroid != 0) nativeClearNativeReference(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public NavigationController getNavigationController() {
         return mNavigationController;
     }
@@ -963,6 +968,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private static native void nativeDestroyWebContents(long webContentsAndroidPtr);
 
     private static native WebContents nativeFromNativePtr(long webContentsAndroidPtr);
+
+    private native void nativeClearNativeReference(long nativeWebContentsAndroid);
 
     private native WindowAndroid nativeGetTopLevelNativeWindow(long nativeWebContentsAndroid);
     private native void nativeSetTopLevelNativeWindow(

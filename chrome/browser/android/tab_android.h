@@ -130,8 +130,9 @@ class TabAndroid {
         const base::android::JavaParamRef<jobject>& jweb_contents_delegate,
         const base::android::JavaParamRef<jobject>& jcontext_menu_populator);
   void DestroyWebContents(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj,
-                          jboolean delete_native);
+                          const base::android::JavaParamRef<jobject>& obj);
+  void ReleaseWebContents(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
   void OnPhysicalBackingSizeChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

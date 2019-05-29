@@ -121,6 +121,12 @@ public interface WebContents extends Parcelable {
     boolean isDestroyed();
 
     /**
+     * Removes the native WebContents' reference to this object. This is used when we want to
+     * destroy this object without destroying its native counterpart.
+     */
+    void clearNativeReference();
+
+    /**
      * @return The navigation controller associated with this WebContents.
      */
     NavigationController getNavigationController();

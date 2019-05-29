@@ -66,6 +66,9 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public void clearNativeReference() {}
+
+    @Override
     public NavigationController getNavigationController() {
         return null;
     }
