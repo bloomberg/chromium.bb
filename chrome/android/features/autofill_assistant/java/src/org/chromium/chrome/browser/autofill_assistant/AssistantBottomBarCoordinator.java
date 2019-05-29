@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.transition.ChangeBounds;
@@ -21,6 +20,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
@@ -76,7 +76,7 @@ class AssistantBottomBarCoordinator
     private boolean mResizeViewport;
 
     AssistantBottomBarCoordinator(
-            Activity activity, AssistantModel model, BottomSheetController controller) {
+            ChromeActivity activity, AssistantModel model, BottomSheetController controller) {
         mModel = model;
         mBottomSheetController = controller;
         mContent = new AssistantBottomSheetContent(activity);
@@ -183,6 +183,13 @@ class AssistantBottomBarCoordinator
                     showAndExpand();
                 } else {
                     hide();
+                }
+            } else if (AssistantModel.ALLOW_TALKBACK_ON_WEBSITE == propertyKey) {
+                boolean allow = model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE);
+                if (allow) {
+                    activity.removeViewObscuringAllTabs(bottomSheet);
+                } else {
+                    activity.addViewObscuringAllTabs(bottomSheet);
                 }
             }
         });

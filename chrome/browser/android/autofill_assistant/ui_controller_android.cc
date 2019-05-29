@@ -524,6 +524,8 @@ UiControllerAndroid::GetOverlayModel() {
 void UiControllerAndroid::SetOverlayState(OverlayState state) {
   Java_AssistantOverlayModel_setState(AttachCurrentThread(), GetOverlayModel(),
                                       state);
+  Java_AssistantModel_setAllowTalkbackOnWebsite(
+      AttachCurrentThread(), GetModel(), state != OverlayState::FULL);
 }
 
 void UiControllerAndroid::OnTouchableAreaChanged(

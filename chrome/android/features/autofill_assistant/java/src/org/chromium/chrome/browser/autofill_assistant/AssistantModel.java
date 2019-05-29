@@ -21,6 +21,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 @JNINamespace("autofill_assistant")
 class AssistantModel extends PropertyModel {
     static final WritableBooleanPropertyKey ALLOW_SOFT_KEYBOARD = new WritableBooleanPropertyKey();
+    static final WritableBooleanPropertyKey ALLOW_TALKBACK_ON_WEBSITE =
+            new WritableBooleanPropertyKey();
     static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
 
     private final AssistantOverlayModel mOverlayModel = new AssistantOverlayModel();
@@ -34,7 +36,7 @@ class AssistantModel extends PropertyModel {
     private final AssistantCarouselModel mActionsModel = new AssistantCarouselModel();
 
     AssistantModel() {
-        super(ALLOW_SOFT_KEYBOARD, VISIBLE);
+        super(ALLOW_SOFT_KEYBOARD, VISIBLE, ALLOW_TALKBACK_ON_WEBSITE);
     }
 
     @CalledByNative
@@ -78,6 +80,11 @@ class AssistantModel extends PropertyModel {
     @CalledByNative
     private void setAllowSoftKeyboard(boolean allowed) {
         set(ALLOW_SOFT_KEYBOARD, allowed);
+    }
+
+    @CalledByNative
+    private void setAllowTalkbackOnWebsite(boolean allowed) {
+        set(ALLOW_TALKBACK_ON_WEBSITE, allowed);
     }
 
     @CalledByNative

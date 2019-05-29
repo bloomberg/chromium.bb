@@ -62,8 +62,6 @@ public class AssistantOverlayCoordinator {
      * Destroy this coordinator.
      */
     public void destroy() {
-        if (mActivity.isViewObscuringAllTabs()) mActivity.removeViewObscuringAllTabs(mScrim);
-
         setScrimEnabled(false);
         mEventFilter.destroy();
         mDrawable.destroy();
@@ -90,14 +88,6 @@ public class AssistantOverlayCoordinator {
             setScrimEnabled(true);
             mDrawable.setPartial(state == AssistantOverlayState.PARTIAL);
             mEventFilter.setPartial(state == AssistantOverlayState.PARTIAL);
-        }
-
-        if (state == AssistantOverlayState.FULL && !mActivity.isViewObscuringAllTabs()) {
-            mActivity.addViewObscuringAllTabs(mScrim);
-        }
-
-        if (state != AssistantOverlayState.FULL && mActivity.isViewObscuringAllTabs()) {
-            mActivity.removeViewObscuringAllTabs(mScrim);
         }
     }
 
