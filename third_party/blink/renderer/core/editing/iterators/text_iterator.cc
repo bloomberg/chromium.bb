@@ -238,11 +238,11 @@ TextIteratorAlgorithm<Strategy>::~TextIteratorAlgorithm() {
     return;
   const Document& document = OwnerDocument();
   if (behavior_.ForInnerText())
-    UseCounter::Count(document, WebFeature::kInnerTextWithShadowTree);
+    document.CountUse(WebFeature::kInnerTextWithShadowTree);
   if (behavior_.ForSelectionToString())
-    UseCounter::Count(document, WebFeature::kSelectionToStringWithShadowTree);
+    document.CountUse(WebFeature::kSelectionToStringWithShadowTree);
   if (behavior_.ForWindowFind())
-    UseCounter::Count(document, WebFeature::kWindowFindWithShadowTree);
+    document.CountUse(WebFeature::kWindowFindWithShadowTree);
 }
 
 template <typename Strategy>

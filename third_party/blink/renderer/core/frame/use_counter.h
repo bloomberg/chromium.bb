@@ -38,7 +38,6 @@
 
 namespace blink {
 
-class Document;
 class DocumentLoader;
 class Element;
 class EnumerationHistogram;
@@ -74,9 +73,6 @@ class CORE_EXPORT UseCounter : public GarbageCollectedMixin {
   static void Count(UseCounter& use_counter, mojom::WebFeature feature) {
     use_counter.CountUse(feature);
   }
-
-  // TODO(yhirano): Remove this.
-  static void Count(const Document& document, mojom::WebFeature feature);
 
  public:
   UseCounter() = default;

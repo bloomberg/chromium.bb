@@ -179,8 +179,8 @@ CSSKeyframeRule* CSSKeyframesRule::AnonymousIndexedGetter(
   const Document* parent_document =
       CSSStyleSheet::SingleOwnerDocument(parentStyleSheet());
   if (parent_document) {
-    UseCounter::Count(*parent_document,
-                      WebFeature::kCSSKeyframesRuleAnonymousIndexedGetter);
+    parent_document->CountUse(
+        WebFeature::kCSSKeyframesRuleAnonymousIndexedGetter);
   }
   return Item(index);
 }

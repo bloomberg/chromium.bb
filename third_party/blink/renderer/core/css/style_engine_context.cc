@@ -38,8 +38,7 @@ void StyleEngineContext::AddingPendingSheet(const Document& document) {
   if (!added_pending_sheet_before_body_) {
     added_pending_sheet_before_body_ = !document.body();
     if (!added_pending_sheet_before_body_) {
-      UseCounter::Count(document,
-                        WebFeature::kPendingStylesheetAddedAfterBodyStarted);
+      document.CountUse(WebFeature::kPendingStylesheetAddedAfterBodyStarted);
     }
   }
 }

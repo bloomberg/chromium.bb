@@ -50,7 +50,7 @@ CSSBoxType ReferenceBox(const ShapeValue& shape_value) {
 
 void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
     LayoutSize new_reference_box_logical_size) {
-  const Document& document = layout_box_.GetDocument();
+  Document& document = layout_box_.GetDocument();
   bool is_horizontal_writing_mode =
       layout_box_.ContainingBlock()->StyleRef().IsHorizontalWritingMode();
 

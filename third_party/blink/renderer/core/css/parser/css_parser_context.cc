@@ -217,7 +217,7 @@ KURL CSSParserContext::CompleteURL(const String& url) const {
 
 void CSSParserContext::Count(WebFeature feature) const {
   if (IsUseCounterRecordingEnabled())
-    UseCounter::Count(*document_, feature);
+    document_->CountUse(feature);
 }
 
 void CSSParserContext::CountDeprecation(WebFeature feature) const {

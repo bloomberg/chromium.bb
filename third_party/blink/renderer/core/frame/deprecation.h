@@ -16,6 +16,7 @@ namespace mojom {
 enum class FeaturePolicyFeature;
 }  // namespace mojom
 
+class Document;
 class DocumentLoader;
 class ExecutionContext;
 class LocalFrame;

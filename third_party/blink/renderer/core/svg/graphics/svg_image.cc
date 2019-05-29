@@ -690,8 +690,7 @@ SVGImageChromeClient& SVGImage::ChromeClientForTesting() {
 void SVGImage::UpdateUseCounters(const Document& document) const {
   if (SVGSVGElement* root_element = SvgRootElement(page_.Get())) {
     if (root_element->TimeContainer()->HasAnimations()) {
-      UseCounter::Count(document,
-                        WebFeature::kSVGSMILAnimationInImageRegardlessOfCache);
+      document.CountUse(WebFeature::kSVGSMILAnimationInImageRegardlessOfCache);
     }
   }
 }

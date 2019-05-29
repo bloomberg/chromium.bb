@@ -93,14 +93,14 @@ bool IsMultipleFieldsTemporalInput(const AtomicString& type) {
 ThemePainter::ThemePainter() = default;
 
 #define COUNT_APPEARANCE(doc, feature) \
-  UseCounter::Count(doc, WebFeature::kCSSValueAppearance##feature##Rendered)
+  doc.CountUse(WebFeature::kCSSValueAppearance##feature##Rendered)
 
 // Returns true; Needs CSS painting and/or PaintBorderOnly().
 bool ThemePainter::Paint(const LayoutObject& o,
                          const PaintInfo& paint_info,
                          const IntRect& r) {
   const Node* node = o.GetNode();
-  const auto& doc = o.GetDocument();
+  Document& doc = o.GetDocument();
   const ComputedStyle& style = o.StyleRef();
   ControlPart part = o.StyleRef().Appearance();
 

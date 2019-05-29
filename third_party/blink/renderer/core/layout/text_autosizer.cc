@@ -498,7 +498,7 @@ float TextAutosizer::Inflate(LayoutObject* parent,
   }
 
   if (page_info_.has_autosized_)
-    UseCounter::Count(*document_, WebFeature::kTextAutosizing);
+    document_->CountUse(WebFeature::kTextAutosizing);
 
   return multiplier;
 }
@@ -1155,7 +1155,7 @@ void TextAutosizer::ReportIfCrossSiteFrame() {
       view->Size().IsEmpty() || !IsCrossSite(*frame, frame->Tree().Top()))
     return;
 
-  UseCounter::Count(*document_, WebFeature::kTextAutosizedCrossSiteIframe);
+  document_->CountUse(WebFeature::kTextAutosizedCrossSiteIframe);
 }
 
 void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,

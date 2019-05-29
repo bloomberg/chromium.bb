@@ -5285,7 +5285,7 @@ String Document::cookie(ExceptionState& exception_state) const {
   if (GetSettings() && !GetSettings()->GetCookieEnabled())
     return String();
 
-  UseCounter::Count(*this, WebFeature::kCookieGet);
+  CountUse(WebFeature::kCookieGet);
 
   // FIXME: The HTML5 DOM spec states that this attribute can raise an
   // InvalidStateError exception on getting if the Document has no
@@ -5302,7 +5302,7 @@ String Document::cookie(ExceptionState& exception_state) const {
       exception_state.ThrowSecurityError("Access is denied for this document.");
     return String();
   } else if (GetSecurityOrigin()->IsLocal()) {
-    UseCounter::Count(*this, WebFeature::kFileAccessedCookies);
+    CountUse(WebFeature::kFileAccessedCookies);
   }
 
   KURL cookie_url = CookieURL();
@@ -7501,13 +7501,12 @@ bool Document::IsSecureContext(String& error_message) const {
 bool Document::IsSecureContext() const {
   bool is_secure = secure_context_state_ == SecureContextState::kSecure;
   if (GetSandboxFlags() != WebSandboxFlags::kNone) {
-    UseCounter::Count(
-        *this, is_secure
-                   ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
-                   : WebFeature::kSecureContextCheckForSandboxedOriginFailed);
+    CountUse(is_secure
+                 ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
+                 : WebFeature::kSecureContextCheckForSandboxedOriginFailed);
   }
-  UseCounter::Count(*this, is_secure ? WebFeature::kSecureContextCheckPassed
-                                     : WebFeature::kSecureContextCheckFailed);
+  CountUse(is_secure ? WebFeature::kSecureContextCheckPassed
+                     : WebFeature::kSecureContextCheckFailed);
   return is_secure;
 }
 
@@ -7859,7 +7858,7 @@ bool Document::IsFocusAllowed() const {
         ad ? WebFeature::kFocusWithoutUserActivationNotSandboxedAdFrame
            : WebFeature::kFocusWithoutUserActivationNotSandboxedNotAdFrame;
   }
-  UseCounter::Count(*this, uma_type);
+  CountUse(uma_type);
   if (!RuntimeEnabledFeatures::BlockingFocusWithoutUserActivationEnabled())
     return true;
   return IsFeatureEnabled(

@@ -44,10 +44,6 @@
 
 namespace blink {
 
-void UseCounter::Count(const Document& document, mojom::WebFeature feature) {
-  document.CountUse(feature);
-}
-
 UseCounterMuteScope::UseCounterMuteScope(const Element& element)
     : loader_(element.GetDocument().Loader()) {
   if (loader_)
