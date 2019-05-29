@@ -53,6 +53,10 @@ ServiceWorkerTaskQueue::ServiceWorkerTaskQueue(BrowserContext* browser_context)
 
 ServiceWorkerTaskQueue::~ServiceWorkerTaskQueue() {}
 
+ServiceWorkerTaskQueue::TestObserver::TestObserver() {}
+
+ServiceWorkerTaskQueue::TestObserver::~TestObserver() {}
+
 // static
 ServiceWorkerTaskQueue* ServiceWorkerTaskQueue::Get(BrowserContext* context) {
   return ServiceWorkerTaskQueueFactory::GetForBrowserContext(context);
