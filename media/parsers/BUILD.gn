@@ -68,3 +68,15 @@ fuzzer_test("media_vp8_parser_fuzzer") {
   libfuzzer_options = [ "max_len = 400000" ]
   dict = "//media/test/vp8.dict"
 }
+
+fuzzer_test("media_webp_parser_fuzzer") {
+  sources = [
+    "webp_parser_fuzzertest.cc",
+  ]
+  deps = [
+    ":parsers",
+    "//base",
+  ]
+  seed_corpus = "//media/test/data"
+  dict = "//media/test/webp.dict"
+}
