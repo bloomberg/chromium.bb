@@ -151,10 +151,13 @@ void PushMessagingRouter::DeliverMessageToWorker(
 
   if (devtools_context->IsRecording(
           DevToolsBackgroundService::kPushMessaging)) {
+    std::map<std::string, std::string> event_metadata;
+    if (payload)
+      event_metadata["Payload"] = *payload;
     devtools_context->LogBackgroundServiceEventOnIO(
         service_worker->registration_id(), service_worker->script_origin(),
         DevToolsBackgroundService::kPushMessaging, "Push event dispatched",
-        message_id, {});
+        message_id, event_metadata);
   }
 }
 

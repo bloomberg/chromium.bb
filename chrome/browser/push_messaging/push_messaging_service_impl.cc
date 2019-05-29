@@ -136,7 +136,8 @@ void LogMessageReceivedEventToDevTools(
     const PushMessagingAppIdentifier& app_identifier,
     const std::string& message_id,
     bool was_encrypted,
-    const std::string& error_message) {
+    const std::string& error_message,
+    const std::string& payload) {
   if (!devtools_context)
     return;
 
@@ -146,6 +147,8 @@ void LogMessageReceivedEventToDevTools(
 
   if (!error_message.empty())
     event_metadata["Error Reason"] = error_message;
+  else if (was_encrypted)
+    event_metadata["Payload"] = payload;
 
   devtools_context->LogBackgroundServiceEvent(
       app_identifier.service_worker_registration_id(),
@@ -279,10 +282,11 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
     return;
   }
 
-  LogMessageReceivedEventToDevTools(GetDevToolsContext(app_identifier.origin()),
-                                    app_identifier, message.message_id,
-                                    /* was_encrypted= */ message.decrypted,
-                                    std::string() /* error_message */);
+  LogMessageReceivedEventToDevTools(
+      GetDevToolsContext(app_identifier.origin()), app_identifier,
+      message.message_id,
+      /* was_encrypted= */ message.decrypted, std::string() /* error_message */,
+      message.decrypted ? message.raw_data : std::string());
 
   // Drop message and unregister if |origin| has lost push permission.
   if (!IsPermissionSet(app_identifier.origin())) {
@@ -492,9 +496,9 @@ void PushMessagingServiceImpl::OnMessageDecryptionFailed(
   if (app_identifier.is_null())
     return;
 
-  LogMessageReceivedEventToDevTools(GetDevToolsContext(app_identifier.origin()),
-                                    app_identifier, message_id,
-                                    /* was_encrypted= */ true, error_message);
+  LogMessageReceivedEventToDevTools(
+      GetDevToolsContext(app_identifier.origin()), app_identifier, message_id,
+      /* was_encrypted= */ true, error_message, "" /* payload */);
 }
 
 // GetEndpoint method ----------------------------------------------------------

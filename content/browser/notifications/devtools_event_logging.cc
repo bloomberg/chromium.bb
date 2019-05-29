@@ -88,8 +88,10 @@ void LogNotificationDisplayedEventToDevTools(
   if (!callback)
     return;
 
-  std::move(callback).Run(/* event_name= */ "Notification displayed",
-                          /* event_metadata= */ {});
+  std::move(callback).Run(
+      /* event_name= */ "Notification displayed",
+      {{"Title", base::UTF16ToUTF8(data.notification_data.title)},
+       {"Body", base::UTF16ToUTF8(data.notification_data.body)}});
 }
 
 void LogNotificationClosedEventToDevTools(
@@ -113,9 +115,10 @@ void LogNotificationScheduledEventToDevTools(
 
   std::move(callback).Run(
       /* event_name= */ "Notification scheduled",
-      /* event_metadata= */ {
-          {"Show Trigger Timestamp",
-           base::NumberToString(show_trigger_timestamp.ToJsTime())}});
+      {{"Show Trigger Timestamp",
+        base::NumberToString(show_trigger_timestamp.ToJsTime())},
+       {"Title", base::UTF16ToUTF8(data.notification_data.title)},
+       {"Body", base::UTF16ToUTF8(data.notification_data.body)}});
 }
 
 void LogNotificationClickedEventToDevTools(
