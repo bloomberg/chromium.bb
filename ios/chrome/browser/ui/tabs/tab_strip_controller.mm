@@ -24,7 +24,6 @@
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
@@ -44,11 +43,13 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#include "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_favicon_driver_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "third_party/google_toolbox_for_mac/src/iPhone/GTMFadeTruncatingLabel.h"
 #include "ui/gfx/image/image.h"
 
@@ -157,7 +158,7 @@ UIColor* BackgroundColor() {
 @end
 
 @interface TabStripController () <DropAndNavigateDelegate,
-                                  TabModelObserver,
+                                  CRWWebStateObserver,
                                   TabStripViewLayoutDelegate,
                                   TabViewDelegate,
                                   WebStateListObserving,
@@ -244,6 +245,14 @@ UIColor* BackgroundColor() {
   std::unique_ptr<WebStateListFaviconDriverObserver>
       _webStateListFaviconObserver;
 
+  // Bridges C++ WebStateObserver methods to this TabStripController.
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
+
+  // Forwards observer methods for all WebStates in the WebStateList monitored
+  // by the TabStripController.
+  std::unique_ptr<AllWebStateObservationForwarder>
+      _allWebStateObservationForwarder;
+
   API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _buttonNewTabInteraction;
 }
 
@@ -266,8 +275,8 @@ UIColor* BackgroundColor() {
 // |isSelected| is passed in here as an optimization, so that the TabView is
 // drawn correctly the first time, without requiring the model to send a
 // -setSelected message to the TabView.
-- (TabView*)tabViewForWebState:(web::WebState*)webState
-                    isSelected:(BOOL)isSelected;
+- (TabView*)createTabViewForWebState:(web::WebState*)webState
+                          isSelected:(BOOL)isSelected;
 
 // Creates and installs the view used to dim unselected tabs.  Does nothing if
 // the view already exists.
@@ -378,8 +387,9 @@ UIColor* BackgroundColor() {
 // Updates the tab switcher button with the current tab count.
 - (void)updateTabCount;
 
-// Updates the tab view fav icon & progress spinner based on the |webState|.
-- (void)updateTabViewForWebState:(web::WebState*)webState;
+// Returns the existing tab view for |webState| or nil if there is no TabView
+// for it.
+- (TabView*)tabViewForWebState:(web::WebState*)webState;
 
 @end
 
@@ -403,12 +413,16 @@ UIColor* BackgroundColor() {
     _closingTabs = [[NSMutableSet alloc] initWithCapacity:5];
 
     _tabModel = tabModel;
-    [_tabModel addObserver:self];
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _tabModel.webStateList->AddObserver(_webStateListObserver.get());
     _webStateListFaviconObserver =
         std::make_unique<WebStateListFaviconDriverObserver>(
             _tabModel.webStateList, self);
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
+    // Observe all webStates of this |_tabModel.webStateList|.
+    _allWebStateObservationForwarder =
+        std::make_unique<AllWebStateObservationForwarder>(
+            _tabModel.webStateList, _webStateObserver.get());
     _style = style;
     _dispatcher = dispatcher;
 
@@ -506,7 +520,7 @@ UIColor* BackgroundColor() {
 - (void)dealloc {
   [_tabStripView setDelegate:nil];
   [_tabStripView setLayoutDelegate:nil];
-  [_tabModel removeObserver:self];
+  _allWebStateObservationForwarder.reset();
   _tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
 }
 
@@ -523,7 +537,8 @@ UIColor* BackgroundColor() {
   for (int index = 0; index < webStateList->count(); ++index) {
     web::WebState* webState = webStateList->GetWebStateAt(index);
     BOOL isSelected = index == webStateList->active_index();
-    TabView* view = [self tabViewForWebState:webState isSelected:isSelected];
+    TabView* view = [self createTabViewForWebState:webState
+                                        isSelected:isSelected];
     [_tabArray addObject:view];
     [_tabStripView addSubview:view];
   }
@@ -550,8 +565,8 @@ UIColor* BackgroundColor() {
   return view;
 }
 
-- (TabView*)tabViewForWebState:(web::WebState*)webState
-                    isSelected:(BOOL)isSelected {
+- (TabView*)createTabViewForWebState:(web::WebState*)webState
+                          isSelected:(BOOL)isSelected {
   TabView* view = [[TabView alloc] initWithEmptyView:NO selected:isSelected];
   if (UseRTLLayout())
     [view setTransform:CGAffineTransformMakeScale(-1, 1)];
@@ -964,7 +979,55 @@ UIColor* BackgroundColor() {
 }
 
 #pragma mark -
-#pragma mark WebStateObserving methods
+#pragma mark - CRWWebStateObserver methods
+
+- (void)webStateDidStartLoading:(web::WebState*)webState {
+  // webState can start loading before  didInsertWebState is called, in that
+  // case early return as there is no view to update yet.
+  if (_tabModel.count > _tabArray.count - _closingTabs.count)
+    return;
+
+  if (IsVisibleURLNewTabPage(webState))
+    return;
+
+  TabView* view = [self tabViewForWebState:webState];
+  if (!view) {
+    DCHECK(false) << "Received start loading notification for a Webstate "
+                  << "that is not contained in the WebStateList";
+    return;
+  }
+  [view startProgressSpinner];
+  [view setNeedsDisplay];
+}
+
+- (void)webStateDidStopLoading:(web::WebState*)webState {
+  TabView* view = [self tabViewForWebState:webState];
+  if (!view) {
+    DCHECK(false) << "Received stop loading notification for a Webstate "
+                  << "that is not contained in the WebStateList";
+    return;
+  }
+  // In new Tab case WebState's DidChangeTitle is not called. Make sure to
+  // updated the title here to account for that.
+  [view setTitle:tab_util::GetTabTitle(webState)];
+
+  [view stopProgressSpinner];
+  [view setNeedsDisplay];
+}
+
+- (void)webStateDidChangeTitle:(web::WebState*)webState {
+  TabView* view = [self tabViewForWebState:webState];
+  if (!view) {
+    DCHECK(false) << "Received title change notification for a Webstate "
+                  << "that is not contained in the WebStateList";
+    return;
+  }
+  [view setTitle:tab_util::GetTabTitle(webState)];
+  [view setNeedsDisplay];
+}
+
+#pragma mark -
+#pragma mark WebStateListObserving methods
 
 // Observer method, active WebState changed.
 - (void)webStateList:(WebStateList*)webStateList
@@ -1048,7 +1111,8 @@ UIColor* BackgroundColor() {
     didInsertWebState:(web::WebState*)webState
               atIndex:(int)index
            activating:(BOOL)activating {
-  TabView* view = [self tabViewForWebState:webState isSelected:activating];
+  TabView* view = [self createTabViewForWebState:webState
+                                      isSelected:activating];
   [_tabArray insertObject:view atIndex:[self indexForModelIndex:index]];
   [[self tabStripView] addSubview:view];
 
@@ -1087,37 +1151,14 @@ UIColor* BackgroundColor() {
 }
 
 #pragma mark -
-#pragma mark TabModelObserver methods
-
-// Observer method.
-- (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
-  // didChangeTab is called with each single webState. Some of these changes
-  // may happen before didInsertWebState is called, in that case early return as
-  // there is no view to update yet.
-  if (_tabModel.count > _tabArray.count - _closingTabs.count)
-    return;
-  [self updateTabViewForWebState:tab.webState];
-}
-
-#pragma mark -
 #pragma mark Views and Layout
 
-- (void)updateTabViewForWebState:(web::WebState*)webState {
+- (TabView*)tabViewForWebState:(web::WebState*)webState {
   int modelIndex = _tabModel.webStateList->GetIndexOfWebState(webState);
-  if (modelIndex == WebStateList::kInvalidIndex) {
-    DCHECK(false) << "Received notification for a Webstate that is not "
-                  << "contained in the WebStateList";
-    return;
-  }
+  if (modelIndex == WebStateList::kInvalidIndex)
+    return nil;
   NSUInteger index = [self indexForModelIndex:modelIndex];
-  TabView* view = [_tabArray objectAtIndex:index];
-  [view setTitle:tab_util::GetTabTitle(webState)];
-
-  if (webState->IsLoading() && !IsVisibleURLNewTabPage(webState))
-    [view startProgressSpinner];
-  else
-    [view stopProgressSpinner];
-  [view setNeedsDisplay];
+  return [_tabArray objectAtIndex:index];
 }
 
 - (CGFloat)tabStripVisibleSpace {
