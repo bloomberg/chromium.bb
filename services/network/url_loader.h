@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -51,7 +52,8 @@ class ScopedThrottlingToken;
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     : public mojom::URLLoader,
       public net::URLRequest::Delegate,
-      public mojom::AuthChallengeResponder {
+      public mojom::AuthChallengeResponder,
+      public mojom::ClientCertificateResponder {
  public:
   using DeleteCallback = base::OnceCallback<void(mojom::URLLoader* loader)>;
 
@@ -112,6 +114,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // mojom::AuthChallengeResponder:
   void OnAuthCredentials(
       const base::Optional<net::AuthCredentials>& credentials) override;
+
+  // mojom::ClientCertificateResponder:
+  void ContinueWithCertificate(
+      const scoped_refptr<net::X509Certificate>& x509_certificate,
+      const std::string& provider_name,
+      const std::vector<uint16_t>& algorithm_preferences,
+      mojom::SSLPrivateKeyPtr ssl_private_key) override;
+  void ContinueWithoutCertificate() override;
+  void CancelRequest() override;
 
   net::LoadState GetLoadStateForTesting() const;
 
@@ -190,12 +201,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void OnUploadProgressACK();
   void OnSSLCertificateErrorResponse(const net::SSLInfo& ssl_info,
                                      int net_error);
-  void OnCertificateRequestedResponse(
-      const scoped_refptr<net::X509Certificate>& x509_certificate,
-      const std::string& provider_name,
-      const std::vector<uint16_t>& algorithm_preferences,
-      mojom::SSLPrivateKeyPtr ssl_private_key,
-      bool cancel_certificate_selection);
   bool HasDataPipe() const;
   void RecordBodyReadFromNetBeforePausedIfNeeded();
   void ResumeStart();
@@ -247,6 +252,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   mojo::Binding<mojom::URLLoader> binding_;
   mojo::Binding<mojom::AuthChallengeResponder>
       auth_challenge_responder_binding_;
+  mojo::Binding<mojom::ClientCertificateResponder>
+      client_cert_responder_binding_;
   mojom::URLLoaderClientPtr url_loader_client_;
   int64_t total_written_bytes_ = 0;
 

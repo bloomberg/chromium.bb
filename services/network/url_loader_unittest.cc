@@ -33,6 +33,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/wait.h"
+#include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
@@ -2131,6 +2132,7 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
     NULL_CERTIFICATE,
     VALID_CERTIFICATE_SIGNATURE,
     INVALID_CERTIFICATE_SIGNATURE,
+    DESTROY_CLIENT_CERT_RESPONDER,
   };
 
   // mojom::NetworkServiceClient:
@@ -2170,8 +2172,7 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
       uint32_t routing_id,
       uint32_t request_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      mojom::NetworkServiceClient::OnCertificateRequestedCallback callback)
-      override {
+      mojom::ClientCertificateResponderPtr client_cert_responder) override {
     switch (certificate_response_) {
       case CertificateResponse::INVALID:
         NOTREACHED();
@@ -2181,21 +2182,19 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
         url_loader_ptr_->reset();
         break;
       case CertificateResponse::CANCEL_CERTIFICATE_SELECTION:
-        std::move(callback).Run(nullptr, std::string(), std::vector<uint16_t>(),
-                                nullptr,
-                                true /* cancel_certificate_selection */);
+        client_cert_responder->CancelRequest();
         break;
       case CertificateResponse::NULL_CERTIFICATE:
-        std::move(callback).Run(nullptr, std::string(), std::vector<uint16_t>(),
-                                nullptr,
-                                false /* cancel_certificate_selection */);
+        client_cert_responder->ContinueWithoutCertificate();
         break;
       case CertificateResponse::VALID_CERTIFICATE_SIGNATURE:
       case CertificateResponse::INVALID_CERTIFICATE_SIGNATURE:
-        std::move(callback).Run(std::move(certificate_), provider_name_,
-                                algorithm_preferences_,
-                                std::move(ssl_private_key_ptr_),
-                                false /* cancel_certificate_selection */);
+        client_cert_responder->ContinueWithCertificate(
+            std::move(certificate_), provider_name_, algorithm_preferences_,
+            std::move(ssl_private_key_ptr_));
+        break;
+      case CertificateResponse::DESTROY_CLIENT_CERT_RESPONDER:
+        // Send no response and let the local variable be destroyed.
         break;
     }
     ++on_certificate_requested_counter_;
@@ -2641,6 +2640,119 @@ class TestSSLPrivateKey : public net::SSLPrivateKey {
 };
 
 #if !defined(OS_IOS)
+TEST_F(URLLoaderTest, ClientAuthRespondTwice) {
+  // This tests that one URLLoader can handle two client cert requests.
+
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+
+  net::EmbeddedTestServer test_server_1(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server_1.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  test_server_1.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server_1.Start());
+
+  net::EmbeddedTestServer test_server_2(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server_2.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  test_server_2.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server_2.Start());
+
+  std::unique_ptr<net::FakeClientCertIdentity> identity =
+      net::FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+          net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8");
+  ASSERT_TRUE(identity);
+  scoped_refptr<TestSSLPrivateKey> private_key =
+      base::MakeRefCounted<TestSSLPrivateKey>(identity->ssl_private_key());
+
+  MockNetworkServiceClient network_service_client;
+  network_service_client.set_certificate_response(
+      MockNetworkServiceClient::CertificateResponse::
+          VALID_CERTIFICATE_SIGNATURE);
+  network_service_client.set_private_key(private_key);
+  network_service_client.set_certificate(identity->certificate());
+
+  // Create a request to server_1 that will redirect to server_2
+  ResourceRequest request = CreateResourceRequest(
+      "GET",
+      test_server_1.GetURL("/server-redirect-307?" +
+                           net::EscapeQueryParamValue(
+                               test_server_2.GetURL("/echo").spec(), true)));
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+  EXPECT_EQ(0, network_service_client.on_certificate_requested_counter());
+  EXPECT_EQ(0, private_key->sign_count());
+
+  client()->RunUntilRedirectReceived();
+  loader->FollowRedirect({}, {}, base::nullopt);
+  // MockNetworkServiceClient gives away the private key when it invokes
+  // ContinueWithCertificate, so we have to give it the key again.
+  network_service_client.set_private_key(private_key);
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+  EXPECT_EQ(2, network_service_client.on_certificate_requested_counter());
+  EXPECT_EQ(2, private_key->sign_count());
+}
+
+TEST_F(URLLoaderTest, ClientAuthDestroyResponder) {
+  // When URLLoader receives no message from the ClientCertificateResponder and
+  // its connection errors out, we expect the request to be canceled rather than
+  // just hang.
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("services/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  MockNetworkServiceClient network_service_client;
+  network_service_client.set_certificate_response(
+      MockNetworkServiceClient::CertificateResponse::
+          DESTROY_CLIENT_CERT_RESPONDER);
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server.GetURL("/defaultresponse"));
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, client()->CreateInterfacePtr(),
+      TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
+      resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+  network_service_client.set_url_loader_ptr(&loader);
+
+  RunUntilIdle();
+  ASSERT_TRUE(url_loader);
+
+  client()->RunUntilComplete();
+
+  EXPECT_EQ(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED,
+            client()->completion_status().error_code);
+}
+
 TEST_F(URLLoaderTest, ClientAuthCancelConnection) {
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   net::SSLServerConfig ssl_config;

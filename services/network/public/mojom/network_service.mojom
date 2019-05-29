@@ -49,6 +49,37 @@ interface AuthChallengeResponder {
    OnAuthCredentials(AuthCredentials? credentials);
 };
 
+// This interface enables the UI to send client certificate selections back to
+// the network service.
+//
+// Defining an interface for this purpose, rather than using a union in the
+// response of OnCertificateRequested, enables the NetworkServiceClient to learn
+// of the URLLoader destruction via the connection error handler.
+interface ClientCertificateResponder {
+  // Use the selected certificate and continue the URLRequest.
+  //
+  // - |provider_name| corresponds to the return value of
+  //   net::SSLPrivateKey::GetProviderName().
+  // - |algorithm_preferences| corresponds to the return value of
+  //   net::SSLPrivateKey::GetAlgorithmPreferences().
+  ContinueWithCertificate(network.mojom.X509Certificate x509_certificate,
+                          string provider_name,
+                          array<uint16> algorithm_preferences,
+                          SSLPrivateKey ssl_private_key);
+
+  // Affirmatively select no certificate (this is cached and can affect future
+  // URLRequests). Does not cancel the URLRequest.
+  //
+  // The connection is continued with no client cert.
+  // net::URLRequest::ContinueWithCertificate(nullptr, nullptr) needs to be
+  // called.
+  ContinueWithoutCertificate();
+
+  // Cancel the URLRequest. The request is aborted.
+  // net::URLRequest::CancelWithError() needs to be called.
+  CancelRequest();
+};
+
 struct LoadInfo {
   uint32 process_id;
   uint32 routing_id;
@@ -73,34 +104,22 @@ interface NetworkServiceClient {
                  AuthChallengeInfo auth_info,
                  URLResponseHead? head,
                  AuthChallengeResponder auth_challenge_responder);
+
   // Called when an SSL certificate requested message is received for client
   // authentication.
-  // The |provider_name| parameter corresponses to the return value of
-  // net::SSLPrivateKey::GetProviderName().
-  // The |algorithm_preferences| parameter corresponds to the return value
-  // of net::SSLPrivateKey::GetAlgorithmPreferences().
-  // The |cancel_certificate_selection| parameter is used to distinguish
-  // between the following two cases because the |x509_certificate| will be
-  // nullptr in both cases:
-  // 1. The connection is continued with no client cert,
-  // net::URLRequest::ContinueWithCertificate(nullptr, nullptr) needs to be
-  // called.
-  // 2. The request is aborted, net::URLRequest::CancelWithError() needs to be
-  // called.
   //
-  // |window_id| or else |process_id| and |routing_id| indicates
-  // the frame making the request, see
-  // network::ResourceRequest::fetch_window_id.
+  // Rather than using one response for multiple purposes, the caller expects
+  // exactly one response (or disconnect) to be sent back via |cert_responder|.
+  //
+  // |window_id| or else |process_id| and |routing_id| indicates the frame
+  // making the request, see network::ResourceRequest::fetch_window_id.
   OnCertificateRequested(mojo_base.mojom.UnguessableToken? window_id,
                          uint32 process_id,
                          uint32 routing_id,
                          uint32 request_id,
-                         network.mojom.SSLCertRequestInfo cert_info) => (
-                             network.mojom.X509Certificate x509_certificate,
-                             string provider_name,
-                             array<uint16> algorithm_preferences,
-                             SSLPrivateKey ssl_private_key,
-                             bool cancel_certificate_selection);
+                         network.mojom.SSLCertRequestInfo cert_info,
+                         ClientCertificateResponder cert_responder);
+
   // Called when an SSL certificate is encountered.
   // The callback argument is a net::ERROR value. If it's net::OK, then the
   // request is resumed. Otherwise it's cancelled with the given error.

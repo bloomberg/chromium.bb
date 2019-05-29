@@ -332,6 +332,7 @@ URLLoader::URLLoader(
       do_not_prompt_for_login_(request.do_not_prompt_for_login),
       binding_(this, std::move(url_loader_request)),
       auth_challenge_responder_binding_(this),
+      client_cert_responder_binding_(this),
       url_loader_client_(std::move(url_loader_client)),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
@@ -776,33 +777,40 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
 
 void URLLoader::OnCertificateRequested(net::URLRequest* unused,
                                        net::SSLCertRequestInfo* cert_info) {
+  DCHECK(!client_cert_responder_binding_.is_bound());
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIgnoreUrlFetcherCertRequests) &&
       factory_params_->process_id == 0 &&
       render_frame_id_ == MSG_ROUTING_NONE) {
-    url_request_->ContinueWithCertificate(nullptr, nullptr);
+    ContinueWithoutCertificate();
     return;
   }
 
   if (!network_service_client_) {
-    OnCertificateRequestedResponse(nullptr, std::string(),
-                                   std::vector<uint16_t>(), nullptr,
-                                   true /* cancel_certificate_selection */);
+    ContinueWithoutCertificate();
     return;
   }
+
+  // Set up mojo endpoints for ClientCertificateResponder and bind to the
+  // InterfaceRequest. This enables us to receive messages regarding the client
+  // certificate selection.
+  mojom::ClientCertificateResponderPtr client_cert_responder;
+  auto client_cert_responder_request =
+      mojo::MakeRequest(&client_cert_responder);
+  client_cert_responder_binding_.Bind(std::move(client_cert_responder_request));
+  client_cert_responder_binding_.set_connection_error_handler(
+      base::BindOnce(&URLLoader::CancelRequest, base::Unretained(this)));
 
   if (fetch_window_id_) {
     network_service_client_->OnCertificateRequested(
         fetch_window_id_, -1 /* process_id */, -1 /* routing_id */, request_id_,
-        cert_info,
-        base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
-                       weak_ptr_factory_.GetWeakPtr()));
+        cert_info, std::move(client_cert_responder));
   } else {
     network_service_client_->OnCertificateRequested(
         base::nullopt /* window_id */, factory_params_->process_id,
         render_frame_id_, request_id_, cert_info,
-        base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
-                       weak_ptr_factory_.GetWeakPtr()));
+        std::move(client_cert_responder));
   }
 }
 
@@ -1177,6 +1185,28 @@ void URLLoader::OnAuthCredentials(
   }
 }
 
+void URLLoader::ContinueWithCertificate(
+    const scoped_refptr<net::X509Certificate>& x509_certificate,
+    const std::string& provider_name,
+    const std::vector<uint16_t>& algorithm_preferences,
+    mojom::SSLPrivateKeyPtr ssl_private_key) {
+  client_cert_responder_binding_.Close();
+  auto key = base::MakeRefCounted<SSLPrivateKeyInternal>(
+      provider_name, algorithm_preferences, std::move(ssl_private_key));
+  url_request_->ContinueWithCertificate(std::move(x509_certificate),
+                                        std::move(key));
+}
+
+void URLLoader::ContinueWithoutCertificate() {
+  client_cert_responder_binding_.Close();
+  url_request_->ContinueWithCertificate(nullptr, nullptr);
+}
+
+void URLLoader::CancelRequest() {
+  client_cert_responder_binding_.Close();
+  url_request_->CancelWithError(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
+}
+
 void URLLoader::NotifyCompleted(int error_code) {
   // Ensure sending the final upload progress message here, since
   // OnResponseCompleted can be called without OnResponseStarted on cancellation
@@ -1313,26 +1343,6 @@ void URLLoader::OnSSLCertificateErrorResponse(const net::SSLInfo& ssl_info,
   }
 
   url_request_->CancelWithSSLError(net_error, ssl_info);
-}
-
-void URLLoader::OnCertificateRequestedResponse(
-    const scoped_refptr<net::X509Certificate>& x509_certificate,
-    const std::string& provider_name,
-    const std::vector<uint16_t>& algorithm_preferences,
-    mojom::SSLPrivateKeyPtr ssl_private_key,
-    bool cancel_certificate_selection) {
-  if (cancel_certificate_selection) {
-    url_request_->CancelWithError(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
-  } else {
-    if (x509_certificate) {
-      auto key = base::MakeRefCounted<SSLPrivateKeyInternal>(
-          provider_name, algorithm_preferences, std::move(ssl_private_key));
-      url_request_->ContinueWithCertificate(std::move(x509_certificate),
-                                            std::move(key));
-    } else {
-      url_request_->ContinueWithCertificate(nullptr, nullptr);
-    }
-  }
 }
 
 bool URLLoader::HasDataPipe() const {

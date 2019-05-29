@@ -4,6 +4,8 @@
 
 #include "services/network/test/test_network_service_client.h"
 
+#include <utility>
+
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
@@ -36,7 +38,7 @@ void TestNetworkServiceClient::OnCertificateRequested(
     uint32_t routing_id,
     uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-    mojom::NetworkServiceClient::OnCertificateRequestedCallback callback) {
+    mojom::ClientCertificateResponderPtr client_cert_responder) {
   NOTREACHED();
 }
 

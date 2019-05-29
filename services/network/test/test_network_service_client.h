@@ -5,6 +5,9 @@
 #ifndef SERVICES_NETWORK_TEST_TEST_NETWORK_SERVICE_CLIENT_H_
 #define SERVICES_NETWORK_TEST_TEST_NETWORK_SERVICE_CLIENT_H_
 
+#include <string>
+#include <vector>
+
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -43,8 +46,7 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
       uint32_t routing_id,
       uint32_t request_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      mojom::NetworkServiceClient::OnCertificateRequestedCallback callback)
-      override;
+      mojom::ClientCertificateResponderPtr client_cert_responder) override;
   void OnSSLCertificateError(uint32_t process_id,
                              uint32_t routing_id,
                              const GURL& url,

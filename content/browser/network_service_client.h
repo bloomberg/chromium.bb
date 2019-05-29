@@ -5,6 +5,10 @@
 #ifndef CONTENT_BROWSER_NETWORK_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_NETWORK_SERVICE_IMPL_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "build/build_config.h"
@@ -50,8 +54,7 @@ class CONTENT_EXPORT NetworkServiceClient
       uint32_t routing_id,
       uint32_t request_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
-          callback) override;
+      network::mojom::ClientCertificateResponderPtr cert_responder) override;
   void OnSSLCertificateError(uint32_t process_id,
                              uint32_t routing_id,
                              const GURL& url,
