@@ -967,6 +967,25 @@ gfx::Size BrowserView::GetContentsSize() const {
   return contents_web_view_->size();
 }
 
+void BrowserView::SetContentsSize(const gfx::Size& size) {
+  DCHECK(!GetContentsSize().IsEmpty());
+
+  const int width_diff = size.width() - GetContentsSize().width();
+  const int height_diff = size.height() - GetContentsSize().height();
+
+  // Resizing the window may be expensive, so only do it if the size is wrong.
+  if (width_diff == 0 && height_diff == 0)
+    return;
+
+  gfx::Rect bounds = GetBounds();
+  bounds.set_width(bounds.width() + width_diff);
+  bounds.set_height(bounds.height() + height_diff);
+  SetBounds(bounds);
+
+  DCHECK_EQ(GetContentsSize().width(), size.width());
+  DCHECK_EQ(GetContentsSize().height(), size.height());
+}
+
 bool BrowserView::IsMaximized() const {
   return frame_->IsMaximized();
 }

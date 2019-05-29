@@ -241,6 +241,10 @@ class BrowserWindow : public ui::BaseWindow {
   // the TabStripModel has an active tab.
   virtual gfx::Size GetContentsSize() const = 0;
 
+  // Resizes the window to fit a WebContents of a certain size. This should only
+  // be called after the TabStripModel has an active tab.
+  virtual void SetContentsSize(const gfx::Size& size) = 0;
+
   // Returns the container of page action icons.
   virtual PageActionIconContainer* GetOmniboxPageActionIconContainer() = 0;
 

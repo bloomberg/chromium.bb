@@ -1150,6 +1150,36 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OffScopePWAPopupsHaveCorrectSize) {
   EXPECT_EQ(size, popup_browser->window()->GetContentsSize());
 }
 
+// Tests that using window.open to create a popup window in scope results in
+// a correctly sized window.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InScopePWAPopupsHaveCorrectSize) {
+  ASSERT_TRUE(https_server()->Start());
+
+  InstallSecurePWA();
+
+  LaunchApp();
+  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(app_browser_));
+
+  gfx::Size size(500, 500);
+  Browser* popup_browser =
+      OpenPopupAndWait(app_browser_, GetSecureAppURL(), size);
+
+  // The navigation should have happened in a new window.
+  EXPECT_NE(popup_browser, app_browser_);
+
+  // The popup browser should be a PWA.
+  EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(popup_browser));
+
+  // Toolbar should not be shown, as the popup is in scope.
+  EXPECT_FALSE(popup_browser->app_controller()->ShouldShowToolbar());
+
+  // Skip animating the toolbar visibility.
+  popup_browser->app_controller()->UpdateToolbarVisibility(false);
+
+  // The popup window should be the size we specified.
+  EXPECT_EQ(size, popup_browser->window()->GetContentsSize());
+}
+
 // Tests that desktop PWAs open links in the browser.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
                        DesktopPWAsOpenLinksInBrowserWhenFeatureDisabled) {

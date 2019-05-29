@@ -95,7 +95,12 @@ class AppBrowserController : public TabStripModelObserver,
 
   Browser* browser() const { return browser_; }
 
+  // Gets the url that the app browser controller was created with. Note: This
+  // may be empty until the web contents begins navigating.
+  const GURL& initial_url() const { return initial_url_; }
+
   // content::WebContentsObserver:
+  void DidStartNavigation(content::NavigationHandle* handle) override;
   void DidChangeThemeColor(base::Optional<SkColor> theme_color) override;
 
   // TabStripModelObserver:
@@ -106,12 +111,20 @@ class AppBrowserController : public TabStripModelObserver,
 
  protected:
   explicit AppBrowserController(Browser* browser);
+
+  // Called once the app browser controller has determined its initial url.
+  virtual void OnReceivedInitialURL() {}
+
   // Called by OnTabstripModelChanged().
   virtual void OnTabInserted(content::WebContents* contents);
   virtual void OnTabRemoved(content::WebContents* contents);
 
  private:
+  // Sets the url that the app browser controller was created with.
+  void SetInitialURL(const GURL& initial_url);
+
   Browser* const browser_;
+  GURL initial_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBrowserController);
 };

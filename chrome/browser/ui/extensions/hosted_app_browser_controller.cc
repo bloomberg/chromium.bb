@@ -11,6 +11,7 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -151,8 +152,7 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  // Don't show a toolbar until a navigation has occurred.
-  if (!web_contents || web_contents->GetLastCommittedURL().is_empty())
+  if (!web_contents)
     return false;
 
   GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);
@@ -160,13 +160,6 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
 
   bool is_internal_launch_scheme = launch_scheme == kExtensionScheme ||
                                    launch_scheme == content::kChromeUIScheme;
-
-  GURL last_committed_url = web_contents->GetLastCommittedURL();
-
-  // We check the visible URL to indicate to the user that they are navigating
-  // to a different origin than that of the app as soon as the navigation
-  // starts, even if the navigation hasn't committed yet.
-  GURL visible_url = web_contents->GetVisibleURL();
 
   // The current page must be secure for us to hide the toolbar. However,
   // the chrome-extension:// and chrome:// launch URL apps can hide the toolbar,
@@ -177,28 +170,44 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
   base::StringPiece secure_page_scheme =
       is_internal_launch_scheme ? launch_scheme : url::kHttpsScheme;
 
-  // Insecure page schemes show the toolbar.
-  if (last_committed_url.scheme_piece() != secure_page_scheme ||
-      visible_url.scheme_piece() != secure_page_scheme) {
+  auto should_show_toolbar_for_url = [&](const GURL& url) -> bool {
+    // If the url is unset, it doesn't give a signal as to whether the toolbar
+    // should be shown or not. In lieu of more information, do not show the
+    // toolbar.
+    if (url.is_empty())
+      return false;
+
+    if (url.scheme_piece() != secure_page_scheme)
+      return true;
+
+    if (IsForSystemWebApp()) {
+      DCHECK_EQ(url.scheme_piece(), content::kChromeUIScheme);
+      return false;
+    }
+
+    // Page URLs that are not within scope
+    // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
+    // corresponding to |launch_url| show the toolbar.
+    return !IsSameScope(launch_url, url, web_contents->GetBrowserContext());
+  };
+
+  GURL visible_url = web_contents->GetVisibleURL();
+  GURL last_committed_url = web_contents->GetLastCommittedURL();
+
+  if (last_committed_url.is_empty() && visible_url.is_empty())
+    return should_show_toolbar_for_url(initial_url());
+
+  if (should_show_toolbar_for_url(visible_url) ||
+      should_show_toolbar_for_url(last_committed_url)) {
     return true;
   }
-
-  if (IsForSystemWebApp()) {
-    DCHECK_EQ(last_committed_url.scheme_piece(), content::kChromeUIScheme);
-    return false;
-  }
-
-  // Page URLs that are not within scope
-  // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
-  // corresponding to |launch_url| show the toolbar.
-  if (!IsSameScope(launch_url, last_committed_url,
-                   web_contents->GetBrowserContext()) ||
-      !IsSameScope(launch_url, visible_url, web_contents->GetBrowserContext()))
-    return true;
 
   // Insecure external web sites show the toolbar.
-  if (!is_internal_launch_scheme && !IsSiteSecure(web_contents))
+  // Note: IsSiteSecure is false until a url is committed.
+  if (!last_committed_url.is_empty() && !is_internal_launch_scheme &&
+      !IsSiteSecure(web_contents)) {
     return true;
+  }
 
   return false;
 }
@@ -306,6 +315,21 @@ void HostedAppBrowserController::Uninstall() {
 
 bool HostedAppBrowserController::IsInstalled() const {
   return GetExtension();
+}
+
+void HostedAppBrowserController::OnReceivedInitialURL() {
+  UpdateToolbarVisibility(false);
+
+  // If the window bounds have not been overridden, there is no need to resize
+  // the window.
+  if (!browser()->bounds_overridden())
+    return;
+
+  DCHECK(chrome::SavedBoundsAreContentBounds(browser()));
+  // TODO(crbug.com/964825): Correctly set the window size at creation time.
+  // This is currently not possible because the current url is not easily known
+  // at popup construction time.
+  browser()->window()->SetContentsSize(browser()->override_bounds().size());
 }
 
 void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {

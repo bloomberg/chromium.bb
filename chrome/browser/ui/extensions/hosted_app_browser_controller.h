@@ -98,6 +98,7 @@ class HostedAppBrowserController : public ExtensionUninstallDialog::Delegate,
   bool IsHostedApp() const override;
 
  protected:
+  void OnReceivedInitialURL() override;
   void OnTabInserted(content::WebContents* contents) override;
   void OnTabRemoved(content::WebContents* contents) override;
 

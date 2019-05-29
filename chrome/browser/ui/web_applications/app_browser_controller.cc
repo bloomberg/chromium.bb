@@ -16,6 +16,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -105,6 +106,17 @@ bool AppBrowserController::IsForSystemWebApp() const {
       .IsSystemWebApp(*GetAppId());
 }
 
+void AppBrowserController::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!initial_url().is_empty())
+    return;
+  if (!navigation_handle->IsInMainFrame())
+    return;
+  if (navigation_handle->GetURL().is_empty())
+    return;
+  SetInitialURL(navigation_handle->GetURL());
+}
+
 void AppBrowserController::DidChangeThemeColor(
     base::Optional<SkColor> theme_color) {
   browser_->window()->UpdateFrameColor();
@@ -157,11 +169,21 @@ void AppBrowserController::OnTabInserted(content::WebContents* contents) {
   DCHECK(!web_contents()) << " App windows are single tabbed only";
   content::WebContentsObserver::Observe(contents);
   DidChangeThemeColor(GetThemeColor());
+
+  if (!contents->GetVisibleURL().is_empty())
+    SetInitialURL(contents->GetVisibleURL());
 }
 
 void AppBrowserController::OnTabRemoved(content::WebContents* contents) {
   DCHECK_EQ(contents, web_contents());
   content::WebContentsObserver::Observe(nullptr);
+}
+
+void AppBrowserController::SetInitialURL(const GURL& initial_url) {
+  DCHECK(initial_url_.is_empty());
+  initial_url_ = initial_url;
+
+  OnReceivedInitialURL();
 }
 
 }  // namespace web_app
