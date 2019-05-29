@@ -13,7 +13,7 @@
 #include "media/base/fake_single_thread_task_runner.h"
 #include "net/base/net_errors.h"
 
-namespace openscreen {
+namespace media_router {
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -267,4 +267,4 @@ TEST(NetworkServiceQuicPacketWriterTest, TooManyPacketsCausesWriteBlockage) {
 
   ASSERT_FALSE(test_writer.writer->IsWriteBlocked());
 }
-}  // namespace openscreen
+}  // namespace media_router

@@ -13,7 +13,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
-namespace openscreen {
+namespace media_router {
 class AsyncPacketSender {
  public:
   virtual ~AsyncPacketSender() {}
@@ -41,6 +41,6 @@ class NetworkServiceAsyncPacketSender : public AsyncPacketSender {
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceAsyncPacketSender);
 };
 
-}  // namespace openscreen
+}  // namespace media_router
 
 #endif  // CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_OPENSCREEN_NETWORK_SERVICE_ASYNC_PACKET_SENDER_H_
