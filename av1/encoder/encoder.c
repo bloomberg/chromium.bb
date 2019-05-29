@@ -2629,8 +2629,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   cpi->refresh_alt_ref_frame = 0;
 
-  av1_init_level_info(cpi->level_info);
-
   cpi->b_calculate_psnr = CONFIG_INTERNAL_STATS;
 #if CONFIG_INTERNAL_STATS
   cpi->b_calculate_blockiness = 1;
@@ -5541,7 +5539,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   if (cpi->keep_level_stats && oxcf->pass != 1) {
     // Initialize level info. at the beginning of each sequence.
     if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
-      av1_init_level_info(cpi->level_info);
+      av1_init_level_info(cpi);
     }
     av1_update_level_info(cpi, *size, *time_stamp, *time_end);
   }

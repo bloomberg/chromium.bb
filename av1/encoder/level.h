@@ -53,7 +53,6 @@ typedef struct {
   int start;  // Buffer index of the first FrameRecord.
 } FrameWindowBuffer;
 
-// Used to keep track of AV1 Level Stats. Currently unimplemented.
 typedef struct {
   int max_bitrate;  // In bps.
   int max_tile_size;
@@ -66,11 +65,6 @@ typedef struct {
   double total_time_encoded;
   double min_cr;
 } AV1LevelStats;
-
-typedef struct {
-  AV1LevelStats level_stats;
-  AV1LevelSpec level_spec;
-} AV1LevelInfo;
 
 // The following data structures are for the decoder model.
 typedef struct {
@@ -111,7 +105,8 @@ enum {
   DECODE_EXISTING_FRAME_BUF_EMPTY,
   DISPLAY_FRAME_LATE,
   SMOOTHING_BUFFER_UNDERFLOW,
-  SMOOTHING_BUFFER_OVERFLOW
+  SMOOTHING_BUFFER_OVERFLOW,
+  DECODER_MODEL_DISABLED
 } UENUM1BYTE(DECODER_MODEL_STATUS);
 
 #define BUFFER_POOL_MAX_SIZE 10
@@ -143,7 +138,13 @@ typedef struct {
   size_t coded_bits;
 } DECODER_MODEL;
 
-void av1_init_level_info(AV1LevelInfo *level_info[]);
+typedef struct {
+  AV1LevelStats level_stats;
+  AV1LevelSpec level_spec;
+  DECODER_MODEL decoder_models[SEQ_LEVELS];
+} AV1LevelInfo;
+
+void av1_init_level_info(struct AV1_COMP *cpi);
 
 void av1_update_level_info(struct AV1_COMP *cpi, size_t size, int64_t ts_start,
                            int64_t ts_end);
