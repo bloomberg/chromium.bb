@@ -553,6 +553,7 @@ crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
 
 # Flaky timeout on android_n5x_swarming_rel and
