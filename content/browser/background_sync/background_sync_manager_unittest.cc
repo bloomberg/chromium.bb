@@ -121,6 +121,9 @@ class BackgroundSyncManagerTest
     ON_CALL(*mock_permission_manager,
             GetPermissionStatus(PermissionType::PERIODIC_BACKGROUND_SYNC, _, _))
         .WillByDefault(Return(blink::mojom::PermissionStatus::GRANTED));
+    ON_CALL(*mock_permission_manager,
+            GetPermissionStatus(PermissionType::NOTIFICATIONS, _, _))
+        .WillByDefault(Return(blink::mojom::PermissionStatus::DENIED));
     helper_->browser_context()->SetPermissionControllerDelegate(
         std::move(mock_permission_manager));
 
@@ -575,6 +578,8 @@ class BackgroundSyncManagerTest
     BackgroundSyncParameters* parameters =
         GetController()->background_sync_parameters();
     parameters->max_sync_attempts = max_sync_attempts;
+    parameters->max_sync_attempts_with_notification_permission =
+        max_sync_attempts + 1;
 
     // Restart the BackgroundSyncManager so that it updates its parameters.
     SetupBackgroundSyncManager();
@@ -779,6 +784,11 @@ TEST_F(BackgroundSyncManagerTest, RegisterPermissionDenied) {
       GetPermissionControllerDelegate();
 
   EXPECT_CALL(*mock_permission_manager,
+              GetPermissionStatus(PermissionType::NOTIFICATIONS,
+                                  expected_origin, expected_origin))
+      .Times(2);
+
+  EXPECT_CALL(*mock_permission_manager,
               GetPermissionStatus(PermissionType::BACKGROUND_SYNC,
                                   expected_origin, expected_origin))
       .WillOnce(testing::Return(blink::mojom::PermissionStatus::DENIED));
@@ -796,6 +806,11 @@ TEST_F(BackgroundSyncManagerTest, RegisterPermissionGranted) {
   GURL expected_origin = GURL(kScope1).GetOrigin();
   MockPermissionManager* mock_permission_manager =
       GetPermissionControllerDelegate();
+
+  EXPECT_CALL(*mock_permission_manager,
+              GetPermissionStatus(PermissionType::NOTIFICATIONS,
+                                  expected_origin, expected_origin))
+      .Times(2);
 
   EXPECT_CALL(*mock_permission_manager,
               GetPermissionStatus(PermissionType::BACKGROUND_SYNC,
@@ -1942,6 +1957,28 @@ TEST_F(BackgroundSyncManagerTest, UkmRecordedAtCompletion) {
     histogram_tester.ExpectBucketCount(
         "BackgroundSync.Registration.OneShot.NumAttemptsForSuccessfulEvent", 1,
         0);
+  }
+}
+
+TEST_F(BackgroundSyncManagerTest, MaxSyncAttemptsWithNotificationPermission) {
+  const int max_attempts = 5;
+  SetMaxSyncAttemptsAndRestartManager(max_attempts);
+  MockPermissionManager* mock_permission_manager =
+      GetPermissionControllerDelegate();
+
+  {
+    EXPECT_TRUE(Register(sync_options_1_));
+    EXPECT_EQ(callback_one_shot_sync_registration_->max_attempts(),
+              max_attempts);
+  }
+
+  {
+    ON_CALL(*mock_permission_manager,
+            GetPermissionStatus(PermissionType::NOTIFICATIONS, _, _))
+        .WillByDefault(Return(blink::mojom::PermissionStatus::GRANTED));
+    EXPECT_TRUE(Register(sync_options_2_));
+    EXPECT_EQ(callback_one_shot_sync_registration_->max_attempts(),
+              max_attempts + 1);
   }
 }
 

@@ -36,6 +36,9 @@ const char BackgroundSyncControllerImpl::kFieldTrialName[] = "BackgroundSync";
 const char BackgroundSyncControllerImpl::kDisabledParameterName[] = "disabled";
 const char BackgroundSyncControllerImpl::kMaxAttemptsParameterName[] =
     "max_sync_attempts";
+const char BackgroundSyncControllerImpl::
+    kMaxAttemptsWithNotificationPermissionParameterName[] =
+        "max_sync_attempts_with_notification_permission";
 const char BackgroundSyncControllerImpl::kInitialRetryParameterName[] =
     "initial_retry_delay_sec";
 const char BackgroundSyncControllerImpl::kRetryDelayFactorParameterName[] =
@@ -73,6 +76,16 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
   if (base::LowerCaseEqualsASCII(field_params[kDisabledParameterName],
                                  "true")) {
     parameters->disable = true;
+  }
+
+  if (base::ContainsKey(field_params,
+                        kMaxAttemptsWithNotificationPermissionParameterName)) {
+    int max_attempts;
+    if (base::StringToInt(
+            field_params[kMaxAttemptsWithNotificationPermissionParameterName],
+            &max_attempts)) {
+      parameters->max_sync_attempts_with_notification_permission = max_attempts;
+    }
   }
 
   if (base::ContainsKey(field_params, kMaxAttemptsParameterName)) {

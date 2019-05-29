@@ -20,9 +20,15 @@ struct CONTENT_EXPORT BackgroundSyncParameters {
   // fail.
   bool disable;
 
-  // The number of attempts the BackgroundSyncManager will make to fire an event
-  // before giving up.
+  // The number of attempts the BackgroundSyncManager will make to fire an
+  // event before giving up.
   int max_sync_attempts;
+
+  // The number of attempts the BackgroundSyncManager will make to fire an
+  // event before giving up, assuming the origin has notification permission.
+  // This value will override |max_sync_attempts| assuming the Sync
+  // Registration's origin has notification permissions.
+  int max_sync_attempts_with_notification_permission;
 
   // The first time that a registration retries, it will wait at least this much
   // time before doing so.

@@ -40,6 +40,9 @@
 #endif
 
 using blink::mojom::BackgroundSyncType;
+using blink::mojom::PermissionStatus;
+using SyncAndNotificationPermissions =
+    std::pair<PermissionStatus, PermissionStatus>;
 
 namespace content {
 
@@ -89,7 +92,7 @@ BackgroundSyncController* GetBackgroundSyncControllerOnUIThread(
   return browser_context->GetBackgroundSyncController();
 }
 
-blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
+SyncAndNotificationPermissions GetBackgroundSyncPermissionOnUIThread(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     const url::Origin& origin,
     BackgroundSyncType sync_type) {
@@ -98,7 +101,7 @@ blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
   BrowserContext* browser_context =
       GetBrowserContextOnUIThread(std::move(service_worker_context));
   if (!browser_context)
-    return blink::mojom::PermissionStatus::DENIED;
+    return {PermissionStatus::DENIED, PermissionStatus::DENIED};
 
   PermissionController* permission_controller =
       BrowserContext::GetPermissionController(browser_context);
@@ -106,11 +109,14 @@ blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
 
   // The requesting origin always matches the embedding origin.
   GURL origin_url = origin.GetURL();
-  return permission_controller->GetPermissionStatus(
+  auto sync_permission = permission_controller->GetPermissionStatus(
       sync_type == BackgroundSyncType::ONE_SHOT
           ? PermissionType::BACKGROUND_SYNC
           : PermissionType::PERIODIC_BACKGROUND_SYNC,
       origin_url, origin_url);
+  auto notification_permission = permission_controller->GetPermissionStatus(
+      PermissionType::NOTIFICATIONS, origin_url, origin_url);
+  return {sync_permission, notification_permission};
 }
 
 void NotifyBackgroundSyncRegisteredOnUIThread(
@@ -590,6 +596,10 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
         registration->set_delay_until(
             base::Time::FromInternalValue(registration_proto.delay_until()));
         registration->set_resolved();
+        if (registration_proto.has_max_attempts())
+          registration->set_max_attempts(registration_proto.max_attempts());
+        else
+          registration->set_max_attempts(parameters_->max_sync_attempts);
       }
     }
   }
@@ -675,15 +685,15 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     int64_t sw_registration_id,
     blink::mojom::SyncRegistrationOptions options,
     StatusAndRegistrationCallback callback,
-    blink::mojom::PermissionStatus permission_status) {
+    SyncAndNotificationPermissions permission_statuses) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (permission_status == blink::mojom::PermissionStatus::DENIED) {
+  if (permission_statuses.first == PermissionStatus::DENIED) {
     RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_PERMISSION_DENIED,
                               std::move(callback));
     return;
   }
-  DCHECK(permission_status == blink::mojom::PermissionStatus::GRANTED);
+  DCHECK_EQ(permission_statuses.first, PermissionStatus::GRANTED);
 
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
@@ -740,6 +750,10 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
   BackgroundSyncRegistration new_registration;
 
   *new_registration.options() = std::move(options);
+  new_registration.set_max_attempts(
+      permission_statuses.second == PermissionStatus::GRANTED
+          ? parameters_->max_sync_attempts_with_notification_permission
+          : parameters_->max_sync_attempts);
 
   if (new_registration.sync_type() == BackgroundSyncType::PERIODIC) {
     base::PostTaskWithTraitsAndReplyWithResult(
@@ -930,6 +944,7 @@ void BackgroundSyncManager::StoreRegistrations(
           registration.options()->min_interval);
     }
     registration_proto->set_num_attempts(registration.num_attempts());
+    registration_proto->set_max_attempts(registration.max_attempts());
     registration_proto->set_delay_until(
         registration.delay_until().ToInternalValue());
   }
@@ -1415,7 +1430,7 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
   num_firing_registrations_ += 1;
 
   const bool last_chance =
-      registration->num_attempts() == parameters_->max_sync_attempts - 1;
+      registration->num_attempts() == registration->max_attempts() - 1;
 
   HasMainFrameProviderHost(
       url::Origin::Create(service_worker_registration->scope().GetOrigin()),
@@ -1517,7 +1532,7 @@ void BackgroundSyncManager::EventCompleteImpl(
   // It's important to update |num_attempts| before we update |delay_until|.
   registration->set_num_attempts(registration->num_attempts() + 1);
   if ((registration->sync_type() == BackgroundSyncType::PERIODIC &&
-       registration->num_attempts() == parameters_->max_sync_attempts) ||
+       registration->num_attempts() == registration->max_attempts()) ||
       (registration->sync_state() ==
        blink::mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING)) {
     registration->set_num_attempts(0);
@@ -1527,7 +1542,7 @@ void BackgroundSyncManager::EventCompleteImpl(
   bool succeeded = status_code == blink::ServiceWorkerStatusCode::kOk;
   if (registration->sync_type() == BackgroundSyncType::PERIODIC ||
       (!succeeded &&
-       registration->num_attempts() < parameters_->max_sync_attempts)) {
+       registration->num_attempts() < registration->max_attempts())) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
@@ -1561,8 +1576,7 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
   }
 
   bool succeeded = status_code == blink::ServiceWorkerStatusCode::kOk;
-  bool can_retry =
-      registration->num_attempts() < parameters_->max_sync_attempts;
+  bool can_retry = registration->num_attempts() < registration->max_attempts();
 
   bool registration_completed = true;
   if (registration->sync_state() ==
@@ -1618,7 +1632,7 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
           base::BindOnce(&NotifyBackgroundSyncCompletedOnUIThread,
                          service_worker_context_, origin, status_code,
                          registration->num_attempts(),
-                         parameters_->max_sync_attempts));
+                         registration->max_attempts()));
     }
 
     RemoveActiveRegistration(*registration_info);

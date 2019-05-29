@@ -126,6 +126,9 @@ TEST_F(BackgroundSyncControllerImplTest, AllParamsSet) {
       "100";
   field_parameters[BackgroundSyncControllerImpl::kMaxAttemptsParameterName] =
       "200";
+  field_parameters[BackgroundSyncControllerImpl::
+                       kMaxAttemptsWithNotificationPermissionParameterName] =
+      "250";
   field_parameters
       [BackgroundSyncControllerImpl::kRetryDelayFactorParameterName] = "300";
   field_parameters[BackgroundSyncControllerImpl::kMinSyncRecoveryTimeName] =
@@ -143,6 +146,8 @@ TEST_F(BackgroundSyncControllerImplTest, AllParamsSet) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(100),
             sync_parameters.initial_retry_delay);
   EXPECT_EQ(200, sync_parameters.max_sync_attempts);
+  EXPECT_EQ(250,
+            sync_parameters.max_sync_attempts_with_notification_permission);
   EXPECT_EQ(300, sync_parameters.retry_delay_factor);
   EXPECT_EQ(base::TimeDelta::FromSeconds(400),
             sync_parameters.min_sync_recovery_time);

@@ -261,7 +261,8 @@ class CONTENT_EXPORT BackgroundSyncManager
       int64_t sw_registration_id,
       blink::mojom::SyncRegistrationOptions options,
       StatusAndRegistrationCallback callback,
-      blink::mojom::PermissionStatus permission_status);
+      std::pair<blink::mojom::PermissionStatus, blink::mojom::PermissionStatus>
+          permission_statuses);
   void RegisterDidGetDelay(int64_t sw_registration_id,
                            BackgroundSyncRegistration new_registration,
                            StatusAndRegistrationCallback callback,
