@@ -31,8 +31,18 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  typedef Vector<scoped_refptr<const NGPhysicalFragment>, 4> ChildrenVector;
-  typedef Vector<LogicalOffset, 4> OffsetVector;
+  struct ChildWithOffset {
+    DISALLOW_NEW();
+    ChildWithOffset(LogicalOffset offset,
+                    scoped_refptr<const NGPhysicalFragment> fragment)
+        : offset(offset), fragment(std::move(fragment)) {}
+
+    // We store logical offsets (instead of the final physical), as we can't
+    // convert into the physical coordinate space until we know our final size.
+    LogicalOffset offset;
+    scoped_refptr<const NGPhysicalFragment> fragment;
+  };
+  typedef Vector<ChildWithOffset, 4> ChildrenVector;
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
   NGContainerFragmentBuilder& SetBfcLineOffset(LayoutUnit bfc_line_offset) {
@@ -40,8 +50,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     return *this;
   }
 
-  // The NGBfcOffset is where this fragment was positioned within the BFC. If
-  // it is not set, this fragment may be placed anywhere within the BFC.
+  // The BFC block-offset is where this fragment was positioned within the BFC.
+  // If it is not set, this fragment may be placed anywhere within the BFC.
   const base::Optional<LayoutUnit>& BfcBlockOffset() const {
     return bfc_block_offset_;
   }
@@ -241,11 +251,6 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   ChildrenVector children_;
 
-  // Logical offsets for the children. Stored as logical offsets as we can't
-  // convert to physical offsets until layout of all children has been
-  // determined.
-  OffsetVector offsets_;
-
   // Only used by the NGBoxFragmentBuilder subclass, but defined here to avoid
   // a virtual function call.
   NGBreakTokenVector child_break_tokens_;
@@ -266,5 +271,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 };
 
 }  // namespace blink
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
+    blink::NGContainerFragmentBuilder::ChildWithOffset)
 
 #endif  // NGContainerFragmentBuilder

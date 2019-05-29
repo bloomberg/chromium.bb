@@ -2198,23 +2198,23 @@ LayoutUnit NGBlockLayoutAlgorithm::ComputeLineBoxBaselineOffset(
 // Add a baseline from a child box fragment.
 // @return false if the specified child is not a box or is OOF.
 bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
-                                         const NGPhysicalFragment* child,
+                                         const NGPhysicalFragment& child,
                                          LayoutUnit child_offset) {
-  if (child->IsLineBox()) {
-    const auto* line_box = To<NGPhysicalLineBoxFragment>(child);
+  if (child.IsLineBox()) {
+    const auto& line_box = To<NGPhysicalLineBoxFragment>(child);
 
     // Skip over a line-box which is empty. These don't have any baselines which
     // should be added.
-    if (line_box->IsEmptyLineBox())
+    if (line_box.IsEmptyLineBox())
       return false;
 
     LayoutUnit offset =
-        ComputeLineBoxBaselineOffset(request, *line_box, child_offset);
+        ComputeLineBoxBaselineOffset(request, line_box, child_offset);
     container_builder_.AddBaseline(request, offset);
     return true;
   }
 
-  if (child->IsFloatingOrOutOfFlowPositioned())
+  if (child.IsFloatingOrOutOfFlowPositioned())
     return false;
 
   if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(child)) {
@@ -2236,21 +2236,20 @@ void NGBlockLayoutAlgorithm::PropagateBaselinesFromChildren() {
 
   for (const auto& request : requests) {
     switch (request.AlgorithmType()) {
-      case NGBaselineAlgorithmType::kAtomicInline:
+      case NGBaselineAlgorithmType::kAtomicInline: {
         if (Node().UseLogicalBottomMarginEdgeForInlineBlockBaseline())
           break;
 
-        for (unsigned i = container_builder_.Children().size(); i--;) {
-          if (AddBaseline(request, container_builder_.Children()[i].get(),
-                          container_builder_.Offsets()[i].block_offset))
+        const auto& children = container_builder_.Children();
+        for (auto it = children.rbegin(); it != children.rend(); ++it) {
+          if (AddBaseline(request, *it->fragment, it->offset.block_offset))
             break;
         }
         break;
-
+      }
       case NGBaselineAlgorithmType::kFirstLine:
-        for (unsigned i = 0; i < container_builder_.Children().size(); i++) {
-          if (AddBaseline(request, container_builder_.Children()[i].get(),
-                          container_builder_.Offsets()[i].block_offset))
+        for (const auto& child : container_builder_.Children()) {
+          if (AddBaseline(request, *child.fragment, child.offset.block_offset))
             break;
         }
         break;

@@ -142,34 +142,32 @@ void NGContainerFragmentBuilder::AddChildInternal(
   // In order to know where list-markers are within the children list (for the
   // |NGSimplifiedLayoutAlgorithm|) we always place them as the first child.
   if (child->IsListMarker()) {
-    children_.push_front(std::move(child));
-    offsets_.push_front(child_offset);
+    children_.push_front(ChildWithOffset(child_offset, std::move(child)));
     return;
   }
 
-  children_.emplace_back(std::move(child));
-  offsets_.push_back(child_offset);
+  children_.emplace_back(child_offset, std::move(child));
 }
 
 LogicalOffset NGContainerFragmentBuilder::GetChildOffset(
-    const LayoutObject* child) const {
-  for (wtf_size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i]->GetLayoutObject() == child)
-      return offsets_[i];
+    const LayoutObject* object) const {
+  for (const auto& child : children_) {
+    if (child.fragment->GetLayoutObject() == object)
+      return child.offset;
 
     // TODO(layout-dev): ikilpatrick thinks we may need to traverse
     // further than the initial line-box children for a nested inline
     // container. We could not come up with a testcase, it would be
     // something with split inlines, and nested oof/fixed descendants maybe.
-    if (children_[i]->IsLineBox()) {
+    if (child.fragment->IsLineBox()) {
       const auto& line_box_fragment =
-          To<NGPhysicalLineBoxFragment>(*children_[i]);
+          To<NGPhysicalLineBoxFragment>(*child.fragment);
       for (const auto& line_box_child : line_box_fragment.Children()) {
-        if (line_box_child->GetLayoutObject() == child) {
-          return offsets_[i] + line_box_child.Offset().ConvertToLogical(
-                                   GetWritingMode(), Direction(),
-                                   line_box_fragment.Size(),
-                                   line_box_child->Size());
+        if (line_box_child->GetLayoutObject() == object) {
+          return child.offset + line_box_child.Offset().ConvertToLogical(
+                                    GetWritingMode(), Direction(),
+                                    line_box_fragment.Size(),
+                                    line_box_child->Size());
         }
       }
     }
@@ -275,7 +273,7 @@ String NGContainerFragmentBuilder::ToString() const {
                        InlineSize().ToFloat(), BlockSize().ToFloat(),
                        children_.size());
   for (auto& child : children_) {
-    builder.Append(child->DumpFragmentTree(
+    builder.Append(child.fragment->DumpFragmentTree(
         NGPhysicalFragment::DumpAll & ~NGPhysicalFragment::DumpHeaderText));
   }
   return builder.ToString();

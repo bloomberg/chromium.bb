@@ -233,7 +233,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   void PropagateBaselinesFromChildren();
   bool AddBaseline(const NGBaselineRequest&,
-                   const NGPhysicalFragment*,
+                   const NGPhysicalFragment&,
                    LayoutUnit child_offset);
 
   // Compute the baseline offset of a line box from the content box.

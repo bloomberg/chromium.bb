@@ -31,9 +31,10 @@ using LineBoxPair = std::pair<const NGPhysicalLineBoxFragment*,
 void GatherInlineContainerFragmentsFromLinebox(
     NGBoxFragmentBuilder::InlineContainingBlockMap* inline_containing_block_map,
     HashMap<const LayoutObject*, LineBoxPair>* containing_linebox_map,
-    const NGPhysicalLineBoxFragment* linebox,
+    const NGPhysicalLineBoxFragment& linebox,
     const PhysicalOffset linebox_offset) {
-  for (auto& descendant : NGInlineFragmentTraversal::DescendantsOf(*linebox)) {
+  for (const auto& descendant :
+       NGInlineFragmentTraversal::DescendantsOf(linebox)) {
     if (!descendant.fragment->IsBox())
       continue;
     const LayoutObject* key = descendant.fragment->GetLayoutObject();
@@ -58,19 +59,19 @@ void GatherInlineContainerFragmentsFromLinebox(
     PhysicalRect fragment_rect(
         linebox_offset + descendant.offset_to_container_box,
         descendant.fragment->Size());
-    if (containing_lineboxes.first == linebox) {
+    if (containing_lineboxes.first == &linebox) {
       containing_block_geometry->start_fragment_union_rect.Unite(fragment_rect);
     } else if (!containing_lineboxes.first) {
-      containing_lineboxes.first = linebox;
+      containing_lineboxes.first = &linebox;
       containing_block_geometry =
           NGBoxFragmentBuilder::InlineContainingBlockGeometry{fragment_rect,
                                                               PhysicalRect()};
     }
     // Skip fragments within an empty line boxes for the end fragment.
-    if (containing_lineboxes.second == linebox) {
+    if (containing_lineboxes.second == &linebox) {
       containing_block_geometry->end_fragment_union_rect.Unite(fragment_rect);
-    } else if (!containing_lineboxes.second || !linebox->IsEmptyLineBox()) {
-      containing_lineboxes.second = linebox;
+    } else if (!containing_lineboxes.second || !linebox.IsEmptyLineBox()) {
+      containing_lineboxes.second = &linebox;
       containing_block_geometry->end_fragment_union_rect = fragment_rect;
     }
   }
@@ -82,7 +83,6 @@ void NGBoxFragmentBuilder::RemoveChildren() {
   child_break_tokens_.resize(0);
   inline_break_tokens_.resize(0);
   children_.resize(0);
-  offsets_.resize(0);
 }
 
 NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeChild(
@@ -121,13 +121,12 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeLine(
     DCHECK_GT(children_.size(), 0UL);
     for (int i = children_.size() - 1; i >= 0; i--) {
       DCHECK_NE(i, 0);
-      if (!children_[i]->IsLineBox())
+      if (!children_[i].fragment->IsLineBox())
         continue;
       if (!--lines_to_remove) {
         // This is the first line that is going to the next fragment. Remove it,
         // and everything after it.
         children_.resize(i);
-        offsets_.resize(i);
         break;
       }
     }
@@ -287,20 +286,20 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
 #endif
 
   HashMap<const LayoutObject*, LineBoxPair> containing_linebox_map;
-  for (wtf_size_t i = 0; i < children_.size(); i++) {
-    if (children_[i]->IsLineBox()) {
-      const auto* linebox = To<NGPhysicalLineBoxFragment>(children_[i].get());
-      const PhysicalOffset linebox_offset = offsets_[i].ConvertToPhysical(
+  for (const auto& child : children_) {
+    if (child.fragment->IsLineBox()) {
+      const auto& linebox = To<NGPhysicalLineBoxFragment>(*child.fragment);
+      const PhysicalOffset linebox_offset = child.offset.ConvertToPhysical(
           GetWritingMode(), Direction(),
-          ToPhysicalSize(Size(), GetWritingMode()), linebox->Size());
+          ToPhysicalSize(Size(), GetWritingMode()), linebox.Size());
       GatherInlineContainerFragmentsFromLinebox(inline_containing_block_map,
                                                 &containing_linebox_map,
                                                 linebox, linebox_offset);
-    } else if (children_[i]->IsBox()) {
-      const auto* box_fragment = To<NGPhysicalBoxFragment>(children_[i].get());
+    } else if (child.fragment->IsBox()) {
+      const auto& box_fragment = To<NGPhysicalBoxFragment>(*child.fragment);
       bool is_anonymous_container =
-          box_fragment->GetLayoutObject() &&
-          box_fragment->GetLayoutObject()->IsAnonymousBlock();
+          box_fragment.GetLayoutObject() &&
+          box_fragment.GetLayoutObject()->IsAnonymousBlock();
       if (!is_anonymous_container)
         continue;
       // If child is an anonymous container, this might be a special case of
@@ -309,15 +308,15 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
       // lineboxes inside anonymous box.
       // For more on this special case, see "css container is an inline, with
       // inline splitting" comment in NGOutOfFlowLayoutPart::LayoutDescendant.
-      const PhysicalOffset box_offset = offsets_[i].ConvertToPhysical(
+      const PhysicalOffset box_offset = child.offset.ConvertToPhysical(
           GetWritingMode(), Direction(),
-          ToPhysicalSize(Size(), GetWritingMode()), box_fragment->Size());
+          ToPhysicalSize(Size(), GetWritingMode()), box_fragment.Size());
 
       // Traverse lineboxes of anonymous box.
-      for (const auto& child : box_fragment->Children()) {
-        if (child->IsLineBox()) {
-          const auto* linebox = To<NGPhysicalLineBoxFragment>(child.get());
-          const PhysicalOffset linebox_offset = child.Offset() + box_offset;
+      for (const auto& box_child : box_fragment.Children()) {
+        if (box_child->IsLineBox()) {
+          const auto& linebox = To<NGPhysicalLineBoxFragment>(*box_child);
+          const PhysicalOffset linebox_offset = box_child.Offset() + box_offset;
           GatherInlineContainerFragmentsFromLinebox(inline_containing_block_map,
                                                     &containing_linebox_map,
                                                     linebox, linebox_offset);

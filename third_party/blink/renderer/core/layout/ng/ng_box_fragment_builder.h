@@ -172,9 +172,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   scoped_refptr<const NGLayoutResult> Abort(
       NGLayoutResult::NGLayoutResultStatus);
 
-  // A vector of child offsets. Initially set by AddChild().
-  const OffsetVector& Offsets() const { return offsets_; }
-
   NGPhysicalFragment::NGBoxType BoxType() const;
   NGBoxFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
     box_type_ = box_type;

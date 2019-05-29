@@ -16,7 +16,6 @@ namespace blink {
 
 void NGLineBoxFragmentBuilder::Reset() {
   children_.Shrink(0);
-  offsets_.Shrink(0);
   child_break_tokens_.Shrink(0);
   inline_break_tokens_.Shrink(0);
   oof_positioned_candidates_.Shrink(0);
@@ -78,7 +77,6 @@ void NGLineBoxFragmentBuilder::ChildList::MoveInBlockDirection(LayoutUnit delta,
 }
 
 void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
-  offsets_.ReserveCapacity(children.size());
   children_.ReserveCapacity(children.size());
 
   for (auto& child : children) {

@@ -45,17 +45,16 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
       builder->may_have_descendant_above_block_start_;
   depends_on_percentage_block_size_ = DependsOnPercentageBlockSize(*builder);
 
-  DCHECK_EQ(builder->children_.size(), builder->offsets_.size());
   // Because flexible arrays need to be the last member in a class, we need to
   // have the buffer passed as a constructor argument and have the actual
   // storage be part of the subclass.
   wtf_size_t i = 0;
   for (auto& child : builder->children_) {
-    buffer[i].fragment = child.get();
+    buffer[i].fragment = child.fragment.get();
     buffer[i].fragment->AddRef();
-    buffer[i].offset = builder->offsets_[i].ConvertToPhysical(
+    buffer[i].offset = child.offset.ConvertToPhysical(
         block_or_line_writing_mode, builder->Direction(), Size(),
-        child->Size());
+        child.fragment->Size());
     ++i;
   }
 }
