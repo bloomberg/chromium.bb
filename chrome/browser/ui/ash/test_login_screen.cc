@@ -73,13 +73,6 @@ void TestLoginScreen::IsReadyForPassword(IsReadyForPasswordCallback callback) {
   std::move(callback).Run(true);
 }
 
-void TestLoginScreen::SetPublicSessionDisplayName(
-    const AccountId& account_id,
-    const std::string& display_name) {}
-
-void TestLoginScreen::SetPublicSessionShowFullManagementDisclosure(
-    bool show_full_management_disclosure) {}
-
 void TestLoginScreen::ShowKioskAppError(const std::string& message) {}
 
 void TestLoginScreen::SetAddUserButtonEnabled(bool enable) {}

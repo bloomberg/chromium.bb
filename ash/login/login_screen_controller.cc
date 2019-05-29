@@ -390,18 +390,6 @@ void LoginScreenController::IsReadyForPassword(
   std::move(callback).Run(LockScreen::HasInstance() && !IsAuthenticating());
 }
 
-void LoginScreenController::SetPublicSessionDisplayName(
-    const AccountId& account_id,
-    const std::string& display_name) {
-  login_data_dispatcher_.SetPublicSessionDisplayName(account_id, display_name);
-}
-
-void LoginScreenController::SetPublicSessionShowFullManagementDisclosure(
-    bool is_full_management_disclosure_needed) {
-  login_data_dispatcher_.SetPublicSessionShowFullManagementDisclosure(
-      is_full_management_disclosure_needed);
-}
-
 void LoginScreenController::ShowKioskAppError(const std::string& message) {
   ToastData toast_data(
       "KioskAppError", base::UTF8ToUTF16(message), -1 /*duration_ms*/,

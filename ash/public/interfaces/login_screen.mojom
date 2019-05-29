@@ -114,15 +114,6 @@ interface LoginScreen {
   // Check if the login/lock screen is ready for a password.
   IsReadyForPassword() => (bool is_ready);
 
-  // Set the public session display name for user with |account_id|.
-  SetPublicSessionDisplayName(signin.mojom.AccountId account_id,
-                              string display_name);
-
-  // Sets whether full management disclosure is needed for the public/managed
-  // session login screen.
-  SetPublicSessionShowFullManagementDisclosure(
-      bool show_full_management_disclosure);
-
   // Display a toast describing the latest kiosk app launch error.
   ShowKioskAppError(string message);
 

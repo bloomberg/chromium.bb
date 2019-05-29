@@ -70,7 +70,7 @@ UserBoardViewMojo::~UserBoardViewMojo() = default;
 void UserBoardViewMojo::SetPublicSessionDisplayName(
     const AccountId& account_id,
     const std::string& display_name) {
-  LoginScreenClient::Get()->login_screen()->SetPublicSessionDisplayName(
+  ash::LoginScreen::Get()->GetModel()->SetPublicSessionDisplayName(
       account_id, display_name);
 }
 
@@ -92,8 +92,8 @@ void UserBoardViewMojo::SetPublicSessionLocales(
 
 void UserBoardViewMojo::SetPublicSessionShowFullManagementDisclosure(
     bool show_full_management_disclosure) {
-  LoginScreenClient::Get()
-      ->login_screen()
+  ash::LoginScreen::Get()
+      ->GetModel()
       ->SetPublicSessionShowFullManagementDisclosure(
           show_full_management_disclosure);
 }

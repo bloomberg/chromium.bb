@@ -50,6 +50,10 @@ class ASH_PUBLIC_EXPORT LoginScreenModel {
   virtual void SetAvatarForUser(const AccountId& account_id,
                                 const UserAvatar& avatar) = 0;
 
+  // Set the public session display name for user with |account_id|.
+  virtual void SetPublicSessionDisplayName(const AccountId& account_id,
+                                           const std::string& display_name) = 0;
+
   // Set the public session locales for user with |account_id|.
   // |locales|:            Available locales for this user.
   // |default_locale|:     Default locale for this user.
@@ -66,6 +70,11 @@ class ASH_PUBLIC_EXPORT LoginScreenModel {
       const AccountId& account_id,
       const std::string& locale,
       const std::vector<InputMethodItem>& keyboard_layouts) = 0;
+
+  // Sets whether full management disclosure is needed for the public/managed
+  // session login screen.
+  virtual void SetPublicSessionShowFullManagementDisclosure(
+      bool show_full_management_disclosure) = 0;
 
   // Called when focus is reported to be leaving a lock screen app window.
   // Requests focus to be handed off to the next suitable widget.

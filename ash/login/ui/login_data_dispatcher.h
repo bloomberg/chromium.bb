@@ -172,7 +172,7 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
                      const std::string& enterprise_info_text,
                      const std::string& bluetooth_name);
   void SetPublicSessionDisplayName(const AccountId& account_id,
-                                   const std::string& display_name);
+                                   const std::string& display_name) override;
   void SetPublicSessionLocales(const AccountId& account_id,
                                const std::vector<LocaleItem>& locales,
                                const std::string& default_locale,
@@ -182,7 +182,7 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
       const std::string& locale,
       const std::vector<InputMethodItem>& keyboard_layouts) override;
   void SetPublicSessionShowFullManagementDisclosure(
-      bool show_full_management_disclosure);
+      bool show_full_management_disclosure) override;
   void SetDetachableBasePairingStatus(
       DetachableBasePairingStatus pairing_status);
   void SetShowParentAccessDialog(bool show);

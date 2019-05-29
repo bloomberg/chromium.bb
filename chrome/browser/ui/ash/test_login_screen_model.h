@@ -26,10 +26,14 @@ class TestLoginScreenModel : public ash::LoginScreenModel {
                                const std::vector<ash::LocaleItem>& locales,
                                const std::string& default_locale,
                                bool show_advanced_view) override;
+  void SetPublicSessionDisplayName(const AccountId& account_id,
+                                   const std::string& display_name) override;
   void SetPublicSessionKeyboardLayouts(
       const AccountId& account_id,
       const std::string& locale,
       const std::vector<ash::InputMethodItem>& keyboard_layouts) override;
+  void SetPublicSessionShowFullManagementDisclosure(
+      bool show_full_management_disclosure) override;
   void HandleFocusLeavingLockScreenApps(bool reverse) override;
   void NotifyOobeDialogState(ash::OobeDialogState state) override;
 

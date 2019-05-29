@@ -18,6 +18,9 @@ void TestLoginScreenModel::UpdateWarningMessage(const base::string16& message) {
 }
 void TestLoginScreenModel::SetFingerprintState(const AccountId& account_id,
                                                ash::FingerprintState state) {}
+void TestLoginScreenModel::SetPublicSessionDisplayName(
+    const AccountId& account_id,
+    const std::string& display_name) {}
 void TestLoginScreenModel::SetPublicSessionLocales(
     const AccountId& account_id,
     const std::vector<ash::LocaleItem>& locales,
@@ -27,5 +30,7 @@ void TestLoginScreenModel::SetPublicSessionKeyboardLayouts(
     const AccountId& account_id,
     const std::string& locale,
     const std::vector<ash::InputMethodItem>& keyboard_layouts) {}
+void TestLoginScreenModel::SetPublicSessionShowFullManagementDisclosure(
+    bool show_full_management_disclosure) {}
 void TestLoginScreenModel::HandleFocusLeavingLockScreenApps(bool reverse) {}
 void TestLoginScreenModel::NotifyOobeDialogState(ash::OobeDialogState state) {}

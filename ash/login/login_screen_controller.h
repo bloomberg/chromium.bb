@@ -135,10 +135,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
                      const std::string& enterprise_info_text,
                      const std::string& bluetooth_name) override;
   void IsReadyForPassword(IsReadyForPasswordCallback callback) override;
-  void SetPublicSessionDisplayName(const AccountId& account_id,
-                                   const std::string& display_name) override;
-  void SetPublicSessionShowFullManagementDisclosure(
-      bool is_full_management_disclosure_needed) override;
   void ShowKioskAppError(const std::string& message) override;
   void SetAddUserButtonEnabled(bool enable) override;
   void SetShutdownButtonEnabled(bool enable) override;
