@@ -97,6 +97,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   // WebPagePopup implementation.
   WebPoint PositionRelativeToOwner() override;
+  WebDocument GetDocument() override;
   WebPagePopupClient* GetClientForTesting() const override;
 
   // PagePopup implementation.

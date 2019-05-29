@@ -169,6 +169,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AddInlineTextBoxChildren(bool force) override;
   void AddImageMapChildren() override;
   void AddHiddenChildren() override;
+  void AddPopupChildren() override;
   bool CanHaveChildren() const override;
 
   // Properties of the object's owning document or page.
@@ -219,7 +220,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AXSVGRoot* RemoteSVGRootElement() const;
   AXObject* RemoteSVGElementHitTest(const IntPoint&) const;
   void OffsetBoundingBoxForRemoteSVGElement(LayoutRect&) const;
-  void AddPopupChildren();
   void AddRemoteSVGChildren();
   void AddTableChildren();
   void AddValidationMessageChild();

@@ -589,6 +589,10 @@ WebPoint WebPagePopupImpl::PositionRelativeToOwner() {
                   window_rect.y - root_window_rect.y);
 }
 
+WebDocument WebPagePopupImpl::GetDocument() {
+  return WebDocument(MainFrame().GetDocument());
+}
+
 WebPagePopupClient* WebPagePopupImpl::GetClientForTesting() const {
   return web_page_popup_client_;
 }

@@ -97,9 +97,18 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
   // @WAIT-FOR: directives.
   void ParseHtmlForExtraDirectives(const std::string& test_html,
                                    std::vector<std::string>* wait_for,
-                                   std::vector<std::string>* run_until);
+                                   std::vector<std::string>* run_until,
+                                   std::vector<std::string>* default_action_on);
 
   void RunTestForPlatform(const base::FilePath file_path, const char* file_dir);
+
+  // Retrieve the accessibility node, starting from the root node, that matches
+  // the accessibility name.
+  BrowserAccessibility* FindNode(const std::string& name);
+
+  // Retrieve the browser accessibility manager object for the current web
+  // contents.
+  BrowserAccessibilityManager* GetManager();
 
   // The default property filters plus the property filters loaded from the test
   // file.
@@ -125,6 +134,10 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
   bool enable_accessibility_after_navigating_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
+
+ private:
+  BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
+                                          const std::string& name);
 };
 
 }  // namespace content

@@ -2335,6 +2335,7 @@ void AXNodeObject::AddChildren() {
   }
 
   AddHiddenChildren();
+  AddPopupChildren();
   AddImageMapChildren();
   AddInlineTextBoxChildren(false);
   AddAccessibleNodeChildren();

@@ -1408,6 +1408,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDate) {
   RunHtmlTest(FILE_PATH_LITERAL("input-date.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityInputDateWithPopupOpen) {
+  RunHtmlTest(FILE_PATH_LITERAL("input-date-with-popup-open.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDateTime) {
   RunHtmlTest(FILE_PATH_LITERAL("input-datetime.html"));
 }

@@ -550,6 +550,21 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     dirty_objects.push_back(dirty_object);
   }
 
+  // Popups have a document lifecycle managed separately from the main document
+  // but we need to return a combined accessibility tree for both.
+  // We ensured layout validity for the main document in the loop above; if a
+  // popup is open, do the same for it.
+  WebDocument popup_document = GetPopupDocument();
+  if (!popup_document.IsNull()) {
+    WebAXObject popup_root_obj = WebAXObject::FromWebDocument(popup_document);
+    if (!popup_root_obj.UpdateLayoutAndCheckValidity()) {
+      // If a popup is open but we can't ensure its validity, return without
+      // sending an update bundle, the same as we would for a node in the main
+      // document.
+      return;
+    }
+  }
+
   // Keep track of if the host node for a plugin has been invalidated,
   // because if so, the plugin subtree will need to be re-serialized.
   bool invalidate_plugin_subtree = false;
@@ -1185,6 +1200,14 @@ void RenderAccessibilityImpl::AddImageAnnotationDebuggingAttributes(
       }
     }
   }
+}
+
+blink::WebDocument RenderAccessibilityImpl::GetPopupDocument() {
+  blink::WebPagePopup* popup =
+      render_frame_->GetRenderView()->GetWebView()->GetPagePopup();
+  if (popup)
+    return popup->GetDocument();
+  return WebDocument();
 }
 
 }  // namespace content

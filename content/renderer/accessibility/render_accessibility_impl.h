@@ -169,6 +169,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void AddImageAnnotationDebuggingAttributes(
       const std::vector<AXContentTreeUpdate>& updates);
 
+  // Returns the document for the active popup if any.
+  blink::WebDocument GetPopupDocument();
+
   // The RenderFrameImpl that owns us.
   RenderFrameImpl* render_frame_;
 

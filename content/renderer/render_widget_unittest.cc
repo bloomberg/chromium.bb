@@ -161,6 +161,7 @@ class StubWebPagePopup : public blink::WebPagePopup {
 
   // WebPagePopup implementation.
   blink::WebPoint PositionRelativeToOwner() override { return {}; }
+  blink::WebDocument GetDocument() override { return {}; }
   blink::WebPagePopupClient* GetClientForTesting() const override {
     return nullptr;
   }
