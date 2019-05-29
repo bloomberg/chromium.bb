@@ -2836,6 +2836,164 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_FormWithoutNameField) {
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowOne) {
+  std::map<std::string, std::string> parameters;
+  parameters[features::kAutofillUseMobileLabelDisambiguationParameterName] =
+      features::kAutofillUseMobileLabelDisambiguationParameterShowOne;
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeatureWithParameters(
+      features::kAutofillUseMobileLabelDisambiguation, parameters);
+
+  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
+                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
+                       "19786744120");
+  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "María", "", "Lòpez", "maria@aol.com", "",
+                       "11 Elkins St", "", "Boston", "MA", "02127", "US",
+                       "6172686862");
+
+  // The profiles' use dates and counts are set make this test deterministic.
+  // The suggestion created with data from profile1 should be ranked higher
+  // than profile2's associated suggestion. This ensures that profile1's
+  // suggestion is the first element in the collection returned by
+  // GetProfileSuggestions.
+  profile1.set_use_date(AutofillClock::Now());
+  profile1.set_use_count(10);
+  profile2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(10));
+  profile2.set_use_count(1);
+
+  AddProfileToPersonalDataManager(profile1);
+  AddProfileToPersonalDataManager(profile2);
+
+  // Tests a form with name, email address, and phone number fields.
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(EMAIL_ADDRESS), base::string16(), false,
+          std::vector<ServerFieldType>{NAME_FIRST, NAME_LAST, EMAIL_ADDRESS,
+                                       PHONE_HOME_WHOLE_NUMBER}),
+      ElementsAre(AllOf(testing::Field(&Suggestion::label,
+                                       base::ASCIIToUTF16("(978) 674-4120")),
+                        testing::Field(&Suggestion::additional_label,
+                                       base::ASCIIToUTF16("(978) 674-4120")),
+                        testing::Field(&Suggestion::icon, "")),
+                  AllOf(testing::Field(&Suggestion::label,
+                                       base::ASCIIToUTF16("(617) 268-6862")),
+                        testing::Field(&Suggestion::additional_label,
+                                       base::ASCIIToUTF16("(617) 268-6862")),
+                        testing::Field(&Suggestion::icon, ""))));
+
+  // Tests a form with name, address, phone number, and email address fields.
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(EMAIL_ADDRESS), base::string16(), false,
+          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
+                                       ADDRESS_HOME_CITY, EMAIL_ADDRESS,
+                                       PHONE_HOME_WHOLE_NUMBER}),
+      ElementsAre(AllOf(testing::Field(&Suggestion::label,
+                                       base::ASCIIToUTF16("401 Merrimack St")),
+                        testing::Field(&Suggestion::additional_label,
+                                       base::ASCIIToUTF16("401 Merrimack St")),
+                        testing::Field(&Suggestion::icon, "")),
+                  AllOf(testing::Field(&Suggestion::label,
+                                       base::ASCIIToUTF16("11 Elkins St")),
+                        testing::Field(&Suggestion::additional_label,
+                                       base::ASCIIToUTF16("11 Elkins St")),
+                        testing::Field(&Suggestion::icon, ""))));
+}
+#endif  // if defined(OS_ANDROID) || defined(OS_IOS)
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowAll) {
+  std::map<std::string, std::string> parameters;
+  parameters[features::kAutofillUseMobileLabelDisambiguationParameterName] =
+      features::kAutofillUseMobileLabelDisambiguationParameterShowAll;
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeatureWithParameters(
+      features::kAutofillUseMobileLabelDisambiguation, parameters);
+
+  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
+                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
+                       "19786744120");
+  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "María", "", "Lòpez", "maria@aol.com", "",
+                       "11 Elkins St", "", "Boston", "MA", "02127", "US",
+                       "6172686862");
+
+  // The profiles' use dates and counts are set make this test deterministic.
+  // The suggestion created with data from profile1 should be ranked higher
+  // than profile2's associated suggestion. This ensures that profile1's
+  // suggestion is the first element in the collection returned by
+  // GetProfileSuggestions.
+  profile1.set_use_date(AutofillClock::Now());
+  profile1.set_use_count(10);
+  profile2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(10));
+  profile2.set_use_count(1);
+
+  AddProfileToPersonalDataManager(profile1);
+  AddProfileToPersonalDataManager(profile2);
+
+  // Tests a form with name, email address, and phone number fields.
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(EMAIL_ADDRESS), base::string16(), false,
+          std::vector<ServerFieldType>{NAME_FIRST, NAME_LAST, EMAIL_ADDRESS,
+                                       PHONE_HOME_WHOLE_NUMBER}),
+      ElementsAre(
+          AllOf(testing::Field(&Suggestion::label,
+                               ConstructMobileLabelLine(
+                                   {base::ASCIIToUTF16("Hoa"),
+                                    base::ASCIIToUTF16("(978) 674-4120")})),
+                testing::Field(&Suggestion::additional_label,
+                               ConstructMobileLabelLine(
+                                   {base::ASCIIToUTF16("Hoa"),
+                                    base::ASCIIToUTF16("(978) 674-4120")})),
+                testing::Field(&Suggestion::icon, "")),
+          AllOf(testing::Field(&Suggestion::label,
+                               ConstructMobileLabelLine(
+                                   {base::UTF8ToUTF16("María"),
+                                    base::ASCIIToUTF16("(617) 268-6862")})),
+                testing::Field(&Suggestion::additional_label,
+                               ConstructMobileLabelLine(
+                                   {base::UTF8ToUTF16("María"),
+                                    base::ASCIIToUTF16("(617) 268-6862")})),
+                testing::Field(&Suggestion::icon, ""))));
+
+  // Tests a form with name, address, phone number, and email address fields.
+  EXPECT_THAT(
+      personal_data_->GetProfileSuggestions(
+          AutofillType(EMAIL_ADDRESS), base::string16(), false,
+          std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
+                                       ADDRESS_HOME_CITY, EMAIL_ADDRESS,
+                                       PHONE_HOME_WHOLE_NUMBER}),
+      ElementsAre(
+          AllOf(testing::Field(&Suggestion::label,
+                               ConstructMobileLabelLine(
+                                   {base::ASCIIToUTF16("Hoa Pham"),
+                                    base::ASCIIToUTF16("401 Merrimack St"),
+                                    base::ASCIIToUTF16("(978) 674-4120")})),
+                testing::Field(&Suggestion::additional_label,
+                               ConstructMobileLabelLine(
+                                   {base::ASCIIToUTF16("Hoa Pham"),
+                                    base::ASCIIToUTF16("401 Merrimack St"),
+                                    base::ASCIIToUTF16("(978) 674-4120")})),
+                testing::Field(&Suggestion::icon, "")),
+          AllOf(testing::Field(&Suggestion::label,
+                               ConstructMobileLabelLine(
+                                   {base::UTF8ToUTF16("María Lòpez"),
+                                    base::ASCIIToUTF16("11 Elkins St"),
+                                    base::ASCIIToUTF16("(617) 268-6862")})),
+                testing::Field(&Suggestion::additional_label,
+                               ConstructMobileLabelLine(
+                                   {base::UTF8ToUTF16("María Lòpez"),
+                                    base::ASCIIToUTF16("11 Elkins St"),
+                                    base::ASCIIToUTF16("(617) 268-6862")})),
+                testing::Field(&Suggestion::icon, ""))));
+}
+#endif  // if defined(OS_ANDROID) || defined(OS_IOS)
+
 TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesMaskedServerCard) {
   // Add a masked server card.
   std::vector<CreditCard> server_cards;
