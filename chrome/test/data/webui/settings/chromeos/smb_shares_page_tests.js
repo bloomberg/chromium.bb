@@ -69,6 +69,44 @@ suite('AddSmbShareDialogTests', function() {
     expectFalse(addButton.disabled);
   });
 
+  test('AddDisabledWithInvalidUrl', function() {
+    const url = addDialog.$.address;
+    const addButton = addDialog.$$('.action-button');
+
+    url.value = '';
+    expectTrue(addButton.disabled);
+
+    // Invalid scheme (must start with smb:// or \\)
+    url.value = 'foobar';
+    expectTrue(addButton.disabled);
+    url.value = 'foo\\\\bar\\baz';
+    expectTrue(addButton.disabled);
+    url.value = 'smb:/foo/bar';
+    expectTrue(addButton.disabled);
+
+    // Incomplete (must be of the form \\server\share)
+    url.value = '\\\\foo';
+    expectTrue(addButton.disabled);
+    url.value = '\\\\foo\\';
+    expectTrue(addButton.disabled);
+    url.value = '\\\\foo\\\\';
+    expectTrue(addButton.disabled);
+
+    // Incomplete (must be of the form smb://server/share)
+    url.value = 'smb://';
+    expectTrue(addButton.disabled);
+    url.value = 'smb://foo';
+    expectTrue(addButton.disabled);
+    url.value = 'smb://foo/';
+    expectTrue(addButton.disabled);
+
+    // Valid URLs.
+    url.value = '\\\\foo\\bar';
+    expectFalse(addButton.disabled);
+    url.value = 'smb://foo/bar';
+    expectFalse(addButton.disabled);
+  });
+
   test('ClickAdd', function() {
     const expectedSmbUrl = 'smb://192.168.1.1/testshare';
     const expectedSmbName = 'testname';

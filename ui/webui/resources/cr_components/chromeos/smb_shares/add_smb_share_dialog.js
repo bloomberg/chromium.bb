@@ -15,8 +15,19 @@ cr.define('smb_shares', function() {
     GENERAL_ERROR: 3,
   };
 
+  /**
+   * Regular expression that matches SMB share URLs of the form
+   * smb://server/share or \\server\share. This is a coarse regexp intended for
+   * quick UI feedback and does not reject all invalid URLs.
+   *
+   * @type {!RegExp}
+   */
+  const SMB_SHARE_URL_REGEX =
+      /^((smb:\/\/[^\/]+\/[^\/].*)|(\\\\[^\\]+\\[^\\].*))$/;
+
   return {
     MountErrorType: MountErrorType,
+    SMB_SHARE_URL_REGEX: SMB_SHARE_URL_REGEX,
   };
 });
 
@@ -154,7 +165,7 @@ Polymer({
    * @private
    */
   canAddShare_: function() {
-    return !!this.mountUrl_ && !this.inProgress_;
+    return !!this.mountUrl_ && !this.inProgress_ && this.isShareUrlValid_();
   },
 
   /**
@@ -280,5 +291,16 @@ Polymer({
    */
   shouldShowPathError_: function() {
     return this.currentMountError_ == smb_shares.MountErrorType.PATH_ERROR;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isShareUrlValid_: function() {
+    if (!this.mountUrl_) {
+      return false;
+    }
+    return smb_shares.SMB_SHARE_URL_REGEX.test(this.mountUrl_);
   },
 });
