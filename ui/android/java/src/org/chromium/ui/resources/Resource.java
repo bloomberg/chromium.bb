@@ -15,10 +15,11 @@ import org.chromium.ui.resources.statics.NinePatchData;
  */
 public interface Resource {
     /**
-     * The {@link Bitmap} can only be used in
+     * This can only be called in
      * {@link ResourceLoader.ResourceLoaderCallback#onResourceLoaded(int, int, Resource)}, where it
-     * would be called exactly once per invocation, and deep-copied into the CC layer, so it is
-     * encouraged to make sure we don't keep an extra copy at the Java side unnecessarily.
+     * would be called exactly once per invocation, and the {@link Bitmap} would be deep-copied into
+     * the CC layer, so it is encouraged to make sure we don't keep an extra copy at the Java side
+     * unnecessarily.
      * @return A {@link Bitmap} representing the resource.
      */
     Bitmap getBitmap();
