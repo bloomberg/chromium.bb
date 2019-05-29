@@ -21,6 +21,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/app_source_url_recorder.h"
@@ -123,7 +124,6 @@ AppLaunchEventLogger::AppLaunchEventLogger()
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  PopulatePwaIdUrlMap();
 }
 
 AppLaunchEventLogger::~AppLaunchEventLogger() {}
@@ -192,20 +192,9 @@ std::string AppLaunchEventLogger::RemoveScheme(const std::string& id) {
   return app_id;
 }
 
-void AppLaunchEventLogger::PopulatePwaIdUrlMap() {
-  pwa_id_url_map_ = base::flat_map<std::string, std::string>{
-      // Google+
-      {"dcdbodpaldbchkfinnjphocleggfceip", "https://plus.google.com/discover"},
-      // Photos
-      {"ncmjhecbjeaamljdfahankockkkdmedg", "https://photos.google.com/"}};
-}
-
-const std::string& AppLaunchEventLogger::GetPwaUrl(const std::string& id) {
-  auto search = pwa_id_url_map_.find(id);
-  if (search != pwa_id_url_map_.end()) {
-    return search->second;
-  }
-  return base::EmptyString();
+const GURL& AppLaunchEventLogger::GetLaunchWebURL(
+    const extensions::Extension* extension) {
+  return extensions::AppLaunchInfo::GetLaunchWebURL(extension);
 }
 
 void AppLaunchEventLogger::OkApp(AppLaunchEvent_AppType app_type,
@@ -247,7 +236,7 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
     app.second.set_is_policy_compliant(false);
   }
 
-  // Store all Chrome and PWA apps.
+  // Store all Chrome, PWA and bookmark apps.
   // registry_ can be nullptr in tests.
   if (registry_) {
     std::unique_ptr<extensions::ExtensionSet> extensions =
@@ -257,13 +246,11 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
       if (extension->from_webstore()) {
         OkApp(AppLaunchEvent_AppType_CHROME, extension->id(),
               base::EmptyString(), base::EmptyString());
-      } else {
-        // Only allow PWA apps on the whitelist.
-        auto search = pwa_id_url_map_.find(extension->id());
-        if (search != pwa_id_url_map_.end()) {
-          OkApp(AppLaunchEvent_AppType_PWA, extension->id(),
-                base::EmptyString(), search->second);
-        }
+        // PWA apps have from_bookmark() true. This will also categorize
+        // bookmark apps as AppLaunchEvent_AppType_PWA.
+      } else if (extension->from_bookmark()) {
+        OkApp(AppLaunchEvent_AppType_PWA, extension->id(), base::EmptyString(),
+              GetLaunchWebURL(extension.get()).spec());
       }
     }
   }
@@ -351,7 +338,7 @@ ukm::SourceId AppLaunchEventLogger::GetSourceId(
     return ukm::AppSourceUrlRecorder::GetSourceIdForArc(arc_package_name);
   } else {
     // Either app is Crostini; or Chrome but not in app store; or Arc but not
-    // syncable; or PWA but not in whitelist.
+    // syncable.
     return ukm::kInvalidSourceId;
   }
 }

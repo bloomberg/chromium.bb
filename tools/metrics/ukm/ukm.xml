@@ -333,7 +333,7 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="AppType">
     <summary>
-      The type of app. 1: CHROME, 2: PLAY, 3: PWA.
+      The type of app. 1: CHROME, 2: PLAY, 3: PWA/Bookmark app.
     </summary>
   </metric>
   <metric name="ClicksEachHour00">
@@ -561,7 +561,8 @@ be describing additional metrics about the same event.
     from the suggestion chip, or from the grid of apps. The UKM metrics are not
     keyed by navigational urls. Instead, for Chrome apps the keys are based upon
     the app id, for Play apps the keys are based upon a hash of the package name
-    and for PWAs the keys are the urls associated with the PWA.
+    and for PWAs and bookmark apps the keys are the urls associated with the
+    PWA/bookmark.
   </summary>
   <metric name="AllClicksLast24Hours">
     <summary>
@@ -579,7 +580,7 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="AppType">
     <summary>
-      The type of app. 1: CHROME, 2: PLAY, 3: PWA.
+      The type of app. 1: CHROME, 2: PLAY, 3: PWA/Bookmark app.
     </summary>
   </metric>
   <metric name="ClickMethod">

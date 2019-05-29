@@ -26,6 +26,7 @@ namespace app_list {
 const char kGmailChromeApp[] = "pjkljhegncpnkpknbcohdijeoejaedia";
 const char kMapsArcApp[] = "gmhipfhgnoelkiiofcnimehjnpaejiel";
 const char kPhotosPWAApp[] = "ncmjhecbjeaamljdfahankockkkdmedg";
+const GURL kPhotosPWAUrl = GURL("http://photos.google.com/");
 
 const char kMapsPackageName[] = "com.google.android.apps.maps";
 
@@ -36,6 +37,13 @@ bool TestIsWebstoreExtension(base::StringPiece id) {
 }
 
 }  // namespace
+
+class AppLaunchEventLoggerForTest : public AppLaunchEventLogger {
+ protected:
+  const GURL& GetLaunchWebURL(const extensions::Extension* extension) override {
+    return kPhotosPWAUrl;
+  }
+};
 
 class AppLaunchEventLoggerTest : public testing::Test {
  protected:
@@ -51,12 +59,14 @@ class AppLaunchEventLoggerTest : public testing::Test {
 TEST_F(AppLaunchEventLoggerTest, CheckUkmCodePWA) {
   extensions::ExtensionRegistry registry(nullptr);
   scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder("test").SetID(kPhotosPWAApp).Build();
+      extensions::ExtensionBuilder("test")
+          .SetID(kPhotosPWAApp)
+          .AddFlags(extensions::Extension::FROM_BOOKMARK)
+          .Build();
+
   registry.AddEnabled(extension);
 
-  GURL url("https://photos.google.com/");
-
-  AppLaunchEventLogger app_launch_event_logger_;
+  AppLaunchEventLoggerForTest app_launch_event_logger_;
   app_launch_event_logger_.SetAppDataForTesting(&registry, nullptr, nullptr);
   app_launch_event_logger_.OnGridClicked(kPhotosPWAApp);
 
@@ -65,7 +75,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodePWA) {
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
   const auto* entry = entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kPhotosPWAUrl);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLast24Hours", 1);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLastHour", 1);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AppType", 3);
@@ -76,7 +86,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodePWA) {
       test_ukm_recorder_.GetEntriesByName("AppListAppClickData");
   ASSERT_EQ(1ul, click_entries.size());
   const auto* photos_entry = click_entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(photos_entry, url);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(photos_entry, kPhotosPWAUrl);
   test_ukm_recorder_.ExpectEntryMetric(photos_entry, "AppLaunchId",
                                        entry->source_id);
   test_ukm_recorder_.ExpectEntryMetric(photos_entry, "AppType", 3);
@@ -97,7 +107,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeChrome) {
   test_ukm_recorder_.SetIsWebstoreExtensionCallback(
       base::BindRepeating(&TestIsWebstoreExtension));
 
-  AppLaunchEventLogger app_launch_event_logger_;
+  AppLaunchEventLoggerForTest app_launch_event_logger_;
   app_launch_event_logger_.SetAppDataForTesting(&registry, nullptr, nullptr);
   app_launch_event_logger_.OnGridClicked(kGmailChromeApp);
 
@@ -126,7 +136,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeArc) {
 
   GURL url("app://play/gbpfhehadcpcndihhameeacbdmbjbhgi");
 
-  AppLaunchEventLogger app_launch_event_logger_;
+  AppLaunchEventLoggerForTest app_launch_event_logger_;
   app_launch_event_logger_.SetAppDataForTesting(nullptr, arc_apps.get(),
                                                 packages.get());
   app_launch_event_logger_.OnGridClicked(kMapsArcApp);
@@ -145,10 +155,11 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
   // Click on PWA photos, then Chrome Maps, then PWA Photos again.
   extensions::ExtensionRegistry registry(nullptr);
   scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder("test").SetID(kPhotosPWAApp).Build();
+      extensions::ExtensionBuilder("test")
+          .SetID(kPhotosPWAApp)
+          .AddFlags(extensions::Extension::FROM_BOOKMARK)
+          .Build();
   registry.AddEnabled(extension);
-
-  GURL photos_url("https://photos.google.com/");
 
   base::Value package(base::Value::Type::DICTIONARY);
   package.SetKey(AppLaunchEventLogger::kShouldSync, base::Value(true));
@@ -164,7 +175,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
 
   GURL maps_url("app://play/gbpfhehadcpcndihhameeacbdmbjbhgi");
 
-  AppLaunchEventLogger app_launch_event_logger_;
+  AppLaunchEventLoggerForTest app_launch_event_logger_;
   app_launch_event_logger_.SetAppDataForTesting(&registry, arc_apps.get(),
                                                 packages.get());
   app_launch_event_logger_.OnGridClicked(kPhotosPWAApp);
@@ -178,7 +189,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(4ul, entries.size());
   const auto* entry = entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, photos_url);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kPhotosPWAUrl);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLast24Hours", 4);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLastHour", 4);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AppType", 3);
@@ -192,12 +203,12 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
   const auto* maps_entry = click_entries.at(6);
   const auto* photos_entry = click_entries.at(7);
   if (test_ukm_recorder_.GetSourceForSourceId(maps_entry->source_id)->url() ==
-      photos_url) {
+      kPhotosPWAUrl) {
     const auto* tmp_entry = photos_entry;
     photos_entry = maps_entry;
     maps_entry = tmp_entry;
   }
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(photos_entry, photos_url);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(photos_entry, kPhotosPWAUrl);
   test_ukm_recorder_.ExpectEntrySourceHasUrl(maps_entry, maps_url);
   test_ukm_recorder_.ExpectEntryMetric(photos_entry, "AppLaunchId",
                                        entry->source_id);
@@ -220,12 +231,13 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
 TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {
   extensions::ExtensionRegistry registry(nullptr);
   scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder("test").SetID(kPhotosPWAApp).Build();
+      extensions::ExtensionBuilder("test")
+          .SetID(kPhotosPWAApp)
+          .AddFlags(extensions::Extension::FROM_BOOKMARK)
+          .Build();
   registry.AddEnabled(extension);
 
-  GURL url("https://photos.google.com/");
-
-  AppLaunchEventLogger app_launch_event_logger_;
+  AppLaunchEventLoggerForTest app_launch_event_logger_;
   app_launch_event_logger_.SetAppDataForTesting(&registry, nullptr, nullptr);
   app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(kPhotosPWAApp, 3,
                                                               2);
@@ -235,7 +247,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
   const auto* entry = entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kPhotosPWAUrl);
   test_ukm_recorder_.ExpectEntryMetric(entry, "PositionIndex", 3);
   test_ukm_recorder_.ExpectEntryMetric(entry, "LaunchedFrom", 2);
 }
@@ -243,12 +255,13 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {
 TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSearchBox) {
   extensions::ExtensionRegistry registry(nullptr);
   scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder("test").SetID(kPhotosPWAApp).Build();
+      extensions::ExtensionBuilder("test")
+          .SetID(kPhotosPWAApp)
+          .AddFlags(extensions::Extension::FROM_BOOKMARK)
+          .Build();
   registry.AddEnabled(extension);
 
-  GURL url("https://photos.google.com/");
-
-  AppLaunchEventLogger app_launch_event_logger_;
+  AppLaunchEventLoggerForTest app_launch_event_logger_;
   app_launch_event_logger_.SetAppDataForTesting(&registry, nullptr, nullptr);
   app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(kPhotosPWAApp, 3,
                                                               4);
@@ -258,7 +271,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSearchBox) {
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
   const auto* entry = entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kPhotosPWAUrl);
   test_ukm_recorder_.ExpectEntryMetric(entry, "PositionIndex", 3);
   test_ukm_recorder_.ExpectEntryMetric(entry, "LaunchedFrom", 4);
 }

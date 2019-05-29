@@ -36,11 +36,11 @@ namespace app_list {
 
 // This class logs metrics associated with clicking on apps in ChromeOS.
 // Logging is restricted to Arc apps with sync enabled, Chrome apps from the
-// app store and PWAs from a whitelist. This class uses UKM for logging,
+// app store, PWAs and bookmark apps. This class uses UKM for logging,
 // however, the metrics are not keyed by navigational urls. Instead, for Chrome
 // apps the keys are based upon the app id, for Arc apps the keys are based upon
-// a hash of the package name and for PWAs the keys are the urls associated with
-// the PWA.
+// a hash of the package name, and for PWAs and bookmark apps the keys are the
+// urls associated with the PWA/bookmark.
 // At the time of app launch this class logs metrics about the app clicked on
 // and another five apps that were not clicked on, chosen at random.
 class AppLaunchEventLogger {
@@ -65,23 +65,21 @@ class AppLaunchEventLogger {
   static const char kPackageName[];
   static const char kShouldSync[];
 
+ protected:
+  // Get the url used to launch a PWA or bookmark app.
+  virtual const GURL& GetLaunchWebURL(const extensions::Extension* extension);
+
  private:
   // Removes any leading "chrome-extension://" or "arc://". Also remove any
   // trailing "/".
   std::string RemoveScheme(const std::string& id);
-  // Creates the mapping from PWA app id to PWA url. This mapping also acts as a
-  // whitelist for which PWA apps can be logged here.
-  void PopulatePwaIdUrlMap();
-  // Gets the PWA url from its app id. Returns base::EmptyString() if no match
-  // found.
-  const std::string& GetPwaUrl(const std::string& id);
+
   // Marks app as ok for policy compliance. If the app is not in
   // |app_features_map_| then add it.
   void OkApp(AppLaunchEvent_AppType app_type,
              const std::string& app_id,
              const std::string& arc_package_name,
              const std::string& pwa_url);
-
   // Enforces logging policy, ensuring that the |app_features_map_| only
   // contains apps that are allowed to be logged. All apps are rechecked in case
   // they have been uninstalled since the previous check.
@@ -89,7 +87,7 @@ class AppLaunchEventLogger {
   // Updates the app data following a click.
   void ProcessClick(const AppLaunchEvent& event, const base::Time& now);
   // Returns a source id. |arc_package_name| is only required for Arc apps,
-  // |pwa_url| is only required for PWA apps.
+  // |pwa_url| is only required for PWAs and bookmark apps.
   ukm::SourceId GetSourceId(AppLaunchEvent_AppType app_type,
                             const std::string& app_id,
                             const std::string& arc_package_name,
@@ -109,10 +107,6 @@ class AppLaunchEventLogger {
       ukm::builders::AppListAppClickData* const app_click_data);
   // Logs the app click using UKM.
   void Log(AppLaunchEvent app_launch_event);
-
-  // Map from PWA app id to PWA url. This also acts as a whitelist of PWA apps
-  // the can be logged.
-  base::flat_map<std::string, std::string> pwa_id_url_map_;
 
   // The arc apps installed on the device.
   const base::DictionaryValue* arc_apps_;
