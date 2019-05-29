@@ -38,19 +38,15 @@ Polymer({
   is: 'print-preview-pages-settings',
 
   behaviors: [
-    SettingsBehavior, print_preview.InputBehavior,
-    print_preview.SelectBehavior
+    SettingsBehavior, print_preview.InputBehavior, print_preview.SelectBehavior
   ],
 
   properties: {
     disabled: Boolean,
 
-    pageCount: Number,
-
-    /** @private {!Array<number>} */
-    allPagesArray_: {
-      type: Array,
-      computed: 'computeAllPagesArray_(pageCount)',
+    pageCount: {
+      type: Number,
+      observer: 'onPageCountChange_',
     },
 
     /** @private {boolean} */
@@ -90,7 +86,7 @@ Polymer({
     /** @private {!Array<{to: number, from: number}>} */
     rangesToPrint_: {
       type: Array,
-      computed: 'computeRangesToPrint_(pagesToPrint_, allPagesArray_)',
+      computed: 'computeRangesToPrint_(pagesToPrint_)',
     },
 
     /**
@@ -104,7 +100,7 @@ Polymer({
   },
 
   observers: [
-    'updatePagesToPrint_(inputString_, allPagesArray_)',
+    'updatePagesToPrint_(inputString_)',
     'onRangeChange_(errorState_, rangesToPrint_, settings.pages, ' +
         'settings.pagesPerSheet.value)',
   ],
@@ -153,8 +149,8 @@ Polymer({
   /** @private */
   onCollapseChanged_: function() {
     if (this.customSelected_) {
-        /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
-            .inputElement.focus();
+      /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
+          .inputElement.focus();
     }
   },
 
@@ -168,18 +164,6 @@ Polymer({
   },
 
   /**
-   * @return {!Array<number>}
-   * @private
-   */
-  computeAllPagesArray_: function() {
-    const array = new Array(this.pageCount);
-    for (let i = 0; i < array.length; i++) {
-      array[i] = i + 1;
-    }
-    return array;
-  },
-
-  /**
    * Updates pages to print and error state based on the validity and
    * current value of the input.
    * @private
@@ -187,7 +171,9 @@ Polymer({
   updatePagesToPrint_: function() {
     if (!this.customSelected_) {
       this.errorState_ = PagesInputErrorState.NO_ERROR;
-      this.pagesToPrint_ = this.allPagesArray_ || [];
+      this.pagesToPrint_ = this.pageCount ?
+          Array.from(new Array(this.pageCount).fill(0), (_, i) => i + 1) :
+          [];
       return;
     } else if (this.inputString_ === '') {
       this.errorState_ = PagesInputErrorState.EMPTY;
@@ -197,7 +183,7 @@ Polymer({
     const pages = [];
     const added = {};
     const ranges = this.inputString_.split(/,|\u3001/);
-    const maxPage = this.allPagesArray_.length;
+    const maxPage = this.pageCount;
     for (const range of ranges) {
       if (range == '') {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
@@ -266,14 +252,13 @@ Polymer({
   },
 
   /**
-   * Updates ranges to print.
    * @return {!Array<{to: number, from: number}>}
    * @private
    */
   computeRangesToPrint_: function() {
     if (!this.pagesToPrint_ || this.pagesToPrint_.length == 0 ||
         this.pagesToPrint_[0] == -1 ||
-        this.pagesToPrint_.length == this.allPagesArray_.length) {
+        this.pagesToPrint_.length == this.pageCount) {
       return [];
     }
 
@@ -432,6 +417,28 @@ Polymer({
       this.resetString();
     }
     this.updatePagesToPrint_();
-  }
+  },
+
+  /**
+   * @param {number} current
+   * @param {number} previous
+   * @private
+   */
+  onPageCountChange_: function(current, previous) {
+    // Reset the custom input to the new "all pages" value if it is equal to the
+    // full page range and was either set automatically, or would become invalid
+    // due to the page count change.
+    const resetCustom = this.customSelected_ && !!this.pagesToPrint_ &&
+        this.pagesToPrint_.length === previous &&
+        (current < previous || !this.restoreLastInput_);
+
+    if (resetCustom) {
+      this.$$('cr-input').value = this.getAllPagesString_();
+      this.inputString_ = this.getAllPagesString_();
+      this.resetString();
+    } else {
+      this.updatePagesToPrint_();
+    }
+  },
 });
 })();

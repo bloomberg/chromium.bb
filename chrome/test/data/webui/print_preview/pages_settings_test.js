@@ -293,6 +293,17 @@ cr.define('pages_settings_test', function() {
       // Input has been cleared.
       assertEquals('', input.value);
       validateState([1, 2, 3], [], '', false);
+      whenBlurred = test_util.eventToPromise('blur', input);
+      input.blur();
+
+      await whenBlurred;
+      assertEquals('1-3', input.value);
+
+      // Change the page count. Since the range was set automatically, this
+      // should reset it to the new set of all pages.
+      pagesSection.pageCount = 2;
+      validateState([1, 2], [], '', false);
+      assertEquals('1-2', input.value);
     });
 
     // Verifies that the input is never disabled when the validity of the
