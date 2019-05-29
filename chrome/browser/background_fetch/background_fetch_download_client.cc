@@ -70,7 +70,7 @@ void BackgroundFetchDownloadClient::OnServiceInitialized(
 
     if (download.paused) {
       // We need to resurface the notification in a paused state.
-      content::BrowserThread::PostAfterStartupTask(
+      content::BrowserThread::PostBestEffortTask(
           FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
           base::BindOnce(&BackgroundFetchDelegateImpl::RestartPausedDownload,
                          GetDelegate()->GetWeakPtr(), download.guid));
