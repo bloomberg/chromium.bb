@@ -583,9 +583,7 @@ PhysicalRect NGPaintFragment::InkOverflow() const {
   if (!ink_overflow_)
     return fragment.LocalRect();
 
-  // |Style()| is one of the most expensive operations in this function. Do this
-  // after other checks.
-  if (HasOverflowClip() || fragment.Style().HasMask())
+  if (HasOverflowClip())
     return ink_overflow_->self_ink_overflow;
 
   PhysicalRect rect = ink_overflow_->self_ink_overflow;
