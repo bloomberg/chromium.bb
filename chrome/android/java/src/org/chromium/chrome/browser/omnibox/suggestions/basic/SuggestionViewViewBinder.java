@@ -95,6 +95,7 @@ public class SuggestionViewViewBinder {
             view.setSuggestionIconAreaWidthRes(showIcons
                             ? R.dimen.omnibox_suggestion_start_offset_with_icon
                             : R.dimen.omnibox_suggestion_start_offset_without_icon);
+            updateSuggestionIcon(view, model);
         } else if (SuggestionViewProperties.TEXT_LINE_2_TEXT.equals(propertyKey)) {
             Spannable line2Text = model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT).text;
             if (TextUtils.isEmpty(line2Text)) {
@@ -184,7 +185,6 @@ public class SuggestionViewViewBinder {
             }
             icon = AppCompatResources.getDrawable(view.getContext(), drawableId);
         }
-
         view.setSuggestionIconDrawable(
                 icon, iconType, allowTint, model.get(SuggestionCommonProperties.USE_DARK_COLORS));
     }
