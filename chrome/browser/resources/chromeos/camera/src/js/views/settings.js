@@ -60,7 +60,7 @@ cca.views.MasterSettings = function() {
     'settings-timerdur': () => this.openSubSettings('timersettings'),
     'settings-resolution': () => this.openSubSettings('resolutionsettings'),
     'settings-feedback': () => this.openFeedback(),
-    'settings-help': () => this.openHelp_(),
+    'settings-help': () => cca.util.openHelp(),
   });
 
   // End of properties, seal the object.
@@ -92,15 +92,6 @@ cca.views.MasterSettings.prototype.openFeedback = function() {
   };
   const id = 'gfdkimpbcpahaombhbimeihdjnejgicl'; // Feedback extension id.
   chrome.runtime.sendMessage(id, data);
-};
-
-/**
- * Opens help.
- * @private
- */
-cca.views.MasterSettings.prototype.openHelp_ = function() {
-  window.open(
-      'https://support.google.com/chromebook/?p=camera_usage_on_chromebook');
 };
 
 /**

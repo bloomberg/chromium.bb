@@ -858,3 +858,11 @@ cca.util.isWindowFullSize = function() {
   // width matches screen width here as workarounds.
   return chrome.app.window.current().outerBounds.width >= screen.width;
 };
+
+/**
+ * Opens help.
+ */
+cca.util.openHelp = function() {
+  window.open(
+      'https://support.google.com/chromebook/?p=camera_usage_on_chromebook');
+};

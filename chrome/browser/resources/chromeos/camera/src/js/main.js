@@ -65,7 +65,6 @@ cca.App = function() {
     this.browserView_,
     new cca.views.Warning(),
     new cca.views.Dialog('#message-dialog'),
-    new cca.views.Dialog('#intro-dialog'),
   ]);
 };
 
@@ -164,7 +163,6 @@ cca.App.prototype.start = function() {
     }
     this.model_.load();
     cca.nav.open('camera');
-    this.openIntroDialog_();
   }).catch((error) => {
     console.error(error);
     if (error && error.message == 'no-migrate') {
@@ -185,19 +183,6 @@ cca.App.prototype.start = function() {
 cca.App.prototype.onKeyPressed_ = function(event) {
   cca.tooltip.hide(); // Hide shown tooltip on any keypress.
   cca.nav.onKeyPressed(event);
-};
-
-/**
- * Tries to open dialog for introducing new CCA.
- * @private
- */
-cca.App.prototype.openIntroDialog_ = function() {
-  chrome.storage.local.get(['isIntroDialogShown'], (values) => {
-    if (!values['isIntroDialogShown']) {
-      cca.nav.open('intro-dialog');
-      chrome.storage.local.set({isIntroDialogShown: true});
-    }
-  });
 };
 
 /**

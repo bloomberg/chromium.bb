@@ -91,6 +91,8 @@ RESOURCES = \
 	src/images/camera_button_timer_on_10s.svg \
 	src/images/camera_button_timer_on_3s.svg \
 	src/images/camera_focus_aim.svg \
+	src/images/camera_intro_banner_close.svg \
+	src/images/camera_intro_banner_icon.svg \
 	src/images/camera_mode_photo.svg \
 	src/images/camera_mode_portrait.svg \
 	src/images/camera_mode_square.svg \
@@ -104,7 +106,6 @@ RESOURCES = \
 	src/images/camera_shutter_video_start_hover.svg \
 	src/images/camera_shutter_video_stop.svg \
 	src/images/camera_shutter_video_stop_hover.svg \
-	src/images/dialog_intro_icon.svg \
 	src/images/settings_button_back.svg \
 	src/images/settings_button_expand.svg \
 	src/images/settings_feedback.svg \
