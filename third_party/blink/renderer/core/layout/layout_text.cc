@@ -1971,13 +1971,13 @@ PhysicalRect LayoutText::PhysicalLinesBoundingBox() const {
   return result;
 }
 
-LayoutRect LayoutText::VisualOverflowRect() const {
-  if (base::Optional<PhysicalRect> physical_rect =
+PhysicalRect LayoutText::PhysicalVisualOverflowRect() const {
+  if (base::Optional<PhysicalRect> rect =
           NGPaintFragment::LocalVisualRectFor(*this))
-    return FlipForWritingMode(*physical_rect);
+    return *rect;
 
   if (!FirstTextBox())
-    return LayoutRect();
+    return PhysicalRect();
 
   // Return the width of the minimal left side and the maximal right side.
   LayoutUnit logical_left_side = LayoutUnit::Max();
@@ -2017,16 +2017,11 @@ LayoutRect LayoutText::VisualOverflowRect() const {
                   logical_height);
   if (!StyleRef().IsHorizontalWritingMode())
     rect = rect.TransposedRect();
-  return rect;
+  return FlipForWritingMode(rect);
 }
 
 PhysicalRect LayoutText::LocalVisualRectIgnoringVisibility() const {
-  PhysicalRect rect;
-  if (const auto& r = NGPaintFragment::LocalVisualRectFor(*this))
-    rect = *r;
-  else
-    rect = FlipForWritingMode(VisualOverflowRect());
-  return UnionRect(rect, LocalSelectionVisualRect());
+  return UnionRect(PhysicalVisualOverflowRect(), LocalSelectionVisualRect());
 }
 
 PhysicalRect LayoutText::LocalSelectionVisualRect() const {

@@ -177,7 +177,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   // border boxes.
   virtual IntRect BorderBoundingBox() const = 0;
 
-  virtual LayoutRect VisualOverflowRect() const = 0;
+  virtual PhysicalRect PhysicalVisualOverflowRect() const = 0;
 
   bool UsesCompositedScrolling() const;
 
