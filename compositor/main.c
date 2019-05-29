@@ -2329,6 +2329,7 @@ load_drm_backend(struct weston_compositor *c,
 	int use_shadow;
 	int ret = 0;
 	int use_pixman_config_ = 0;
+	int drm_use_current_mode = 0;
 	int32_t use_pixman_ = 0;
 
 	wet->drm_use_current_mode = false;
@@ -2342,11 +2343,12 @@ load_drm_backend(struct weston_compositor *c,
 		{ WESTON_OPTION_STRING, "seat", 0, &config.seat_id },
 		{ WESTON_OPTION_INTEGER, "tty", 0, &config.tty },
 		{ WESTON_OPTION_STRING, "drm-device", 0, &config.specific_device },
-		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &wet->drm_use_current_mode },
+		{ WESTON_OPTION_BOOLEAN, "current-mode", 0, &drm_use_current_mode },
 		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman_ },
 	};
 
 	parse_options(options, ARRAY_LENGTH(options), argc, argv);
+	wet->drm_use_current_mode = drm_use_current_mode;
 	config.use_pixman = use_pixman_;
 
 	section = weston_config_get_section(wc, "core", NULL, NULL);
@@ -2618,6 +2620,8 @@ load_x11_backend(struct weston_compositor *c,
 	char const *section_name;
 	int i;
 	int32_t use_pixman_config_ = 0;
+	int fullscreen = 0;
+	int no_input = 0;
 	int use_pixman_ = 0;
 
 	struct wet_output_config *parsed_options = wet_init_parsed_options(c);
@@ -2633,13 +2637,15 @@ load_x11_backend(struct weston_compositor *c,
 	       { WESTON_OPTION_INTEGER, "width", 0, &parsed_options->width },
 	       { WESTON_OPTION_INTEGER, "height", 0, &parsed_options->height },
 	       { WESTON_OPTION_INTEGER, "scale", 0, &parsed_options->scale },
-	       { WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &config.fullscreen },
+	       { WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &fullscreen },
 	       { WESTON_OPTION_INTEGER, "output-count", 0, &option_count },
-	       { WESTON_OPTION_BOOLEAN, "no-input", 0, &config.no_input },
+	       { WESTON_OPTION_BOOLEAN, "no-input", 0, &no_input },
 	       { WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman_ },
 	};
 
 	parse_options(options, ARRAY_LENGTH(options), argc, argv);
+	config.fullscreen = fullscreen;
+	config.no_input = no_input;
 	config.use_pixman = use_pixman_;
 
 	config.base.struct_version = WESTON_X11_BACKEND_CONFIG_VERSION;
