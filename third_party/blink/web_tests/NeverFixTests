@@ -2069,7 +2069,7 @@ external/wpt/payment-request/payment-response/requestId-attribute-manual.https.h
 external/wpt/payment-request/payment-response/retry-method-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/shippingAddress-attribute-manual.https.html [ WontFix ]
 external/wpt/payment-request/payment-response/shippingOption-attribute-manual.https.html [ WontFix ]
-external/wpt/payment-request/rejects_if_not_active_manual.https.html [ WontFix ]
+external/wpt/payment-request/rejects_if_not_active-manual.https.html [ WontFix ]
 external/wpt/payment-request/shipping-address-changed-manual.https.html [ WontFix ]
 external/wpt/payment-request/show-method-optional-promise-rejects-manual.https.html [ WontFix ]
 external/wpt/payment-request/show-method-optional-promise-resolves-manual.https.html [ WontFix ]
