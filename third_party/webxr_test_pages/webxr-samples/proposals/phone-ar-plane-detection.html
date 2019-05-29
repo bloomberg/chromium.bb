@@ -294,7 +294,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function DOMPointFromVec4(vector) {
-        return { x : vector[0], y : vector[1], z : vector[2], w : vector[3]}
+        return new DOMPointReadOnly(vector[0], vector[1], vector[2], vector[3]);
       }
 
       let rayOrigin = vec4.create();

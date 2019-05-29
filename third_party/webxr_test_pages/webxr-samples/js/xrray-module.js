@@ -42,7 +42,7 @@ const multiply = function(lhs, rhs) {
   for(let col = 0; col < 4; ++col) {
     for(let row = 0; row < 4; ++row) {
       for(let k = 0; k < 4; ++k) {
-        result[col * 4 + row] += rhs[col][k] * lhs[k][row];
+        result[col * 4 + row] += rhs[col * 4 + k] * lhs[k * 4 + row];
       }
     }
   }
@@ -89,7 +89,7 @@ const rotate = function(matrix, axis, angle) {
       // second column
       axis.x * axis.y * one_minus_cos_angle - axis.z * sin_angle,
       cos_angle + axis.y * axis.y * one_minus_cos_angle,
-      axis.z * axis.y * one_minus_cos_angle + x * sin_angle,
+      axis.z * axis.y * one_minus_cos_angle + axis.x * sin_angle,
       0,
       // third column
       axis.x * axis.z * one_minus_cos_angle + axis.y * sin_angle,
@@ -108,7 +108,6 @@ const rotate = function(matrix, axis, angle) {
 
 export class XRRay {
   constructor() {
-
     if (arguments.length > 0 && arguments[0] instanceof XRRigidTransform) {
       if(arguments.length != 1)
         throw new Error("Invalid number of arguments!");
@@ -139,7 +138,7 @@ export class XRRay {
       ]);
 
       const initial_ray_direction = [0, 0, -1];
-      const desired_ray_direction = [direction.x, direction.y, direction.z];
+      const desired_ray_direction = [this.direction_.x, this.direction_.y, this.direction_.z];
 
       const cos_angle = dot(initial_ray_direction, desired_ray_direction);
 
@@ -153,14 +152,14 @@ export class XRRay {
         const axis = new DOMPointReadOnly(1, 0, 0, 0);
         cos_angle = -1;
 
-        this.matrix_ = rotate(this.matrix_, axis, Math.acos(angle));
+        this.matrix_ = rotate(this.matrix_, axis, Math.acos(cos_angle));
       } else {
         // Rotation needed - create it from axis-angle.
-        const cross_initial_desired = cross(initialRayDirection, desiredRayDirection);
+        const cross_initial_desired = cross(initial_ray_direction, desired_ray_direction);
         const axis = normalizeLength(new DOMPointReadOnly(
           cross_initial_desired[0], cross_initial_desired[1], cross_initial_desired[2], 0));
 
-        this.matrix_ = rotate(this.matrix_, axis, Math.acos(angle));
+        this.matrix_ = rotate(this.matrix_, axis, Math.acos(cos_angle));
       }
     }
 

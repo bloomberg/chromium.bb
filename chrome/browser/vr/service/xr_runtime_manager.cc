@@ -52,6 +52,13 @@ XRRuntimeManager* g_xr_runtime_manager = nullptr;
 
 base::LazyInstance<base::ObserverList<XRRuntimeManagerObserver>>::Leaky
     g_xr_runtime_manager_observers;
+
+// Returns true if any of the AR-related features are enabled.
+bool AreArFeaturesEnabled() {
+  return base::FeatureList::IsEnabled(features::kWebXrHitTest) ||
+         base::FeatureList::IsEnabled(features::kWebXrPlaneDetection);
+}
+
 }  // namespace
 
 XRRuntimeManager::~XRRuntimeManager() {
@@ -64,15 +71,17 @@ XRRuntimeManager* XRRuntimeManager::GetInstance() {
     // Register VRDeviceProviders for the current platform
     ProviderList providers;
 
+    if (AreArFeaturesEnabled()) {
 #if defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_ARCORE)
-    if (base::FeatureList::IsEnabled(features::kWebXrHitTest)) {
       providers.emplace_back(device::ArCoreDeviceProviderFactory::Create());
+#endif  // BUILDFLAG(ENABLE_ARCORE)
+#endif  // defined(OS_ANDROID)
     }
-#endif
 
+#if defined(OS_ANDROID)
     providers.emplace_back(std::make_unique<device::GvrDeviceProvider>());
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
     providers.emplace_back(std::make_unique<vr::IsolatedVRDeviceProvider>());

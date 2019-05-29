@@ -77,6 +77,9 @@ XRSession::SessionMode stringToSessionMode(const String& mode_string) {
   return XRSession::kModeInline;
 }
 
+// When updating this list, also update XRRuntimeManager's
+// AreArFeaturesEnabled() until https://crbug.com/966647 is fixed.
+// TODO(https://crbug.com/966647) remove the above comment when fixed.
 bool AreArRuntimeFeaturesEnabled(const FeatureContext* context) {
   return RuntimeEnabledFeatures::WebXRHitTestEnabled(context) ||
          RuntimeEnabledFeatures::WebXRPlaneDetectionEnabled(context);
