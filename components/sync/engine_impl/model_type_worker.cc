@@ -209,8 +209,8 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     }
 
     auto response_data = std::make_unique<UpdateResponseData>();
-    switch (PopulateUpdateResponseData(cryptographer_.get(), *update_entity,
-                                       response_data.get())) {
+    switch (PopulateUpdateResponseData(cryptographer_.get(), type_,
+                                       *update_entity, response_data.get())) {
       case SUCCESS:
         if (!response_data->entity->client_tag_hash.empty()) {
           client_tag_hashes.push_back(response_data->entity->client_tag_hash);
@@ -240,6 +240,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
 // |response_data| must be not null.
 ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     const Cryptographer* cryptographer,
+    ModelType model_type,
     const sync_pb::SyncEntity& update_entity,
     UpdateResponseData* response_data) {
   response_data->response_version = update_entity.version();
@@ -342,6 +343,12 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   if (!specifics.has_encrypted()) {
     // No encryption.
     data->specifics = specifics;
+    // Legacy clients populates the name field in the SyncEntity instead of the
+    // title field in the BookmarkSpecifics.
+    if (model_type == BOOKMARKS && !specifics.bookmark().has_title() &&
+        !update_entity.name().empty()) {
+      data->specifics.mutable_bookmark()->set_title(update_entity.name());
+    }
     response_data->entity = std::move(data);
     return SUCCESS;
   }
