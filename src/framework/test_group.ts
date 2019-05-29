@@ -3,7 +3,6 @@ import { IParamsAny, IParamsSpec } from './params/index.js';
 
 type TestFn<F extends Fixture> = (t: F) => (Promise<void> | void);
 interface ICase {
-  name: string;
   params?: object;
   run: (log: CaseRecorder) => Promise<void>;
 }
@@ -32,7 +31,7 @@ export abstract class Fixture {
 }
 
 export class TestGroup {
-  private tests: ICase[] = [];
+  private tests: Map<string, ICase> = new Map();
 
   public constructor() {}
 
@@ -48,9 +47,9 @@ export class TestGroup {
   }
 
   public * iterate(log: GroupRecorder): Iterable<IRunCase> {
-    for (const t of this.tests) {
-      const [res, rec] = log.record(t.name, t.params);
-      yield {name: t.name, params: t.params, run: async () => {
+    for (const [name, t] of this.tests) {
+      const [res, rec] = log.record(name, t.params);
+      yield {name, params: t.params, run: async () => {
         rec.start();
         try {
           await t.run(rec);
@@ -69,12 +68,23 @@ export class TestGroup {
                                       params: (IParamsSpec | undefined),
                                       fixture: IFixture<F>,
                                       fn: TestFn<F>): void {
+    const validNames = /^[a-zA-Z0-9,.\- ']+$/;
+    if (!validNames.test(name)) {
+      throw new Error(`Invalid test name ${name}; must match ${validNames}`);
+    }
+
     const n = params ? (name + '/' + JSON.stringify(params)) : name;
     const p = params ? params : {};
-    this.tests.push({ name: n, run: async (log) => {
-      const inst = new fixture(log, p);
-      await inst.init();
-      return fn(inst);
-    }});
+    if (this.tests.has(n)) {
+      throw new Error('Duplicate test name');
+    }
+
+    this.tests.set(n, {
+      async run(log) {
+        const inst = new fixture(log, p);
+        await inst.init();
+        return fn(inst);
+      },
+    });
   }
 }

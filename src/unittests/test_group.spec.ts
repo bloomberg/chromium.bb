@@ -11,9 +11,7 @@ import {
 
 export const group = new TestGroup();
 
-// TODO: these tests should really create their own TestGroup and assert things about it
-
-group.test('default_fixture', DefaultFixture, (t0) => {
+group.test('default fixture', DefaultFixture, (t0) => {
   function print(t: Fixture) {
     t.log(JSON.stringify(t.params));
   }
@@ -26,7 +24,7 @@ group.test('default_fixture', DefaultFixture, (t0) => {
   // TODO: check output
 });
 
-group.test('custom_fixture', DefaultFixture, (t0) => {
+group.test('custom fixture', DefaultFixture, (t0) => {
   class Printer extends DefaultFixture {
     public print() {
       this.log(JSON.stringify(this.params));
@@ -40,3 +38,22 @@ group.test('custom_fixture', DefaultFixture, (t0) => {
 
   // TODO: check output
 });
+
+group.test('duplicate test name', DefaultFixture, (t) => {
+  const g = new TestGroup();
+  g.test('abc', DefaultFixture, () => {});
+
+  t.shouldThrow(() => {
+    g.test('abc', DefaultFixture, () => {});
+  });
+});
+
+for (const char of '"`~@#$+=/\\|!%^&*[]<>{}') {
+  group.testp('invalid test name', {char}, DefaultFixture, (t) => {
+    const g = new TestGroup();
+
+    t.shouldThrow(() => {
+      g.test('a' + char + 'b', DefaultFixture, () => {});
+    });
+  });
+}

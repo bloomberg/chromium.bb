@@ -28,20 +28,22 @@ group.test('options', ParamsTest, (t) => {
     [{ hello: 1 }, { hello: 2 }, { hello: 3 }]);
 });
 
-group.test('combine/none', ParamsTest, (t) => {
+// TODO: somehow "subgroup" the combine tests
+
+group.test('combine, none', ParamsTest, (t) => {
   t.test(
     pcombine([]),
     []);
 });
 
-group.test('combine/zeroes_and_ones', ParamsTest, (t) => {
+group.test('combine, zeroes and ones', ParamsTest, (t) => {
   t.test(pcombine([[], []]), []);
   t.test(pcombine([[], [{}]]), []);
   t.test(pcombine([[{}], []]), []);
   t.test(pcombine([[{}], [{}]]), [{}]);
 });
 
-group.test('combine/mixed', ParamsTest, (t) => {
+group.test('combine, mixed', ParamsTest, (t) => {
   t.test(
     pcombine([ poptions('x', [1, 2]), poptions('y', ['a', 'b']), [{p: 4}, {q: 5}], [{}] ]),
     [

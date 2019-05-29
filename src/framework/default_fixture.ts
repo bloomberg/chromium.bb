@@ -10,10 +10,17 @@ export class DefaultFixture extends Fixture {
   }
 
   public ok(msg?: string) {
-    if (msg) {
-      this.log('OK: ' + msg);
-    } else {
-      this.log('OK');
+    const m = msg ? (': ' + msg) : '';
+    this.log('OK' + m);
+  }
+
+  public shouldThrow(fn: () => void, msg?: string) {
+    const m = msg ? (': ' + msg) : '';
+    try {
+      fn();
+      this.fail('DID NOT THROW' + m);
+    } catch (ex) {
+      this.ok('threw' + m);
     }
   }
 
