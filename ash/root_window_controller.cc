@@ -908,11 +908,21 @@ void RootWindowController::CreateContainers() {
   aura::Window* screen_rotation_container = CreateContainer(
       kShellWindowId_ScreenRotationContainer, "ScreenRotationContainer", root);
 
+  // Everything that needs to be included in the docked magnifier, when enabled,
+  // should be a descendant of MagnifiedContainer. The DockedMagnifierContainer
+  // should not be a descendant of this container, otherwise there would be a
+  // cycle (docked magnifier trying to magnify itself).
+  aura::Window* magnified_container =
+      CreateContainer(kShellWindowId_MagnifiedContainer, "MagnifiedContainer",
+                      screen_rotation_container);
+
+  CreateContainer(kShellWindowId_DockedMagnifierContainer,
+                  "DockedMagnifierContainer", screen_rotation_container);
+
   // These containers are just used by PowerButtonController to animate groups
   // of containers simultaneously without messing up the current transformations
-  // on those containers. These are direct children of the
-  // screen_rotation_container window; all of the other containers are their
-  // children.
+  // on those containers. These are direct children of the magnified_container
+  // window; all of the other containers are their children.
 
   // The wallpaper container is not part of the lock animation, so it is not
   // included in those animate groups. When the screen is locked, the wallpaper
@@ -920,27 +930,27 @@ void RootWindowController::CreateContainers() {
   // Ensure that there's an opaque layer occluding the non-lock-screen layers.
   aura::Window* wallpaper_container =
       CreateContainer(kShellWindowId_WallpaperContainer, "WallpaperContainer",
-                      screen_rotation_container);
+                      magnified_container);
   ::wm::SetChildWindowVisibilityChangesAnimated(wallpaper_container);
 
-  aura::Window* non_lock_screen_containers = CreateContainer(
-      kShellWindowId_NonLockScreenContainersContainer,
-      "NonLockScreenContainersContainer", screen_rotation_container);
+  aura::Window* non_lock_screen_containers =
+      CreateContainer(kShellWindowId_NonLockScreenContainersContainer,
+                      "NonLockScreenContainersContainer", magnified_container);
   // Clip all windows inside this container, as half pixel of the window's
   // texture may become visible when the screen is scaled. crbug.com/368591.
   non_lock_screen_containers->layer()->SetMasksToBounds(true);
 
-  aura::Window* lock_wallpaper_containers = CreateContainer(
-      kShellWindowId_LockScreenWallpaperContainer,
-      "LockScreenWallpaperContainer", screen_rotation_container);
+  aura::Window* lock_wallpaper_containers =
+      CreateContainer(kShellWindowId_LockScreenWallpaperContainer,
+                      "LockScreenWallpaperContainer", magnified_container);
   ::wm::SetChildWindowVisibilityChangesAnimated(lock_wallpaper_containers);
 
-  aura::Window* lock_screen_containers = CreateContainer(
-      kShellWindowId_LockScreenContainersContainer,
-      "LockScreenContainersContainer", screen_rotation_container);
+  aura::Window* lock_screen_containers =
+      CreateContainer(kShellWindowId_LockScreenContainersContainer,
+                      "LockScreenContainersContainer", magnified_container);
   aura::Window* lock_screen_related_containers = CreateContainer(
       kShellWindowId_LockScreenRelatedContainersContainer,
-      "LockScreenRelatedContainersContainer", screen_rotation_container);
+      "LockScreenRelatedContainersContainer", magnified_container);
 
   aura::Window* app_list_tablet_mode_container =
       CreateContainer(kShellWindowId_HomeScreenContainer, "HomeScreenContainer",
@@ -1119,19 +1129,16 @@ void RootWindowController::CreateContainers() {
   overlay_container->SetLayoutManager(
       new OverlayLayoutManager(overlay_container));  // Takes ownership.
 
-  CreateContainer(kShellWindowId_DockedMagnifierContainer,
-                  "DockedMagnifierContainer", lock_screen_related_containers);
-
   aura::Window* mouse_cursor_container =
       CreateContainer(kShellWindowId_MouseCursorContainer,
-                      "MouseCursorContainer", screen_rotation_container);
+                      "MouseCursorContainer", magnified_container);
   mouse_cursor_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   CreateContainer(kShellWindowId_AlwaysOnTopWallpaperContainer,
-                  "AlwaysOnTopWallpaperContainer", screen_rotation_container);
+                  "AlwaysOnTopWallpaperContainer", magnified_container);
 
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
-                  "PowerButtonAnimationContainer", screen_rotation_container);
+                  "PowerButtonAnimationContainer", magnified_container);
 }
 
 void RootWindowController::CreateSystemWallpaper(

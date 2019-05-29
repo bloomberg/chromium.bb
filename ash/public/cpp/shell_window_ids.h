@@ -21,6 +21,13 @@ enum ShellWindowId {
   // for screen rotation animation.
   kShellWindowId_ScreenRotationContainer = 0,
 
+  // The magnified container which contains everything that would be magnified
+  // when docked magnifier is enabled.
+  kShellWindowId_MagnifiedContainer,
+
+  // The container for the Docked Magnifier viewport widget and the separator.
+  kShellWindowId_DockedMagnifierContainer,
+
   // A higher-level container that holds all of the containers stacked below
   // kShellWindowId_LockScreenContainer.  Only used by PowerButtonController for
   // animating lower-level containers.
@@ -35,9 +42,8 @@ enum ShellWindowId {
   // lock-screen-related windows (which are displayed regardless of the screen
   // lock state, effectively containers stacked above
   // kShellWindowId_LockSystemModalContainer). Used by the shelf, status area,
-  // virtual keyboard, settings bubble, menus, Docked Magnifier viewport, etc.
-  // Also used by the PowerButtonController for animating lower-level
-  // containers.
+  // virtual keyboard, settings bubble, menus, etc.  Also used by the
+  // PowerButtonController for animating lower-level containers.
   kShellWindowId_LockScreenRelatedContainersContainer,
 
   // A container used for windows of WINDOW_TYPE_CONTROL that have no parent.
@@ -150,9 +156,6 @@ enum ShellWindowId {
   // The container for special components overlaid onscreen, such as the
   // region selector for partial screenshots.
   kShellWindowId_OverlayContainer,
-
-  // The container for the Docked Magnifier viewport widget and the separator.
-  kShellWindowId_DockedMagnifierContainer,
 
   // The container for mouse cursor.
   kShellWindowId_MouseCursorContainer,
