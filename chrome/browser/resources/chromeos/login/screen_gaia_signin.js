@@ -10,42 +10,42 @@
 
 (function() {
 
-// GAIA animation guard timer. Started when GAIA page is loaded
-// (Authenticator 'ready' event) and is intended to guard against edge cases
-// when 'showView' message is not generated/received.
-/** @const */ var GAIA_ANIMATION_GUARD_MILLISEC = 300;
+// GAIA animation guard timer. Started when GAIA page is loaded (Authenticator
+// 'ready' event) and is intended to guard against edge cases when 'showView'
+// message is not generated/received.
+const GAIA_ANIMATION_GUARD_MILLISEC = 300;
 
 // Maximum Gaia loading time in seconds.
-/** @const */ var MAX_GAIA_LOADING_TIME_SEC = 60;
+const MAX_GAIA_LOADING_TIME_SEC = 60;
 
 // The help topic regarding user not being in the whitelist.
-/** @const */ var HELP_CANT_ACCESS_ACCOUNT = 188036;
+const HELP_CANT_ACCESS_ACCOUNT = 188036;
 
 // Amount of time the user has to be idle for before showing the online login
 // page.
-/** @const */ var IDLE_TIME_UNTIL_EXIT_OFFLINE_IN_MILLISECONDS = 180 * 1000;
+const IDLE_TIME_UNTIL_EXIT_OFFLINE_IN_MILLISECONDS = 180 * 1000;
 
 // Approximate amount of time between checks to see if we should go to the
 // online login page when we're in the offline login page and the device is
 // online.
-/** @const */ var IDLE_TIME_CHECK_FREQUENCY = 5 * 1000;
+const IDLE_TIME_CHECK_FREQUENCY = 5 * 1000;
 
-// Amount of time allowed for video based SAML logins, to prevent a site
-// from keeping the camera on indefinitely.  This is a hard deadline and
-// it will not be extended by user activity.
-/** @const */ var VIDEO_LOGIN_TIMEOUT = 90 * 1000;
+// Amount of time allowed for video based SAML logins, to prevent a site from
+// keeping the camera on indefinitely.  This is a hard deadline and it will
+// not be extended by user activity.
+const VIDEO_LOGIN_TIMEOUT = 90 * 1000;
 
 // Horizontal padding for the error bubble.
-/** @const */ var BUBBLE_HORIZONTAL_PADDING = 65;
+const BUBBLE_HORIZONTAL_PADDING = 65;
 
 // Vertical padding for the error bubble.
-/** @const */ var BUBBLE_VERTICAL_PADDING = -213;
+const BUBBLE_VERTICAL_PADDING = -213;
 
 /**
  * The modes this screen can be in.
- * @enum {integer}
+ * @enum {number}
  */
-var ScreenMode = {
+const ScreenMode = {
   DEFAULT: 0,            // Default GAIA login flow.
   OFFLINE: 1,            // GAIA offline login.
   SAML_INTERSTITIAL: 2,  // Interstitial page before SAML redirection.
@@ -61,7 +61,6 @@ Polymer({
     'loadAuthExtension',
     'doReload',
     'monitorOfflineIdle',
-    'updateControlsState',
     'showWhitelistCheckFailedError',
     'invalidateAd',
   ],
@@ -77,7 +76,7 @@ Polymer({
 
   /**
    * Current mode of this screen.
-   * @type {integer}
+   * @type {ScreenMode}
    * @private
    */
   screenMode_: ScreenMode.DEFAULT,
@@ -85,8 +84,9 @@ Polymer({
   /**
    * Email of the user, which is logging in using offline mode.
    * @type {string}
+   * @private
    */
-  email: '',
+  email_: '',
 
   /**
    * Timer id of pending load.
@@ -96,8 +96,8 @@ Polymer({
   loadingTimer_: undefined,
 
   /**
-   * Timer id of a guard timer that is fired in case 'showView' message
-   * is not received from GAIA.
+   * Timer id of a guard timer that is fired in case 'showView' message is not
+   * received from GAIA.
    * @type {number}
    * @private
    */
@@ -141,6 +141,7 @@ Polymer({
   /**
    * SAML password confirmation attempt count.
    * @type {number}
+   * @private
    */
   samlPasswordConfirmAttempt_: 0,
 
@@ -148,12 +149,16 @@ Polymer({
    * Do we currently have a setTimeout task running that tries to bring us
    * back to the online login page after the user has idled for awhile? If so,
    * then this id will be non-negative.
+   * @type {number}
+   * @private
    */
   tryToGoToOnlineLoginPageCallbackId_: -1,
 
   /**
-   * The most recent period of time that the user has interacted. This is
-   * only updated when the offline page is active and the device is online.
+   * The most recent period of time that the user has interacted. This is only
+   * updated when the offline page is active and the device is online.
+   * @type {number}
+   * @private
    */
   mostRecentUserActivity_: Date.now(),
 
@@ -168,14 +173,14 @@ Polymer({
     this.authenticator_ = new cr.login.Authenticator(this.getSigninFrame_());
     this.authenticator_.addEventListener('ready', this.onAuthReady_.bind(this));
 
-    var that = this;
-    var $that = this.$;
+    const that = this;
+    const $that = this.$;
     [this.authenticator_, this.$['offline-gaia'], this.$['offline-ad-auth']]
         .forEach(function(frame) {
           // Ignore events from currently inactive frame.
-          var frameFilter = function(callback) {
+          const frameFilter = function(callback) {
             return function(e) {
-              var currentFrame = null;
+              let currentFrame = null;
               switch (that.screenMode_) {
                 case ScreenMode.DEFAULT:
                 case ScreenMode.SAML_INTERSTITIAL:
@@ -204,8 +209,10 @@ Polymer({
               'menuItemClicked', frameFilter(that.onMenuItemClicked_));
         });
 
-    this.authenticator_.addEventListener(
-        'showView', this.onShowView_.bind(this));
+    this.authenticator_.addEventListener('showView', (e) => {
+      // Redirect to onShowView_() with dropping the |e| argument.
+      this.onShowView_();
+    });
     this.authenticator_.confirmPasswordCallback =
         this.onAuthConfirmPassword_.bind(this);
     this.authenticator_.noPasswordCallback = this.onAuthNoPassword_.bind(this);
@@ -244,7 +251,7 @@ Polymer({
     // Register handlers for the saml interstitial page events.
     this.$['saml-interstitial'].addEventListener(
         'samlPageNextClicked', function() {
-          this.screenMode = ScreenMode.DEFAULT;
+          this.setScreenMode_(ScreenMode.DEFAULT);
           this.loadAuthenticator_(true /* doSamlRedirect */);
         }.bind(this));
     this.$['saml-interstitial'].addEventListener(
@@ -252,7 +259,7 @@ Polymer({
           // The user requests to change the account. We must clear the email
           // field of the auth params.
           this.authenticatorParams_.email = '';
-          this.screenMode = ScreenMode.DEFAULT;
+          this.setScreenMode_(ScreenMode.DEFAULT);
           this.loadAuthenticator_(false /* doSamlRedirect */);
         }.bind(this));
 
@@ -269,27 +276,32 @@ Polymer({
    * Whether the dialog could be closed.
    * This is being checked in cancel() when user clicks on signin-back-button
    * (normal gaia flow) or the "Back" button in other authentication frames.
-   * @type {boolean}
+   * @return {boolean}
+   * @private
    */
-  get closable() {
-    return Oobe.getInstance().hasUserPods || this.isOffline();
+  isClosable_: function() {
+    return Oobe.getInstance().hasUserPods || this.isOffline_();
   },
 
   /**
    * Returns true if the screen is at the beginning of flow (i.e. the email
    * page).
    * @type {boolean}
+   * @private
    */
-  isAtTheBeginning: function() {
+  isAtTheBeginning_: function() {
     return !this.canGoBack_() && !this.isSAML() &&
         !this.classList.contains('whitelist-error') && !this.authCompleted_;
   },
 
   /**
-   * Updates visibility of UI control buttons.
+   * Updates whether the Guest button is allowed to be shown. (Note that the
+   * C++ side contains additional logic that decides whether the Guest button
+   * should be shown.)
+   * @private
    */
-  updateControlsState: function() {
-    let showGuestInOobe = !this.closable && this.isAtTheBeginning();
+  updateGuestButtonVisibility_: function() {
+    let showGuestInOobe = !this.isClosable_() && this.isAtTheBeginning_();
     chrome.send('showGuestInOobe', [showGuestInOobe]);
   },
 
@@ -300,13 +312,14 @@ Polymer({
    * @private
    */
   canGoBack_: function() {
-    var isWhitelistError = this.classList.contains('whitelist-error');
+    const isWhitelistError = this.classList.contains('whitelist-error');
     return this.lastBackMessageValue_ && !isWhitelistError &&
-        !this.authCompleted_ && !this.loading && !this.isSAML();
+        !this.authCompleted_ && !this.isLoadingUiShown_() && !this.isSAML();
   },
 
   /**
    * Handles clicks on "Back" button.
+   * @private
    */
   onBackButtonClicked_: function() {
     if (!this.canGoBack_()) {
@@ -321,9 +334,10 @@ Polymer({
    * @param {boolean} doSamlRedirect If the authenticator should do
    *     authentication by automatic redirection to the SAML-based enrollment
    *     enterprise domain IdP.
+   * @private
    */
   loadAuthenticator_: function(doSamlRedirect) {
-    this.loading = true;
+    this.showLoadingUi_(true);
     this.startLoadingTimer_();
 
     this.authenticatorParams_.doSamlRedirect = doSamlRedirect;
@@ -333,18 +347,19 @@ Polymer({
 
   /**
    * Returns true if offline version of Gaia is used.
-   * @type {boolean}
+   * @return {boolean}
+   * @private
    */
-  isOffline: function() {
+  isOffline_: function() {
     return this.screenMode_ == ScreenMode.OFFLINE;
   },
 
   /**
-   * Sets the current screen mode and updates the visible elements
-   * accordingly.
-   * @param {integer} value The screen mode.
+   * Sets the current screen mode and updates the visible elements accordingly.
+   * @param {ScreenMode} value The screen mode.
+   * @private
    */
-  set screenMode(value) {
+  setScreenMode_: function(value) {
     this.screenMode_ = value;
     switch (this.screenMode_) {
       case ScreenMode.DEFAULT:
@@ -377,8 +392,8 @@ Polymer({
         break;
     }
     this.updateSigninFrameContainers_();
-    chrome.send('updateOfflineLogin', [this.isOffline()]);
-    this.updateControlsState();
+    chrome.send('updateOfflineLogin', [this.isOffline_()]);
+    this.updateGuestButtonVisibility_();
   },
 
   /**
@@ -388,19 +403,20 @@ Polymer({
    * currently active. It is intended that when the device goes online, this
    * gets called with true; when it goes offline, this gets called with
    * false.
+   * @param {boolean} shouldMonitor
    */
   monitorOfflineIdle: function(shouldMonitor) {
-    var ACTIVITY_EVENTS = ['click', 'mousemove', 'keypress'];
-    var self = this;
+    const ACTIVITY_EVENTS = ['click', 'mousemove', 'keypress'];
+    const self = this;
 
     // updateActivityTime_ is used as a callback for addEventListener, so we
     // need the exact reference for removeEventListener. Because the callback
     // needs to access the |this| as scoped inside of this function, we create
     // a closure that uses the appropriate |this|.
     //
-    // Unfourtantely, we cannot define this function inside of the JSON object
-    // as then we have to no way to create to capture the correct |this|
-    // reference. We define it here instead.
+    // Unfortunately, we cannot define this function inside of the JSON object
+    // as then we have no way to create to capture the correct |this| reference.
+    // We define it here instead.
     if (!self.updateActivityTime_) {
       self.updateActivityTime_ = function() {
         self.mostRecentUserActivity_ = Date.now();
@@ -411,7 +427,7 @@ Polymer({
     if (shouldMonitor) {
       // If we're not using the offline login page or we're already
       // monitoring, then we don't need to do anything.
-      if (!self.isOffline() ||
+      if (!self.isOffline_() ||
           self.tryToGoToOnlineLoginPageCallbackId_ !== -1) {
         return;
       }
@@ -424,13 +440,13 @@ Polymer({
       self.tryToGoToOnlineLoginPageCallbackId_ = setInterval(function() {
         // If we're not in the offline page or the signin page, then we want
         // to terminate monitoring.
-        if (!self.isOffline() ||
+        if (!self.isOffline_() ||
             Oobe.getInstance().currentScreen.id != 'gaia-signin') {
           self.monitorOfflineIdle(false);
           return;
         }
 
-        var idleDuration = Date.now() - self.mostRecentUserActivity_;
+        const idleDuration = Date.now() - self.mostRecentUserActivity_;
         if (idleDuration > IDLE_TIME_UNTIL_EXIT_OFFLINE_IN_MILLISECONDS) {
           self.monitorOfflineIdle(false);
           Oobe.resetSigninUI(true);
@@ -453,11 +469,22 @@ Polymer({
   },
 
   /**
+   * Returns whether the loading UI is currently displayed.
+   * @return {boolean}
+   * @private
+   */
+  isLoadingUiShown_() {
+    return !this.$['gaia-loading'].hidden;
+  },
+
+  /**
    * Shows/hides loading UI.
    * @param {boolean} show True to show loading UI.
    * @private
    */
-  showLoadingUI_: function(show) {
+  showLoadingUi_: function(show) {
+    if (show == this.isLoadingUiShown_())
+      return;
     this.$['gaia-loading'].hidden = !show;
 
     // Only set hidden for offline-gaia or saml-interstitial and not set it on
@@ -467,7 +494,7 @@ Polymer({
       this.getActiveFrame_().hidden = show;
     this.getActiveFrame_().classList.toggle('show', !show);
     this.classList.toggle('loading', show);
-    this.updateControlsState();
+    this.updateGuestButtonVisibility_();
   },
 
   /**
@@ -534,20 +561,6 @@ Polymer({
   },
 
   /**
-   * Whether Gaia is loading.
-   * @type {boolean}
-   */
-  get loading() {
-    return !this.$['gaia-loading'].hidden;
-  },
-  set loading(loading) {
-    if (loading == this.loading)
-      return;
-
-    this.showLoadingUI_(loading);
-  },
-
-  /**
    * Event handler that is invoked just before the frame is shown.
    */
   onBeforeShow: function() {
@@ -556,8 +569,8 @@ Polymer({
         behavior.onBeforeShow.call(this);
     });
 
-    this.screenMode = ScreenMode.DEFAULT;
-    this.loading = true;
+    this.setScreenMode_(ScreenMode.DEFAULT);
+    this.showLoadingUi_(true);
     chrome.send('loginUIStateChanged', ['gaia-signin', true]);
     Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
 
@@ -567,18 +580,23 @@ Polymer({
     });
 
     // Re-enable navigation in case it was disabled before refresh.
-    this.navigationDisabled_ = false;
+    this.enableNavigation_(true);
 
     this.lastBackMessageValue_ = false;
-    this.updateControlsState();
+    this.updateGuestButtonVisibility_();
 
     this.$['offline-ad-auth'].onBeforeShow();
     this.$['signin-frame-dialog'].onBeforeShow();
   },
 
-  set navigationDisabled_(value) {
-    this.$['gaia-screen-buttons-overlay'].hidden = !value;
-    this.$['signin-back-button'].disabled = value;
+  /**
+   * Sets whether the navigation controls are visible and enabled.
+   * @param {boolean} value
+   * @private
+   */
+  enableNavigation_: function(value) {
+    this.$['gaia-screen-buttons-overlay'].hidden = value;
+    this.$['signin-back-button'].disabled = !value;
   },
 
   /**
@@ -615,7 +633,7 @@ Polymer({
 
   /** Event handler that is invoked after the screen is shown. */
   onAfterShow: function() {
-    if (!this.loading)
+    if (!this.isLoadingUiShown_())
       this.focusActiveFrame_();
   },
 
@@ -630,14 +648,14 @@ Polymer({
 
   /**
    * Copies attributes between nodes.
-   * @param {!Object} fromNode source to copy attributes from
-   * @param {!Object} toNode target to copy attributes to
+   * @param {!Element} fromNode source to copy attributes from
+   * @param {!Element} toNode target to copy attributes to
    * @param {!Set<string>} skipAttributes specifies attributes to be skipped
    * @private
    */
   copyAttributes_: function(fromNode, toNode, skipAttributes) {
-    for (var i = 0; i < fromNode.attributes.length; ++i) {
-      var attribute = fromNode.attributes[i];
+    for (let i = 0; i < fromNode.attributes.length; ++i) {
+      const attribute = fromNode.attributes[i];
       if (!skipAttributes.has(attribute.nodeName))
         toNode.setAttribute(attribute.nodeName, attribute.nodeValue);
     }
@@ -650,7 +668,7 @@ Polymer({
    * @private
    */
   setSigninFramePartition_: function(newWebviewPartitionName) {
-    var signinFrame = this.getSigninFrame_();
+    const signinFrame = this.getSigninFrame_();
 
     if (!signinFrame.src) {
       // We have not navigated anywhere yet. Note that a webview's src
@@ -658,11 +676,11 @@ Polymer({
       signinFrame.partition = newWebviewPartitionName;
     } else if (signinFrame.partition != newWebviewPartitionName) {
       // The webview has already navigated. We have to re-create it.
-      var signinFrameParent = signinFrame.parentElement;
+      const signinFrameParent = signinFrame.parentElement;
 
       // Copy all attributes except for partition and src from the previous
       // webview. Use the specified |newWebviewPartitionName|.
-      var newSigninFrame = document.createElement('webview');
+      const newSigninFrame = document.createElement('webview');
       this.copyAttributes_(
           signinFrame, newSigninFrame, new Set(['src', 'partition']));
       newSigninFrame.partition = newWebviewPartitionName;
@@ -676,8 +694,7 @@ Polymer({
 
   /**
    * Loads the authentication extension into the iframe.
-   * @param {Object} data Extension parameters bag.
-   * @private
+   * @param {!Object} data Extension parameters bag.
    */
   loadAuthExtension: function(data) {
     // Redirect the webview to the blank page in order to stop the SAML IdP
@@ -690,8 +707,8 @@ Polymer({
     this.setSigninFramePartition_(data.webviewPartitionName);
 
     // This triggers updateSigninFrameContainers_()
-    this.screenMode = data.screenMode;
-    this.email = '';
+    this.setScreenMode_(data.screenMode);
+    this.email_ = '';
     this.authCompleted_ = false;
     this.lastBackMessageValue_ = false;
 
@@ -701,9 +718,9 @@ Polymer({
 
     this.updateSigninFrameContainers_();
 
-    var params = {};
-    for (var i in cr.login.Authenticator.SUPPORTED_PARAMS) {
-      var name = cr.login.Authenticator.SUPPORTED_PARAMS[i];
+    let params = {};
+    for (let i in cr.login.Authenticator.SUPPORTED_PARAMS) {
+      const name = cr.login.Authenticator.SUPPORTED_PARAMS[i];
       if (data[name])
         params[name] = data[name];
     }
@@ -724,28 +741,28 @@ Polymer({
         break;
 
       case ScreenMode.OFFLINE:
-        this.loadOffline(params);
+        this.loadOffline_(params);
         break;
 
       case ScreenMode.AD_AUTH:
-        this.loadAdAuth(params);
+        this.loadAdAuth_(params);
         break;
 
       case ScreenMode.SAML_INTERSTITIAL:
         this.$['saml-interstitial'].domain = data.enterpriseDisplayDomain;
-        if (this.loading)
-          this.loading = false;
+        this.showLoadingUi_(false);
         // This event is for the browser tests.
         this.samlInterstitialPageReady = true;
         this.$['saml-interstitial'].fire('samlInterstitialPageReady');
         break;
     }
-    this.updateControlsState();
+    this.updateGuestButtonVisibility_();
     chrome.send('authExtensionLoaded');
   },
 
   /**
    * Displays correct screen container for given mode and APi version.
+   * @private
    */
   updateSigninFrameContainers_: function() {
     let oldState = this.classList.contains('v2');
@@ -765,6 +782,7 @@ Polymer({
 
   /**
    * Whether the current auth flow is SAML.
+   * @return {boolean}
    */
   isSAML: function() {
     return this.authenticator_.authFlow == cr.login.Authenticator.AuthFlow.SAML;
@@ -772,6 +790,7 @@ Polymer({
 
   /**
    * Helper function to update the title bar.
+   * @private
    */
   updateSamlNotice_: function() {
     if (this.authenticator_.videoEnabled) {
@@ -789,6 +808,7 @@ Polymer({
 
   /**
    * Clean up from a video-enabled SAML flow.
+   * @private
    */
   clearVideoTimer_: function() {
     if (this.videoTimer_ !== undefined) {
@@ -799,6 +819,7 @@ Polymer({
 
   /**
    * Invoked when the authDomain property is changed on the authenticator.
+   * @private
    */
   onAuthDomainChange_: function() {
     this.updateSamlNotice_();
@@ -806,6 +827,7 @@ Polymer({
 
   /**
    * Invoked when the videoEnabled property is changed on the authenticator.
+   * @private
    */
   onVideoEnabledChange_: function() {
     this.updateSamlNotice_();
@@ -819,18 +841,19 @@ Polymer({
 
   /**
    * Invoked when the authFlow property is changed on the authenticator.
+   * @private
    */
   onAuthFlowChange_: function() {
-    var isSAML = this.isSAML();
+    const isSaml = this.isSAML();
 
-    this.$['saml-notice-container'].hidden = !isSAML;
-    this.classList.toggle('saml', isSAML);
+    this.$['saml-notice-container'].hidden = !isSaml;
+    this.classList.toggle('saml', isSaml);
 
     if (Oobe.getInstance().currentScreen.id == 'gaia-signin') {
       Oobe.getInstance().updateScreenSize(this);
     }
 
-    this.updateControlsState();
+    this.updateGuestButtonVisibility_();
   },
 
   /**
@@ -842,18 +865,18 @@ Polymer({
     this.showViewProcessed_ = false;
     this.startLoadAnimationGuardTimer_();
     this.clearLoadingTimer_();
-    this.loading = false;
+    this.showLoadingUi_(false);
 
     if (!this.$['offline-gaia'].hidden)
       this.$['offline-gaia'].focus();
   },
 
   /**
-   * Invoked when a fra,e emits 'dialogShown' event.
+   * Invoked when a frame emits 'dialogShown' event.
    * @private
    */
   onDialogShown_: function() {
-    this.navigationDisabled_ = true;
+    this.enableNavigation_(false);
   },
 
   /**
@@ -861,11 +884,12 @@ Polymer({
    * @private
    */
   onDialogHidden_: function() {
-    this.navigationDisabled_ = false;
+    this.enableNavigation_(true);
   },
 
   /**
    * Invoked when user activates menu item.
+   * @param {!CustomEvent} e
    * @private
    */
   onMenuItemClicked_: function(e) {
@@ -893,12 +917,13 @@ Polymer({
 
   /**
    * Invoked when a frame emits 'backButton' event.
+   * @param {!CustomEvent<boolean>} e
    * @private
    */
   onBackButton_: function(e) {
     this.getActiveFrame_().focus();
     this.lastBackMessageValue_ = !!e.detail;
-    this.updateControlsState();
+    this.updateGuestButtonVisibility_();
   },
 
   /**
@@ -906,7 +931,7 @@ Polymer({
    * guard time fires.
    * @private
    */
-  onShowView_: function(e) {
+  onShowView_: function() {
     if (this.showViewProcessed_)
       return;
 
@@ -940,7 +965,7 @@ Polymer({
    * @private
    */
   onAuthConfirmPassword_: function(email, passwordCount) {
-    this.loading = true;
+    this.showLoadingUi_(true);
 
     if (this.samlPasswordConfirmAttempt_ == 0)
       chrome.send('scrapedPasswordCount', [passwordCount]);
@@ -952,7 +977,7 @@ Polymer({
           this.onConfirmPasswordCollected_.bind(this));
     } else {
       chrome.send('scrapedPasswordVerificationFailed');
-      this.showFatalAuthError(
+      this.showFatalAuthError_(
           loadTimeData.getString('fatalErrorMessageVerificationFailed'),
           loadTimeData.getString('fatalErrorTryAgainButton'));
     }
@@ -960,6 +985,7 @@ Polymer({
 
   /**
    * Invoked when the confirm password screen is dismissed.
+   * @param {string} password The password entered at the confirm screen.
    * @private
    */
   onConfirmPasswordCollected_: function(password) {
@@ -971,10 +997,11 @@ Polymer({
   },
 
   /**
-   * Inovked when the user has successfully authenticated via SAML, the
+   * Invoked when the user has successfully authenticated via SAML, the
    * principals API was not used and no passwords could be scraped.
    * The user will be asked to pick a manual password for the device.
    * @param {string} email The authenticated user's e-mail.
+   * @private
    */
   onAuthNoPassword_: function(email) {
     chrome.send('scrapedPasswordCount', [0]);
@@ -989,6 +1016,7 @@ Polymer({
    * device, when password scraping fails.
    * @param {string} password The password the user entered. Not necessarily
    *     the same as their SAML password.
+   * @private
    */
   onManualPasswordCollected_: function(password) {
     this.authenticator_.completeAuthWithManualPassword(password);
@@ -1000,9 +1028,10 @@ Polymer({
    * This method is only called on Chrome OS, where the entire authentication
    * flow is required to be encrypted.
    * @param {string} url The URL that was blocked.
+   * @private
    */
   onInsecureContentBlocked_: function(url) {
-    this.showFatalAuthError(
+    this.showFatalAuthError_(
         loadTimeData.getStringF('fatalErrorMessageInsecureURL', url),
         loadTimeData.getString('fatalErrorDoneButton'));
   },
@@ -1011,22 +1040,25 @@ Polymer({
    * Shows the fatal auth error.
    * @param {string} message The error message to show.
    * @param {string} buttonLabel The label to display on dismiss button.
+   * @private
    */
-  showFatalAuthError: function(message, buttonLabel) {
+  showFatalAuthError_: function(message, buttonLabel) {
     login.FatalErrorScreen.show(message, buttonLabel, Oobe.showSigninUI);
   },
 
   /**
    * Show fatal auth error when information is missing from GAIA.
+   * @private
    */
   missingGaiaInfo_: function() {
-    this.showFatalAuthError(
+    this.showFatalAuthError_(
         loadTimeData.getString('fatalErrorMessageNoAccountDetails'),
         loadTimeData.getString('fatalErrorTryAgainButton'));
   },
 
   /**
    * Record that SAML API was used during sign-in.
+   * @private
    */
   samlApiUsed_: function() {
     chrome.send('usingSAMLAPI');
@@ -1039,12 +1071,12 @@ Polymer({
    */
   onAuthCompleted_: function(credentials) {
     if (this.screenMode_ == ScreenMode.AD_AUTH) {
-      this.email = credentials.username;
+      this.email_ = credentials.username;
       chrome.send(
           'completeAdAuthentication',
           [credentials.username, credentials.password]);
     } else if (credentials.useOffline) {
-      this.email = credentials.email;
+      this.email_ = credentials.email;
       chrome.send(
           'completeOfflineAuthentication',
           [credentials.email, credentials.password]);
@@ -1056,9 +1088,9 @@ Polymer({
       ]);
     }
 
-    this.loading = true;
-    // Hide the back button and the border line as they are not useful
-    // when the loading screen is shown.
+    this.showLoadingUi_(true);
+    // Hide the back button and the border line as they are not useful when
+    // the loading screen is shown.
     this.$['signin-back-button'].hidden = true;
     this.$['signin-frame-dialog'].setAttribute('hide-shadow', true);
 
@@ -1067,12 +1099,13 @@ Polymer({
 
     this.clearVideoTimer_();
     this.authCompleted_ = true;
-    this.updateControlsState();
+    this.updateGuestButtonVisibility_();
   },
 
   /**
    * Invoked when onAuthCompleted message received.
-   * @param {!Object} e Payload of the received HTML5 message.
+   * @param {!CustomEvent<!Object>} e Event with the credentials object as the
+   *     payload.
    * @private
    */
   onAuthCompletedMessage_: function(e) {
@@ -1081,20 +1114,24 @@ Polymer({
 
   /**
    * Invoked when onLoadAbort message received.
-   * @param {!Object} e Payload of the received HTML5 message.
+   * @param {!CustomEvent<!Object>} e Event with the payload containing
+   *     additional information about error event like:
+   *     {string} error Error code such as "ERR_INTERNET_DISCONNECTED".
+   *     {string} src The URL that failed to load.
    * @private
    */
   onLoadAbortMessage_: function(e) {
-    this.onWebviewError(e.detail);
+    this.onWebviewError_(e.detail);
   },
 
   /**
    * Invoked when identifierEntered message received.
-   * @param {!Object} e Payload of the received HTML5 message.
+   * @param {!CustomEvent<!Object>} e Event with payload containing:
+   *     {string} accountIdentifier User identifier.
    * @private
    */
   onIdentifierEnteredMessage_: function(e) {
-    this.onIdentifierEntered(e.detail);
+    this.onIdentifierEntered_(e.detail);
   },
 
   /**
@@ -1107,7 +1144,7 @@ Polymer({
     // Reload and show the sign-in UI if needed.
     this.authenticator_.resetStates();
     if (takeFocus) {
-      if (!forceOnline && this.isOffline()) {
+      if (!forceOnline && this.isOffline_()) {
         Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
         // Do nothing, since offline version is reloaded after an error comes.
       } else {
@@ -1123,24 +1160,24 @@ Polymer({
     if (this.screenMode_ != ScreenMode.DEFAULT)
       return;
     this.authenticator_.reload();
-    this.loading = true;
+    this.showLoadingUi_(true);
     this.startLoadingTimer_();
     this.lastBackMessageValue_ = false;
     this.authCompleted_ = false;
-    this.updateControlsState();
+    this.updateGuestButtonVisibility_();
   },
 
   /**
    * Shows sign-in error bubble.
    * @param {number} loginAttempts Number of login attempts tried.
-   * @param {HTMLElement} content Content to show in bubble.
+   * @param {HTMLElement} error Content to show in bubble.
    */
   showErrorBubble: function(loginAttempts, error) {
-    if (this.isOffline()) {
+    if (this.isOffline_()) {
       // Reload offline version of the sign-in extension, which will show
       // error itself.
-      chrome.send('offlineLogin', [this.email]);
-    } else if (!this.loading) {
+      chrome.send('offlineLogin', [this.email_]);
+    } else if (!this.isLoadingUiShown_()) {
       $('bubble').showContentForElement(
           this, cr.ui.Bubble.Attachment.BOTTOM, error,
           BUBBLE_HORIZONTAL_PADDING, BUBBLE_VERTICAL_PADDING);
@@ -1167,7 +1204,7 @@ Polymer({
     if (this.screenMode_ == ScreenMode.AD_AUTH)
       chrome.send('cancelAdAuthentication');
 
-    if (this.closable)
+    if (this.isClosable_())
       Oobe.showUserPods();
     else
       Oobe.resetSigninUI(true);
@@ -1176,19 +1213,21 @@ Polymer({
   /**
    * Handler for webview error handling.
    * @param {!Object} data Additional information about error event like:
-   * {string} error Error code such as "ERR_INTERNET_DISCONNECTED".
-   * {string} url The URL that failed to load.
+   *     {string} error Error code such as "ERR_INTERNET_DISCONNECTED".
+   *     {string} src The URL that failed to load.
+   * @private
    */
-  onWebviewError: function(data) {
+  onWebviewError_: function(data) {
     chrome.send('webviewLoadAborted', [data.error]);
   },
 
   /**
    * Handler for identifierEntered event.
    * @param {!Object} data The identifier entered by user:
-   * {string} accountIdentifier User identifier.
+   *     {string} accountIdentifier User identifier.
+   * @private
    */
-  onIdentifierEntered: function(data) {
+  onIdentifierEntered_: function(data) {
     chrome.send('identifierEntered', [data.accountIdentifier]);
   },
 
@@ -1196,11 +1235,12 @@ Polymer({
    * Sets enterprise info strings for offline gaia.
    * Also sets callback and sends message whether we already have email and
    * should switch to the password screen with error.
+   * @private
    */
-  loadOffline: function(params) {
-    this.loading = true;
+  loadOffline_: function(params) {
+    this.showLoadingUi_(true);
     this.startLoadingTimer_();
-    var offlineLogin = this.$['offline-gaia'];
+    const offlineLogin = this.$['offline-gaia'];
     if ('enterpriseDisplayDomain' in params)
       offlineLogin.domain = params['enterpriseDisplayDomain'];
     if ('emailDomain' in params)
@@ -1209,10 +1249,11 @@ Polymer({
     this.onAuthReady_();
   },
 
-  loadAdAuth: function(params) {
-    this.loading = true;
+  /** @private */
+  loadAdAuth_: function(params) {
+    this.showLoadingUi_(true);
     this.startLoadingTimer_();
-    var adAuthUI = this.getActiveFrame_();
+    const adAuthUI = this.getActiveFrame_();
     adAuthUI.realm = params['realm'];
 
     if ('emailDomain' in params)
@@ -1224,14 +1265,14 @@ Polymer({
   },
 
   /**
-   * Show/Hide error when user is not in whitelist. When UI is hidden
-   * GAIA is reloaded.
+   * Show/Hide error when user is not in whitelist. When UI is hidden GAIA is
+   * reloaded.
    * @param {boolean} show Show/hide error UI.
-   * @param {!Object} opt_data Optional additional information.
+   * @param {!Object=} opt_data Optional additional information.
    */
   showWhitelistCheckFailedError: function(show, opt_data) {
     if (show) {
-      var isManaged = opt_data && opt_data.enterpriseManaged;
+      const isManaged = opt_data && opt_data.enterpriseManaged;
       this.$['gaia-whitelist-error'].textContent = loadTimeData.getValue(
           isManaged ? 'whitelistErrorEnterprise' : 'whitelistErrorConsumer');
       // To make animations correct, we need to make sure Gaia is completely
@@ -1242,24 +1283,28 @@ Polymer({
     }
 
     this.classList.toggle('whitelist-error', show);
-    this.loading = !show;
+    this.showLoadingUi_(!show);
 
     if (show)
       this.$['gaia-whitelist-error'].submitButton.focus();
     else
       Oobe.showSigninUI();
 
-    this.updateControlsState();
+    this.updateGuestButtonVisibility_();
   },
 
+  /**
+   * @param {string} username
+   * @param {ACTIVE_DIRECTORY_ERROR_STATE} errorState
+   */
   invalidateAd: function(username, errorState) {
     if (this.screenMode_ != ScreenMode.AD_AUTH)
       return;
-    var adAuthUI = this.getActiveFrame_();
+    const adAuthUI = this.getActiveFrame_();
     adAuthUI.userName = username;
     adAuthUI.errorState = errorState;
     this.authCompleted_ = false;
-    this.loading = false;
+    this.showLoadingUi_(false);
   },
 
 });
