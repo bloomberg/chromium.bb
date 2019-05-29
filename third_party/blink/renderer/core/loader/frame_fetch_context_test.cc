@@ -579,6 +579,7 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
     document->SetURL(KURL("https://www.example.com/"));
     document->SetSecurityOrigin(
         SecurityOrigin::Create(KURL("https://www.example.com/")));
+    document->InitializeFeaturePolicy({}, {}, nullptr, nullptr);
     Settings* settings = document->GetSettings();
     settings->SetScriptEnabled(true);
   }
@@ -632,15 +633,10 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemorySecureTransport) {
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Width", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", false, "");
-// On non-Android platforms, the client hints should be sent only to the first
-// party origins.
-#if defined(OS_ANDROID)
-  ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory", true,
-               "4");
-#else
+  // Without a feature policy header, the client hints should be sent only to
+  // the first party origins.
   ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory",
                false, "");
-#endif
 }
 
 // Verify that client hints are not attached when the resources do not belong to
@@ -665,6 +661,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemoryHintsLocalContext) {
   document->SetURL(KURL("http://localhost/"));
   document->SetSecurityOrigin(
       SecurityOrigin::Create(KURL("http://localhost/")));
+  document->InitializeFeaturePolicy({}, {}, nullptr, nullptr);
   ExpectHeader("http://localhost/1.gif", "Device-Memory", false, "");
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
@@ -897,6 +894,47 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   EXPECT_LT(
       0u,
       GetHeaderValue("https://www.example.com/1.gif", "ect").Ascii().length());
+}
+
+// Verify that the client hints should be attached for third-party subresources
+// fetched over secure transport, when specifically allowed by feature policy.
+TEST_F(FrameFetchContextHintsTest, MonitorHintsFeaturePolicy) {
+  ParsedFeaturePolicy policy = FeaturePolicyParser::ParseHeader(
+      "ch-device-memory 'self' https://www.example.net",
+      SecurityOrigin::CreateFromString("https://www.example.com/"), nullptr,
+      document);
+  document->InitializeFeaturePolicy(policy, {}, nullptr, nullptr);
+  ClientHintsPreferences preferences;
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
+  document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+  // With a feature policy header, the client hints should be sent to the
+  // declared third party origins.
+  ExpectHeader("https://www.example.net/1.gif", "Device-Memory", true, "4");
+  ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory",
+               false, "");
+  // Hints not declared in the policy are still not attached.
+  ExpectHeader("https://www.example.net/1.gif", "DPR", false, "");
+}
+
+// Verify that the client hints are not attached for third-party subresources
+// fetched over insecure transport, even when specifically allowed by feature
+// policy.
+TEST_F(FrameFetchContextHintsTest, MonitorHintsFeaturePolicyInsecureContext) {
+  ParsedFeaturePolicy policy = FeaturePolicyParser::ParseHeader(
+      "ch-device-memory *",
+      SecurityOrigin::CreateFromString("https://www.example.com/"), nullptr,
+      document);
+  document->InitializeFeaturePolicy(policy, {}, nullptr, nullptr);
+  ExpectHeader("https://www.example.com/1.gif", "Device-Memory", false, "");
+  ClientHintsPreferences preferences;
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
+  document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
+  // Device-Memory hint in this case is sent to all (and only) secure origins.
+  ExpectHeader("https://www.example.net/1.gif", "Device-Memory", true, "4");
+  ExpectHeader("http://www.example.net/1.gif", "Device-Memory", false, "");
 }
 
 TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {

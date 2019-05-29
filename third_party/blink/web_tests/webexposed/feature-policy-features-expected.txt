@@ -5,6 +5,11 @@ accelerometer
 ambient-light-sensor
 autoplay
 camera
+ch-device-memory
+ch-dpr
+ch-ua
+ch-viewport-width
+ch-width
 document-domain
 document-write
 downloads-without-user-activation

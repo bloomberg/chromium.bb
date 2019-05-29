@@ -112,6 +112,21 @@ namespace blink {
 
 namespace {
 
+// Client hints sent to third parties are controlled through two mechanisms,
+// based on the state of the experimental flag "FeaturePolicyForClientHints".
+//
+// If that flag is disabled (the default), then all hints are always sent for
+// first-party subresources, and the kAllowClientHintsToThirdParty feature
+// controls whether some specific hints are sent to third parties. (Only
+// device-memory, resource-width, viewport-width and the limited UA hints are
+// sent under this model). This feature is enabled by default on Android, and
+// disabled by default on all other platforms.
+//
+// When the runtime flag is enabled, all client hints except UA are controlled
+// entirely by feature policy on all platforms. In that case, hints will
+// generally be sent for first-party resources, and not for third-party
+// resources, unless specifically enabled by policy.
+
 // If kAllowClientHintsToThirdParty is enabled, then device-memory,
 // resource-width and viewport-width client hints can be sent to third-party
 // origins if the first-party has opted in to receiving client hints.
@@ -521,6 +536,15 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (!AllowScriptFromSourceWithoutNotifying(request.Url()))
     return;
 
+  // When the runtime flag "FeaturePolicyForClientHints" is enabled, feature
+  // policy is used to enable hints for all subresources, based on the policy of
+  // the requesting document, and the origin of the resource.
+  const FeaturePolicy* policy = nullptr;
+  if (frame_or_imported_document_)
+    policy = frame_or_imported_document_->GetDocument().GetFeaturePolicy();
+  url::Origin resource_origin =
+      SecurityOrigin::Create(request.Url())->ToUrlOrigin();
+
   // Sec-CH-UA is special: we always send the header to all origins that are
   // eligible for client hints (e.g. secure transport, JavaScript enabled). We
   // alter the header's value based on whether or not the site has opted into
@@ -528,14 +552,18 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   //
   // https://github.com/WICG/ua-client-hints
   blink::UserAgentMetadata ua = GetUserAgentMetadata();
+  bool use_full_ua =
+      (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+       (policy &&
+        policy->IsFeatureEnabledForOrigin(
+            mojom::FeaturePolicyFeature::kClientHintUA, resource_origin))) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kUA, hints_preferences,
+                           enabled_hints);
   if (RuntimeEnabledFeatures::UserAgentClientHintEnabled()) {
     StringBuilder result;
     result.Append(ua.brand.data());
     const std::string& version =
-        ShouldSendClientHint(mojom::WebClientHintsType::kUA, hints_preferences,
-                             enabled_hints)
-            ? ua.full_version
-            : ua.major_version;
+        use_full_ua ? ua.full_version : ua.major_version;
     if (!version.empty()) {
       result.Append(' ');
       result.Append(version.data());
@@ -546,9 +574,14 @@ void FrameFetchContext::AddClientHintsIfNecessary(
         result.ToAtomicString());
   }
 
+  // If the frame is detached, then don't send any hints other than UA.
+  if (!policy)
+    return;
+
   bool is_1p_origin = IsFirstPartyOrigin(request.Url());
 
-  if (!base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) &&
+  if (!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
+      !base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) &&
       !is_1p_origin) {
     // No client hints for 3p origins.
     return;
@@ -560,7 +593,18 @@ void FrameFetchContext::AddClientHintsIfNecessary(
                                                                 &enabled_hints);
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kDeviceMemory,
+  // TODO(iclelland): If feature policy control over client hints ships, remove
+  // the runtime flag check for the next four hints. Currently, when the
+  // kAllowClientHintsToThirdParty feature is enabled, but the runtime flag is
+  // *not* set, the behaviour is that these four hints will be sent on all
+  // eligible requests. Feature policy control is intended to change that
+  // default.
+
+  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+       policy->IsFeatureEnabledForOrigin(
+           mojom::FeaturePolicyFeature::kClientHintDeviceMemory,
+           resource_origin)) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kDeviceMemory,
                            hints_preferences, enabled_hints)) {
     request.AddHttpHeaderField(
         "Device-Memory",
@@ -569,12 +613,18 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   }
 
   float dpr = GetDevicePixelRatio();
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kDpr, hints_preferences,
+  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+       policy->IsFeatureEnabledForOrigin(
+           mojom::FeaturePolicyFeature::kClientHintDPR, resource_origin)) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kDpr, hints_preferences,
                            enabled_hints)) {
     request.AddHttpHeaderField("DPR", AtomicString(String::Number(dpr)));
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kResourceWidth,
+  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+       policy->IsFeatureEnabledForOrigin(
+           mojom::FeaturePolicyFeature::kClientHintWidth, resource_origin)) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kResourceWidth,
                            hints_preferences, enabled_hints)) {
     if (resource_width.is_set) {
       float physical_width = resource_width.width * dpr;
@@ -583,7 +633,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     }
   }
 
-  if (ShouldSendClientHint(mojom::WebClientHintsType::kViewportWidth,
+  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+       policy->IsFeatureEnabledForOrigin(
+           mojom::FeaturePolicyFeature::kClientHintViewportWidth,
+           resource_origin)) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kViewportWidth,
                            hints_preferences, enabled_hints) &&
       !GetResourceFetcherProperties().IsDetached() && GetFrame()->View()) {
     request.AddHttpHeaderField(

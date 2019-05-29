@@ -23470,6 +23470,11 @@ Called by update_net_error_codes.py.-->
   <int value="50" label="ExecutionWhileOutOfViewport"/>
   <int value="51" label="ExecutionWhileNotRendered"/>
   <int value="52" label="FocusWithoutUserActivation"/>
+  <int value="53" label="ClientHintDeviceMemory"/>
+  <int value="54" label="ClientHintDPR"/>
+  <int value="55" label="ClientHintUA"/>
+  <int value="56" label="ClientHintViewportWidth"/>
+  <int value="57" label="ClientHintWidth"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">

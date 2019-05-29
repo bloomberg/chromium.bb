@@ -45,6 +45,31 @@
       feature_policy_name: "camera",
     },
     {
+      name: "ClientHintDPR",
+      feature_policy_name: "ch-dpr",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
+      name: "ClientHintDeviceMemory",
+      feature_policy_name: "ch-device-memory",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
+      name: "ClientHintUA",
+      feature_policy_name: "ch-ua",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
+      name: "ClientHintViewportWidth",
+      feature_policy_name: "ch-viewport-width",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
+      name: "ClientHintWidth",
+      feature_policy_name: "ch-width",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
       name: "DocumentDomain",
       feature_policy_name: "document-domain",
       depends_on: ["ExperimentalProductivityFeatures"],

@@ -253,6 +253,10 @@
       status: "experimental",
     },
     {
+      name: "ClientHintsFeaturePolicy",
+      status: "experimental",
+    },
+    {
       name: "ClientPlaceholdersForServerLoFi",
     },
     {
@@ -549,6 +553,10 @@
     {
       name: "FastMobileScrolling",
       status: {"Android": "stable"},
+    },
+    {
+      name: "FeaturePolicyForClientHints",
+      status: "experimental",
     },
     {
       name: "FeaturePolicyForSandbox",

@@ -141,6 +141,13 @@ enum FeaturePolicyFeature {
   // When disallowed, a frame without user activation cannot acquire focus.
   kFocusWithoutUserActivation = 52,
 
+  // Client Hints
+  kClientHintDeviceMemory = 53,
+  kClientHintDPR = 54,
+  kClientHintUA = 55,
+  kClientHintViewportWidth = 56,
+  kClientHintWidth = 57,
+
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.
   // Also, run update_feature_policy_enum.py in
