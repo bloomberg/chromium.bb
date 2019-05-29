@@ -355,8 +355,6 @@ class CrostiniManager : public KeyedService,
       // The path to the disk image, including the name of
       // the image itself.
       const base::FilePath& disk_path,
-      // The storage location of the disk image
-      vm_tools::concierge::StorageLocation storage_location,
       DestroyDiskImageCallback callback);
 
   void ListVmDisks(ListVmDisksCallback callback);

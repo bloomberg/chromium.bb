@@ -811,8 +811,7 @@ void CrostiniManager::CreateDiskImage(
   // The type of disk image to be created.
   request.set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
 
-  if (storage_location != vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT &&
-      storage_location != vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS) {
+  if (storage_location != vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT) {
     LOG(ERROR) << "'" << storage_location
                << "' is not a valid storage location";
     std::move(callback).Run(
@@ -833,7 +832,6 @@ void CrostiniManager::CreateDiskImage(
 
 void CrostiniManager::DestroyDiskImage(
     const base::FilePath& disk_path,
-    vm_tools::concierge::StorageLocation storage_location,
     DestroyDiskImageCallback callback) {
   std::string disk_path_string = disk_path.AsUTF8Unsafe();
   if (disk_path_string.empty()) {
@@ -845,15 +843,6 @@ void CrostiniManager::DestroyDiskImage(
   vm_tools::concierge::DestroyDiskImageRequest request;
   request.set_cryptohome_id(CryptohomeIdForProfile(profile_));
   request.set_disk_path(std::move(disk_path_string));
-
-  if (storage_location != vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT &&
-      storage_location != vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS) {
-    LOG(ERROR) << "'" << storage_location
-               << "' is not a valid storage location";
-    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
-    return;
-  }
-  request.set_storage_location(storage_location);
 
   GetConciergeClient()->DestroyDiskImage(
       std::move(request),

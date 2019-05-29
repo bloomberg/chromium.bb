@@ -75,7 +75,6 @@ void CrostiniRemover::StopVmFinished(CrostiniResult result) {
       vm_name_, "");
   CrostiniManager::GetForProfile(profile_)->DestroyDiskImage(
       base::FilePath(vm_name_),
-      vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
       base::BindOnce(&CrostiniRemover::DestroyDiskImageFinished, this));
 }
 

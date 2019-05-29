@@ -278,8 +278,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageSuccess) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   crostini_manager()->CreateDiskImage(
-      disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS,
-      kDiskSizeBytes,
+      disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT, kDiskSizeBytes,
       base::BindOnce(&CrostiniManagerTest::CreateDiskImageSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -289,18 +288,7 @@ TEST_F(CrostiniManagerTest, DestroyDiskImageNameError) {
   const base::FilePath& disk_path = base::FilePath("");
 
   crostini_manager()->DestroyDiskImage(
-      disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
-      base::BindOnce(&CrostiniManagerTest::DestroyDiskImageClientErrorCallback,
-                     base::Unretained(this), run_loop()->QuitClosure()));
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerTest, DestroyDiskImageStorageLocationError) {
-  const base::FilePath& disk_path = base::FilePath(kVmName);
-
-  crostini_manager()->DestroyDiskImage(
       disk_path,
-      vm_tools::concierge::StorageLocation_INT_MIN_SENTINEL_DO_NOT_USE_,
       base::BindOnce(&CrostiniManagerTest::DestroyDiskImageClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -310,7 +298,7 @@ TEST_F(CrostiniManagerTest, DestroyDiskImageSuccess) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   crostini_manager()->DestroyDiskImage(
-      disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_DOWNLOADS,
+      disk_path,
       base::BindOnce(&CrostiniManagerTest::DestroyDiskImageSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
