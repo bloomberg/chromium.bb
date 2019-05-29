@@ -13,6 +13,7 @@ crbug.com/917284 external/wpt/service-workers/service-worker/claim-fetch-with-ap
 crbug.com/933880 external/wpt/FileAPI/url/cross-global-revoke.sub.html [ Failure ]
 crbug.com/933880 external/wpt/FileAPI/url/url-with-fetch.any.html [ Failure ]
 crbug.com/933880 external/wpt/FileAPI/url/url-with-xhr.any.html [ Failure ]
+crbug.com/933880 external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 
 crbug.com/950412 [ Linux Debug ] http/tests/inspector-protocol/network/request-interception-request-id.js [ Failure ]
 
