@@ -35,6 +35,7 @@
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_util.h"
+#include "net/der/encode_values.h"
 #include "net/der/parser.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/pkcs7.h"
@@ -73,39 +74,6 @@ void SplitOnChar(const base::StringPiece& src,
     *left = src.substr(0, pos);
     *right = src.substr(pos);
   }
-}
-
-// Converts a GeneralizedTime struct to a base::Time, returning true on success
-// or false if |generalized| was invalid or cannot be represented by
-// base::Time.
-bool GeneralizedTimeToBaseTime(const der::GeneralizedTime& generalized,
-                               base::Time* result) {
-  base::Time::Exploded exploded = {0};
-  exploded.year = generalized.year;
-  exploded.month = generalized.month;
-  exploded.day_of_month = generalized.day;
-  exploded.hour = generalized.hours;
-  exploded.minute = generalized.minutes;
-  exploded.second = generalized.seconds;
-
-  if (base::Time::FromUTCExploded(exploded, result))
-    return true;
-
-  // Fail on obviously bad dates.
-  if (!exploded.HasValidValues())
-    return false;
-
-  // TODO(mattm): consider consolidating this with
-  // SaturatedTimeFromUTCExploded from cookie_util.cc
-  if (static_cast<int>(generalized.year) > base::Time::kExplodedMaxYear) {
-    *result = base::Time::Max();
-    return true;
-  }
-  if (static_cast<int>(generalized.year) < base::Time::kExplodedMinYear) {
-    *result = base::Time::Min();
-    return true;
-  }
-  return false;
 }
 
 // Sets |value| to the Value from a DER Sequence Tag-Length-Value and return
@@ -869,8 +837,8 @@ bool X509Certificate::Initialize(UnsafeCreateOptions options) {
     return false;
   }
 
-  if (!GeneralizedTimeToBaseTime(tbs.validity_not_before, &valid_start_) ||
-      !GeneralizedTimeToBaseTime(tbs.validity_not_after, &valid_expiry_)) {
+  if (!der::GeneralizedTimeToTime(tbs.validity_not_before, &valid_start_) ||
+      !der::GeneralizedTimeToTime(tbs.validity_not_after, &valid_expiry_)) {
     return false;
   }
   serial_number_ = tbs.serial_number.AsString();
