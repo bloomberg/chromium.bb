@@ -65,7 +65,7 @@ v8::Local<v8::Value> JSEventHandlerForContentAttribute::GetCompiledHandler(
       // https://html.spec.whatwg.org/C/#window-reflecting-body-element-event-handler-set
       document = &node->GetDocument();
     } else {
-      element = ToElement(node);
+      element = To<Element>(node);
       document = &node->GetDocument();
     }
     // EventTarget::GetExecutionContext() sometimes returns the document which

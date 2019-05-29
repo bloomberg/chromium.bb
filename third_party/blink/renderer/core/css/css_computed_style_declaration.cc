@@ -313,9 +313,10 @@ const ComputedStyle* CSSComputedStyleDeclaration::ComputeComputedStyle() const {
 Node* CSSComputedStyleDeclaration::StyledNode() const {
   if (!node_)
     return nullptr;
-  if (node_->IsElementNode()) {
+
+  if (auto* node_element = DynamicTo<Element>(node_.Get())) {
     if (PseudoElement* element =
-            ToElement(node_)->GetPseudoElement(pseudo_element_specifier_))
+            node_element->GetPseudoElement(pseudo_element_specifier_))
       return element;
   }
   return node_.Get();

@@ -117,14 +117,9 @@ bool IsGoodForScoring(const WebDistillabilityFeatures& features,
 void CollectFeatures(Element& root,
                      WebDistillabilityFeatures& features,
                      bool under_list_item = false) {
-  for (Node& node : NodeTraversal::ChildrenOf(root)) {
+  for (Element& element : ElementTraversal::ChildrenOf(root)) {
     bool is_list_item = false;
-    if (!node.IsElementNode()) {
-      continue;
-    }
-
     features.element_count++;
-    Element& element = ToElement(node);
     if (element.HasTagName(kATag)) {
       features.anchor_count++;
     } else if (element.HasTagName(kFormTag)) {

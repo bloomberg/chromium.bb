@@ -314,8 +314,8 @@ void ScrollTimeline::AttachAnimation() {
     return;
 
   GetActiveScrollTimelineSet().insert(resolved_scroll_source_);
-  if (resolved_scroll_source_->IsElementNode())
-    ToElement(resolved_scroll_source_)->SetNeedsCompositingUpdate();
+  if (auto* element = DynamicTo<Element>(resolved_scroll_source_.Get()))
+    element->SetNeedsCompositingUpdate();
   resolved_scroll_source_->GetDocument()
       .GetLayoutView()
       ->Compositor()
@@ -332,8 +332,8 @@ void ScrollTimeline::DetachAnimation() {
     return;
 
   GetActiveScrollTimelineSet().erase(resolved_scroll_source_);
-  if (resolved_scroll_source_->IsElementNode())
-    ToElement(resolved_scroll_source_)->SetNeedsCompositingUpdate();
+  if (auto* element = DynamicTo<Element>(resolved_scroll_source_.Get()))
+    element->SetNeedsCompositingUpdate();
   auto* layout_view = resolved_scroll_source_->GetDocument().GetLayoutView();
   if (layout_view && layout_view->Compositor()) {
     layout_view->Compositor()->SetNeedsCompositingUpdate(

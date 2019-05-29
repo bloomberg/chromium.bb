@@ -959,10 +959,11 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
   auto* keyframe_effect_composited = MakeGarbageCollected<KeyframeEffect>(
-      ToElement(object_composited->GetNode()), MakeSimpleEffectModel(), timing);
+      To<Element>(object_composited->GetNode()), MakeSimpleEffectModel(),
+      timing);
   Animation* animation_composited = timeline->Play(keyframe_effect_composited);
   auto* keyframe_effect_not_composited = MakeGarbageCollected<KeyframeEffect>(
-      ToElement(object_not_composited->GetNode()), MakeSimpleEffectModel(),
+      To<Element>(object_not_composited->GetNode()), MakeSimpleEffectModel(),
       timing);
   Animation* animation_not_composited =
       timeline->Play(keyframe_effect_not_composited);

@@ -194,7 +194,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void SetText(const String&, bool allow_import_rules, ExceptionState&);
   void SetMedia(MediaList*);
   void SetAlternateFromConstructor(bool);
-  bool IsAlternate() const;
   bool CanBeActivated(const String& current_preferrable_name) const;
 
   void SetIsConstructed(bool is_constructed) {
@@ -206,6 +205,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void Trace(blink::Visitor*) override;
 
  private:
+  bool IsAlternate() const;
   bool IsCSSStyleSheet() const override { return true; }
   String type() const override { return "text/css"; }
 

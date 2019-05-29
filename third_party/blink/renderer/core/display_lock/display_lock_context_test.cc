@@ -1212,7 +1212,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
 
   auto* template_el =
       ToHTMLTemplateElement(GetDocument().getElementById("template"));
-  auto* child = ToElement(template_el->content()->firstChild());
+  auto* child = To<Element>(template_el->content()->firstChild());
   EXPECT_FALSE(child->isConnected());
   ASSERT_TRUE(child->getDisplayLockForBindings());
 
@@ -1239,7 +1239,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
 
   // Try to lock an element that was moved from a template to a document.
   auto* document_child =
-      ToElement(GetDocument().adoptNode(child, ASSERT_NO_EXCEPTION));
+      To<Element>(GetDocument().adoptNode(child, ASSERT_NO_EXCEPTION));
   GetDocument().getElementById("container")->appendChild(document_child);
 
   {

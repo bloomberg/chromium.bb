@@ -1599,9 +1599,9 @@ void StyleEngine::MarkForWhitespaceReattachment() {
 }
 
 void StyleEngine::NodeWillBeRemoved(Node& node) {
-  if (node.IsElementNode()) {
+  if (auto* element = DynamicTo<Element>(node)) {
     pending_invalidations_.RescheduleSiblingInvalidationsAsDescendants(
-        ToElement(node));
+        *element);
   }
 
   // Mark closest ancestor with with LayoutObject to have all whitespace
@@ -1620,8 +1620,9 @@ void StyleEngine::NodeWillBeRemoved(Node& node) {
     layout_object = layout_object->Parent();
   DCHECK(layout_object);
   DCHECK(layout_object->GetNode());
-  if (layout_object->GetNode()->IsElementNode()) {
-    whitespace_reattach_set_.insert(ToElement(layout_object->GetNode()));
+  if (auto* layout_object_element =
+          DynamicTo<Element>(layout_object->GetNode())) {
+    whitespace_reattach_set_.insert(layout_object_element);
     GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
   }
 }
@@ -1736,8 +1737,8 @@ void StyleEngine::RecalcStyle(const StyleRecalcChange change) {
   }
   for (ContainerNode* ancestor = root_element.ParentOrShadowHostNode();
        ancestor; ancestor = ancestor->ParentOrShadowHostNode()) {
-    if (ancestor->IsElementNode())
-      ToElement(ancestor)->RecalcStyleForTraversalRootAncestor();
+    if (auto* ancestor_element = DynamicTo<Element>(ancestor))
+      ancestor_element->RecalcStyleForTraversalRootAncestor();
     ancestor->ClearChildNeedsStyleRecalc();
   }
   style_recalc_root_.Clear();
@@ -1757,8 +1758,8 @@ void StyleEngine::RebuildLayoutTree() {
 
   for (ContainerNode* ancestor = root_element.GetReattachParent(); ancestor;
        ancestor = ancestor->GetReattachParent()) {
-    if (ancestor->IsElementNode())
-      ToElement(ancestor)->RebuildLayoutTreeForTraversalRootAncestor();
+    if (auto* ancestor_element = DynamicTo<Element>(ancestor))
+      ancestor_element->RebuildLayoutTreeForTraversalRootAncestor();
     ancestor->ClearChildNeedsStyleRecalc();
     ancestor->ClearChildNeedsReattachLayoutTree();
   }

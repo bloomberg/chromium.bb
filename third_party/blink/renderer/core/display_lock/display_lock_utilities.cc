@@ -50,13 +50,14 @@ const HeapVector<Member<Element>>
 DisplayLockUtilities::ActivatableLockedInclusiveAncestors(Element& element) {
   HeapVector<Member<Element>> elements_to_activate;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(element)) {
-    if (!ancestor.IsElementNode())
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
       continue;
-    if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
+    if (auto* context = ancestor_element->GetDisplayLockContext()) {
       DCHECK(context->IsActivatable());
       if (!context->IsLocked())
         continue;
-      elements_to_activate.push_back(&ToElement(ancestor));
+      elements_to_activate.push_back(ancestor_element);
     }
   }
   return elements_to_activate;
@@ -89,9 +90,10 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
   // structure that we can use to quickly identify nodes that are in the
   // locked subtree.
   for (Node& ancestor : ancestor_view) {
-    if (!ancestor.IsElementNode())
+    auto* ancestor_node = DynamicTo<Element>(ancestor);
+    if (!ancestor_node)
       continue;
-    if (auto* context = ToElement(ancestor).GetDisplayLockContext())
+    if (auto* context = ancestor_node->GetDisplayLockContext())
       scoped_update_forced_list_.push_back(context->GetScopedForcedUpdate());
   }
 }
@@ -127,11 +129,12 @@ Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
   // TODO(crbug.com/924550): Once we figure out a more efficient way to
   // determine whether we're inside a locked subtree or not, change this.
   for (Node& ancestor : FlatTreeTraversal::AncestorsOf(node)) {
-    if (!ancestor.IsElementNode())
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
       continue;
-    if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
+    if (auto* context = ancestor_element->GetDisplayLockContext()) {
       if (context->IsLocked())
-        return &ToElement(ancestor);
+        return ancestor_element;
     }
   }
   return nullptr;
@@ -146,11 +149,12 @@ Element* DisplayLockUtilities::HighestLockedInclusiveAncestor(
   }
   Element* locked_ancestor = nullptr;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
-    if (!ancestor.IsElementNode())
+    auto* ancestor_node = DynamicTo<Element>(ancestor);
+    if (!ancestor_node)
       continue;
-    if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
+    if (auto* context = ancestor_node->GetDisplayLockContext()) {
       if (context->IsLocked())
-        locked_ancestor = &ToElement(ancestor);
+        locked_ancestor = ancestor_node;
     }
   }
   return locked_ancestor;

@@ -200,9 +200,8 @@ Node* ComputedStylePropertyMap::StyledNode() const {
   DCHECK(node_);
   if (!pseudo_id_)
     return node_;
-  if (node_->IsElementNode()) {
-    if (PseudoElement* element =
-            (ToElement(node_))->GetPseudoElement(pseudo_id_)) {
+  if (auto* element_node = DynamicTo<Element>(node_.Get())) {
+    if (PseudoElement* element = element_node->GetPseudoElement(pseudo_id_)) {
       return element;
     }
   }

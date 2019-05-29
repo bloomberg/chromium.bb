@@ -1422,9 +1422,10 @@ void Element::DispatchActivateInvisibleEventIfNeeded() {
   HeapVector<Member<Element>> invisible_ancestors;
   HeapVector<Member<Element>> activated_elements;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (ancestor.IsElementNode() &&
-        ToElement(ancestor).Invisible() != InvisibleState::kMissing) {
-      invisible_ancestors.push_back(ToElement(ancestor));
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (ancestor_element &&
+        ancestor_element->Invisible() != InvisibleState::kMissing) {
+      invisible_ancestors.push_back(ancestor_element);
       activated_elements.push_back(ancestor.GetTreeScope().Retarget(*this));
     }
   }
@@ -1441,8 +1442,9 @@ bool Element::IsInsideInvisibleStaticSubtree() const {
   if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
     return false;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (ancestor.IsElementNode() &&
-        ToElement(ancestor).Invisible() == InvisibleState::kStatic)
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (ancestor_element &&
+        ancestor_element->Invisible() == InvisibleState::kStatic)
       return true;
   }
   return false;
@@ -1453,8 +1455,9 @@ bool Element::IsInsideInvisibleSubtree() const {
       !CanParticipateInFlatTree())
     return false;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (ancestor.IsElementNode() &&
-        ToElement(ancestor).Invisible() != InvisibleState::kMissing)
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (ancestor_element &&
+        ancestor_element->Invisible() != InvisibleState::kMissing)
       return true;
   }
   return false;
@@ -2120,10 +2123,10 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
 
   if (Fullscreen::IsFullscreenElement(*this)) {
     SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
-    if (insertion_point.IsElementNode()) {
-      ToElement(insertion_point).SetContainsFullScreenElement(false);
-      ToElement(insertion_point)
-          .SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
+    if (auto* insertion_point_element = DynamicTo<Element>(insertion_point)) {
+      insertion_point_element->SetContainsFullScreenElement(false);
+      insertion_point_element
+          ->SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
               false);
     }
   }
@@ -3081,7 +3084,7 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
     CheckForSiblingStyleChanges(
         change.type == kElementRemoved ? kSiblingElementRemoved
                                        : kSiblingElementInserted,
-        ToElement(change.sibling_changed), change.sibling_before_change,
+        To<Element>(change.sibling_changed.Get()), change.sibling_before_change,
         change.sibling_after_change);
 
   if (ShadowRoot* shadow_root = GetShadowRoot())
@@ -3555,14 +3558,15 @@ void Element::ActivateDisplayLockIfNeeded() {
 
   HeapVector<std::pair<Member<Element>, Member<Element>>> activatable_targets;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (!ancestor.IsElementNode())
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
       continue;
-    if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
+    if (auto* context = ancestor_element->GetDisplayLockContext()) {
       // If any of the ancestors is not activatable, we can't activate.
       if (!context->IsActivatable())
         return;
       activatable_targets.push_back(std::make_pair(
-          &ToElement(ancestor), &ancestor.GetTreeScope().Retarget(*this)));
+          ancestor_element, &ancestor.GetTreeScope().Retarget(*this)));
     }
   }
 
@@ -3593,9 +3597,10 @@ bool Element::DisplayLockPreventsActivation() const {
   // check whether a node is in a locked subtree quickly.
   // See crbug.com/924550 for more details.
   for (const Node& current : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    if (!current.IsElementNode())
+    auto* current_element = DynamicTo<Element>(current);
+    if (!current_element)
       continue;
-    if (auto* context = ToElement(current).GetDisplayLockContext()) {
+    if (auto* context = current_element->GetDisplayLockContext()) {
       if (!context->IsActivatable())
         return true;
     }
@@ -3788,7 +3793,9 @@ void Element::SetOuterHTMLFromString(const String& html,
         "This element has no parent node.");
     return;
   }
-  if (!p->IsElementNode()) {
+
+  auto* parent = DynamicTo<Element>(p);
+  if (!parent) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNoModificationAllowedError,
         "This element's parent is of type '" + p->nodeName() +
@@ -3796,7 +3803,6 @@ void Element::SetOuterHTMLFromString(const String& html,
     return;
   }
 
-  Element* parent = ToElement(p);
   Node* prev = previousSibling();
   Node* next = nextSibling();
 
@@ -3954,7 +3960,7 @@ Element* Element::insertAdjacentElement(const String& where,
                                         Element* new_child,
                                         ExceptionState& exception_state) {
   Node* return_value = InsertAdjacent(where, new_child, exception_state);
-  return ToElement(return_value);
+  return To<Element>(return_value);
 }
 
 void Element::insertAdjacentText(const String& where,
@@ -4218,7 +4224,7 @@ AtomicString Element::ComputeInheritedLanguage() const {
   // the first language.
   do {
     if (n->IsElementNode()) {
-      if (const ElementData* element_data = ToElement(n)->GetElementData()) {
+      if (const auto* element_data = To<Element>(n)->GetElementData()) {
         AttributeCollection attributes = element_data->Attributes();
         // Spec: xml:lang takes precedence -- http://www.w3.org/TR/xhtml1/#C_7
         if (const Attribute* attribute =
@@ -4666,13 +4672,13 @@ void Element::SetContainsPersistentVideo(bool value) {
   // the tree, part of the tree might still carry the flag.
   if (!value && Fullscreen::IsFullscreenElement(*this)) {
     for (Node* node = firstChild(); node;) {
-      if (!node->IsElementNode() ||
-          !ToElement(node)->ContainsPersistentVideo()) {
+      auto* element = DynamicTo<Element>(node);
+      if (!element || !element->ContainsPersistentVideo()) {
         node = node->nextSibling();
         break;
       }
 
-      ToElement(node)->SetContainsPersistentVideo(false);
+      element->SetContainsPersistentVideo(false);
       node = node->firstChild();
     }
   }

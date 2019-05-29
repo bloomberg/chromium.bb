@@ -1182,6 +1182,11 @@ inline bool IsElementOfType<const Element>(const Element&) {
   return true;
 }
 
+template <>
+struct DowncastTraits<Element> {
+  static bool AllowFrom(const Node& node) { return node.IsElementNode(); }
+};
+
 // Type casting.
 template <typename T>
 inline T& ToElement(Node& node) {
