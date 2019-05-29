@@ -57,10 +57,13 @@ class RenderingStorySet(story.StorySet):
         # 'backdrop-filter' CSS property to work.
         required_args.append('--enable-experimental-web-platform-features')
 
+      # TODO(crbug.com/968125): We must run without out-of-process rasterization
+      # until that branch is implemented for YUV decoding.
       if (story_class.TAGS and
           story_tags.IMAGE_DECODING in story_class.TAGS and
           story_tags.GPU_RASTERIZATION in story_class.TAGS):
-        required_args.append('--force-gpu-rasterization')
+        required_args += ['--force-gpu-rasterization',
+                          '--disable--oop-rasterization']
         # Run RGB decoding with GPU rasterization (to be most comparable to YUV)
         self.AddStory(story_class(
             page_set=self,
