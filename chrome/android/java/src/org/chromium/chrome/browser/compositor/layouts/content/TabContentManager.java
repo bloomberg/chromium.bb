@@ -67,8 +67,7 @@ public class TabContentManager {
             String commandLineSwitch) {
         int val = -1;
         // TODO(crbug/959054): Convert this to Finch config.
-        if (FeatureUtilities.isGridTabSwitcherEnabled()
-                || FeatureUtilities.isTabGroupsAndroidEnabled()) {
+        if (FeatureUtilities.isGridTabSwitcherEnabled()) {
             // With Grid Tab Switcher, we can greatly reduce the capacity of thumbnail cache.
             // See crbug.com/959054 for more details.
             if (resourceId == R.integer.default_thumbnail_cache_size) val = 2;

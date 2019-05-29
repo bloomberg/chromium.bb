@@ -433,8 +433,7 @@ public class TabModelImpl extends TabModelJniBridge {
         // TODO(meiliang): This is a band-aid fix, should remove after LayoutManager is able to
         // manage the Grid Tab Switcher.
         // Disable animation if GridTabSwitcher or TabGroup is enabled.
-        boolean animate = !(FeatureUtilities.isGridTabSwitcherEnabled()
-                || FeatureUtilities.isTabGroupsAndroidEnabled());
+        boolean animate = !FeatureUtilities.isGridTabSwitcherEnabled();
 
         closeAllTabs(animate, false, true);
     }

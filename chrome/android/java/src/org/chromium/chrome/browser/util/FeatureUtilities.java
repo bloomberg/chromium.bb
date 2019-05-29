@@ -641,7 +641,8 @@ public class FeatureUtilities {
         }
         // TODO(yusufo): AccessibilityLayout check should not be here and the flow should support
         // changing that setting while Chrome is alive.
-        return sIsGridTabSwitcherEnabled;
+        // Having Tab Groups implies Grid Tab Switcher.
+        return sIsGridTabSwitcherEnabled || isTabGroupsAndroidEnabled();
     }
 
     private static void cacheTabGroupsAndroidEnabled() {

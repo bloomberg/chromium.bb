@@ -685,8 +685,7 @@ public class ChromeTabbedActivity
             } else {
                 GridTabSwitcher gridTabSwitcher = null;
 
-                if (FeatureUtilities.isGridTabSwitcherEnabled()
-                        || FeatureUtilities.isTabGroupsAndroidEnabled()) {
+                if (FeatureUtilities.isGridTabSwitcherEnabled()) {
                     TabManagementDelegate tabManagementDelegate =
                             TabManagementModuleProvider.getDelegate();
                     if (tabManagementDelegate != null) {
