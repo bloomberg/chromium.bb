@@ -322,6 +322,12 @@ static bool AllowInitialInShorthand(CSSPropertyID property_id) {
     case CSSPropertyID::kBorderRight:
     case CSSPropertyID::kBorderBottom:
     case CSSPropertyID::kBorderLeft:
+    case CSSPropertyID::kBorderBlockStart:
+    case CSSPropertyID::kBorderBlockEnd:
+    case CSSPropertyID::kBorderInlineStart:
+    case CSSPropertyID::kBorderInlineEnd:
+    case CSSPropertyID::kBorderBlock:
+    case CSSPropertyID::kBorderInline:
     case CSSPropertyID::kOutline:
     case CSSPropertyID::kColumnRule:
     case CSSPropertyID::kColumns:
