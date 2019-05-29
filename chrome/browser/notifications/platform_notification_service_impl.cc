@@ -23,12 +23,8 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -47,6 +43,13 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "url/origin.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
@@ -67,8 +70,7 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
   return false;
-#endif  // defined(OS_ANDROID)
-
+#else
   // Check to see if this notification comes from a webpage that is displaying
   // fullscreen content.
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -92,6 +94,7 @@ static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
       return true;
     }
   }
+#endif
 
   return false;
 }

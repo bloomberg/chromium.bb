@@ -11,7 +11,6 @@
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "components/live_tab_count_metrics/live_tab_count_metrics.h"
 #include "content/public/browser/web_contents.h"

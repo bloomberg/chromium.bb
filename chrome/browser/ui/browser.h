@@ -21,6 +21,8 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bar.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_bubble_manager.h"
@@ -35,6 +37,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sessions/core/session_id.h"
 #include "components/translate/content/browser/content_translate_driver.h"
+#include "components/zoom/zoom_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/page_navigator.h"
@@ -49,13 +52,11 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/bookmarks/bookmark_bar.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
-#include "components/zoom/zoom_observer.h"
-#endif  // !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#error This file should only be included on desktop.
+#endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/signin_view_controller.h"
 #endif
 
@@ -114,10 +115,8 @@ class AppBrowserController;
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public ChromeWebModalDialogManagerDelegate,
-#if !defined(OS_ANDROID)
                 public BookmarkTabHelperObserver,
                 public zoom::ZoomObserver,
-#endif  // !defined(OS_ANDROID)
                 public content::PageNavigator,
                 public content::NotificationObserver,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -330,7 +329,7 @@ class Browser : public TabStripModelObserver,
     return app_controller_.get();
   }
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
   SigninViewController* signin_view_controller() {
     return &signin_view_controller_;
   }
@@ -346,10 +345,8 @@ class Browser : public TabStripModelObserver,
   // Returns true if a FindBarController exists for this browser.
   bool HasFindBarController() const;
 
-#if !defined(OS_ANDROID)
   // Returns the state of the bookmark bar.
   BookmarkBar::State bookmark_bar_state() const { return bookmark_bar_state_; }
-#endif
 
   // State Storage and Retrieval for UI ///////////////////////////////////////
 
@@ -788,7 +785,6 @@ class Browser : public TabStripModelObserver,
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
 
-#if !defined(OS_ANDROID)
   // Overridden from BookmarkTabHelperObserver:
   void URLStarredChanged(content::WebContents* web_contents,
                          bool starred) override;
@@ -796,7 +792,6 @@ class Browser : public TabStripModelObserver,
   // Overridden from ZoomObserver:
   void OnZoomChanged(
       const zoom::ZoomController::ZoomChangedEventData& data) override;
-#endif  // !defined(OS_ANDROID)
 
   // Overridden from SelectFileDialog::Listener:
   void FileSelected(const base::FilePath& path,
@@ -1091,9 +1086,7 @@ class Browser : public TabStripModelObserver,
   // set of commands are enabled.
   std::unique_ptr<web_app::AppBrowserController> app_controller_;
 
-#if !defined(OS_ANDROID)
   BookmarkBar::State bookmark_bar_state_;
-#endif
 
   std::unique_ptr<ExclusiveAccessManager> exclusive_access_manager_;
 
@@ -1105,7 +1098,7 @@ class Browser : public TabStripModelObserver,
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
   SigninViewController signin_view_controller_;
 #endif
 

@@ -220,11 +220,9 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-
-#if !defined(OS_ANDROID)
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
-#endif
+
 #if defined(OS_WIN)
 #include <shellapi.h>
 #include <windows.h>
@@ -430,9 +428,7 @@ Browser::Browser(const CreateParams& params)
       live_tab_context_(new BrowserLiveTabContext(this)),
       synced_window_delegate_(new BrowserSyncedWindowDelegate(this)),
       app_controller_(MaybeCreateWebAppController(this)),
-#if !defined(OS_ANDROID)
       bookmark_bar_state_(BookmarkBar::HIDDEN),
-#endif
       command_controller_(new chrome::BrowserCommandController(this)),
       window_has_shown_(false),
       chrome_updater_factory_(this),
@@ -453,11 +449,9 @@ Browser::Browser(const CreateParams& params)
 
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
-#if !defined(OS_ANDROID)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile_)));
-#endif
   registrar_.Add(this, chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
                  content::NotificationService::AllSources());
 
@@ -466,13 +460,11 @@ Browser::Browser(const CreateParams& params)
       prefs::kDevToolsAvailability,
       base::BindRepeating(&Browser::OnDevToolsAvailabilityChanged,
                           base::Unretained(this)));
-#if !defined(OS_ANDROID)
   profile_pref_registrar_.Add(
       bookmarks::prefs::kShowBookmarkBar,
       base::BindRepeating(&Browser::UpdateBookmarkBarState,
                           base::Unretained(this),
                           BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE));
-#endif
 
   if (search::IsInstantExtendedAPIEnabled() && is_type_tabbed())
     instant_controller_.reset(new BrowserInstantController(this));
@@ -1929,13 +1921,11 @@ Browser::GetWebContentsModalDialogHost() {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, BookmarkTabHelperObserver implementation:
 
-#if !defined(OS_ANDROID)
 void Browser::URLStarredChanged(content::WebContents* web_contents,
                                 bool starred) {
   if (web_contents == tab_strip_model_->GetActiveWebContents())
     window_->SetStarredState(starred);
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, ZoomObserver implementation:
@@ -1989,11 +1979,9 @@ void Browser::Observe(int type,
                       const content::NotificationSource& source,
                       const content::NotificationDetails& details) {
   switch (type) {
-#if !defined(OS_ANDROID)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       window()->UserChangedTheme(BrowserThemeChangeType::kBrowserTheme);
       break;
-#endif
 
     case chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED: {
       WebContents* web_contents = content::Source<WebContents>(source).ptr();
@@ -2646,7 +2634,6 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
 }
 
 void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
-#if !defined(OS_ANDROID)
   BookmarkBar::State state =
       ShouldShowBookmarkBar() ? BookmarkBar::SHOW : BookmarkBar::HIDDEN;
 
@@ -2669,11 +2656,9 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   window_->BookmarkBarStateChanged(
       should_animate ? BookmarkBar::ANIMATE_STATE_CHANGE
                      : BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
-#endif
 }
 
 bool Browser::ShouldShowBookmarkBar() const {
-#if !defined(OS_ANDROID)
   if (profile_->IsGuestSession())
     return false;
 
@@ -2689,9 +2674,6 @@ bool Browser::ShouldShowBookmarkBar() const {
   BookmarkTabHelper* bookmark_tab_helper =
       BookmarkTabHelper::FromWebContents(web_contents);
   return bookmark_tab_helper && bookmark_tab_helper->ShouldShowBookmarkBar();
-#else
-  return false;
-#endif
 }
 
 bool Browser::ShouldHideUIForFullscreen() const {

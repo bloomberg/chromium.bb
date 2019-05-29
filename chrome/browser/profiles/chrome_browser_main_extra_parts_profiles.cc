@@ -64,7 +64,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_client_service_factory.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
-#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
@@ -163,6 +162,10 @@
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/printing/cloud_print/privet_notifications_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/session_service_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)

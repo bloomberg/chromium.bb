@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -27,6 +26,10 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/login/login_state/login_state.h"

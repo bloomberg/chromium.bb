@@ -16,7 +16,6 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/account_consistency_method.h"
@@ -25,6 +24,10 @@
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/test/base/browser_with_test_window_test.h"
+#endif
 
 // ChromeOS has its own network delay logic.
 #if !defined(OS_CHROMEOS)

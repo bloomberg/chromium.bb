@@ -19,12 +19,17 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_switch_event_latency_recorder.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/page_transition_types.h"
+
+#if defined(OS_ANDROID)
+#error This file should only be included on desktop.
+#endif
 
 class Profile;
 class TabStripModelDelegate;

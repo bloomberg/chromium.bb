@@ -79,7 +79,6 @@
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -165,6 +164,7 @@
 #include "chrome/browser/android/component_updater/background_task_update_scheduler.h"
 #else
 #include "chrome/browser/gcm/gcm_product_util.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"

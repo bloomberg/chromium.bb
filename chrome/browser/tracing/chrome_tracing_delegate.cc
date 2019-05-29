@@ -18,8 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tracing/crash_service_uploader.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -30,11 +28,15 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/crash_upload_list/crash_upload_list_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#else
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #endif
 
 namespace {

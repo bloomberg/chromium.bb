@@ -18,10 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
@@ -36,6 +32,13 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/browser_window.h"
+#endif
 
 namespace signin_util {
 namespace {

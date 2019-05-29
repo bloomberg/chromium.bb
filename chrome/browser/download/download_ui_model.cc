@@ -19,6 +19,10 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/text_elider.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #endif  // defined(OS_CHROMEOS)

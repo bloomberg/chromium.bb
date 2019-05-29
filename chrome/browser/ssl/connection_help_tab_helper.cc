@@ -7,7 +7,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"

@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -70,6 +71,7 @@ class StubNotificationUIManager : public NotificationUIManager {
   DISALLOW_COPY_AND_ASSIGN(StubNotificationUIManager);
 };
 
+#if !defined(OS_ANDROID)
 // Helper class that has to be created in the stack to check if the fullscreen
 // setting of a browser is in the desired state.
 class FullscreenStateWaiter {
@@ -84,5 +86,6 @@ class FullscreenStateWaiter {
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenStateWaiter);
 };
+#endif
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_TEST_UTIL_H_

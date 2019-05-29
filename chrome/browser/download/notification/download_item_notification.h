@@ -13,6 +13,7 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/image_decoder.h"
+#include "chrome/browser/ui/browser.h"
 #include "components/download/public/common/download_item.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "third_party/skia/include/core/SkColor.h"

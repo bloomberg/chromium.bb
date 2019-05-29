@@ -11,11 +11,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -32,7 +28,11 @@
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #else
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
 namespace {

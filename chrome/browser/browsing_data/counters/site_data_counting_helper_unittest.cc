@@ -14,7 +14,6 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"

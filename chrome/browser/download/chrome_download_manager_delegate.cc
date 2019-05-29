@@ -42,8 +42,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/buildflags.h"
@@ -83,6 +81,9 @@
 #include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#else
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/content/browser/risk/fingerprint.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
@@ -29,6 +28,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "extensions/browser/app_window/app_window.h"

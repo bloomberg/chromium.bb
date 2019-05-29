@@ -53,14 +53,10 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
@@ -108,6 +104,10 @@
 #include "extensions/common/manifest.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/session_service_factory.h"
+#endif
+
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
@@ -121,6 +121,9 @@
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #else
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1149,6 +1152,10 @@ void ProfileManager::Observe(
       break;
     }
     case chrome::NOTIFICATION_BROWSER_OPENED: {
+#if defined(OS_ANDROID)
+      NOTREACHED();
+      break;
+#else
       Browser* browser = content::Source<Browser>(source).ptr();
       DCHECK(browser);
       Profile* profile = browser->profile();
@@ -1166,8 +1173,13 @@ void ProfileManager::Observe(
       // a new browser window was opened.
       closing_all_browsers_ = false;
       break;
+#endif
     }
     case chrome::NOTIFICATION_BROWSER_CLOSED: {
+#if defined(OS_ANDROID)
+      NOTREACHED();
+      break;
+#else
       Browser* browser = content::Source<Browser>(source).ptr();
       DCHECK(browser);
       Profile* profile = browser->profile();
@@ -1178,6 +1190,7 @@ void ProfileManager::Observe(
         save_active_profiles = !closing_all_browsers_;
       }
       break;
+#endif
     }
     default: {
       NOTREACHED();
