@@ -12,6 +12,7 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/test/test_context_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -636,67 +637,18 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
       texsubimage2d_callback_;
 };
 
-class TestContextProvider : public base::RefCounted<TestContextProvider>,
-                            public viz::ContextProvider {
- public:
-  explicit TestContextProvider(sk_sp<::GrContext> gr_context)
-      : gr_context_(std::move(gr_context)) {}
-
-  void AddRef() const override {
-    base::RefCounted<TestContextProvider>::AddRef();
-  }
-  void Release() const override {
-    base::RefCounted<TestContextProvider>::Release();
-  }
-  gpu::ContextResult BindToCurrentThread() override {
-    return gpu::ContextResult::kSuccess;
-  }
-  void AddObserver(viz::ContextLostObserver* obs) override { NOTREACHED(); }
-  void RemoveObserver(viz::ContextLostObserver* obs) override { NOTREACHED(); }
-  base::Lock* GetLock() override { return nullptr; }
-  viz::ContextCacheController* CacheController() override {
-    NOTREACHED();
-    return nullptr;
-  }
-  gpu::ContextSupport* ContextSupport() override { return nullptr; }
-  ::GrContext* GrContext() override { return gr_context_.get(); }
-  gpu::SharedImageInterface* SharedImageInterface() override {
-    NOTREACHED();
-    return nullptr;
-  }
-  const gpu::Capabilities& ContextCapabilities() const override {
-    return capabilities_;
-  }
-  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
-    return feature_info_;
-  }
-  TestGLES2Interface* ContextGL() override { return &gles2_; }
-
- private:
-  friend base::RefCounted<TestContextProvider>;
-  ~TestContextProvider() override = default;
-
-  TestGLES2Interface gles2_;
-  sk_sp<::GrContext> gr_context_;
-  gpu::Capabilities capabilities_;
-  gpu::GpuFeatureInfo feature_info_;
-};
-
 void MailboxHoldersReleased(const gpu::SyncToken& sync_token) {}
 }  // namespace
 
 // Test that PaintCanvasVideoRenderer::Paint doesn't crash when GrContext is
-// unable to wrap a video frame texture (eg due to being abandoned). The mock
-// GrContext will fail to wrap the texture even if it is not abandoned, but we
-// leave the abandonContext call in place, in case that behavior changes.
+// unable to wrap a video frame texture (eg due to being abandoned).
 TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
-  sk_sp<GrContext> gr_context = GrContext::MakeMock(nullptr);
-  gr_context->abandonContext();
+  auto context_provider = viz::TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  context_provider->GrContext()->abandonContext();
 
   cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
 
-  auto context_provider =
-      base::MakeRefCounted<TestContextProvider>(std::move(gr_context));
   gfx::Size size(kWidth, kHeight);
   gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {gpu::MailboxHolder(
       gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_RECTANGLE_ARB)};
