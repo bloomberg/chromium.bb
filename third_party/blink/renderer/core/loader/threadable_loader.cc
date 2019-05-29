@@ -344,10 +344,10 @@ void ThreadableLoader::PrepareCrossOriginRequest(
   if (GetSecurityOrigin())
     request.SetHTTPOrigin(GetSecurityOrigin());
 
-  if (override_referrer_) {
-    request.SetReferrerString(referrer_after_redirect_.referrer);
-    request.SetReferrerPolicy(referrer_after_redirect_.referrer_policy);
-  }
+  // TODO(domfarolino): Stop setting the HTTPReferrer header, and instead use
+  // ResourceRequest::referrer_. See https://crbug.com/850813.
+  if (override_referrer_)
+    request.SetHttpReferrer(referrer_after_redirect_);
 }
 
 void ThreadableLoader::LoadPreflightRequest(

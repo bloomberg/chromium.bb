@@ -3179,6 +3179,10 @@ crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integ
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/svg/presentation-attribute.html [ Timeout Failure ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/svg/processing-instruction.html [ Timeout Failure ]
 
+crbug.com/906959 external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
+crbug.com/906959 external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
+crbug.com/906959 external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
+crbug.com/906959 external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/shared-worker/keep-origin-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-http/shared-worker/no-redirect/insecure-protocol.http.html [ Failure ]
 crbug.com/906959 external/wpt/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/insecure-protocol.http.html [ Failure ]

@@ -248,11 +248,11 @@ std::unique_ptr<TracedValue> ResourcePrioritySetData(
   return value;
 }
 
-// This function corresponds with step 2 substep 7 of
-// https://fetch.spec.whatwg.org/#main-fetch.
 void SetReferrer(
     ResourceRequest& request,
     const FetchClientSettingsObject& fetch_client_settings_object) {
+  // TODO(domfarolino): we can probably *just set* the HTTP `Referer` here
+  // no matter what now.
   if (!request.DidSetHttpReferrer()) {
     String referrer_to_use = request.ReferrerString();
     network::mojom::ReferrerPolicy referrer_policy_to_use =
@@ -261,24 +261,20 @@ void SetReferrer(
     if (referrer_to_use == Referrer::ClientReferrerString())
       referrer_to_use = fetch_client_settings_object.GetOutgoingReferrer();
 
-    if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
+    if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault) {
       referrer_policy_to_use = fetch_client_settings_object.GetReferrerPolicy();
+    }
 
-    request.SetReferrerString(referrer_to_use);
-    request.SetReferrerPolicy(referrer_policy_to_use);
     // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
     // and store it elsewhere. See https://crbug.com/850813.
     request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
         referrer_policy_to_use, request.Url(), referrer_to_use));
   } else {
-    // In the case of stale requests that are being revalidated, these requests
-    // will already have their HttpReferrer set, and we will end up here. We
-    // won't regenerate the referrer, but instead check that it's still correct.
-    CHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
-                                              request.Url(),
-                                              request.ReferrerString())
-                 .referrer,
-             request.HttpReferrer());
+    CHECK_EQ(
+        SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
+                                         request.Url(), request.HttpReferrer())
+            .referrer,
+        request.HttpReferrer());
   }
 }
 

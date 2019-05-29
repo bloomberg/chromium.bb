@@ -62,9 +62,8 @@ StyleImage* CSSImageValue::CacheImage(
     if (absolute_url_.IsEmpty())
       ReResolveURL(document);
     ResourceRequest resource_request(absolute_url_);
-    resource_request.SetReferrerPolicy(
-        ReferrerPolicyResolveDefault(referrer_.referrer_policy));
-    resource_request.SetReferrerString(referrer_.referrer);
+    resource_request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
+        referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
     ResourceLoaderOptions options;
     options.initiator_info.name = initiator_name_.IsEmpty()
                                       ? fetch_initiator_type_names::kCSS

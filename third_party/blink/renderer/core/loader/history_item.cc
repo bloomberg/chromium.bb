@@ -152,8 +152,9 @@ EncodedFormData* HistoryItem::FormData() {
 ResourceRequest HistoryItem::GenerateResourceRequest(
     mojom::FetchCacheMode cache_mode) {
   ResourceRequest request(url_string_);
-  request.SetReferrerString(referrer_.referrer);
-  request.SetReferrerPolicy(referrer_.referrer_policy);
+  // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
+  // header and instead use a separate member. See https://crbug.com/850813.
+  request.SetHttpReferrer(referrer_);
   request.SetCacheMode(cache_mode);
   if (form_data_) {
     request.SetHttpMethod(http_names::kPOST);

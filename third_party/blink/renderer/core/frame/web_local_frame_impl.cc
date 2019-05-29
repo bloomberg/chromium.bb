@@ -957,10 +957,10 @@ void WebLocalFrameImpl::SetReferrerForRequest(WebURLRequest& request,
   String referrer = referrer_url.IsEmpty()
                         ? GetFrame()->GetDocument()->OutgoingReferrer()
                         : String(referrer_url.GetString());
-  ResourceRequest& resource_request = request.ToMutableResourceRequest();
-  resource_request.SetReferrerPolicy(
-      GetFrame()->GetDocument()->GetReferrerPolicy());
-  resource_request.SetReferrerString(referrer);
+  request.ToMutableResourceRequest().SetHttpReferrer(
+      SecurityPolicy::GenerateReferrer(
+          GetFrame()->GetDocument()->GetReferrerPolicy(), request.Url(),
+          referrer));
 }
 
 WebAssociatedURLLoader* WebLocalFrameImpl::CreateAssociatedURLLoader(
