@@ -42,12 +42,11 @@ void NetworkQualityEstimatorProviderImpl::PostReplyOnNetworkQualityChanged(
   }
 
 #ifdef OS_ANDROID
-  // TODO(tbansal): https://crbug.com/898304: Tasks posted via
-  // content::BrowserThread::PostAfterStartupTask may take up to ~20 seconds to
-  // execute. Figure out a way to call
+  // TODO(tbansal): https://crbug.com/898304: Tasks posted at BEST_EFFORT
+  // may take up to ~20 seconds to execute. Figure out a way to call
   // g_browser_process->network_quality_tracker earlier rather than waiting for
-  // content::BrowserThread::PostAfterStartupTask.
-  content::BrowserThread::PostAfterStartupTask(
+  // BEST_EFFORT to run (which happens sometime after startup is completed)
+  content::BrowserThread::PostBestEffortTask(
       FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
       base::BindOnce(&NetworkQualityEstimatorProviderImpl::
                          AddEffectiveConnectionTypeObserverNow,
