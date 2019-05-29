@@ -265,4 +265,18 @@ void FakeDebugDaemonClient::SetSchedulerConfiguration(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
+void FakeDebugDaemonClient::SetU2fFlags(const std::set<std::string>& flags,
+                                        VoidDBusMethodCallback callback) {
+  u2f_flags_ = flags;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeDebugDaemonClient::GetU2fFlags(
+    DBusMethodCallback<std::set<std::string>> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::make_optional(u2f_flags_)));
+}
+
 }  // namespace chromeos

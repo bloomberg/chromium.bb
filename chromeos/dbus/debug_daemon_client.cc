@@ -24,6 +24,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -543,6 +544,29 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void SetU2fFlags(const std::set<std::string>& flags,
+                   VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kSetU2fFlags);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(base::JoinString(
+        std::vector<std::string>(flags.begin(), flags.end()), ","));
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void GetU2fFlags(
+      DBusMethodCallback<std::set<std::string>> callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetU2fFlags);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnGetU2fFlags,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     debugdaemon_proxy_ =
@@ -799,6 +823,31 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       reader.PopBool(&result);
     }
     std::move(callback).Run(result);
+  }
+
+  void OnGetU2fFlags(DBusMethodCallback<std::set<std::string>> callback,
+                     dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::string flags_string;
+    dbus::MessageReader reader(response);
+    if (!reader.PopString(&flags_string)) {
+      LOG(ERROR) << "Failed to read GetU2fFlags response";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::set<std::string> flags;
+    for (const auto& flag :
+         base::SplitString(flags_string, ",", base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_NONEMPTY)) {
+      flags.insert(flag);
+    }
+
+    std::move(callback).Run(std::move(flags));
   }
 
   dbus::ObjectProxy* debugdaemon_proxy_;

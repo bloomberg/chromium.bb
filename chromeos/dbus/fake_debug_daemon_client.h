@@ -90,6 +90,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
   void SetRlzPingSent(SetRlzPingSentCallback callback) override;
   void SetSchedulerConfiguration(const std::string& config_name,
                                  VoidDBusMethodCallback callback) override;
+  void SetU2fFlags(const std::set<std::string>& flags,
+                   VoidDBusMethodCallback callback) override;
+  void GetU2fFlags(DBusMethodCallback<std::set<std::string>> callback) override;
 
   // Sets debugging features mask for testing.
   virtual void SetDebuggingFeaturesStatus(int features_mask);
@@ -102,6 +105,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
     return scheduler_configuration_name_;
   }
 
+  const std::set<std::string>& u2f_flags() const { return u2f_flags_; }
+
  private:
   int features_mask_;
 
@@ -110,6 +115,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
       pending_wait_for_service_to_be_available_callbacks_;
   std::set<std::string> printers_;
   std::string scheduler_configuration_name_;
+  std::set<std::string> u2f_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDebugDaemonClient);
 };

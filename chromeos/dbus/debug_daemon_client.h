@@ -241,6 +241,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   virtual void SetSchedulerConfiguration(const std::string& config_name,
                                          VoidDBusMethodCallback callback) = 0;
 
+  // Set U2F flags.
+  virtual void SetU2fFlags(const std::set<std::string>& flags,
+                           VoidDBusMethodCallback callback) = 0;
+  // Get U2F flags.
+  virtual void GetU2fFlags(
+      DBusMethodCallback<std::set<std::string>> callback) = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static std::unique_ptr<DebugDaemonClient> Create();
