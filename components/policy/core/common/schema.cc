@@ -522,30 +522,37 @@ class Schema::InternalStorage
   }
 
   const SchemaNode* schema(int index) const {
+    DCHECK_GE(index, 0);
     return schema_data_.schema_nodes + index;
   }
 
   const PropertiesNode* properties(int index) const {
+    DCHECK_GE(index, 0);
     return schema_data_.properties_nodes + index;
   }
 
   const PropertyNode* property(int index) const {
+    DCHECK_GE(index, 0);
     return schema_data_.property_nodes + index;
   }
 
   const RestrictionNode* restriction(int index) const {
+    DCHECK_GE(index, 0);
     return schema_data_.restriction_nodes + index;
   }
 
   const char* const* required_property(int index) const {
+    DCHECK_GE(index, 0);
     return schema_data_.required_properties + index;
   }
 
   const int* int_enums(int index) const {
+    DCHECK_GE(index, 0);
     return schema_data_.int_enums + index;
   }
 
   const char* const* string_enums(int index) const {
+    DCHECK_GE(index, 0);
     return schema_data_.string_enums + index;
   }
 
@@ -1159,10 +1166,16 @@ bool Schema::InternalStorage::FindSensitiveChildrenRecursive(
 }
 
 Schema::Iterator::Iterator(const scoped_refptr<const InternalStorage>& storage,
-                           const PropertiesNode* node)
-    : storage_(storage),
-      it_(storage->property(node->begin)),
-      end_(storage->property(node->end)) {}
+                           const PropertiesNode* node) {
+  if (node->begin == kInvalid || node->end == kInvalid) {
+    it_ = nullptr;
+    end_ = nullptr;
+  } else {
+    storage_ = storage;
+    it_ = storage->property(node->begin);
+    end_ = storage->property(node->end);
+  }
+}
 
 Schema::Iterator::Iterator(const Iterator& iterator)
     : storage_(iterator.storage_),
@@ -1183,6 +1196,7 @@ bool Schema::Iterator::IsAtEnd() const {
 }
 
 void Schema::Iterator::Advance() {
+  DCHECK(it_);
   ++it_;
 }
 
@@ -1503,6 +1517,8 @@ Schema Schema::GetKnownProperty(const std::string& key) const {
   CHECK(valid());
   CHECK_EQ(base::Value::Type::DICTIONARY, type());
   const PropertiesNode* node = storage_->properties(node_->extra);
+  if (node->begin == kInvalid || node->end == kInvalid)
+    return Schema();
   const PropertyNode* begin = storage_->property(node->begin);
   const PropertyNode* end = storage_->property(node->end);
   const PropertyNode* it = std::lower_bound(begin, end, key, CompareKeys);
@@ -1524,6 +1540,8 @@ SchemaList Schema::GetPatternProperties(const std::string& key) const {
   CHECK(valid());
   CHECK_EQ(base::Value::Type::DICTIONARY, type());
   const PropertiesNode* node = storage_->properties(node_->extra);
+  if (node->end == kInvalid || node->pattern_end == kInvalid)
+    return {};
   const PropertyNode* begin = storage_->property(node->end);
   const PropertyNode* end = storage_->property(node->pattern_end);
   SchemaList matching_properties;
@@ -1540,6 +1558,8 @@ std::vector<std::string> Schema::GetRequiredProperties() const {
   CHECK(valid());
   CHECK_EQ(base::Value::Type::DICTIONARY, type());
   const PropertiesNode* node = storage_->properties(node_->extra);
+  if (node->required_begin == kInvalid || node->required_end == kInvalid)
+    return {};
   const size_t begin = node->required_begin;
   const size_t end = node->required_end;
 

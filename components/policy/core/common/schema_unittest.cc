@@ -444,6 +444,9 @@ TEST(SchemaTest, Lookups) {
   // This empty schema should never find named properties.
   EXPECT_FALSE(schema.GetKnownProperty("").valid());
   EXPECT_FALSE(schema.GetKnownProperty("xyz").valid());
+  EXPECT_TRUE(schema.GetRequiredProperties().empty());
+  EXPECT_TRUE(schema.GetPatternProperties("").empty());
+  EXPECT_FALSE(schema.GetAdditionalProperties().valid());
   EXPECT_TRUE(schema.GetPropertiesIterator().IsAtEnd());
 
   schema = Schema::Parse(R"({
