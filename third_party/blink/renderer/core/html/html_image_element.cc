@@ -745,9 +745,17 @@ void HTMLImageElement::SelectSourceURL(
         FastGetAttribute(kSrcAttr), FastGetAttribute(kSrcsetAttr),
         &GetDocument());
   }
+  AtomicString old_url = best_fit_image_url_;
   SetBestFitURLAndDPRFromImageCandidate(candidate);
 
-  GetImageLoader().UpdateFromElement(behavior, referrer_policy_);
+  // Step 5 in
+  // https://html.spec.whatwg.org/multipage/images.html#reacting-to-environment-changes
+  // Deliberately not compliant and avoiding checking image density, to avoid
+  // spurious downloads. See https://github.com/whatwg/html/issues/4646
+  if (behavior != HTMLImageLoader::kUpdateSizeChanged ||
+      best_fit_image_url_ != old_url) {
+    GetImageLoader().UpdateFromElement(behavior, referrer_policy_);
+  }
 
   ImageResourceContent* image_content = GetImageLoader().GetContent();
   // Images such as data: uri's can return immediately and may already have
