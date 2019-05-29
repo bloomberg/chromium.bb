@@ -295,6 +295,9 @@
   <message name="IDS_EXTENSIONS_LOADING_ACTIVITIES" desc="The message shown to the user when the activity log for an extension is currently being fetched from the API.">
     Fetching activities...
   </message>
+  <message name="IDS_MISSING_OR_UNINSTALLED_EXTENSION" desc="The placeholder for the activity log page header if the extension does not exist or is not installed.">
+    Missing or uninstalled extension
+  </message>
   <message name="IDS_EXTENSIONS_NO_ACTIVITIES" desc="The message shown to the user when an extension has no recent activities.">
     No recent activities
   </message>

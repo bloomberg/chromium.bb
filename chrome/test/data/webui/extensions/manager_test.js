@@ -171,8 +171,9 @@ cr.define('extension_manager_tests', function() {
       extensions.navigation.navigateTo(
           {page: Page.ACTIVITY_LOG, extensionId: 'z'.repeat(32)});
       Polymer.dom.flush();
-      // Should be re-routed to the main page.
-      assertViewActive('extensions-item-list');
+      // Should also be on activity log page. See |changePage_| in manager.js
+      // for the use case.
+      assertViewActive('extensions-activity-log');
     });
   });
 

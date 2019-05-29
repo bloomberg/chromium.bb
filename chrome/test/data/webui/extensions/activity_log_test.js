@@ -19,7 +19,8 @@ suite('ExtensionsActivityLogTest', function() {
 
   /**
    * Backing extension info for the activity log.
-   * @type {chrome.developerPrivate.ExtensionInfo}
+   * @type {chrome.developerPrivate.ExtensionInfo|
+   *        extensions.ActivityLogExtensionPlaceholder}
    */
   let extensionInfo;
 
@@ -83,6 +84,22 @@ suite('ExtensionsActivityLogTest', function() {
     expectDeepEquals(
         currentPage, {page: Page.DETAILS, extensionId: EXTENSION_ID});
   });
+
+  test(
+      'clicking on back button for a placeholder page navigates to list view',
+      function() {
+        activityLog.extensionInfo = {id: EXTENSION_ID, isPlaceholder: true};
+
+        Polymer.dom.flush();
+
+        let currentPage = null;
+        extensions.navigation.addListener(newPage => {
+          currentPage = newPage;
+        });
+
+        activityLog.$$('#closeButton').click();
+        expectDeepEquals(currentPage, {page: Page.LIST});
+      });
 
   test('tab transitions', async () => {
     Polymer.dom.flush();

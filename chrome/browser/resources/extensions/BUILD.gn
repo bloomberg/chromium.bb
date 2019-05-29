@@ -261,6 +261,7 @@ js_library("manager") {
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
   ]
   externs_list = [ "$externs_path/developer_private.js" ]
 }
