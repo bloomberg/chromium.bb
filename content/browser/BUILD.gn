@@ -2496,9 +2496,15 @@ jumbo_source_set("browser") {
   } else {
     # Not Android.
     sources += [
+      # The WebAuthn devtools protocol API is not supported in Android yet.
+      "$target_gen_dir/devtools/protocol/web_authn.cc",
+      "$target_gen_dir/devtools/protocol/web_authn.h",
+
       # Devtools frontend not included in Android
       "devtools/devtools_frontend_host_impl.cc",
       "devtools/devtools_frontend_host_impl.h",
+      "devtools/protocol/webauthn_handler.cc",
+      "devtools/protocol/webauthn_handler.h",
       "host_zoom_level_context.cc",
       "host_zoom_level_context.h",
       "host_zoom_map_impl.cc",

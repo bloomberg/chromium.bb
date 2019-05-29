@@ -65,6 +65,8 @@
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
+#else
+#include "content/browser/devtools/protocol/webauthn_handler.h"
 #endif
 
 namespace content {
@@ -323,6 +325,9 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     session->AddHandler(std::make_unique<protocol::TracingHandler>(
         frame_tree_node_, GetIOContext()));
   }
+#if !defined(OS_ANDROID)
+  session->AddHandler(std::make_unique<protocol::WebAuthnHandler>());
+#endif  // !defined(OS_ANDROID)
 
   if (sessions().empty()) {
     bool use_video_capture_api = true;

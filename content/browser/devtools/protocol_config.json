@@ -99,6 +99,10 @@
             {
                 "domain": "Fetch",
                 "async": ["enable", "continueRequest", "failRequest", "fulfillRequest", "continueWithAuth", "getResponseBody", "takeResponseBodyAsStream"]
+            },
+            {
+                "domain": "WebAuthn",
+                "include": ["enable", "disable"]
             }
         ]
     },
