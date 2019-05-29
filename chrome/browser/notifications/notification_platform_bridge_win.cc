@@ -150,7 +150,7 @@ class NotificationPlatformBridgeWinImpl
     // Delete any remaining temp files in the image folder from the previous
     // sessions.
     DCHECK(notification_task_runner_);
-    content::BrowserThread::PostAfterStartupTask(
+    content::BrowserThread::PostBestEffortTask(
         FROM_HERE, notification_task_runner_,
         image_retainer_->GetCleanupTask());
   }
