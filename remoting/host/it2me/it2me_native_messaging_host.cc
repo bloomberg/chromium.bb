@@ -98,13 +98,13 @@ void PolicyErrorCallback(
 
 // An OAuthTokenGetter implementation that simply passes |username| and
 // |access_token| when CallWithToken() is called.
-class PassthroguhOAuthTokenGetter : public OAuthTokenGetter {
+class PassthroughOAuthTokenGetter : public OAuthTokenGetter {
  public:
-  PassthroguhOAuthTokenGetter(const std::string& username,
+  PassthroughOAuthTokenGetter(const std::string& username,
                               const std::string& access_token)
       : username_(username), access_token_(access_token) {}
 
-  ~PassthroguhOAuthTokenGetter() override = default;
+  ~PassthroughOAuthTokenGetter() override = default;
 
   void CallWithToken(OAuthTokenGetter::TokenCallback on_access_token) override {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -299,11 +299,11 @@ void It2MeNativeMessagingHost::ProcessConnect(
         CreateMuxingSignalStrategy(username, access_token, message.get());
     register_host_request =
         std::make_unique<RemotingRegisterSupportHostRequest>(
-            std::make_unique<PassthroguhOAuthTokenGetter>(username,
+            std::make_unique<PassthroughOAuthTokenGetter>(username,
                                                           access_token));
     log_to_server = std::make_unique<RemotingLogToServer>(
         ServerLogEntry::IT2ME,
-        std::make_unique<PassthroguhOAuthTokenGetter>(username, access_token));
+        std::make_unique<PassthroughOAuthTokenGetter>(username, access_token));
   }
   if (!signal_strategy) {
     SendErrorAndExit(std::move(response), ErrorCode::INCOMPATIBLE_PROTOCOL);
@@ -635,7 +635,7 @@ It2MeNativeMessagingHost::CreateMuxingSignalStrategy(
       net::ClientSocketFactory::GetDefaultFactory(),
       host_context_->url_request_context_getter(), xmpp_config);
   auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
-      std::make_unique<PassthroguhOAuthTokenGetter>(username, access_token),
+      std::make_unique<PassthroughOAuthTokenGetter>(username, access_token),
       std::make_unique<FtlClientUuidDeviceIdProvider>());
   return std::make_unique<MuxingSignalStrategy>(
       std::move(ftl_signal_strategy), std::move(xmpp_signal_strategy));
