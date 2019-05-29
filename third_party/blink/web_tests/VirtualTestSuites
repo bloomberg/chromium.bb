@@ -963,6 +963,11 @@
     "args": ["--enable-features=FreezeUserAgent"]
   },
   {
+    "prefix": "insecure-device-sensor-events",
+    "base": "http/tests/security/powerfulFeatureRestrictions/",
+    "args": ["--disable-features=RestrictDeviceSensorEventsToSecureContexts"]
+  },
+  {
     "prefix": "native-file-system",
     "base": "external/wpt/native-file-system",
     "args": ["--enable-features=NativeFileSystemAPI"]

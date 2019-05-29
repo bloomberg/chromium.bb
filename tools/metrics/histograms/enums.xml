@@ -21064,9 +21064,9 @@ Called by update_net_error_codes.py.-->
   <int value="665" label="MixedContentFormPresent"/>
   <int value="666" label="GetUserMediaInsecureOrigin"/>
   <int value="667" label="GetUserMediaSecureOrigin"/>
-  <int value="668" label="DeviceMotionInsecureOrigin_Obsolete"/>
+  <int value="668" label="DeviceMotionInsecureOrigin"/>
   <int value="669" label="DeviceMotionSecureOrigin"/>
-  <int value="670" label="DeviceOrientationInsecureOrigin_Obsolete"/>
+  <int value="670" label="DeviceOrientationInsecureOrigin"/>
   <int value="671" label="DeviceOrientationSecureOrigin"/>
   <int value="672" label="SandboxViaIFrame"/>
   <int value="673" label="SandboxViaCSP"/>
@@ -21397,7 +21397,7 @@ Called by update_net_error_codes.py.-->
   <int value="984" label="BluetoothDeviceInstanceId"/>
   <int value="985" label="HTMLLabelElementFormIDLAttribute"/>
   <int value="986" label="HTMLLabelElementFormContentAttribute"/>
-  <int value="987" label="DeviceOrientationAbsoluteInsecureOrigin_Obsolete"/>
+  <int value="987" label="DeviceOrientationAbsoluteInsecureOrigin"/>
   <int value="988" label="DeviceOrientationAbsoluteSecureOrigin"/>
   <int value="989" label="FontFaceConstructor"/>
   <int value="990" label="ServiceWorkerControlledPage"/>
