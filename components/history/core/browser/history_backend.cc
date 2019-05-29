@@ -1446,8 +1446,8 @@ void HistoryBackend::GetRedirectsToSpecificVisit(VisitID cur_visit,
 }
 
 void HistoryBackend::ScheduleAutocomplete(
-    const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback) {
-  callback.Run(this, db_.get());
+    base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback) {
+  std::move(callback).Run(this, db_.get());
 }
 
 void HistoryBackend::DeleteFTSIndexDatabases() {

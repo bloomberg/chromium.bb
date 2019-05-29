@@ -233,7 +233,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Run the |callback| on the History thread.
   // |callback| should handle the null database case.
   void ScheduleAutocomplete(
-      const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback);
+      base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback);
 
   QueryURLResult QueryURL(const GURL& url, bool want_visits);
   QueryResults QueryHistory(const base::string16& text_query,

@@ -958,11 +958,11 @@ bool HistoryService::Init(
 }
 
 void HistoryService::ScheduleAutocomplete(
-    const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback) {
+    base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleTask(PRIORITY_UI,
                base::BindOnce(&HistoryBackend::ScheduleAutocomplete,
-                              history_backend_, callback));
+                              history_backend_, std::move(callback)));
 }
 
 void HistoryService::ScheduleTask(SchedulePriority priority,

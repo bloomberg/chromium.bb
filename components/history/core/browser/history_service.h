@@ -575,7 +575,7 @@ class HistoryService : public KeyedService {
   // will be called back on the internal history thread with the history
   // database so it can query. See history_url_provider.h for a diagram.
   void ScheduleAutocomplete(
-      const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback);
+      base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback);
 
   // Notification from the backend that it has finished loading. Sends
   // notification (NOTIFY_HISTORY_LOADED) and sets backend_loaded_ to true.
