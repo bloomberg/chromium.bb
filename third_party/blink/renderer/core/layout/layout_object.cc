@@ -3136,7 +3136,8 @@ void LayoutObject::WillBeRemovedFromTree() {
     FindReferencingScrollAnchors(this, kClear);
   }
 
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+      RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
     if (LocalFrameView* frame_view = GetFrameView()) {
       frame_view->GetPaintTimingDetector().NotifyNodeRemoved(*this);
     }

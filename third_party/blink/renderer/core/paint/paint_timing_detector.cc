@@ -159,8 +159,14 @@ void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
       WebInputEvent::IsPinchGestureEventType(type)) {
     return;
   }
-  if (text_paint_timing_detector_)
-    text_paint_timing_detector_->StopRecordEntries();
+  DCHECK(frame_view_);
+  if (text_paint_timing_detector_) {
+    text_paint_timing_detector_->StopRecordingLargestTextPaint();
+    if (!RuntimeEnabledFeatures::ElementTimingEnabled(
+            frame_view_->GetFrame().GetDocument())) {
+      text_paint_timing_detector_->StopRecordEntries();
+    }
+  }
   if (image_paint_timing_detector_)
     image_paint_timing_detector_->StopRecordEntries();
 }
@@ -168,8 +174,14 @@ void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
 void PaintTimingDetector::NotifyScroll(ScrollType scroll_type) {
   if (scroll_type != kUserScroll && scroll_type != kCompositorScroll)
     return;
-  if (text_paint_timing_detector_)
-    text_paint_timing_detector_->StopRecordEntries();
+  DCHECK(frame_view_);
+  if (text_paint_timing_detector_) {
+    text_paint_timing_detector_->StopRecordingLargestTextPaint();
+    if (!RuntimeEnabledFeatures::ElementTimingEnabled(
+            frame_view_->GetFrame().GetDocument())) {
+      text_paint_timing_detector_->StopRecordEntries();
+    }
+  }
   if (image_paint_timing_detector_)
     image_paint_timing_detector_->StopRecordEntries();
 }

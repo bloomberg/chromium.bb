@@ -342,8 +342,11 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   DCHECK(layout_block.ChildrenInline());
   base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
       scoped_paint_timing_detector_block_paint_hook;
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+      RuntimeEnabledFeatures::ElementTimingEnabled(
+          &layout_block.GetDocument())) {
     scoped_paint_timing_detector_block_paint_hook.emplace(layout_block);
+  }
   if (ShouldPaintDescendantOutlines(paint_info.phase)) {
     ObjectPainter(layout_block).PaintInlineChildrenOutlines(paint_info);
   } else {

@@ -45,7 +45,14 @@ TextPaintTimingDetector::TextPaintTimingDetector(LocalFrameView* frame_view)
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &TextPaintTimingDetector::TimerFired),
-      frame_view_(frame_view) {}
+      frame_view_(frame_view) {
+  Document* document = frame_view_->GetFrame().GetDocument();
+  if (document && RuntimeEnabledFeatures::ElementTimingEnabled(document)) {
+    LocalDOMWindow* window = document->domWindow();
+    if (window)
+      records_manager_.SetTextElementTiming(&TextElementTiming::From(*window));
+  }
+}
 
 void TextPaintTimingDetector::PopulateTraceValue(
     TracedValue& value,
@@ -89,6 +96,10 @@ void TextPaintTimingDetector::TimerFired(TimerBase* time) {
 }
 
 void TextPaintTimingDetector::UpdateCandidate() {
+  if (!records_manager_.IsRecordingLargestTextPaint())
+    return;
+
+  DCHECK(RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled());
   TextRecord* largest_text_record =
       records_manager_.FindLargestPaintCandidate();
   const base::TimeTicks time =
@@ -100,6 +111,7 @@ void TextPaintTimingDetector::UpdateCandidate() {
           time, size);
   if (!changed)
     return;
+
   if (largest_text_record && !largest_text_record->paint_time.is_null())
     ReportCandidateToTrace(*largest_text_record);
   else
@@ -113,7 +125,7 @@ void TextPaintTimingDetector::OnPaintFinished() {
   }
   if (records_manager_.NeedMeausuringPaintTime()) {
     // Start repeating timer only once at the first text paint.
-    if (!timer_.IsActive())
+    if (!timer_.IsActive() && is_recording_ltp_)
       timer_.StartRepeating(kTimerDelay, FROM_HERE);
     if (!awaiting_swap_promise_) {
       RegisterNotifySwapTime(
@@ -121,6 +133,10 @@ void TextPaintTimingDetector::OnPaintFinished() {
                               WrapCrossThreadWeakPersistent(this)));
     }
   }
+  // Delete unneeded information from |records_manager_| if no longer recording
+  // LargestTextPaint.
+  if (!is_recording_ltp_ && records_manager_.IsRecordingLargestTextPaint())
+    records_manager_.StopRecordingLargestTextPaint();
 }
 
 void TextPaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
@@ -229,15 +245,23 @@ void TextPaintTimingDetector::StopRecordEntries() {
   is_recording_ = false;
 }
 
+void TextPaintTimingDetector::StopRecordingLargestTextPaint() {
+  // This does not immediately call TextRecordsManager's
+  // StopRecordingLargestTextPaint(). However, it stops the timer, and the next
+  // time OnPaintFinished() is called, the TextRecordsManager has the last
+  // chance to update LargestTextPaint (based on elements that had already been
+  // painted), and THEN we call its StopRecordingLargestTextPaint() so that the
+  // LargestTextPaint-only information is cleared.
+  timer_.Stop();
+  is_recording_ltp_ = false;
+}
+
 void TextPaintTimingDetector::Trace(blink::Visitor* visitor) {
+  visitor->Trace(records_manager_);
   visitor->Trace(frame_view_);
 }
 
 TextRecordsManager::TextRecordsManager() : size_ordered_set_(&LargeTextFirst) {}
-
-bool TextRecordsManager::AreAllVisibleNodesDetached() const {
-  return visible_node_map_.size() == detached_ids_.size();
-}
 
 void TextRecordsManager::SetNodeDetachedIfNeeded(const DOMNodeId& node_id) {
   if (!visible_node_map_.Contains(node_id))
@@ -254,15 +278,15 @@ void TextRecordsManager::AssignPaintTimeToQueuedNodes(
   // consumed in a callback earlier than this one. That violates the assumption
   // that only one or zero callback will be called after one OnPaintFinished.
   DCHECK_GT(texts_queued_for_paint_time_.size(), 0UL);
-  while (!texts_queued_for_paint_time_.IsEmpty()) {
-    base::WeakPtr<TextRecord>& record = texts_queued_for_paint_time_.front();
+  for (auto& record : texts_queued_for_paint_time_) {
     DCHECK(visible_node_map_.Contains(record->node_id));
     DCHECK_EQ(record->paint_time, base::TimeTicks());
     record->paint_time = timestamp;
-
-    texts_queued_for_paint_time_.pop_front();
-    is_result_invalidated_ = true;
   }
+  if (text_element_timing_)
+    text_element_timing_->OnTextNodesPainted(texts_queued_for_paint_time_);
+  texts_queued_for_paint_time_.clear();
+  is_result_invalidated_ = true;
 }
 
 void TextRecordsManager::MarkNodeReattachedIfNeeded(const DOMNodeId& node_id) {
@@ -302,7 +326,8 @@ void TextRecordsManager::RecordVisibleNode(const DOMNodeId& node_id,
   }
   record->text = text;
 #endif
-  size_ordered_set_.emplace(record->AsWeakPtr());
+  if (is_recording_ltp_)
+    size_ordered_set_.emplace(record->AsWeakPtr());
   QueueToMeasurePaintTime(record->AsWeakPtr());
   visible_node_map_.insert(node_id, std::move(record));
   is_result_invalidated_ = true;
@@ -319,6 +344,7 @@ bool TextRecordsManager::HasTooManyNodes() const {
 }
 
 TextRecord* TextRecordsManager::FindLargestPaintCandidate() {
+  DCHECK(is_recording_ltp_);
   DCHECK_EQ(visible_node_map_.size(), size_ordered_set_.size());
   if (!is_result_invalidated_)
     return cached_largest_paint_candidate_;
@@ -338,6 +364,16 @@ TextRecord* TextRecordsManager::FindLargestPaintCandidate() {
   cached_largest_paint_candidate_ = new_largest_paint_candidate;
   is_result_invalidated_ = false;
   return new_largest_paint_candidate;
+}
+
+void TextRecordsManager::StopRecordingLargestTextPaint() {
+  is_recording_ltp_ = false;
+  size_ordered_set_.clear();
+  cached_largest_paint_candidate_ = nullptr;
+}
+
+void TextRecordsManager::Trace(blink::Visitor* visitor) {
+  visitor->Trace(text_element_timing_);
 }
 
 void TextPaintTimingDetector::WillWalkTextAggregatingNode() {

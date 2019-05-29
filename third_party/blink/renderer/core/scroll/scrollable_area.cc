@@ -362,9 +362,11 @@ void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,
         GetScrollOffset() - old_offset, scroll_type);
   }
 
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-    if (GetScrollOffset() != old_offset && GetLayoutBox() &&
-        GetLayoutBox()->GetFrameView() &&
+  if (GetLayoutBox() &&
+      (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+       RuntimeEnabledFeatures::ElementTimingEnabled(
+           &GetLayoutBox()->GetDocument()))) {
+    if (GetScrollOffset() != old_offset && GetLayoutBox()->GetFrameView() &&
         GetLayoutBox()
             ->GetFrameView()
             ->GetPaintTimingDetector()

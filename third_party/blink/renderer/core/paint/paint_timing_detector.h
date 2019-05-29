@@ -97,16 +97,16 @@ class CORE_EXPORT PaintTimingDetector
   uint64_t largest_text_paint_size_ = 0;
 };
 
-// Largest Text Paint aggregates text nodes by these text nodes' ancestors. In
-// order to tell whether a text node is contained by another node
-// efficiently, LTP relies on the paint order of the rendering tree
-// (https://www.w3.org/TR/CSS21/zindex.html). Because of the paint order, we can
-// assume that if a text node T is visited during the visit of another node B,
-// then B contains T. This class acts as the hook to certain container nodes
-// (block object or inline object) to tell whether a text node is their
-// descendant. The hook should be placed right before visiting the subtree of an
-// container node, so that the constructor and the destructor can tell the start
-// and end of the visit.
+// Largest Text Paint and Text Element Timing aggregate text nodes by these
+// text nodes' ancestors. In order to tell whether a text node is contained by
+// another node efficiently, The aggregation relies on the paint order of the
+// rendering tree (https://www.w3.org/TR/CSS21/zindex.html). Because of the
+// paint order, we can assume that if a text node T is visited during the visit
+// of another node B, then B contains T. This class acts as the hook to certain
+// container nodes (block object or inline object) to tell whether a text node
+// is their descendant. The hook should be placed right before visiting the
+// subtree of an container node, so that the constructor and the destructor can
+// tell the start and end of the visit.
 class ScopedPaintTimingDetectorBlockPaintHook {
   DISALLOW_NEW();
 

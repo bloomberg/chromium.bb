@@ -237,6 +237,8 @@ blink_core_sources("paint") {
     "table_section_painter.h",
     "text_control_single_line_painter.cc",
     "text_control_single_line_painter.h",
+    "text_element_timing.cc",
+    "text_element_timing.h",
     "text_paint_style.h",
     "text_paint_timing_detector.cc",
     "text_paint_timing_detector.h",

@@ -127,4 +127,4 @@ class CORE_EXPORT ImageElementTiming final
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_IMAGE_ELEMENT_TIMING_H_

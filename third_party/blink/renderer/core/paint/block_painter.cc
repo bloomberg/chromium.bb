@@ -34,8 +34,11 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
 
   base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
       scoped_paint_timing_detector_block_paint_hook;
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+      RuntimeEnabledFeatures::ElementTimingEnabled(
+          &layout_block_.GetDocument())) {
     scoped_paint_timing_detector_block_paint_hook.emplace(layout_block_);
+  }
 
   auto paint_offset = paint_state.PaintOffset();
   auto& local_paint_info = paint_state.MutablePaintInfo();

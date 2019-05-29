@@ -74,12 +74,15 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.
   context.GetPaintController().SetTextPainted();
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() &&
-      !font.ShouldSkipDrawing()) {
-    // We should consider using the text node as the tracking node, instead of
-    // the line layout item.
-    Node* node = ellipsis_box_.GetLineLayoutItem().GetNode();
-    if (node) {
+  // We should consider using the text node as the tracking node, instead of
+  // the line layout item.
+  Node* node = ellipsis_box_.GetLineLayoutItem().GetNode();
+  if (!node)
+    return;
+
+  if ((RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+       RuntimeEnabledFeatures::ElementTimingEnabled(&node->GetDocument()))) {
+    if (!font.ShouldSkipDrawing()) {
       PaintTimingDetector::NotifyTextPaint(
           *node->GetLayoutObject(), paint_info.context.GetPaintController()
                                         .CurrentPaintChunkProperties());

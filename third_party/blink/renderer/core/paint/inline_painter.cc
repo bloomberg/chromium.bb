@@ -22,8 +22,11 @@ namespace blink {
 void InlinePainter::Paint(const PaintInfo& paint_info) {
   base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
       scoped_paint_timing_detector_block_paint_hook;
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+      RuntimeEnabledFeatures::ElementTimingEnabled(
+          &layout_inline_.GetDocument())) {
     scoped_paint_timing_detector_block_paint_hook.emplace(layout_inline_);
+  }
 
   ScopedPaintState paint_state(layout_inline_, paint_info);
   auto paint_offset = paint_state.PaintOffset();
