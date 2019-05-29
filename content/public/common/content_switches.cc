@@ -576,6 +576,10 @@ const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
 // Indicates the utility process should run with a message loop type of UI.
 const char kMessageLoopTypeUi[] = "message-loop-type-ui";
 
+// Set the default result for MockCertVerifier. This only works in test code.
+const char kMockCertVerifierDefaultResultForTesting[] =
+    "mock-cert-verifier-default-result-for-testing";
+
 // Use a Mojo-based LocalStorage implementation.
 const char kMojoLocalStorage[]              = "mojo-local-storage";
 

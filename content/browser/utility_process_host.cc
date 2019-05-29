@@ -398,6 +398,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kUseFakeMjpegDecodeAccelerator,
       switches::kUseFileForFakeVideoCapture,
       switches::kUseMockCertVerifierForTesting,
+      switches::kMockCertVerifierDefaultResultForTesting,
       switches::kUtilityStartupDialog,
       switches::kUseGL,
       switches::kV,

@@ -81,6 +81,16 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
       mock_cert_verifier_ = std::make_unique<net::MockCertVerifier>();
       network::NetworkContext::SetCertVerifierForTesting(
           mock_cert_verifier_.get());
+
+      // The default result may be set using a command line flag.
+      std::string default_result =
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kMockCertVerifierDefaultResultForTesting);
+      int default_result_int = 0;
+      if (!default_result.empty() &&
+          base::StringToInt(default_result, &default_result_int)) {
+        mock_cert_verifier_->set_default_result(default_result_int);
+      }
     }
   }
 
