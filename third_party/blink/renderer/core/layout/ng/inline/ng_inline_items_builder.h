@@ -21,6 +21,7 @@ class ComputedStyle;
 class LayoutInline;
 class LayoutObject;
 class LayoutText;
+struct NGInlineNodeData;
 class NGDirtyLines;
 
 // NGInlineItemsBuilder builds a string and a list of NGInlineItem from inlines.
@@ -70,15 +71,17 @@ class NGInlineItemsBuilderTemplate {
 
   // Append a string from |LayoutText|.
   //
-  // If |previous_text| is given, reuse existing items if they exist and are
+  // If |previous_data| is given, reuse existing items if they exist and are
   // reusable. Otherwise appends new items.
-  void AppendText(LayoutText* layout_text, const String* previous_text);
+  void AppendText(LayoutText* layout_text,
+                  const NGInlineNodeData* previous_data);
 
   // Append existing items from an unchanged LayoutObject.
   // Returns whether the existing items could be reused.
   // NOTE: The state of the builder remains unchanged if the append operation
   // fails (i.e. if it returns false).
-  bool AppendTextReusing(const String& previous_text, LayoutText* layout_text);
+  bool AppendTextReusing(const NGInlineNodeData& previous_data,
+                         LayoutText* layout_text);
 
   // Append a string.
   // When appending, spaces are collapsed according to CSS Text, The white space
@@ -221,8 +224,10 @@ class NGInlineItemsBuilderTemplate {
 };
 
 template <>
-CORE_EXPORT bool NGInlineItemsBuilderTemplate<
-    NGOffsetMappingBuilder>::AppendTextReusing(const String&, LayoutText*);
+CORE_EXPORT bool
+NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::AppendTextReusing(
+    const NGInlineNodeData&,
+    LayoutText*);
 
 template <>
 CORE_EXPORT void

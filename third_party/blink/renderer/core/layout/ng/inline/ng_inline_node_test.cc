@@ -1420,6 +1420,18 @@ TEST_F(NGInlineNodeTest, PreservedNewlineWithBidiAndRelayout) {
   EXPECT_EQ(String(u"foo\u2066\u2069\n\u2066\u2069bar\nbaz"), GetText());
 }
 
+TEST_F(NGInlineNodeTest, PreservedNewlineWithRemovedBidiAndRelayout) {
+  SetupHtml("container",
+            "<pre id=container>foo<span dir=rtl>\nbar</span></pre>");
+  EXPECT_EQ(String(u"foo\u2067\u2069\n\u2067bar\u2069"), GetText());
+
+  GetDocument().QuerySelector("span")->removeAttribute(html_names::kDirAttr);
+  UpdateAllLifecyclePhasesForTest();
+
+  // The bidi control characters around '\n' should not preserve
+  EXPECT_EQ("foo\nbar", GetText());
+}
+
 #if SEGMENT_BREAK_TRANSFORMATION_FOR_EAST_ASIAN_WIDTH
 // https://crbug.com/879088
 TEST_F(NGInlineNodeTest, RemoveSegmentBreakFromJapaneseInRelayout) {

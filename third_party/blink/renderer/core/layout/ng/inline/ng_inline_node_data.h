@@ -31,6 +31,7 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
     base_direction_ = static_cast<unsigned>(direction);
   }
 
+  friend class NGInlineItemsBuilderTest;
   friend class NGInlineNode;
   friend class NGInlineNodeLegacy;
   friend class NGInlineNodeForTest;

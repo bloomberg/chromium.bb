@@ -75,7 +75,7 @@ class ItemsBuilderForMarkLineBoxesDirty {
  public:
   ItemsBuilderForMarkLineBoxesDirty(NGDirtyLines* dirty_lines)
       : dirty_lines_(dirty_lines) {}
-  void AppendText(LayoutText* layout_text, const String*) {
+  void AppendText(LayoutText* layout_text, const NGInlineItemsData*) {
     if (dirty_lines_ && dirty_lines_->HandleText(layout_text))
       dirty_lines_ = nullptr;
   }
@@ -145,7 +145,7 @@ class ItemsBuilderForMarkLineBoxesDirty {
 template <typename ItemsBuilder>
 void CollectInlinesInternal(LayoutBlockFlow* block,
                             ItemsBuilder* builder,
-                            const String* previous_text) {
+                            const NGInlineNodeData* previous_data) {
   builder->EnterBlock(block->Style());
   LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
 
@@ -153,7 +153,7 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
       LayoutNGListItem::FindSymbolMarkerLayoutText(block);
   while (node) {
     if (LayoutText* layout_text = ToLayoutTextOrNull(node)) {
-      builder->AppendText(layout_text, previous_text);
+      builder->AppendText(layout_text, previous_data);
 
       if (symbol == layout_text)
         builder->SetIsSymbolMarker(true);
@@ -476,11 +476,9 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   LayoutBlockFlow* block = GetLayoutBlockFlow();
   block->WillCollectInlines();
 
-  String* previous_text =
-      previous_data ? &previous_data->text_content : nullptr;
   data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
   NGInlineItemsBuilder builder(&data->items, dirty_lines);
-  CollectInlinesInternal(block, &builder, previous_text);
+  CollectInlinesInternal(block, &builder, previous_data);
   data->text_content = builder.ToString();
 
   // Set |is_bidi_enabled_| for all UTF-16 strings for now, because at this

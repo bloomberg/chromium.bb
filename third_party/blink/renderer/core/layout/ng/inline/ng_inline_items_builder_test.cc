@@ -7,12 +7,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-
-namespace {
 
 // The spec turned into a discussion that may change. Put this logic on hold
 // until CSSWG resolves the issue.
@@ -79,7 +78,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     builder.ExitBlock();
     text_ = builder.ToString();
     ValidateItems();
-    CheckReuseItemsProducesSameResult(inputs);
+    CheckReuseItemsProducesSameResult(inputs, builder.HasBidiControls());
     for (LayoutObject* anonymous_object : anonymous_objects)
       anonymous_object->Destroy();
     return text_;
@@ -111,7 +110,12 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     EXPECT_EQ(current_offset, text_.length());
   }
 
-  void CheckReuseItemsProducesSameResult(Vector<Input> inputs) {
+  void CheckReuseItemsProducesSameResult(Vector<Input> inputs,
+                                         bool has_bidi_controls) {
+    NGInlineNodeData fake_data;
+    fake_data.text_content = text_;
+    fake_data.is_bidi_enabled_ = has_bidi_controls;
+
     Vector<NGInlineItem> reuse_items;
     NGInlineItemsBuilder reuse_builder(&reuse_items);
     for (Input& input : inputs) {
@@ -131,8 +135,9 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
       }
 
       // Try to re-use previous items, or Append if it was not re-usable.
-      bool reused = input.layout_text->HasValidInlineItems() &&
-                    reuse_builder.AppendTextReusing(text_, input.layout_text);
+      bool reused =
+          input.layout_text->HasValidInlineItems() &&
+          reuse_builder.AppendTextReusing(fake_data, input.layout_text);
       if (!reused) {
         reuse_builder.AppendText(input.text, input.layout_text);
       }
@@ -492,7 +497,5 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
                    u" World"),
             builder.ToString());
 }
-
-}  // namespace
 
 }  // namespace blink

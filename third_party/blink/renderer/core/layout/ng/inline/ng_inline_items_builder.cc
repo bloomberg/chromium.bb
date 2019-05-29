@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_dirty_lines.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
@@ -276,13 +277,15 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
 
 template <typename OffsetMappingBuilder>
 bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
-    const String& original_string,
+    const NGInlineNodeData& original_data,
     LayoutText* layout_text) {
   DCHECK(layout_text);
   const NGInlineItems& items = layout_text->InlineItems();
   const NGInlineItem& old_item0 = items.front();
   if (!old_item0.Length())
     return false;
+
+  const String& original_string = original_data.text_content;
 
   // Don't reuse existing items if they might be affected by whitespace
   // collapsing.
@@ -341,12 +344,14 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
       return false;
   }
 
-  if (bidi_context_.size() && new_style.PreserveNewline()) {
-    // We exit and then re-enter all bidi contexts around a forced breaks. We
+  if (new_style.PreserveNewline()) {
+    // We exit and then re-enter all bidi contexts around a forced break. So, We
     // must go through the full pipeline to ensure that we exit and enter the
-    // contexts in the same in the re-layout.
-    if (layout_text->GetText().Contains(kNewlineCharacter))
-      return false;
+    // correct bidi contexts the re-layout.
+    if (bidi_context_.size() || original_data.IsBidiEnabled()) {
+      if (layout_text->GetText().Contains(kNewlineCharacter))
+        return false;
+    }
   }
 
   if (UNLIKELY(old_item0.StartOffset() > 0 &&
@@ -407,7 +412,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
 
 template <>
 bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::AppendTextReusing(
-    const String&,
+    const NGInlineNodeData&,
     LayoutText*) {
   NOTREACHED();
   return false;
@@ -416,14 +421,14 @@ bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::AppendTextReusing(
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendText(
     LayoutText* layout_text,
-    const String* previous_text) {
+    const NGInlineNodeData* previous_data) {
   // Mark dirty lines. Clear if marked, only the first dirty line is relevant.
   if (dirty_lines_ && dirty_lines_->HandleText(layout_text))
     dirty_lines_ = nullptr;
 
   // If the LayoutText element hasn't changed, reuse the existing items.
-  if (previous_text && layout_text->HasValidInlineItems()) {
-    if (AppendTextReusing(*previous_text, layout_text)) {
+  if (previous_data && layout_text->HasValidInlineItems()) {
+    if (AppendTextReusing(*previous_data, layout_text)) {
       return;
     }
   }
