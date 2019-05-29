@@ -393,7 +393,12 @@ void SetIndividualRuntimeFeatures(
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyFrameLoading,
           "restrict-lazy-load-frames-to-data-saver-only", false));
-  WebRuntimeFeatures::EnableRestrictLazyImageLoadingToDataSaver(
+
+  WebRuntimeFeatures::EnableAutomaticLazyImageLoading(
+      base::GetFieldTrialParamByFeatureAsBool(
+          features::kLazyImageLoading, "automatic-lazy-load-images-enabled",
+          false));
+  WebRuntimeFeatures::EnableRestrictAutomaticLazyImageLoadingToDataSaver(
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyImageLoading,
           "restrict-lazy-load-images-to-data-saver-only", false));

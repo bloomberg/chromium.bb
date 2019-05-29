@@ -646,7 +646,8 @@
   {
     "prefix": "lazyload-image",
     "base": "http/tests/lazyload",
-    "args": ["--enable-features=LazyImageLoading"]
+    "args": ["--enable-blink-features=LazyImageLoading,AutomaticLazyImageLoading",
+             "--disable-blink-features=RestrictAutomaticLazyImageLoadingToDataSaver"]
   },
   {
     "prefix": "origin-policy",
@@ -656,7 +657,8 @@
   {
     "prefix" : "lazyload-policy",
     "base": "external/wpt/feature-policy/experimental-features/lazyload",
-    "args": ["--enable-blink-features=LazyFrameLoading,LazyImageLoading"]
+    "args": ["--enable-blink-features=LazyFrameLoading,LazyImageLoading,AutomaticLazyImageLoading",
+             "--disable-blink-features=RestrictAutomaticLazyImageLoadingToDataSaver"]
   },
   {
     "prefix": "display-lock",

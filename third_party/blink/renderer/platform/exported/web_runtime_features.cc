@@ -116,6 +116,10 @@ void WebRuntimeFeatures::EnableAudioOutputDevices(bool enable) {
   RuntimeEnabledFeatures::SetAudioOutputDevicesEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableAutomaticLazyImageLoading(bool enable) {
+  RuntimeEnabledFeatures::SetAutomaticLazyImageLoadingEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableCacheInlineScriptCode(bool enable) {
   RuntimeEnabledFeatures::SetCacheInlineScriptCodeEnabled(enable);
 }
@@ -517,9 +521,10 @@ void WebRuntimeFeatures::EnableRestrictLazyFrameLoadingToDataSaver(
   RuntimeEnabledFeatures::SetRestrictLazyFrameLoadingToDataSaverEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableRestrictLazyImageLoadingToDataSaver(
+void WebRuntimeFeatures::EnableRestrictAutomaticLazyImageLoadingToDataSaver(
     bool enable) {
-  RuntimeEnabledFeatures::SetRestrictLazyImageLoadingToDataSaverEnabled(enable);
+  RuntimeEnabledFeatures::
+      SetRestrictAutomaticLazyImageLoadingToDataSaverEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableExpensiveBackgroundTimerThrottling(bool enable) {

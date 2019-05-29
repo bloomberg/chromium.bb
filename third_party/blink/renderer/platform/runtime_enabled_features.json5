@@ -133,6 +133,10 @@
       status: "experimental",
     },
     {
+      name: "AutomaticLazyImageLoading",
+      depends_on: ["LazyImageLoading"],
+    },
+    {
       name: "AutomationControlled",
       settable_from_internals: true,
     },
@@ -1237,10 +1241,11 @@
       status: "stable",
     },
     {
-      name: "RestrictLazyFrameLoadingToDataSaver",
+      name: "RestrictAutomaticLazyImageLoadingToDataSaver",
+      depends_on: ["AutomaticLazyImageLoading"],
     },
     {
-      name: "RestrictLazyImageLoadingToDataSaver",
+      name: "RestrictLazyFrameLoadingToDataSaver",
     },
     {
       name: "RtcAudioJitterBufferMaxPackets",

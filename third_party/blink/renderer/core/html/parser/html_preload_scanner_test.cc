@@ -86,9 +86,9 @@ struct IntegrityTestCase {
   const char* input_html;
 };
 
-struct LazyImageLoadTestCase {
+struct LazyLoadImageTestCase {
   const char* input_html;
-  bool is_lazyload_image_disabled;
+  PreloadRequest::LazyLoadImageEligibility lazy_load_image_eligibility;
 };
 
 class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
@@ -191,10 +191,11 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
     }
   }
 
-  void LazyImageLoadDisableVerification(bool is_lazyload_image_disabled) {
+  void LazyLoadImageEligibilityVerification(
+      PreloadRequest::LazyLoadImageEligibility expected_eligibility) {
     ASSERT_TRUE(preload_request_.get());
-    EXPECT_EQ(preload_request_->IsLazyloadImageDisabledForTesting(),
-              is_lazyload_image_disabled);
+    EXPECT_EQ(expected_eligibility,
+              preload_request_->GetLazyLoadImageEligibilityForTesting());
   }
 
  protected:
@@ -365,7 +366,7 @@ class HTMLPreloadScannerTest : public PageTestBase {
         test_case.number_of_integrity_metadata_found);
   }
 
-  void Test(LazyImageLoadTestCase test_case) {
+  void Test(LazyLoadImageTestCase test_case) {
     SCOPED_TRACE(test_case.input_html);
     HTMLMockHTMLResourcePreloader preloader;
     KURL base_url("http://example.test/");
@@ -373,8 +374,8 @@ class HTMLPreloadScannerTest : public PageTestBase {
     PreloadRequestStream requests =
         scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
     preloader.TakeAndPreload(requests);
-    preloader.LazyImageLoadDisableVerification(
-        test_case.is_lazyload_image_disabled);
+    preloader.LazyLoadImageEligibilityVerification(
+        test_case.lazy_load_image_eligibility);
   }
 
  private:
@@ -1211,31 +1212,51 @@ TEST_F(HTMLPreloadScannerTest, MetaCsp_NoPreloadsAfter) {
     Test(test_case);
 }
 
-TEST_F(HTMLPreloadScannerTest, LazyImageLoadDisabledForSmallImages) {
+TEST_F(HTMLPreloadScannerTest, LazyLoadImageDisabledForSmallImages) {
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  LazyImageLoadTestCase test_cases[] = {
-      {"<img src='foo.jpg'>", false},
-      {"<img src='foo.jpg' style='height: 1px; width: 1px'>", true},
-      {"<img src='foo.jpg' style='height: 10px; width: 10px'>", true},
-      {"<img src='foo.jpg' style='height: 20px; width: 20px'>", false},
-      {"<img src='foo.jpg' style='height: 1px;'>", false},
-      {"<img src='foo.jpg' style='width: 1px;'>", false},
+  LazyLoadImageTestCase test_cases[] = {
+      {"<img src='foo.jpg'>",
+       PreloadRequest::LazyLoadImageEligibility::kEnabledAutomatic},
+      {"<img src='foo.jpg' height='1px' width='1px'>",
+       PreloadRequest::LazyLoadImageEligibility::kDisabled},
+      {"<img src='foo.jpg' style='height: 1px; width: 1px'>",
+       PreloadRequest::LazyLoadImageEligibility::kDisabled},
+      {"<img src='foo.jpg' height='10px' width='10px'>",
+       PreloadRequest::LazyLoadImageEligibility::kDisabled},
+      {"<img src='foo.jpg' style='height: 10px; width: 10px'>",
+       PreloadRequest::LazyLoadImageEligibility::kDisabled},
+      {"<img src='foo.jpg' height='20px' width='20px'>",
+       PreloadRequest::LazyLoadImageEligibility::kEnabledAutomatic},
+      {"<img src='foo.jpg' style='height: 20px; width: 20px'>",
+       PreloadRequest::LazyLoadImageEligibility::kEnabledAutomatic},
+      {"<img src='foo.jpg' height='1px'>",
+       PreloadRequest::LazyLoadImageEligibility::kEnabledAutomatic},
+      {"<img src='foo.jpg' style='height: 1px;'>",
+       PreloadRequest::LazyLoadImageEligibility::kEnabledAutomatic},
+      {"<img src='foo.jpg' width='1px'>",
+       PreloadRequest::LazyLoadImageEligibility::kEnabledAutomatic},
+      {"<img src='foo.jpg' style='width: 1px;'>",
+       PreloadRequest::LazyLoadImageEligibility::kEnabledAutomatic},
   };
 
   for (const auto& test_case : test_cases)
     Test(test_case);
 }
 
-TEST_F(HTMLPreloadScannerTest, LazyImageLoadAttributePassed) {
+TEST_F(HTMLPreloadScannerTest, LazyLoadImageAttributePassed) {
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  LazyImageLoadTestCase test_cases[] = {
-      {"<img src='foo.jpg' loading='auto'>", false},
-      {"<img src='foo.jpg' loading='lazy'>", false},
-      {"<img src='foo.jpg' loading='eager'>", true},
+  LazyLoadImageTestCase test_cases[] = {
+      {"<img src='foo.jpg' loading='auto'>",
+       PreloadRequest::LazyLoadImageEligibility::kEnabledAutomatic},
+      {"<img src='foo.jpg' loading='lazy'>",
+       PreloadRequest::LazyLoadImageEligibility::kEnabledExplicit},
+      {"<img src='foo.jpg' loading='eager'>",
+       PreloadRequest::LazyLoadImageEligibility::kDisabled},
       // loading=lazy should override other conditions.
-      {"<img src='foo.jpg' style='height: 1px;' loading='lazy'>", false},
+      {"<img src='foo.jpg' style='height: 1px;' loading='lazy'>",
+       PreloadRequest::LazyLoadImageEligibility::kEnabledExplicit},
       {"<img src='foo.jpg' style='height: 1px; width: 1px' loading='lazy'>",
-       false},
+       PreloadRequest::LazyLoadImageEligibility::kEnabledExplicit},
   };
   for (const auto& test_case : test_cases)
     Test(test_case);

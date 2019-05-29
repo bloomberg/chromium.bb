@@ -318,7 +318,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool IsClientLoFiAllowed(const ResourceRequest&) const;
 
   // Returns true if lazyloading the image is possible.
-  bool IsLazyLoadingImageAllowed() const;
+  bool IsExplicitLazyLoadingImageAllowed() const;
+  bool IsAutomaticLazyLoadingImageAllowed() const;
 
   // The returned value is a off-heap raw-ptr and should not be stored.
   WebURLLoaderFactory* GetURLLoaderFactory();

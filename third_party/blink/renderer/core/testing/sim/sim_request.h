@@ -27,11 +27,18 @@ class SimRequestBase {
  public:
   // Additional params which can be passed to the SimRequest.
   struct Params {
+    Params() : response_http_status(200) {}
+
     // Redirect the request to |redirect_url|. Don't call Start() or Complete()
     // if |redirect_url| is non-empty.
     String redirect_url;
 
     WTF::HashMap<String, String> response_http_headers;
+
+    // The HTTP status code of the response. |response_http_status| is ignored
+    // if |redirect_url| is non-empty, since a redirect implies a 302 status
+    // code.
+    int response_http_status;
   };
 
   // Write a chunk of the response body.
@@ -75,6 +82,7 @@ class SimRequestBase {
   WebURLLoaderClient* client_;
   unsigned total_encoded_data_length_;
   WTF::HashMap<String, String> response_http_headers_;
+  int response_http_status_;
   StaticDataNavigationBodyLoader* navigation_body_loader_ = nullptr;
 };
 

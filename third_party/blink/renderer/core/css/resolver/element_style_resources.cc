@@ -205,11 +205,9 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
             FetchParameters::ImageRequestOptimization
                 image_request_optimization = FetchParameters::kNone;
             if (!BackgroundLayerMayBeSprite(*background_layer)) {
-              if (element_->GetDocument().GetSettings() &&
-                  element_->GetDocument().GetSettings()->GetLazyLoadEnabled() &&
-                  element_->GetDocument()
+              if (element_->GetDocument()
                       .GetFrame()
-                      ->IsLazyLoadingImageAllowed()) {
+                      ->IsAutomaticLazyLoadingImageAllowed()) {
                 image_request_optimization = FetchParameters::kDeferImageLoad;
               } else {
                 image_request_optimization = FetchParameters::kAllowPlaceholder;

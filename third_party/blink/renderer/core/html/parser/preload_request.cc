@@ -103,12 +103,17 @@ Resource* PreloadRequest::Start(Document* document) {
     // the async request to the blocked script here.
   }
 
-  if (resource_type_ == ResourceType::kImage) {
+  if (resource_type_ == ResourceType::kImage &&
+      params.Url().ProtocolIsInHTTPFamily()) {
     if (const auto* frame = document->Loader()->GetFrame()) {
       if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
         params.SetClientLoFiPlaceholder();
-      } else if (!is_lazyload_image_disabled_ &&
-                 frame->IsLazyLoadingImageAllowed()) {
+      } else if ((lazy_load_image_eligibility_ ==
+                      LazyLoadImageEligibility::kEnabledExplicit &&
+                  frame->IsExplicitLazyLoadingImageAllowed()) ||
+                 (lazy_load_image_eligibility_ ==
+                      LazyLoadImageEligibility::kEnabledAutomatic &&
+                  frame->IsAutomaticLazyLoadingImageAllowed())) {
         params.SetLazyImagePlaceholder();
       }
     }

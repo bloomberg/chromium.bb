@@ -1290,15 +1290,24 @@ bool LocalFrame::IsClientLoFiAllowed(const ResourceRequest& request) const {
                          request, Client()->GetPreviewsStateForFrame());
 }
 
-bool LocalFrame::IsLazyLoadingImageAllowed() const {
-  if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled())
+bool LocalFrame::IsExplicitLazyLoadingImageAllowed() const {
+  DCHECK(GetSettings());
+  return RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
+         GetSettings()->GetLazyLoadEnabled();
+}
+
+bool LocalFrame::IsAutomaticLazyLoadingImageAllowed() const {
+  if (!IsExplicitLazyLoadingImageAllowed())
     return false;
-  if (Owner() && !Owner()->ShouldLazyLoadChildren())
+  if (!RuntimeEnabledFeatures::AutomaticLazyImageLoadingEnabled())
     return false;
-  if (RuntimeEnabledFeatures::RestrictLazyImageLoadingToDataSaverEnabled() &&
+  if (RuntimeEnabledFeatures::
+          RestrictAutomaticLazyImageLoadingToDataSaverEnabled() &&
       !is_save_data_enabled_) {
     return false;
   }
+  if (Owner() && !Owner()->ShouldLazyLoadChildren())
+    return false;
   return true;
 }
 

@@ -23,7 +23,8 @@ SimRequestBase::SimRequestBase(String url,
       started_(false),
       client_(nullptr),
       total_encoded_data_length_(0),
-      response_http_headers_(params.response_http_headers) {
+      response_http_headers_(params.response_http_headers),
+      response_http_status_(params.response_http_status) {
   SimNetwork::Current().AddRequest(*this);
 }
 
@@ -58,6 +59,7 @@ void SimRequestBase::UsedForNavigation(
 void SimRequestBase::StartInternal() {
   DCHECK(!started_);
   DCHECK(redirect_url_.IsEmpty());  // client_ is nullptr on redirects
+  DCHECK(client_);
   started_ = true;
   client_->DidReceiveResponse(response_);
 }

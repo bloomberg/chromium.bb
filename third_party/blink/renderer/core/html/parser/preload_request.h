@@ -126,11 +126,16 @@ class CORE_EXPORT PreloadRequest {
     return is_image_set_ == ResourceFetcher::kImageIsImageSet;
   }
 
-  void SetIsLazyloadImageDisabled(bool is_lazyload_image_disable) {
-    is_lazyload_image_disabled_ = is_lazyload_image_disable;
+  enum class LazyLoadImageEligibility {
+    kDisabled,
+    kEnabledExplicit,
+    kEnabledAutomatic
+  };
+  void SetLazyLoadImageEligibility(LazyLoadImageEligibility eligibility) {
+    lazy_load_image_eligibility_ = eligibility;
   }
-  bool IsLazyloadImageDisabledForTesting() {
-    return is_lazyload_image_disabled_;
+  LazyLoadImageEligibility GetLazyLoadImageEligibilityForTesting() const {
+    return lazy_load_image_eligibility_;
   }
 
  private:
@@ -161,7 +166,7 @@ class CORE_EXPORT PreloadRequest {
         referrer_source_(referrer_source),
         from_insertion_scanner_(false),
         is_image_set_(is_image_set),
-        is_lazyload_image_disabled_(false) {}
+        lazy_load_image_eligibility_(LazyLoadImageEligibility::kDisabled) {}
 
   KURL CompleteURL(Document*);
 
@@ -184,7 +189,7 @@ class CORE_EXPORT PreloadRequest {
   IntegrityMetadataSet integrity_metadata_;
   bool from_insertion_scanner_;
   ResourceFetcher::IsImageSet is_image_set_;
-  bool is_lazyload_image_disabled_;
+  LazyLoadImageEligibility lazy_load_image_eligibility_;
 };
 
 typedef Vector<std::unique_ptr<PreloadRequest>> PreloadRequestStream;

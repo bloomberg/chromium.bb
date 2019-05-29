@@ -288,14 +288,32 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetCharset(Charset());
     request->SetDefer(defer_);
 
+    LoadingAttrValue effective_loading_attr_value = loading_attr_value_;
     // If the 'lazyload' feature policy is enforced, the attribute value
-    // loading='lazy' is considered as 'auto'.
-    if (loading_attr_value_ != LoadingAttrValue::kLazy &&
-        ((loading_attr_value_ == LoadingAttrValue::kEager &&
-          !document_parameters.lazyload_policy_enforced) ||
-         (width_attr_small_absolute_ && height_attr_small_absolute_) ||
-         inline_style_dimensions_small_)) {
-      request->SetIsLazyloadImageDisabled(true);
+    // loading='eager' is considered as 'auto'.
+    if (effective_loading_attr_value == LoadingAttrValue::kEager &&
+        document_parameters.lazyload_policy_enforced) {
+      effective_loading_attr_value = LoadingAttrValue::kAuto;
+    }
+    switch (effective_loading_attr_value) {
+      case LoadingAttrValue::kEager:
+        request->SetLazyLoadImageEligibility(
+            PreloadRequest::LazyLoadImageEligibility::kDisabled);
+        break;
+      case LoadingAttrValue::kLazy:
+        request->SetLazyLoadImageEligibility(
+            PreloadRequest::LazyLoadImageEligibility::kEnabledExplicit);
+        break;
+      case LoadingAttrValue::kAuto:
+        if ((width_attr_small_absolute_ && height_attr_small_absolute_) ||
+            inline_style_dimensions_small_) {
+          request->SetLazyLoadImageEligibility(
+              PreloadRequest::LazyLoadImageEligibility::kDisabled);
+        } else {
+          request->SetLazyLoadImageEligibility(
+              PreloadRequest::LazyLoadImageEligibility::kEnabledAutomatic);
+        }
+        break;
     }
 
     // The only link tags that should keep the integrity metadata are
