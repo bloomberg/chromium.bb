@@ -2657,6 +2657,7 @@ TEST_P(NavigationManagerTest, CommitNonNilPendingItem) {
 
   // Call CommitPendingItem() with a valid pending item.
   auto item = std::make_unique<web::NavigationItemImpl>();
+  item->SetURL(GURL("http://www.url.com/new"));
   item->SetNavigationInitiationType(
       web::NavigationInitiationType::BROWSER_INITIATED);
   navigation_manager()->CommitPendingItem(std::move(item));

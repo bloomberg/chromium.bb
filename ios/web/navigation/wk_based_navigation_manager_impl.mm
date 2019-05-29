@@ -298,8 +298,30 @@ void WKBasedNavigationManagerImpl::CommitPendingItem(
     empty_window_open_item_ = std::move(item);
   } else {
     empty_window_open_item_.reset();
-    SetNavigationItemInWKItem(proxy.backForwardList.currentItem,
-                              std::move(item));
+
+    const GURL item_url(item->GetURL());
+    WKBackForwardList* back_forward_list = proxy.backForwardList;
+    if (item_url == net::GURLWithNSURL(back_forward_list.currentItem.URL)) {
+      SetNavigationItemInWKItem(back_forward_list.currentItem, std::move(item));
+    } else {
+      // Sometimes |currentItem.URL| is not updated correctly while the webView
+      // URL is correctly updated. This is a bug in WKWebView. Check to see if
+      // the next or previous item matches, and update that item instead. If
+      // nothing matches, still update the the currentItem.
+      if (item_url == net::GURLWithNSURL(back_forward_list.backItem.URL)) {
+        SetNavigationItemInWKItem(back_forward_list.backItem, std::move(item));
+      } else if (item_url ==
+                 net::GURLWithNSURL(back_forward_list.forwardItem.URL)) {
+        SetNavigationItemInWKItem(back_forward_list.forwardItem,
+                                  std::move(item));
+      } else {
+        // Otherwise default here. This can happen when restoring an NTP, since
+        // |back_forward_list.currentItem.URL| doesn't get updated when going
+        // from a file:// scheme to about:// scheme.
+        SetNavigationItemInWKItem(back_forward_list.currentItem,
+                                  std::move(item));
+      }
+    }
   }
 
   pending_item_index_ = -1;
