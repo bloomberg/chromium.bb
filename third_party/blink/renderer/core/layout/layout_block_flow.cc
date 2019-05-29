@@ -385,7 +385,7 @@ bool LayoutBlockFlow::CheckIfIsSelfCollapsingBlock() const {
                             ToElement(GetNode())->ShadowPseudoId() ==
                                 "-webkit-input-placeholder"));
 
-  if (LogicalHeight() > LayoutUnit() || BorderAndPaddingLogicalHeight() ||
+  if (LogicalHeight() > LayoutUnit() ||
       StyleRef().LogicalMinHeight().IsPositive() ||
       StyleRef().MarginBeforeCollapse() == EMarginCollapse::kSeparate ||
       StyleRef().MarginAfterCollapse() == EMarginCollapse::kSeparate)
