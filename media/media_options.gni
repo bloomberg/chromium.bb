@@ -85,8 +85,7 @@ declare_args() {
   # are combined and we could override more logging than expected.
   enable_logging_override = !use_jumbo_build && is_chromecast
 
-  # TODO(crbug.com/930300): Fix media_unittests for fuchsia X64.
-  enable_dav1d_decoder = !is_android && !is_ios && !is_fuchsia
+  enable_dav1d_decoder = !is_android && !is_ios
 }
 
 declare_args() {
