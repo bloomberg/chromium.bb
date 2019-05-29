@@ -55,8 +55,43 @@
       depends_on: ["ClientHintsFeaturePolicy"],
     },
     {
+      name: "ClientHintDownlink",
+      feature_policy_name: "ch-downlink",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
+      name: "ClientHintECT",
+      feature_policy_name: "ch-ect",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
+      name: "ClientHintLang",
+      feature_policy_name: "ch-lang",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
+      name: "ClientHintRTT",
+      feature_policy_name: "ch-rtt",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
       name: "ClientHintUA",
       feature_policy_name: "ch-ua",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
+      name: "ClientHintUAArch",
+      feature_policy_name: "ch-ua-arch",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
+      name: "ClientHintUAPlatform",
+      feature_policy_name: "ch-ua-platform",
+      depends_on: ["ClientHintsFeaturePolicy"],
+    },
+    {
+      name: "ClientHintUAModel",
+      feature_policy_name: "ch-ua-model",
       depends_on: ["ClientHintsFeaturePolicy"],
     },
     {

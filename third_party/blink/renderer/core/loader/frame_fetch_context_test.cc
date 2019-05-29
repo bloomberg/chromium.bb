@@ -898,7 +898,69 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
 
 // Verify that the client hints should be attached for third-party subresources
 // fetched over secure transport, when specifically allowed by feature policy.
-TEST_F(FrameFetchContextHintsTest, MonitorHintsFeaturePolicy) {
+TEST_F(FrameFetchContextHintsTest, MonitorAllHintsFeaturePolicy) {
+  ParsedFeaturePolicy policy = FeaturePolicyParser::ParseHeader(
+      "ch-dpr *; ch-device-memory *; ch-downlink *; ch-ect *; ch-lang *;"
+      "ch-rtt *; ch-ua *; ch-ua-arch *; ch-ua-platform *; ch-ua-model *;"
+      "ch-viewport-width *; ch-width *",
+      SecurityOrigin::CreateFromString("https://www.example.com/"), nullptr,
+      document);
+  document->InitializeFeaturePolicy(policy, {}, nullptr, nullptr);
+  ClientHintsPreferences preferences;
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDpr);
+  preferences.SetShouldSendForTesting(
+      mojom::WebClientHintsType::kResourceWidth);
+  preferences.SetShouldSendForTesting(
+      mojom::WebClientHintsType::kViewportWidth);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kRtt);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDownlink);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kEct);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kLang);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUA);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAArch);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAPlatform);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAModel);
+  ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
+  document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+
+  // Verify that all client hints are sent to a third-party origin, with this
+  // feature policy header.
+  ExpectHeader("https://www.example.net/1.gif", "DPR", true, "1");
+  ExpectHeader("https://www.example.net/1.gif", "Device-Memory", true, "4");
+
+  document->domWindow()->navigator()->SetLanguagesForTesting("en,de,fr");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-Lang", true,
+               "\"en\", \"de\", \"fr\"");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA", true, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Arch", true, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Platform", true, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Model", true, "");
+  ExpectHeader("https://www.example.net/1.gif", "Width", true, "400", 400);
+  ExpectHeader("https://www.example.net/1.gif", "Viewport-Width", true, "500");
+
+  // Value of network quality client hints may vary, so only check if the
+  // header is present and the values are non-negative/non-empty.
+  bool conversion_ok = false;
+  int rtt_header_value = GetHeaderValue("https://www.example.com/1.gif", "rtt")
+                             .ToIntStrict(&conversion_ok);
+  EXPECT_TRUE(conversion_ok);
+  EXPECT_LE(0, rtt_header_value);
+
+  float downlink_header_value =
+      GetHeaderValue("https://www.example.com/1.gif", "downlink")
+          .ToFloat(&conversion_ok);
+  EXPECT_TRUE(conversion_ok);
+  EXPECT_LE(0, downlink_header_value);
+
+  EXPECT_LT(
+      0u,
+      GetHeaderValue("https://www.example.com/1.gif", "ect").Ascii().length());
+}
+
+// Verify that only the specifically allowed client hints are attached for
+// third-party subresources fetched over secure transport.
+TEST_F(FrameFetchContextHintsTest, MonitorSomeHintsFeaturePolicy) {
   ParsedFeaturePolicy policy = FeaturePolicyParser::ParseHeader(
       "ch-device-memory 'self' https://www.example.net",
       SecurityOrigin::CreateFromString("https://www.example.com/"), nullptr,
@@ -914,8 +976,20 @@ TEST_F(FrameFetchContextHintsTest, MonitorHintsFeaturePolicy) {
   ExpectHeader("https://www.example.net/1.gif", "Device-Memory", true, "4");
   ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory",
                false, "");
-  // Hints not declared in the policy are still not attached.
+  // `Sec-CH-UA` is special.
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA", true, "");
+
+  // Other hints not declared in the policy are still not attached.
+  ExpectHeader("https://www.example.net/1.gif", "downlink", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "ect", false, "");
   ExpectHeader("https://www.example.net/1.gif", "DPR", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-Lang", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Arch", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Platform", false,
+               "");
+  ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Model", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Width", false, "");
+  ExpectHeader("https://www.example.net/1.gif", "Viewport-Width", false, "");
 }
 
 // Verify that the client hints are not attached for third-party subresources

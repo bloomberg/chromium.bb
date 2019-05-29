@@ -23470,11 +23470,18 @@ Called by update_net_error_codes.py.-->
   <int value="50" label="ExecutionWhileOutOfViewport"/>
   <int value="51" label="ExecutionWhileNotRendered"/>
   <int value="52" label="FocusWithoutUserActivation"/>
-  <int value="53" label="ClientHintDeviceMemory"/>
-  <int value="54" label="ClientHintDPR"/>
-  <int value="55" label="ClientHintUA"/>
-  <int value="56" label="ClientHintViewportWidth"/>
-  <int value="57" label="ClientHintWidth"/>
+  <int value="53" label="ClientHintDPR"/>
+  <int value="54" label="ClientHintDeviceMemory"/>
+  <int value="55" label="ClientHintDownlink"/>
+  <int value="56" label="ClientHintECT"/>
+  <int value="57" label="ClientHintLang"/>
+  <int value="58" label="ClientHintRTT"/>
+  <int value="59" label="ClientHintUA"/>
+  <int value="60" label="ClientHintUAArch"/>
+  <int value="61" label="ClientHintUAModel"/>
+  <int value="62" label="ClientHintUAPlatform"/>
+  <int value="63" label="ClientHintViewportWidth"/>
+  <int value="64" label="ClientHintWidth"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">

@@ -6,8 +6,15 @@ ambient-light-sensor
 autoplay
 camera
 ch-device-memory
+ch-downlink
 ch-dpr
+ch-ect
+ch-lang
+ch-rtt
 ch-ua
+ch-ua-arch
+ch-ua-model
+ch-ua-platform
 ch-viewport-width
 ch-width
 document-domain

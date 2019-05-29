@@ -142,11 +142,18 @@ enum FeaturePolicyFeature {
   kFocusWithoutUserActivation = 52,
 
   // Client Hints
-  kClientHintDeviceMemory = 53,
-  kClientHintDPR = 54,
-  kClientHintUA = 55,
-  kClientHintViewportWidth = 56,
-  kClientHintWidth = 57,
+  kClientHintDPR = 53,
+  kClientHintDeviceMemory = 54,
+  kClientHintDownlink = 55,
+  kClientHintECT = 56,
+  kClientHintLang = 57,
+  kClientHintRTT = 58,
+  kClientHintUA = 59,
+  kClientHintUAArch = 60,
+  kClientHintUAModel = 61,
+  kClientHintUAPlatform = 62,
+  kClientHintViewportWidth = 63,
+  kClientHintWidth = 64,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.
