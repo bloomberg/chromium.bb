@@ -2128,6 +2128,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gale',
       'gonzo',
       'grunt',
+      'guado',
       'guado-accelerator',
       'guado_moblab',
       'hana',
@@ -2214,7 +2215,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'mistral', # contact: roopeshr@, b/131190241.
       'moblab-generic-vm', # contact: alevkoy@, crbug/960998
-      'guado', # contact: mnissler@, crbug/967616
   ])
 
 
