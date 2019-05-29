@@ -29,7 +29,6 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/vector_icons.h"
-#include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/notification_background_painter.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
@@ -69,7 +68,7 @@ constexpr gfx::Size kActionButtonMinSize(0, 32);
 // TODO(tetsui): Move |kIconViewSize| to public/cpp/message_center_constants.h
 // and merge with contradicting |kNotificationIconSize|.
 constexpr gfx::Size kIconViewSize(36, 36);
-constexpr gfx::Insets kLargeImageContainerPadding(0, 12, 12, 12);
+constexpr gfx::Insets kLargeImageContainerPadding(0, 16, 16, 16);
 constexpr gfx::Size kLargeImageMinSize(328, 0);
 constexpr gfx::Size kLargeImageMaxSize(328, 218);
 constexpr gfx::Insets kLeftContentPadding(2, 4, 0, 4);
@@ -103,6 +102,8 @@ constexpr SkColor kTextfieldPlaceholderIconColorMD =
 // The icon size of inline reply input field.
 constexpr int kInputReplyButtonSize = 20;
 
+// Max number of lines for title_view_.
+constexpr int kMaxLinesForTitleView = 1;
 // Max number of lines for message_view_.
 constexpr int kMaxLinesForMessageView = 1;
 constexpr int kMaxLinesForExpandedMessageView = 4;
@@ -135,6 +136,9 @@ constexpr int kTextFontSizeDelta = 1;
 // However, it is not perferable that we completely omit the title, so
 // the ratio of the message width is limited to this value.
 constexpr double kProgressNotificationMessageRatio = 0.7;
+
+// Line height of title and message views.
+constexpr int kLineHeightMD = 17;
 
 // This key/property allows tagging the textfield with its index.
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kTextfieldIndexKey, 0U)
@@ -706,7 +710,7 @@ void NotificationViewMD::UpdateControlButtonsVisibilityWithNotification(
       notification.should_show_settings_button());
   control_buttons_view_->ShowSnoozeButton(
       notification.should_show_snooze_button());
-  control_buttons_view_->ShowCloseButton(GetMode() == Mode::NORMAL);
+  control_buttons_view_->ShowCloseButton(GetMode() != Mode::PINNED);
   UpdateControlButtonsVisibility();
 }
 
@@ -813,6 +817,13 @@ void NotificationViewMD::CreateOrUpdateTitleView(
     title_view_->SetFontList(font_list);
     title_view_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
     title_view_->SetEnabledColor(kRegularTextColorMD);
+    title_view_->SetLineHeight(kLineHeightMD);
+    // TODO(knollr): multiline should not be required, but we need to set the
+    // width of |title_view_| (because of crbug.com/682266), which only works in
+    // multiline mode.
+    title_view_->SetMultiLine(true);
+    title_view_->SetMaxLines(kMaxLinesForTitleView);
+    title_view_->SetAllowCharacterBreak(true);
     left_content_->AddChildViewAt(title_view_, left_content_count_);
   } else {
     title_view_->SetText(title);
@@ -834,13 +845,17 @@ void NotificationViewMD::CreateOrUpdateMessageView(
   base::string16 text = gfx::TruncateString(
       notification.message(), kMessageCharacterLimitMD, gfx::WORD_BREAK);
 
-  const gfx::FontList& font_list = GetTextFontList();
-
   if (!message_view_) {
-    message_view_ = new BoundedLabel(text, font_list);
-    message_view_->SetLineLimit(kMaxLinesForMessageView);
-    message_view_->SetColor(kDimTextColorMD);
+    const gfx::FontList& font_list = GetTextFontList();
 
+    message_view_ = new views::Label(text);
+    message_view_->SetFontList(font_list);
+    message_view_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+    message_view_->SetEnabledColor(kDimTextColorMD);
+    message_view_->SetLineHeight(kLineHeightMD);
+    message_view_->SetMultiLine(true);
+    message_view_->SetMaxLines(kMaxLinesForMessageView);
+    message_view_->SetAllowCharacterBreak(true);
     left_content_->AddChildViewAt(message_view_, left_content_count_);
   } else {
     message_view_->SetText(text);
@@ -1156,7 +1171,7 @@ bool NotificationViewMD::IsExpandable() {
 
   // Expandable if the message exceeds one line.
   if (message_view_ && message_view_->GetVisible() &&
-      message_view_->GetLinesForWidthAndLimit(message_view_->width(), -1) > 1) {
+      message_view_->GetRequiredLines() > 1) {
     return true;
   }
   // Expandable if there is at least one inline action.
@@ -1183,8 +1198,8 @@ void NotificationViewMD::ToggleExpanded() {
 void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   header_row_->SetExpanded(expanded);
   if (message_view_) {
-    message_view_->SetLineLimit(expanded ? kMaxLinesForExpandedMessageView
-                                         : kMaxLinesForMessageView);
+    message_view_->SetMaxLines(expanded ? kMaxLinesForExpandedMessageView
+                                        : kMaxLinesForMessageView);
   }
   if (image_container_view_)
     image_container_view_->SetVisible(expanded);
@@ -1216,10 +1231,14 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
     // Ideally, we should fix the original bug, but it seems there's no obvious
     // solution for the bug according to https://crbug.com/678337#c7, we should
     // ensure that the change won't break any of the users of BoxLayout class.
+    if (title_view_)
+      title_view_->SizeToFit(kMessageViewWidthWithIcon);
     if (message_view_)
       message_view_->SizeToFit(kMessageViewWidthWithIcon);
   } else {
     left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
+    if (title_view_)
+      title_view_->SizeToFit(kMessageViewWidth);
     if (message_view_)
       message_view_->SizeToFit(kMessageViewWidth);
   }

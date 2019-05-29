@@ -145,6 +145,10 @@ class VIEWS_EXPORT Label : public View,
   int max_lines() const { return max_lines_; }
   void SetMaxLines(int max_lines);
 
+  // Returns the number of lines required to render all text. The actual number
+  // of rendered lines might be limited by |max_lines_| which elides the rest.
+  size_t GetRequiredLines() const;
+
   // Get or set if the label text should be obscured before rendering (e.g.
   // should "Password!" display as "*********"); default is false.
   bool obscured() const { return full_text_->obscured(); }

@@ -228,6 +228,10 @@ void Label::SetMaximumWidth(int max_width) {
   SizeToPreferredSize();
 }
 
+size_t Label::GetRequiredLines() const {
+  return full_text_->GetNumLines();
+}
+
 base::string16 Label::GetDisplayTextForTesting() {
   ClearDisplayText();
   MaybeBuildDisplayText();

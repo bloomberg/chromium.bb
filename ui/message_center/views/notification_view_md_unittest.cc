@@ -18,7 +18,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/padded_button.h"
@@ -1098,6 +1097,33 @@ TEST_F(NotificationViewMDTest, UpdateAddingIcon) {
   EXPECT_LT(notification_view()->left_content_->width(), left_content_width);
 }
 
+TEST_F(NotificationViewMDTest, UpdateInSettings) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_type(NOTIFICATION_TYPE_SIMPLE);
+  UpdateNotificationViews(*notification);
+
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
+
+  // Inline settings will be shown by clicking settings button.
+  EXPECT_FALSE(notification_view()->settings_row_->GetVisible());
+  gfx::Point settings_cursor_location(1, 1);
+  views::View::ConvertPointToTarget(
+      notification_view()->control_buttons_view_->settings_button(),
+      notification_view(), &settings_cursor_location);
+  generator.MoveMouseTo(settings_cursor_location);
+  generator.ClickLeftButton();
+  EXPECT_TRUE(notification_view()->settings_row_->GetVisible());
+
+  // Trigger an update event.
+  UpdateNotificationViews(*notification);
+
+  // The close button should be visible.
+  views::Button* close_button =
+      notification_view()->control_buttons_view_->close_button();
+  ASSERT_NE(nullptr, close_button);
+  EXPECT_TRUE(close_button->GetVisible());
+}
+
 TEST_F(NotificationViewMDTest, InlineSettings) {
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   notification->set_type(NOTIFICATION_TYPE_SIMPLE);
@@ -1264,6 +1290,30 @@ TEST_F(NotificationViewMDTest, TestDeleteOnDisableNotification) {
   set_delete_on_notification_removed(true);
   notification_view()->ButtonPressed(notification_view()->settings_done_button_,
                                      DummyEvent());
+}
+
+TEST_F(NotificationViewMDTest, TestLongTitleAndMessage) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_type(NotificationType::NOTIFICATION_TYPE_SIMPLE);
+  notification->set_title(base::ASCIIToUTF16("title"));
+  notification->set_message(base::ASCIIToUTF16(
+      "consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore "
+      "et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
+      "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."));
+  UpdateNotificationViews(*notification);
+  notification_view()->ToggleExpanded();
+
+  // Get the height of the message view with a short title.
+  const int message_height = notification_view()->message_view_->height();
+
+  notification->set_title(base::ASCIIToUTF16(
+      "consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore "
+      "et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
+      "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."));
+  UpdateNotificationViews(*notification);
+
+  // The height of the message view should stay the same with a long title.
+  EXPECT_EQ(message_height, notification_view()->message_view_->height());
 }
 
 }  // namespace message_center
