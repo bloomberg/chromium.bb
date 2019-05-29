@@ -65,6 +65,7 @@
 #include <content/renderer/render_thread_impl.h>
 #include <content/public/renderer/render_thread.h>
 #include <content/browser/browser_main_loop.h>
+#include <gin/public/v8_platform.h>
 #include <sandbox/win/src/win_utils.h>
 #include <services/service_manager/public/cpp/service_executable/switches.h>
 #include <services/service_manager/sandbox/switches.h>
@@ -734,6 +735,10 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 
 
 // patch section: expose v8 platform
+v8::Platform *ToolkitImpl::getV8Platform()
+{
+    return gin::V8Platform::Get();
+}
 
 
 // patch section: multi-heap tracer
