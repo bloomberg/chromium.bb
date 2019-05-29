@@ -84,7 +84,9 @@ class WebNavigationControl : public WebLocalFrame {
   // This runs some JavaScript event listeners, which may cancel the navigation
   // or detach the frame. In this case the method returns false and client
   // should not proceed with the navigation.
-  virtual bool WillStartNavigation(const WebNavigationInfo&) = 0;
+  virtual bool WillStartNavigation(
+      const WebNavigationInfo&,
+      bool is_history_navigation_in_new_child_frame) = 0;
 
   // Informs the frame that the navigation it asked the client to do was
   // dropped.
@@ -94,6 +96,10 @@ class WebNavigationControl : public WebLocalFrame {
   // initial history navigations in child frames, which may actually happen
   // in another process.
   virtual void MarkAsLoading() = 0;
+
+  // TODO(ahemery): Remove all IsClientNavigationInitialHistoryLoad functions
+  // when IsPerNavigationMojoInterface is enabled.
+  virtual bool IsClientNavigationInitialHistoryLoad() = 0;
 
  protected:
   explicit WebNavigationControl(WebTreeScopeType scope)

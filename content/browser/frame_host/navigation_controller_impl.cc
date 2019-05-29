@@ -3103,15 +3103,15 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
       params.post_data, base::Optional<SourceLocation>(),
       params.started_from_context_menu, has_user_gesture, InitiatorCSPInfo(),
-      params.href_translate, params.input_start);
+      params.href_translate,
+      false /* is_history_navigation_in_new_child_frame */, params.input_start);
 
   CommitNavigationParams commit_params(
       frame_entry->committed_origin(), override_user_agent,
       params.redirect_chain, common_params.url, common_params.method,
       params.can_load_local_resources, frame_entry->page_state(),
-      entry->GetUniqueID(), false /* is_history_navigation_in_new_child */,
-      entry->GetSubframeUniqueNames(node), true /* intended_as_new_entry */,
-      -1 /* pending_history_list_offset */,
+      entry->GetUniqueID(), entry->GetSubframeUniqueNames(node),
+      true /* intended_as_new_entry */, -1 /* pending_history_list_offset */,
       params.should_clear_history_list ? -1 : GetLastCommittedEntryIndex(),
       params.should_clear_history_list ? 0 : GetEntryCount(),
       is_view_source_mode, params.should_clear_history_list);
@@ -3143,7 +3143,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     FrameNavigationEntry* frame_entry,
     ReloadType reload_type,
     bool is_same_document_history_load,
-    bool is_history_navigation_in_new_child) {
+    bool is_history_navigation_in_new_child_frame) {
   GURL dest_url = frame_entry->url();
   base::Optional<url::Origin> origin_to_commit =
       frame_entry->committed_origin();
@@ -3218,13 +3218,14 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   CommonNavigationParams common_params = entry->ConstructCommonNavigationParams(
       *frame_entry, request_body, dest_url, dest_referrer, navigation_type,
       previews_state, navigation_start, base::TimeTicks() /* input_start */);
+  common_params.is_history_navigation_in_new_child_frame =
+      is_history_navigation_in_new_child_frame;
 
   // TODO(clamy): |intended_as_new_entry| below should always be false once
   // Reload no longer leads to this being called for a pending NavigationEntry
   // of index -1.
   CommitNavigationParams commit_params = entry->ConstructCommitNavigationParams(
       *frame_entry, common_params.url, origin_to_commit, common_params.method,
-      is_history_navigation_in_new_child,
       entry->GetSubframeUniqueNames(frame_tree_node),
       GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
       GetIndexOfEntry(entry), GetLastCommittedEntryIndex(), GetEntryCount());

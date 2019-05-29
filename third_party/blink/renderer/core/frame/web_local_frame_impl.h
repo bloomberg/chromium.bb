@@ -332,7 +332,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool HasCommittedFirstRealLoad() override;
   void DidDropNavigation() override;
   void MarkAsLoading() override;
-  bool WillStartNavigation(const WebNavigationInfo&) override;
+  bool IsClientNavigationInitialHistoryLoad() override;
+  bool WillStartNavigation(
+      const WebNavigationInfo&,
+      bool is_history_navigation_in_new_child_frame) override;
 
   void SetLifecycleState(mojom::FrameLifecycleState state) override;
   void WasHidden() override;

@@ -339,7 +339,7 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
   bool should_dispatch_beforeunload =
       !FrameMsg_Navigate_Type::IsSameDocument(
           request->common_params().navigation_type) &&
-      !request->commit_params().is_history_navigation_in_new_child &&
+      !request->common_params().is_history_navigation_in_new_child_frame &&
       frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload(
           false /* check_subframes_only */);
 
@@ -594,14 +594,25 @@ void NavigatorImpl::OnBeginNavigation(
   // This is a renderer-initiated navigation.
   DCHECK(frame_tree_node);
 
+  if (common_params.is_history_navigation_in_new_child_frame) {
+    // Try to find a FrameNavigationEntry that matches this frame instead, based
+    // on the frame's unique name.  If this can't be found, fall back to the
+    // default path below.
+    if (frame_tree_node->navigator()->StartHistoryNavigationInNewSubframe(
+            frame_tree_node->current_frame_host(), common_params.url)) {
+      return;
+    }
+  }
+
   NavigationRequest* ongoing_navigation_request =
       frame_tree_node->navigation_request();
 
   // Client redirects during the initial history navigation of a child frame
   // should take precedence over the history navigation (despite being renderer-
   // initiated).  See https://crbug.com/348447 and https://crbug.com/691168.
-  if (ongoing_navigation_request && ongoing_navigation_request->commit_params()
-                                        .is_history_navigation_in_new_child) {
+  if (ongoing_navigation_request &&
+      ongoing_navigation_request->common_params()
+          .is_history_navigation_in_new_child_frame) {
     // Preemptively clear this local pointer before deleting the request.
     ongoing_navigation_request = nullptr;
     frame_tree_node->ResetNavigationRequest(false, true);

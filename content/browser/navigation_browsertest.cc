@@ -665,7 +665,8 @@ IN_PROC_BROWSER_TEST_F(NavigationDisableWebSecurityTest,
       base::TimeTicks::Now() /* navigation_start */, "GET",
       nullptr /* post_data */, base::Optional<SourceLocation>(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
-      InitiatorCSPInfo(), std::string() /* href_translate */);
+      InitiatorCSPInfo(), std::string() /* href_translate */,
+      false /* is_history_navigation_in_new_child_frame */);
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New(
           std::string() /* headers */, net::LOAD_NORMAL,

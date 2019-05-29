@@ -1174,12 +1174,8 @@ class CONTENT_EXPORT RenderFrameImpl
       base::TimeDelta main_thread_use_time,
       mojom::MhtmlSaveStatus save_status);
 
-  // Requests that the browser process navigates to |url|. If
-  // |is_history_navigation_in_new_child| is true, the browser process should
-  // look for a matching FrameNavigationEntry in the last committed entry to use
-  // instead of |url|.
-  void OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
-               bool is_history_navigation_in_new_child);
+  // Requests that the browser process navigates to |url|.
+  void OpenURL(std::unique_ptr<blink::WebNavigationInfo> info);
 
   // Returns a ChildURLLoaderFactoryBundle which can be used to request
   // subresources for this frame.
@@ -1235,7 +1231,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const CommitNavigationParams& commit_params);
 
   // Sends a FrameHostMsg_BeginNavigation to the browser
-  void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info);
+  void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info,
+                               bool is_history_navigation_in_new_child_frame);
 
   // Commit a navigation that isn't handled by the browser (e.g., an empty
   // document, about:srcdoc or an MHTML archive).
@@ -1395,7 +1392,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // When this happens, the navigation will be sent back to the browser process
   // so that it can be performed in cross-document fashion.
   blink::mojom::CommitResult PrepareForHistoryNavigationCommit(
-      FrameMsg_Navigate_Type::Value navigation_type,
+      const CommonNavigationParams& common_params,
       const CommitNavigationParams& commit_params,
       blink::WebHistoryItem* item_for_history_navigation,
       blink::WebFrameLoadType* load_type);

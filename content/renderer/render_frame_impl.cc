@@ -529,7 +529,8 @@ CommonNavigationParams MakeCommonNavigationParams(
     std::unique_ptr<blink::WebNavigationInfo> info,
     int load_flags,
     bool has_download_sandbox_flag,
-    bool from_ad) {
+    bool from_ad,
+    bool is_history_navigation_in_new_child_frame) {
   // A valid RequestorOrigin is always expected to be present.
   DCHECK(!info->url_request.RequestorOrigin().IsNull());
 
@@ -590,7 +591,8 @@ CommonNavigationParams MakeCommonNavigationParams(
                            ? base::Optional<CSPSource>(BuildCSPSource(
                                  info->initiator_csp.self_source.value()))
                            : base::nullopt),
-      info->href_translate.Latin1(), info->input_start);
+      info->href_translate.Latin1(), is_history_navigation_in_new_child_frame,
+      info->input_start);
 }
 
 WebFrameLoadType NavigationTypeToLoadType(
@@ -3566,8 +3568,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
 
     // Check that the history navigation can commit.
     commit_status = PrepareForHistoryNavigationCommit(
-        common_params.navigation_type, commit_params,
-        &item_for_history_navigation, &load_type);
+        common_params, commit_params, &item_for_history_navigation, &load_type);
   }
 
   if (commit_status != blink::mojom::CommitResult::Ok) {
@@ -3819,10 +3820,9 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     // which should be the case because history navigations are routed via the
     // browser.
     DCHECK_NE(0, commit_params.nav_entry_id);
-    DCHECK(!commit_params.is_history_navigation_in_new_child);
+    DCHECK(!common_params.is_history_navigation_in_new_child_frame);
     commit_status = PrepareForHistoryNavigationCommit(
-        common_params.navigation_type, commit_params,
-        &item_for_history_navigation, &load_type);
+        common_params, commit_params, &item_for_history_navigation, &load_type);
   }
 
   if (commit_status == blink::mojom::CommitResult::Ok) {
@@ -6122,10 +6122,11 @@ void RenderFrameImpl::PrepareFrameForCommit(
 }
 
 blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
-    FrameMsg_Navigate_Type::Value navigation_type,
+    const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
     WebHistoryItem* item_for_history_navigation,
     blink::WebFrameLoadType* load_type) {
+  FrameMsg_Navigate_Type::Value navigation_type = common_params.navigation_type;
   DCHECK(navigation_type == FrameMsg_Navigate_Type::HISTORY_SAME_DOCUMENT ||
          navigation_type ==
              FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT ||
@@ -6167,12 +6168,22 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
   }
 
   // If this navigation is to a history item for a new child frame, we may
-  // want to ignore it in some cases.  If a Javascript navigation (i.e.,
-  // client redirect) interrupted it and has either been scheduled,
-  // started loading, or has committed, we should ignore the history item.
+  // want to ignore it if a Javascript navigation (i.e., client redirect)
+  // interrupted it.
+  // To detect this we need to check for the interrupt at different stages of
+  // navigation:
   bool interrupted_by_client_redirect =
-      frame_->IsNavigationScheduledWithin(0) || !current_history_item_.IsNull();
-  if (commit_params.is_history_navigation_in_new_child &&
+      // IsNavigationScheduleWithin() checks that we have something just
+      // started, sent to the browser or loading.
+      (frame_->IsNavigationScheduledWithin(0) &&
+       // The current navigation however is just returning from the browser. To
+       // check that it is not the current navigation, we verify the "initial
+       // history navigation in a subframe" flag of ClientNavigationState.
+       !frame_->IsClientNavigationInitialHistoryLoad()) ||
+      // The client navigation could already have finished, in which case there
+      // will be an history item.
+      !current_history_item_.IsNull();
+  if (common_params.is_history_navigation_in_new_child_frame &&
       interrupted_by_client_redirect) {
     return blink::mojom::CommitResult::Aborted;
   }
@@ -6336,7 +6347,7 @@ void RenderFrameImpl::BeginNavigation(
   if (IsTopLevelNavigation(frame_) &&
       render_view_->renderer_preferences_
           .browser_handles_all_top_level_requests) {
-    OpenURL(std::move(info), /*is_history_navigation_in_new_child=*/false);
+    OpenURL(std::move(info));
     return;  // Suppress the load here.
   }
 
@@ -6348,38 +6359,33 @@ void RenderFrameImpl::BeginNavigation(
   // it, because it will only be used once as the frame is created.)
   // Note: Skip this logic for MHTML files (|use_archive|), which should load
   // their subframes from the archive and not from history.
+  bool is_history_navigation_in_new_child_frame = false;
   if (info->is_history_navigation_in_new_child_frame && frame_->Parent() &&
       !use_archive) {
     // Check whether the browser has a history item for this frame that isn't
     // just staying at the initial about:blank document.
-    bool should_ask_browser = false;
     RenderFrameImpl* parent = RenderFrameImpl::FromWebFrame(frame_->Parent());
     auto iter = parent->history_subframe_unique_names_.find(
         unique_name_helper_.value());
     if (iter != parent->history_subframe_unique_names_.end()) {
       bool history_item_is_about_blank = iter->second;
-      should_ask_browser =
+      is_history_navigation_in_new_child_frame =
           !history_item_is_about_blank || url != url::kAboutBlankURL;
       parent->history_subframe_unique_names_.erase(iter);
     }
+  }
 
-    if (should_ask_browser) {
-      // Don't do this if |info| also says it is a client redirect, in which
-      // case JavaScript on the page is trying to interrupt the history
-      // navigation.
-      if (!info->is_client_redirect) {
-        OpenURL(std::move(info), /*is_history_navigation_in_new_child=*/true);
-        // TODO(japhet): This case wants to flag the frame as loading and do
-        // nothing else. It'd be nice if it could go through the
-        // WillStartNavigation, too.
-        frame_->MarkAsLoading();
-        return;
-      }
+  if (is_history_navigation_in_new_child_frame) {
+    // Don't do this if |info| also says it is a client redirect, in which
+    // case JavaScript on the page is trying to interrupt the history
+    // navigation.
+    if (info->is_client_redirect) {
       // Client redirects during an initial history load should attempt to
       // cancel the history navigation.  They will create a provisional
       // document loader, causing the history load to be ignored in
       // NavigateInternal, and this IPC will try to cancel any cross-process
       // history load.
+      is_history_navigation_in_new_child_frame = false;
       GetFrameHost()->CancelInitialHistoryLoad();
     }
   }
@@ -6428,7 +6434,7 @@ void RenderFrameImpl::BeginNavigation(
     }
 
     if (should_fork) {
-      OpenURL(std::move(info), /*is_history_navigation_in_new_child=*/false);
+      OpenURL(std::move(info));
       return;  // Suppress the load here.
     }
   }
@@ -6471,7 +6477,8 @@ void RenderFrameImpl::BeginNavigation(
         WebDocumentLoader::WillLoadUrlAsEmpty(url) &&
         !frame_->HasCommittedFirstRealLoad();
 
-    if (is_first_real_empty_document_navigation) {
+    if (is_first_real_empty_document_navigation &&
+        !is_history_navigation_in_new_child_frame) {
       CommitSyncNavigation(std::move(info));
       return;
     }
@@ -6481,9 +6488,11 @@ void RenderFrameImpl::BeginNavigation(
     // renderer process.
     // TODO(arthursonzogni): Remove this. Everything should use the default code
     // path and be driven by the browser process.
-    if (use_archive || url == content::kAboutSrcDocURL ||
-        WebDocumentLoader::WillLoadUrlAsEmpty(url)) {
-      if (!frame_->WillStartNavigation(*info))
+    if (use_archive || (((url == content::kAboutSrcDocURL) ||
+                         WebDocumentLoader::WillLoadUrlAsEmpty(url)) &&
+                        !is_history_navigation_in_new_child_frame)) {
+      if (!frame_->WillStartNavigation(
+              *info, false /* is_history_navigation_in_new_child_frame */))
         return;
       // Only the first navigation in a frame to an empty document must be
       // handled synchronously, the others are required to happen
@@ -6498,7 +6507,8 @@ void RenderFrameImpl::BeginNavigation(
 
     // Everything else is handled asynchronously by the browser process through
     // BeginNavigation.
-    BeginNavigationInternal(std::move(info));
+    BeginNavigationInternal(std::move(info),
+                            is_history_navigation_in_new_child_frame);
     return;
   }
 
@@ -6509,7 +6519,7 @@ void RenderFrameImpl::BeginNavigation(
                 blink::WebLocalFrameClient::CrossOriginRedirects::kFollow,
                 blob_url_token.PassHandle());
   } else {
-    OpenURL(std::move(info), /*is_history_navigation_in_new_child=*/false);
+    OpenURL(std::move(info));
   }
 }
 
@@ -6766,8 +6776,7 @@ void RenderFrameImpl::OnSelectPopupMenuItems(
 #endif
 #endif
 
-void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
-                              bool is_history_navigation_in_new_child) {
+void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   // A valid RequestorOrigin is always expected to be present.
   DCHECK(!info->url_request.RequestorOrigin().IsNull());
 
@@ -6802,9 +6811,6 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
       policy == blink::kWebNavigationPolicyNewPopup) {
     WebUserGestureIndicator::ConsumeUserGesture(frame_);
   }
-
-  if (is_history_navigation_in_new_child)
-    params.is_history_navigation_in_new_child = true;
 
   params.href_translate = info->href_translate.Latin1();
 
@@ -7024,9 +7030,11 @@ std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
 }  // namespace
 
 void RenderFrameImpl::BeginNavigationInternal(
-    std::unique_ptr<blink::WebNavigationInfo> info) {
+    std::unique_ptr<blink::WebNavigationInfo> info,
+    bool is_history_navigation_in_new_child_frame) {
   std::unique_ptr<DocumentState> document_state = BuildDocumentState();
-  if (!frame_->WillStartNavigation(*info))
+  if (!frame_->WillStartNavigation(*info,
+                                   is_history_navigation_in_new_child_frame))
     return;
 
   browser_side_navigation_pending_ = true;
@@ -7137,8 +7145,8 @@ void RenderFrameImpl::BeginNavigationInternal(
 
   GetFrameHost()->BeginNavigation(
       MakeCommonNavigationParams(frame_->GetSecurityOrigin(), std::move(info),
-                                 load_flags, has_download_sandbox_flag,
-                                 from_ad),
+                                 load_flags, has_download_sandbox_flag, from_ad,
+                                 is_history_navigation_in_new_child_frame),
       std::move(begin_navigation_params), std::move(blob_url_token),
       std::move(navigation_client_info), std::move(initiator_ptr));
 }

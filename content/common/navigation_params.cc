@@ -56,6 +56,7 @@ CommonNavigationParams::CommonNavigationParams(
     bool has_user_gesture,
     const InitiatorCSPInfo& initiator_csp_info,
     const std::string& href_translate,
+    bool is_history_navigation_in_new_child_frame,
     base::TimeTicks input_start)
     : url(url),
       initiator_origin(initiator_origin),
@@ -75,6 +76,8 @@ CommonNavigationParams::CommonNavigationParams(
       has_user_gesture(has_user_gesture),
       initiator_csp_info(initiator_csp_info),
       href_translate(href_translate),
+      is_history_navigation_in_new_child_frame(
+          is_history_navigation_in_new_child_frame),
       input_start(input_start) {
   // |method != "POST"| should imply absence of |post_data|.
   if (method != "POST" && post_data) {
@@ -100,7 +103,6 @@ CommitNavigationParams::CommitNavigationParams(
     bool can_load_local_resources,
     const PageState& page_state,
     int nav_entry_id,
-    bool is_history_navigation_in_new_child,
     std::map<std::string, bool> subframe_unique_names,
     bool intended_as_new_entry,
     int pending_history_list_offset,
@@ -116,7 +118,6 @@ CommitNavigationParams::CommitNavigationParams(
       can_load_local_resources(can_load_local_resources),
       page_state(page_state),
       nav_entry_id(nav_entry_id),
-      is_history_navigation_in_new_child(is_history_navigation_in_new_child),
       subframe_unique_names(subframe_unique_names),
       intended_as_new_entry(intended_as_new_entry),
       pending_history_list_offset(pending_history_list_offset),

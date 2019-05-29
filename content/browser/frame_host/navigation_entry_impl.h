@@ -189,7 +189,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       const GURL& original_url,
       const base::Optional<url::Origin>& origin_to_commit,
       const std::string& original_method,
-      bool is_history_navigation_in_new_child,
       const std::map<std::string, bool>& subframe_unique_names,
       bool intended_as_new_entry,
       int pending_offset_to_send,

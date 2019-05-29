@@ -958,7 +958,8 @@ void FrameLoader::CommitNavigation(
   TakeObjectSnapshot();
 }
 
-bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info) {
+bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info,
+                                      bool is_history_navigation_in_new_frame) {
   if (!CancelProvisionalLoaderForNewNavigation(!info.form.IsNull()))
     return false;
 
@@ -966,6 +967,8 @@ bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info) {
   client_navigation_ = std::make_unique<ClientNavigationState>();
   client_navigation_->url = info.url_request.Url();
   client_navigation_->http_method = info.url_request.HttpMethod();
+  client_navigation_->is_history_navigation_in_new_frame =
+      is_history_navigation_in_new_frame;
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
@@ -1573,6 +1576,11 @@ inline void FrameLoader::TakeObjectSnapshot() const {
   }
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("loading", "FrameLoader", this,
                                       ToTracedValue());
+}
+
+bool FrameLoader::IsClientNavigationInitialHistoryLoad() {
+  return client_navigation_ &&
+         client_navigation_->is_history_navigation_in_new_frame;
 }
 
 STATIC_ASSERT_ENUM(kWebHistoryScrollRestorationManual,

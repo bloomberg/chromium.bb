@@ -2179,16 +2179,6 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
     return;
   }
 
-  if (params.is_history_navigation_in_new_child) {
-    // Try to find a FrameNavigationEntry that matches this frame instead, based
-    // on the frame's unique name.  If this can't be found, fall back to the
-    // default params using RequestOpenURL below.
-    if (frame_tree_node_->navigator()->StartHistoryNavigationInNewSubframe(
-            this, validated_url)) {
-      return;
-    }
-  }
-
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OpenURL", "url",
                validated_url.possibly_invalid_spec());
 
@@ -4298,7 +4288,8 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, download_policy, false,
       GURL(), GURL(), PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
-      false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
+      false /* has_user_gesture */, InitiatorCSPInfo(), std::string(),
+      false /* is_history_navigation_in_new_child_frame */);
   CommitNavigation(nullptr /* navigation_request */, nullptr /* response */,
                    network::mojom::URLLoaderClientEndpointsPtr(), common_params,
                    CommitNavigationParams(), false, base::nullopt,

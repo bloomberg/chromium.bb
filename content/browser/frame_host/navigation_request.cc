@@ -509,7 +509,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       false,                          // can_load_local_resources
       PageState(),                    // page_state
       0,                              // nav_entry_id
-      false,                          // is_history_navigation_in_new_child
       std::map<std::string, bool>(),  // subframe_unique_names
       false,                          // intended_as_new_entry
       -1,  // |pending_history_list_offset| is set to -1 because
@@ -553,12 +552,14 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       base::TimeTicks::Now(), params.method, nullptr,
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
       params.gesture == NavigationGestureUser, InitiatorCSPInfo(),
-      std::string() /* href_translate */, base::TimeTicks::Now());
+      std::string() /* href_translate */,
+      false /* is_history_navigation_in_new_child_frame */,
+      base::TimeTicks::Now());
   CommitNavigationParams commit_params(
       params.origin, params.is_overriding_user_agent, params.redirects,
       params.original_request_url, params.method,
       false /* can_load_local_resources */, params.page_state,
-      params.nav_entry_id, false /* is_history_navigation_in_new_child */,
+      params.nav_entry_id,
       std::map<std::string, bool>() /* subframe_unique_names */,
       params.intended_as_new_entry, -1 /* pending_history_list_offset */,
       -1 /* current_history_list_offset */,

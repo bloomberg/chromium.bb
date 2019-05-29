@@ -2190,10 +2190,17 @@ void WebLocalFrameImpl::MarkAsLoading() {
   GetFrame()->Loader().MarkAsLoading();
 }
 
-bool WebLocalFrameImpl::WillStartNavigation(const WebNavigationInfo& info) {
+bool WebLocalFrameImpl::IsClientNavigationInitialHistoryLoad() {
+  return GetFrame()->Loader().IsClientNavigationInitialHistoryLoad();
+}
+
+bool WebLocalFrameImpl::WillStartNavigation(
+    const WebNavigationInfo& info,
+    bool is_history_navigation_in_new_child_frame) {
   DCHECK(!info.url_request.IsNull());
   DCHECK(!info.url_request.Url().ProtocolIs("javascript"));
-  return GetFrame()->Loader().WillStartNavigation(info);
+  return GetFrame()->Loader().WillStartNavigation(
+      info, is_history_navigation_in_new_child_frame);
 }
 
 void WebLocalFrameImpl::SendOrientationChangeEvent() {

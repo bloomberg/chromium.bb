@@ -408,7 +408,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     CommitNavigationParams commit_params =
         entry->ConstructCommitNavigationParams(
             *frame_entry, common_params.url, frame_entry->committed_origin(),
-            common_params.method, false,
+            common_params.method,
             entry->GetSubframeUniqueNames(frame_tree_node),
             controller->GetPendingEntryIndex() ==
                 -1 /* intended_as_new_entry */,
@@ -2870,8 +2870,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
       base::TimeTicks::Now(), base::TimeTicks::Now());
   CommitNavigationParams commit_params = entry.ConstructCommitNavigationParams(
       *frame_entry, common_params.url, frame_entry->committed_origin(),
-      common_params.method, false,
-      entry.GetSubframeUniqueNames(frame_tree_node),
+      common_params.method, entry.GetSubframeUniqueNames(frame_tree_node),
       controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
       static_cast<NavigationControllerImpl&>(controller())
           .GetIndexOfEntry(&entry),

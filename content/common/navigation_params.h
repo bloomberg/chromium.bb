@@ -103,6 +103,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       bool has_user_gesture,
       const InitiatorCSPInfo& initiator_csp_info,
       const std::string& href_translate,
+      bool is_history_navigation_in_new_child_frame,
       base::TimeTicks input_start = base::TimeTicks());
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
@@ -185,6 +186,13 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // from a link that had that attribute set.
   std::string href_translate;
 
+  // Whether this is a history navigation in a newly created child frame, in
+  // which case the browser process is instructing the renderer process to load
+  // a URL from a session history item.  Defaults to false.
+  // TODO(ahemery): Move this to BeginNavigationParams once we default to
+  // IsPerNavigationMojoInterface().
+  bool is_history_navigation_in_new_child_frame = false;
+
   // The time the input event leading to the navigation occurred. This will
   // not always be set; it depends on the creator of the CommonNavigationParams
   // setting it.
@@ -214,7 +222,6 @@ struct CONTENT_EXPORT CommitNavigationParams {
                          bool can_load_local_resources,
                          const PageState& page_state,
                          int nav_entry_id,
-                         bool is_history_navigation_in_new_child,
                          std::map<std::string, bool> subframe_unique_names,
                          bool intended_as_new_entry,
                          int pending_history_list_offset,
@@ -265,11 +272,6 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // is 0.) If the load succeeds, then this nav_entry_id will be reflected in
   // the resulting FrameHostMsg_DidCommitProvisionalLoad_Params.
   int nav_entry_id = 0;
-
-  // Whether this is a history navigation in a newly created child frame, in
-  // which case the browser process is instructing the renderer process to load
-  // a URL from a session history item.  Defaults to false.
-  bool is_history_navigation_in_new_child = false;
 
   // If this is a history navigation, this contains a map of frame unique names
   // to |is_about_blank| for immediate children of the frame being navigated for
