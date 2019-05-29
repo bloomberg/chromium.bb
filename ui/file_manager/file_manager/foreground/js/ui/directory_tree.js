@@ -652,7 +652,7 @@ class DirectoryItem extends cr.ui.TreeItem {
     ejectButton.addEventListener('down', (event) => {
       event.stopPropagation();
     });
-    ejectButton.className = 'root-eject';
+    ejectButton.className = 'root-eject align-right-icon';
     ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
     ejectButton.setAttribute('tabindex', '0');
     ejectButton.addEventListener('click', (event) => {
@@ -1606,15 +1606,19 @@ class AndroidAppItem extends cr.ui.TreeItem {
     /** @public {string} */
     this.label = modelItem.androidApp.name;
 
-    const icon = this.querySelector('.icon');
-    icon.classList.add('item-icon');
+    const appIcon = this.querySelector('.icon');
+    appIcon.classList.add('item-icon');
     if (modelItem.androidApp.iconSet) {
       const backgroundImage =
           util.iconSetToCSSBackgroundImageValue(modelItem.androidApp.iconSet);
       if (backgroundImage !== 'none') {
-        icon.setAttribute('style', 'background-image: ' + backgroundImage);
+        appIcon.setAttribute('style', 'background-image: ' + backgroundImage);
       }
     }
+
+    const externalLinkIcon = cr.doc.createElement('span');
+    externalLinkIcon.className = 'external-link-icon align-right-icon';
+    this.rowElement.appendChild(externalLinkIcon);
   }
 
   /**
