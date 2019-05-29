@@ -13,7 +13,6 @@ namespace message_center {
 
 class MessagePopupCollection;
 class MessageView;
-class MessageViewContextMenuController;
 class Notification;
 class PopupAlignmentDelegate;
 
@@ -80,8 +79,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupView : public views::WidgetDelegateView,
   // Unowned.
   PopupAlignmentDelegate* const alignment_delegate_;
   MessagePopupCollection* const popup_collection_;
-
-  std::unique_ptr<MessageViewContextMenuController> context_menu_controller_;
 
   const bool a11y_feedback_on_init_;
   bool is_hovered_ = false;

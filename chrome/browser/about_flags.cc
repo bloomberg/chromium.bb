@@ -153,7 +153,6 @@
 #include "ui/android/buildflags.h"
 #else  // OS_ANDROID
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "ui/message_center/public/cpp/features.h"
 #endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
@@ -1612,18 +1611,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionContentVerificationName,
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
-#if !defined(OS_ANDROID)
 #if defined(OS_CHROMEOS)
     {"enable-lock-screen-notification",
      flag_descriptions::kLockScreenNotificationName,
      flag_descriptions::kLockScreenNotificationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kLockScreenNotifications)},
 #endif  // OS_CHROMEOS
-    {"enable-message-center-new-style-notification",
-     flag_descriptions::kMessageCenterNewStyleNotificationName,
-     flag_descriptions::kMessageCenterNewStyleNotificationDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(message_center::kNewStyleNotifications)},
-#endif  // !OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"wake-on-wifi-packet", flag_descriptions::kWakeOnPacketsName,
      flag_descriptions::kWakeOnPacketsDescription, kOsCrOSOwnerOnly,

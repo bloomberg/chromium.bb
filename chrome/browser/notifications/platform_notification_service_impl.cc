@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -30,8 +29,6 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/buildflags.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -42,14 +39,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
-#include "ui/message_center/public/cpp/features.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "url/origin.h"
@@ -410,9 +404,7 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   message_center::RichNotificationData optional_fields;
 
   optional_fields.settings_button_handler =
-      base::FeatureList::IsEnabled(message_center::kNewStyleNotifications)
-          ? message_center::SettingsButtonHandler::INLINE
-          : message_center::SettingsButtonHandler::DELEGATE;
+      message_center::SettingsButtonHandler::INLINE;
 
   // TODO(peter): Handle different screen densities instead of always using the
   // 1x bitmap - crbug.com/585815.

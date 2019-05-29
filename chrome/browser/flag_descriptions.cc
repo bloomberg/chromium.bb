@@ -1138,10 +1138,6 @@ const char kMediaRouterCastAllowAllIPsDescription[] =
     "Have the Media Router connect to Cast devices on all IP addresses, not "
     "just RFC1918/RFC4193 private addresses.";
 
-const char kMessageCenterNewStyleNotificationName[] = "New style notification";
-const char kMessageCenterNewStyleNotificationDescription[] =
-    "Enables the experiment style of material-design notification";
-
 const char kMimeHandlerViewInCrossProcessFrameName[] =
     "MimeHandlerView in cross-process frame";
 const char kMimeHandlerViewInCrossProcessFrameDescription[] =

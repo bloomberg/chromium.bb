@@ -92,8 +92,6 @@ jumbo_component("message_center") {
 
     if (toolkit_views) {
       sources += [
-        "views/bounded_label.cc",
-        "views/bounded_label.h",
         "views/desktop_popup_alignment_delegate.cc",
         "views/desktop_popup_alignment_delegate.h",
         "views/message_popup_collection.cc",
@@ -126,16 +124,6 @@ jumbo_component("message_center") {
         "views/slide_out_controller.cc",
         "views/slide_out_controller.h",
       ]
-      if (!is_chromeos) {
-        sources += [
-          "views/message_view_context_menu_controller.cc",
-          "views/message_view_context_menu_controller.h",
-          "views/notification_menu_model.cc",
-          "views/notification_menu_model.h",
-          "views/notification_view.cc",
-          "views/notification_view.h",
-        ]
-      }
       deps += [
         "//ui/compositor",
         "//ui/events",
@@ -223,23 +211,13 @@ if (enable_message_center) {
 
     if (toolkit_views) {
       sources += [
-        "views/bounded_label_unittest.cc",
         "views/message_popup_collection_unittest.cc",
         "views/notification_header_view_unittest.cc",
         "views/notification_view_md_unittest.cc",
         "views/relative_time_formatter_unittest.cc",
         "views/slide_out_controller_unittest.cc",
       ]
-      if (!is_chromeos) {
-        sources += [
-          "views/notification_menu_model_unittest.cc",
-          "views/notification_view_unittest.cc",
-        ]
-      }
       deps += [
-        # Compositor is needed by message_center_view_unittest.cc and for the
-        # fonts used by bounded_label_unittest.cc.
-        "//ui/compositor",
         "//ui/display",
         "//ui/strings",
         "//ui/views",
