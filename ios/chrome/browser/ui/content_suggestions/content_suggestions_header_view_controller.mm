@@ -333,6 +333,9 @@ using base::UserMetricsAction;
   self.identityDiscButton.imageEdgeInsets = UIEdgeInsetsMake(
       ntp_home::kIdentityAvatarMargin, ntp_home::kIdentityAvatarMargin,
       ntp_home::kIdentityAvatarMargin, ntp_home::kIdentityAvatarMargin);
+  [self.identityDiscButton addTarget:self
+                              action:@selector(identityDiscTapped)
+                    forControlEvents:UIControlEventTouchUpInside];
   // TODO(crbug.com/965958): Set action on button to launch into Settings.
   [self.headerView setIdentityDiscView:self.identityDiscButton];
 
@@ -384,6 +387,11 @@ using base::UserMetricsAction;
   if ([self.delegate ignoreLoadRequests])
     return;
   [self shiftTilesUp];
+}
+
+- (void)identityDiscTapped {
+  base::RecordAction(base::UserMetricsAction("MobileNTPIdentityDiscTapped"));
+  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
 }
 
 // TODO(crbug.com/807330) The fakebox is currently a collection of views spread

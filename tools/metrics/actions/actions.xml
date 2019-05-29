@@ -11964,6 +11964,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileNTPIdentityDiscTapped">
+  <owner>msarda@chromium.org</owner>
+  <owner>pkl@chromium.org</owner>
+  <description>
+    Recorded when a user taps on the Identity Disc on NTP.
+  </description>
+</action>
+
 <action name="MobileNTPMostVisited">
   <owner>dewittj@chromium.org</owner>
   <description>Recorded when a user clicks on a Most Visited tile.</description>
