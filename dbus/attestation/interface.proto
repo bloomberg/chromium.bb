@@ -419,3 +419,15 @@ message GetEnrollmentIdReply {
   optional AttestationStatus status = 1;
   optional string enrollment_id = 2;
 }
+
+message GetCertifiedNvIndexRequest {
+  optional int32 nv_index = 1;
+  optional int32 nv_size = 2;
+}
+
+message GetCertifiedNvIndexReply {
+  optional AttestationStatus status = 1;
+  optional bytes certified_data = 2;
+  optional bytes signature = 3;
+  optional bytes identity_certificate = 4;
+}
