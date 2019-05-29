@@ -1323,9 +1323,9 @@ IN_PROC_BROWSER_TEST_P(
     base::RunLoop loop;
     history_service->QueryRedirectsFrom(
         HttpsLitePageURL(kRedirectNonPreview),
-        base::BindLambdaForTesting([&](const history::RedirectList* redirects) {
-          EXPECT_FALSE(redirects->empty());
-          for (const GURL& url : *redirects) {
+        base::BindLambdaForTesting([&](history::RedirectList redirects) {
+          EXPECT_FALSE(redirects.empty());
+          for (const GURL& url : redirects) {
             EXPECT_FALSE(previews::IsLitePageRedirectPreviewURL(url));
           }
           loop.Quit();

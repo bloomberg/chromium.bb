@@ -819,30 +819,28 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryHistory(
 
 base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsFrom(
     const GURL& from_url,
-    const QueryRedirectsCallback& callback,
+    QueryRedirectsCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  RedirectList* result = new RedirectList();
-  return tracker->PostTaskAndReply(
+  return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::QueryRedirectsFrom, history_backend_,
-                     from_url, base::Unretained(result)),
-      base::BindOnce(callback, base::Owned(result)));
+                     from_url),
+      std::move(callback));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsTo(
     const GURL& to_url,
-    const QueryRedirectsCallback& callback,
+    QueryRedirectsCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  RedirectList* result = new RedirectList();
-  return tracker->PostTaskAndReply(
+  return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::QueryRedirectsTo, history_backend_,
-                     to_url, base::Unretained(result)),
-      base::BindOnce(callback, base::Owned(result)));
+                     to_url),
+      std::move(callback));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::GetVisibleVisitCountToHost(

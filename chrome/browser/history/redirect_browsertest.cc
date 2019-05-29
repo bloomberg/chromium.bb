@@ -55,9 +55,8 @@ class RedirectTest : public InProcessBrowserTest {
     std::vector<GURL> rv;
     history_service->QueryRedirectsFrom(
         url,
-        base::Bind(&RedirectTest::OnRedirectQueryComplete,
-                   base::Unretained(this),
-                   &rv),
+        base::BindOnce(&RedirectTest::OnRedirectQueryComplete,
+                       base::Unretained(this), &rv),
         &tracker_);
     content::RunMessageLoop();
     return rv;
@@ -65,8 +64,8 @@ class RedirectTest : public InProcessBrowserTest {
 
  protected:
   void OnRedirectQueryComplete(std::vector<GURL>* rv,
-                               const history::RedirectList* redirects) {
-    rv->insert(rv->end(), redirects->begin(), redirects->end());
+                               history::RedirectList redirects) {
+    rv->insert(rv->end(), redirects.begin(), redirects.end());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }

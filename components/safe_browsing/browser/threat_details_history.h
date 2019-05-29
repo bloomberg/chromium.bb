@@ -53,7 +53,7 @@ class ThreatDetailsRedirectsCollector
   void StartGetRedirects(const std::vector<GURL>& urls);
   void GetRedirects(const GURL& url);
   void OnGotQueryRedirectsTo(const GURL& url,
-                             const history::RedirectList* redirect_list);
+                             history::RedirectList redirect_list);
 
   // Runs the callback when redirects collecting is all done.
   void AllDone();

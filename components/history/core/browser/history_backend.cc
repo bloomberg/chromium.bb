@@ -1342,32 +1342,32 @@ void HistoryBackend::QueryHistoryText(const base::string16& text_query,
     result->set_reached_beginning(true);
 }
 
-void HistoryBackend::QueryRedirectsFrom(const GURL& from_url,
-                                        RedirectList* redirects) {
-  redirects->clear();
+RedirectList HistoryBackend::QueryRedirectsFrom(const GURL& from_url) {
   if (!db_)
-    return;
+    return {};
 
   URLID from_url_id = db_->GetRowForURL(from_url, nullptr);
   VisitID cur_visit = db_->GetMostRecentVisitForURL(from_url_id, nullptr);
   if (!cur_visit)
-    return;  // No visits for URL.
+    return {};  // No visits for URL.
 
-  GetRedirectsFromSpecificVisit(cur_visit, redirects);
+  RedirectList redirects;
+  GetRedirectsFromSpecificVisit(cur_visit, &redirects);
+  return redirects;
 }
 
-void HistoryBackend::QueryRedirectsTo(const GURL& to_url,
-                                      RedirectList* redirects) {
-  redirects->clear();
+RedirectList HistoryBackend::QueryRedirectsTo(const GURL& to_url) {
   if (!db_)
-    return;
+    return {};
 
   URLID to_url_id = db_->GetRowForURL(to_url, nullptr);
   VisitID cur_visit = db_->GetMostRecentVisitForURL(to_url_id, nullptr);
   if (!cur_visit)
-    return;  // No visits for URL.
+    return {};  // No visits for URL.
 
-  GetRedirectsToSpecificVisit(cur_visit, redirects);
+  RedirectList redirects;
+  GetRedirectsToSpecificVisit(cur_visit, &redirects);
+  return redirects;
 }
 
 void HistoryBackend::GetVisibleVisitCountToHost(
@@ -1396,8 +1396,7 @@ void HistoryBackend::QueryMostVisitedURLs(int result_count,
       url_filter);
 
   for (const std::unique_ptr<PageUsageData>& current_data : data) {
-    RedirectList redirects;
-    QueryRedirectsFrom(current_data->GetURL(), &redirects);
+    RedirectList redirects = QueryRedirectsFrom(current_data->GetURL());
     result->emplace_back(current_data->GetURL(), current_data->GetTitle(),
                          redirects);
   }

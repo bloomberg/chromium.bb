@@ -254,21 +254,21 @@ class HistoryService : public KeyedService {
   // If there is no such URL in the database or the most recent visit has no
   // redirect, the vector will be empty. If the given page has redirected to
   // multiple destinations, this will pick a random one.
-  typedef base::Callback<void(const RedirectList*)> QueryRedirectsCallback;
+  using QueryRedirectsCallback = base::OnceCallback<void(RedirectList)>;
 
   // Schedules a query for the most recent redirect coming out of the given
   // URL. See the RedirectQuerySource above, which is guaranteed to be called
   // if the request is not canceled.
   base::CancelableTaskTracker::TaskId QueryRedirectsFrom(
       const GURL& from_url,
-      const QueryRedirectsCallback& callback,
+      QueryRedirectsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Schedules a query to get the most recent redirects ending at the given
   // URL.
   base::CancelableTaskTracker::TaskId QueryRedirectsTo(
       const GURL& to_url,
-      const QueryRedirectsCallback& callback,
+      QueryRedirectsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Requests the number of user-visible visits (i.e. no redirects or subframes)

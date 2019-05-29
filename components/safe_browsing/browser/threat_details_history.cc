@@ -84,18 +84,18 @@ void ThreatDetailsRedirectsCollector::GetRedirects(const GURL& url) {
 
   history_service_->QueryRedirectsTo(
       url,
-      base::Bind(&ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo,
-                 base::Unretained(this), url),
+      base::BindOnce(&ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo,
+                     base::Unretained(this), url),
       &request_tracker_);
 }
 
 void ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo(
     const GURL& url,
-    const history::RedirectList* redirect_list) {
-  if (!redirect_list->empty()) {
+    history::RedirectList redirect_list) {
+  if (!redirect_list.empty()) {
     std::vector<GURL> urllist;
     urllist.push_back(url);
-    urllist.insert(urllist.end(), redirect_list->begin(), redirect_list->end());
+    urllist.insert(urllist.end(), redirect_list.begin(), redirect_list.end());
     redirects_urls_.push_back(urllist);
   }
 

@@ -1157,8 +1157,7 @@ void HistoryURLProvider::CullRedirects(history::HistoryBackend* backend,
        (source < matches->size()) && (source < max_results); ) {
     const GURL& url = (*matches)[source].url_info.url();
     // TODO(brettw) this should go away when everything uses GURL.
-    history::RedirectList redirects;
-    backend->QueryRedirectsFrom(url, &redirects);
+    history::RedirectList redirects = backend->QueryRedirectsFrom(url);
     if (!redirects.empty()) {
       // Remove all but the first occurrence of any of these redirects in the
       // search results. We also must add the URL we queried for, since it may

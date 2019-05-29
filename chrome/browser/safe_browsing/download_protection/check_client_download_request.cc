@@ -528,20 +528,20 @@ void CheckClientDownloadRequest::GetTabRedirects() {
 
   history->QueryRedirectsTo(
       tab_url_,
-      base::Bind(&CheckClientDownloadRequest::OnGotTabRedirects,
-                 weakptr_factory_.GetWeakPtr(), tab_url_),
+      base::BindOnce(&CheckClientDownloadRequest::OnGotTabRedirects,
+                     weakptr_factory_.GetWeakPtr(), tab_url_),
       &request_tracker_);
 }
 
 void CheckClientDownloadRequest::OnGotTabRedirects(
     const GURL& url,
-    const history::RedirectList* redirect_list) {
+    history::RedirectList redirect_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(url, tab_url_);
 
-  if (!redirect_list->empty()) {
-    tab_redirects_.insert(tab_redirects_.end(), redirect_list->rbegin(),
-                          redirect_list->rend());
+  if (!redirect_list.empty()) {
+    tab_redirects_.insert(tab_redirects_.end(), redirect_list.rbegin(),
+                          redirect_list.rend());
   }
 
   SendRequest();

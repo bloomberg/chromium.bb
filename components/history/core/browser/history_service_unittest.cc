@@ -125,20 +125,16 @@ class HistoryServiceTest : public testing::Test {
     base::RunLoop run_loop;
     history_service_->QueryRedirectsFrom(
         url,
-        base::BindRepeating(&HistoryServiceTest::OnRedirectQueryComplete,
-                            base::Unretained(this), run_loop.QuitClosure()),
+        base::BindOnce(&HistoryServiceTest::OnRedirectQueryComplete,
+                       base::Unretained(this), run_loop.QuitClosure()),
         &tracker_);
     run_loop.Run();  // Will be exited in *QueryComplete.
   }
 
   // Callback for QueryRedirects.
   void OnRedirectQueryComplete(base::OnceClosure done,
-                               const history::RedirectList* redirects) {
-    saved_redirects_.clear();
-    if (!redirects->empty()) {
-      saved_redirects_.insert(
-          saved_redirects_.end(), redirects->begin(), redirects->end());
-    }
+                               history::RedirectList redirects) {
+    saved_redirects_ = std::move(redirects);
     std::move(done).Run();
   }
 
