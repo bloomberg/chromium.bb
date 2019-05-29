@@ -84,11 +84,11 @@ content::RenderFrameHost* GetIframe(content::WebContents* tab,
 
 bool ContainsDefaultSearchTile(content::RenderFrameHost* iframe) {
   int num_search_tiles;
-  EXPECT_TRUE(
-      instant_test_utils::GetIntFromJS(iframe,
-                                       "document.querySelectorAll(\".md-tile["
-                                       "href='https://google.com/']\").length",
-                                       &num_search_tiles));
+  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe,
+      "document.querySelectorAll(\".md-tile["
+      "href='https://www.google.com/']\").length",
+      &num_search_tiles));
   return num_search_tiles == 1;
 }
 
@@ -114,7 +114,11 @@ class LocalNTPTest : public InProcessBrowserTest {
     // Make sure the observer knows about the current items. Typically, this
     // gets triggered by navigating to an NTP.
     instant_service->UpdateMostVisitedItemsInfo();
-    mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
+    const int numDefaultMVItems =
+        kDefaultMostVisitedItemCount +
+        (base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut) ? 1
+                                                                         : 0);
+    mv_observer.WaitForMostVisitedItems(numDefaultMVItems);
   }
 
  private:
