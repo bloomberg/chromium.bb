@@ -1249,6 +1249,28 @@ TEST_F(TextfieldTest, DeletionWithSelection) {
   }
 }
 
+// Test deletions not covered by other tests with key events.
+TEST_F(TextfieldTest, DeletionWithEditCommands) {
+  struct {
+    ui::TextEditCommand command;
+    const char* expected;
+  } cases[] = {
+      {ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE, "two three"},
+      {ui::TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH, "two three"},
+      {ui::TextEditCommand::DELETE_TO_END_OF_LINE, "one "},
+      {ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH, "one "},
+  };
+
+  InitTextfield();
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
+    textfield_->SetText(ASCIIToUTF16("one two three"));
+    textfield_->SelectRange(gfx::Range(4));
+    test_api_->ExecuteTextEditCommand(cases[i].command);
+    EXPECT_STR_EQ(cases[i].expected, textfield_->text());
+  }
+}
+
 TEST_F(TextfieldTest, PasswordTest) {
   InitTextfield();
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);

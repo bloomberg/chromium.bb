@@ -9,12 +9,11 @@ namespace gfx {
 
 // TODO(msw): Distinguish between logical character stops and glyph stops?
 // TODO(msw): Merge with base::i18n::BreakIterator::BreakType.
-// TODO(jongkwon.lee): Rename LINE_BREAK_MULTILINE, LINE_BREAK.
 enum BreakType {
-  CHARACTER_BREAK = 0,   // Stop cursor movement on neighboring characters
-  WORD_BREAK,            // Stop cursor movement on nearest word boundaries
-  LINE_BREAK,            // Stop cursor movement on line ends as shown on screen
-  LINE_BREAK_MULTILINE,  // LINE_BREAK for multiline
+  CHARACTER_BREAK = 0,  // Stop cursor movement on neighboring characters.
+  WORD_BREAK,           // Stop cursor movement on nearest word boundaries.
+  LINE_BREAK,           // Stop cursor movement on line ends as shown on screen.
+  FIELD_BREAK,          // Stop cursor movement on text ends.
 };
 
 // Specifies the selection behavior for a move/move-and-select command. For

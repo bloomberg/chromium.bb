@@ -591,8 +591,8 @@ void RenderText::MoveCursor(BreakType break_type,
   }
 
   // Cancelling a selection moves to the edge of the selection.
-  if (break_type != LINE_BREAK && !selection().is_empty() &&
-      selection_behavior == SELECTION_NONE) {
+  if (break_type != FIELD_BREAK && break_type != LINE_BREAK &&
+      !selection().is_empty() && selection_behavior == SELECTION_NONE) {
     // Use the nearest word boundary in the proper |direction| for word breaks.
     if (break_type == WORD_BREAK)
       cursor = GetAdjacentSelectionModel(cursor, break_type, direction);
@@ -1130,9 +1130,9 @@ SelectionModel RenderText::GetAdjacentSelectionModel(
 
   if (direction == CURSOR_UP || direction == CURSOR_DOWN)
     return AdjacentLineSelectionModel(current, direction);
-  if (break_type == LINE_BREAK || text().empty())
+  if (break_type == FIELD_BREAK || text().empty())
     return EdgeSelectionModel(direction);
-  if (break_type == LINE_BREAK_MULTILINE)
+  if (break_type == LINE_BREAK)
     return LineSelectionModel(GetLineContainingCaret(current), direction);
   if (break_type == CHARACTER_BREAK)
     return AdjacentCharSelectionModel(current, direction);
@@ -1149,13 +1149,19 @@ SelectionModel RenderText::EdgeSelectionModel(
 
 SelectionModel RenderText::LineSelectionModel(size_t line_index,
                                               VisualCursorDirection direction) {
+  DCHECK(direction == CURSOR_LEFT || direction == CURSOR_RIGHT);
   const internal::Line& line = lines()[line_index];
   if (line.segments.empty()) {
     // Only the last line can be empty.
     DCHECK_EQ(lines().size() - 1, line_index);
     return EdgeSelectionModel(GetVisualDirectionOfLogicalEnd());
   }
+  if (line_index ==
+      (direction == GetVisualDirectionOfLogicalEnd() ? GetNumLines() - 1 : 0)) {
+    return EdgeSelectionModel(direction);
+  }
 
+  DCHECK_GT(GetNumLines(), 1U);
   size_t max_index = 0;
   size_t min_index = text().length();
   for (const auto& segment : line.segments) {
@@ -1175,9 +1181,9 @@ SelectionModel RenderText::LineSelectionModel(size_t line_index,
   // line number of the cursor in multiline text.
   return direction == GetVisualDirectionOfLogicalEnd()
              ? SelectionModel(DisplayIndexToTextIndex(max_index),
-                              multiline() ? CURSOR_BACKWARD : CURSOR_FORWARD)
+                              CURSOR_BACKWARD)
              : SelectionModel(DisplayIndexToTextIndex(min_index),
-                              multiline() ? CURSOR_FORWARD : CURSOR_BACKWARD);
+                              CURSOR_FORWARD);
 }
 
 void RenderText::SetSelectionModel(const SelectionModel& model) {
@@ -1301,7 +1307,9 @@ Point RenderText::ToViewPoint(const PointF& point,
   const auto float_ge = [](float a, float b) {
     return a > b || std::fabs(a - b) <= kFloatComparisonEpsilon;
   };
-  const auto float_gt = [](float a, float b) { return a - b > kFloatComparisonEpsilon; };
+  const auto float_gt = [](float a, float b) {
+    return a - b > kFloatComparisonEpsilon;
+  };
 
   const size_t num_lines = GetNumLines();
   if (num_lines == 1) {

@@ -1859,13 +1859,19 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
       text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_LINE:
-    case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH:
       model_->MoveCursor(gfx::LINE_BREAK, begin, gfx::SELECTION_RETAIN);
       text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
       break;
+    case ui::TextEditCommand::DELETE_TO_BEGINNING_OF_PARAGRAPH:
+      model_->MoveCursor(gfx::FIELD_BREAK, begin, gfx::SELECTION_RETAIN);
+      text_changed = cursor_changed = model_->Backspace(add_to_kill_buffer);
+      break;
     case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
-    case ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
       model_->MoveCursor(gfx::LINE_BREAK, end, gfx::SELECTION_RETAIN);
+      text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
+      break;
+    case ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
+      model_->MoveCursor(gfx::FIELD_BREAK, end, gfx::SELECTION_RETAIN);
       text_changed = cursor_changed = model_->Delete(add_to_kill_buffer);
       break;
     case ui::TextEditCommand::DELETE_WORD_BACKWARD:
@@ -1904,46 +1910,55 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
       model_->MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT,
                          gfx::SELECTION_RETAIN);
       break;
-    case ui::TextEditCommand::MOVE_TO_BEGINNING_OF_DOCUMENT:
     case ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE:
+      model_->MoveCursor(gfx::LINE_BREAK, begin, gfx::SELECTION_NONE);
+      break;
+    case ui::TextEditCommand::MOVE_TO_BEGINNING_OF_DOCUMENT:
     case ui::TextEditCommand::MOVE_TO_BEGINNING_OF_PARAGRAPH:
     case ui::TextEditCommand::MOVE_UP:
     case ui::TextEditCommand::MOVE_PAGE_UP:
-      model_->MoveCursor(gfx::LINE_BREAK, begin, gfx::SELECTION_NONE);
+      model_->MoveCursor(gfx::FIELD_BREAK, begin, gfx::SELECTION_NONE);
+      break;
+    case ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION:
+      model_->MoveCursor(gfx::LINE_BREAK, begin, kLineSelectionBehavior);
       break;
     case ui::TextEditCommand::
         MOVE_TO_BEGINNING_OF_DOCUMENT_AND_MODIFY_SELECTION:
-    case ui::TextEditCommand::MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION:
     case ui::TextEditCommand::
         MOVE_TO_BEGINNING_OF_PARAGRAPH_AND_MODIFY_SELECTION:
-      model_->MoveCursor(gfx::LINE_BREAK, begin, kLineSelectionBehavior);
+      model_->MoveCursor(gfx::FIELD_BREAK, begin, kLineSelectionBehavior);
       break;
     case ui::TextEditCommand::MOVE_PAGE_UP_AND_MODIFY_SELECTION:
     case ui::TextEditCommand::MOVE_UP_AND_MODIFY_SELECTION:
-      model_->MoveCursor(gfx::LINE_BREAK, begin, gfx::SELECTION_RETAIN);
+      model_->MoveCursor(gfx::FIELD_BREAK, begin, gfx::SELECTION_RETAIN);
+      break;
+    case ui::TextEditCommand::MOVE_TO_END_OF_LINE:
+      model_->MoveCursor(gfx::LINE_BREAK, end, gfx::SELECTION_NONE);
       break;
     case ui::TextEditCommand::MOVE_TO_END_OF_DOCUMENT:
-    case ui::TextEditCommand::MOVE_TO_END_OF_LINE:
     case ui::TextEditCommand::MOVE_TO_END_OF_PARAGRAPH:
     case ui::TextEditCommand::MOVE_DOWN:
     case ui::TextEditCommand::MOVE_PAGE_DOWN:
-      model_->MoveCursor(gfx::LINE_BREAK, end, gfx::SELECTION_NONE);
+      model_->MoveCursor(gfx::FIELD_BREAK, end, gfx::SELECTION_NONE);
+      break;
+    case ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION:
+      model_->MoveCursor(gfx::LINE_BREAK, end, kLineSelectionBehavior);
       break;
     case ui::TextEditCommand::MOVE_TO_END_OF_DOCUMENT_AND_MODIFY_SELECTION:
-    case ui::TextEditCommand::MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION:
     case ui::TextEditCommand::MOVE_TO_END_OF_PARAGRAPH_AND_MODIFY_SELECTION:
-      model_->MoveCursor(gfx::LINE_BREAK, end, kLineSelectionBehavior);
+      model_->MoveCursor(gfx::FIELD_BREAK, end, kLineSelectionBehavior);
       break;
     case ui::TextEditCommand::MOVE_PAGE_DOWN_AND_MODIFY_SELECTION:
     case ui::TextEditCommand::MOVE_DOWN_AND_MODIFY_SELECTION:
-      model_->MoveCursor(gfx::LINE_BREAK, end, gfx::SELECTION_RETAIN);
+      model_->MoveCursor(gfx::FIELD_BREAK, end, gfx::SELECTION_RETAIN);
       break;
     case ui::TextEditCommand::MOVE_PARAGRAPH_BACKWARD_AND_MODIFY_SELECTION:
-      model_->MoveCursor(gfx::LINE_BREAK, begin,
+      model_->MoveCursor(gfx::FIELD_BREAK, begin,
                          kMoveParagraphSelectionBehavior);
       break;
     case ui::TextEditCommand::MOVE_PARAGRAPH_FORWARD_AND_MODIFY_SELECTION:
-      model_->MoveCursor(gfx::LINE_BREAK, end, kMoveParagraphSelectionBehavior);
+      model_->MoveCursor(gfx::FIELD_BREAK, end,
+                         kMoveParagraphSelectionBehavior);
       break;
     case ui::TextEditCommand::MOVE_WORD_BACKWARD:
       model_->MoveCursor(gfx::WORD_BREAK, begin, gfx::SELECTION_NONE);

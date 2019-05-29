@@ -1571,77 +1571,79 @@ TEST_F(RenderTextTest, MoveCursor_Line) {
   render_text->SetText(UTF8ToUTF16("123 456 789"));
   std::vector<Range> expected;
 
-  // SELECTION_NONE.
-  render_text->SelectRange(Range(6));
+  for (auto break_type : {LINE_BREAK, FIELD_BREAK}) {
+    // SELECTION_NONE.
+    render_text->SelectRange(Range(6));
 
-  // Move right twice.
-  expected.push_back(Range(11));
-  expected.push_back(Range(11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_NONE, &expected);
+    // Move right twice.
+    expected.push_back(Range(11));
+    expected.push_back(Range(11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_NONE, &expected);
 
-  // Move left twice.
-  expected.push_back(Range(0));
-  expected.push_back(Range(0));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_LEFT,
-                                        SELECTION_NONE, &expected);
+    // Move left twice.
+    expected.push_back(Range(0));
+    expected.push_back(Range(0));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_LEFT,
+                                          SELECTION_NONE, &expected);
 
-  // SELECTION_CARET.
-  render_text->SelectRange(Range(6));
+    // SELECTION_CARET.
+    render_text->SelectRange(Range(6));
 
-  // Move right.
-  expected.push_back(Range(6, 11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_CARET, &expected);
+    // Move right.
+    expected.push_back(Range(6, 11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_CARET, &expected);
 
-  // Move left twice.
-  expected.push_back(Range(6));
-  expected.push_back(Range(6, 0));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_LEFT,
-                                        SELECTION_CARET, &expected);
+    // Move left twice.
+    expected.push_back(Range(6));
+    expected.push_back(Range(6, 0));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_LEFT,
+                                          SELECTION_CARET, &expected);
 
-  // Move right.
-  expected.push_back(Range(6));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_CARET, &expected);
+    // Move right.
+    expected.push_back(Range(6));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_CARET, &expected);
 
-  // SELECTION_RETAIN.
-  render_text->SelectRange(Range(6));
+    // SELECTION_RETAIN.
+    render_text->SelectRange(Range(6));
 
-  // Move right.
-  expected.push_back(Range(6, 11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_RETAIN, &expected);
+    // Move right.
+    expected.push_back(Range(6, 11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_RETAIN, &expected);
 
-  // Move left twice.
-  expected.push_back(Range(6, 0));
-  expected.push_back(Range(6, 0));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_LEFT,
-                                        SELECTION_RETAIN, &expected);
+    // Move left twice.
+    expected.push_back(Range(6, 0));
+    expected.push_back(Range(6, 0));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_LEFT,
+                                          SELECTION_RETAIN, &expected);
 
-  // Move right.
-  expected.push_back(Range(6, 11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_RETAIN, &expected);
+    // Move right.
+    expected.push_back(Range(6, 11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_RETAIN, &expected);
 
-  // SELECTION_EXTEND.
-  render_text->SelectRange(Range(6));
+    // SELECTION_EXTEND.
+    render_text->SelectRange(Range(6));
 
-  // Move right.
-  expected.push_back(Range(6, 11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_EXTEND, &expected);
+    // Move right.
+    expected.push_back(Range(6, 11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_EXTEND, &expected);
 
-  // Move left twice.
-  expected.push_back(Range(11, 0));
-  expected.push_back(Range(11, 0));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_LEFT,
-                                        SELECTION_EXTEND, &expected);
+    // Move left twice.
+    expected.push_back(Range(11, 0));
+    expected.push_back(Range(11, 0));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_LEFT,
+                                          SELECTION_EXTEND, &expected);
 
-  // Move right.
-  expected.push_back(Range(0, 11));
-  RunMoveCursorTestAndClearExpectations(render_text, LINE_BREAK, CURSOR_RIGHT,
-                                        SELECTION_EXTEND, &expected);
+    // Move right.
+    expected.push_back(Range(0, 11));
+    RunMoveCursorTestAndClearExpectations(render_text, break_type, CURSOR_RIGHT,
+                                          SELECTION_EXTEND, &expected);
+  }
 }
 
 TEST_F(RenderTextTest, MoveCursor_UpDown) {
@@ -2335,13 +2337,13 @@ TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection_Multiline) {
   EXPECT_EQ(4U, render_text->GetNumLines());
 
   // Move cursor right to the end of the text.
-  render_text->MoveCursor(LINE_BREAK_MULTILINE, CURSOR_RIGHT, SELECTION_NONE);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(Range(4), render_text->selection());
   EXPECT_EQ(0U, GetLineContainingCaret());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(Range(5), render_text->selection());
   EXPECT_EQ(1U, GetLineContainingCaret());
-  render_text->MoveCursor(LINE_BREAK_MULTILINE, CURSOR_RIGHT, SELECTION_NONE);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(Range(7), render_text->selection());
   EXPECT_EQ(1U, GetLineContainingCaret());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
@@ -2350,12 +2352,12 @@ TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection_Multiline) {
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(Range(9), render_text->selection());
   EXPECT_EQ(3U, GetLineContainingCaret());
-  render_text->MoveCursor(LINE_BREAK_MULTILINE, CURSOR_RIGHT, SELECTION_NONE);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(Range(11), render_text->selection());
   EXPECT_EQ(3U, GetLineContainingCaret());
 
   // Move cursor left to the beginning of the text.
-  render_text->MoveCursor(LINE_BREAK_MULTILINE, CURSOR_LEFT, SELECTION_NONE);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(Range(9), render_text->selection());
   EXPECT_EQ(3U, GetLineContainingCaret());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
@@ -2364,13 +2366,13 @@ TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection_Multiline) {
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(Range(7), render_text->selection());
   EXPECT_EQ(1U, GetLineContainingCaret());
-  render_text->MoveCursor(LINE_BREAK_MULTILINE, CURSOR_LEFT, SELECTION_NONE);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(Range(4), render_text->selection());
   EXPECT_EQ(1U, GetLineContainingCaret());
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(Range(3), render_text->selection());
   EXPECT_EQ(0U, GetLineContainingCaret());
-  render_text->MoveCursor(LINE_BREAK_MULTILINE, CURSOR_LEFT, SELECTION_NONE);
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(Range(0), render_text->selection());
   EXPECT_EQ(0U, GetLineContainingCaret());
 
@@ -2402,6 +2404,16 @@ TEST_F(RenderTextTest, MoveCursorLeftRightWithSelection_Multiline) {
   EXPECT_EQ(Range(4), render_text->selection());
   EXPECT_EQ(1U, GetLineContainingCaret());
   render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(0), render_text->selection());
+  EXPECT_EQ(0U, GetLineContainingCaret());
+
+  // Move cursor right with FIELD_BREAK.
+  render_text->MoveCursor(FIELD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(11), render_text->selection());
+  EXPECT_EQ(3U, GetLineContainingCaret());
+
+  // Move cursor left with FIELD_BREAK.
+  render_text->MoveCursor(FIELD_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(Range(0), render_text->selection());
   EXPECT_EQ(0U, GetLineContainingCaret());
 }
