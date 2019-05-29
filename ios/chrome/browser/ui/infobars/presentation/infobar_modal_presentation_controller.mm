@@ -29,6 +29,13 @@ const CGFloat kModalViewVerticalPadding = 20;
 
 @implementation InfobarModalPresentationController
 
+- (void)presentationTransitionWillBegin {
+  UITapGestureRecognizer* tap =
+      [[UITapGestureRecognizer alloc] initWithTarget:self.presentedView
+                                              action:@selector(endEditing:)];
+  [self.containerView addGestureRecognizer:tap];
+}
+
 - (void)containerViewWillLayoutSubviews {
   self.presentedView.frame = [self frameForPresentedView];
 
