@@ -131,7 +131,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   bool SetCaretOffset(int offset);
   bool SetTextSelectionForAtkText(int start_offset, int end_offset);
   bool HasSelection();
-  gchar* GetSelection(int* start_offset, int* end_offset);
+  void GetSelectionExtents(int* start_offset, int* end_offset);
+  gchar* GetSelectionWithText(int* start_offset, int* end_offset);
 
   std::string accessible_name_;
 

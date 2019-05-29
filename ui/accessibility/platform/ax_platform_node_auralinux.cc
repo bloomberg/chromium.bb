@@ -1150,7 +1150,7 @@ gchar* GetSelection(AtkText* atk_text,
   if (selection_num != 0)
     return nullptr;
 
-  return obj->GetSelection(start_offset, end_offset);
+  return obj->GetSelectionWithText(start_offset, end_offset);
 }
 
 gboolean RemoveSelection(AtkText* atk_text, int selection_num) {
@@ -3777,6 +3777,11 @@ bool AXPlatformNodeAuraLinux::SetCaretOffset(int offset) {
   if (offset < 0 || offset > character_count)
     offset = character_count;
 
+  // Even if we don't change anything, we still want to act like we
+  // were successful.
+  if (offset == GetCaretOffset() && !HasSelection())
+    return true;
+
   offset = UnicodeToUTF16OffsetInText(offset);
   if (!SetHypertextSelection(offset, offset))
     return false;
@@ -3796,10 +3801,23 @@ bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
   if (end_offset < 0 || end_offset > int{text.length()})
     return false;
 
-  bool result = SetHypertextSelection(start_offset, end_offset);
-  if (result)
-    OnTextSelectionChanged();
-  return result;
+  // We must put these in the correct order so that we can do
+  // a comparison with the existing start and end below.
+  if (end_offset < start_offset)
+    std::swap(start_offset, end_offset);
+
+  // Even if we don't change anything, we still want to act like we
+  // were successful.
+  int old_start_offset, old_end_offset;
+  GetSelectionExtents(&old_start_offset, &old_end_offset);
+  if (old_start_offset == start_offset && old_end_offset == end_offset)
+    return true;
+
+  if (!SetHypertextSelection(start_offset, end_offset))
+    return false;
+
+  OnTextSelectionChanged();
+  return true;
 }
 
 bool AXPlatformNodeAuraLinux::HasSelection() {
@@ -3809,10 +3827,8 @@ bool AXPlatformNodeAuraLinux::HasSelection() {
          selection_start != selection_end;
 }
 
-// Since this method doesn't return a static gchar*, we expect the caller of
-// atk_text_get_selection to free the return value.
-gchar* AXPlatformNodeAuraLinux::GetSelection(int* start_offset,
-                                             int* end_offset) {
+void AXPlatformNodeAuraLinux::GetSelectionExtents(int* start_offset,
+                                                  int* end_offset) {
   if (start_offset)
     *start_offset = 0;
   if (end_offset)
@@ -3822,7 +3838,7 @@ gchar* AXPlatformNodeAuraLinux::GetSelection(int* start_offset,
   GetSelectionOffsets(&selection_start, &selection_end);
   if (selection_start < 0 || selection_end < 0 ||
       selection_start == selection_end)
-    return nullptr;
+    return;
 
   // We should ignore the direction of the selection when exposing start and
   // end offsets. According to the ATK documentation the end offset is always
@@ -3838,6 +3854,22 @@ gchar* AXPlatformNodeAuraLinux::GetSelection(int* start_offset,
     *start_offset = selection_start;
   if (end_offset)
     *end_offset = selection_end;
+}
+
+// Since this method doesn't return a static gchar*, we expect the caller of
+// atk_text_get_selection to free the return value.
+gchar* AXPlatformNodeAuraLinux::GetSelectionWithText(int* start_offset,
+                                                     int* end_offset) {
+  int selection_start, selection_end;
+  GetSelectionExtents(&selection_start, &selection_end);
+  if (start_offset)
+    *start_offset = selection_start;
+  if (end_offset)
+    *end_offset = selection_end;
+
+  if (selection_start < 0 || selection_end < 0 ||
+      selection_start == selection_end)
+    return nullptr;
 
   return atk_text::GetText(ATK_TEXT(atk_object_), selection_start,
                            selection_end);

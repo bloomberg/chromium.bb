@@ -1356,16 +1356,23 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCaretMoved) {
   ASSERT_EQ(atk_text_get_caret_offset(atk_text), 4);
   ASSERT_EQ(caret_position_from_event, 4);
 
+  // Setting the same position should not trigger another event.
   caret_position_from_event = -1;
+  atk_text_set_caret_offset(atk_text, 4);
+  ASSERT_EQ(atk_text_get_caret_offset(atk_text), 4);
+  ASSERT_EQ(caret_position_from_event, -1);
+
   int character_count = atk_text_get_character_count(atk_text);
   atk_text_set_caret_offset(atk_text, -1);
   ASSERT_EQ(atk_text_get_caret_offset(atk_text), character_count);
   ASSERT_EQ(caret_position_from_event, character_count);
+  atk_text_set_caret_offset(atk_text, 0);  // Reset position.
 
   caret_position_from_event = -1;
   atk_text_set_caret_offset(atk_text, -1000);
   ASSERT_EQ(atk_text_get_caret_offset(atk_text), character_count);
   ASSERT_EQ(caret_position_from_event, character_count);
+  atk_text_set_caret_offset(atk_text, 0);  // Reset position.
 
   caret_position_from_event = -1;
   atk_text_set_caret_offset(atk_text, 1000);
@@ -1993,9 +2000,21 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldSetSelection) {
   EXPECT_EQ(selection_start, 0);
   EXPECT_EQ(selection_end, 1);
 
+  // Reset position.
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 0));
+
   saw_selection_change = false;
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 1, 0));
   EXPECT_TRUE(saw_selection_change);
+  g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
+  EXPECT_EQ(selection_start, 0);
+  EXPECT_EQ(selection_end, 1);
+
+  // Setting the selection to the same location should not trigger
+  // another event.
+  saw_selection_change = false;
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 1, 0));
+  EXPECT_FALSE(saw_selection_change);
   g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
   EXPECT_EQ(selection_start, 0);
   EXPECT_EQ(selection_end, 1);
@@ -2032,6 +2051,9 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldSetSelection) {
   EXPECT_TRUE(atk_text_remove_selection(atk_text, 0));
   EXPECT_TRUE(saw_selection_change);
   EXPECT_EQ(0, atk_text_get_n_selections(atk_text));
+
+  // Reset position.
+  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 0));
 
   saw_selection_change = false;
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 1));
