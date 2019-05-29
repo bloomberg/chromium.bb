@@ -3138,6 +3138,10 @@ const char kSmartTextSelectionDescription[] =
     "Shows quick actions for text "
     "selections in the context menu.";
 
+const char kSplitSettingsName[] = "Split OS and browser settings";
+const char kSplitSettingsDescription[] =
+    "Show separate settings for the OS and browser";
+
 const char kStreamlinedUsbPrinterSetupName[] =
     "Streamlined USB Printer Setup Flow";
 const char kStreamlinedUsbPrinterSetupDescription[] =

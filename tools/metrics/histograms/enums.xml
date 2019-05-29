@@ -33883,6 +33883,7 @@ from previous Chrome versions.
   <int value="-820041355" label="enable-transition-compositing"/>
   <int value="-816984237" label="OfflinePagesAsyncDownload:enabled"/>
   <int value="-816895294" label="DiscoverApp:disabled"/>
+  <int value="-815213125" label="SplitSettings:enabled"/>
   <int value="-814097014" label="disable-session-crashed-bubble"/>
   <int value="-813753274" label="VrBrowsing:disabled"/>
   <int value="-813474479" label="site-per-process"/>
@@ -33987,6 +33988,7 @@ from previous Chrome versions.
   <int value="-673804828" label="EnablePlayStoreAppSearch:disabled"/>
   <int value="-671992446" label="TranslateRankerEnforcement:disabled"/>
   <int value="-670188266" label="enable-zip-archiver-unpacker"/>
+  <int value="-669761849" label="SplitSettings:disabled"/>
   <int value="-667517406" label="overscroll-history-navigation"/>
   <int value="-667018797"
       label="OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions:disabled"/>

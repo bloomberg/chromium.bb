@@ -1880,6 +1880,9 @@ extern const char kSmartDimModelV3Description[];
 extern const char kSmartTextSelectionName[];
 extern const char kSmartTextSelectionDescription[];
 
+extern const char kSplitSettingsName[];
+extern const char kSplitSettingsDescription[];
+
 extern const char kStreamlinedUsbPrinterSetupName[];
 extern const char kStreamlinedUsbPrinterSetupDescription[];
 

@@ -3829,6 +3829,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kSmartDimModelV3)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+    {"split-settings", flag_descriptions::kSplitSettingsName,
+     flag_descriptions::kSplitSettingsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kSplitSettings)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

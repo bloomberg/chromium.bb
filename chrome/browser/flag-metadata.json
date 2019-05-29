@@ -2753,6 +2753,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "split-settings",
+    "owners": [ "maybelle" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "stop-in-background",
     "owners": [ "chrome-catan@google.com" ],
     "expiry_milestone": 76
