@@ -164,11 +164,10 @@ class WaylandGamingSeatDelegate : public GamingSeatDelegate {
           GetGamepadBusType(device.type), device.vendor_id, device.product_id,
           device.version);
 
-      for (size_t i = 0; i < device.axes.size(); ++i) {
-        const auto& axis = device.axes[i];
-        zcr_gamepad_v2_send_axis_added(gamepad_resource, i, axis.min_value,
-                                       axis.max_value, axis.flat, axis.fuzz,
-                                       axis.resolution);
+      for (const auto& axis : device.axes) {
+        zcr_gamepad_v2_send_axis_added(gamepad_resource, axis.code,
+                                       axis.min_value, axis.max_value,
+                                       axis.flat, axis.fuzz, axis.resolution);
       }
       zcr_gamepad_v2_send_activated(gamepad_resource);
     } else {

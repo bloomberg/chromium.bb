@@ -135,6 +135,7 @@ GamepadEventConverterEvdev::GamepadEventConverterEvdev(
     abs_info = devinfo.GetAbsInfoByCode(code);
     if (devinfo.HasAbsEvent(code)) {
       ui::GamepadDevice::Axis axis;
+      axis.code = code;
       axis.min_value = abs_info.minimum;
       axis.max_value = abs_info.maximum;
       axis.flat = abs_info.flat;

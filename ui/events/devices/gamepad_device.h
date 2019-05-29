@@ -16,6 +16,9 @@ namespace ui {
 struct EVENTS_DEVICES_EXPORT GamepadDevice : public InputDevice {
   // Represents an axis of a gamepad e.g. an analog thumb stick.
   struct Axis {
+    // Gamepad axis index. Corresponds to |raw_code_| of GamepadEvent.
+    uint16_t code = 0;
+
     // See input_absinfo for the definition of these variables.
     int32_t min_value = 0;
     int32_t max_value = 0;
