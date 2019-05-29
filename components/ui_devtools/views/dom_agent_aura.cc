@@ -25,6 +25,7 @@ DOMAgentAura::DOMAgentAura() {
   dom_agent_aura_ = this;
   aura::Env::GetInstance()->AddObserver(this);
 }
+
 DOMAgentAura::~DOMAgentAura() {
   for (aura::Window* window : roots_)
     window->RemoveObserver(this);
@@ -32,13 +33,9 @@ DOMAgentAura::~DOMAgentAura() {
   dom_agent_aura_ = nullptr;
 }
 
-void DOMAgentAura::RegisterRootWindow(aura::Window* root) {
-  roots_.push_back(root);
-  root->AddObserver(this);
-}
-
 void DOMAgentAura::OnHostInitialized(aura::WindowTreeHost* host) {
-  RegisterRootWindow(host->window());
+  roots_.push_back(host->window());
+  host->window()->AddObserver(this);
 }
 
 void DOMAgentAura::OnWindowDestroying(aura::Window* window) {

@@ -24,7 +24,6 @@ class DOMAgentAura : public DOMAgentViews,
 
   ~DOMAgentAura() override;
   static DOMAgentAura* GetInstance() { return dom_agent_aura_; }
-  void RegisterRootWindow(aura::Window* root);
 
   // DOMAgent
   std::vector<UIElement*> CreateChildrenForRoot() override;

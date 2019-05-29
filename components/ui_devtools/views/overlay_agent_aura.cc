@@ -4,6 +4,7 @@
 
 #include "components/ui_devtools/views/overlay_agent_aura.h"
 
+#include "components/ui_devtools/dom_agent.h"
 #include "components/ui_devtools/views/window_element.h"
 #include "ui/aura/env.h"
 #include "ui/views/view.h"

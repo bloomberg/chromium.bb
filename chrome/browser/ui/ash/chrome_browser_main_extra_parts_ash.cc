@@ -50,8 +50,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
-#include "components/ui_devtools/switches.h"
-#include "components/ui_devtools/views/devtools_server_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -127,18 +125,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       std::make_unique<CastConfigControllerMediaRouter>();
 
   ash_shell_init_ = std::make_unique<AshShellInit>();
-
-  if (ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
-          ui_devtools::switches::kEnableUiDevTools)) {
-    // Register Ash's root windows with UI DevTools; warn in multi-process Mash.
-    // TODO(crbug.com/896977): Refine ui_devtools support for Ash and mojo apps.
-    if (features::IsSingleProcessMash()) {
-      ui_devtools::RegisterAdditionalRootWindowsAndEnv(
-          ash::Shell::Get()->GetAllRootWindows());
-    } else if (features::IsMultiProcessMash()) {
-      LOG(WARNING) << "Chrome cannot access Ash and mojo app UIs in Mash.";
-    }
-  }
 
   screen_orientation_delegate_ =
       std::make_unique<ScreenOrientationDelegateChromeos>();
