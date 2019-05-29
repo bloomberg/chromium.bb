@@ -12,7 +12,6 @@
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -29,17 +28,17 @@ class ExceptionState;
 class FetchHeaderList;
 class SecurityOrigin;
 class ScriptState;
-class WebServiceWorkerRequest;
 
-class FetchRequestData final
+class CORE_EXPORT FetchRequestData final
     : public GarbageCollectedFinalized<FetchRequestData> {
  public:
   enum Tainting { kBasicTainting, kCorsTainting, kOpaqueTainting };
+  enum class ForServiceWorkerFetchEvent { kFalse, kTrue };
 
   static FetchRequestData* Create();
-  static FetchRequestData* Create(ScriptState*, const WebServiceWorkerRequest&);
   static FetchRequestData* Create(ScriptState*,
-                                  const mojom::blink::FetchAPIRequest&);
+                                  const mojom::blink::FetchAPIRequest&,
+                                  ForServiceWorkerFetchEvent);
   FetchRequestData* Clone(ScriptState*, ExceptionState&);
   FetchRequestData* Pass(ScriptState*, ExceptionState&);
 

@@ -199,6 +199,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void DidStartWorkerThread() override;
   void WillStopWorkerThread() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;
+  bool IsExcludedHeaderForServiceWorkerFetchEvent(
+      const blink::WebString& header_name) override;
 
   void RecordMetricsForBackgroundedRendererPurge() override;
 

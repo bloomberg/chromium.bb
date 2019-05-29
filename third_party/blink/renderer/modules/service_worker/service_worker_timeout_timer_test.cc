@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/service_worker/service_worker_timeout_timer.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_timeout_timer.h"
 
-#include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/location.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/time/tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -25,37 +22,37 @@ class MockEvent {
   MockEvent() : weak_factory_(this) {}
 
   ServiceWorkerTimeoutTimer::AbortCallback CreateAbortCallback() {
-    return base::BindOnce(&MockEvent::Abort, weak_factory_.GetWeakPtr());
+    return WTF::Bind(&MockEvent::Abort, weak_factory_.GetWeakPtr());
   }
 
   int event_id() const { return event_id_; }
   void set_event_id(int event_id) { event_id_ = event_id; }
-  const base::Optional<blink::mojom::ServiceWorkerEventStatus>& status() const {
+  const base::Optional<mojom::blink::ServiceWorkerEventStatus>& status() const {
     return status_;
   }
 
  private:
-  void Abort(int event_id, blink::mojom::ServiceWorkerEventStatus status) {
+  void Abort(int event_id, mojom::blink::ServiceWorkerEventStatus status) {
     EXPECT_EQ(event_id_, event_id);
     EXPECT_FALSE(status_.has_value());
     status_ = status;
   }
 
   int event_id_ = 0;
-  base::Optional<blink::mojom::ServiceWorkerEventStatus> status_;
+  base::Optional<mojom::blink::ServiceWorkerEventStatus> status_;
   base::WeakPtrFactory<MockEvent> weak_factory_;
 };
 
 base::RepeatingClosure CreateReceiverWithCalledFlag(bool* out_is_called) {
-  return base::BindRepeating([](bool* out_is_called) { *out_is_called = true; },
-                             out_is_called);
+  return WTF::BindRepeating([](bool* out_is_called) { *out_is_called = true; },
+                            WTF::Unretained(out_is_called));
 }
 
 base::OnceClosure CreateDispatchingEventTask(
     ServiceWorkerTimeoutTimer* timer,
     std::string tag,
     std::vector<std::string>* out_tags) {
-  return base::BindOnce(
+  return WTF::Bind(
       [](ServiceWorkerTimeoutTimer* timer, std::string tag,
          std::vector<std::string>* out_tags) {
         // Event dispatched inside of pending task should run successfully.
@@ -70,7 +67,7 @@ base::OnceClosure CreateDispatchingEventTask(
         timer->EndEvent(event_id);
         EXPECT_FALSE(event.status().has_value());
       },
-      timer, std::move(tag), out_tags);
+      WTF::Unretained(timer), std::move(tag), WTF::Unretained(out_tags));
 }
 
 }  // namespace
@@ -82,14 +79,19 @@ class ServiceWorkerTimeoutTimerTest : public testing::Test {
   void SetUp() override {
     task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
         base::Time::Now(), base::TimeTicks::Now());
-    message_loop_.SetTaskRunner(task_runner_);
+    // Ensure all things run on |task_runner_| instead of the default task
+    // runner initialized by blink_unittests.
+    task_runner_context_ =
+        std::make_unique<base::TestMockTimeTaskRunner::ScopedContext>(
+            task_runner_);
   }
 
   base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
-  base::MessageLoop message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  std::unique_ptr<base::TestMockTimeTaskRunner::ScopedContext>
+      task_runner_context_;
 };
 
 TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
@@ -222,7 +224,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, EventTimer) {
 
   EXPECT_FALSE(event1.status().has_value());
   EXPECT_TRUE(event2.status().has_value());
-  EXPECT_EQ(blink::mojom::ServiceWorkerEventStatus::TIMEOUT,
+  EXPECT_EQ(mojom::blink::ServiceWorkerEventStatus::TIMEOUT,
             event2.status().value());
 }
 
@@ -245,14 +247,14 @@ TEST_F(ServiceWorkerTimeoutTimerTest, CustomTimeouts) {
 
   EXPECT_TRUE(event1.status().has_value());
   EXPECT_FALSE(event2.status().has_value());
-  EXPECT_EQ(blink::mojom::ServiceWorkerEventStatus::TIMEOUT,
+  EXPECT_EQ(mojom::blink::ServiceWorkerEventStatus::TIMEOUT,
             event1.status().value());
   task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kUpdateInterval +
                                base::TimeDelta::FromSeconds(1));
 
   EXPECT_TRUE(event1.status().has_value());
   EXPECT_TRUE(event2.status().has_value());
-  EXPECT_EQ(blink::mojom::ServiceWorkerEventStatus::TIMEOUT,
+  EXPECT_EQ(mojom::blink::ServiceWorkerEventStatus::TIMEOUT,
             event2.status().value());
 }
 
@@ -294,10 +296,10 @@ TEST_F(ServiceWorkerTimeoutTimerTest, AbortAllOnDestruction) {
   }
 
   EXPECT_TRUE(event1.status().has_value());
-  EXPECT_EQ(blink::mojom::ServiceWorkerEventStatus::ABORTED,
+  EXPECT_EQ(mojom::blink::ServiceWorkerEventStatus::ABORTED,
             event1.status().value());
   EXPECT_TRUE(event2.status().has_value());
-  EXPECT_EQ(blink::mojom::ServiceWorkerEventStatus::ABORTED,
+  EXPECT_EQ(mojom::blink::ServiceWorkerEventStatus::ABORTED,
             event2.status().value());
 }
 
@@ -416,4 +418,4 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
   }
 }
 
-}  // namespace content
+}  // namespace blink

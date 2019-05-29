@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/payments/payment_handler_utils.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "v8/include/v8.h"
@@ -26,7 +26,7 @@ void CanMakePaymentRespondWithObserver::OnResponseRejected(
   PaymentHandlerUtils::ReportResponseError(GetExecutionContext(),
                                            "CanMakePaymentEvent", error);
 
-  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+  To<ServiceWorkerGlobalScope>(GetExecutionContext())
       ->RespondToCanMakePaymentEvent(event_id_, false);
 }
 
@@ -46,13 +46,13 @@ void CanMakePaymentRespondWithObserver::OnResponseFulfilled(
     return;
   }
 
-  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+  To<ServiceWorkerGlobalScope>(GetExecutionContext())
       ->RespondToCanMakePaymentEvent(event_id_, response);
 }
 
 void CanMakePaymentRespondWithObserver::OnNoResponse() {
   DCHECK(GetExecutionContext());
-  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+  To<ServiceWorkerGlobalScope>(GetExecutionContext())
       ->RespondToCanMakePaymentEvent(event_id_, true);
 }
 

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_
-#define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_
 
 #include <map>
 #include <set>
 
 #include "base/callback.h"
-#include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace base {
 
@@ -22,7 +22,7 @@ class TickClock;
 
 }  // namespace base
 
-namespace content {
+namespace blink {
 
 // ServiceWorkerTimeoutTimer manages two types of timeouts: the long standing
 // event timeout and the idle timeout.
@@ -40,11 +40,11 @@ namespace content {
 // The lifetime of ServiceWorkerTimeoutTimer is the same with the worker
 // thread. If ServiceWorkerTimeoutTimer is destructed while there are inflight
 // events, all |abort_callback|s will be immediately called with status ABORTED.
-class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
+class MODULES_EXPORT ServiceWorkerTimeoutTimer {
  public:
   // A token to keep the timeout timer from going into the idle state if any of
   // them are alive.
-  class CONTENT_EXPORT StayAwakeToken {
+  class MODULES_EXPORT StayAwakeToken {
    public:
     explicit StayAwakeToken(base::WeakPtr<ServiceWorkerTimeoutTimer> timer);
     ~StayAwakeToken();
@@ -55,7 +55,7 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
 
   using AbortCallback =
       base::OnceCallback<void(int /* event_id */,
-                              blink::mojom::ServiceWorkerEventStatus)>;
+                              mojom::blink::ServiceWorkerEventStatus)>;
 
   explicit ServiceWorkerTimeoutTimer(base::RepeatingClosure idle_callback);
   // For testing.
@@ -135,7 +135,7 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   struct EventInfo {
     EventInfo(int id,
               base::TimeTicks expiration_time,
-              base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus)>
+              base::OnceCallback<void(mojom::blink::ServiceWorkerEventStatus)>
                   abort_callback);
     ~EventInfo();
     // Compares |expiration_time|, or |id| if |expiration_time| is the same.
@@ -143,7 +143,7 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
 
     const int id;
     const base::TimeTicks expiration_time;
-    mutable base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus)>
+    mutable base::OnceCallback<void(mojom::blink::ServiceWorkerEventStatus)>
         abort_callback;
   };
 
@@ -175,7 +175,7 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   // terminate it due to idleness. These tasks run once StartEvent() is called
   // due to a new event from the browser, signalling that the browser decided
   // not to terminate the worker.
-  base::queue<base::OnceClosure> pending_tasks_;
+  Deque<base::OnceClosure> pending_tasks_;
 
   // Set to true during running |pending_tasks_|. This is used for avoiding to
   // invoke |idle_callback_| when running |pending_tasks_|.
@@ -195,6 +195,6 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   base::WeakPtrFactory<ServiceWorkerTimeoutTimer> weak_factory_;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_TIMEOUT_TIMER_H_

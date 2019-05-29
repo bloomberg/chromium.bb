@@ -1113,8 +1113,9 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
               HeapVector<Member<Request>> requests;
               requests.ReserveInitialCapacity(result->get_keys().size());
               for (auto& request : result->get_keys()) {
-                requests.push_back(
-                    Request::Create(resolver->GetScriptState(), *request));
+                requests.push_back(Request::Create(
+                    resolver->GetScriptState(), *request,
+                    Request::ForServiceWorkerFetchEvent::kFalse));
               }
               resolver->Resolve(requests);
             }

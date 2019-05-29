@@ -1477,7 +1477,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   FetchOnRegisteredWorker(kPath, &result, &response1, &blob_data_handle);
   ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
             result);
-  EXPECT_EQ(std::string(), *response1->cache_storage_cache_name);
+  EXPECT_FALSE(response1->cache_storage_cache_name.has_value());
   EXPECT_EQ(network::mojom::FetchResponseSource::kNetwork,
             response1->response_source);
 
@@ -1508,7 +1508,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   FetchOnRegisteredWorker(kPath, &result, &response1, &blob_data_handle);
   ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
             result);
-  EXPECT_EQ(std::string(), *response1->cache_storage_cache_name);
+  EXPECT_FALSE(response1->cache_storage_cache_name.has_value());
   EXPECT_EQ(network::mojom::FetchResponseSource::kNetwork,
             response1->response_source);
 

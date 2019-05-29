@@ -659,6 +659,10 @@ class BLINK_PLATFORM_EXPORT Platform {
       const WebSecurityOrigin& script_origin) {
     return false;
   }
+  virtual bool IsExcludedHeaderForServiceWorkerFetchEvent(
+      const WebString& header_name) {
+    return false;
+  }
 
   // WebCrypto ----------------------------------------------------------
 
