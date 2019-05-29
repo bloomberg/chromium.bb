@@ -284,15 +284,6 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
                                            kFeaturePolicyBlocked));
   }
 
-  // If we no longer have a valid service connection reject the request, unless
-  // it was for an inline mode.  In which case, we'll end up creating the
-  // session in OnRequestSessionReturned.
-  if (!service_ && session_mode != XRSession::kModeInline) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotFoundError, kNoDevicesMessage));
-  }
-
   // Only one immersive session can be active at a time.
   if (is_immersive && frameProvider()->immersive_session()) {
     return ScriptPromise::RejectWithDOMException(
@@ -308,6 +299,19 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
                                            kRequestRequiresUserActivation));
+  }
+
+  // TODO(https://crbug.com/962991): The error handling here is not spec
+  // compliant. The spec says to reject based on no device before rejecting
+  // based on user gesture.
+  // If we no longer have a valid service connection reject the request, unless
+  // it was for an inline mode.  In which case, we'll end up creating the
+  // session in OnRequestSessionReturned.
+  if (!service_ && session_mode != XRSession::kModeInline) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
+                                           kNoDevicesMessage));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -340,6 +344,9 @@ void XR::DispatchRequestSession(PendingSessionQuery* query) {
       return;
     }
 
+    // TODO(https://crbug.com/962991): The spec says to reject with null.
+    // Clarify/fix the spec. In other places where we have no device or no
+    // service we return kNotSupportedError.
     query->resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
     return;
@@ -613,6 +620,9 @@ void XR::OnDeviceDisconnect() {
   HeapHashSet<Member<PendingSessionQuery>> request_queries =
       outstanding_request_queries_;
   for (const auto& query : request_queries) {
+    // We had a device, so rejecting the session request as though the mode
+    // isn't supported. TODO(https://crbug.com/962991): The spec should specify
+    // what is returned here.
     OnRequestSessionReturned(query, nullptr);
   }
   DCHECK(outstanding_support_queries_.IsEmpty());

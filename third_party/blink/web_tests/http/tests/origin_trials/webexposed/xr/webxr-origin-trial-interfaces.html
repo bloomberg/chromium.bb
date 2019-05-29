@@ -92,16 +92,6 @@ test(t => {
 // Ensure that AR sessions are not exposed as part of the WebXR origin trial.
 // The webXREnabled check is effectively checking whether experimental features
 // are enabled. This works as long as at least one AR feature is experimental.
-// TODO(https://crbug.com/962685): Make the supportsSession checks first after
-// this issue is fixed.
-promise_test(t => {
-  let promise = navigator.xr.requestSession('immersive-ar');
-  if (OriginTrialsHelper.is_runtime_flag_enabled('webXREnabled')) {
-    return promise_rejects(t, "SecurityError", promise);
-  } else {
-    return promise_rejects(t, new TypeError(), promise);
-  }
-}, "immersive-ar is not recognized by requestSession() with a WebXR token.");
 promise_test(t => {
   let promise = navigator.xr.supportsSession('immersive-ar');
   if (OriginTrialsHelper.is_runtime_flag_enabled('webXREnabled')) {
@@ -110,6 +100,14 @@ promise_test(t => {
     return promise_rejects(t, new TypeError(), promise);
   }
 }, "immersive-ar is not recognized by supportsSession() with a WebXR token.");
+promise_test(t => {
+  let promise = navigator.xr.requestSession('immersive-ar');
+  if (OriginTrialsHelper.is_runtime_flag_enabled('webXREnabled')) {
+    return promise_rejects(t, "SecurityError", promise);
+  } else {
+    return promise_rejects(t, new TypeError(), promise);
+  }
+}, "immersive-ar is not recognized by requestSession() with a WebXR token.");
 // Verify the rejection reason matches that for other invalid enum values.
 // It only makes sense to run these when the failure occurs.
 if (!OriginTrialsHelper.is_runtime_flag_enabled('webXREnabled')) {
