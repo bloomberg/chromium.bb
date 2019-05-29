@@ -3327,7 +3327,7 @@ Document* Document::open(v8::Isolate* isolate,
                          const AtomicString& replace,
                          ExceptionState& exception_state) {
   if (replace == "replace") {
-    UseCounter::Count(Loader(), WebFeature::kDocumentOpenTwoArgsWithReplace);
+    CountUse(WebFeature::kDocumentOpenTwoArgsWithReplace);
   }
   open(EnteredDOMWindow(isolate)->document(), exception_state);
   return this;
@@ -8068,6 +8068,52 @@ TrustedTypePolicyFactory* Document::GetTrustedTypes() const {
 void Document::ColorSchemeChanged() {
   GetStyleEngine().ColorSchemeChanged();
   MediaQueryAffectingValueChanged();
+}
+
+void Document::CountUse(mojom::WebFeature feature) const {
+  if (DocumentLoader* loader = Loader()) {
+    loader->CountUse(feature);
+  }
+}
+
+void Document::CountUse(mojom::WebFeature feature) {
+  if (DocumentLoader* loader = Loader()) {
+    loader->CountUse(feature);
+  }
+}
+
+void Document::CountUse(CSSPropertyID property,
+                        FrameUseCounter::CSSPropertyType type) const {
+  if (DocumentLoader* loader = Loader()) {
+    loader->GetUseCounter().Count(property, type, GetFrame());
+  }
+}
+
+void Document::CountUseOnlyInCrossOriginIframe(
+    mojom::WebFeature feature) const {
+  LocalFrame* frame = GetFrame();
+  if (frame && frame->IsCrossOriginSubframe())
+    CountUse(feature);
+}
+
+bool Document::IsUseCounted(mojom::WebFeature feature) const {
+  if (DocumentLoader* loader = Loader()) {
+    return loader->GetUseCounter().HasRecordedMeasurement(feature);
+  }
+  return false;
+}
+
+bool Document::IsUseCounted(CSSPropertyID property,
+                            FrameUseCounter::CSSPropertyType type) const {
+  if (DocumentLoader* loader = Loader()) {
+    return loader->GetUseCounter().IsCounted(property, type);
+  }
+  return false;
+}
+
+void Document::ClearUseCounterForTesting(mojom::WebFeature feature) {
+  if (DocumentLoader* loader = Loader())
+    loader->GetUseCounter().ClearMeasurementForTesting(feature);
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

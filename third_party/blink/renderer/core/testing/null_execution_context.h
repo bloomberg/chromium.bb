@@ -65,6 +65,8 @@ class NullExecutionContext
   FrameOrWorkerScheduler* GetScheduler() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
+  void CountUse(mojom::WebFeature) override {}
+
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
 

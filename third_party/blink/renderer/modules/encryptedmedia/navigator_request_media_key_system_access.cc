@@ -158,8 +158,8 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   }
 
   UseCounter::Count(*document, WebFeature::kEncryptedMediaSecureOrigin);
-  UseCounter::CountCrossOriginIframe(
-      *document, WebFeature::kEncryptedMediaCrossOriginIframe);
+  document->CountUseOnlyInCrossOriginIframe(
+      WebFeature::kEncryptedMediaCrossOriginIframe);
 
   // 4. Let origin be the origin of document.
   //    (Passed with the execution context.)

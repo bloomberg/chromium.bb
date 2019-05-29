@@ -4686,8 +4686,8 @@ TEST_F(WebViewTest, SubframeBeforeUnloadUseCounter) {
     frame->ExecuteScript(
         WebScriptSource("addEventListener('beforeunload', function() {});"));
     web_view->MainFrameImpl()->DispatchBeforeUnloadEvent(false);
-    EXPECT_FALSE(UseCounter::IsCounted(*document,
-                                       WebFeature::kSubFrameBeforeUnloadFired));
+    EXPECT_FALSE(
+        document->IsUseCounted(WebFeature::kSubFrameBeforeUnloadFired));
   }
 
   // Add a beforeunload handler in the iframe and dispatch. Make sure we do
@@ -4706,8 +4706,8 @@ TEST_F(WebViewTest, SubframeBeforeUnloadUseCounter) {
                                                   ->Tree()
                                                   .FirstChild())
                                    ->GetDocument();
-    EXPECT_TRUE(UseCounter::IsCounted(*child_document,
-                                      WebFeature::kSubFrameBeforeUnloadFired));
+    EXPECT_TRUE(
+        child_document->IsUseCounted(WebFeature::kSubFrameBeforeUnloadFired));
   }
 }
 

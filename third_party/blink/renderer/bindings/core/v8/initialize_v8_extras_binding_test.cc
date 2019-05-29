@@ -38,8 +38,8 @@ TEST(InitializeV8ExtrasBindingTest, SupportedId) {
   ScriptValue rv = EvalWithPrintingError(
       &scope, "binding.countUse('TransformStreamConstructor');");
   EXPECT_TRUE(rv.IsUndefined());
-  EXPECT_TRUE(UseCounter::IsCounted(scope.GetDocument(),
-                                    WebFeature::kTransformStreamConstructor));
+  EXPECT_TRUE(scope.GetDocument().IsUseCounted(
+      WebFeature::kTransformStreamConstructor));
 }
 
 TEST(InitializeV8ExtrasBindingTest, UnsupportedId) {

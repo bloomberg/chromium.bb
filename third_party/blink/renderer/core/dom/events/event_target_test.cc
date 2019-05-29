@@ -52,40 +52,40 @@ TEST_F(EventTargetTest, PreventDefaultCalled) {
 }
 
 TEST_F(EventTargetTest, UseCountPassiveTouchEventListener) {
-  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(),
-                                     WebFeature::kPassiveTouchEventListener));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kPassiveTouchEventListener));
   GetDocument().GetSettings()->SetScriptEnabled(true);
   GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
       "window.addEventListener('touchstart', function() {}, {passive: true});");
-  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
-                                    WebFeature::kPassiveTouchEventListener));
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kNonPassiveTouchEventListener));
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kPassiveTouchEventListener));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kNonPassiveTouchEventListener));
 }
 
 TEST_F(EventTargetTest, UseCountNonPassiveTouchEventListener) {
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kNonPassiveTouchEventListener));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kNonPassiveTouchEventListener));
   GetDocument().GetSettings()->SetScriptEnabled(true);
   GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
       "window.addEventListener('touchstart', function() {}, {passive: "
       "false});");
-  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
-                                    WebFeature::kNonPassiveTouchEventListener));
-  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(),
-                                     WebFeature::kPassiveTouchEventListener));
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kNonPassiveTouchEventListener));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kPassiveTouchEventListener));
 }
 
 TEST_F(EventTargetTest, UseCountPassiveTouchEventListenerPassiveNotSpecified) {
-  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(),
-                                     WebFeature::kPassiveTouchEventListener));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kPassiveTouchEventListener));
   GetDocument().GetSettings()->SetScriptEnabled(true);
   GetDocument().GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
       "window.addEventListener('touchstart', function() {});");
-  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
-                                    WebFeature::kPassiveTouchEventListener));
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kNonPassiveTouchEventListener));
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kPassiveTouchEventListener));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kNonPassiveTouchEventListener));
 }
 
 }  // namespace blink

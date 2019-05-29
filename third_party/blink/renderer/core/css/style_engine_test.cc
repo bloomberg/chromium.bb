@@ -1781,8 +1781,8 @@ TEST_F(StyleEngineTest, CSSSelectorEmptyWhitespaceOnlyFail) {
   GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail));
 
   auto* div_elements = GetDocument().getElementsByTagName("div");
   ASSERT_TRUE(div_elements);
@@ -1792,8 +1792,7 @@ TEST_F(StyleEngineTest, CSSSelectorEmptyWhitespaceOnlyFail) {
     element->setAttribute(blink::html_names::kClassAttr, "match");
     element->GetDocument().View()->UpdateAllLifecyclePhases(
         DocumentLifecycle::LifecycleUpdateReason::kTest);
-    return UseCounter::IsCounted(
-        element->GetDocument(),
+    return element->GetDocument().IsUseCounted(
         WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail);
   };
 

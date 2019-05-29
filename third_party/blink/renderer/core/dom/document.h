@@ -39,10 +39,12 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
@@ -64,6 +66,7 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -1556,6 +1559,23 @@ class CORE_EXPORT Document : public ContainerNode,
   // A META element with name=color-scheme was added, removed, or modified.
   // Update the presentation level color-scheme property for the root element.
   void ColorSchemeMetaChanged();
+
+  // Use counter related functions.
+  void CountUse(mojom::WebFeature feature) final;
+  void CountUse(mojom::WebFeature feature) const;
+  void CountUse(CSSPropertyID property_id,
+                FrameUseCounter::CSSPropertyType) const;
+  // Count |feature| only when this document is associated with a cross-origin
+  // iframe.
+  void CountUseOnlyInCrossOriginIframe(mojom::WebFeature feature) const;
+  // Return whether the Feature was previously counted for this document.
+  // NOTE: only for use in testing.
+  bool IsUseCounted(mojom::WebFeature) const;
+  // Return whether the property was previously counted for this document.
+  // NOTE: only for use in testing.
+  bool IsUseCounted(CSSPropertyID property,
+                    FrameUseCounter::CSSPropertyType) const;
+  void ClearUseCounterForTesting(mojom::WebFeature);
 
  protected:
   void DidUpdateSecurityOrigin() final;

@@ -55,8 +55,8 @@ AudioContext* AudioContext::Create(Document& document,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  UseCounter::CountCrossOriginIframe(
-      document, WebFeature::kAudioContextCrossOriginIframe);
+  document.CountUseOnlyInCrossOriginIframe(
+      WebFeature::kAudioContextCrossOriginIframe);
 
   WebAudioLatencyHint latency_hint(WebAudioLatencyHint::kCategoryInteractive);
   if (context_options->latencyHint().IsAudioContextLatencyCategory()) {

@@ -2270,50 +2270,50 @@ TEST_F(ScrollbarsTest, UseCounterNegativeWhenThumbIsNotScrolledWithMouse) {
                                 IntPoint(100, 100), ScrollOffset(0, -100)));
   WebView().MainFrameWidget()->HandleInputEvent(GenerateWheelGestureEvent(
       WebInputEvent::kGestureScrollEnd, IntPoint(100, 100)));
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
 
   // Hovering over the vertical scrollbar won't trigger the UseCounter.
   HandleMouseMoveEvent(195, 5);
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
 
   // Hovering over the horizontal scrollbar won't trigger the UseCounter.
   HandleMouseMoveEvent(5, 195);
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kHorizontalScrollbarThumbScrollingWithMouse));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kHorizontalScrollbarThumbScrollingWithMouse));
 
   // Clicking on the vertical scrollbar won't trigger the UseCounter.
   HandleMousePressEvent(195, 175);
   EXPECT_EQ(vertical_scrollbar->PressedPart(),
             ScrollbarPart::kForwardTrackPart);
   HandleMouseReleaseEvent(195, 175);
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
 
   // Clicking on the horizontal scrollbar won't trigger the UseCounter.
   HandleMousePressEvent(175, 195);
   EXPECT_EQ(horizontal_scrollbar->PressedPart(),
             ScrollbarPart::kForwardTrackPart);
   HandleMouseReleaseEvent(175, 195);
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kHorizontalScrollbarThumbScrollingWithMouse));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kHorizontalScrollbarThumbScrollingWithMouse));
 
   // Clicking outside the scrollbar and then releasing over the thumb of the
   // vertical scrollbar won't trigger the UseCounter.
   HandleMousePressEvent(50, 50);
   HandleMouseMoveEvent(195, 5);
   HandleMouseReleaseEvent(195, 5);
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
 
   // Clicking outside the scrollbar and then releasing over the thumb of the
   // horizontal scrollbar won't trigger the UseCounter.
   HandleMousePressEvent(50, 50);
   HandleMouseMoveEvent(5, 195);
   HandleMouseReleaseEvent(5, 195);
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kHorizontalScrollbarThumbScrollingWithMouse));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kHorizontalScrollbarThumbScrollingWithMouse));
 }
 
 TEST_F(ScrollbarsTest, UseCounterPositiveWhenThumbIsScrolledWithMouse) {
@@ -2345,15 +2345,15 @@ TEST_F(ScrollbarsTest, UseCounterPositiveWhenThumbIsScrolledWithMouse) {
   HandleMousePressEvent(195, 5);
   EXPECT_EQ(vertical_scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
   HandleMouseReleaseEvent(195, 5);
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kVerticalScrollbarThumbScrollingWithMouse));
 
   // Clicking the thumb on the horizontal scrollbar will trigger the UseCounter.
   HandleMousePressEvent(5, 195);
   EXPECT_EQ(horizontal_scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
   HandleMouseReleaseEvent(5, 195);
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kHorizontalScrollbarThumbScrollingWithMouse));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kHorizontalScrollbarThumbScrollingWithMouse));
 }
 
 TEST_F(ScrollbarsTest, UseCounterNegativeWhenThumbIsNotScrolledWithTouch) {
@@ -2388,8 +2388,8 @@ TEST_F(ScrollbarsTest, UseCounterNegativeWhenThumbIsNotScrolledWithTouch) {
             ScrollbarPart::kForwardTrackPart);
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
       WebInputEvent::kGestureTapCancel, IntPoint(195, 175)));
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kVerticalScrollbarThumbScrollingWithTouch));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kVerticalScrollbarThumbScrollingWithTouch));
 
   // Tapping on the horizontal scrollbar won't trigger the UseCounter.
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
@@ -2398,8 +2398,8 @@ TEST_F(ScrollbarsTest, UseCounterNegativeWhenThumbIsNotScrolledWithTouch) {
             ScrollbarPart::kForwardTrackPart);
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
       WebInputEvent::kGestureTapCancel, IntPoint(175, 195)));
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
 
   // Tapping outside the scrollbar and then releasing over the thumb of the
   // vertical scrollbar won't trigger the UseCounter.
@@ -2407,8 +2407,8 @@ TEST_F(ScrollbarsTest, UseCounterNegativeWhenThumbIsNotScrolledWithTouch) {
       WebInputEvent::kGestureTapDown, IntPoint(50, 50)));
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
       WebInputEvent::kGestureTapCancel, IntPoint(195, 5)));
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kVerticalScrollbarThumbScrollingWithTouch));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kVerticalScrollbarThumbScrollingWithTouch));
 
   // Tapping outside the scrollbar and then releasing over the thumb of the
   // horizontal scrollbar won't trigger the UseCounter.
@@ -2416,8 +2416,8 @@ TEST_F(ScrollbarsTest, UseCounterNegativeWhenThumbIsNotScrolledWithTouch) {
       WebInputEvent::kGestureTapDown, IntPoint(50, 50)));
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
       WebInputEvent::kGestureTapCancel, IntPoint(5, 195)));
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
 }
 
 TEST_F(ScrollbarsTest, UseCounterPositiveWhenThumbIsScrolledWithTouch) {
@@ -2451,8 +2451,8 @@ TEST_F(ScrollbarsTest, UseCounterPositiveWhenThumbIsScrolledWithTouch) {
   EXPECT_EQ(vertical_scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
       WebInputEvent::kGestureTapCancel, IntPoint(195, 5)));
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kVerticalScrollbarThumbScrollingWithTouch));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kVerticalScrollbarThumbScrollingWithTouch));
 
   // Clicking the thumb on the horizontal scrollbar will trigger the UseCounter.
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
@@ -2460,8 +2460,8 @@ TEST_F(ScrollbarsTest, UseCounterPositiveWhenThumbIsScrolledWithTouch) {
   EXPECT_EQ(horizontal_scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
   WebView().MainFrameWidget()->HandleInputEvent(GenerateTouchGestureEvent(
       WebInputEvent::kGestureTapCancel, IntPoint(5, 195)));
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
 }
 
 // For infinite scrolling page (load more content when scroll to bottom), user

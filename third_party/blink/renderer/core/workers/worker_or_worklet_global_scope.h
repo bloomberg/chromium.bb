@@ -76,6 +76,9 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // SecurityContext
   void DidUpdateSecurityOrigin() final {}
 
+  // UseCounter
+  void CountUse(WebFeature feature) final { CountFeature(feature); }
+
   // Returns true when the WorkerOrWorkletGlobalScope is closing (e.g. via
   // WorkerGlobalScope#close() method). If this returns true, the worker is
   // going to be shutdown after the current task execution. Globals that
@@ -89,6 +92,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void SetModulator(Modulator*);
 
   // Called from UseCounter to record API use in this execution context.
+  // TODO(yhirano): Unify this with CountUse.
   void CountFeature(WebFeature);
 
   // Called from UseCounter to record deprecated API use in this execution

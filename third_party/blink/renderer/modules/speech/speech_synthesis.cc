@@ -115,8 +115,8 @@ void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance) {
   // Note: Non-UseCounter based TTS metrics are of the form TextToSpeech.* and
   // are generally global, whereas these are scoped to a single page load.
   UseCounter::Count(document, WebFeature::kTextToSpeech_Speak);
-  UseCounter::CountCrossOriginIframe(
-      *document, WebFeature::kTextToSpeech_SpeakCrossOrigin);
+  document->CountUseOnlyInCrossOriginIframe(
+      WebFeature::kTextToSpeech_SpeakCrossOrigin);
   if (!IsAllowedToStartByAutoplay()) {
     Deprecation::CountDeprecation(
         document, WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay);

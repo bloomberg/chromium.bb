@@ -75,6 +75,7 @@
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
@@ -1731,6 +1732,34 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
 void LocalFrame::MaybeLogAdClickNavigation() {
   if (HasTransientUserActivation() && IsAdSubframe())
     UseCounter::Count(GetDocument(), WebFeature::kAdClickNavigation);
+}
+
+void LocalFrame::CountUseIfFeatureWouldBeBlockedByFeaturePolicy(
+    mojom::WebFeature blocked_cross_origin,
+    mojom::WebFeature blocked_same_origin) {
+  // Get the origin of the top-level document
+  const SecurityOrigin* topOrigin =
+      Tree().Top().GetSecurityContext()->GetSecurityOrigin();
+
+  // Check if this frame is same-origin with the top-level
+  if (!GetSecurityContext()->GetSecurityOrigin()->CanAccess(topOrigin)) {
+    // This frame is cross-origin with the top-level frame, and so would be
+    // blocked without a feature policy.
+    UseCounter::Count(GetDocument(), blocked_cross_origin);
+    return;
+  }
+
+  // Walk up the frame tree looking for any cross-origin embeds. Even if this
+  // frame is same-origin with the top-level, if it is embedded by a cross-
+  // origin frame (like A->B->A) it would be blocked without a feature policy.
+  const Frame* f = this;
+  while (!f->IsMainFrame()) {
+    if (!f->GetSecurityContext()->GetSecurityOrigin()->CanAccess(topOrigin)) {
+      UseCounter::Count(GetDocument(), blocked_same_origin);
+      return;
+    }
+    f = f->Tree().Parent();
+  }
 }
 
 }  // namespace blink

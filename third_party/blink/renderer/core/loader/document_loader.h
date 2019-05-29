@@ -96,7 +96,10 @@ enum class GlobalObjectReusePolicy { kCreateNew, kUseExisting };
 // The DocumentLoader fetches a main resource and handles the result.
 class CORE_EXPORT DocumentLoader
     : public GarbageCollectedFinalized<DocumentLoader>,
+      public UseCounter,
       public WebNavigationBodyLoader::Client {
+  USING_GARBAGE_COLLECTED_MIXIN(DocumentLoader);
+
  public:
   DocumentLoader(LocalFrame*,
                  WebNavigationType navigation_type,
@@ -232,7 +235,7 @@ class CORE_EXPORT DocumentLoader
 
   void LoadFailed(const ResourceError&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   // For automation driver-initiated navigations over the devtools protocol,
   // |devtools_navigation_token_| is used to tag the navigation. This navigation
@@ -263,12 +266,16 @@ class CORE_EXPORT DocumentLoader
 
   bool IsListingFtpDirectory() const { return listing_ftp_directory_; }
 
-  UseCounter& GetUseCounter() { return use_counter_; }
+  // TODO(yhirano): Rename this to GetFrameUseCounter.
+  FrameUseCounter& GetUseCounter() { return use_counter_; }
   Dactyloscoper& GetDactyloscoper() { return dactyloscoper_; }
 
   int ErrorCode() const { return error_code_; }
 
   PrefetchedSignedExchangeManager* GetPrefetchedSignedExchangeManager() const;
+
+  // UseCounter
+  void CountUse(mojom::WebFeature) override;
 
  protected:
   bool had_transient_activation() const { return had_transient_activation_; }
@@ -473,12 +480,12 @@ class CORE_EXPORT DocumentLoader
   Member<SourceKeyedCachedMetadataHandler> cached_metadata_handler_;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
 
-  // This UseCounter tracks feature usage associated with the lifetime of the
-  // document load. Features recorded prior to commit will be recorded locally.
-  // Once commited, feature usage will be piped to the browser side page load
-  // metrics that aggregates usage from frames to one page load and report
-  // feature usage to UMA histograms per page load.
-  UseCounter use_counter_;
+  // This FrameUseCounter tracks feature usage associated with the lifetime of
+  // the document load. Features recorded prior to commit will be recorded
+  // locally. Once committed, feature usage will be piped to the browser side
+  // page load metrics that aggregates usage from frames to one page load and
+  // report feature usage to UMA histograms per page load.
+  FrameUseCounter use_counter_;
 
   Dactyloscoper dactyloscoper_;
 };

@@ -96,8 +96,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
     UseCounter::Count(
         document,
         WebFeature::kRequestMIDIAccessWithSysExOption_ObscuredByFootprinting);
-    UseCounter::CountCrossOriginIframe(
-        document,
+    document.CountUseOnlyInCrossOriginIframe(
         WebFeature::
             kRequestMIDIAccessIframeWithSysExOption_ObscuredByFootprinting);
   } else {
@@ -110,8 +109,8 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
                       ? WebFeature::kNoSysexWebMIDIWithoutPermission
                       : WebFeature::kNoSysexWebMIDIOnInsecureOrigin);
   }
-  UseCounter::CountCrossOriginIframe(
-      document, WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
+  document.CountUseOnlyInCrossOriginIframe(
+      WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
 
   if (!document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kMidiFeature,
                                  ReportOptions::kReportOnFailure,

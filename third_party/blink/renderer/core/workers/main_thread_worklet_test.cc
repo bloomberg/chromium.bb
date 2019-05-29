@@ -125,9 +125,9 @@ TEST_F(MainThreadWorkletTest, UseCounter) {
 
   // API use on WorkletGlobalScope for the main thread should be recorded in
   // UseCounter on the Document.
-  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature1));
+  EXPECT_FALSE(GetDocument().IsUseCounted(kFeature1));
   UseCounter::Count(global_scope_, kFeature1);
-  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature1));
+  EXPECT_TRUE(GetDocument().IsUseCounted(kFeature1));
 
   // API use should be reported to the Document only one time. See comments in
   // MainThreadWorkletReportingProxyForTest::ReportFeature.
@@ -138,9 +138,9 @@ TEST_F(MainThreadWorkletTest, UseCounter) {
 
   // Deprecated API use on WorkletGlobalScope for the main thread should be
   // recorded in UseCounter on the Document.
-  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature2));
+  EXPECT_FALSE(GetDocument().IsUseCounted(kFeature2));
   Deprecation::CountDeprecation(global_scope_, kFeature2);
-  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature2));
+  EXPECT_TRUE(GetDocument().IsUseCounted(kFeature2));
 
   // API use should be reported to the Document only one time. See comments in
   // MainThreadWorkletReportingProxyForTest::ReportDeprecation.

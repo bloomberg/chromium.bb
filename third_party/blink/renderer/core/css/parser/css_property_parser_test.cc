@@ -317,18 +317,14 @@ TEST(CSSPropertyParserTest, ClipPathEllipse) {
   CSSParser::ParseSingleValue(CSSPropertyID::kClipPath,
                               "ellipse(1px 2px at invalid)", context);
 
-  EXPECT_FALSE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseTwoRadius));
+  EXPECT_FALSE(doc->IsUseCounted(WebFeature::kBasicShapeEllipseTwoRadius));
   CSSParser::ParseSingleValue(CSSPropertyID::kClipPath, "ellipse(1px 2px)",
                               context);
-  EXPECT_TRUE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseTwoRadius));
+  EXPECT_TRUE(doc->IsUseCounted(WebFeature::kBasicShapeEllipseTwoRadius));
 
-  EXPECT_FALSE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseNoRadius));
+  EXPECT_FALSE(doc->IsUseCounted(WebFeature::kBasicShapeEllipseNoRadius));
   CSSParser::ParseSingleValue(CSSPropertyID::kClipPath, "ellipse()", context);
-  EXPECT_TRUE(
-      UseCounter::IsCounted(*doc, WebFeature::kBasicShapeEllipseNoRadius));
+  EXPECT_TRUE(doc->IsUseCounted(WebFeature::kBasicShapeEllipseNoRadius));
 }
 
 TEST(CSSPropertyParserTest, ScrollCustomizationPropertySingleValue) {
@@ -381,10 +377,10 @@ TEST(CSSPropertyParserTest, GradientUseCount) {
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSGradient;
-  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(document.IsUseCounted(feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<style>* { background-image: linear-gradient(red, blue); }</style>");
-  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_TRUE(document.IsUseCounted(feature));
 }
 
 TEST(CSSPropertyParserTest, PaintUseCount) {
@@ -393,10 +389,10 @@ TEST(CSSPropertyParserTest, PaintUseCount) {
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   document.SetSecureContextStateForTesting(SecureContextState::kSecure);
   WebFeature feature = WebFeature::kCSSPaintFunction;
-  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(document.IsUseCounted(feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<style>span { background-image: paint(geometry); }</style>");
-  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_TRUE(document.IsUseCounted(feature));
 }
 
 TEST(CSSPropertyParserTest, CrossFadeUseCount) {
@@ -404,11 +400,11 @@ TEST(CSSPropertyParserTest, CrossFadeUseCount) {
   Document& document = dummy_page_holder->GetDocument();
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kWebkitCrossFade;
-  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(document.IsUseCounted(feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<style>div { background-image: -webkit-cross-fade(url('from.png'), "
       "url('to.png'), 0.2); }</style>");
-  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_TRUE(document.IsUseCounted(feature));
 }
 
 TEST(CSSPropertyParserTest, DropViewportDescriptor) {
@@ -447,7 +443,7 @@ class CSSPropertyUseCounterTest : public ::testing::Test {
   }
 
   bool IsCounted(WebFeature feature) {
-    return UseCounter::IsCounted(GetDocument(), feature);
+    return GetDocument().IsUseCounted(feature);
   }
 
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }

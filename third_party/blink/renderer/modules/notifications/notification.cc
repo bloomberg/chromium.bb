@@ -99,8 +99,8 @@ Notification* Notification::Create(ExecutionContext* context,
   if (context->IsSecureContext()) {
     UseCounter::Count(context, WebFeature::kNotificationSecureOrigin);
     if (document) {
-      UseCounter::CountCrossOriginIframe(
-          *document, WebFeature::kNotificationAPISecureOriginIframe);
+      document->CountUseOnlyInCrossOriginIframe(
+          WebFeature::kNotificationAPISecureOriginIframe);
     }
   } else {
     Deprecation::CountDeprecation(context,

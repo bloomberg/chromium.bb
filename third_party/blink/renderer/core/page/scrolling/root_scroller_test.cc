@@ -1990,15 +1990,15 @@ TEST_F(ImplicitRootScrollerSimTest, UseCounterNegative) {
   ASSERT_NE(container,
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kActivatedImplicitRootScroller));
 
   container->style()->setProperty(&GetDocument(), "height", "150%", String(),
                                   ASSERT_NO_EXCEPTION);
   Compositor().BeginFrame();
 
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kActivatedImplicitRootScroller));
 }
 
 // Tests use counter for implicit root scroller. Ensure it's counted on a
@@ -2038,8 +2038,8 @@ TEST_F(ImplicitRootScrollerSimTest, UseCounterPositive) {
   ASSERT_EQ(container,
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kActivatedImplicitRootScroller));
 
   container->style()->setProperty(&GetDocument(), "height", "150%", String(),
                                   ASSERT_NO_EXCEPTION);
@@ -2048,8 +2048,8 @@ TEST_F(ImplicitRootScrollerSimTest, UseCounterPositive) {
   ASSERT_NE(container,
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kActivatedImplicitRootScroller));
 }
 
 // Tests use counter for implicit root scroller. Ensure it's counted on a
@@ -2089,8 +2089,8 @@ TEST_F(ImplicitRootScrollerSimTest, UseCounterPositiveAfterLoad) {
   ASSERT_NE(container,
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 
-  EXPECT_FALSE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kActivatedImplicitRootScroller));
 
   container->style()->setProperty(&GetDocument(), "height", "100%", String(),
                                   ASSERT_NO_EXCEPTION);
@@ -2099,8 +2099,8 @@ TEST_F(ImplicitRootScrollerSimTest, UseCounterPositiveAfterLoad) {
   ASSERT_EQ(container,
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 
-  EXPECT_TRUE(UseCounter::IsCounted(
-      GetDocument(), WebFeature::kActivatedImplicitRootScroller));
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kActivatedImplicitRootScroller));
 }
 
 // Tests that if we have multiple valid candidates for implicit promotion, we

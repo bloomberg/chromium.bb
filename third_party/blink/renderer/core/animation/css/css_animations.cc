@@ -141,8 +141,8 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
 
   for (const CSSProperty* property : specified_properties_for_use_counter) {
     DCHECK(isValidCSSPropertyID(property->PropertyID()));
-    UseCounter::CountAnimatedCSS(element_for_scoping->GetDocument(),
-                                 property->PropertyID());
+    element_for_scoping->GetDocument().CountUse(
+        property->PropertyID(), FrameUseCounter::CSSPropertyType::kAnimation);
   }
 
   // Merge duplicate keyframes.
@@ -626,8 +626,9 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     running_transition.animation = animation;
     transitions_.Set(property, running_transition);
     DCHECK(isValidCSSPropertyID(property.GetCSSProperty().PropertyID()));
-    UseCounter::CountAnimatedCSS(element->GetDocument(),
-                                 property.GetCSSProperty().PropertyID());
+    element->GetDocument().CountUse(
+        property.GetCSSProperty().PropertyID(),
+        FrameUseCounter::CSSPropertyType::kAnimation);
   }
   ClearPendingUpdate();
 }

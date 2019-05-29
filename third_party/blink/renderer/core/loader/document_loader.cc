@@ -789,7 +789,7 @@ void DocumentLoader::HandleResponse() {
   // Pre-commit state, count usage the use counter associated with "this"
   // (provisional document loader) instead of frame_'s document loader.
   if (response_.DidServiceWorkerNavigationPreload())
-    UseCounter::Count(this, WebFeature::kServiceWorkerNavigationPreload);
+    CountUse(WebFeature::kServiceWorkerNavigationPreload);
 
   if (response_.CurrentRequestUrl().ProtocolIs("ftp") &&
       response_.MimeType() == "text/vnd.chromium.ftp-dir") {
@@ -1414,10 +1414,9 @@ void DocumentLoader::DidCommitNavigation(
   // Report legacy TLS versions after Page::DidCommitLoad, because the latter
   // clears the console.
   if (response_.IsLegacyTLSVersion()) {
-    UseCounter::Count(this,
-                      frame_->Tree().Parent()
-                          ? WebFeature::kLegacyTLSVersionInSubframeMainResource
-                          : WebFeature::kLegacyTLSVersionInMainFrameResource);
+    CountUse(frame_->Tree().Parent()
+                 ? WebFeature::kLegacyTLSVersionInSubframeMainResource
+                 : WebFeature::kLegacyTLSVersionInMainFrameResource);
     GetLocalFrameClient().ReportLegacyTLSVersion(response_.CurrentRequestUrl());
     if (!frame_->Tree().Parent()) {
       ukm::builders::Net_LegacyTLSVersion(document->UkmSourceID())
@@ -1696,6 +1695,10 @@ void DocumentLoader::ResumeParser() {
     parser_->Finish();
     parser_.Clear();
   }
+}
+
+void DocumentLoader::CountUse(mojom::WebFeature feature) {
+  return use_counter_.Count(feature, GetFrame());
 }
 
 void DocumentLoader::ReportPreviewsIntervention() const {

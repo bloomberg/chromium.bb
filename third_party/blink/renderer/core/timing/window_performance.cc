@@ -184,7 +184,7 @@ WindowPerformance::CreateNavigationTimingInstance() {
   WebVector<WebServerTimingInfo> server_timing =
       PerformanceServerTiming::ParseServerTiming(*info);
   if (!server_timing.empty())
-    UseCounter::Count(document_loader, WebFeature::kPerformanceServerTiming);
+    document_loader->CountUse(WebFeature::kPerformanceServerTiming);
 
   return MakeGarbageCollected<PerformanceNavigationTiming>(
       GetFrame(), info, time_origin_, server_timing);

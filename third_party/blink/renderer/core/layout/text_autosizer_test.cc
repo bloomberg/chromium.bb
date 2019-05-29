@@ -1111,8 +1111,8 @@ TEST_F(TextAutosizerSimTest, CrossSiteUseCounter) {
   auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
   auto* child_doc = child_frame->GetFrame()->GetDocument();
 
-  EXPECT_TRUE(UseCounter::IsCounted(*child_doc,
-                                    WebFeature::kTextAutosizedCrossSiteIframe));
+  EXPECT_TRUE(
+      child_doc->IsUseCounted(WebFeature::kTextAutosizedCrossSiteIframe));
 }
 
 }  // namespace blink

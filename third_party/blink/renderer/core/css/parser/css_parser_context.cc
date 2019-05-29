@@ -226,10 +226,8 @@ void CSSParserContext::CountDeprecation(WebFeature feature) const {
 }
 
 void CSSParserContext::Count(CSSParserMode mode, CSSPropertyID property) const {
-  if (IsUseCounterRecordingEnabled() && document_->Loader()) {
-    UseCounter* use_counter = &document_->Loader()->GetUseCounter();
-    if (use_counter)
-      use_counter->Count(mode, property, document_->GetFrame());
+  if (IsUseCounterRecordingEnabled() && IsUseCounterEnabledForMode(mode)) {
+    document_->CountUse(property, FrameUseCounter::CSSPropertyType::kDefault);
   }
 }
 

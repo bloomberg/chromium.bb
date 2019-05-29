@@ -772,8 +772,8 @@ TEST_F(FeaturePolicyParserTest, OriginTrialFeatureUseCounter) {
     auto dummy = std::make_unique<DummyPageHolder>();
     FeaturePolicyParser::ParseHeader("payment; fullscreen", origin_a_.get(),
                                      &messages, &dummy->GetDocument());
-    EXPECT_FALSE(UseCounter::IsCounted(dummy->GetDocument(),
-                                       WebFeature::kUnoptimizedImagePolicies));
+    EXPECT_FALSE(dummy->GetDocument().IsUseCounted(
+        WebFeature::kUnoptimizedImagePolicies));
   }
 
   // Validate that declarations which should trigger the use counter do.
@@ -781,8 +781,8 @@ TEST_F(FeaturePolicyParserTest, OriginTrialFeatureUseCounter) {
     auto dummy = std::make_unique<DummyPageHolder>();
     FeaturePolicyParser::ParseHeader(declaration, origin_a_.get(), &messages,
                                      &dummy->GetDocument());
-    EXPECT_TRUE(UseCounter::IsCounted(dummy->GetDocument(),
-                                      WebFeature::kUnoptimizedImagePolicies))
+    EXPECT_TRUE(dummy->GetDocument().IsUseCounted(
+        WebFeature::kUnoptimizedImagePolicies))
         << declaration << " should trigger the origin trial use counter.";
   }
 }

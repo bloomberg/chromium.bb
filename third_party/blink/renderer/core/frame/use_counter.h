@@ -38,14 +38,56 @@
 
 namespace blink {
 
-class CSSStyleSheet;
 class Document;
 class DocumentLoader;
-class EnumerationHistogram;
 class Element;
-class ExecutionContext;
+class EnumerationHistogram;
 class LocalFrame;
 class StyleSheetContents;
+
+// Definition for UseCounter features can be found in:
+// third_party/blink/public/mojom/web_feature/web_feature.mojom
+//
+// UseCounter is used for counting the number of times features of
+// Blink are used on real web pages and help us know commonly
+// features are used and thus when it's safe to remove or change them. It's
+// counting whether a feature is used in a context (e.g., a page), so calling
+// a counting function multiple times for the same UseCounter with the same
+// feature will be ignored.
+//
+// The Chromium Content layer controls what is done with this data.
+//
+// For instance, in Google Chrome, these counts are submitted anonymously
+// through the UMA histogram recording system in Chrome for users who have the
+// "Automatically send usage statistics and crash reports to Google" setting
+// enabled:
+// http://www.google.com/chrome/intl/en/privacy.html
+//
+// This is a pure virtual interface class with some utility static functions.
+class CORE_EXPORT UseCounter : public GarbageCollectedMixin {
+ public:
+  static void Count(UseCounter* use_counter, mojom::WebFeature feature) {
+    if (use_counter) {
+      use_counter->CountUse(feature);
+    }
+  }
+  static void Count(UseCounter& use_counter, mojom::WebFeature feature) {
+    use_counter.CountUse(feature);
+  }
+
+  // TODO(yhirano): Remove this.
+  static void Count(const Document& document, mojom::WebFeature feature);
+
+ public:
+  UseCounter() = default;
+  virtual ~UseCounter() = default;
+
+  // Counts a use of the given feature. Repeated calls are ignored.
+  virtual void CountUse(mojom::WebFeature feature) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UseCounter);
+};
 
 // Utility class for muting UseCounter, for instance ignoring attributes
 // constructed in user-agent shadow DOM. Once constructed, all UseCounting
@@ -62,23 +104,13 @@ class UseCounterMuteScope {
   Member<DocumentLoader> loader_;
 };
 
-// Definition for UseCounter features can be found in:
-// third_party/blink/public/mojom/web_feature/web_feature.mojom
-
-// UseCounter is used for counting the number of times features of
-// Blink are used on real web pages and help us know commonly
-// features are used and thus when it's safe to remove or change them.
+// This is an implementation class of use counters for a Frame. Although
+// FrameUseCounter doesn't inherit UseCounter, a frame-related UseCounter is
+// associated with a FrameUseCounter and calls to the UseCounter will eventually
+// be redirected/delegated to the FrameUseCounter for actual processing.
 //
-// The Chromium Content layer controls what is done with this data.
-//
-// For instance, in Google Chrome, these counts are submitted anonymously
-// through the UMA histogram recording system in Chrome for users who have the
-// "Automatically send usage statistics and crash reports to Google" setting
-// enabled:
-// http://www.google.com/chrome/intl/en/privacy.html
-//
-// Changes on UseCounter are observable by UseCounter::Observer.
-class CORE_EXPORT UseCounter {
+// Changes on FrameUseCounter are observable by FrameUseCounter::Observer.
+class CORE_EXPORT FrameUseCounter final {
   DISALLOW_NEW();
 
  public:
@@ -99,9 +131,13 @@ class CORE_EXPORT UseCounter {
 
   enum CommitState { kPreCommit, kCommited };
 
-  UseCounter(Context = kDefaultContext, CommitState = kPreCommit);
+  // CSS properties for animation are separately counted. This enum is used to
+  // distinguish them.
+  enum class CSSPropertyType { kDefault, kAnimation };
 
-  // An interface to observe UseCounter changes. Note that this is never
+  explicit FrameUseCounter(Context = kDefaultContext, CommitState = kPreCommit);
+
+  // An interface to observe FrameUseCounter changes. Note that this is never
   // notified when the counter is disabled by |m_muteCount| or when |m_context|
   // is kDisabledContext.
   class Observer : public GarbageCollected<Observer> {
@@ -114,43 +150,18 @@ class CORE_EXPORT UseCounter {
     virtual void Trace(blink::Visitor* visitor) {}
   };
 
-  // "count" sets the bit for this feature to 1. Repeated calls are ignored.
-  static void Count(DocumentLoader*, WebFeature);
-  static void Count(const Document&, WebFeature);
-  static void Count(ExecutionContext*, WebFeature);
-
-  void Count(CSSParserMode, CSSPropertyID, const LocalFrame*);
+  // Repeated calls are ignored.
+  void Count(CSSPropertyID, CSSPropertyType, const LocalFrame*);
+  // Repeated calls are ignored.
   void Count(WebFeature, const LocalFrame*);
 
-  static void CountAnimatedCSS(const Document&, CSSPropertyID);
-  void CountAnimatedCSS(CSSPropertyID, const LocalFrame*);
+  bool IsCounted(CSSPropertyID unresolved_property, CSSPropertyType) const;
 
-  // Count only features if they're being used in an iframe which does not
-  // have script access into the top level document.
-  static void CountCrossOriginIframe(const Document&, WebFeature);
-
-  // Return whether the Feature was previously counted for this document.
-  // NOTE: only for use in testing.
-  static bool IsCounted(Document&, WebFeature);
-  // Return whether the CSSPropertyID was previously counted for this document.
-  // NOTE: only for use in testing.
-  static bool IsCounted(Document&, const String&);
-  bool IsCounted(CSSPropertyID unresolved_property);
-
-  static void ClearCountForTesting(Document& document, WebFeature feature);
-
-  // Return whether the CSSPropertyID was previously counted for this document.
-  // NOTE: only for use in testing.
-  static bool IsCountedAnimatedCSS(Document&, const String&);
-  bool IsCountedAnimatedCSS(CSSPropertyID unresolved_property);
-
-  // Retains a reference to the observer to notify of UseCounter changes.
+  // Retains a reference to the observer to notify of FrameUseCounter changes.
   void AddObserver(Observer*);
 
   // Invoked when a new document is loaded into the main frame of the page.
   void DidCommitLoad(const LocalFrame*);
-
-  static int MapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID);
 
   // When muted, all calls to "count" functions are ignoed.  May be nested.
   void MuteForInspector();
@@ -169,17 +180,6 @@ class CORE_EXPORT UseCounter {
 
   void ClearMeasurementForTesting(WebFeature);
 
-  // Triggers a use counter if a feature, which is currently available in all
-  // frames, would be blocked by the introduction of feature policy. This takes
-  // two counters (which may be the same). It triggers |blockedCrossOrigin| if
-  // the frame is cross-origin relative to the top-level document, and triggers
-  // |blockedSameOrigin| if it is same-origin with the top level, but is
-  // embedded in any way through a cross-origin frame. (A->B->A embedding)
-  static void CountIfFeatureWouldBeBlockedByFeaturePolicy(
-      const LocalFrame&,
-      WebFeature blockedCrossOrigin,
-      WebFeature blockedSameOrigin);
-
   void Trace(blink::Visitor*);
 
  private:
@@ -192,11 +192,13 @@ class CORE_EXPORT UseCounter {
   EnumerationHistogram& CssHistogram() const;
   EnumerationHistogram& AnimatedCSSHistogram() const;
 
+  static int MapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID);
+
   // If non-zero, ignore all 'count' calls completely.
   unsigned mute_count_;
 
-  // The scope represented by this UseCounter instance, which must be fixed for
-  // the duration of a page but can change when a new page is loaded.
+  // The scope represented by this FrameUseCounter instance, which must be fixed
+  // for the duration of a page but can change when a new page is loaded.
   Context context_;
   // CommitState tracks whether navigation has commited. Prior to commit,
   // UseCounters are logged locally and delivered to the browser only once the
@@ -212,7 +214,7 @@ class CORE_EXPORT UseCounter {
 
   HeapHashSet<Member<Observer>> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(UseCounter);
+  DISALLOW_COPY_AND_ASSIGN(FrameUseCounter);
 };
 
 }  // namespace blink

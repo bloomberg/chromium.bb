@@ -223,13 +223,13 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
 
   // API use on the DedicatedWorkerGlobalScope should be recorded in UseCounter
   // on the Document.
-  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature1));
+  EXPECT_FALSE(GetDocument().IsUseCounted(kFeature1));
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBindOnce(&DedicatedWorkerThreadForTest::CountFeature,
                           CrossThreadUnretained(GetWorkerThread()), kFeature1));
   test::EnterRunLoop();
-  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature1));
+  EXPECT_TRUE(GetDocument().IsUseCounted(kFeature1));
 
   // API use should be reported to the Document only one time. See comments in
   // DedicatedWorkerObjectProxyForTest::CountFeature.
@@ -244,13 +244,13 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
 
   // Deprecated API use on the DedicatedWorkerGlobalScope should be recorded in
   // UseCounter on the Document.
-  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature2));
+  EXPECT_FALSE(GetDocument().IsUseCounted(kFeature2));
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBindOnce(&DedicatedWorkerThreadForTest::CountDeprecation,
                           CrossThreadUnretained(GetWorkerThread()), kFeature2));
   test::EnterRunLoop();
-  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature2));
+  EXPECT_TRUE(GetDocument().IsUseCounted(kFeature2));
 
   // API use should be reported to the Document only one time. See comments in
   // DedicatedWorkerObjectProxyForTest::CountDeprecation.

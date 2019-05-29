@@ -187,10 +187,10 @@ using ui::mojom::ImeTextSpanThickness;
 
 namespace {
 
-class UseCounterObserverImpl final : public UseCounter::Observer {
-
+class FrameUseCounterObserverImpl final : public FrameUseCounter::Observer {
  public:
-  UseCounterObserverImpl(ScriptPromiseResolver* resolver, WebFeature feature)
+  FrameUseCounterObserverImpl(ScriptPromiseResolver* resolver,
+                              WebFeature feature)
       : resolver_(resolver), feature_(feature) {}
 
   bool OnCountFeature(WebFeature feature) final {
@@ -201,14 +201,14 @@ class UseCounterObserverImpl final : public UseCounter::Observer {
   }
 
   void Trace(blink::Visitor* visitor) override {
-    UseCounter::Observer::Trace(visitor);
+    FrameUseCounter::Observer::Trace(visitor);
     visitor->Trace(resolver_);
   }
 
  private:
   Member<ScriptPromiseResolver> resolver_;
   WebFeature feature_;
-  DISALLOW_COPY_AND_ASSIGN(UseCounterObserverImpl);
+  DISALLOW_COPY_AND_ASSIGN(FrameUseCounterObserverImpl);
 };
 
 }  // namespace
@@ -3193,23 +3193,25 @@ void Internals::setVisualViewportOffset(int x, int y) {
 bool Internals::isUseCounted(Document* document, uint32_t feature) {
   if (feature >= static_cast<int32_t>(WebFeature::kNumberOfFeatures))
     return false;
-  return UseCounter::IsCounted(*document, static_cast<WebFeature>(feature));
+  return document->IsUseCounted(static_cast<WebFeature>(feature));
 }
 
 bool Internals::isCSSPropertyUseCounted(Document* document,
                                         const String& property_name) {
-  return UseCounter::IsCounted(*document, property_name);
+  return document->IsUseCounted(unresolvedCSSPropertyID(property_name),
+                                FrameUseCounter::CSSPropertyType::kDefault);
 }
 
 bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
                                                 const String& property_name) {
-  return UseCounter::IsCountedAnimatedCSS(*document, property_name);
+  return document->IsUseCounted(unresolvedCSSPropertyID(property_name),
+                                FrameUseCounter::CSSPropertyType::kAnimation);
 }
 
 void Internals::clearUseCounter(Document* document, uint32_t feature) {
   if (feature >= static_cast<int32_t>(WebFeature::kNumberOfFeatures))
     return;
-  UseCounter::ClearCountForTesting(*document, static_cast<WebFeature>(feature));
+  document->ClearUseCounterForTesting(static_cast<WebFeature>(feature));
 }
 
 Vector<String> Internals::getCSSPropertyLonghands() const {
@@ -3255,7 +3257,7 @@ ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
   }
 
   WebFeature use_counter_feature = static_cast<WebFeature>(feature);
-  if (UseCounter::IsCounted(*document, use_counter_feature)) {
+  if (document->IsUseCounted(use_counter_feature)) {
     resolver->Resolve();
     return promise;
   }
@@ -3267,7 +3269,7 @@ ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
   }
 
   loader->GetUseCounter().AddObserver(
-      MakeGarbageCollected<UseCounterObserverImpl>(
+      MakeGarbageCollected<FrameUseCounterObserverImpl>(
           resolver, static_cast<WebFeature>(use_counter_feature)));
   return promise;
 }

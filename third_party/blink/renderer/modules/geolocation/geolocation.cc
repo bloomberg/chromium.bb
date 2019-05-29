@@ -152,8 +152,8 @@ void Geolocation::RecordOriginTypeAccess() const {
   String insecure_origin_msg;
   if (document->IsSecureContext(insecure_origin_msg)) {
     UseCounter::Count(document, WebFeature::kGeolocationSecureOrigin);
-    UseCounter::CountCrossOriginIframe(
-        *document, WebFeature::kGeolocationSecureOriginIframe);
+    document->CountUseOnlyInCrossOriginIframe(
+        WebFeature::kGeolocationSecureOriginIframe);
   } else if (GetFrame()
                  ->GetSettings()
                  ->GetAllowGeolocationOnInsecureOrigins()) {

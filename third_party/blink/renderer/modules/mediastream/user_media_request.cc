@@ -473,8 +473,8 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
 
   if (document->IsSecureContext(error_message)) {
     UseCounter::Count(document, WebFeature::kGetUserMediaSecureOrigin);
-    UseCounter::CountCrossOriginIframe(
-        *document, WebFeature::kGetUserMediaSecureOriginIframe);
+    document->CountUseOnlyInCrossOriginIframe(
+        WebFeature::kGetUserMediaSecureOriginIframe);
 
     // Feature policy deprecation messages.
     if (Audio()) {

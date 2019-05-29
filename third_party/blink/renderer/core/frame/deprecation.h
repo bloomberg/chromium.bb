@@ -17,6 +17,7 @@ enum class FeaturePolicyFeature;
 }  // namespace mojom
 
 class DocumentLoader;
+class ExecutionContext;
 class LocalFrame;
 
 class CORE_EXPORT Deprecation final {

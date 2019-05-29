@@ -39,6 +39,7 @@
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -421,6 +422,16 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // RemoteFrame, we could call it at FrameLoader::StartNavigation where all
   // navigations go through.
   void MaybeLogAdClickNavigation();
+
+  // Triggers a use counter if a feature, which is currently available in all
+  // frames, would be blocked by the introduction of feature policy. This takes
+  // two counters (which may be the same). It triggers |blockedCrossOrigin| if
+  // the frame is cross-origin relative to the top-level document, and triggers
+  // |blockedSameOrigin| if it is same-origin with the top level, but is
+  // embedded in any way through a cross-origin frame. (A->B->A embedding)
+  void CountUseIfFeatureWouldBeBlockedByFeaturePolicy(
+      mojom::WebFeature blocked_cross_origin,
+      mojom::WebFeature blocked_same_origin);
 
  private:
   friend class FrameNavigationDisabler;

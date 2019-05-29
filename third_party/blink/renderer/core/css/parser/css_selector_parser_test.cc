@@ -596,14 +596,14 @@ TEST(CSSSelectorParserTest, UseCountShadowPseudo) {
 
   auto ExpectCount = [doc, context, sheet](const char* selector,
                                            WebFeature feature) {
-    EXPECT_FALSE(UseCounter::IsCounted(*doc, feature));
+    EXPECT_FALSE(doc->IsUseCounted(feature));
 
     CSSTokenizer tokenizer(selector);
     const auto tokens = tokenizer.TokenizeToEOF();
     CSSParserTokenRange range(tokens);
     CSSSelectorParser::ParseSelector(range, context, sheet);
 
-    EXPECT_TRUE(UseCounter::IsCounted(*doc, feature));
+    EXPECT_TRUE(doc->IsUseCounted(feature));
   };
 
   ExpectCount("::cue", WebFeature::kCSSSelectorCue);
