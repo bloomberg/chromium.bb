@@ -39,7 +39,6 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   // device::mojom::XRDevice
   void RequestSession(
       device::mojom::XRSessionOptionsPtr options,
-      bool triggered_by_displayactive,
       device::mojom::XRDevice::RequestSessionCallback callback) override;
   void SupportsSession(
       device::mojom::XRSessionOptionsPtr options,
@@ -84,7 +83,6 @@ class XRDeviceImpl : public device::mojom::XRDevice {
       device::mojom::XRDevice::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session);
   void OnUserConsent(device::mojom::XRSessionOptionsPtr options,
-                     bool triggered_by_displayactive,
                      device::mojom::XRDevice::RequestSessionCallback callback,
                      bool allowed);
 

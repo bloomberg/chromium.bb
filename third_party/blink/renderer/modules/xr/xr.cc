@@ -354,7 +354,7 @@ void XR::DispatchRequestSession(PendingSessionQuery* query) {
   // legacy API has been removed.
   outstanding_request_queries_.insert(query);
   device_->RequestSession(
-      std::move(session_options), false /* triggered by display activate */,
+      std::move(session_options),
       WTF::Bind(&XR::OnRequestSessionReturned, WrapWeakPersistent(this),
                 WrapPersistent(query)));
 }

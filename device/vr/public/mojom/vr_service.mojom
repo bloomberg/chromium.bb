@@ -348,9 +348,7 @@ interface VRServiceClient {
 interface XRDevice {
   // Request to initialize a session in the browser process. If successful, the
   // XRSession struct with the requisite interfaces will be returned.
-  RequestSession(
-    XRSessionOptions options,
-    bool triggered_by_displayactive) => (XRSession? session);
+  RequestSession(XRSessionOptions options) => (XRSession? session);
   SupportsSession(XRSessionOptions options) => (bool supports_session);
 
   // WebVR 1.1 functionality compatibility method. Returns VRDisplayInfo for an

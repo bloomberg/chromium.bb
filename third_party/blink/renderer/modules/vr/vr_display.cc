@@ -150,12 +150,8 @@ VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
   device::mojom::blink::XRSessionOptionsPtr options =
       device::mojom::blink::XRSessionOptions::New();
   options->immersive = false;
-  // Set in_on_display_activate to true, this will prevent the request present
-  // from being logged.
-  // TODO(http://crbug.com/842025): clean up the logging when refactors are
-  // complete.
   device_ptr_->RequestSession(
-      std::move(options), true,
+      std::move(options),
       WTF::Bind(&VRDisplay::OnNonImmersiveSessionRequestReturned,
                 WrapPersistent(this)));
 }
@@ -549,7 +545,7 @@ ScriptPromise VRDisplay::requestPresent(
     options->use_legacy_webvr_render_path = true;
 
     device_ptr_->RequestSession(
-        std::move(options), in_display_activate_,
+        std::move(options),
         WTF::Bind(&VRDisplay::OnRequestImmersiveSessionReturned,
                   WrapPersistent(this)));
     pending_present_request_ = true;
@@ -978,8 +974,6 @@ void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (reason == device::mojom::blink::VRDisplayEventReason::MOUNTED)
     gesture_indicator = LocalFrame::NotifyUserActivation(doc->GetFrame());
-
-  base::AutoReset<bool> in_activate(&in_display_activate_, true);
 
   navigator_vr_->DispatchVREvent(VRDisplayEvent::Create(
       event_type_names::kVrdisplayactivate, this, reason));

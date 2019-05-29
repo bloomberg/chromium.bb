@@ -110,7 +110,6 @@ XRDeviceImpl::~XRDeviceImpl() {
 
 void XRDeviceImpl::RequestSession(
     device::mojom::XRSessionOptionsPtr options,
-    bool triggered_by_displayactive,
     device::mojom::XRDevice::RequestSessionCallback callback) {
   DCHECK(options);
 
@@ -140,18 +139,16 @@ void XRDeviceImpl::RequestSession(
         GetWebContents(),
         base::BindOnce(&XRDeviceImpl::OnUserConsent,
                        weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                       triggered_by_displayactive, std::move(callback)));
+                       std::move(callback)));
     return;
   }
 #endif
 
-  OnUserConsent(std::move(options), triggered_by_displayactive,
-                std::move(callback), true);
+  OnUserConsent(std::move(options), std::move(callback), true);
 }
 
 void XRDeviceImpl::OnUserConsent(
     device::mojom::XRSessionOptionsPtr options,
-    bool triggered_by_displayactive,
     device::mojom::XRDevice::RequestSessionCallback callback,
     bool allowed) {
   if (!allowed) {
@@ -184,9 +181,7 @@ void XRDeviceImpl::OnUserConsent(
       render_frame_host_ ? render_frame_host_->GetRoutingID() : -1;
 
   if (runtime_options->immersive) {
-    if (!triggered_by_displayactive) {
-      ReportRequestPresent();
-    }
+    ReportRequestPresent();
 
     base::OnceCallback<void(device::mojom::XRSessionPtr)> immersive_callback =
         base::BindOnce(&XRDeviceImpl::OnSessionCreated,
