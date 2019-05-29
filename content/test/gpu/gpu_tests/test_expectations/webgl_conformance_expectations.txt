@@ -210,6 +210,8 @@ crbug.com/956134 [ win d3d9 ] conformance/extensions/webgl-depth-texture.html [ 
 # WIN / OpenGL / NVIDIA failures
 crbug.com/715001 [ win nvidia opengl passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
 crbug.com/703779 [ win nvidia opengl ] conformance/textures/misc/texture-size.html [ Failure ]
+crbug.com/963205 [ win nvidia opengl passthrough ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]
+crbug.com/963205 [ win nvidia opengl passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ RetryOnFailure ]
 
 # Mark ANGLE's OpenGL as flaky on Windows Nvidia
 crbug.com/582083 [ win nvidia opengl ] conformance/* [ RetryOnFailure ]
