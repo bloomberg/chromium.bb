@@ -2295,7 +2295,7 @@ jumbo_split_static_library("ui") {
       "//ui/views/controls/webview",
     ]
     deps += [
-      "//chrome/browser/safe_browsing:chrome_cleaner_types",
+      "//chrome/browser/safe_browsing/chrome_cleaner:public",
       "//chrome/browser/win/conflicts:module_info",
       "//chrome/credential_provider/common:common_constants",
       "//components/search_engines",

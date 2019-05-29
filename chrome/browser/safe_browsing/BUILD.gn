@@ -21,7 +21,6 @@ jumbo_static_library("safe_browsing") {
     "//chrome/common:constants",
     "//chrome/common/safe_browsing:file_type_policies",
     "//components/browser_sync",
-    "//components/chrome_cleaner/public/interfaces",
     "//components/keyed_service/content",
     "//components/language/core/browser",
     "//components/password_manager/core/browser",
@@ -46,27 +45,6 @@ jumbo_static_library("safe_browsing") {
 
   if (enable_extensions) {
     sources += [
-      "chrome_cleaner/chrome_cleaner_controller_impl_win.cc",
-      "chrome_cleaner/chrome_cleaner_controller_impl_win.h",
-      "chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.cc",
-      "chrome_cleaner/chrome_cleaner_dialog_controller_impl_win.h",
-      "chrome_cleaner/chrome_cleaner_extensions_util_win.h",
-      "chrome_cleaner/chrome_cleaner_fetcher_win.cc",
-      "chrome_cleaner/chrome_cleaner_fetcher_win.h",
-      "chrome_cleaner/chrome_cleaner_navigation_util_win.cc",
-      "chrome_cleaner/chrome_cleaner_navigation_util_win.h",
-      "chrome_cleaner/chrome_cleaner_reboot_dialog_controller_impl_win.cc",
-      "chrome_cleaner/chrome_cleaner_reboot_dialog_controller_impl_win.h",
-      "chrome_cleaner/chrome_cleaner_runner_win.cc",
-      "chrome_cleaner/chrome_cleaner_runner_win.h",
-      "chrome_cleaner/reporter_runner_win.cc",
-      "chrome_cleaner/reporter_runner_win.h",
-      "chrome_cleaner/settings_resetter_win.cc",
-      "chrome_cleaner/settings_resetter_win.h",
-      "chrome_cleaner/srt_chrome_prompt_impl_win.cc",
-      "chrome_cleaner/srt_chrome_prompt_impl_win.h",
-      "chrome_cleaner/srt_client_info_win.cc",
-      "chrome_cleaner/srt_client_info_win.h",
       "settings_reset_prompt/default_settings_fetcher.cc",
       "settings_reset_prompt/default_settings_fetcher.h",
       "settings_reset_prompt/settings_reset_prompt_config.cc",
@@ -80,11 +58,7 @@ jumbo_static_library("safe_browsing") {
       "settings_reset_prompt/settings_reset_prompt_util_win.cc",
       "settings_reset_prompt/settings_reset_prompt_util_win.h",
     ]
-    deps += [
-      ":chrome_cleaner_types",
-      "//components/keep_alive_registry",
-      "//extensions/browser",
-    ]
+    deps += [ "//extensions/browser" ]
   }
 
   if (safe_browsing_mode != 0) {
@@ -291,29 +265,6 @@ static_library("advanced_protection") {
     "//components/signin/core/browser",
     "//content/public/browser",
     "//services/identity/public/cpp",
-  ]
-}
-
-source_set("chrome_cleaner_types") {
-  sources = [
-    "chrome_cleaner/chrome_cleaner_controller_win.cc",
-    "chrome_cleaner/chrome_cleaner_controller_win.h",
-    "chrome_cleaner/chrome_cleaner_dialog_controller_win.h",
-    "chrome_cleaner/chrome_cleaner_reboot_dialog_controller_win.h",
-    "chrome_cleaner/chrome_cleaner_scanner_results_win.cc",
-    "chrome_cleaner/chrome_cleaner_scanner_results_win.h",
-    "chrome_cleaner/srt_field_trial_win.cc",
-    "chrome_cleaner/srt_field_trial_win.h",
-    "chrome_cleaner/sw_reporter_invocation_win.cc",
-    "chrome_cleaner/sw_reporter_invocation_win.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/chrome_cleaner/public/constants",
-    "//components/chrome_cleaner/public/interfaces",
-    "//components/variations",
-    "//url",
   ]
 }
 

@@ -3597,6 +3597,8 @@ jumbo_split_static_library("browser") {
     deps += [
       ":chrome_process_finder",
       "//chrome:file_pre_reader",
+      "//chrome/browser/safe_browsing/chrome_cleaner",
+      "//chrome/browser/safe_browsing/chrome_cleaner:public",
       "//chrome/browser/win/conflicts:module_info",
       "//chrome/chrome_elf:blacklist",
       "//chrome/chrome_elf:constants",
@@ -3621,6 +3623,8 @@ jumbo_split_static_library("browser") {
       "//ui/aura_extra",
       "//ui/base:fullscreen_win",
     ]
+    allow_circular_includes_from +=
+        [ "//chrome/browser/safe_browsing/chrome_cleaner" ]
 
     all_dependent_configs = [ ":browser_win_linker_flags" ]
 
