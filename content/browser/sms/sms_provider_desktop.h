@@ -5,11 +5,6 @@
 #ifndef CONTENT_BROWSER_SMS_SMS_PROVIDER_DESKTOP_H_
 #define CONTENT_BROWSER_SMS_SMS_PROVIDER_DESKTOP_H_
 
-#include <memory>
-
-#include "base/callback_forward.h"
-#include "base/macros.h"
-#include "base/time/time.h"
 #include "content/browser/sms/sms_provider.h"
 
 namespace content {
@@ -18,7 +13,7 @@ class SmsProviderDesktop : public SmsProvider {
  public:
   SmsProviderDesktop() = default;
   ~SmsProviderDesktop() override = default;
-  void Retrieve(base::TimeDelta timeout, SmsCallback callback) override;
+  void Retrieve() override;
 };
 
 }  // namespace content

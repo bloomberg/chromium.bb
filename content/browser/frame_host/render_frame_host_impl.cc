@@ -5933,7 +5933,7 @@ void RenderFrameHostImpl::BindSmsManagerRequest(
   }
   SmsService* sms_service = GetProcess()->GetBrowserContext()->GetSmsService();
   if (sms_service) {
-    sms_service->Bind(std::move(request));
+    sms_service->Bind(std::move(request), GetLastCommittedOrigin());
   }
 }
 

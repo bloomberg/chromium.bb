@@ -13,7 +13,6 @@ import com.google.android.gms.auth.api.phone.SmsRetriever;
 import com.google.android.gms.auth.api.phone.SmsRetrieverClient;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 
 import org.chromium.base.ContextUtils;
@@ -29,12 +28,12 @@ import org.chromium.base.annotations.JNINamespace;
 public class SmsReceiver extends BroadcastReceiver {
     private static final String TAG = "SmsReceiver";
     private static final boolean DEBUG = false;
-    private final long mSmsReceiverAndroid;
+    private final long mSmsProviderAndroid;
     private boolean mDestroyed;
 
-    private SmsReceiver(long smsReceiverAndroid) {
+    private SmsReceiver(long smsProviderAndroid) {
         mDestroyed = false;
-        mSmsReceiverAndroid = smsReceiverAndroid;
+        mSmsProviderAndroid = smsProviderAndroid;
 
         final Context context = ContextUtils.getApplicationContext();
 
@@ -52,9 +51,9 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     @CalledByNative
-    private static SmsReceiver create(long smsReceiverAndroid) {
+    private static SmsReceiver create(long smsProviderAndroid) {
         if (DEBUG) Log.d(TAG, "Creating SmsReceiver.");
-        return new SmsReceiver(smsReceiverAndroid);
+        return new SmsReceiver(smsProviderAndroid);
     }
 
     @CalledByNative
@@ -94,11 +93,11 @@ public class SmsReceiver extends BroadcastReceiver {
             case CommonStatusCodes.SUCCESS:
                 String message = intent.getExtras().getString(SmsRetriever.EXTRA_SMS_MESSAGE);
                 if (DEBUG) Log.d(TAG, "Got message: %s!", message);
-                nativeOnReceive(mSmsReceiverAndroid, message);
+                nativeOnReceive(mSmsProviderAndroid, message);
                 break;
             case CommonStatusCodes.TIMEOUT:
                 if (DEBUG) Log.d(TAG, "Timeout");
-                nativeOnError(mSmsReceiverAndroid);
+                nativeOnTimeout(mSmsProviderAndroid);
                 break;
         }
     }
@@ -110,15 +109,9 @@ public class SmsReceiver extends BroadcastReceiver {
         SmsRetrieverClient client = SmsRetriever.getClient(context);
         Task<Void> task = client.startSmsRetriever();
 
-        task.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(Exception e) {
-                if (DEBUG) Log.d(TAG, "Failed to install the retriever.");
-                nativeOnError(mSmsReceiverAndroid);
-            }
-        });
+        if (DEBUG) Log.d(TAG, "Installed task");
     }
 
-    private native static void nativeOnReceive(long nativeSmsReceiverAndroid, String sms);
-    private native static void nativeOnError(long nativeSmsReceiverAndroid);
+    private static native void nativeOnReceive(long nativeSmsProviderAndroid, String sms);
+    private static native void nativeOnTimeout(long nativeSmsProviderAndroid);
 }

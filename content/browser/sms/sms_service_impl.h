@@ -5,45 +5,44 @@
 #ifndef CONTENT_BROWSER_SMS_SMS_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_SMS_SMS_SERVICE_IMPL_H_
 
+#include <map>
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/time/time.h"
+#include "content/browser/sms/sms_manager_impl.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/sms_service.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/sms/sms_manager.mojom.h"
+
+namespace url {
+class Origin;
+}
 
 namespace content {
 
 // The SmsServiceImpl is responsible for taking the incoming mojo calls from the
 // renderer process and dispatching them to the SmsProvider platform-specific
 // implementation.
-class CONTENT_EXPORT SmsServiceImpl : public blink::mojom::SmsManager,
-                                      public content::SmsService {
+class CONTENT_EXPORT SmsServiceImpl : public content::SmsService {
  public:
   SmsServiceImpl();
   ~SmsServiceImpl() override;
 
   // content::SmsService
-  void Bind(blink::mojom::SmsManagerRequest request) override;
-
-  // blink.mojom.SmsManager:
-  void GetNextMessage(base::TimeDelta timeout,
-                      GetNextMessageCallback callback) override;
+  void Bind(blink::mojom::SmsManagerRequest, const url::Origin&) override;
 
   // Testing helpers.
-  void SetSmsProviderForTest(std::unique_ptr<SmsProvider> sms_provider);
+  void SetSmsProviderForTest(std::unique_ptr<SmsProvider>);
 
  private:
   std::unique_ptr<SmsProvider> sms_provider_;
 
   // Registered clients.
-  mojo::BindingSet<blink::mojom::SmsManager> bindings_;
+  mojo::StrongBindingSet<blink::mojom::SmsManager> bindings_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SmsServiceImpl);

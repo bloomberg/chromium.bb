@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/time/time.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/browser/sms/sms_service_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -26,20 +25,16 @@ class MockSmsProvider : public SmsProvider {
   MockSmsProvider() = default;
   ~MockSmsProvider() override = default;
 
-  void Retrieve(base::TimeDelta timeout, SmsCallback callback) {
-    DoRetrieve(timeout, &callback);
-  }
-
-  MOCK_METHOD2(DoRetrieve, void(base::TimeDelta, SmsCallback*));
+  MOCK_METHOD0(Retrieve, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSmsProvider);
 };
 
-class SmsTest : public ContentBrowserTest {
+class SmsBrowserTest : public ContentBrowserTest {
  public:
-  SmsTest() = default;
-  ~SmsTest() override = default;
+  SmsBrowserTest() = default;
+  ~SmsBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
@@ -51,12 +46,15 @@ class SmsTest : public ContentBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SmsTest, Start) {
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Start) {
+  GURL url = GetTestUrl(nullptr, "simple_page.html");
+  NavigateToURL(shell(), url);
 
-  auto mock_sms_provider = std::make_unique<NiceMock<MockSmsProvider>>();
+  auto* mock = new NiceMock<MockSmsProvider>();
+
   auto* sms_service = static_cast<SmsServiceImpl*>(
       shell()->web_contents()->GetBrowserContext()->GetSmsService());
+  sms_service->SetSmsProviderForTest(base::WrapUnique(mock));
 
   // Test that SMS content can be retrieved after SmsManager.start().
   std::string script = R"(
@@ -71,14 +69,9 @@ IN_PROC_BROWSER_TEST_F(SmsTest, Start) {
     }) ();
   )";
 
-  EXPECT_CALL(*mock_sms_provider,
-              DoRetrieve(base::TimeDelta::FromSeconds(60), _))
-      .WillOnce(Invoke(
-          [](base::TimeDelta timeout,
-             base::OnceCallback<void(bool, base::Optional<std::string>)>*
-                 callback) { std::move(*callback).Run(true, "hello"); }));
-
-  sms_service->SetSmsProviderForTest(std::move(mock_sms_provider));
+  EXPECT_CALL(*mock, Retrieve()).WillOnce(Invoke([&mock, &url]() {
+    mock->NotifyReceive(url::Origin::Create(url), "hello");
+  }));
 
   EXPECT_EQ("hello", EvalJs(shell(), script));
 }

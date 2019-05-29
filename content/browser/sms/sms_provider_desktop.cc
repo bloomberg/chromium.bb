@@ -4,12 +4,9 @@
 
 #include "content/browser/sms/sms_provider_desktop.h"
 
-#include "base/callback.h"
-
 namespace content {
 
-void SmsProviderDesktop::Retrieve(base::TimeDelta timeout,
-                                  SmsCallback callback) {
+void SmsProviderDesktop::Retrieve() {
   // TODO(crbug.com/670299): implementation pending.
   NOTIMPLEMENTED();
 }

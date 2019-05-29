@@ -9,7 +9,6 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/callback.h"
 #include "base/macros.h"
 #include "content/browser/sms/sms_provider.h"
 
@@ -20,16 +19,15 @@ class SmsProviderAndroid : public SmsProvider {
   SmsProviderAndroid();
   ~SmsProviderAndroid() override;
 
-  void Retrieve(base::TimeDelta timeout, SmsCallback callback) override;
+  void Retrieve() override;
+
+  void OnReceive(JNIEnv*,
+                 const base::android::JavaParamRef<jobject>&,
+                 jstring message);
+  void OnTimeout(JNIEnv* env, const base::android::JavaParamRef<jobject>&);
 
  private:
-  void OnReceive(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& obj,
-                 jstring message);
-  void OnError(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-
   base::android::ScopedJavaGlobalRef<jobject> j_sms_receiver_;
-  SmsCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SmsProviderAndroid);
 };

@@ -7,30 +7,48 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/time/time.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
+#include "content/browser/sms/sms_parser.h"
+#include "content/common/content_export.h"
+
+namespace url {
+class Origin;
+}
 
 namespace content {
 
 // This class wraps the platform-specific functions and allows tests to
 // inject custom providers.
-class SmsProvider {
+class CONTENT_EXPORT SmsProvider {
  public:
-  using SmsCallback =
-      base::OnceCallback<void(bool, base::Optional<std::string>)>;
+  class Observer : public base::CheckedObserver {
+   public:
+    // Receive an |sms| from an origin. Return true if the message is
+    // handled, which stops its propagation to other observers.
+    virtual bool OnReceive(const url::Origin&, const std::string& sms) = 0;
+    virtual void OnTimeout() = 0;
+  };
 
-  SmsProvider() = default;
-  virtual ~SmsProvider() = default;
+  SmsProvider();
+  virtual ~SmsProvider();
 
-  // Listen to the next incoming SMS and call the callback when it is received.
-  // On timeout, call the callback with an empty message.
-  virtual void Retrieve(base::TimeDelta timeout, SmsCallback callback) = 0;
+  // Listen to the next incoming SMS and notify observers (exactly once) when
+  // it is received or (exclusively) when it timeouts.
+  virtual void Retrieve() = 0;
 
   static std::unique_ptr<SmsProvider> Create();
 
+  void AddObserver(Observer*);
+  void RemoveObserver(const Observer*);
+  void NotifyReceive(const url::Origin&, const std::string& sms);
+  void NotifyReceive(const std::string& sms);
+  void NotifyTimeout();
+  bool HasObservers();
+
  private:
+  base::ObserverList<Observer> observers_;
   DISALLOW_COPY_AND_ASSIGN(SmsProvider);
 };
 

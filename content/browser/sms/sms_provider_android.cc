@@ -4,7 +4,10 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "content/browser/sms/sms_provider_android.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 #include "jni/SmsReceiver_jni.h"
 
@@ -14,7 +17,7 @@ using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
-SmsProviderAndroid::SmsProviderAndroid() {
+SmsProviderAndroid::SmsProviderAndroid() : SmsProvider() {
   // This class is constructed a single time whenever the
   // first web page uses the SMS Retriever API to wait for
   // SMSes.
@@ -28,10 +31,9 @@ SmsProviderAndroid::~SmsProviderAndroid() {
   Java_SmsReceiver_destroy(env, j_sms_receiver_);
 }
 
-void SmsProviderAndroid::Retrieve(base::TimeDelta timeout,
-                                  SmsCallback callback) {
-  callback_ = std::move(callback);
+void SmsProviderAndroid::Retrieve() {
   JNIEnv* env = AttachCurrentThread();
+
   Java_SmsReceiver_listen(env, j_sms_receiver_);
 }
 
@@ -40,13 +42,13 @@ void SmsProviderAndroid::OnReceive(
     const base::android::JavaParamRef<jobject>& obj,
     jstring message) {
   std::string sms = ConvertJavaStringToUTF8(env, message);
-  std::move(callback_).Run(true, sms);
+  NotifyReceive(sms);
 }
 
-void SmsProviderAndroid::OnError(
+void SmsProviderAndroid::OnTimeout(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  std::move(callback_).Run(false, base::nullopt);
+  NotifyTimeout();
 }
 
 }  // namespace content
