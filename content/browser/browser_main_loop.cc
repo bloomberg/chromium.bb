@@ -1627,9 +1627,9 @@ void BrowserMainLoop::InitializeAudio() {
 
   if (base::FeatureList::IsEnabled(features::kAudioServiceLaunchOnStartup)) {
     // Schedule the audio service startup on the main thread.
-    BrowserThread::PostAfterStartupTask(
+    base::PostTaskWithTraits(
         FROM_HERE,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindOnce([]() {
           TRACE_EVENT0("audio", "Starting audio service");
           ServiceManagerConnection* connection =
