@@ -20,6 +20,6 @@ source_set("translate_internals") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/web_state_list",
-    "//ios/web/public",
+    "//ios/web/public/webui",
   ]
 }

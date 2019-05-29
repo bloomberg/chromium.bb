@@ -11,8 +11,8 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/webui/translate_internals/ios_translate_internals_handler.h"
 #include "ios/chrome/grit/ios_resources.h"
-#include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios.h"
+#include "ios/web/public/webui/web_ui_ios_data_source.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

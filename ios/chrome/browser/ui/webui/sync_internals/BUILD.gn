@@ -20,6 +20,6 @@ source_set("sync_internals") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/common",
-    "//ios/web",
+    "//ios/web/public/webui",
   ]
 }

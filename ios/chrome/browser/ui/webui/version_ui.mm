@@ -23,8 +23,8 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/web/public/web_client.h"
-#include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios.h"
+#include "ios/web/public/webui/web_ui_ios_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

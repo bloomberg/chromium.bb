@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_UI_IOS_DATA_SOURCE_H_
-#define IOS_WEB_PUBLIC_WEB_UI_IOS_DATA_SOURCE_H_
+#ifndef IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_DATA_SOURCE_H_
+#define IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_DATA_SOURCE_H_
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
@@ -59,4 +59,4 @@ class WebUIIOSDataSource : public base::SupportsUserData {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_WEB_UI_IOS_DATA_SOURCE_H_
+#endif  // IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_DATA_SOURCE_H_

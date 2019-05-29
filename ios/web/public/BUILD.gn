@@ -35,7 +35,6 @@ source_set("public") {
     "navigation_manager.h",
     "reload_type.h",
     "service_manager_connection.h",
-    "url_data_source_ios.h",
     "url_scheme_util.h",
     "url_schemes.h",
     "url_schemes.mm",
@@ -58,14 +57,7 @@ source_set("public") {
     "web_task_traits.h",
     "web_thread.h",
     "web_thread_delegate.h",
-    "web_ui_ios_data_source.h",
     "web_view_creation_util.h",
-    "webui/web_ui_ios.h",
-    "webui/web_ui_ios_controller.cc",
-    "webui/web_ui_ios_controller.h",
-    "webui/web_ui_ios_controller_factory.h",
-    "webui/web_ui_ios_message_handler.cc",
-    "webui/web_ui_ios_message_handler.h",
   ]
 
   libs = [ "WebKit.framework" ]

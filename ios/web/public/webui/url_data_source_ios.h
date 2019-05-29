@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_URL_DATA_SOURCE_IOS_H_
-#define IOS_WEB_PUBLIC_URL_DATA_SOURCE_IOS_H_
+#ifndef IOS_WEB_PUBLIC_WEBUI_URL_DATA_SOURCE_IOS_H_
+#define IOS_WEB_PUBLIC_WEBUI_URL_DATA_SOURCE_IOS_H_
 
 #include <string>
 
@@ -90,4 +90,4 @@ class URLDataSourceIOS {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_URL_DATA_SOURCE_IOS_H_
+#endif  // IOS_WEB_PUBLIC_WEBUI_URL_DATA_SOURCE_IOS_H_

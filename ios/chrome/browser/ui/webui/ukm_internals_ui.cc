@@ -15,9 +15,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/grit/ios_resources.h"
-#include "ios/web/public/url_data_source_ios.h"
-#include "ios/web/public/web_ui_ios_data_source.h"
+#include "ios/web/public/webui/url_data_source_ios.h"
 #include "ios/web/public/webui/web_ui_ios.h"
+#include "ios/web/public/webui/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
 
 namespace {
