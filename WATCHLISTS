@@ -432,9 +432,6 @@
                   '|third_party/blink/renderer/platform/exported/web_rtc' \
                   '|third_party/blink/web_tests/fast/mediastream/'
     },
-    'blink_modules': {
-      'filepath': 'third_party/blink/renderer/modules'
-    },
     'blink_navigator_content_utils': {
       'filepath': 'third_party/blink/renderer/modules/navigatorcontentutils' \
                   '|third_party/blink/web_tests/fast/dom/navigatorcontentutils'
@@ -2005,7 +2002,7 @@
                     'rtoy@chromium.org'],
     'blink_battery_status': ['mlamouri+watch-blink@chromium.org',
                              'timvolodine@chromium.org'],
-    'blink_bindings': ['blink-reviews-bindings@chromium.org'],
+    'blink_bindings': ['blink-reviews-bindings@chromium.org', 'haraken@chromium.org'],
     'blink_bindings_serialization': ['jbroman+watch@chromium.org'],
     'blink_bluetooth': ['mattreynolds+watch@chromium.org',
                         'ortuno+watch@chromium.org',
@@ -2084,7 +2081,6 @@
     'blink_media_queries': ['kenneth.christiansen@gmail.com',
                             'yoavweiss@chromium.org'],
     'blink_mediastream': ['tommyw+watchlist@chromium.org'],
-    'blink_modules': ['haraken-watch@chromium.org'],
     'blink_navigator_content_utils': ['gyuyoung.kim@chromium.org'],
     'blink_out_of_process_frames': ['dcheng@chromium.org',
                                     'mlamouri+watch-blink@chromium.org'],
@@ -2109,7 +2105,7 @@
     'blink_quota': ['kinuko+fileapi@chromium.org',
                     'nhiroki@chromium.org',
                     'tzik@chromium.org'],
-    'blink_scheduler': ['scheduler-bugs+blink@chromium.org'],
+    'blink_scheduler': ['scheduler-bugs+blink@chromium.org', 'haraken@chromium.org'],
     'blink_screen_orientation': ['mlamouri+watch-blink@chromium.org'],
     'blink_script': ['kouhei+script@chromium.org',
                      'hiroshige+script@chromium.org'],
@@ -2153,7 +2149,7 @@
                       'horo+watch@chromium.org',
                       'kinuko+worker@chromium.org',
                       'shimazu+worker@chromium.org'],
-    'blink_wtf': ['blink-reviews-wtf@chromium.org'],
+    'blink_wtf': ['blink-reviews-wtf@chromium.org', 'haraken@chromium.org'],
     'blink_xml': ['dominicc+watchlist@chromium.org',
                   'joelhockey+watch@chromium.org'],
     'bottombar': ['donnd+watch@chromium.org',
