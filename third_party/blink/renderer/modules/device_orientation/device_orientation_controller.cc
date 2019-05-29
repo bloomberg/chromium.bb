@@ -54,17 +54,22 @@ void DeviceOrientationController::DidAddEventListener(
   if (event_type != EventTypeName())
     return;
 
-  // TOOD(crbug.com/932078): Investigate if this ever called with no |frame|.
-  LocalFrame* frame = GetDocument().GetFrame();
-  if (frame) {
-    // TODO(crbug.com/967734): MediaControlsOrientationLock calls into this
-    // from potentially non-secure contexts. Do a no-op instead of crashing.
-    if (!GetDocument().IsSecureContext())
-      return;
+  // The document could be detached, e.g. if it is the `contentDocument` of an
+  // <iframe> that has been removed from the DOM of its parent frame.
+  if (GetDocument().IsContextDestroyed())
+    return;
 
-    UseCounter::Count(GetDocument(),
-                      WebFeature::kDeviceOrientationSecureOrigin);
-  }
+  // The API is not exposed to Workers or Worklets, so if the current realm
+  // execution context is valid, it must have a responsible browsing context.
+  SECURITY_CHECK(GetDocument().GetFrame());
+
+  // The event handler property on `window` is restricted to [SecureContext],
+  // but nothing prevents a site from calling `window.addEventListener(...)`
+  // from a non-secure browsing context.
+  if (!GetDocument().IsSecureContext())
+    return;
+
+  UseCounter::Count(GetDocument(), WebFeature::kDeviceOrientationSecureOrigin);
 
   if (!has_event_listener_) {
     Platform::Current()->RecordRapporURL("DeviceSensors.DeviceOrientation",
@@ -78,7 +83,8 @@ void DeviceOrientationController::DidAddEventListener(
 
     if (!CheckPolicyFeatures({mojom::FeaturePolicyFeature::kAccelerometer,
                               mojom::FeaturePolicyFeature::kGyroscope})) {
-      LogToConsolePolicyFeaturesDisabled(frame, EventTypeName());
+      LogToConsolePolicyFeaturesDisabled(GetDocument().GetFrame(),
+                                         EventTypeName());
       return;
     }
   }
