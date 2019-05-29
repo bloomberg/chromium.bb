@@ -78,7 +78,6 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/compositor/compositor_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/dom_us_layout_data.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
@@ -703,10 +702,6 @@ class AutofillInteractiveTest : public AutofillInteractiveTestBase {
     command_line->AppendSwitchASCII(
         translate::switches::kTranslateScriptURL,
         embedded_test_server()->GetURL("/mock_translate_script.js").spec());
-    // TODO(crbug.com/966475) This temporary switch enables pixel outputs to
-    // understand why the tests time out. Check the "shard #xx isolated out"
-    // links on the try bot site to see the screenshots.
-    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
   }
 };
 
