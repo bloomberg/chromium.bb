@@ -225,7 +225,9 @@ bool AllowedToRequestFullscreen(Document& document) {
   // true:
 
   //  The algorithm is triggered by a user activation.
-  if (LocalFrame::HasTransientUserActivation(document.GetFrame()))
+  // We are doing experiment to see if there is any webpage breaking after we
+  // only allow one fullscreen when the user activation state is active.
+  if (LocalFrame::ConsumeTransientUserActivation(document.GetFrame()))
     return true;
 
   //  The algorithm is triggered by a user generated orientation change.
