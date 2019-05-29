@@ -1222,6 +1222,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusedFrameUnload) {
   auto filter = base::MakeRefCounted<DropMessageFilter>(
       FrameMsgStart, FrameHostMsg_Detach::ID);
   B2->GetProcess()->AddFilter(filter.get());
+  B2->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
 
   EXPECT_FALSE(B2->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
   EXPECT_TRUE(ExecJs(B2, "window.onunload = ()=>{};"));
