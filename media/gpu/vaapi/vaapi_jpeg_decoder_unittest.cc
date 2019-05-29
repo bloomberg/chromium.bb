@@ -414,19 +414,29 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
   return Decode(encoded_image, VA_FOURCC_I420, status);
 }
 
+// The intention of this test is to ensure that the workarounds added in
+// VaapiWrapper::GetJpegDecodeSuitableImageFourCC() don't result in an
+// unsupported image format.
 TEST_F(VaapiJpegDecoderTest, MinimalImageFormatSupport) {
   // All drivers should support at least I420.
-  ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported({.fourcc = VA_FOURCC_I420}));
+  VAImageFormat i420_format{};
+  i420_format.fourcc = VA_FOURCC_I420;
+  ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(i420_format));
 
   // Additionally, the mesa VAAPI driver should support YV12, NV12 and YUYV.
   if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
                        "Mesa Gallium driver", base::CompareCase::SENSITIVE)) {
-    ASSERT_TRUE(
-        VaapiWrapper::IsImageFormatSupported({.fourcc = VA_FOURCC_YV12}));
-    ASSERT_TRUE(
-        VaapiWrapper::IsImageFormatSupported({.fourcc = VA_FOURCC_NV12}));
-    ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(
-        {.fourcc = VA_FOURCC('Y', 'U', 'Y', 'V')}));
+    VAImageFormat yv12_format{};
+    yv12_format.fourcc = VA_FOURCC_YV12;
+    ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(yv12_format));
+
+    VAImageFormat nv12_format{};
+    nv12_format.fourcc = VA_FOURCC_NV12;
+    ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(nv12_format));
+
+    VAImageFormat yuyv_format{};
+    yuyv_format.fourcc = VA_FOURCC('Y', 'U', 'Y', 'V');
+    ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(yuyv_format));
   }
 }
 
@@ -462,9 +472,21 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
   //
   // 2) The FOURCC returned by VaapiWrapper::GetJpegDecodeSuitableImageFourCC()
   //    corresponds to a supported image format.
+  //
+  // Note that we expect VA_FOURCC_I420 and VA_FOURCC_NV12 support in all
+  // drivers.
   const std::vector<VAImageFormat>& supported_image_formats =
       VaapiWrapper::GetSupportedImageFormatsForTesting();
-  ASSERT_GE(supported_image_formats.size(), 1u);
+  EXPECT_GE(supported_image_formats.size(), 2u);
+
+  VAImageFormat i420_format{};
+  i420_format.fourcc = VA_FOURCC_I420;
+  EXPECT_TRUE(VaapiWrapper::IsImageFormatSupported(i420_format));
+
+  VAImageFormat nv12_format{};
+  nv12_format.fourcc = VA_FOURCC_NV12;
+  EXPECT_TRUE(VaapiWrapper::IsImageFormatSupported(nv12_format));
+
   for (const auto& image_format : supported_image_formats) {
     std::unique_ptr<ScopedVAImage> scoped_image =
         Decode(encoded_image, image_format.fourcc);

@@ -155,6 +155,7 @@ static const struct {
 
 constexpr const char* kMesaGalliumDriverPrefix = "Mesa Gallium driver";
 constexpr const char* kIntelI965DriverPrefix = "Intel i965 driver";
+constexpr const char* kIntelIHDDriverPrefix = "Intel iHD driver";
 
 static const struct {
   std::string va_driver;
@@ -962,11 +963,26 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
     // reported. See https://gitlab.freedesktop.org/mesa/mesa/commit/b0a44f10.
     // Remove this workaround once b/128340287 is resolved.
     if (std::find_if(supported_formats_.cbegin(), supported_formats_.cend(),
-                     [](const VAImageFormat format) {
+                     [](const VAImageFormat& format) {
                        return format.fourcc == VA_FOURCC_I420;
                      }) == supported_formats_.cend()) {
-      supported_formats_.push_back(VAImageFormat{.fourcc = VA_FOURCC_I420});
+      VAImageFormat i420_format{};
+      i420_format.fourcc = VA_FOURCC_I420;
+      supported_formats_.push_back(i420_format);
     }
+  } else if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                              kIntelIHDDriverPrefix,
+                              base::CompareCase::SENSITIVE)) {
+    // TODO(andrescj): for Intel's media driver, remove everything that's not
+    // I420 or NV12 since it is 'over-advertising' the supported formats. Remove
+    // this workaround once https://crbug.com/955284 is fixed.
+    supported_formats_.erase(
+        std::remove_if(supported_formats_.begin(), supported_formats_.end(),
+                       [](const VAImageFormat& format) {
+                         return format.fourcc != VA_FOURCC_I420 &&
+                                format.fourcc != VA_FOURCC_NV12;
+                       }),
+        supported_formats_.end());
   }
   return true;
 }
@@ -1118,7 +1134,9 @@ bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
   if (!IsJpegDecodingSupportedForInternalFormat(rt_format))
     return false;
 
-  // Work around some driver-specific conversion issues.
+  // Work around some driver-specific conversion issues. If you add a workaround
+  // here, please update the VaapiJpegDecoderTest.MinimalImageFormatSupport
+  // test.
   if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
                        kMesaGalliumDriverPrefix,
                        base::CompareCase::SENSITIVE)) {
