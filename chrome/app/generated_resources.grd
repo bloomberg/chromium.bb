@@ -1098,8 +1098,8 @@ are declared in tools/grit/grit_rule.gni.
 
       <!-- App menu -->
       <if expr="chromeos">
-        <message name="IDS_TOGGLE_REQUEST_TABLET_SITE" desc="The toggle to request tablet site on a touch dev.">
-          Request tablet site
+        <message name="IDS_TOGGLE_REQUEST_TABLET_SITE" desc="The toggle to request mobile version site on a touch dev.">
+          Request mobile site
         </message>
       </if>
       <message name="IDS_HELP_MENU" desc="The text label of the Help sub-menu item in the wrench menu">
