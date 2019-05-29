@@ -169,6 +169,9 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
       owner_type == blink::FrameOwnerElementType::kEmbed ||
       owner_type == blink::FrameOwnerElementType::kObject;
   DCHECK_NE(MSG_ROUTING_NONE, embedder_widget_routing_id_);
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame())
+    delegate_->RecordLoadMetric(
+        /* in_main_frame */ !GetEmbedderFrame()->GetParent(), mime_type_);
 }
 
 void MimeHandlerViewGuest::SetBeforeUnloadController(
@@ -199,6 +202,7 @@ void MimeHandlerViewGuest::CreateWebContents(
     std::move(callback).Run(nullptr);
     return;
   }
+  mime_type_ = stream_->mime_type();
   const Extension* mime_handler_extension =
       // TODO(lazyboy): Do we need handle the case where the extension is
       // terminated (ExtensionRegistry::TERMINATED)?

@@ -109,6 +109,8 @@ class MimeHandlerViewGuest
   // parent frame of the embedder frame (for post message).
   bool maybe_has_frame_container() const { return maybe_has_frame_container_; }
 
+  const std::string& mime_type() const { return mime_type_; }
+
   base::WeakPtr<MimeHandlerViewGuest> GetWeakPtr();
 
  protected:
@@ -194,6 +196,8 @@ class MimeHandlerViewGuest
   bool is_embedder_fullscreen_ = false;
   bool plugin_can_save_ = false;
   GURL original_resource_url_;
+  std::string mime_type_;
+
   // True when the MimeHandlerViewGeust might have a frame container in its
   // embedder's parent frame to facilitate postMessage.
   bool maybe_has_frame_container_ = false;

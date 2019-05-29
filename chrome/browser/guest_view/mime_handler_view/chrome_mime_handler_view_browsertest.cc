@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pdf_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
@@ -48,6 +49,7 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "url/url_constants.h"
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #endif
@@ -618,6 +620,43 @@ IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
     histogram_tester.ExpectBucketCount(
         extensions::MimeHandlerViewUMATypes::kUMAName, pair.first, pair.second);
   }
+}
+
+IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
+                       UMAPDFLoadStatsFullPage) {
+  base::HistogramTester histogram_tester;
+  GURL data_url("data:application/pdf,foo");
+  ui_test_utils::NavigateToURL(browser(), data_url);
+  auto* guest = GetGuestViewManager()->WaitForSingleGuestCreated();
+  while (guest->IsLoading()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectBucketCount(
+      "PDF.LoadStatus", PDFLoadStatus::kLoadedFullPagePdfWithPdfium, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
+                       UMAPDFLoadStatsEmbedded) {
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ASSERT_TRUE(content::ExecJs(
+      browser()->tab_strip_model()->GetWebContentsAt(0),
+      "document.write('<iframe></iframe>');"
+      "document.querySelector('iframe').src = 'data:application/pdf, foo';"));
+  auto* guest = GetGuestViewManager()->WaitForSingleGuestCreated();
+  while (guest->IsLoading()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectBucketCount(
+      "PDF.LoadStatus", PDFLoadStatus::kLoadedEmbeddedPdfWithPdfium, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(,
