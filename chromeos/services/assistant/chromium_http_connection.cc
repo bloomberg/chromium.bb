@@ -287,22 +287,15 @@ void ChromiumHttpConnection::OnComplete(bool success) {
       delegate_->OnPartialResponse(partial_response);
   }
 
-  if (success) {
-    DCHECK_NE(response_code, kResponseCodeInvalid);
-    delegate_->OnCompleteResponse(response_code, raw_headers, "");
-    return;
-  }
-
-  if (url_loader_->NetError() != net::OK) {
-    delegate_->OnNetworkError(kResponseCodeInvalid,
-                              net::ErrorToString(url_loader_->NetError()));
+  if (response_code != kResponseCodeInvalid) {
+    delegate_->OnCompleteResponse(response_code, raw_headers, /*response=*/"");
     return;
   }
 
   const std::string message = net::ErrorToString(url_loader_->NetError());
   VLOG(2) << "ChromiumHttpConnection completed with network error="
-          << response_code << ": " << message;
-  delegate_->OnNetworkError(response_code, message);
+          << url_loader_->NetError() << ": " << message;
+  delegate_->OnNetworkError(url_loader_->NetError(), message);
 }
 
 void ChromiumHttpConnection::OnRetry(base::OnceClosure start_retry) {
