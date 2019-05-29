@@ -176,6 +176,7 @@ component("bindings") {
     "receiver.h",
     "receiver_set.h",
     "remote.h",
+    "self_owned_receiver.h",
     "sequence_local_sync_event_watcher.h",
     "shared_associated_remote.h",
     "shared_remote.h",

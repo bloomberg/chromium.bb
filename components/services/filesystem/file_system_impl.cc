@@ -17,7 +17,7 @@
 #include "build/build_config.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "url/gurl.h"
 
@@ -30,10 +30,11 @@ FileSystemImpl::FileSystemImpl(const service_manager::Identity& remote_identity,
       lock_table_(std::move(lock_table)),
       persistent_dir_(persistent_dir) {}
 
-FileSystemImpl::~FileSystemImpl() {}
+FileSystemImpl::~FileSystemImpl() = default;
 
-void FileSystemImpl::OpenTempDirectory(mojom::DirectoryRequest directory,
-                                       OpenTempDirectoryCallback callback) {
+void FileSystemImpl::OpenTempDirectory(
+    mojo::PendingReceiver<mojom::Directory> receiver,
+    OpenTempDirectoryCallback callback) {
   // Set only if the |DirectoryImpl| will own a temporary directory.
   std::unique_ptr<base::ScopedTempDir> temp_dir(new base::ScopedTempDir);
   CHECK(temp_dir->CreateUniqueTempDir());
@@ -41,14 +42,15 @@ void FileSystemImpl::OpenTempDirectory(mojom::DirectoryRequest directory,
   base::FilePath path = temp_dir->GetPath();
   scoped_refptr<SharedTempDir> shared_temp_dir =
       new SharedTempDir(std::move(temp_dir));
-  mojo::MakeStrongBinding(std::make_unique<DirectoryImpl>(
-                              path, std::move(shared_temp_dir), lock_table_),
-                          std::move(directory));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<DirectoryImpl>(path, std::move(shared_temp_dir),
+                                      lock_table_),
+      std::move(receiver));
   std::move(callback).Run(base::File::Error::FILE_OK);
 }
 
 void FileSystemImpl::OpenPersistentFileSystem(
-    mojo::InterfaceRequest<mojom::Directory> directory,
+    mojo::PendingReceiver<mojom::Directory> receiver,
     OpenPersistentFileSystemCallback callback) {
   std::unique_ptr<base::ScopedTempDir> temp_dir;
   base::FilePath path = persistent_dir_;
@@ -58,9 +60,10 @@ void FileSystemImpl::OpenPersistentFileSystem(
   scoped_refptr<SharedTempDir> shared_temp_dir =
       new SharedTempDir(std::move(temp_dir));
 
-  mojo::MakeStrongBinding(std::make_unique<DirectoryImpl>(
-                              path, std::move(shared_temp_dir), lock_table_),
-                          std::move(directory));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<DirectoryImpl>(path, std::move(shared_temp_dir),
+                                      lock_table_),
+      std::move(receiver));
   std::move(callback).Run(base::File::Error::FILE_OK);
 }
 

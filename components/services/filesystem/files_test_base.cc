@@ -26,15 +26,17 @@ FilesTestBase::FilesTestBase()
       test_service_(
           test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
 
-FilesTestBase::~FilesTestBase() {}
+FilesTestBase::~FilesTestBase() = default;
 
 void FilesTestBase::SetUp() {
-  connector()->BindInterface("filesystem", &files_);
+  connector()->Connect("filesystem", files_.BindNewPipeAndPassReceiver());
 }
 
-void FilesTestBase::GetTemporaryRoot(mojom::DirectoryPtr* directory) {
+void FilesTestBase::GetTemporaryRoot(
+    mojo::Remote<mojom::Directory>* directory) {
   base::File::Error error = base::File::Error::FILE_ERROR_FAILED;
-  bool handled = files()->OpenTempDirectory(MakeRequest(directory), &error);
+  bool handled = files()->OpenTempDirectory(
+      directory->BindNewPipeAndPassReceiver(), &error);
   ASSERT_TRUE(handled);
   ASSERT_EQ(base::File::Error::FILE_OK, error);
 }

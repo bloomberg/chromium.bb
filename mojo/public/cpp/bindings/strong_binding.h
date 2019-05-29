@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/message_header_validator.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {

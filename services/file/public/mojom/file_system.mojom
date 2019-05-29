@@ -10,10 +10,11 @@ import "mojo/public/mojom/base/file_error.mojom";
 // Provide access to various directories within the requesting user's directory.
 interface FileSystem {
   // Returns the user's directory.
-  GetDirectory(filesystem.mojom.Directory& dir) => ();
+  GetDirectory(pending_receiver<filesystem.mojom.Directory> dir) => ();
 
   // Returns a subdirectory under the user's dir. Returns a filesystem error
   // when we fail to create the subdirectory.
-  GetSubDirectory(string dir_path, filesystem.mojom.Directory& dir)
+  GetSubDirectory(string dir_path,
+                  pending_receiver<filesystem.mojom.Directory> dir)
       => (mojo_base.mojom.FileError err);
 };

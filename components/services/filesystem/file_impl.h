@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/public/interfaces/directory.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace base {
 class FilePath;
@@ -66,7 +65,8 @@ class FileImpl : public mojom::File {
   void Touch(mojom::TimespecOrNowPtr atime,
              mojom::TimespecOrNowPtr mtime,
              TouchCallback callback) override;
-  void Dup(mojom::FileRequest file, DupCallback callback) override;
+  void Dup(mojo::PendingReceiver<mojom::File> receiver,
+           DupCallback callback) override;
   void Flush(FlushCallback callback) override;
   void Lock(LockCallback callback) override;
   void Unlock(UnlockCallback callback) override;

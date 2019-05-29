@@ -1036,8 +1036,7 @@ TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
 
 TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
   FakeLevelDBService mock_leveldb_service;
-  file_service()->GetBinderRegistryForTesting()->AddInterface(
-      leveldb::mojom::LevelDBService::Name_,
+  file_service()->GetBinderMapForTesting().Add(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&mock_leveldb_service)));
 
@@ -1185,8 +1184,7 @@ TEST_F(LocalStorageContextMojoTestWithService, RecreateOnCommitFailure) {
 TEST_F(LocalStorageContextMojoTestWithService,
        DontRecreateOnRepeatedCommitFailure) {
   FakeLevelDBService mock_leveldb_service;
-  file_service()->GetBinderRegistryForTesting()->AddInterface(
-      leveldb::mojom::LevelDBService::Name_,
+  file_service()->GetBinderMapForTesting().Add(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&mock_leveldb_service)));
 

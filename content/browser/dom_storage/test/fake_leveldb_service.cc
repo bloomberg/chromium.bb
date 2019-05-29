@@ -72,11 +72,9 @@ void FakeLevelDBService::Destroy(filesystem::mojom::DirectoryPtr,
 }
 
 void FakeLevelDBService::Bind(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe,
-    const service_manager::BindSourceInfo& source_info) {
-  bindings_.AddBinding(
-      this, leveldb::mojom::LevelDBServiceRequest(std::move(interface_pipe)));
+    const service_manager::Identity& remote_identity,
+    mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver) {
+  bindings_.AddBinding(this, std::move(receiver));
 }
 
 void FakeLevelDBService::FlushBindingsForTesting() {

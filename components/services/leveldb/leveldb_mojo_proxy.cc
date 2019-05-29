@@ -258,7 +258,7 @@ void LevelDBMojoProxy::CreateDirImpl(OpaqueDir* dir,
                                      base::File::Error* out_error) {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
   bool completed = dir->directory->OpenDirectory(
-      name, nullptr,
+      name, mojo::NullReceiver(),
       filesystem::mojom::kFlagRead | filesystem::mojom::kFlagWrite |
           filesystem::mojom::kFlagCreate,
       out_error);

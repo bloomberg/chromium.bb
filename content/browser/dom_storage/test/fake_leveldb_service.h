@@ -82,9 +82,8 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
     on_open_callback_ = std::move(on_open_callback);
   }
 
-  void Bind(const std::string& interface_name,
-            mojo::ScopedMessagePipeHandle interface_pipe,
-            const service_manager::BindSourceInfo& source_info);
+  void Bind(const service_manager::Identity& remote_identity,
+            mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver);
 
   void FlushBindingsForTesting();
 

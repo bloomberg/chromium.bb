@@ -4,12 +4,15 @@
 
 #include "services/file/file_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
 #include "components/services/filesystem/lock_table.h"
 #include "components/services/leveldb/leveldb_service_impl.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/file/file_system.h"
 #include "services/file/user_id_map.h"
 
@@ -22,21 +25,23 @@ class FileService::FileSystemObjects
   FileSystemObjects(base::FilePath user_dir) : user_dir_(user_dir) {}
 
   // Destroyed on the |file_service_runner_|.
-  ~FileSystemObjects() {}
+  ~FileSystemObjects() = default;
 
   // Called on the |file_service_runner_|.
-  void OnFileSystemRequest(const service_manager::Identity& remote_identity,
-                           mojom::FileSystemRequest request) {
+  void BindFileSystemReceiver(
+      const service_manager::Identity& remote_identity,
+      mojo::PendingReceiver<mojom::FileSystem> receiver) {
     if (!lock_table_)
       lock_table_ = new filesystem::LockTable;
-    mojo::MakeStrongBinding(
+    file_system_receivers_.Add(
         std::make_unique<FileSystem>(user_dir_, lock_table_),
-        std::move(request));
+        std::move(receiver));
   }
 
  private:
   scoped_refptr<filesystem::LockTable> lock_table_;
   base::FilePath user_dir_;
+  mojo::UniqueReceiverSet<mojom::FileSystem> file_system_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemObjects);
 };
@@ -50,15 +55,17 @@ class FileService::LevelDBServiceObjects
       : file_task_runner_(std::move(file_task_runner)) {}
 
   // Destroyed on the |leveldb_service_runner_|.
-  ~LevelDBServiceObjects() {}
+  ~LevelDBServiceObjects() = default;
 
   // Called on the |leveldb_service_runner_|.
-  void OnLevelDBServiceRequest(const service_manager::Identity& remote_identity,
-                               leveldb::mojom::LevelDBServiceRequest request) {
-    if (!leveldb_service_)
-      leveldb_service_.reset(
-          new leveldb::LevelDBServiceImpl(file_task_runner_));
-    leveldb_bindings_.AddBinding(leveldb_service_.get(), std::move(request));
+  void BindLevelDBServiceReceiver(
+      const service_manager::Identity& remote_identity,
+      mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver) {
+    if (!leveldb_service_) {
+      leveldb_service_ =
+          std::make_unique<leveldb::LevelDBServiceImpl>(file_task_runner_);
+    }
+    leveldb_receivers_.Add(leveldb_service_.get(), std::move(receiver));
   }
 
  private:
@@ -66,21 +73,22 @@ class FileService::LevelDBServiceObjects
 
   // Variables that are only accessible on the |leveldb_service_runner_| thread.
   std::unique_ptr<leveldb::mojom::LevelDBService> leveldb_service_;
-  mojo::BindingSet<leveldb::mojom::LevelDBService> leveldb_bindings_;
+  mojo::ReceiverSet<leveldb::mojom::LevelDBService> leveldb_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceObjects);
 };
 
-FileService::FileService(service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
+FileService::FileService(
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+    : service_binding_(this, std::move(receiver)),
       file_service_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       leveldb_service_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
-  registry_.AddInterface<leveldb::mojom::LevelDBService>(base::BindRepeating(
-      &FileService::BindLevelDBServiceRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::FileSystem>(base::BindRepeating(
-      &FileService::BindFileSystemRequest, base::Unretained(this)));
+  binders_.Add<leveldb::mojom::LevelDBService>(base::BindRepeating(
+      &FileService::BindLevelDBServiceReceiver, base::Unretained(this)));
+  binders_.Add<mojom::FileSystem>(base::BindRepeating(
+      &FileService::BindFileSystemReceiver, base::Unretained(this)));
 }
 
 FileService::~FileService() {
@@ -89,40 +97,36 @@ FileService::~FileService() {
 }
 
 void FileService::OnStart() {
-  file_system_objects_.reset(
-      new FileService::FileSystemObjects(GetUserDirForInstanceGroup(
-          service_binding_.identity().instance_group())));
-  leveldb_objects_.reset(
-      new FileService::LevelDBServiceObjects(file_service_runner_));
+  file_system_objects_ = std::make_unique<FileService::FileSystemObjects>(
+      GetUserDirForInstanceGroup(service_binding_.identity().instance_group()));
+  leveldb_objects_ = std::make_unique<FileService::LevelDBServiceObjects>(
+      file_service_runner_);
 }
 
-void FileService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe),
-                          source_info);
+void FileService::OnConnect(const service_manager::ConnectSourceInfo& source,
+                            const std::string& interface_name,
+                            mojo::ScopedMessagePipeHandle receiver_pipe) {
+  binders_.TryBind(source.identity, interface_name, &receiver_pipe);
 }
 
-void FileService::BindFileSystemRequest(
-    mojom::FileSystemRequest request,
-    const service_manager::BindSourceInfo& source_info) {
+void FileService::BindFileSystemReceiver(
+    const service_manager::Identity& remote_identity,
+    mojo::PendingReceiver<mojom::FileSystem> receiver) {
   file_service_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&FileService::FileSystemObjects::OnFileSystemRequest,
-                     file_system_objects_->AsWeakPtr(), source_info.identity,
-                     std::move(request)));
+      base::BindOnce(&FileService::FileSystemObjects::BindFileSystemReceiver,
+                     file_system_objects_->AsWeakPtr(), remote_identity,
+                     std::move(receiver)));
 }
 
-void FileService::BindLevelDBServiceRequest(
-    leveldb::mojom::LevelDBServiceRequest request,
-    const service_manager::BindSourceInfo& source_info) {
+void FileService::BindLevelDBServiceReceiver(
+    const service_manager::Identity& remote_identity,
+    mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver) {
   leveldb_service_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &FileService::LevelDBServiceObjects::OnLevelDBServiceRequest,
-          leveldb_objects_->AsWeakPtr(), source_info.identity,
-          std::move(request)));
+          &FileService::LevelDBServiceObjects::BindLevelDBServiceReceiver,
+          leveldb_objects_->AsWeakPtr(), remote_identity, std::move(receiver)));
 }
 
 }  // namespace user_service
