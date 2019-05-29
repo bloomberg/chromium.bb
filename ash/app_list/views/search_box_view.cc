@@ -512,7 +512,7 @@ void SearchBoxView::SetAutocompleteText(
   DCHECK(base::StartsWith(autocomplete_text, current_text,
                           base::CompareCase::INSENSITIVE_ASCII));
   // Don't set autocomplete text if it's the same as current search box text.
-  if (autocomplete_text.length() == current_text.length())
+  if (autocomplete_text == current_text)
     return;
 
   const base::string16& highlighted_text =
