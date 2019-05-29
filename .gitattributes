@@ -15,6 +15,7 @@
 *.gni text eol=lf
 *.h text eol=lf
 *.html   text eol=lf
+*.idl text eol=lf
 *.in   text eol=lf
 *.inc   text eol=lf
 *.java   text eol=lf
