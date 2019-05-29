@@ -1703,8 +1703,19 @@ void LocalFrame::UnpauseContext() {
 }
 
 void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
+  // If we have asked to be frozen we will only do this once the
+  // load event has fired.
+  if ((state == mojom::FrameLifecycleState::kFrozen ||
+       state == mojom::FrameLifecycleState::kFrozenAutoResumeMedia) &&
+      IsLoading()) {
+    pending_lifecycle_state_ = state;
+    return;
+  }
+  pending_lifecycle_state_ = base::nullopt;
+
   if (state == lifecycle_state_)
     return;
+
   bool is_frozen = lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
   bool freeze = state != mojom::FrameLifecycleState::kRunning;
 
@@ -1759,6 +1770,15 @@ void LocalFrame::CountUseIfFeatureWouldBeBlockedByFeaturePolicy(
       return;
     }
     f = f->Tree().Parent();
+  }
+}
+
+void LocalFrame::FinishedLoading() {
+  DomWindow()->FinishedLoading();
+
+  if (pending_lifecycle_state_) {
+    DCHECK(!IsLoading());
+    SetLifecycleState(pending_lifecycle_state_.value());
   }
 }
 

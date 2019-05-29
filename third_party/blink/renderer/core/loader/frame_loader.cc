@@ -414,7 +414,7 @@ void FrameLoader::DidFinishNavigation() {
     RestoreScrollPositionAndViewState();
     if (document_loader_)
       document_loader_->SetLoadType(WebFrameLoadType::kStandard);
-    frame_->DomWindow()->FinishedLoading();
+    frame_->FinishedLoading();
   }
 
   Frame* parent = frame_->Tree().Parent();

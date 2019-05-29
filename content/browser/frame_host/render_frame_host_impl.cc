@@ -3471,8 +3471,6 @@ void RenderFrameHostImpl::OnDidStopLoading() {
   // of this RenderFrameHost is being tracked.
   if (is_active())
     frame_tree_node_->DidStopLoading();
-
-  UpdateFrameFrozenState();
 }
 
 void RenderFrameHostImpl::OnDidChangeLoadProgress(double load_progress) {
@@ -6926,10 +6924,6 @@ RenderFrameHostImpl::BuildNavigationClientCommitFailedNavigationCallback(
 }
 
 void RenderFrameHostImpl::UpdateFrameFrozenState() {
-  // If the document is in the loading state keep it still loading.
-  if (is_loading_)
-    return;
-
   if (!IsFeatureEnabled(
           blink::mojom::FeaturePolicyFeature::kExecutionWhileNotRendered) &&
       visibility_ == blink::mojom::FrameVisibility::kNotRendered) {
