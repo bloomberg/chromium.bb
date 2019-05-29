@@ -1699,6 +1699,9 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   // However, for now, we only try once.
   texture->set_is_bind_pending(false);
 
+  // Update any binding points that are currently bound for this texture.
+  RebindTexture(texture);
+
   // No client ID available here, can this texture already be discardable?
   UpdateTextureSizeFromTexturePassthrough(texture, 0);
 }
@@ -2384,6 +2387,35 @@ void GLES2DecoderPassthroughImpl::UpdateTextureBinding(
       // Update the texture binding
       api()->glBindTextureFn(target, texture_service_id);
       target_bound_textures[bound_texture_index].texture = texture;
+    }
+  }
+
+  // Reset the active texture unit if it was changed
+  if (cur_texture_unit != active_texture_unit_) {
+    api()->glActiveTextureFn(
+        static_cast<GLenum>(GL_TEXTURE0 + active_texture_unit_));
+  }
+}
+
+void GLES2DecoderPassthroughImpl::RebindTexture(TexturePassthrough* texture) {
+  DCHECK(texture != nullptr);
+  size_t cur_texture_unit = active_texture_unit_;
+  GLenum target = texture->target();
+  auto& target_bound_textures =
+      bound_textures_[static_cast<size_t>(GLenumToTextureTarget(target))];
+  for (size_t bound_texture_index = 0;
+       bound_texture_index < target_bound_textures.size();
+       bound_texture_index++) {
+    if (target_bound_textures[bound_texture_index].texture == texture) {
+      // Update the active texture unit if needed
+      if (bound_texture_index != cur_texture_unit) {
+        api()->glActiveTextureFn(
+            static_cast<GLenum>(GL_TEXTURE0 + bound_texture_index));
+        cur_texture_unit = bound_texture_index;
+      }
+
+      // Update the texture binding
+      api()->glBindTextureFn(target, texture->service_id());
     }
   }
 

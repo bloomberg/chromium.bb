@@ -502,8 +502,15 @@ void TextureManager::Destroy() {
   DCHECK_EQ(0u, memory_type_tracker_->GetMemRepresented());
 }
 
+TexturePassthrough::LevelInfo::LevelInfo() = default;
+
+TexturePassthrough::LevelInfo::LevelInfo(const LevelInfo& rhs) = default;
+
+TexturePassthrough::LevelInfo::~LevelInfo() = default;
+
 TexturePassthrough::TexturePassthrough(GLuint service_id, GLenum target)
     : TextureBase(service_id),
+      owned_service_id_(service_id),
       have_context_(true),
       level_images_(target == GL_TEXTURE_CUBE_MAP ? 6 : 1) {
   TextureBase::SetTarget(target);
@@ -512,7 +519,7 @@ TexturePassthrough::TexturePassthrough(GLuint service_id, GLenum target)
 TexturePassthrough::~TexturePassthrough() {
   DeleteFromMailboxManager();
   if (have_context_) {
-    glDeleteTextures(1, &service_id_);
+    glDeleteTextures(1, &owned_service_id_);
   }
 }
 
@@ -537,6 +544,70 @@ void TexturePassthrough::MarkContextLost() {
 void TexturePassthrough::SetLevelImage(GLenum target,
                                        GLint level,
                                        gl::GLImage* image) {
+  SetLevelImageInternal(target, level, image, nullptr, owned_service_id_);
+}
+
+gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
+                                               GLint level) const {
+  size_t face_idx = 0;
+  if (!LevelInfoExists(target, level, &face_idx)) {
+    return nullptr;
+  }
+
+  return level_images_[face_idx][level].image.get();
+}
+
+void TexturePassthrough::SetStreamLevelImage(
+    GLenum target,
+    GLint level,
+    GLStreamTextureImage* stream_texture_image,
+    GLuint service_id) {
+  SetLevelImageInternal(target, level, stream_texture_image,
+                        stream_texture_image, service_id);
+}
+
+GLStreamTextureImage* TexturePassthrough::GetStreamLevelImage(
+    GLenum target,
+    GLint level) const {
+  size_t face_idx = 0;
+  if (!LevelInfoExists(target, level, &face_idx)) {
+    return nullptr;
+  }
+
+  return level_images_[face_idx][level].stream_texture_image.get();
+}
+
+void TexturePassthrough::SetEstimatedSize(size_t size) {
+  estimated_size_ = size;
+}
+
+bool TexturePassthrough::LevelInfoExists(GLenum target,
+                                         GLint level,
+                                         size_t* out_face_idx) const {
+  DCHECK(out_face_idx);
+
+  if (GLES2Util::GLFaceTargetToTextureTarget(target) != target_) {
+    return false;
+  }
+
+  size_t face_idx = GLES2Util::GLTargetToFaceIndex(target);
+  DCHECK(face_idx < level_images_.size());
+  DCHECK(level >= 0);
+
+  if (static_cast<GLint>(level_images_[face_idx].size()) <= level) {
+    return false;
+  }
+
+  *out_face_idx = face_idx;
+  return true;
+}
+
+void TexturePassthrough::SetLevelImageInternal(
+    GLenum target,
+    GLint level,
+    gl::GLImage* image,
+    GLStreamTextureImage* stream_texture_image,
+    GLuint service_id) {
   size_t face_idx = GLES2Util::GLTargetToFaceIndex(target);
   DCHECK(face_idx < level_images_.size());
   DCHECK(level >= 0);
@@ -546,28 +617,12 @@ void TexturePassthrough::SetLevelImage(GLenum target,
     level_images_[face_idx].resize(level + 1);
   }
 
-  level_images_[face_idx][level] = image;
-}
+  level_images_[face_idx][level].image = image;
+  level_images_[face_idx][level].stream_texture_image = stream_texture_image;
 
-gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
-                                               GLint level) const {
-  if (GLES2Util::GLFaceTargetToTextureTarget(target) != target_) {
-    return nullptr;
+  if (service_id != 0 && service_id != service_id_) {
+    service_id_ = service_id;
   }
-
-  size_t face_idx = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK(face_idx < level_images_.size());
-  DCHECK(level >= 0);
-
-  if (static_cast<GLint>(level_images_[face_idx].size()) <= level) {
-    return nullptr;
-  }
-
-  return level_images_[face_idx][level].get();
-}
-
-void TexturePassthrough::SetEstimatedSize(size_t size) {
-  estimated_size_ = size;
 }
 
 Texture::Texture(GLuint service_id)

@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/decoder_client.h"
+#include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/multi_draw_manager.h"
@@ -4909,8 +4910,38 @@ error::Error
 GLES2DecoderPassthroughImpl::DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint location,
     GLboolean transpose,
-    const volatile GLfloat* defaultValue) {
-  NOTIMPLEMENTED();
+    const volatile GLfloat* transform) {
+  constexpr GLenum kTextureTarget = GL_TEXTURE_EXTERNAL_OES;
+  scoped_refptr<TexturePassthrough> bound_texture =
+      bound_textures_[static_cast<size_t>(
+          GLenumToTextureTarget(kTextureTarget))][active_texture_unit_]
+          .texture;
+  if (!bound_texture) {
+    InsertError(GL_INVALID_OPERATION, "no texture bound");
+    return error::kNoError;
+  }
+
+  float gl_matrix[16] = {};
+
+  GLStreamTextureImage* image =
+      bound_texture->GetStreamLevelImage(kTextureTarget, 0);
+  if (image) {
+    gfx::Transform st_transform(gfx::Transform::kSkipInitialization);
+    gfx::Transform pre_transform(gfx::Transform::kSkipInitialization);
+    image->GetTextureMatrix(gl_matrix);
+    st_transform.matrix().setColMajorf(gl_matrix);
+    // const_cast is safe, because setColMajorf only does a memcpy.
+    // TODO(piman): can we remove this assumption without having to introduce
+    // an extra copy?
+    pre_transform.matrix().setColMajorf(const_cast<const GLfloat*>(transform));
+    gfx::Transform(pre_transform, st_transform).matrix().asColMajorf(gl_matrix);
+  } else {
+    // Missing stream texture. Treat matrix as identity.
+    memcpy(gl_matrix, const_cast<const GLfloat*>(transform), sizeof(gl_matrix));
+  }
+
+  api()->glUniformMatrix4fvFn(location, 1, transpose, gl_matrix);
+
   return error::kNoError;
 }
 
@@ -4921,7 +4952,28 @@ error::Error GLES2DecoderPassthroughImpl::DoOverlayPromotionHintCHROMIUM(
     GLint display_y,
     GLint display_width,
     GLint display_height) {
-  NOTIMPLEMENTED();
+  if (texture == 0) {
+    return error::kNoError;
+  }
+
+  scoped_refptr<TexturePassthrough> passthrough_texture = nullptr;
+  if (!resources_->texture_object_map.GetServiceID(texture,
+                                                   &passthrough_texture) ||
+      passthrough_texture == nullptr) {
+    InsertError(GL_INVALID_VALUE, "invalid texture id");
+    return error::kNoError;
+  }
+
+  GLStreamTextureImage* image =
+      passthrough_texture->GetStreamLevelImage(GL_TEXTURE_EXTERNAL_OES, 0);
+  if (!image) {
+    InsertError(GL_INVALID_OPERATION, "texture has no StreamTextureImage");
+    return error::kNoError;
+  }
+
+  image->NotifyPromotionHint(promotion_hint != GL_FALSE, display_x, display_y,
+                             display_width, display_height);
+
   return error::kNoError;
 }
 

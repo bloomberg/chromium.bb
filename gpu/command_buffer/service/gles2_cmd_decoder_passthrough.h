@@ -446,6 +446,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   void UpdateTextureBinding(GLenum target,
                             GLuint client_id,
                             TexturePassthrough* texture);
+  void RebindTexture(TexturePassthrough* texture);
 
   void UpdateTextureSizeFromTexturePassthrough(TexturePassthrough* texture,
                                                GLuint client_id);
