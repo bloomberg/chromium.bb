@@ -55,6 +55,7 @@ ChannelLayout ToChannelLayout(const ::media::ChannelLayout channel_layout) {
     case ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO:
       return ChannelLayout::STEREO;
     case ::media::ChannelLayout::CHANNEL_LAYOUT_5_1:
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_5_1_BACK:
       return ChannelLayout::SURROUND_5_1;
     case ::media::ChannelLayout::CHANNEL_LAYOUT_BITSTREAM:
       return ChannelLayout::BITSTREAM;

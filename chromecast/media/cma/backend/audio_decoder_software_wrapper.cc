@@ -113,6 +113,7 @@ bool AudioDecoderSoftwareWrapper::SetConfig(const AudioConfig& config) {
   output_config_.bytes_per_channel = 2;
   output_config_.samples_per_second = config.samples_per_second;
   output_config_.encryption_scheme = EncryptionScheme::kUnencrypted;
+  output_config_.channel_layout = config.channel_layout;
   return backend_decoder_->SetConfig(output_config_);
 }
 
