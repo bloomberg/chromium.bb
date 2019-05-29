@@ -112,7 +112,15 @@ SpdySessionPool::SpdySessionPool(
 }
 
 SpdySessionPool::~SpdySessionPool() {
-  DCHECK(spdy_session_request_map_.empty());
+#if DCHECK_IS_ON()
+  for (const auto& request_info : spdy_session_request_map_) {
+    // The should be no pending SpdySessionRequests on destruction, though there
+    // may be callbacks waiting to be invoked, since they use weak pointers and
+    // there's no API to unregister them.
+    DCHECK(request_info.second.request_set.empty());
+  }
+#endif  // DCHECK_IS_ON()
+
   // TODO(bnc): CloseAllSessions() is also called in HttpNetworkSession
   // destructor, one of the two calls should be removed.
   CloseAllSessions();
