@@ -94,7 +94,7 @@ interface DWriteFontProxy {
   // to perform searches in it. Retrieval may take up to several seconds if the
   // table needs rebuilding on browser side.
   GetUniqueNameLookupTable() =>
-  (mojo_base.mojom.ReadOnlySharedMemoryRegion font_lookup_table);
+  (mojo_base.mojom.ReadOnlySharedMemoryRegion? font_lookup_table);
 
   // Locates a font family that is able to render the specified text using the
   // specified style. If successful, the family_index and family_name will

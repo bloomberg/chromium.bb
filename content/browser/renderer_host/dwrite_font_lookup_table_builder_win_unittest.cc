@@ -92,7 +92,7 @@ class DWriteFontLookupTableBuilderTimeoutTest
 // class directly.
 TEST_F(DWriteFontLookupTableBuilderTest, TestFindUniqueFontDirect) {
   font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();
-  font_lookup_table_builder_->EnsureFontUniqueNameTable();
+  font_lookup_table_builder_->EnsureFontUniqueNameTableForTesting();
   TestMatchFonts();
 }
 
@@ -100,7 +100,7 @@ TEST_P(DWriteFontLookupTableBuilderTimeoutTest, TestTimeout) {
   font_lookup_table_builder_->SetSlowDownIndexingForTestingWithTimeout(
       GetParam(), kTestingTimeout);
   font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();
-  font_lookup_table_builder_->EnsureFontUniqueNameTable();
+  font_lookup_table_builder_->EnsureFontUniqueNameTableForTesting();
   base::ReadOnlySharedMemoryRegion font_table_memory =
       font_lookup_table_builder_->DuplicateMemoryRegion();
   blink::FontTableMatcher font_table_matcher(font_table_memory.Map());
@@ -128,7 +128,7 @@ TEST_F(DWriteFontLookupTableBuilderTest, TestReadyEarly) {
   font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();
   ASSERT_FALSE(font_lookup_table_builder_->FontUniqueNameTableReady());
   font_lookup_table_builder_->ResumeFromHangForTesting();
-  font_lookup_table_builder_->EnsureFontUniqueNameTable();
+  font_lookup_table_builder_->EnsureFontUniqueNameTableForTesting();
   ASSERT_TRUE(font_lookup_table_builder_->FontUniqueNameTableReady());
 }
 
@@ -137,7 +137,7 @@ TEST_F(DWriteFontLookupTableBuilderTest, RepeatedScheduling) {
     font_lookup_table_builder_->ResetLookupTableForTesting();
     font_lookup_table_builder_->SetCachingEnabledForTesting(false);
     font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();
-    font_lookup_table_builder_->EnsureFontUniqueNameTable();
+    font_lookup_table_builder_->EnsureFontUniqueNameTableForTesting();
   }
 }
 
@@ -149,7 +149,8 @@ TEST_F(DWriteFontLookupTableBuilderTest, HandleCorruptCacheFile) {
   // Cycle once to build cache file.
   font_lookup_table_builder_->ResetLookupTableForTesting();
   font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();
-  font_lookup_table_builder_->EnsureFontUniqueNameTable();
+  ASSERT_TRUE(
+      font_lookup_table_builder_->EnsureFontUniqueNameTableForTesting());
   // Truncate table for testing
   base::FilePath cache_file_path = scoped_temp_dir_.GetPath().Append(
       FILE_PATH_LITERAL("font_unique_name_table.pb"));
@@ -170,13 +171,15 @@ TEST_F(DWriteFontLookupTableBuilderTest, HandleCorruptCacheFile) {
   // Reload the cache file.
   font_lookup_table_builder_->ResetLookupTableForTesting();
   font_lookup_table_builder_->SchedulePrepareFontUniqueNameTableIfNeeded();
-  ASSERT_TRUE(font_lookup_table_builder_->EnsureFontUniqueNameTable());
+  ASSERT_TRUE(
+      font_lookup_table_builder_->EnsureFontUniqueNameTableForTesting());
 
   TestMatchFonts();
 
   // Ensure that the table is still valid even though persisting has failed due
   // to the exclusive write lock on the file.
-  ASSERT_TRUE(font_lookup_table_builder_->EnsureFontUniqueNameTable());
+  ASSERT_TRUE(
+      font_lookup_table_builder_->EnsureFontUniqueNameTableForTesting());
 }
 
 }  // namespace content

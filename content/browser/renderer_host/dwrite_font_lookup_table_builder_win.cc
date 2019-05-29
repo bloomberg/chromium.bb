@@ -30,6 +30,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/registry.h"
 #include "content/browser/renderer_host/dwrite_font_file_util_win.h"
+#include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 #include "content/browser/renderer_host/dwrite_font_uma_logging_win.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
@@ -89,21 +90,6 @@ bool ExtractCaseFoldedLocalizedStrings(
   return true;
 }
 
-// Used in the BuildFontUniqueNameTable() method to ensure that
-// |font_table_built_| is signaled whenever the function exits due to an error
-// or otherwise.
-class ScopedAutoSignal {
- public:
-  ScopedAutoSignal(base::WaitableEvent* waitable_event)
-      : waitable_event_(waitable_event) {}
-  ~ScopedAutoSignal() { waitable_event_->Signal(); }
-
- private:
-  base::WaitableEvent* const waitable_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedAutoSignal);
-};
-
 bool EnsureCacheDirectory(base::FilePath cache_directory) {
   // If the directory does not exist already, ensure that the parent directory
   // exists, which is usually the User Data directory. If it exists, we can try
@@ -144,7 +130,7 @@ DWriteFontLookupTableBuilder::~DWriteFontLookupTableBuilder() = default;
 
 base::ReadOnlySharedMemoryRegion
 DWriteFontLookupTableBuilder::DuplicateMemoryRegion() {
-  DCHECK(EnsureFontUniqueNameTable());
+  DCHECK(FontUniqueNameTableReady());
   return font_table_memory_.region.Duplicate();
 }
 
@@ -242,8 +228,27 @@ void DWriteFontLookupTableBuilder::OverrideDWriteVersionChecksForTesting() {
   factory3_.Reset();
 }
 
+bool DWriteFontLookupTableBuilder::EnsureFontUniqueNameTableForTesting() {
+  TRACE_EVENT0("dwrite,fonts",
+               "DWriteFontLookupTableBuilder::EnsureFontUniqueNameTable");
+  DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
+  DCHECK(!HasDWriteUniqueFontLookups());
+  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
+  font_table_built_.Wait();
+  return IsFontUniqueNameTableValid();
+}
+
 base::TimeDelta DWriteFontLookupTableBuilder::IndexingTimeout() {
   return font_indexing_timeout_;
+}
+
+void DWriteFontLookupTableBuilder::PostCallbacks() {
+  for (auto& pending_callback : pending_callbacks_) {
+    pending_callback.task_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(pending_callback.mojo_callback),
+                                  DuplicateMemoryRegion()));
+  }
+  pending_callbacks_.clear();
 }
 
 base::FilePath DWriteFontLookupTableBuilder::TableCacheFilePath() {
@@ -317,17 +322,38 @@ bool DWriteFontLookupTableBuilder::LoadFromFile() {
   return true;
 }
 
-bool DWriteFontLookupTableBuilder::EnsureFontUniqueNameTable() {
+DWriteFontLookupTableBuilder::CallbackOnTaskRunner::CallbackOnTaskRunner(
+    scoped_refptr<base::SequencedTaskRunner> runner,
+    blink::mojom::DWriteFontProxy::GetUniqueNameLookupTableCallback callback)
+    : task_runner(std::move(runner)), mojo_callback(std::move(callback)) {}
+
+DWriteFontLookupTableBuilder::CallbackOnTaskRunner::CallbackOnTaskRunner(
+    CallbackOnTaskRunner&& other) {
+  task_runner = std::move(other.task_runner);
+  mojo_callback = std::move(other.mojo_callback);
+  other.task_runner = nullptr;
+  other.mojo_callback =
+      blink::mojom::DWriteFontProxy::GetUniqueNameLookupTableCallback();
+}
+
+DWriteFontLookupTableBuilder::CallbackOnTaskRunner::~CallbackOnTaskRunner() =
+    default;
+
+void DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReady(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    blink::mojom::DWriteFontProxy::GetUniqueNameLookupTableCallback callback) {
   TRACE_EVENT0("dwrite,fonts",
-               "DWriteFontLookupTableBuilder::EnsureFontUniqueNameTable");
-  DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
+               "DWriteFontLookupTableBuilder::QueueShareMemoryRegionWhenReady");
   DCHECK(!HasDWriteUniqueFontLookups());
-  base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
-  font_table_built_.Wait();
-  return IsFontUniqueNameTableValid();
+  DCHECK(!font_table_built_.IsSignaled());
+  pending_callbacks_.emplace_back(std::move(task_runner), std::move(callback));
 }
 
 bool DWriteFontLookupTableBuilder::FontUniqueNameTableReady() {
+  TRACE_EVENT0("dwrite,fonts",
+               "DWriteFontLookupTableBuilder::FontUniqueNameTableReady");
+  DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
+  DCHECK(!HasDWriteUniqueFontLookups());
   return font_table_built_.IsSignaled() && IsFontUniqueNameTableValid();
 }
 
@@ -382,6 +408,7 @@ void DWriteFontLookupTableBuilder::PrepareFontUniqueNameTable() {
       UMA_HISTOGRAM_MEDIUM_TIMES("DirectWrite.Fonts.Proxy.LookupTableReadyTime",
                                  duration);
       font_table_built_.Signal();
+      PostCallbacks();
       return;
     }
   }
@@ -592,7 +619,6 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
   TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::FinalizeFontTable");
   DCHECK(!font_table_built_.IsSignaled());
-  ScopedAutoSignal auto_signal(&font_table_built_);
 
   timeout_callback_.Cancel();
 
@@ -622,15 +648,12 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
 
   font_table_memory_ = base::ReadOnlySharedMemoryRegion::Create(
       font_unique_name_table->ByteSizeLong());
-  if (!IsFontUniqueNameTableValid()) {
-    return;
-  }
 
-  if (!font_unique_name_table->SerializeToArray(
+  if (!IsFontUniqueNameTableValid() ||
+      !font_unique_name_table->SerializeToArray(
           font_table_memory_.mapping.memory(),
           font_table_memory_.mapping.size())) {
     font_table_memory_ = base::MappedReadOnlyRegion();
-    return;
   }
 
   if (caching_enabled_) {
@@ -638,6 +661,12 @@ void DWriteFontLookupTableBuilder::FinalizeFontTable() {
     UMA_HISTOGRAM_BOOLEAN("DirectWrite.Fonts.Proxy.LookupTablePersistSuccess",
                           persist_succeeded);
   }
+
+  font_table_built_.Signal();
+  PostCallbacks();
+
+  if (!IsFontUniqueNameTableValid())
+    return;
 
   base::TimeDelta duration = base::TimeTicks::Now() - start_time_table_build_;
   UMA_HISTOGRAM_MEDIUM_TIMES("DirectWrite.Fonts.Proxy.LookupTableBuildTime",
