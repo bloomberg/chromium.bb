@@ -59,6 +59,8 @@ class AvSyncVideo : public AvSync {
   // This is the small playback rate change done to maintain AV sync.
   double current_audio_clock_rate_ = 1.0;
 
+  int64_t playback_start_timestamp_ = INT64_MAX;
+
   int64_t last_vpts_value_ = INT64_MIN;
 
   int64_t last_apts_value_ = INT64_MIN;

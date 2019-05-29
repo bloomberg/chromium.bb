@@ -71,6 +71,7 @@ AvSyncVideo::~AvSyncVideo() = default;
 
 void AvSyncVideo::NotifyStart(int64_t timestamp, int64_t pts) {
   LOG(INFO) << __func__;
+  playback_start_timestamp_ = backend_->MonotonicClockNow();
   current_media_playback_rate_ = 1.0;
   current_audio_clock_rate_ = 1.0;
   backend_->video_decoder()->SetPlaybackRate(current_media_playback_rate_);
@@ -86,10 +87,12 @@ void AvSyncVideo::NotifyStop() {
 void AvSyncVideo::NotifyPause() {
   LOG(INFO) << __func__;
   StopAvSync();
+  playback_start_timestamp_ = INT64_MAX;
 }
 
 void AvSyncVideo::NotifyResume() {
   LOG(INFO) << __func__;
+  playback_start_timestamp_ = backend_->MonotonicClockNow();
   StartAvSync();
 }
 
@@ -132,10 +135,9 @@ void AvSyncVideo::UpkeepAvSync() {
   int64_t new_raw_apts = 0;
   int64_t new_apts_timestamp = 0;
   if (!backend_->audio_decoder()->GetTimestampedPts(&new_apts_timestamp,
-                                                    &new_raw_apts)) {
-    return;
-  }
-  if (new_raw_apts == last_apts_value_) {
+                                                    &new_raw_apts) ||
+      new_apts_timestamp <= playback_start_timestamp_ ||
+      new_raw_apts == last_apts_value_) {
     return;
   }
   last_apts_value_ = new_raw_apts;
@@ -199,12 +201,10 @@ bool AvSyncVideo::VptsUpkeep() {
 
   int64_t new_raw_vpts = 0;
   int64_t new_vpts_timestamp = 0;
-  if (!backend_->video_decoder()->GetCurrentPts(&new_vpts_timestamp,
-                                                &new_raw_vpts)) {
-    return false;
-  }
-
-  if (new_raw_vpts != last_vpts_value_) {
+  if (backend_->video_decoder()->GetCurrentPts(&new_vpts_timestamp,
+                                               &new_raw_vpts) &&
+      new_vpts_timestamp > playback_start_timestamp_ &&
+      new_raw_vpts != last_vpts_value_) {
     video_pts_->AddSample(new_raw_vpts, new_vpts_timestamp, 1.0);
     last_vpts_value_ = new_raw_vpts;
   }
