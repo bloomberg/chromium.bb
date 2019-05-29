@@ -92,8 +92,7 @@ bool ConstraintSetHasNonImageCapture(
          constraint_set->hasFrameRate() || constraint_set->hasGroupId() ||
          constraint_set->hasHeight() || constraint_set->hasLatency() ||
          constraint_set->hasSampleRate() || constraint_set->hasSampleSize() ||
-         constraint_set->hasVideoKind() || constraint_set->hasVolume() ||
-         constraint_set->hasWidth();
+         constraint_set->hasVideoKind() || constraint_set->hasWidth();
 }
 
 bool ConstraintSetHasImageAndNonImageCapture(
@@ -517,8 +516,6 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
     settings->setChannelCount(platform_settings.channel_count);
   if (platform_settings.HasLatency())
     settings->setLatency(platform_settings.latency);
-  if (platform_settings.HasVolume())
-    settings->setVolume(platform_settings.volume);
 
   if (image_capture_)
     image_capture_->GetMediaTrackSettings(settings);

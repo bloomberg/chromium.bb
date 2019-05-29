@@ -226,13 +226,6 @@ void MediaStreamCenter::GetSourceSettings(
   // kSampleFormatS16 is the format used for all audio input streams.
   settings.sample_size =
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16);
-
-  ProcessedLocalAudioSource* const processed_source =
-      ProcessedLocalAudioSource::From(source);
-  settings.volume = processed_source
-                        ? static_cast<double>(processed_source->Volume()) /
-                              processed_source->MaxVolume()
-                        : 1.0;
 }
 
 }  // namespace content
