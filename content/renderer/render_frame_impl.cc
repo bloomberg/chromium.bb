@@ -5275,10 +5275,6 @@ void RenderFrameImpl::WillSendRequestInternal(
         old_extra_data->TakeNavigationResponseOverrideOwnership();
   }
 
-  // Set an empty HTTP origin header for non GET methods if none is currently
-  // present.
-  request.SetHttpOriginIfNeeded(WebSecurityOrigin::CreateUnique());
-
   WebDocument frame_document = frame_->GetDocument();
   if (!request.GetExtraData())
     request.SetExtraData(std::make_unique<RequestExtraData>());
