@@ -10,6 +10,7 @@
 
 #import <memory>
 
+#import "ios/web/security/cert_verification_error.h"
 #include "ui/base/page_transition_types.h"
 
 @class CRWWKNavigationHandler;
@@ -38,6 +39,11 @@ class WKBackForwardListItemHolder;
 // Returns associated UserInteractionState.
 - (web::UserInteractionState*)userInteractionStateForNavigationHandler:
     (CRWWKNavigationHandler*)navigationHandler;
+
+// Returns associated certificate verification errors.
+- (web::CertVerificationErrorsCacheType*)
+    certVerificationErrorsForNavigationHandler:
+        (CRWWKNavigationHandler*)navigationHandler;
 
 // Returns YES if WKWebView is halted.
 - (BOOL)navigationHandlerWebViewIsHalted:
@@ -89,6 +95,27 @@ class WKBackForwardListItemHolder;
                hasUserGesture:(BOOL)hasUserGesture
             rendererInitiated:(BOOL)renderedInitiated
         placeholderNavigation:(BOOL)placeholderNavigation;
+
+// Notifies the delegate that load has been cancelled.
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+     handleCancelledError:(NSError*)error
+            forNavigation:(WKNavigation*)navigation
+          provisionalLoad:(BOOL)provisionalLoad;
+
+// Notifies the delegate that load ends in an SSL error and certificate chain.
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+       handleSSLCertError:(NSError*)error
+            forNavigation:(WKNavigation*)navigation;
+
+// Notifies the delegate that load ends in error.
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+          handleLoadError:(NSError*)error
+            forNavigation:(WKNavigation*)navigation
+          provisionalLoad:(BOOL)provisionalLoad;
+
+// Instructs the delegate to clear the web frames list.
+- (void)navigationHandlerRemoveAllWebFrames:
+    (CRWWKNavigationHandler*)navigationHandler;
 
 @end
 
@@ -162,6 +189,15 @@ class WKBackForwardListItemHolder;
 // TODO(crbug.com/956511): Make this private once "webView:didCommitNavigation"
 // is moved into CRWWKNavigationHandler.
 - (void)commitPendingNavigationInfoInWebView:(WKWebView*)webView;
+
+// WKNavigation objects are used as a weak key to store web::NavigationContext.
+// WKWebView manages WKNavigation lifetime and destroys them after the
+// navigation is finished. However for window opening navigations WKWebView
+// passes null WKNavigation to WKNavigationDelegate callbacks and strong key is
+// used to store web::NavigationContext. Those "null" navigations have to be
+// cleaned up manually by calling this method.
+// TODO(crbug.com/956511): Make this private once refactor is done.
+- (void)forgetNullWKNavigation:(WKNavigation*)navigation;
 
 @end
 

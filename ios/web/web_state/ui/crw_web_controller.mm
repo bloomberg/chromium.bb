@@ -237,11 +237,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   // history navigations.
   BOOL _dispatchingSameDocumentHashChangeEvent;
 
-  // The WKNavigation captured when |stopLoading| was called. Used for reporting
-  // WebController.EmptyNavigationManagerCausedByStopLoading UMA metric which
-  // helps with diagnosing a navigation related crash (crbug.com/565457).
-  __weak WKNavigation* _stoppedWKNavigation;
-
   // Updates SSLStatus for current navigation item.
   CRWSSLStatusUpdater* _SSLStatusUpdater;
 
@@ -962,9 +957,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 - (void)stopLoading {
-  _stoppedWKNavigation =
-      [self.navigationHandler.navigationStates lastAddedNavigation];
-
   base::RecordAction(base::UserMetricsAction("Stop"));
   // Discard the pending and transient entried before notifying the tab model
   // observers of the change via |-abortLoad|.
@@ -3553,70 +3545,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self.navigationHandler webView:webView
       didFailProvisionalNavigation:navigation
                          withError:error];
-
-  [self.navigationHandler.navigationStates
-           setState:web::WKNavigationState::PROVISIONALY_FAILED
-      forNavigation:navigation];
-
-  // Ignore provisional navigation failure if a new navigation has been started,
-  // for example, if a page is reloaded after the start of the provisional
-  // load but before the load has been committed.
-  if (![[self.navigationHandler.navigationStates lastAddedNavigation]
-          isEqual:navigation]) {
-    return;
-  }
-
-  // TODO(crbug.com/570699): Remove this workaround once |stopLoading| does not
-  // discard pending navigation items.
-  if ((!self.webStateImpl ||
-       !self.webStateImpl->GetNavigationManagerImpl().GetVisibleItem()) &&
-      _stoppedWKNavigation &&
-      [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
-      error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
-    // App is going to crash in this state (crbug.com/565457). Crash will occur
-    // on dereferencing visible navigation item, which is null. This scenario is
-    // possible after pending load was stopped for a child window. Early return
-    // to prevent the crash and report UMA metric to check if crash happening
-    // because the load was stopped.
-    UMA_HISTOGRAM_BOOLEAN(
-        "WebController.EmptyNavigationManagerCausedByStopLoading",
-        [_stoppedWKNavigation isEqual:navigation]);
-    return;
-  }
-
-  // Handle load cancellation for directly cancelled navigations without
-  // handling their potential errors. Otherwise, handle the error.
-  if (self.navigationHandler.pendingNavigationInfo.cancelled) {
-    [self handleCancelledError:error
-                 forNavigation:navigation
-               provisionalLoad:YES];
-  } else if (error.code == NSURLErrorUnsupportedURL &&
-             self.webStateImpl->HasWebUI()) {
-    // This is a navigation to WebUI page.
-    DCHECK(web::GetWebClient()->IsAppSpecificURL(
-        net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey])));
-  } else {
-    if (web::IsWKWebViewSSLCertError(error)) {
-      [self handleSSLCertError:error forNavigation:navigation];
-    } else {
-      [self handleLoadError:error forNavigation:navigation provisionalLoad:YES];
-    }
-  }
-
-  [self removeAllWebFrames];
-  // This must be reset at the end, since code above may need information about
-  // the pending load.
-  self.navigationHandler.pendingNavigationInfo = nil;
-  _certVerificationErrors->Clear();
-  if (web::features::StorePendingItemInContext()) {
-    // Remove the navigation to immediately get rid of pending item.
-    if (web::WKNavigationState::NONE != [self.navigationHandler.navigationStates
-                                            stateForNavigation:navigation]) {
-      [self.navigationHandler.navigationStates removeNavigation:navigation];
-    }
-  } else {
-    [self forgetNullWKNavigation:navigation];
-  }
 }
 
 - (void)webView:(WKWebView*)webView
@@ -3982,7 +3910,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       [self.navigationHandler.navigationStates removeNavigation:navigation];
     }
   } else {
-    [self forgetNullWKNavigation:navigation];
+    [self.navigationHandler forgetNullWKNavigation:navigation];
   }
 }
 
@@ -4001,7 +3929,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   [self removeAllWebFrames];
   _certVerificationErrors->Clear();
-  [self forgetNullWKNavigation:navigation];
+  [self.navigationHandler forgetNullWKNavigation:navigation];
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4312,17 +4240,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   const std::string image = "image";
   std::string MIMEType = self.webState->GetContentsMimeType();
   return MIMEType.compare(0, image.length(), image) == 0;
-}
-
-// WKNavigation objects are used as a weak key to store web::NavigationContext.
-// WKWebView manages WKNavigation lifetime and destroys them after the
-// navigation is finished. However for window opening navigations WKWebView
-// passes null WKNavigation to WKNavigationDelegate callbacks and strong key is
-// used to store web::NavigationContext. Those "null" navigations have to be
-// cleaned up manually by calling this method.
-- (void)forgetNullWKNavigation:(WKNavigation*)navigation {
-  if (!navigation)
-    [self.navigationHandler.navigationStates removeNavigation:navigation];
 }
 
 #pragma mark - CRWSSLStatusUpdaterDataSource
@@ -4840,6 +4757,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return &_userInteractionState;
 }
 
+- (web::CertVerificationErrorsCacheType*)
+    certVerificationErrorsForNavigationHandler:
+        (CRWWKNavigationHandler*)navigationHandler {
+  return _certVerificationErrors.get();
+}
+
 - (GURL)navigationHandlerDocumentURL:
     (CRWWKNavigationHandler*)navigationHandler {
   return _documentURL;
@@ -4894,6 +4817,34 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                           hasUserGesture:hasUserGesture
                        rendererInitiated:renderedInitiated
                    placeholderNavigation:placeholderNavigation];
+}
+
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+     handleCancelledError:(NSError*)error
+            forNavigation:(WKNavigation*)navigation
+          provisionalLoad:(BOOL)provisionalLoad {
+  [self handleCancelledError:error
+               forNavigation:navigation
+             provisionalLoad:provisionalLoad];
+}
+
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+       handleSSLCertError:(NSError*)error
+            forNavigation:(WKNavigation*)navigation {
+  [self handleSSLCertError:error forNavigation:navigation];
+}
+
+- (void)navigationHandler:(CRWWKNavigationHandler*)navigationHandler
+          handleLoadError:(NSError*)error
+            forNavigation:(WKNavigation*)navigation
+          provisionalLoad:(BOOL)provisionalLoad {
+  [self handleLoadError:error
+          forNavigation:navigation
+        provisionalLoad:provisionalLoad];
+}
+- (void)navigationHandlerRemoveAllWebFrames:
+    (CRWWKNavigationHandler*)navigationHandler {
+  [self removeAllWebFrames];
 }
 
 #pragma mark - Testing-Only Methods

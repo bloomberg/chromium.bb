@@ -15,6 +15,7 @@
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/navigation_manager_util.h"
+#import "ios/web/navigation/web_kit_constants.h"
 #import "ios/web/navigation/wk_back_forward_list_item_holder.h"
 #import "ios/web/navigation/wk_navigation_action_policy_util.h"
 #import "ios/web/navigation/wk_navigation_action_util.h"
@@ -23,6 +24,7 @@
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_client.h"
+#import "ios/web/security/wk_web_view_security_util.h"
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_view/wk_web_view_util.h"
@@ -39,7 +41,21 @@ using web::wk_navigation_util::kReferrerHeaderName;
 using web::wk_navigation_util::IsRestoreSessionUrl;
 using web::wk_navigation_util::IsWKInternalUrl;
 
-@interface CRWWKNavigationHandler ()
+@interface CRWWKNavigationHandler () {
+  // Used to poll for a SafeBrowsing warning being displayed. This is created in
+  // |decidePolicyForNavigationAction| and destroyed once any of the following
+  // happens: 1) a SafeBrowsing warning is detected; 2) any WKNavigationDelegate
+  // method is called; 3) |stopLoading| is called.
+  base::RepeatingTimer _safeBrowsingWarningDetectionTimer;
+
+  // Referrer for the current page; does not include the fragment.
+  NSString* _currentReferrerString;
+
+  // The WKNavigation captured when |stopLoading| was called. Used for reporting
+  // WebController.EmptyNavigationManagerCausedByStopLoading UMA metric which
+  // helps with diagnosing a navigation related crash (crbug.com/565457).
+  __weak WKNavigation* _stoppedWKNavigation;
+}
 
 // Returns the WebStateImpl from self.delegate.
 @property(nonatomic, readonly, assign) web::WebStateImpl* webStateImpl;
@@ -49,19 +65,13 @@ using web::wk_navigation_util::IsWKInternalUrl;
 // Returns the UserInteractionState from self.delegate.
 @property(nonatomic, readonly, assign)
     web::UserInteractionState* userInteractionState;
+// Returns the CertVerificationErrorsCacheType from self.delegate.
+@property(nonatomic, readonly, assign)
+    web::CertVerificationErrorsCacheType* certVerificationErrors;
 
 @end
 
-@implementation CRWWKNavigationHandler {
-  // Used to poll for a SafeBrowsing warning being displayed. This is created in
-  // |decidePolicyForNavigationAction| and destroyed once any of the following
-  // happens: 1) a SafeBrowsing warning is detected; 2) any WKNavigationDelegate
-  // method is called; 3) |stopLoading| is called.
-  base::RepeatingTimer _safeBrowsingWarningDetectionTimer;
-
-  // Referrer for the current page; does not include the fragment.
-  NSString* _currentReferrerString;
-}
+@implementation CRWWKNavigationHandler
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -599,6 +609,74 @@ using web::wk_navigation_util::IsWKInternalUrl;
     didFailProvisionalNavigation:(WKNavigation*)navigation
                        withError:(NSError*)error {
   [self didReceiveWKNavigationDelegateCallback];
+
+  [self.navigationStates setState:web::WKNavigationState::PROVISIONALY_FAILED
+                    forNavigation:navigation];
+
+  // Ignore provisional navigation failure if a new navigation has been started,
+  // for example, if a page is reloaded after the start of the provisional
+  // load but before the load has been committed.
+  if (![[self.navigationStates lastAddedNavigation] isEqual:navigation]) {
+    return;
+  }
+
+  // TODO(crbug.com/570699): Remove this workaround once |stopLoading| does not
+  // discard pending navigation items.
+  if ((!self.webStateImpl ||
+       !self.webStateImpl->GetNavigationManagerImpl().GetVisibleItem()) &&
+      _stoppedWKNavigation &&
+      [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
+      error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
+    // App is going to crash in this state (crbug.com/565457). Crash will occur
+    // on dereferencing visible navigation item, which is null. This scenario is
+    // possible after pending load was stopped for a child window. Early return
+    // to prevent the crash and report UMA metric to check if crash happening
+    // because the load was stopped.
+    UMA_HISTOGRAM_BOOLEAN(
+        "WebController.EmptyNavigationManagerCausedByStopLoading",
+        [_stoppedWKNavigation isEqual:navigation]);
+    return;
+  }
+
+  // Handle load cancellation for directly cancelled navigations without
+  // handling their potential errors. Otherwise, handle the error.
+  if (self.pendingNavigationInfo.cancelled) {
+    [self.delegate navigationHandler:self
+                handleCancelledError:error
+                       forNavigation:navigation
+                     provisionalLoad:YES];
+  } else if (error.code == NSURLErrorUnsupportedURL &&
+             self.webStateImpl->HasWebUI()) {
+    // This is a navigation to WebUI page.
+    DCHECK(web::GetWebClient()->IsAppSpecificURL(
+        net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey])));
+  } else {
+    if (web::IsWKWebViewSSLCertError(error)) {
+      [self.delegate navigationHandler:self
+                    handleSSLCertError:error
+                         forNavigation:navigation];
+    } else {
+      [self.delegate navigationHandler:self
+                       handleLoadError:error
+                         forNavigation:navigation
+                       provisionalLoad:YES];
+    }
+  }
+
+  [self.delegate navigationHandlerRemoveAllWebFrames:self];
+  // This must be reset at the end, since code above may need information about
+  // the pending load.
+  self.pendingNavigationInfo = nil;
+  self.certVerificationErrors->Clear();
+  if (web::features::StorePendingItemInContext()) {
+    // Remove the navigation to immediately get rid of pending item.
+    if (web::WKNavigationState::NONE !=
+        [self.navigationStates stateForNavigation:navigation]) {
+      [self.navigationStates removeNavigation:navigation];
+    }
+  } else {
+    [self forgetNullWKNavigation:navigation];
+  }
 }
 
 - (void)webView:(WKWebView*)webView
@@ -641,6 +719,10 @@ using web::wk_navigation_util::IsWKInternalUrl;
 
 - (web::UserInteractionState*)userInteractionState {
   return [self.delegate userInteractionStateForNavigationHandler:self];
+}
+
+- (web::CertVerificationErrorsCacheType*)certVerificationErrors {
+  return [self.delegate certVerificationErrorsForNavigationHandler:self];
 }
 
 - (web::NavigationItemImpl*)currentNavItem {
@@ -919,6 +1001,7 @@ using web::wk_navigation_util::IsWKInternalUrl;
 #pragma mark - Public methods
 
 - (void)stopLoading {
+  _stoppedWKNavigation = [self.navigationStates lastAddedNavigation];
   self.pendingNavigationInfo.cancelled = YES;
   _safeBrowsingWarningDetectionTimer.Stop();
   [self loadCancelled];
@@ -1058,6 +1141,11 @@ using web::wk_navigation_util::IsWKInternalUrl;
   // advance and use that instead.
   return web::Referrer(GURL(base::SysNSStringToUTF8(referrerString)),
                        web::ReferrerPolicyAlways);
+}
+
+- (void)forgetNullWKNavigation:(WKNavigation*)navigation {
+  if (!navigation)
+    [self.navigationStates removeNavigation:navigation];
 }
 
 @end
