@@ -26,6 +26,6 @@ PASS 0024 - Ignore malformed cookies in all 'Set-Cookie'.
 PASS 0025 - Ignore cookies with ';' in all 'Set-Cookie'.
 PASS 0026 - Ignore malformed cookies in all 'Set-Cookie' v2.
 FAIL 0027 - Ignore malformed cookies in all 'Set-Cookie' v3. assert_equals: expected "" but got "bar"
-FAIL 0028 - [INVALID EXPECTATION] Ignore malformed cookies in all 'Set-Cookie' v4. assert_equals: expected "Set-Cookie: foo Set-Cookie:" but got ""
+FAIL 0028 - [INVALID EXPECTATION] Ignore malformed cookies in all 'Set-Cookie' v4. assert_equals: expected "Set-Cookie: foo\nSet-Cookie:" but got ""
 Harness: the test ran to completion.
 

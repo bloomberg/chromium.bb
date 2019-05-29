@@ -8,6 +8,6 @@ PASS connection with audio and video tracks should eventually have connected con
 PASS ICE can connect in a recvonly usecase
 PASS iceConnectionState changes at the right time, with bundle policy balanced
 FAIL iceConnectionState changes at the right time, with bundle policy max-bundle assert_equals: ICE transport.state expected "connected" but got "new"
-PASS iceConnectionState changes at the right time, with bundle policy max-compat
+FAIL iceConnectionState changes at the right time, with bundle policy max-compat assert_equals: ICE transport.state expected "connected" but got "new"
 Harness: the test ran to completion.
 
