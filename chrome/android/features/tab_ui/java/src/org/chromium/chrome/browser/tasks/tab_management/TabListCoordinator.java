@@ -208,4 +208,8 @@ public class TabListCoordinator implements Destroyable {
     int getResourceId() {
         return mRecyclerView.getResourceId();
     }
+
+    long getLastDirtyTimeForTesting() {
+        return mRecyclerView.getLastDirtyTimeForTesting();
+    }
 }

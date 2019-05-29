@@ -11,6 +11,7 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Rect;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -58,6 +59,7 @@ class TabListRecyclerView extends RecyclerView {
     private ValueAnimator mFadeOutAnimator;
     private VisibilityListener mListener;
     private ViewResourceAdapter mDynamicView;
+    private long mLastDirtyTime;
     private long mOriginalAddDuration;
 
     /**
@@ -119,12 +121,23 @@ class TabListRecyclerView extends RecyclerView {
         return getId();
     }
 
+    long getLastDirtyTimeForTesting() {
+        return mLastDirtyTime;
+    }
+
     /**
      * Create a DynamicResource for this RecyclerView.
      * The view resource can be obtained by {@link #getResourceId} in compositor layer.
      */
     void createDynamicView(DynamicResourceLoader loader) {
-        mDynamicView = new ViewResourceAdapter(this);
+        mDynamicView = new ViewResourceAdapter(this) {
+            @Override
+            public boolean isDirty() {
+                boolean dirty = super.isDirty();
+                if (dirty) mLastDirtyTime = SystemClock.elapsedRealtime();
+                return dirty;
+            }
+        };
         loader.registerResource(getResourceId(), mDynamicView);
     }
 

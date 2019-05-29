@@ -15,6 +15,7 @@ import android.os.SystemClock;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.Supplier;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -47,7 +48,8 @@ public class GridTabSwitcherLayout
     private static final String TAG = "GTSLayout";
 
     // Duration of the transition animation
-    private static final long ZOOMING_DURATION = 300;
+    @VisibleForTesting
+    static final long ZOOMING_DURATION = 300;
 
     // The transition animation from a tab to the tab switcher.
     private AnimatorSet mTabToSwitcherAnimation;
@@ -61,6 +63,12 @@ public class GridTabSwitcherLayout
     private int mFrameCount;
     private long mStartTime;
     private int mStartFrame;
+
+    interface PerfListener {
+        void onAnimationDone(int frameRendered, long elapsedMs, int dirtySpan);
+    }
+
+    private PerfListener mPerfListenerForTesting;
 
     public GridTabSwitcherLayout(Context context, LayoutUpdateHost updateHost,
             LayoutRenderHost renderHost, GridTabSwitcher gridTabSwitcher) {
@@ -214,10 +222,7 @@ public class GridTabSwitcherLayout
                 // Step 2: fade in the real GTS RecyclerView.
                 mGridController.showOverview(true);
 
-                // TODO(crbug.com/964406): stop reporting on Canary before enabling in Finch.
-                if (ChromeVersionInfo.isLocalBuild() || ChromeVersionInfo.isCanaryBuild()) {
-                    reportAnimationPerf();
-                }
+                reportAnimationPerf();
             }
         });
         mStartFrame = mFrameCount;
@@ -225,14 +230,34 @@ public class GridTabSwitcherLayout
         mTabToSwitcherAnimation.start();
     }
 
+    void setPerfListenerForTesting(PerfListener perfListener) {
+        mPerfListenerForTesting = perfListener;
+    }
+
+    @VisibleForTesting
+    GridTabSwitcher getGridTabSwitcherForTesting() {
+        return mGridTabSwitcher;
+    }
+
     private void reportAnimationPerf() {
         int frameRendered = mFrameCount - mStartFrame;
         long elapsedMs = SystemClock.elapsedRealtime() - mStartTime;
-        String message = String.format(Locale.US, "fps = %.2f (%d / %dms)",
-                (1000.f * frameRendered / elapsedMs), frameRendered, elapsedMs);
+        long lastDirty = mGridTabSwitcher.getLastDirtyTimeForTesting();
+        int dirtySpan = (int) (lastDirty - mStartTime);
+        float fps = 1000.f * frameRendered / elapsedMs;
+        String message = String.format(Locale.US, "fps = %.2f (%d / %dms), dirtySpan = %d", fps,
+                frameRendered, elapsedMs, dirtySpan);
 
-        Toast.makeText(ContextUtils.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-        Log.i(TAG, message);
+        // TODO(crbug.com/964406): stop reporting on Canary before enabling in Finch.
+        if (ChromeVersionInfo.isLocalBuild() || ChromeVersionInfo.isCanaryBuild()) {
+            Toast.makeText(ContextUtils.getApplicationContext(), message, Toast.LENGTH_SHORT)
+                    .show();
+            Log.i(TAG, message);
+        }
+
+        if (mPerfListenerForTesting != null) {
+            mPerfListenerForTesting.onAnimationDone(frameRendered, elapsedMs, dirtySpan);
+        }
     }
 
     @Override

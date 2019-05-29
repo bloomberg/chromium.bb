@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
+import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
  * Interface for the Grid Tab Switcher.
@@ -32,6 +33,12 @@ public interface GridTabSwitcher {
      * @return The dynamic resource ID of the GridTabSwitcher RecyclerView.
      */
     int getResourceId();
+
+    /**
+     * @return The timestamp of last dirty event of {@link ViewResourceAdapter} of
+     * {@link TabListRecyclerView}.
+     */
+    long getLastDirtyTimeForTesting();
 
     /**
      * Before calling {@link OverviewModeController#showOverview} to start showing the

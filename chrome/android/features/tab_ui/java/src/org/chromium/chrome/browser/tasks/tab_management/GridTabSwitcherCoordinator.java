@@ -122,6 +122,11 @@ public class GridTabSwitcherCoordinator
         return mTabGridCoordinator.getResourceId();
     }
 
+    @Override
+    public long getLastDirtyTimeForTesting() {
+        return mTabGridCoordinator.getLastDirtyTimeForTesting();
+    }
+
     /**
      * Reset the tab grid with the given {@link TabModel}. Can be null.
      * @param tabList The current {@link TabList} to show the tabs for in the grid.

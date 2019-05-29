@@ -50,7 +50,7 @@ public class CompositorAnimator extends Animator {
      * See {@link ValueAnimator}.
      **/
     @VisibleForTesting
-    static float sDurationScale = 1;
+    public static float sDurationScale = 1;
 
     /** The {@link CompositorAnimationHandler} running the animation. */
     private final WeakReference<CompositorAnimationHandler> mHandler;
