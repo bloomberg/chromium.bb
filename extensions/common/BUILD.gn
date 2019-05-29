@@ -383,6 +383,8 @@ if (enable_extensions) {
     sources = [
       "api/declarative_net_request/test_utils.cc",
       "api/declarative_net_request/test_utils.h",
+      "file_test_util.cc",
+      "file_test_util.h",
     ]
 
     deps = [

@@ -62,6 +62,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     // Allow older manifest versions (typically these can't be loaded - we allow
     // them for testing).
     kFlagAllowOldManifestVersions = 1 << 3,
+
+    // Load the provided extension as Service Worker based extension.
+    kFlagRunAsServiceWorkerBasedExtension = 1 << 4,
   };
 
   ExtensionBrowserTest();
@@ -116,6 +119,16 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
       const base::FilePath& path,
       int flags,
       const std::string& install_param);
+
+  // Converts an extension from |path| to a Service Worker based extension and
+  // returns true on success.
+  // If successful, |out_path| contains path of the converted extension.
+  //
+  // NOTE: The conversion works only for extensions with background.scripts and
+  // background.persistent = false; persistent background pages and
+  // background.page are not supported.
+  bool CreateServiceWorkerBasedExtension(const base::FilePath& path,
+                                         base::FilePath* out_path);
 
   // Loads unpacked extension from |path| with manifest |manifest_relative_path|
   // and imitates that it is a component extension.
