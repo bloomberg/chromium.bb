@@ -105,3 +105,8 @@ void AppServiceAppModelBuilder::OnAppUpdate(const apps::AppUpdate& update) {
         profile(), model_updater(), GetSyncItem(update.AppId()), update));
   }
 }
+
+void AppServiceAppModelBuilder::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  Observe(nullptr);
+}

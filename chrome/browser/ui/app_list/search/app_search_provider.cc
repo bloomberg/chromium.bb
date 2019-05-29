@@ -361,6 +361,11 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
     }
   }
 
+  void OnAppRegistryCacheWillBeDestroyed(
+      apps::AppRegistryCache* cache) override {
+    Observe(nullptr);
+  }
+
   // The AppServiceDataSource seems like one (but not the only) good place to
   // add an App Service icon caching wrapper, because (1) the AppSearchProvider
   // destroys and creates multiple search results in a short period of time,

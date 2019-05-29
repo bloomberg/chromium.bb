@@ -220,3 +220,8 @@ void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
     page_->OnAppChanged(CreateUIAppPtr(update));
   }
 }
+
+void AppManagementPageHandler::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  Observe(nullptr);
+}

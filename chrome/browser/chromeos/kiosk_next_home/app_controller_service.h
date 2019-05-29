@@ -59,6 +59,8 @@ class AppControllerService : public mojom::AppController,
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
+  void OnAppRegistryCacheWillBeDestroyed(
+      apps::AppRegistryCache* cache) override;
 
   // Allows overriding the intent config helper for tests.
   void SetIntentConfigHelperForTesting(

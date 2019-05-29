@@ -65,7 +65,7 @@ AppControllerService::AppControllerService(Profile* profile)
       app_service_proxy_(apps::AppServiceProxyFactory::GetForProfile(profile)),
       intent_config_helper_(IntentConfigHelper::GetInstance()) {
   DCHECK(profile);
-  app_service_proxy_->AppRegistryCache().AddObserver(this);
+  Observe(&app_service_proxy_->AppRegistryCache());
 
   // Add the chrome://app-icon URL data source.
   // TODO(ltenorio): Move this to a more suitable location when we change
@@ -74,9 +74,7 @@ AppControllerService::AppControllerService(Profile* profile)
                               std::make_unique<apps::AppIconSource>(profile));
 }
 
-AppControllerService::~AppControllerService() {
-  app_service_proxy_->AppRegistryCache().RemoveObserver(this);
-}
+AppControllerService::~AppControllerService() = default;
 
 void AppControllerService::BindRequest(mojom::AppControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -169,6 +167,11 @@ void AppControllerService::OnAppUpdate(const apps::AppUpdate& update) {
     RecordBridgeAction(BridgeAction::kNotifiedAppChange);
     client_->OnAppChanged(CreateAppPtr(update));
   }
+}
+
+void AppControllerService::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  Observe(nullptr);
 }
 
 void AppControllerService::SetIntentConfigHelperForTesting(

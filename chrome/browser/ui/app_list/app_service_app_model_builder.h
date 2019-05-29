@@ -26,6 +26,8 @@ class AppServiceAppModelBuilder : public AppListModelBuilder,
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
+  void OnAppRegistryCacheWillBeDestroyed(
+      apps::AppRegistryCache* cache) override;
 
   std::unique_ptr<AppListModelUpdaterObserver> crostini_folder_observer_;
 
