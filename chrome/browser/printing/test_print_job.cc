@@ -51,7 +51,7 @@ bool TestPrintJob::FlushJob(base::TimeDelta timeout) {
 
 #if defined(OS_WIN)
 void TestPrintJob::StartPdfToEmfConversion(
-    const scoped_refptr<base::RefCountedMemory>& bytes,
+    scoped_refptr<base::RefCountedMemory> bytes,
     const gfx::Size& page_size,
     const gfx::Rect& content_area) {
   page_size_ = page_size;
@@ -60,7 +60,7 @@ void TestPrintJob::StartPdfToEmfConversion(
 }
 
 void TestPrintJob::StartPdfToPostScriptConversion(
-    const scoped_refptr<base::RefCountedMemory>& bytes,
+    scoped_refptr<base::RefCountedMemory> bytes,
     const gfx::Rect& content_area,
     const gfx::Point& physical_offsets,
     bool ps_level2) {
@@ -71,7 +71,7 @@ void TestPrintJob::StartPdfToPostScriptConversion(
 }
 
 void TestPrintJob::StartPdfToTextConversion(
-    const scoped_refptr<base::RefCountedMemory>& bytes,
+    scoped_refptr<base::RefCountedMemory> bytes,
     const gfx::Size& page_size) {
   page_size_ = page_size;
   type_ = PrintSettings::PrinterType::TYPE_TEXTONLY;

@@ -27,7 +27,7 @@ class PdfConverter {
   // Starts conversion of PDF provided as |data|. Calls |start_callback|
   // with positive |page_count|. |page_count| is 0 if initialization failed.
   static std::unique_ptr<PdfConverter> StartPdfConverter(
-      const scoped_refptr<base::RefCountedMemory>& data,
+      scoped_refptr<base::RefCountedMemory> data,
       const PdfRenderSettings& conversion_settings,
       StartCallback start_callback);
 

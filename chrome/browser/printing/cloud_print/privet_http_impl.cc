@@ -637,7 +637,7 @@ void PrivetLocalPrintOperationImpl::OnNeedPrivetToken(
 }
 
 void PrivetLocalPrintOperationImpl::SetData(
-    const scoped_refptr<base::RefCountedMemory>& data) {
+    scoped_refptr<base::RefCountedMemory> data) {
   DCHECK(!started_);
   data_ = data;
 }

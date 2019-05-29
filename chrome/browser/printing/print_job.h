@@ -57,7 +57,7 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
 
 #if defined(OS_WIN)
   void StartConversionToNativeFormat(
-      const scoped_refptr<base::RefCountedMemory>& print_data,
+      scoped_refptr<base::RefCountedMemory> print_data,
       const gfx::Size& page_size,
       const gfx::Rect& content_area,
       const gfx::Point& physical_offsets);
@@ -147,18 +147,18 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
 
 #if defined(OS_WIN)
   virtual void StartPdfToEmfConversion(
-      const scoped_refptr<base::RefCountedMemory>& bytes,
+      scoped_refptr<base::RefCountedMemory> bytes,
       const gfx::Size& page_size,
       const gfx::Rect& content_area);
 
   virtual void StartPdfToPostScriptConversion(
-      const scoped_refptr<base::RefCountedMemory>& bytes,
+      scoped_refptr<base::RefCountedMemory> bytes,
       const gfx::Rect& content_area,
       const gfx::Point& physical_offsets,
       bool ps_level2);
 
   virtual void StartPdfToTextConversion(
-      const scoped_refptr<base::RefCountedMemory>& bytes,
+      scoped_refptr<base::RefCountedMemory> bytes,
       const gfx::Size& page_size);
 
   void OnPdfConversionStarted(int page_count);

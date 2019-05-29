@@ -316,7 +316,7 @@ std::unique_ptr<base::DictionaryValue> GetJSONAsDictionaryValue(
 }
 
 std::string RefCountedMemoryToString(
-    const scoped_refptr<base::RefCountedMemory>& memory) {
+    scoped_refptr<base::RefCountedMemory> memory) {
   return std::string(memory->front_as<char>(), memory->size());
 }
 
