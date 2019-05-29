@@ -263,11 +263,15 @@ public class TabContentManager {
             Tab tab, Callback<Bitmap> callback, boolean forceUpdate) {
         if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
 
+        if (!forceUpdate) {
+            nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), callback);
+            return;
+        }
+
         // Reading thumbnail from disk is faster than taking screenshot from live Tab, so fetch
         // that first even if |forceUpdate|.
-        nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), callback);
-
-        if (forceUpdate) {
+        nativeGetTabThumbnailWithCallback(mNativeTabContentManager, tab.getId(), (diskBitmap) -> {
+            callback.onResult(diskBitmap);
             cacheTabThumbnail(tab, (bitmap) -> {
                 // Null check to avoid having a Bitmap from nativeGetTabThumbnailWithCallback() but
                 // cleared here.
@@ -277,7 +281,7 @@ public class TabContentManager {
                     callback.onResult(bitmap);
                 }
             });
-        }
+        });
     }
 
     /**
