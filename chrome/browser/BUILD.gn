@@ -3991,7 +3991,6 @@ jumbo_split_static_library("browser") {
       "background/background_mode_manager_win.cc",
       "background/background_mode_optimizer.cc",
       "background/background_mode_optimizer.h",
-      "background/background_trigger.h",
     ]
     if (!use_aura || is_win || is_chromeos) {
       sources -= [ "background/background_mode_manager_aura.cc" ]
