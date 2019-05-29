@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
-#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -217,9 +216,7 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
   }
 
   if (frame && !new_window) {
-    if (frame->GetPage() == current_frame->GetPage())
-      frame->GetPage()->GetFocusController().SetFocusedFrame(frame);
-    else
+    if (frame->GetPage() != current_frame->GetPage())
       frame->GetPage()->GetChromeClient().Focus(current_frame);
     // Focusing can fire onblur, so check for detach.
     if (!frame->GetPage())
