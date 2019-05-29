@@ -8,6 +8,9 @@
      chrome/browser/unified_consent/unified_consent_service_factory.cc has to be
      updated accordingly. -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:key="user_category"
+        android:title="@string/user"/>
     <org.chromium.chrome.browser.preferences.SignInPreference
         android:key="sign_in"
         android:title="@string/sign_in_to_chrome"/>

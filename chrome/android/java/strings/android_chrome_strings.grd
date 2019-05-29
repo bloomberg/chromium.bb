@@ -257,6 +257,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SHOW" desc="Label for a show button. Used in multiple contexts. [CHAR-LIMIT=20]">
         Show
       </message>
+      <message name="IDS_USER" desc="Generic label for UI elements with information about user.">
+        User
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
@@ -346,7 +349,7 @@ CHAR-LIMIT guidelines:
         Sync is on
       </message>
       <message name="IDS_SIGN_IN_TO_CHROME_DISABLED_SUMMARY" desc="A descriptive line of text that appears under the 'Sign in to Chrome' option, in Chrome Settings on Android. The text explains why 'Sign in to Chrome' is disabled. 'Administrator' refers to the IT administrator of the company/organization that owns the user’s device.">
-          Disabled by the administrator of this device
+        Disabled by the administrator of this device
       </message>
       <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS_LEGACY" desc="Title of Google activity controls preference in signed in accounts settings screen">
         Google Activity Controls

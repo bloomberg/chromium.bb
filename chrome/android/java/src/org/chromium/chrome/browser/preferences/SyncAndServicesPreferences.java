@@ -36,6 +36,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -72,6 +73,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     public static final String FRAGMENT_ENTER_PASSPHRASE = "enter_password";
     private static final String FRAGMENT_CANCEL_SYNC = "cancel_sync_dialog";
 
+    private static final String PREF_USER_CATEGORY = "user_category";
     private static final String PREF_SIGNIN = "sign_in";
     private static final String PREF_MANAGE_YOUR_GOOGLE_ACCOUNT = "manage_your_google_account";
 
@@ -159,6 +161,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         PreferenceUtils.addPreferencesFromResource(this, R.xml.sync_and_services_preferences);
 
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.IDENTITY_DISC)) {
+            getPreferenceScreen().removePreference(findPreference(PREF_USER_CATEGORY));
+        }
         mSigninPreference = (SignInPreference) findPreference(PREF_SIGNIN);
         mSigninPreference.setPersonalizedPromoEnabled(false);
         mManageYourGoogleAccount = findPreference(PREF_MANAGE_YOUR_GOOGLE_ACCOUNT);
