@@ -167,6 +167,14 @@ class LinuxPackageOperationProgressObserver {
                                           int progress_percent) = 0;
 };
 
+class PendingAppListUpdatesObserver : public base::CheckedObserver {
+ public:
+  // Called whenever the kPendingAppListUpdatesMethod signal is sent.
+  virtual void OnPendingAppListUpdates(const std::string& vm_name,
+                                       const std::string& container_name,
+                                       int count) = 0;
+};
+
 class ExportContainerProgressObserver {
  public:
   // A successfully started container export will continually fire progress
@@ -566,6 +574,12 @@ class CrostiniManager : public KeyedService,
   void RemoveLinuxPackageOperationProgressObserver(
       LinuxPackageOperationProgressObserver* observer);
 
+  // Add/remove observers for pending app list updates.
+  void AddPendingAppListUpdatesObserver(
+      PendingAppListUpdatesObserver* observer);
+  void RemovePendingAppListUpdatesObserver(
+      PendingAppListUpdatesObserver* observer);
+
   // Add/remove observers for container export/import.
   void AddExportContainerProgressObserver(
       ExportContainerProgressObserver* observer);
@@ -607,6 +621,8 @@ class CrostiniManager : public KeyedService,
   void OnImportLxdContainerProgress(
       const vm_tools::cicerone::ImportLxdContainerProgressSignal& signal)
       override;
+  void OnPendingAppListUpdates(
+      const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) override;
 
   void RemoveCrostini(std::string vm_name, RemoveCrostiniCallback callback);
 
@@ -884,6 +900,9 @@ class CrostiniManager : public KeyedService,
 
   base::ObserverList<LinuxPackageOperationProgressObserver>::Unchecked
       linux_package_operation_progress_observers_;
+
+  base::ObserverList<PendingAppListUpdatesObserver>
+      pending_app_list_updates_observers_;
 
   base::ObserverList<ExportContainerProgressObserver>::Unchecked
       export_container_progress_observers_;

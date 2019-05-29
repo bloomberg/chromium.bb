@@ -108,6 +108,7 @@ CrostiniPackageService::CrostiniPackageService(Profile* profile)
   CrostiniManager* manager = CrostiniManager::GetForProfile(profile);
 
   manager->AddLinuxPackageOperationProgressObserver(this);
+  manager->AddPendingAppListUpdatesObserver(this);
 }
 
 CrostiniPackageService::~CrostiniPackageService() = default;
@@ -115,6 +116,7 @@ CrostiniPackageService::~CrostiniPackageService() = default;
 void CrostiniPackageService::Shutdown() {
   CrostiniManager* manager = CrostiniManager::GetForProfile(profile_);
   manager->RemoveLinuxPackageOperationProgressObserver(this);
+  manager->RemovePendingAppListUpdatesObserver(this);
 }
 
 void CrostiniPackageService::SetNotificationStateChangeCallbackForTesting(
@@ -278,6 +280,14 @@ void CrostiniPackageService::UpdatePackageOperationStatus(
       << ContainerIdToString(container_id) << " has no notification to update";
   DCHECK(it->second) << ContainerIdToString(container_id)
                      << " has null notification pointer";
+
+  // If an operation has finished, but there are still app list updates pending,
+  // don't finish the flow yet.
+  if (status == PackageOperationStatus::SUCCEEDED &&
+      has_pending_app_list_updates_.count(container_id)) {
+    status = PackageOperationStatus::WAITING_FOR_APP_REGISTRY_UPDATE;
+  }
+
   it->second->UpdateProgress(status, progress_percent);
 
   if (status == PackageOperationStatus::SUCCEEDED ||
@@ -294,6 +304,29 @@ void CrostiniPackageService::UpdatePackageOperationStatus(
   }
   if (testing_state_change_callback_) {
     testing_state_change_callback_.Run(status);
+  }
+}
+
+void CrostiniPackageService::OnPendingAppListUpdates(
+    const std::string& vm_name,
+    const std::string& container_name,
+    int count) {
+  const ContainerId container_id(vm_name, container_name);
+
+  if (count != 0) {
+    has_pending_app_list_updates_.insert(container_id);
+  } else {
+    has_pending_app_list_updates_.erase(container_id);
+  }
+
+  auto it = running_notifications_.find(container_id);
+  if (it != running_notifications_.end()) {
+    if (it->second->GetOperationStatus() ==
+            PackageOperationStatus::WAITING_FOR_APP_REGISTRY_UPDATE &&
+        count == 0) {
+      UpdatePackageOperationStatus(container_id,
+                                   PackageOperationStatus::SUCCEEDED, 100);
+    }
   }
 }
 

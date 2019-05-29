@@ -479,6 +479,13 @@ class CiceroneClientImpl : public CiceroneClient {
             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
+    cicerone_proxy_->ConnectToSignal(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kPendingAppListUpdatesSignal,
+        base::BindRepeating(&CiceroneClientImpl::OnPendingAppListUpdatesSignal,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -628,6 +635,18 @@ class CiceroneClientImpl : public CiceroneClient {
     }
     for (auto& observer : observer_list_) {
       observer.OnImportLxdContainerProgress(proto);
+    }
+  }
+
+  void OnPendingAppListUpdatesSignal(dbus::Signal* signal) {
+    vm_tools::cicerone::PendingAppListUpdatesSignal proto;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+    for (auto& observer : observer_list_) {
+      observer.OnPendingAppListUpdates(proto);
     }
   }
 

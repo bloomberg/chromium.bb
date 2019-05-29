@@ -340,6 +340,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       const vm_tools::cicerone::InstallLinuxPackageProgressSignal& signal);
   void UninstallPackageProgress(
       const vm_tools::cicerone::UninstallPackageProgressSignal& signal);
+  void NotifyPendingAppListUpdates(
+      const vm_tools::cicerone::PendingAppListUpdatesSignal& signal);
 
  protected:
   void Init(dbus::Bus* bus) override {}

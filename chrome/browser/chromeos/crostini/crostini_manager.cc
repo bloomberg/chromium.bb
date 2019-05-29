@@ -1679,6 +1679,16 @@ void CrostiniManager::RemoveLinuxPackageOperationProgressObserver(
   linux_package_operation_progress_observers_.RemoveObserver(observer);
 }
 
+void CrostiniManager::AddPendingAppListUpdatesObserver(
+    PendingAppListUpdatesObserver* observer) {
+  pending_app_list_updates_observers_.AddObserver(observer);
+}
+
+void CrostiniManager::RemovePendingAppListUpdatesObserver(
+    PendingAppListUpdatesObserver* observer) {
+  pending_app_list_updates_observers_.RemoveObserver(observer);
+}
+
 void CrostiniManager::AddExportContainerProgressObserver(
     ExportContainerProgressObserver* observer) {
   export_container_progress_observers_.AddObserver(observer);
@@ -2623,6 +2633,14 @@ void CrostiniManager::OnImportLxdContainerProgress(
     }
     std::move(it->second).Run(result);
     import_lxd_container_callbacks_.erase(it);
+  }
+}
+
+void CrostiniManager::OnPendingAppListUpdates(
+    const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) {
+  for (auto& observer : pending_app_list_updates_observers_) {
+    observer.OnPendingAppListUpdates(signal.vm_name(), signal.container_name(),
+                                     signal.count());
   }
 }
 

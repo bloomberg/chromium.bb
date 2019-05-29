@@ -70,6 +70,10 @@ CrostiniPackageNotification::CrostiniPackageNotification(
 
 CrostiniPackageNotification::~CrostiniPackageNotification() = default;
 
+PackageOperationStatus CrostiniPackageNotification::GetOperationStatus() const {
+  return current_status_;
+}
+
 // static
 CrostiniPackageNotification::NotificationSettings
 CrostiniPackageNotification::GetNotificationSettingsForTypeAndAppName(
@@ -154,11 +158,18 @@ void CrostiniPackageNotification::UpdateProgress(PackageOperationStatus status,
           ash::kSystemNotificationColorCriticalWarning);
       break;
 
+    case PackageOperationStatus::WAITING_FOR_APP_REGISTRY_UPDATE:
+      // If a notification progress bar is set to a value outside of [0, 100],
+      // it becomes in infinite progress bar. Do that here because we have no
+      // way to know how long this will take or how close we are to completion.
+      progress_percent = -1;
+      FALLTHROUGH;
     case PackageOperationStatus::RUNNING:
       never_timeout = true;
       notification_type = message_center::NOTIFICATION_TYPE_PROGRESS;
       title = notification_settings_.progress_title;
-      if (notification_type_ == NotificationType::APPLICATION_UNINSTALL) {
+      if (notification_type_ == NotificationType::APPLICATION_UNINSTALL &&
+          progress_percent >= 0) {
         // Uninstalls have a time remaining instead of a fixed message.
         body = GetTimeRemainingMessage(running_start_time_, progress_percent);
 

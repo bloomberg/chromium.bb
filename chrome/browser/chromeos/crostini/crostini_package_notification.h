@@ -44,6 +44,8 @@ class CrostiniPackageNotification
 
   void ForceAllowAutoHide();
 
+  PackageOperationStatus GetOperationStatus() const;
+
   // message_center::NotificationObserver:
   void Close(bool by_user) override;
 

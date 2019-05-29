@@ -320,4 +320,11 @@ void FakeCiceroneClient::UninstallPackageProgress(
   }
 }
 
+void FakeCiceroneClient::NotifyPendingAppListUpdates(
+    const vm_tools::cicerone::PendingAppListUpdatesSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnPendingAppListUpdates(proto);
+  }
+}
+
 }  // namespace chromeos
