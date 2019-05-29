@@ -122,7 +122,7 @@ class EphemeralRangeTemplate final {
   static EphemeralRangeTemplate<Strategy> RangeOfContents(
       const Node& /* node */);
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowTreeForThis() const;
 #endif
 

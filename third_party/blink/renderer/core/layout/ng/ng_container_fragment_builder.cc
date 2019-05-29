@@ -265,7 +265,7 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
   oof_positioned_candidates_.Shrink(0);
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 String NGContainerFragmentBuilder::ToString() const {
   StringBuilder builder;

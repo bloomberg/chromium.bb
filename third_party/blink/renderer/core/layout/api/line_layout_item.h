@@ -316,7 +316,7 @@ class LineLayoutItem {
     static const bool safe_to_compare_to_empty_or_deleted = true;
   };
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
   const char* GetName() const { return layout_object_->GetName(); }
 

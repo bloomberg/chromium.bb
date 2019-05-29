@@ -73,7 +73,7 @@ const NGInlineBreakToken* NGBlockBreakToken::InlineBreakTokenFor(
   return nullptr;
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 String NGBlockBreakToken::ToString() const {
   StringBuilder string_builder;
@@ -84,6 +84,6 @@ String NGBlockBreakToken::ToString() const {
   return string_builder.ToString();
 }
 
-#endif  // NDEBUG
+#endif  // DCHECK_IS_ON()
 
 }  // namespace blink

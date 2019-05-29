@@ -262,7 +262,7 @@ class CORE_EXPORT NGPhysicalFragment
                           base::Optional<PhysicalOffset> = base::nullopt,
                           unsigned indent = 2) const;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowFragmentTree() const;
 #endif
 

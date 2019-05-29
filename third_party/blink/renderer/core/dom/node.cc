@@ -2088,7 +2088,7 @@ String Node::ToString() const {
   return builder.ToString();
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 String Node::ToTreeStringForThis() const {
   return ToMarkedTreeString(this, "*");
@@ -3074,7 +3074,7 @@ void Node::Trace(Visitor* visitor) {
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void showNode(const blink::Node* node) {
   if (node)

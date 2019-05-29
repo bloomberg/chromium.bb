@@ -93,7 +93,7 @@ class LineLayoutBox : public LineLayoutBoxModel {
     return ToBox()->SetInlineBoxWrapper(box);
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
   void ShowLineTreeAndMark(const InlineBox* marked_box1,
                            const char* marked_label1) const {

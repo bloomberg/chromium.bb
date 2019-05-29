@@ -461,7 +461,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     return nullptr;
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowLineTreeAndMark(const InlineBox* = nullptr,
                            const char* = nullptr,
                            const InlineBox* = nullptr,

@@ -111,9 +111,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#ifndef NDEBUG
-#include <stdio.h>
-#endif
 
 namespace blink {
 
@@ -1710,10 +1707,15 @@ HitTestResult LayoutObject::HitTestForOcclusion(
 void LayoutObject::DirtyLinesFromChangedChild(LayoutObject*, MarkingBehavior) {}
 
 std::ostream& operator<<(std::ostream& out, const LayoutObject& object) {
+  String info;
+#if DCHECK_IS_ON()
   StringBuilder string_builder;
   object.DumpLayoutObject(string_builder, false, 0);
-  return out << static_cast<const void*>(&object) << ":"
-             << string_builder.ToString().Utf8().data();
+  info = string_builder.ToString();
+#else
+  info = object.DebugName();
+#endif
+  return out << static_cast<const void*>(&object) << ":" << info.Utf8().data();
 }
 
 std::ostream& operator<<(std::ostream& out, const LayoutObject* object) {
@@ -1722,7 +1724,7 @@ std::ostream& operator<<(std::ostream& out, const LayoutObject* object) {
   return out << *object;
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void LayoutObject::ShowTreeForThis() const {
   if (GetNode())
@@ -1749,8 +1751,6 @@ void LayoutObject::ShowLayoutObject() const {
   DLOG(INFO) << "\n" << string_builder.ToString().Utf8().data();
 }
 
-#endif  // NDEBUG
-
 void LayoutObject::DumpLayoutObject(StringBuilder& string_builder,
                                     bool dump_address,
                                     unsigned show_tree_character_offset) const {
@@ -1774,8 +1774,6 @@ void LayoutObject::DumpLayoutObject(StringBuilder& string_builder,
     string_builder.Append(GetNode()->ToString());
   }
 }
-
-#ifndef NDEBUG
 
 void LayoutObject::DumpLayoutTreeAndMark(StringBuilder& string_builder,
                                          const LayoutObject* marked_object1,
@@ -1802,7 +1800,7 @@ void LayoutObject::DumpLayoutTreeAndMark(StringBuilder& string_builder,
   }
 }
 
-#endif  // NDEBUG
+#endif  // DCHECK_IS_ON()
 
 bool LayoutObject::IsSelected() const {
   // Keep this fast and small, used in very hot functions to skip computing
@@ -4071,7 +4069,7 @@ LayoutUnit LayoutObject::FlipForWritingModeInternal(
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void showTree(const blink::LayoutObject* object) {
   if (object)
@@ -4108,4 +4106,4 @@ void showLayoutTree(const blink::LayoutObject* object1,
   }
 }
 
-#endif
+#endif  // DCHECK_IS_ON()

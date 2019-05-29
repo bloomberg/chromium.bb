@@ -1058,7 +1058,7 @@ void FrameSelection::SetShouldShowBlockCursor(bool should_show_block_cursor) {
   frame_caret_->SetShouldShowBlockCursor(should_show_block_cursor);
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void FrameSelection::ShowTreeForThis() const {
   ComputeVisibleSelectionInDOMTreeDeprecated().ShowTreeForThis();
@@ -1245,7 +1245,7 @@ bool FrameSelection::IsDirectional() const {
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void showTree(const blink::FrameSelection& sel) {
   sel.ShowTreeForThis();

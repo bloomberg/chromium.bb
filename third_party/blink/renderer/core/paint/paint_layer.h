@@ -1396,7 +1396,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 }  // namespace blink
 
 #if DCHECK_IS_ON()
-// Outside the WebCore namespace for ease of invocation from gdb.
+// Outside the blink namespace for ease of invocation from gdb.
 CORE_EXPORT void showLayerTree(const blink::PaintLayer*);
 CORE_EXPORT void showLayerTree(const blink::LayoutObject*);
 #endif

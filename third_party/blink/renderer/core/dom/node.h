@@ -765,7 +765,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   String ToString() const;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   String ToTreeStringForThis() const;
   String ToFlatTreeStringForThis() const;
   void PrintNodePathTo(std::ostream&) const;
@@ -1090,8 +1090,8 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node*);
 
 }  // namespace blink
 
-#ifndef NDEBUG
-// Outside the WebCore namespace for ease of invocation from gdb.
+#if DCHECK_IS_ON()
+// Outside the blink namespace for ease of invocation from gdb.
 void showNode(const blink::Node*);
 void showTree(const blink::Node*);
 void showNodePath(const blink::Node*);

@@ -19,7 +19,7 @@
 namespace blink {
 namespace {
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void AppendNodeToString(NGLayoutInputNode node,
                         StringBuilder* string_builder,
                         unsigned indent = 2) {
@@ -134,7 +134,7 @@ String NGLayoutInputNode::ToString() const {
                      : To<NGBlockNode>(*this).ToString();
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void NGLayoutInputNode::ShowNodeTree() const {
   StringBuilder string_builder;
   string_builder.Append(".:: LayoutNG Node Tree ::.\n");

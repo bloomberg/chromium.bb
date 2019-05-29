@@ -722,6 +722,7 @@ TEST_F(LayoutObjectTest, DisplayContentsWrapperInTableCell) {
   EXPECT_EQ(cell->GetLayoutObject(), none->GetLayoutObject()->Parent());
 }
 
+#if DCHECK_IS_ON()
 TEST_F(LayoutObjectTest, DumpLayoutObject) {
   // Test dumping for debugging, in particular that newlines and non-ASCII
   // characters are escaped as expected.
@@ -751,6 +752,7 @@ lime'>
              "\\u0421\\u0440\\u0435\\u045C\\u0435\\u043D "
              "\\u0440\\u043E\\u0434\\u0435\\u043D\\u0434\\u0435\\u043D\\n\""));
 }
+#endif  // DCHECK_IS_ON()
 
 TEST_F(LayoutObjectTest, DisplayContentsSVGGElementInHTML) {
   SetBodyInnerHTML(R"HTML(

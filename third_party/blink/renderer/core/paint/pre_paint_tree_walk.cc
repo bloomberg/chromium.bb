@@ -127,7 +127,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
   }
 
   if (LayoutView* view = frame_view.GetLayoutView()) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     if (VLOG_IS_ON(3) && needs_tree_builder_context_update) {
       LOG(ERROR) << "PrePaintTreeWalk::Walk(frame_view=" << &frame_view
                  << ")\nLayout tree:";

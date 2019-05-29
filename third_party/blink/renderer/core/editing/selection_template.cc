@@ -120,7 +120,7 @@ bool SelectionTemplate<Strategy>::AssertValid() const {
 }
 #endif
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 template <typename Strategy>
 void SelectionTemplate<Strategy>::ShowTreeForThis() const {
   if (base_.IsNull()) {

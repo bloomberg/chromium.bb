@@ -350,7 +350,7 @@ void FrameTree::Trace(blink::Visitor* visitor) {
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 static void printIndent(int indent) {
   for (int i = 0; i < indent; ++i)
@@ -397,4 +397,4 @@ void showFrameTree(const blink::Frame* frame) {
   printFrames(&frame->Tree().Top(), frame, 0);
 }
 
-#endif
+#endif  // DCHECK_IS_ON()

@@ -55,10 +55,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 
-#ifndef NDEBUG
-#include <stdio.h>
-#endif
-
 namespace blink {
 
 namespace {
@@ -962,7 +958,7 @@ bool DocumentMarkerController::SetTextMatchMarkersActive(const Text& text,
   return true;
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void DocumentMarkerController::ShowMarkers() const {
   StringBuilder builder;
   for (auto& node_iterator : markers_) {
@@ -1027,7 +1023,7 @@ void DocumentMarkerController::DidUpdateCharacterData(CharacterData* node,
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void showDocumentMarkers(const blink::DocumentMarkerController* controller) {
   if (controller)
     controller->ShowMarkers();

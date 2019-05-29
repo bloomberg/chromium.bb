@@ -79,9 +79,7 @@ class InlineFlowBox : public InlineBox {
 
 #if DCHECK_IS_ON()
   ~InlineFlowBox() override;
-#endif
 
-#ifndef NDEBUG
   void DumpLineTreeAndMark(StringBuilder&,
                            const InlineBox* = nullptr,
                            const char* = nullptr,

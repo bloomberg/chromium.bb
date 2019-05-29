@@ -121,7 +121,7 @@ struct AnnotatedRegionValue {
   bool draggable;
 };
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 const int kShowTreeCharacterOffset = 39;
 #endif
 
@@ -397,11 +397,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   };
 
   void AssertLaidOut() const {
-#ifndef NDEBUG
     if (NeedsLayout() &&
         !LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
       ShowLayoutTreeForThis();
-#endif
     SECURITY_DCHECK(!NeedsLayout() ||
                     LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
   }
@@ -417,12 +415,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   void AssertClearedPaintInvalidationFlags() const {
-#ifndef NDEBUG
     if (PaintInvalidationStateIsDirty() && !PrePaintBlockedByDisplayLock()) {
       ShowLayoutTreeForThis();
       NOTREACHED();
     }
-#endif
   }
 
   void AssertSubtreeClearedPaintInvalidationFlags() const {
@@ -434,7 +430,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
   }
 
-#endif
+#endif  // DCHECK_IS_ON()
 
   // LayoutObject tree manipulation
   //////////////////////////////////////////
@@ -555,12 +551,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool RequiresAnonymousTableWrappers(const LayoutObject*) const;
 
  public:
+#if DCHECK_IS_ON()
   // Dump this layout object to the specified string builder.
   void DumpLayoutObject(StringBuilder&,
                         bool dump_address,
                         unsigned show_tree_character_offset) const;
-
-#ifndef NDEBUG
   void ShowTreeForThis() const;
   void ShowLayoutTreeForThis() const;
   void ShowLineTreeForThis() const;
@@ -577,7 +572,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                              const LayoutObject* marked_object2 = nullptr,
                              const char* marked_label2 = nullptr,
                              unsigned depth = 0) const;
-#endif
+#endif  // DCHECK_IS_ON()
 
   // This function is used to create the appropriate LayoutObject based
   // on the style, in particular 'display' and 'content'.
@@ -3354,7 +3349,7 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const LayoutObject&);
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 // Outside the blink namespace for ease of invocation from gdb.
 CORE_EXPORT void showTree(const blink::LayoutObject*);
 CORE_EXPORT void showLineTree(const blink::LayoutObject*);

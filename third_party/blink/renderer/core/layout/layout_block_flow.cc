@@ -2651,7 +2651,7 @@ void LayoutBlockFlow::DeleteLineBoxTree() {
 
 int LayoutBlockFlow::LineCount(
     const RootInlineBox* stop_root_inline_box) const {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   DCHECK(!stop_root_inline_box ||
          stop_root_inline_box->Block().DebugPointer() == this);
 #endif
@@ -4751,7 +4751,7 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
   return CreatePositionWithAffinity(0);
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void LayoutBlockFlow::ShowLineTreeAndMark(const InlineBox* marked_box1,
                                           const char* marked_label1,

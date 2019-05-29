@@ -2114,7 +2114,7 @@ struct DowncastTraits<Document> {
 }  // namespace blink
 
 #ifndef NDEBUG
-// Outside the WebCore namespace for ease of invocation from gdb.
+// Outside the blink namespace for ease of invocation from gdb.
 CORE_EXPORT void showLiveDocumentInstances();
 #endif
 

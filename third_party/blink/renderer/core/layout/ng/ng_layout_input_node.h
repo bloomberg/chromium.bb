@@ -216,7 +216,7 @@ class CORE_EXPORT NGLayoutInputNode {
     return !(*this == other);
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowNodeTree() const;
 #endif
 

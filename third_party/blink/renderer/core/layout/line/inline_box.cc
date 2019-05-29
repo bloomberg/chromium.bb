@@ -30,10 +30,6 @@
 #include "third_party/blink/renderer/platform/fonts/font_metrics.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
-#ifndef NDEBUG
-#include <stdio.h>
-#endif
-
 namespace blink {
 
 class LayoutObject;
@@ -103,7 +99,7 @@ IntRect InlineBox::PartialInvalidationVisualRect() const {
   return GetLineLayoutItem().PartialInvalidationVisualRectForInlineBox();
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void InlineBox::ShowTreeForThis() const {
   GetLineLayoutItem().ShowTreeForThis();
 }
@@ -152,7 +148,7 @@ void InlineBox::DumpBox(StringBuilder& string_inlinebox) const {
       BaselinePosition(kAlphabeticBaseline).ToInt(),
       BaselinePosition(kIdeographicBaseline).ToInt());
 }
-#endif
+#endif  // DCHECK_IS_ON()
 
 LayoutUnit InlineBox::LogicalHeight() const {
   if (HasVirtualLogicalHeight())
@@ -382,7 +378,7 @@ bool CanUseInlineBox(const LayoutObject& node) {
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void showTree(const blink::InlineBox* b) {
   if (b)

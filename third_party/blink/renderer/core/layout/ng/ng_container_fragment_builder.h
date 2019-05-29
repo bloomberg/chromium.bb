@@ -190,7 +190,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   const NGConstraintSpace* ConstraintSpace() const { return space_; }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   String ToString() const;
 #endif
 

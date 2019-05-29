@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 #include <stdio.h>
 #endif
 
@@ -557,7 +557,7 @@ void SVGResources::SetLinkedResource(
   linked_resource_ = linked_resource;
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void SVGResources::Dump(const LayoutObject* object) {
   DCHECK(object);
   DCHECK(object->GetNode());

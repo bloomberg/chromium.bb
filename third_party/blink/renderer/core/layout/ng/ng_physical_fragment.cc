@@ -506,12 +506,12 @@ String NGPhysicalFragment::DumpFragmentTree(
   return string_builder.ToString();
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void NGPhysicalFragment::ShowFragmentTree() const {
   DumpFlags dump_flags = DumpAll;
   LOG(INFO) << "\n" << DumpFragmentTree(dump_flags).Utf8().data();
 }
-#endif  // !NDEBUG
+#endif
 
 PhysicalRect NGPhysicalFragmentWithOffset::RectInContainerBox() const {
   return {offset_to_container_box, fragment->Size()};

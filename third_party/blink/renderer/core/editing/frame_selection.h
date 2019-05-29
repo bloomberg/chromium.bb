@@ -240,7 +240,7 @@ class CORE_EXPORT FrameSelection final
   // Returns true if a word is selected.
   bool SelectWordAroundCaret();
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowTreeForThis() const;
 #endif
 
@@ -334,8 +334,8 @@ class CORE_EXPORT FrameSelection final
 
 }  // namespace blink
 
-#ifndef NDEBUG
-// Outside the WebCore namespace for ease of invocation from gdb.
+#if DCHECK_IS_ON()
+// Outside the blink namespace for ease of invocation from gdb.
 void showTree(const blink::FrameSelection&);
 void showTree(const blink::FrameSelection*);
 #endif

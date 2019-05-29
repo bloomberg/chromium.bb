@@ -179,7 +179,7 @@ VisiblePositionInFlatTree CreateVisiblePosition(
   return VisiblePositionInFlatTree::Create(position_with_affinity);
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 template <typename Strategy>
 void VisiblePositionTemplate<Strategy>::ShowTreeForThis() const {
@@ -224,14 +224,14 @@ std::ostream& operator<<(std::ostream& ostream,
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void showTree(const blink::VisiblePosition* vpos) {
   if (vpos) {
     vpos->ShowTreeForThis();
     return;
   }
-  DVLOG(0) << "Cannot showTree for (nil) VisiblePosition.";
+  DLOG(INFO) << "Cannot showTree for (nil) VisiblePosition.";
 }
 
 void showTree(const blink::VisiblePosition& vpos) {

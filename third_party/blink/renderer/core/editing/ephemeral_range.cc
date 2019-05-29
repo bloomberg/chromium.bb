@@ -161,7 +161,7 @@ bool EphemeralRangeTemplate<Strategy>::IsValid() const {
 }
 #endif
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 template <typename Strategy>
 void EphemeralRangeTemplate<Strategy>::ShowTreeForThis() const {

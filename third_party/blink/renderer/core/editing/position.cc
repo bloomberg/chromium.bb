@@ -701,7 +701,7 @@ String PositionTemplate<Strategy>::ToAnchorTypeAndOffsetString() const {
   return g_empty_string;
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 template <typename Strategy>
 void PositionTemplate<Strategy>::ShowTreeForThis() const {
@@ -725,7 +725,7 @@ void PositionTemplate<Strategy>::ShowTreeForThisInFlatTree() const {
             << ToAnchorTypeAndOffsetString().Utf8().data();
 }
 
-#endif
+#endif  // DCHECK_IS_ON()
 
 template <typename PositionType>
 static std::ostream& PrintPosition(std::ostream& ostream,
@@ -768,7 +768,7 @@ template class CORE_TEMPLATE_EXPORT PositionTemplate<EditingInFlatTreeStrategy>;
 
 }  // namespace blink
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 
 void showTree(const blink::Position& pos) {
   pos.ShowTreeForThis();

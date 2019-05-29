@@ -114,7 +114,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   const NGInlineBreakToken* InlineBreakTokenFor(const NGLayoutInputNode&) const;
   const NGInlineBreakToken* InlineBreakTokenFor(const LayoutBox&) const;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   String ToString() const override;
 #endif
 
