@@ -48,8 +48,8 @@ implicit conversion.
 
 ### Memory Management And Passing
 
-Pass `base::Callback` objects by value if ownership is transferred; otherwise,
-pass it by const-reference.
+Pass `base::{Once,Repeating}Callback` objects by value if ownership is
+transferred; otherwise, pass it by const-reference.
 
 ```cpp
 // |Foo| just refers to |cb| but doesn't store it nor consume it.
@@ -58,8 +58,8 @@ bool Foo(const base::OnceCallback<void(int)>& cb) {
 }
 
 // |Bar| takes the ownership of |cb| and stores |cb| into |g_cb|.
-base::OnceCallback<void(int)> g_cb;
-void Bar(base::OnceCallback<void(int)> cb) {
+base::RepeatingCallback<void(int)> g_cb;
+void Bar(base::RepeatingCallback<void(int)> cb) {
   g_cb = std::move(cb);
 }
 
@@ -70,18 +70,19 @@ void Baz(base::OnceCallback<void(int)> cb) {
 
 // |Qux| takes the ownership of |cb| and transfers ownership to PostTask(),
 // which also takes the ownership of |cb|.
-void Qux(base::OnceCallback<void(int)> cb) {
-  PostTask(FROM_HERE,
-           base::BindOnce(std::move(cb), 42));
+void Qux(base::RepeatingCallback<void(int)> cb) {
+  PostTask(FROM_HERE, base::BindOnce(cb, 42));
+  PostTask(FROM_HERE, base::BindOnce(std::move(cb), 43));
 }
 ```
 
-When you pass a `base::Callback` object to a function parameter, use
-`std::move()` if you don't need to keep a reference to it, otherwise, pass the
+When you pass a `base::{Once,Repeating}Callback` object to a function parameter,
+use `std::move()` if you don't need to keep a reference to it, otherwise, pass the
 object directly. You may see a compile error when the function requires the
 exclusive ownership, and you didn't pass the callback by move. Note that the
-moved-from `base::Callback` becomes null, as if its `Reset()` method had been
-called, and its `is_null()` method will return true.
+moved-from `base::{Once,Repeating}Callback` becomes null, as if its `Reset()`
+method had been called. Afterward, its `is_null()` method will return true and
+its `operator bool()` will return false.
 
 ## Quick reference for basic stuff
 
