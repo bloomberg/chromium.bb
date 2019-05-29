@@ -8,7 +8,6 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItem;
 import static android.support.test.espresso.contrib.RecyclerViewActions.scrollTo;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.scrollToLastElement;
@@ -86,8 +85,7 @@ public class ManualFillingUiCaptureTest {
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswords");
 
-        whenDisplayed(withParent(withId(R.id.keyboard_accessory_sheet)))
-                .perform(scrollToLastElement());
+        whenDisplayed(withId(R.id.passwords_sheet)).perform(scrollToLastElement());
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsScrolled");
     }
@@ -113,8 +111,7 @@ public class ManualFillingUiCaptureTest {
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsRTL");
 
-        whenDisplayed(withParent(withId(R.id.keyboard_accessory_sheet)))
-                .perform(scrollToLastElement());
+        whenDisplayed(withId(R.id.passwords_sheet)).perform(scrollToLastElement());
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsScrolledRTL");
     }
@@ -144,8 +141,7 @@ public class ManualFillingUiCaptureTest {
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsV2");
 
-        whenDisplayed(withParent(withId(R.id.keyboard_accessory_sheet)))
-                .perform(scrollToLastElement());
+        whenDisplayed(withId(R.id.passwords_sheet)).perform(scrollToLastElement());
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsV2Scrolled");
     }
@@ -175,8 +171,7 @@ public class ManualFillingUiCaptureTest {
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsV2RTL");
 
-        whenDisplayed(withParent(withId(R.id.keyboard_accessory_sheet)))
-                .perform(scrollToLastElement());
+        whenDisplayed(withId(R.id.passwords_sheet)).perform(scrollToLastElement());
         waitForUnrelatedChromeUi();
         mScreenShooter.shoot("AccessorySheetPasswordsV2ScrolledRTL");
     }
@@ -195,7 +190,7 @@ public class ManualFillingUiCaptureTest {
 
     private void waitForSuggestionsInSheet() {
         whenDisplayed(withId(R.id.keyboard_accessory_sheet));
-        onView(withParent(withId(R.id.keyboard_accessory_sheet))).check((view, noViewFound) -> {
+        onView(withId(R.id.passwords_sheet)).check((view, noViewFound) -> {
             if (noViewFound != null) throw noViewFound;
             RecyclerViewTestUtils.waitForStableRecyclerView((RecyclerView) view);
         });

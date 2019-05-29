@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.Provider;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.content_public.browser.WebContents;
@@ -28,7 +29,9 @@ class ManualFillingState {
     private boolean mWebContentsShowing;
     private @Nullable CachedProviderAdapter<KeyboardAccessoryData.Action[]> mActionsProvider;
     private @Nullable CachedProviderAdapter<AccessorySheetData> mPasswordSheetDataProvider;
+    private @Nullable CachedProviderAdapter<AccessorySheetData> mAddressSheetDataProvider;
     private @Nullable PasswordAccessorySheetCoordinator mPasswordAccessorySheet;
+    private @Nullable AddressAccessorySheetCoordinator mAddressAccessorySheet;
     private @Nullable CreditCardAccessorySheetCoordinator mCreditCardAccessorySheet;
 
     private class Observer extends WebContentsObserver {
@@ -82,6 +85,7 @@ class ManualFillingState {
         ArrayList<KeyboardAccessoryData.Tab> tabs = new ArrayList<>();
         if (mPasswordAccessorySheet != null) tabs.add(mPasswordAccessorySheet.getTab());
         if (mCreditCardAccessorySheet != null) tabs.add(mCreditCardAccessorySheet.getTab());
+        if (mAddressAccessorySheet != null) tabs.add(mAddressAccessorySheet.getTab());
         return tabs.toArray(new KeyboardAccessoryData.Tab[0]);
     }
 
@@ -91,6 +95,7 @@ class ManualFillingState {
         mPasswordSheetDataProvider = null;
         mPasswordAccessorySheet = null;
         mCreditCardAccessorySheet = null;
+        mAddressAccessorySheet = null;
         mWebContentsShowing = false;
     }
 
@@ -137,6 +142,32 @@ class ManualFillingState {
     @Nullable
     PasswordAccessorySheetCoordinator getPasswordAccessorySheet() {
         return mPasswordAccessorySheet;
+    }
+
+    /**
+     * Wraps the given provider for address data in a {@link CachedProviderAdapter} and stores it.
+     * @param provider A {@link PropertyProvider} providing password sheet data.
+     */
+    void wrapAddressSheetDataProvider(PropertyProvider<AccessorySheetData> provider) {
+        mAddressSheetDataProvider =
+                new CachedProviderAdapter<>(provider, null, this::onAdapterReceivedNewData);
+    }
+
+    /**
+     * Returns the wrapped provider set with {@link #wrapAddressSheetDataProvider}.
+     * @return A {@link CachedProviderAdapter} wrapping a {@link PropertyProvider}.
+     */
+    Provider<AccessorySheetData> getAddressSheetDataProvider() {
+        return mAddressSheetDataProvider;
+    }
+
+    void setAddressAccessorySheet(@Nullable AddressAccessorySheetCoordinator sheet) {
+        mAddressAccessorySheet = sheet;
+    }
+
+    @Nullable
+    AddressAccessorySheetCoordinator getAddressAccessorySheet() {
+        return mAddressAccessorySheet;
     }
 
     void setCreditCardAccessorySheet(@Nullable CreditCardAccessorySheetCoordinator sheet) {

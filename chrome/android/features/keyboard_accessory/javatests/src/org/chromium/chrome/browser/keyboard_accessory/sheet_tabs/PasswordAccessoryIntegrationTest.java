@@ -41,9 +41,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.TimeoutException;
 /**
- * Integration tests for password accessory views. This integration test currently stops testing at
- * the bridge - ideally, there should be an easy way to add a temporary account with temporary
- * passwords.
+ * Integration tests for password accessory views.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
@@ -66,9 +64,9 @@ public class PasswordAccessoryIntegrationTest {
     public void testPasswordSheetIsAvailable() throws InterruptedException {
         mHelper.loadTestPage(false);
 
-        CriteriaHelper.pollUiThread(()
-                                            -> mHelper.getOrCreatePasswordAccessorySheet() != null,
-                "Password Sheet should be bound to accessory sheet.");
+        CriteriaHelper.pollUiThread(() -> {
+            return mHelper.getOrCreatePasswordAccessorySheet() != null;
+        }, " Password Sheet should be bound to accessory sheet.");
     }
 
     @Test
@@ -112,7 +110,7 @@ public class PasswordAccessoryIntegrationTest {
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
 
         mHelper.waitForKeyboardToDisappear();
-        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+        whenDisplayed(withId(R.id.passwords_sheet));
         onView(withText(containsString("Manage password"))).check(matches(isDisplayed()));
     }
 
@@ -151,7 +149,7 @@ public class PasswordAccessoryIntegrationTest {
         // Click the tab to show the sheet and hide the keyboard.
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         mHelper.waitForKeyboardToDisappear();
-        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+        whenDisplayed(withId(R.id.passwords_sheet));
         onView(withText(containsString("No saved passwords"))).check(matches(isDisplayed()));
     }
 }

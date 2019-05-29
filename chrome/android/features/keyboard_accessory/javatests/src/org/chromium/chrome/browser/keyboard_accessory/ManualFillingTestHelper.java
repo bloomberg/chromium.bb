@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAcce
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.ImeAdapter;
@@ -148,6 +149,10 @@ public class ManualFillingTestHelper {
         return DOMUtils.getNodeValue(mWebContentsRef.get(), PASSWORD_NODE_ID);
     }
 
+    public String getFieldText(String nodeId) throws TimeoutException, InterruptedException {
+        return DOMUtils.getNodeValue(mWebContentsRef.get(), nodeId);
+    }
+
     public void clickEmailField(boolean forceAccessory)
             throws TimeoutException, InterruptedException {
         // TODO(fhorschig): This should be |focusNode|. Change with autofill popup deprecation.
@@ -250,6 +255,10 @@ public class ManualFillingTestHelper {
 
     public PasswordAccessorySheetCoordinator getOrCreatePasswordAccessorySheet() {
         return getManualFillingCoordinator().getMediatorForTesting().getOrCreatePasswordSheet();
+    }
+
+    public AddressAccessorySheetCoordinator getOrCreateAddressAccessorySheet() {
+        return getManualFillingCoordinator().getMediatorForTesting().getOrCreateAddressSheet();
     }
 
     // ----------------------------------

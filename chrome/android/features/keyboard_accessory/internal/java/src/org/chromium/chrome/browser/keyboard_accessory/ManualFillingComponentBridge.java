@@ -21,7 +21,9 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 class ManualFillingComponentBridge {
-    private final PropertyProvider<AccessorySheetData> mSheetDataProvider =
+    private final PropertyProvider<AccessorySheetData> mPasswordSheetProvider =
+            new PropertyProvider<>();
+    private final PropertyProvider<AccessorySheetData> mAddressSheetProvider =
             new PropertyProvider<>();
     private final PropertyProvider<Action[]> mActionProvider =
             new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
@@ -33,7 +35,8 @@ class ManualFillingComponentBridge {
         mNativeView = nativeView;
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
         mManualFillingComponent = mActivity.getManualFillingComponent();
-        mManualFillingComponent.registerPasswordProvider(mSheetDataProvider);
+        mManualFillingComponent.registerPasswordProvider(mPasswordSheetProvider);
+        mManualFillingComponent.registerAddressProvider(mAddressSheetProvider);
         mManualFillingComponent.registerCreditCardProvider();
         mManualFillingComponent.registerActionProvider(mActionProvider);
     }
@@ -49,13 +52,13 @@ class ManualFillingComponentBridge {
         AccessorySheetData accessorySheetData = (AccessorySheetData) objAccessorySheetData;
         switch (accessorySheetData.getSheetType()) {
             case AccessoryTabType.PASSWORDS:
-                mSheetDataProvider.notifyObservers(accessorySheetData);
+                mPasswordSheetProvider.notifyObservers((AccessorySheetData) objAccessorySheetData);
                 return;
             case AccessoryTabType.CREDIT_CARDS:
                 // TODO(crbug.com/926365): Implement.
                 return;
             case AccessoryTabType.ADDRESSES:
-                // TODO(crbug.com/962548): Implement.
+                mAddressSheetProvider.notifyObservers((AccessorySheetData) objAccessorySheetData);
                 return;
         }
     }
@@ -114,7 +117,8 @@ class ManualFillingComponentBridge {
 
     @CalledByNative
     private void destroy() {
-        mSheetDataProvider.notifyObservers(null);
+        mPasswordSheetProvider.notifyObservers(null);
+        mAddressSheetProvider.notifyObservers(null);
         mNativeView = 0;
     }
 

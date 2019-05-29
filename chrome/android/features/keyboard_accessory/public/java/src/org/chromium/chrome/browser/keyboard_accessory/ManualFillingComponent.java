@@ -61,6 +61,14 @@ public interface ManualFillingComponent {
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider);
 
     /**
+     * By registering this provider, an empty tab for addresses is created. Call
+     * {@link PropertyProvider#notifyObservers(Object)} to fill or update the sheet.
+     * @param sheetDataProvider The {@link PropertyProvider} the tab will get it's data from.
+     */
+    void registerAddressProvider(
+            PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider);
+
+    /**
      * By calling this function, an empty tab for credit cards is created.
      */
     void registerCreditCardProvider();

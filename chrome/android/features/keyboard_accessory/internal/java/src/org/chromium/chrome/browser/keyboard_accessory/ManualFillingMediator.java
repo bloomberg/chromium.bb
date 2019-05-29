@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -198,6 +199,16 @@ class ManualFillingMediator extends EmptyTabObserver
         PasswordAccessorySheetCoordinator accessorySheet = getOrCreatePasswordSheet();
         if (accessorySheet == null) return; // Not available or initialized yet.
         accessorySheet.registerDataProvider(state.getPasswordSheetDataProvider());
+    }
+
+    void registerAddressProvider(
+            PropertyProvider<KeyboardAccessoryData.AccessorySheetData> dataProvider) {
+        ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
+
+        state.wrapAddressSheetDataProvider(dataProvider);
+        AddressAccessorySheetCoordinator accessorySheet = getOrCreateAddressSheet();
+        if (accessorySheet == null) return; // Not available or initialized yet.
+        accessorySheet.registerDataProvider(state.getAddressSheetDataProvider());
     }
 
     void registerCreditCardProvider() {
@@ -609,6 +620,32 @@ class ManualFillingMediator extends EmptyTabObserver
         }
         refreshTabs();
         return passwordSheet;
+    }
+
+    /**
+     * Returns the address sheet for the current WebContents or creates one if it doesn't exist.
+     * @return A {@link AddressAccessorySheetCoordinator} or null if unavailable.
+     */
+    @VisibleForTesting
+    @Nullable
+    AddressAccessorySheetCoordinator getOrCreateAddressSheet() {
+        if (!isInitialized()) return null;
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
+            return null;
+        }
+        WebContents webContents = mActivity.getCurrentWebContents();
+        if (webContents == null) return null; // There is no active tab or it's being destroyed.
+        ManualFillingState state = mStateCache.getStateFor(webContents);
+        if (state.getAddressAccessorySheet() != null) return state.getAddressAccessorySheet();
+
+        AddressAccessorySheetCoordinator addressSheet = new AddressAccessorySheetCoordinator(
+                mActivity, mAccessorySheet.getScrollListener());
+        state.setAddressAccessorySheet(addressSheet);
+        if (state.getAddressSheetDataProvider() != null) {
+            addressSheet.registerDataProvider(state.getAddressSheetDataProvider());
+        }
+        refreshTabs();
+        return addressSheet;
     }
 
     /**
