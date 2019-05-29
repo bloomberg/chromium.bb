@@ -249,7 +249,8 @@ void MixedRealityRenderLoop::StopRuntime() {
   if (window_)
     ShowWindow(window_->hwnd(), SW_HIDE);
   holographic_space_ = nullptr;
-  origin_ = nullptr;
+  anchor_origin_ = nullptr;
+  stationary_origin_ = nullptr;
   last_origin_from_attached_ = base::nullopt;
   attached_ = nullptr;
   ClearStageStatics();
@@ -298,7 +299,11 @@ void MixedRealityRenderLoop::InitializeOrigin() {
   if (!stationary_frame)
     return;
 
-  origin_ = stationary_frame->CoordinateSystem();
+  stationary_origin_ = stationary_frame->CoordinateSystem();
+
+  // Instead of using the stationary_frame, use an anchor.
+  anchor_origin_ =
+      WMRSpatialAnchorFactory::TryCreateRelativeTo(stationary_origin_.get());
 }
 
 void MixedRealityRenderLoop::ClearStageOrigin() {
@@ -387,7 +392,8 @@ void MixedRealityRenderLoop::OnSessionStart() {
   LogViewerType(VrViewerType::WINDOWS_MIXED_REALITY_UNKNOWN);
 
   // Each session should start with new origins.
-  origin_ = nullptr;
+  stationary_origin_ = nullptr;
+  anchor_origin_ = nullptr;
   attached_ = nullptr;
   last_origin_from_attached_ = base::nullopt;
 
@@ -427,12 +433,13 @@ mojom::XRGamepadDataPtr MixedRealityRenderLoop::GetNextGamepadData() {
     return nullptr;
   }
 
-  if (!origin_) {
+  if (!anchor_origin_) {
     WMRLogging::TraceError(WMRErrorLocation::kGamepadMissingOrigin);
     return nullptr;
   }
 
-  return input_helper_->GetWebVRGamepadData(origin_.get(), timestamp_.get());
+  return input_helper_->GetWebVRGamepadData(anchor_origin_.get(),
+                                            timestamp_.get());
 }
 
 struct EyeToWorldDecomposed {
@@ -586,7 +593,7 @@ void MixedRealityRenderLoop::UpdateWMRDataForNextFrame() {
     return;
 
   // Make sure we have an origin.
-  if (!origin_) {
+  if (!anchor_origin_) {
     InitializeOrigin();
   }
 
@@ -681,10 +688,11 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
   // SpatialStageFrameOfReference.CurrentChanged to also re-calculate this.
   bool changed = false;
   if (stage_transform_needs_updating_) {
-    if (!(stage_origin_ && origin_) && current_display_info_->stageParameters) {
+    if (!(stage_origin_ && anchor_origin_) &&
+        current_display_info_->stageParameters) {
       changed = true;
       current_display_info_->stageParameters = nullptr;
-    } else if (stage_origin_ && origin_) {
+    } else if (stage_origin_ && anchor_origin_) {
       changed = true;
       current_display_info_->stageParameters = nullptr;
 
@@ -692,7 +700,8 @@ bool MixedRealityRenderLoop::UpdateStageParameters() {
           mojom::VRStageParameters::New();
 
       Matrix4x4 origin_to_stage;
-      if (!origin_->TryGetTransformTo(stage_origin_.get(), &origin_to_stage)) {
+      if (!anchor_origin_->TryGetTransformTo(stage_origin_.get(),
+                                             &origin_to_stage)) {
         // We failed to get a transform between the two, so force a
         // recalculation of the stage origin and leave the stageParameters null.
         ClearStageOrigin();
@@ -728,7 +737,7 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
   mojom::XRFrameDataPtr ret =
       CreateDefaultFrameData(timestamp_.get(), next_frame_id_);
 
-  if ((!attached_ && !origin_) || !pose_) {
+  if ((!attached_ && !anchor_origin_) || !pose_) {
     TRACE_EVENT_INSTANT0("xr", "No origin or no pose",
                          TRACE_EVENT_SCOPE_THREAD);
     // If we don't have an origin or pose for this frame, we can still give out
@@ -743,13 +752,15 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
 
   ABI::Windows::Graphics::Holographic::HolographicStereoTransform view;
   bool got_view = false;
-  if (origin_ && pose_->TryGetViewTransform(origin_.get(), &view)) {
+  if (anchor_origin_ &&
+      pose_->TryGetViewTransform(anchor_origin_.get(), &view)) {
     got_view = true;
     // TODO(http://crbug.com/931393): Send down emulated_position_, and report
     // reset events when this changes.
     emulated_position_ = false;
     ABI::Windows::Foundation::Numerics::Matrix4x4 transform;
-    if (attached_coordinates->TryGetTransformTo(origin_.get(), &transform)) {
+    if (attached_coordinates->TryGetTransformTo(anchor_origin_.get(),
+                                                &transform)) {
       last_origin_from_attached_ = gfx::Transform(
           transform.M11, transform.M21, transform.M31, transform.M41,
           transform.M12, transform.M22, transform.M32, transform.M42,
@@ -823,7 +834,7 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
   }
 
   ret->pose->input_state =
-      input_helper_->GetInputState(origin_.get(), timestamp_.get());
+      input_helper_->GetInputState(anchor_origin_.get(), timestamp_.get());
 
   if (emulated_position_ && last_origin_from_attached_) {
     gfx::DecomposedTransform attached_from_view_decomp;

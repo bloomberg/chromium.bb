@@ -90,8 +90,9 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
 
   std::unique_ptr<WMRHolographicSpace> holographic_space_;
   std::unique_ptr<WMRStageOrigin> spatial_stage_;
-  std::unique_ptr<WMRCoordinateSystem> origin_;
+  std::unique_ptr<WMRCoordinateSystem> stationary_origin_;
   std::unique_ptr<WMRCoordinateSystem> stage_origin_;
+  std::unique_ptr<WMRCoordinateSystem> anchor_origin_;
   bool stage_transform_needs_updating_ = false;
   std::unique_ptr<WMRAttachedOrigin> attached_;
   bool emulated_position_ = false;

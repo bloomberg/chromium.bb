@@ -25,6 +25,12 @@ class WMRStageStaticsFactory {
   static std::unique_ptr<WMRStageStatics> Create();
 };
 
+class WMRSpatialAnchorFactory {
+ public:
+  static std::unique_ptr<WMRCoordinateSystem> TryCreateRelativeTo(
+      WMRCoordinateSystem* origin);
+};
+
 class WMRInputManagerFactory {
  public:
   static std::unique_ptr<WMRInputManager> GetForWindow(HWND hwnd);

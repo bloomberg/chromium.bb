@@ -25,6 +25,8 @@ using SpatialMovementRange =
 using ABI::Windows::Foundation::IEventHandler;
 using ABI::Windows::Foundation::IReference;
 using ABI::Windows::Graphics::Holographic::IHolographicSpace;
+using ABI::Windows::Perception::Spatial::ISpatialAnchor;
+using ABI::Windows::Perception::Spatial::ISpatialAnchorStatics;
 using ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem;
 using ABI::Windows::Perception::Spatial::ISpatialLocator;
 using ABI::Windows::Perception::Spatial::
@@ -120,6 +122,34 @@ std::unique_ptr<WMRStageStatics> WMRStageStaticsFactory::Create() {
     return nullptr;
 
   return std::make_unique<WMRStageStaticsImpl>(stage_statics);
+}
+
+std::unique_ptr<WMRCoordinateSystem>
+WMRSpatialAnchorFactory::TryCreateRelativeTo(WMRCoordinateSystem* origin) {
+  if (MixedRealityDeviceStatics::ShouldUseMocks()) {
+    MockWMRStationaryOrigin origin;
+    return origin.CoordinateSystem();
+  }
+
+  ComPtr<ISpatialAnchorStatics> anchor_statics;
+  base::win::ScopedHString spatial_anchor_string =
+      base::win::ScopedHString::Create(
+          RuntimeClass_Windows_Perception_Spatial_SpatialAnchor);
+  HRESULT hr = base::win::RoGetActivationFactory(spatial_anchor_string.get(),
+                                                 IID_PPV_ARGS(&anchor_statics));
+  if (FAILED(hr))
+    return nullptr;
+
+  ComPtr<ISpatialAnchor> anchor;
+  hr = anchor_statics->TryCreateRelativeTo(origin->GetRawPtr(), &anchor);
+  if (FAILED(hr) || !anchor)
+    return nullptr;
+
+  // Make a WMRCoordinateSystemImpl wrapping the coordinate system.
+  ComPtr<ISpatialCoordinateSystem> coordinate_system;
+  hr = anchor->get_CoordinateSystem(&coordinate_system);
+  DCHECK(SUCCEEDED(hr));
+  return std::make_unique<WMRCoordinateSystemImpl>(coordinate_system);
 }
 
 std::unique_ptr<WMRInputManager> WMRInputManagerFactory::GetForWindow(
