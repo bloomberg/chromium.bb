@@ -80,7 +80,7 @@ void NativeInit() {
 
 bool OnInitThread() {
   DCHECK(g_init_message_loop);
-  return g_init_message_loop->IsBoundToCurrentThread();
+  return g_init_message_loop->task_runner()->RunsTasksInCurrentSequence();
 }
 
 // In integrated mode, Cronet native library is built and loaded together with

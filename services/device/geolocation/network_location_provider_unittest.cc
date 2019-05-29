@@ -292,7 +292,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
 // Tests that fixture members were SetUp correctly.
 TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
-  EXPECT_TRUE(main_message_loop_.IsBoundToCurrentThread());
+  EXPECT_TRUE(main_message_loop_.task_runner()->RunsTasksInCurrentSequence());
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
   EXPECT_TRUE(provider);
   provider.reset();

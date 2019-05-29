@@ -168,9 +168,6 @@ class BASE_EXPORT MessageLoop {
   void AddTaskObserver(TaskObserver* task_observer);
   void RemoveTaskObserver(TaskObserver* task_observer);
 
-  // Returns true if this is the active MessageLoop for the current thread.
-  bool IsBoundToCurrentThread() const;
-
   // Returns true if the message loop is idle (ignoring delayed tasks). This is
   // the same condition which triggers DoWork() to return false: i.e.
   // out of tasks which can be processed at the current run-level -- there might
@@ -181,6 +178,9 @@ class BASE_EXPORT MessageLoop {
 
   //----------------------------------------------------------------------------
  protected:
+  // Returns true if this is the active MessageLoop for the current thread.
+  bool IsBoundToCurrentThread() const;
+
   using MessagePumpFactoryCallback =
       OnceCallback<std::unique_ptr<MessagePump>()>;
 

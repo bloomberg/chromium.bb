@@ -406,7 +406,8 @@ size_t DiscardableSharedMemoryManager::GetBytesAllocated() {
 void DiscardableSharedMemoryManager::WillDestroyCurrentMessageLoop() {
   // The mojo thead is going to be destroyed. We should invalidate all related
   // weak ptrs and remove the destrunction observer.
-  DCHECK(mojo_thread_message_loop_->IsBoundToCurrentThread());
+  DCHECK(
+      mojo_thread_message_loop_->task_runner()->RunsTasksInCurrentSequence());
   DLOG_IF(WARNING, mojo_thread_weak_ptr_factory_.HasWeakPtrs())
       << "Some MojoDiscardableSharedMemoryManagerImpls are still alive. They "
          "will be leaked.";
@@ -616,7 +617,8 @@ void DiscardableSharedMemoryManager::ScheduleEnforceMemoryPolicy() {
 
 void DiscardableSharedMemoryManager::InvalidateMojoThreadWeakPtrs(
     base::WaitableEvent* event) {
-  DCHECK(mojo_thread_message_loop_->IsBoundToCurrentThread());
+  DCHECK(
+      mojo_thread_message_loop_->task_runner()->RunsTasksInCurrentSequence());
   mojo_thread_weak_ptr_factory_.InvalidateWeakPtrs();
   mojo_thread_message_loop_->RemoveDestructionObserver(this);
   mojo_thread_message_loop_ = base::MessageLoopCurrent::GetNull();
