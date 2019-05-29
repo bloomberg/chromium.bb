@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_usage_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
@@ -42,8 +43,7 @@ GbmPixmapWayland::~GbmPixmapWayland() {
 bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
                                         gfx::BufferFormat format,
                                         gfx::BufferUsage usage) {
-  TRACE_EVENT1("wayland", "GbmPixmapWayland::InitializeBuffer", "size",
-               size.ToString());
+  TRACE_EVENT0("wayland", "GbmPixmapWayland::InitializeBuffer");
 
   if (!connection_->gbm_device())
     return false;
@@ -76,7 +76,9 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
   const uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
   gbm_bo_ = connection_->gbm_device()->CreateBuffer(fourcc_format, size, flags);
   if (!gbm_bo_) {
-    LOG(FATAL) << "Cannot create bo";
+    LOG(ERROR) << "Cannot create bo with format= "
+               << gfx::BufferFormatToString(format) << " and usage "
+               << gfx::BufferUsageToString(usage);
     return false;
   }
 
