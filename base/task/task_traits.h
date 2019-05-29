@@ -227,6 +227,13 @@ class BASE_EXPORT TaskTraits {
     priority_set_explicitly_ = true;
   }
 
+  // Sets the priority to |priority| if it wasn't explicitly set before.
+  void InheritPriority(TaskPriority priority) {
+    if (priority_set_explicitly_)
+      return;
+    priority_ = priority;
+  }
+
   // Returns true if the priority was set explicitly.
   constexpr bool priority_set_explicitly() const {
     return priority_set_explicitly_;

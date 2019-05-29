@@ -32,11 +32,10 @@ class PostTaskAndReplyWithTraitsTaskRunner
 };
 
 // Returns TaskTraits based on |traits|. If TaskPriority hasn't been set
-// explicitly in |traits|, the returned TaskTraits have the current
+// explicitly in |traits|, the returned TaskTraits will inherit the current
 // TaskPriority.
 TaskTraits GetTaskTraitsWithExplicitPriority(TaskTraits traits) {
-  if (!traits.priority_set_explicitly())
-    traits.UpdatePriority(internal::GetTaskPriorityForCurrentThread());
+  traits.InheritPriority(internal::GetTaskPriorityForCurrentThread());
   return traits;
 }
 
