@@ -4206,8 +4206,10 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
               FROM_HERE, {BrowserThread::IO},
               base::BindOnce(
                   &NativeFileSystemManagerImpl::BindRequest, std::move(manager),
-                  frame->GetLastCommittedOrigin(), frame->GetProcess()->GetID(),
-                  frame->GetRoutingID(), std::move(request)));
+                  NativeFileSystemManagerImpl::BindingContext(
+                      frame->GetLastCommittedOrigin(),
+                      frame->GetProcess()->GetID(), frame->GetRoutingID()),
+                  std::move(request)));
         },
         base::Unretained(this)));
   }

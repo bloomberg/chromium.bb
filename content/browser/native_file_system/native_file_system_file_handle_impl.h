@@ -7,6 +7,7 @@
 
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/native_file_system/native_file_system_handle_base.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/common/content_export.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -14,9 +15,6 @@
 
 namespace storage {
 class BlobDataHandle;
-class BlobStorageContext;
-class FileSystemContext;
-class FileSystemOperationRunner;
 }  // namespace storage
 
 namespace content {
@@ -34,18 +32,15 @@ namespace content {
 // See https://crbug.com/957249 for some thoughts about the blob system aspect
 // of this.
 class CONTENT_EXPORT NativeFileSystemFileHandleImpl
-    : public blink::mojom::NativeFileSystemFileHandle {
+    : public NativeFileSystemHandleBase,
+      public blink::mojom::NativeFileSystemFileHandle {
  public:
   NativeFileSystemFileHandleImpl(
       NativeFileSystemManagerImpl* manager,
+      const BindingContext& context,
       const storage::FileSystemURL& url,
       storage::IsolatedContext::ScopedFSHandle file_system);
   ~NativeFileSystemFileHandleImpl() override;
-
-  const storage::FileSystemURL& url() const { return url_; }
-  const storage::IsolatedContext::ScopedFSHandle& file_system() const {
-    return file_system_;
-  }
 
   // blink::mojom::NativeFileSystemFileHandle:
   void AsBlob(AsBlobCallback callback) override;
@@ -86,22 +81,6 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
                 base::File::Error result,
                 int64_t bytes,
                 bool complete);
-
-  NativeFileSystemManagerImpl* manager() { return manager_; }
-  storage::FileSystemOperationRunner* operation_runner() {
-    return manager()->operation_runner();
-  }
-  storage::FileSystemContext* file_system_context() {
-    return manager()->context();
-  }
-  storage::BlobStorageContext* blob_context() {
-    return manager()->blob_context();
-  }
-
-  // The NativeFileSystemManagerImpl that owns us.
-  NativeFileSystemManagerImpl* const manager_;
-  const storage::FileSystemURL url_;
-  const storage::IsolatedContext::ScopedFSHandle file_system_;
 
   base::WeakPtrFactory<NativeFileSystemFileHandleImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemFileHandleImpl);

@@ -183,8 +183,10 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
           base::PostTaskWithTraits(
               FROM_HERE, {BrowserThread::IO},
               base::BindOnce(&NativeFileSystemManagerImpl::BindRequest,
-                             base::Unretained(manager), origin, host->GetID(),
-                             MSG_ROUTING_NONE, std::move(request)));
+                             base::Unretained(manager),
+                             NativeFileSystemManagerImpl::BindingContext(
+                                 origin, host->GetID(), MSG_ROUTING_NONE),
+                             std::move(request)));
         }));
   }
   parameterized_binder_registry_.AddInterface(

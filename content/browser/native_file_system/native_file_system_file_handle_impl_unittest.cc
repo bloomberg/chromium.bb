@@ -59,7 +59,11 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
         file_system_context_, chrome_blob_context_);
 
     handle_ = std::make_unique<NativeFileSystemFileHandleImpl>(
-        manager_.get(), test_url_, storage::IsolatedContext::ScopedFSHandle());
+        manager_.get(),
+        NativeFileSystemManagerImpl::BindingContext(
+            test_url_.origin(), /*process_id=*/1,
+            /*frame_id=*/MSG_ROUTING_NONE),
+        test_url_, storage::IsolatedContext::ScopedFSHandle());
   }
 
   blink::mojom::BlobPtr CreateBlob(const std::string& contents) {

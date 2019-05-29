@@ -8,17 +8,12 @@
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
-#include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/browser/native_file_system/native_file_system_handle_base.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom.h"
 
-namespace storage {
-class FileSystemContext;
-class FileSystemOperationRunner;
-}  // namespace storage
 
 namespace content {
-class NativeFileSystemManagerImpl;
 class NativeFileSystemTransferTokenImpl;
 
 // This is the browser side implementation of the
@@ -29,18 +24,15 @@ class NativeFileSystemTransferTokenImpl;
 // This class is not thread safe, all methods should be called on the same
 // sequence as storage::FileSystemContext, which today always is the IO thread.
 class NativeFileSystemDirectoryHandleImpl
-    : public blink::mojom::NativeFileSystemDirectoryHandle {
+    : public NativeFileSystemHandleBase,
+      public blink::mojom::NativeFileSystemDirectoryHandle {
  public:
   NativeFileSystemDirectoryHandleImpl(
       NativeFileSystemManagerImpl* manager,
+      const BindingContext& context,
       const storage::FileSystemURL& url,
       storage::IsolatedContext::ScopedFSHandle file_system);
   ~NativeFileSystemDirectoryHandleImpl() override;
-
-  const storage::FileSystemURL& url() const { return url_; }
-  const storage::IsolatedContext::ScopedFSHandle& file_system() const {
-    return file_system_;
-  }
 
   // blink::mojom::NativeFileSystemDirectoryHandle:
   void GetFile(const std::string& name,
@@ -96,19 +88,6 @@ class NativeFileSystemDirectoryHandleImpl
       const std::string& name,
       const storage::FileSystemURL& url,
       bool is_directory);
-
-  NativeFileSystemManagerImpl* manager() { return manager_; }
-  storage::FileSystemOperationRunner* operation_runner() {
-    return manager()->operation_runner();
-  }
-  storage::FileSystemContext* file_system_context() {
-    return manager()->context();
-  }
-
-  // The NativeFileSystemManagerImpl that owns us.
-  NativeFileSystemManagerImpl* const manager_;
-  const storage::FileSystemURL url_;
-  const storage::IsolatedContext::ScopedFSHandle file_system_;
 
   base::WeakPtrFactory<NativeFileSystemDirectoryHandleImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemDirectoryHandleImpl);

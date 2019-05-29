@@ -33,14 +33,13 @@ struct NativeFileSystemDirectoryHandleImpl::ReadDirectoryState {
 
 NativeFileSystemDirectoryHandleImpl::NativeFileSystemDirectoryHandleImpl(
     NativeFileSystemManagerImpl* manager,
+    const BindingContext& context,
     const storage::FileSystemURL& url,
     storage::IsolatedContext::ScopedFSHandle file_system)
-    : manager_(manager), url_(url), file_system_(std::move(file_system)) {
-  DCHECK(manager_);
-  DCHECK_EQ(url_.mount_type() == storage::kFileSystemTypeIsolated,
-            file_system_.is_valid())
-      << url_.mount_type();
-}
+    : NativeFileSystemHandleBase(manager,
+                                 context,
+                                 url,
+                                 std::move(file_system)) {}
 
 NativeFileSystemDirectoryHandleImpl::~NativeFileSystemDirectoryHandleImpl() =
     default;
@@ -92,10 +91,10 @@ void NativeFileSystemDirectoryHandleImpl::GetEntries(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   operation_runner()->ReadDirectory(
-      url_, base::BindRepeating(
-                &NativeFileSystemDirectoryHandleImpl::DidReadDirectory,
-                weak_factory_.GetWeakPtr(),
-                base::Owned(new ReadDirectoryState{std::move(callback)})));
+      url(), base::BindRepeating(
+                 &NativeFileSystemDirectoryHandleImpl::DidReadDirectory,
+                 weak_factory_.GetWeakPtr(),
+                 base::Owned(new ReadDirectoryState{std::move(callback)})));
 }
 
 void NativeFileSystemDirectoryHandleImpl::MoveFrom(
@@ -129,7 +128,7 @@ void NativeFileSystemDirectoryHandleImpl::Remove(bool recurse,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   operation_runner()->Remove(
-      url_, recurse,
+      url(), recurse,
       base::BindOnce(
           [](RemoveCallback callback, base::File::Error result) {
             std::move(callback).Run(NativeFileSystemError::New(result));
@@ -154,8 +153,9 @@ void NativeFileSystemDirectoryHandleImpl::DidGetFile(storage::FileSystemURL url,
     return;
   }
 
-  std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
-                          manager()->CreateFileHandle(url, file_system_));
+  std::move(callback).Run(
+      NativeFileSystemError::New(base::File::FILE_OK),
+      manager()->CreateFileHandle(context(), url, file_system()));
 }
 
 void NativeFileSystemDirectoryHandleImpl::DidGetDirectory(
@@ -169,8 +169,9 @@ void NativeFileSystemDirectoryHandleImpl::DidGetDirectory(
     return;
   }
 
-  std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
-                          manager()->CreateDirectoryHandle(url, file_system_));
+  std::move(callback).Run(
+      NativeFileSystemError::New(base::File::FILE_OK),
+      manager()->CreateDirectoryHandle(context(), url, file_system()));
 }
 
 void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
@@ -267,7 +268,7 @@ storage::FileSystemURL NativeFileSystemDirectoryHandleImpl::GetChildURL(
   std::string escaped_name =
       net::EscapeQueryParamValue(name, /*use_plus=*/false);
 
-  GURL parent_url = url_.ToGURL();
+  GURL parent_url = url().ToGURL();
   std::string path = base::StrCat({parent_url.path(), "/", escaped_name});
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
@@ -284,13 +285,15 @@ NativeFileSystemEntryPtr NativeFileSystemDirectoryHandleImpl::CreateEntry(
     return NativeFileSystemEntry::New(
         NativeFileSystemHandle::NewDirectory(
             manager()
-                ->CreateDirectoryHandle(url, file_system_)
+                ->CreateDirectoryHandle(context(), url, file_system())
                 .PassInterface()),
         name);
   }
   return NativeFileSystemEntry::New(
       NativeFileSystemHandle::NewFile(
-          manager()->CreateFileHandle(url, file_system_).PassInterface()),
+          manager()
+              ->CreateFileHandle(context(), url, file_system())
+              .PassInterface()),
       name);
 }
 

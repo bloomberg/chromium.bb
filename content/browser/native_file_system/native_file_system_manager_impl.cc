@@ -12,6 +12,8 @@
 #include "content/browser/native_file_system/native_file_system_transfer_token_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
@@ -40,16 +42,13 @@ NativeFileSystemManagerImpl::~NativeFileSystemManagerImpl() {
 }
 
 void NativeFileSystemManagerImpl::BindRequest(
-    const url::Origin& origin,
-    int process_id,
-    int frame_id,
+    const BindingContext& binding_context,
     blink::mojom::NativeFileSystemManagerRequest request) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI));
 
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  bindings_.AddBinding(this, std::move(request),
-                       BindingContext(origin, process_id, frame_id));
+  bindings_.AddBinding(this, std::move(request), binding_context);
 }
 
 void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
@@ -61,7 +60,8 @@ void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
       origin.GetURL(), storage::kFileSystemTypeTemporary,
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(&NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_factory_.GetWeakPtr(), bindings_.dispatch_context(),
+                     std::move(callback)));
 }
 
 void NativeFileSystemManagerImpl::ChooseEntries(
@@ -78,13 +78,14 @@ void NativeFileSystemManagerImpl::ChooseEntries(
           &FileSystemChooser::CreateAndShow, context.process_id,
           context.frame_id, type, std::move(accepts), include_accepts_all,
           base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
-                         weak_factory_.GetWeakPtr(), type, context.origin,
+                         weak_factory_.GetWeakPtr(), context, type,
                          std::move(callback)),
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
 }
 
 blink::mojom::NativeFileSystemFileHandlePtr
 NativeFileSystemManagerImpl::CreateFileHandle(
+    const BindingContext& binding_context,
     const storage::FileSystemURL& url,
     storage::IsolatedContext::ScopedFSHandle file_system) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -94,14 +95,16 @@ NativeFileSystemManagerImpl::CreateFileHandle(
       << url.mount_type();
 
   blink::mojom::NativeFileSystemFileHandlePtr result;
-  file_bindings_.AddBinding(std::make_unique<NativeFileSystemFileHandleImpl>(
-                                this, url, std::move(file_system)),
-                            mojo::MakeRequest(&result));
+  file_bindings_.AddBinding(
+      std::make_unique<NativeFileSystemFileHandleImpl>(
+          this, binding_context, url, std::move(file_system)),
+      mojo::MakeRequest(&result));
   return result;
 }
 
 blink::mojom::NativeFileSystemDirectoryHandlePtr
 NativeFileSystemManagerImpl::CreateDirectoryHandle(
+    const BindingContext& binding_context,
     const storage::FileSystemURL& url,
     storage::IsolatedContext::ScopedFSHandle file_system) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -113,35 +116,37 @@ NativeFileSystemManagerImpl::CreateDirectoryHandle(
   blink::mojom::NativeFileSystemDirectoryHandlePtr result;
   directory_bindings_.AddBinding(
       std::make_unique<NativeFileSystemDirectoryHandleImpl>(
-          this, url, std::move(file_system)),
+          this, binding_context, url, std::move(file_system)),
       mojo::MakeRequest(&result));
   return result;
 }
 
 blink::mojom::NativeFileSystemEntryPtr
 NativeFileSystemManagerImpl::CreateFileEntryFromPath(
-    const url::Origin& origin,
+    const BindingContext& binding_context,
     const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto url = CreateFileSystemURLFromPath(origin, file_path);
+  auto url = CreateFileSystemURLFromPath(binding_context.origin, file_path);
 
   return blink::mojom::NativeFileSystemEntry::New(
       blink::mojom::NativeFileSystemHandle::NewFile(
-          CreateFileHandle(url.url, std::move(url.file_system))
+          CreateFileHandle(binding_context, url.url, std::move(url.file_system))
               .PassInterface()),
       url.base_name);
 }
 
 blink::mojom::NativeFileSystemEntryPtr
 NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
-    const url::Origin& origin,
+    const BindingContext& binding_context,
     const base::FilePath& directory_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto url = CreateFileSystemURLFromPath(origin, directory_path);
+  auto url =
+      CreateFileSystemURLFromPath(binding_context.origin, directory_path);
 
   return blink::mojom::NativeFileSystemEntry::New(
       blink::mojom::NativeFileSystemHandle::NewDirectory(
-          CreateDirectoryHandle(url.url, std::move(url.file_system))
+          CreateDirectoryHandle(binding_context, url.url,
+                                std::move(url.file_system))
               .PassInterface()),
       url.base_name);
 }
@@ -181,6 +186,7 @@ NativeFileSystemManagerImpl::operation_runner() {
 }
 
 void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
+    const BindingContext& binding_context,
     GetSandboxedFileSystemCallback callback,
     const GURL& root,
     const std::string& filesystem_name,
@@ -194,12 +200,13 @@ void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
 
   std::move(callback).Run(
       NativeFileSystemError::New(base::File::FILE_OK),
-      CreateDirectoryHandle(context()->CrackURL(root), /*file_system=*/{}));
+      CreateDirectoryHandle(binding_context, context()->CrackURL(root),
+                            /*file_system=*/{}));
 }
 
 void NativeFileSystemManagerImpl::DidChooseEntries(
+    const BindingContext& binding_context,
     blink::mojom::ChooseFileSystemEntryType type,
-    const url::Origin& origin,
     ChooseEntriesCallback callback,
     blink::mojom::NativeFileSystemErrorPtr result,
     std::vector<base::FilePath> entries) {
@@ -211,9 +218,10 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
   result_entries.reserve(entries.size());
   for (const auto& entry : entries) {
     if (type == blink::mojom::ChooseFileSystemEntryType::kOpenDirectory) {
-      result_entries.push_back(CreateDirectoryEntryFromPath(origin, entry));
+      result_entries.push_back(
+          CreateDirectoryEntryFromPath(binding_context, entry));
     } else {
-      result_entries.push_back(CreateFileEntryFromPath(origin, entry));
+      result_entries.push_back(CreateFileEntryFromPath(binding_context, entry));
     }
   }
   std::move(callback).Run(std::move(result), std::move(result_entries));

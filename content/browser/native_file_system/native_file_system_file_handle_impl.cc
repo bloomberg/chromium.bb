@@ -28,14 +28,13 @@ struct NativeFileSystemFileHandleImpl::WriteState {
 
 NativeFileSystemFileHandleImpl::NativeFileSystemFileHandleImpl(
     NativeFileSystemManagerImpl* manager,
+    const BindingContext& context,
     const storage::FileSystemURL& url,
     storage::IsolatedContext::ScopedFSHandle file_system)
-    : manager_(manager), url_(url), file_system_(std::move(file_system)) {
-  DCHECK(manager_);
-  DCHECK_EQ(url_.mount_type() == storage::kFileSystemTypeIsolated,
-            file_system_.is_valid())
-      << url_.mount_type();
-}
+    : NativeFileSystemHandleBase(manager,
+                                 context,
+                                 url,
+                                 std::move(file_system)) {}
 
 NativeFileSystemFileHandleImpl::~NativeFileSystemFileHandleImpl() = default;
 
@@ -44,7 +43,7 @@ void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
   // TODO(mek): Check backend::SupportsStreaming and create snapshot file if
   // streaming is not supported.
   operation_runner()->GetMetadata(
-      url_,
+      url(),
       FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
           FileSystemOperation::GET_METADATA_FIELD_SIZE |
           FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
@@ -56,11 +55,11 @@ void NativeFileSystemFileHandleImpl::Remove(RemoveCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   operation_runner()->RemoveFile(
-      url_, base::BindOnce(
-                [](RemoveCallback callback, base::File::Error result) {
-                  std::move(callback).Run(NativeFileSystemError::New(result));
-                },
-                std::move(callback)));
+      url(), base::BindOnce(
+                 [](RemoveCallback callback, base::File::Error result) {
+                   std::move(callback).Run(NativeFileSystemError::New(result));
+                 },
+                 std::move(callback)));
 }
 
 void NativeFileSystemFileHandleImpl::Write(uint64_t offset,
@@ -90,7 +89,7 @@ void NativeFileSystemFileHandleImpl::WriteStream(
   // the file currently is.
   // TODO(https://crbug.com/957214): Fix this situation.
   operation_runner()->GetMetadata(
-      url_, FileSystemOperation::GET_METADATA_FIELD_SIZE,
+      url(), FileSystemOperation::GET_METADATA_FIELD_SIZE,
       base::BindOnce(&NativeFileSystemFileHandleImpl::DoWriteStreamWithFileInfo,
                      weak_factory_.GetWeakPtr(), std::move(callback), offset,
                      std::move(stream)));
@@ -101,7 +100,7 @@ void NativeFileSystemFileHandleImpl::Truncate(uint64_t length,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   operation_runner()->Truncate(
-      url_, length,
+      url(), length,
       base::BindOnce(
           [](TruncateCallback callback, base::File::Error result) {
             std::move(callback).Run(NativeFileSystemError::New(result));
@@ -132,7 +131,7 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
   // Use AppendFileSystemFile here, since we're streaming the file directly
   // from the file system backend, and the file thus might not actually be
   // backed by a file on disk.
-  blob_builder->AppendFileSystemFile(url_.ToGURL(), 0, -1, info.last_modified,
+  blob_builder->AppendFileSystemFile(url().ToGURL(), 0, -1, info.last_modified,
                                      file_system_context());
   std::unique_ptr<BlobDataHandle> blob_handle =
       blob_context()->AddFinishedBlob(std::move(blob_builder));
@@ -176,7 +175,7 @@ void NativeFileSystemFileHandleImpl::DoWriteBlob(
   // the file currently is.
   // TODO(https://crbug.com/957214): Fix this situation.
   operation_runner()->GetMetadata(
-      url_, FileSystemOperation::GET_METADATA_FIELD_SIZE,
+      url(), FileSystemOperation::GET_METADATA_FIELD_SIZE,
       base::BindOnce(&NativeFileSystemFileHandleImpl::DoWriteBlobWithFileInfo,
                      weak_factory_.GetWeakPtr(), std::move(callback), position,
                      std::move(blob)));
@@ -197,7 +196,7 @@ void NativeFileSystemFileHandleImpl::DoWriteBlobWithFileInfo(
   }
 
   operation_runner()->Write(
-      url_, std::move(blob), position,
+      url(), std::move(blob), position,
       base::BindRepeating(&NativeFileSystemFileHandleImpl::DidWrite,
                           weak_factory_.GetWeakPtr(),
                           base::Owned(new WriteState{std::move(callback)})));
@@ -218,7 +217,7 @@ void NativeFileSystemFileHandleImpl::DoWriteStreamWithFileInfo(
   }
 
   operation_runner()->Write(
-      url_, std::move(data_pipe), position,
+      url(), std::move(data_pipe), position,
       base::BindRepeating(&NativeFileSystemFileHandleImpl::DidWrite,
                           weak_factory_.GetWeakPtr(),
                           base::Owned(new WriteState{std::move(callback)})));
