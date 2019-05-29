@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/history/core/browser/history_service.h"
@@ -119,30 +120,6 @@ const char kValidFilenameUrl[] = "http://www.hostname.com/filename.pdf";
 @end
 
 namespace {
-
-// Observer of a QueryHistory request.
-class HistoryQueryResultsObserver
-    : public base::RefCountedThreadSafe<HistoryQueryResultsObserver> {
- public:
-  HistoryQueryResultsObserver(base::RunLoop* run_loop) : run_loop_(run_loop) {}
-
-  // Stores |results| and stops the current message loop.
-  void ProcessResults(history::QueryResults* results) {
-    results_.Swap(results);
-    run_loop_->QuitWhenIdle();
-  }
-  history::QueryResults* results() { return &results_; }
-
- protected:
-  friend base::RefCountedThreadSafe<HistoryQueryResultsObserver>;
-  virtual ~HistoryQueryResultsObserver();
-
- private:
-  history::QueryResults results_;
-  base::RunLoop* run_loop_;
-};
-
-HistoryQueryResultsObserver::~HistoryQueryResultsObserver() {}
 
 // TabTest is parameterized on this enum to test both LegacyNavigationManager
 // and WKBasedNavigationManager.
@@ -296,19 +273,17 @@ class TabTest : public BlockCleanupTest,
   }
 
   void QueryAllHistory(history::QueryResults* results) {
-    base::CancelableTaskTracker tracker;
     base::RunLoop run_loop;
-    scoped_refptr<HistoryQueryResultsObserver> observer(
-        new HistoryQueryResultsObserver(&run_loop));
-    history::HistoryService* history_service =
-        ios::HistoryServiceFactory::GetForBrowserState(
-            chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
-    history_service->QueryHistory(
-        base::string16(), history::QueryOptions(),
-        base::Bind(&HistoryQueryResultsObserver::ProcessResults, observer),
-        &tracker);
+    base::CancelableTaskTracker tracker;
+    ios::HistoryServiceFactory::GetForBrowserState(
+        chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
+        ->QueryHistory(base::string16(), history::QueryOptions(),
+                       base::BindLambdaForTesting([&](history::QueryResults r) {
+                         *results = std::move(r);
+                         run_loop.Quit();
+                       }),
+                       &tracker);
     run_loop.Run();
-    results->Swap(observer->results());
   }
 
   void CheckHistoryResult(const history::URLResult& historyResult,

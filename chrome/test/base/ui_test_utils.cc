@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -478,29 +479,23 @@ Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
 }
 
 HistoryEnumerator::HistoryEnumerator(Profile* profile) {
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
-      new content::MessageLoopRunner;
+  base::RunLoop run_loop;
+  base::CancelableTaskTracker tracker;
 
-  history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS);
-  hs->QueryHistory(base::string16(),
-                   history::QueryOptions(),
-                   base::Bind(&HistoryEnumerator::HistoryQueryComplete,
-                              base::Unretained(this),
-                              message_loop_runner->QuitClosure()),
-                   &tracker_);
-  message_loop_runner->Run();
+  HistoryServiceFactory::GetForProfile(profile,
+                                       ServiceAccessType::EXPLICIT_ACCESS)
+      ->QueryHistory(
+          base::string16(), history::QueryOptions(),
+          base::BindLambdaForTesting([&](history::QueryResults results) {
+            for (const auto& item : results)
+              urls_.push_back(item.url());
+            run_loop.Quit();
+          }),
+          &tracker);
+  run_loop.Run();
 }
 
 HistoryEnumerator::~HistoryEnumerator() {}
-
-void HistoryEnumerator::HistoryQueryComplete(
-    const base::Closure& quit_task,
-    history::QueryResults* results) {
-  for (size_t i = 0; i < results->size(); ++i)
-    urls_.push_back((*results)[i].url());
-  quit_task.Run();
-}
 
 // Wait for HistoryService to load.
 class WaitHistoryLoadedObserver : public history::HistoryServiceObserver {

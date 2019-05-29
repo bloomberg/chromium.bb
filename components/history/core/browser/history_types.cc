@@ -34,10 +34,18 @@ VisitRow::~VisitRow() {
 
 // QueryResults ----------------------------------------------------------------
 
-QueryResults::QueryResults() : reached_beginning_(false) {
-}
+QueryResults::QueryResults() {}
 
 QueryResults::~QueryResults() {}
+
+QueryResults::QueryResults(QueryResults&& other) noexcept {
+  Swap(&other);
+}
+
+QueryResults& QueryResults::operator=(QueryResults&& other) noexcept {
+  Swap(&other);
+  return *this;
+}
 
 const size_t* QueryResults::MatchesForURL(const GURL& url,
                                           size_t* num_matches) const {

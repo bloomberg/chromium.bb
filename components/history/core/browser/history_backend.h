@@ -236,9 +236,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       const base::Callback<void(HistoryBackend*, URLDatabase*)>& callback);
 
   QueryURLResult QueryURL(const GURL& url, bool want_visits);
-  void QueryHistory(const base::string16& text_query,
-                    const QueryOptions& options,
-                    QueryResults* query_results);
+  QueryResults QueryHistory(const base::string16& text_query,
+                            const QueryOptions& options);
 
   // Computes the most recent URL(s) that the given canonical URL has
   // redirected to. There may be more than one redirect in a row, so this

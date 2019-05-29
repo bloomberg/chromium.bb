@@ -180,7 +180,7 @@ class HistoryMenuBridge : public sessions::TabRestoreServiceObserver,
 
   // Callback method for when HistoryService query results are ready with the
   // most recently-visited sites.
-  void OnVisitedHistoryResults(history::QueryResults* results);
+  void OnVisitedHistoryResults(history::QueryResults results);
 
   // Creates a HistoryItem* for the given tab entry. Caller takes ownership of
   // the result and must delete it when finished.

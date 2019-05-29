@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/importer/importer_unittest_utils.h"
@@ -98,18 +99,15 @@ class ProfileWriterTest : public testing::Test {
             profile, ServiceAccessType::EXPLICIT_ACCESS);
     history::QueryOptions options;
     base::CancelableTaskTracker history_task_tracker;
+    base::RunLoop loop;
     history_service->QueryHistory(
-        base::string16(),
-        options,
-        base::Bind(&ProfileWriterTest::HistoryQueryComplete,
-                   base::Unretained(this)),
+        base::string16(), options,
+        base::BindLambdaForTesting([&](history::QueryResults results) {
+          history_count_ = results.size();
+          loop.Quit();
+        }),
         &history_task_tracker);
-    base::RunLoop().Run();
-  }
-
-  void HistoryQueryComplete(history::QueryResults* results) {
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-    history_count_ = results->size();
+    loop.Run();
   }
 
  protected:

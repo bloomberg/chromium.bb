@@ -307,20 +307,19 @@ ExtensionFunction::ResponseAction HistorySearchFunction::Run() {
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
-  hs->QueryHistory(search_text,
-                   options,
-                   base::Bind(&HistorySearchFunction::SearchComplete,
-                              base::Unretained(this)),
+  hs->QueryHistory(search_text, options,
+                   base::BindOnce(&HistorySearchFunction::SearchComplete,
+                                  base::Unretained(this)),
                    &task_tracker_);
 
   AddRef();               // Balanced in SearchComplete().
   return RespondLater();  // SearchComplete() will be called asynchronously.
 }
 
-void HistorySearchFunction::SearchComplete(history::QueryResults* results) {
+void HistorySearchFunction::SearchComplete(history::QueryResults results) {
   HistoryItemList history_item_vec;
-  if (results && !results->empty()) {
-    for (const auto& item : *results)
+  if (!results.empty()) {
+    for (const auto& item : results)
       history_item_vec.push_back(GetHistoryItem(item));
   }
   Respond(ArgumentList(Search::Results::Create(history_item_vec)));

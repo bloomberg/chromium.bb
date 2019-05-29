@@ -143,7 +143,7 @@ class HistorySearchFunction : public HistoryFunctionWithCallback {
   ResponseAction Run() override;
 
   // Callback for the history function to provide results.
-  void SearchComplete(history::QueryResults* results);
+  void SearchComplete(history::QueryResults results);
 };
 
 class HistoryAddUrlFunction : public HistoryFunction {

@@ -806,16 +806,15 @@ void HistoryService::RemoveDownloads(const std::set<uint32_t>& ids) {
 base::CancelableTaskTracker::TaskId HistoryService::QueryHistory(
     const base::string16& text_query,
     const QueryOptions& options,
-    const QueryHistoryCallback& callback,
+    QueryHistoryCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  QueryResults* query_results = new QueryResults();
-  return tracker->PostTaskAndReply(
+  return tracker->PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::QueryHistory, history_backend_,
-                     text_query, options, base::Unretained(query_results)),
-      base::BindOnce(callback, base::Owned(query_results)));
+                     text_query, options),
+      std::move(callback));
 }
 
 base::CancelableTaskTracker::TaskId HistoryService::QueryRedirectsFrom(
