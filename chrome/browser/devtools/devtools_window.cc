@@ -42,6 +42,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
@@ -795,6 +796,8 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
     DCHECK(inspected_browser);
     DCHECK(inspected_tab_index != -1);
 
+    RegisterModalDialogManager(inspected_browser);
+
     // Tell inspected browser to update splitter and switch to inspected panel.
     BrowserWindow* inspected_window = inspected_browser->window();
     main_web_contents_->SetDelegate(this);
@@ -825,6 +828,8 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
 
   if (!browser_)
     CreateDevToolsBrowser();
+
+  RegisterModalDialogManager(browser_);
 
   if (should_show_window) {
     browser_->window()->Show();
@@ -1631,4 +1636,11 @@ bool DevToolsWindow::ReloadInspectedWebContents(bool bypass_cache) {
   bindings_->CallClientFunction("DevToolsAPI.reloadInspectedPage",
                                 &bypass_cache_value, nullptr, nullptr);
   return true;
+}
+
+void DevToolsWindow::RegisterModalDialogManager(Browser* browser) {
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      main_web_contents_);
+  web_modal::WebContentsModalDialogManager::FromWebContents(main_web_contents_)
+      ->SetDelegate(browser);
 }
