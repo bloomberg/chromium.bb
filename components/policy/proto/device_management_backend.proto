@@ -1837,6 +1837,11 @@ message RemoteCommand {
   // |DEVICE_SET_VOLUME|: {"volume": volume_value}, where volume_value must be
   // an integer between 0 and 100.
   optional string payload = 4;
+
+  // An identifier for the target this command is for. This is the same as
+  // the device_id in PolicyData. We rely on this identifier not being stable
+  // across powerwashes.
+  optional string target_device_id = 5;
 }
 
 // This protobuf defines the execution result of a single remote command
@@ -1845,8 +1850,10 @@ message RemoteCommandResult {
   // If you change this, update policy.mojom/CommandResultType.
   enum ResultType {
     RESULT_IGNORED = 0;  // The command was ignored as obsolete.
-    RESULT_FAILURE = 1;  // The command could not be executed.
-    RESULT_SUCCESS = 2;  // The command was successfully executed.
+    RESULT_FAILURE = 1;  // The command could not be executed or parsed.
+    RESULT_SUCCESS = 2;  // The command was successfully executed. Commands
+                         // such as powerwash will return success before they
+                         // are executed since state will be forgotten.
   }
 
   // The result of the command.
@@ -1874,11 +1881,26 @@ message DeviceRemoteCommandRequest {
   // The execution results of previously fetched commands.
   // The client should send back a command result whenever possible.
   repeated RemoteCommandResult command_results = 2;
+
+  // Whether the server should send secure commands or not.
+  optional bool send_secure_commands = 3;
 }
 
 message DeviceRemoteCommandResponse {
-  // The queue of pending commands.
+  // The queue of pending, non secure commands. If this is present
+  // then there shall be no secure commands in this response (and
+  // vice versa).
   repeated RemoteCommand commands = 1;
+
+  // The queue of pending, secure commands. If this is present
+  // then there shall be no non secure commands in this response
+  // (and vice versa).
+  //
+  // The secure_commands.data field contains a serialized
+  // RemoteCommand. The  ecure_commands.signature field is a
+  // signature of the data field with the policy key for the
+  // domain the device belongs to.
+  repeated SignedData secure_commands = 2;
 }
 
 // Sent by the client to the server to check if the current user is allowed
