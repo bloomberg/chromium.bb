@@ -602,7 +602,9 @@ TEST_F(TabMetricsTest, ReplaceForegroundTab) {
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[1], kBasicMetricValues);
+    // Replaced tab uses the orig source_id; so the metrics is logged to
+    // kTestUrls[0].
+    ExpectNewEntry(kTestUrls[0], kBasicMetricValues);
   }
 
   tab_strip_model->CloseAllTabs();

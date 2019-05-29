@@ -381,6 +381,11 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, TabDrag) {
 // Tests discarded tab is recorded correctly.
 IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
                        DiscardedTabGetsPreviousSourceId) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kTabRanker,
+      {{"number_of_oldest_tabs_to_log_with_TabRanker", "1"}});
+
   ukm::SourceId ukm_source_id_for_tab_0 = 0;
   ukm::SourceId ukm_source_id_for_tab_1 = 0;
 
@@ -407,6 +412,29 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
       ->GetTabLifecycleUnitExternal(first_contents)
       ->DiscardTab();
 
+  // Call LogOldestNTabFeatures should log the oldest tab which is tab@0.
+  TabActivityWatcher::GetInstance()->LogOldestNTabFeatures();
+  {
+    SCOPED_TRACE("");
+    // tab feature of tab@0 should be logged correctly.
+    UkmMetricMap expected_tab_feature_values = kBasicMetricValues;
+    expected_tab_feature_values[TabManager_TabMetrics::kMRUIndexName] = 1;
+    expected_tab_feature_values
+        [TabManager_TabMetrics::kNumReactivationBeforeName] = 0;
+    expected_tab_feature_values[TabManager_TabMetrics::kTotalTabCountName] = 2;
+    expected_tab_feature_values[TabManager_TabMetrics::kWindowTabCountName] = 2;
+    expected_tab_feature_values[TabManager_TabMetrics::kLabelIdName] = 2;
+    expected_tab_feature_values[TabManager_TabMetrics::kQueryIdName] = 1;
+    expected_tab_feature_values
+        [TabManager_TabMetrics::kNavigationEntryCountName] = 2;
+
+    ukm_entry_checker_->ExpectNewEntry(kEntryName, test_urls_[0],
+                                       expected_tab_feature_values);
+    ExpectNewEntryWithSourceId(test_urls_[0], kEntryName, 2,
+                               expected_tab_feature_values,
+                               ukm_source_id_for_tab_0);
+  }
+
   // Switching to first tab logs a forgrounded event for test_urls_[0]
   // and a backgrounded event for test_urls_[1].
   browser()->tab_strip_model()->ActivateTabAt(
@@ -417,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
                                        kBasicMetricValues);
 
     ukm_source_id_for_tab_1 = ExpectNewEntryWithSourceId(
-        test_urls_[1], kEntryName, 2, kBasicMetricValues);
+        test_urls_[1], kEntryName, 3, kBasicMetricValues);
 
     ExpectNewEntryWithSourceId(
         test_urls_[0], kFOCEntryName, 1,

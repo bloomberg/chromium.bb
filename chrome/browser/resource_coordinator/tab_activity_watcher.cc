@@ -103,8 +103,8 @@ class TabActivityWatcher::WebContentsData
     // Copy the replaced tab's stats.
     page_metrics_ = replaced_tab.page_metrics_;
 
-    // Record previous ukm_source_id from the |replaced_tab|.
-    previous_ukm_source_id_ = replaced_tab.ukm_source_id_;
+    // Recover the ukm_source_id from the |replaced_tab|.
+    ukm_source_id_ = replaced_tab.ukm_source_id_;
 
     // Copy the replaced label_id_.
     label_id_ = replaced_tab.label_id_;
@@ -426,11 +426,8 @@ class TabActivityWatcher::WebContentsData
     metrics.total_tab_count = mru.total;
     metrics.label_id = label_id_;
 
-    const ukm::SourceId source_id = discarded_since_backgrounded_
-                                        ? previous_ukm_source_id_
-                                        : ukm_source_id_;
     TabActivityWatcher::GetInstance()
-        ->tab_metrics_logger_->LogForegroundedOrClosedMetrics(source_id,
+        ->tab_metrics_logger_->LogForegroundedOrClosedMetrics(ukm_source_id_,
                                                               metrics);
     // label_id_ is reset whenever a label is logged.
     // A new label_id_ is generated when a query happens inside
@@ -444,9 +441,6 @@ class TabActivityWatcher::WebContentsData
 
   // Updated when a navigation is finished.
   ukm::SourceId ukm_source_id_ = 0;
-
-  // Recorded when a WebContents is replaced by another.
-  ukm::SourceId previous_ukm_source_id_ = 0;
 
   // When the tab was created.
   base::TimeTicks creation_time_;
