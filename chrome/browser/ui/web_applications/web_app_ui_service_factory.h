@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_DELEGATE_IMPL_FACTORY_H_
-#define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_DELEGATE_IMPL_FACTORY_H_
+#ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_SERVICE_FACTORY_H_
+#define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_SERVICE_FACTORY_H_
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -17,21 +17,21 @@ class Profile;
 
 namespace web_app {
 
-class WebAppUiDelegateImpl;
+class WebAppUiService;
 
-// Singleton that owns all WebAppUiDelegateImplFactories and associated them
+// Singleton that owns all WebAppUiServices and associates them
 // with Profile.
-class WebAppUiDelegateImplFactory : public BrowserContextKeyedServiceFactory {
+class WebAppUiServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static WebAppUiDelegateImpl* GetForProfile(Profile* profile);
+  static WebAppUiService* GetForProfile(Profile* profile);
 
-  static WebAppUiDelegateImplFactory* GetInstance();
+  static WebAppUiServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<WebAppUiDelegateImplFactory>;
+  friend struct base::DefaultSingletonTraits<WebAppUiServiceFactory>;
 
-  WebAppUiDelegateImplFactory();
-  ~WebAppUiDelegateImplFactory() override;
+  WebAppUiServiceFactory();
+  ~WebAppUiServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory
   KeyedService* BuildServiceInstanceFor(
@@ -40,9 +40,9 @@ class WebAppUiDelegateImplFactory : public BrowserContextKeyedServiceFactory {
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppUiDelegateImplFactory);
+  DISALLOW_COPY_AND_ASSIGN(WebAppUiServiceFactory);
 };
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_DELEGATE_IMPL_FACTORY_H_
+#endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_SERVICE_FACTORY_H_

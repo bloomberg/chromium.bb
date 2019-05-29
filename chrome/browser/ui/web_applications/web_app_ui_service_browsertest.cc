@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/web_applications/web_app_ui_delegate_impl.h"
+#include "chrome/browser/ui/web_applications/web_app_ui_service.h"
 
 #include "base/barrier_closure.h"
 #include "base/test/bind_test_util.h"
@@ -62,7 +62,7 @@ void CloseAndWait(Browser* browser) {
 const GURL kFooUrl = GURL("https://foo.example");
 const GURL kBarUrl = GURL("https://bar.example");
 
-class WebAppUiDelegateImplBrowserTest : public InProcessBrowserTest {
+class WebAppUiServiceBrowserTest : public InProcessBrowserTest {
  protected:
   Profile* profile() { return browser()->profile(); }
 
@@ -78,28 +78,28 @@ class WebAppUiDelegateImplBrowserTest : public InProcessBrowserTest {
     return extensions::browsertest_util::LaunchAppBrowser(profile(), app);
   }
 
-  WebAppUiDelegateImpl* ui_delegate() {
-    return WebAppUiDelegateImpl::Get(profile());
-  }
+  WebAppUiService* ui_service() { return WebAppUiService::Get(profile()); }
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppUiServiceBrowserTest,
                        GetNumWindowsForApp_AppWindowsAdded) {
   // Should not crash.
-  auto& delegate = WebAppProvider::Get(browser()->profile())->ui_delegate();
-  auto* delegate_impl = WebAppUiDelegateImpl::Get(browser()->profile());
-  EXPECT_EQ(&delegate, delegate_impl);
+  auto& ui_delegate = WebAppProvider::Get(browser()->profile())->ui_delegate();
+  auto* ui_service = WebAppUiService::Get(browser()->profile());
+  EXPECT_EQ(&ui_delegate, ui_service);
 
   // Zero apps on start:
-  EXPECT_EQ(0u, delegate.GetNumWindowsForApp(AppId()));
+  EXPECT_EQ(0u, ui_service->GetNumWindowsForApp(AppId()));
 
   const auto* foo_app = InstallWebApp(kFooUrl);
   LaunchApp(foo_app);
+  EXPECT_EQ(1u, ui_service->GetNumWindowsForApp(foo_app->id()));
 
-  EXPECT_EQ(1u, delegate.GetNumWindowsForApp(foo_app->id()));
+  LaunchApp(foo_app);
+  EXPECT_EQ(2u, ui_service->GetNumWindowsForApp(foo_app->id()));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppUiServiceBrowserTest,
                        GetNumWindowsForApp_AppWindowsRemoved) {
   const auto* foo_app = InstallWebApp(kFooUrl);
   auto* foo_window1 = LaunchApp(foo_app);
@@ -108,21 +108,21 @@ IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
   const auto* bar_app = InstallWebApp(kBarUrl);
   LaunchApp(bar_app);
 
-  EXPECT_EQ(2u, ui_delegate()->GetNumWindowsForApp(foo_app->id()));
-  EXPECT_EQ(1u, ui_delegate()->GetNumWindowsForApp(bar_app->id()));
+  EXPECT_EQ(2u, ui_service()->GetNumWindowsForApp(foo_app->id()));
+  EXPECT_EQ(1u, ui_service()->GetNumWindowsForApp(bar_app->id()));
 
   CloseAndWait(foo_window1);
 
-  EXPECT_EQ(1u, ui_delegate()->GetNumWindowsForApp(foo_app->id()));
-  EXPECT_EQ(1u, ui_delegate()->GetNumWindowsForApp(bar_app->id()));
+  EXPECT_EQ(1u, ui_service()->GetNumWindowsForApp(foo_app->id()));
+  EXPECT_EQ(1u, ui_service()->GetNumWindowsForApp(bar_app->id()));
 
   CloseAndWait(foo_window2);
 
-  EXPECT_EQ(0u, ui_delegate()->GetNumWindowsForApp(foo_app->id()));
-  EXPECT_EQ(1u, ui_delegate()->GetNumWindowsForApp(bar_app->id()));
+  EXPECT_EQ(0u, ui_service()->GetNumWindowsForApp(foo_app->id()));
+  EXPECT_EQ(1u, ui_service()->GetNumWindowsForApp(bar_app->id()));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppUiServiceBrowserTest,
                        NotifyOnAllAppWindowsClosed_NoOpenedWindows) {
   const auto* foo_app = InstallWebApp(kFooUrl);
   const auto* bar_app = InstallWebApp(kBarUrl);
@@ -130,14 +130,14 @@ IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
 
   base::RunLoop run_loop;
   // Should return early; no windows for |foo_app|.
-  ui_delegate()->NotifyOnAllAppWindowsClosed(foo_app->id(),
-                                             run_loop.QuitClosure());
+  ui_service()->NotifyOnAllAppWindowsClosed(foo_app->id(),
+                                            run_loop.QuitClosure());
   run_loop.Run();
 }
 
 // Tests that the callback is correctly called when there is more than one
 // app window.
-IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppUiServiceBrowserTest,
                        NotifyOnAllAppWindowsClosed_MultipleOpenedWindows) {
   const auto* foo_app = InstallWebApp(kFooUrl);
   const auto* bar_app = InstallWebApp(kBarUrl);
@@ -151,11 +151,11 @@ IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
 
     bool callback_ran = false;
     base::RunLoop run_loop;
-    ui_delegate()->NotifyOnAllAppWindowsClosed(
-        foo_app->id(), base::BindLambdaForTesting([&]() {
-          callback_ran = true;
-          run_loop.Quit();
-        }));
+    ui_service()->NotifyOnAllAppWindowsClosed(foo_app->id(),
+                                              base::BindLambdaForTesting([&]() {
+                                                callback_ran = true;
+                                                run_loop.Quit();
+                                              }));
 
     CloseAndWait(foo_window1);
     // The callback shouldn't have run yet because there is still one window
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
 
 // Tests that callbacks are correctly called when there is more than one
 // request.
-IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppUiServiceBrowserTest,
                        NotifyOnAllAppWindowsClosed_MultipleRequests) {
   const auto* foo_app = InstallWebApp(kFooUrl);
   const auto* bar_app = InstallWebApp(kBarUrl);
@@ -187,16 +187,16 @@ IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
 
   base::RunLoop run_loop;
   auto barrier_closure = base::BarrierClosure(2, run_loop.QuitClosure());
-  ui_delegate()->NotifyOnAllAppWindowsClosed(foo_app->id(),
-                                             base::BindLambdaForTesting([&]() {
-                                               callback_ran1 = true;
-                                               barrier_closure.Run();
-                                             }));
-  ui_delegate()->NotifyOnAllAppWindowsClosed(foo_app->id(),
-                                             base::BindLambdaForTesting([&]() {
-                                               callback_ran2 = true;
-                                               barrier_closure.Run();
-                                             }));
+  ui_service()->NotifyOnAllAppWindowsClosed(foo_app->id(),
+                                            base::BindLambdaForTesting([&]() {
+                                              callback_ran1 = true;
+                                              barrier_closure.Run();
+                                            }));
+  ui_service()->NotifyOnAllAppWindowsClosed(foo_app->id(),
+                                            base::BindLambdaForTesting([&]() {
+                                              callback_ran2 = true;
+                                              barrier_closure.Run();
+                                            }));
 
   CloseAndWait(foo_window1);
   // The callback shouldn't have run yet because there is still one window

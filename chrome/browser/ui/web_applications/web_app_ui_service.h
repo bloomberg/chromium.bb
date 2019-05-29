@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_DELEGATE_IMPL_H_
-#define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_DELEGATE_IMPL_H_
+#ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_SERVICE_H_
+#define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_SERVICE_H_
 
 #include <map>
 #include <vector>
@@ -20,14 +20,16 @@ class Browser;
 
 namespace web_app {
 
-class WebAppUiDelegateImpl : public KeyedService,
-                             public BrowserListObserver,
-                             public WebAppUiDelegate {
+// This KeyedService is a UI counterpart for WebAppProvider.
+// It tracks the open windows for each web app.
+class WebAppUiService : public KeyedService,
+                        public BrowserListObserver,
+                        public WebAppUiDelegate {
  public:
-  static WebAppUiDelegateImpl* Get(Profile* profile);
+  static WebAppUiService* Get(Profile* profile);
 
-  explicit WebAppUiDelegateImpl(Profile* profile);
-  ~WebAppUiDelegateImpl() override;
+  explicit WebAppUiService(Profile* profile);
+  ~WebAppUiService() override;
 
   // KeyedService
   void Shutdown() override;
@@ -49,9 +51,9 @@ class WebAppUiDelegateImpl : public KeyedService,
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;
   std::map<AppId, size_t> num_windows_for_apps_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppUiDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebAppUiService);
 };
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_DELEGATE_IMPL_H_
+#endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_SERVICE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/web_applications/web_app_ui_delegate_impl.h"
+#include "chrome/browser/ui/web_applications/web_app_ui_service.h"
 
 #include <utility>
 
@@ -10,18 +10,17 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/ui/web_applications/web_app_ui_delegate_impl_factory.h"
+#include "chrome/browser/ui/web_applications/web_app_ui_service_factory.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 
 namespace web_app {
 
 // static
-WebAppUiDelegateImpl* WebAppUiDelegateImpl::Get(Profile* profile) {
-  return WebAppUiDelegateImplFactory::GetForProfile(profile);
+WebAppUiService* WebAppUiService::Get(Profile* profile) {
+  return WebAppUiServiceFactory::GetForProfile(profile);
 }
 
-WebAppUiDelegateImpl::WebAppUiDelegateImpl(Profile* profile)
-    : profile_(profile) {
+WebAppUiService::WebAppUiService(Profile* profile) : profile_(profile) {
   for (Browser* browser : *BrowserList::GetInstance()) {
     base::Optional<AppId> app_id = GetAppIdForBrowser(browser);
     if (!app_id.has_value())
@@ -34,14 +33,14 @@ WebAppUiDelegateImpl::WebAppUiDelegateImpl(Profile* profile)
   WebAppProvider::Get(profile_)->set_ui_delegate(this);
 }
 
-WebAppUiDelegateImpl::~WebAppUiDelegateImpl() = default;
+WebAppUiService::~WebAppUiService() = default;
 
-void WebAppUiDelegateImpl::Shutdown() {
+void WebAppUiService::Shutdown() {
   WebAppProvider::Get(profile_)->set_ui_delegate(nullptr);
   BrowserList::RemoveObserver(this);
 }
 
-size_t WebAppUiDelegateImpl::GetNumWindowsForApp(const AppId& app_id) {
+size_t WebAppUiService::GetNumWindowsForApp(const AppId& app_id) {
   auto it = num_windows_for_apps_map_.find(app_id);
   if (it == num_windows_for_apps_map_.end())
     return 0;
@@ -49,9 +48,8 @@ size_t WebAppUiDelegateImpl::GetNumWindowsForApp(const AppId& app_id) {
   return it->second;
 }
 
-void WebAppUiDelegateImpl::NotifyOnAllAppWindowsClosed(
-    const AppId& app_id,
-    base::OnceClosure callback) {
+void WebAppUiService::NotifyOnAllAppWindowsClosed(const AppId& app_id,
+                                                  base::OnceClosure callback) {
   const size_t num_windows_for_app = GetNumWindowsForApp(app_id);
   if (num_windows_for_app == 0) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
@@ -62,7 +60,7 @@ void WebAppUiDelegateImpl::NotifyOnAllAppWindowsClosed(
   windows_closed_requests_map_[app_id].push_back(std::move(callback));
 }
 
-void WebAppUiDelegateImpl::OnBrowserAdded(Browser* browser) {
+void WebAppUiService::OnBrowserAdded(Browser* browser) {
   base::Optional<AppId> app_id = GetAppIdForBrowser(browser);
   if (!app_id.has_value())
     return;
@@ -70,7 +68,7 @@ void WebAppUiDelegateImpl::OnBrowserAdded(Browser* browser) {
   ++num_windows_for_apps_map_[app_id.value()];
 }
 
-void WebAppUiDelegateImpl::OnBrowserRemoved(Browser* browser) {
+void WebAppUiService::OnBrowserRemoved(Browser* browser) {
   base::Optional<AppId> app_id_opt = GetAppIdForBrowser(browser);
   if (!app_id_opt.has_value())
     return;
@@ -94,8 +92,7 @@ void WebAppUiDelegateImpl::OnBrowserRemoved(Browser* browser) {
   windows_closed_requests_map_.erase(app_id);
 }
 
-base::Optional<AppId> WebAppUiDelegateImpl::GetAppIdForBrowser(
-    Browser* browser) {
+base::Optional<AppId> WebAppUiService::GetAppIdForBrowser(Browser* browser) {
   if (browser->profile() != profile_)
     return base::nullopt;
 

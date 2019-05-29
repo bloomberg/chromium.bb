@@ -1103,7 +1103,7 @@ if (!is_android) {
       "../browser/ui/views/webauthn/authenticator_dialog_view_browsertest.cc",
       "../browser/ui/views/webview_accessibility_browsertest.cc",
       "../browser/ui/web_applications/bookmark_app_browsertest.cc",
-      "../browser/ui/web_applications/web_app_ui_delegate_impl_browsertest.cc",
+      "../browser/ui/web_applications/web_app_ui_service_browsertest.cc",
       "../browser/ui/webauthn/authenticator_dialog_browsertest.cc",
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.cc",
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.h",
