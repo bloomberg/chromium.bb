@@ -33,6 +33,8 @@
 
 #include <algorithm>
 #include "base/metrics/histogram_macros.h"
+#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
@@ -74,18 +76,6 @@ const SecurityOrigin* GetSecurityOrigin(ExecutionContext* context) {
   if (context)
     return context->GetSecurityOrigin();
   return nullptr;
-}
-
-// When a Performance object is first created, use the current system time
-// to calculate what the Unix time would be at the time the monotonic clock time
-// was zero, assuming no manual changes to the system clock. This can be
-// calculated as current_unix_time - current_monotonic_time.
-DOMHighResTimeStamp GetUnixAtZeroMonotonic() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      DOMHighResTimeStamp, unix_at_zero_monotonic,
-      {ConvertSecondsToDOMHighResTimeStamp(CurrentTime() -
-                                           CurrentTimeTicksInSeconds())});
-  return unix_at_zero_monotonic;
 }
 
 Performance::MeasureParameterType StringToNavigationTimingParameterType(
@@ -159,6 +149,13 @@ void LogMeasureEndToUma(Performance::MeasureParameterType type) {
   UMA_HISTOGRAM_ENUMERATION("Performance.MeasureParameter.EndMark", type);
 }
 
+const Performance::UnifiedClock* DefaultUnifiedClock() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Performance::UnifiedClock, unified_clock,
+                                  (base::DefaultClock::GetInstance(),
+                                   base::DefaultTickClock::GetInstance()));
+  return &unified_clock;
+}
+
 }  // namespace
 
 using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
@@ -176,6 +173,7 @@ Performance::Performance(
       element_timing_buffer_max_size_(kDefaultElementTimingBufferSize),
       user_timing_(nullptr),
       time_origin_(time_origin),
+      unified_clock_(DefaultUnifiedClock()),
       observer_filter_options_(PerformanceEntry::kInvalid),
       task_runner_(std::move(task_runner)),
       deliver_observations_timer_(task_runner_,
@@ -206,7 +204,7 @@ MemoryInfo* Performance::memory() const {
 
 DOMHighResTimeStamp Performance::timeOrigin() const {
   DCHECK(!time_origin_.is_null());
-  return GetUnixAtZeroMonotonic() +
+  return unified_clock_->GetUnixAtZeroMonotonic() +
          ConvertTimeTicksToDOMHighResTimeStamp(time_origin_);
 }
 
@@ -1021,7 +1019,7 @@ DOMHighResTimeStamp Performance::MonotonicTimeToDOMHighResTimeStamp(
 }
 
 DOMHighResTimeStamp Performance::now() const {
-  return MonotonicTimeToDOMHighResTimeStamp(CurrentTimeTicks());
+  return MonotonicTimeToDOMHighResTimeStamp(unified_clock_->NowTicks());
 }
 
 ScriptValue Performance::toJSONForBinding(ScriptState* script_state) const {
@@ -1050,6 +1048,31 @@ void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(active_observers_);
   visitor->Trace(suspended_observers_);
   EventTargetWithInlineData::Trace(visitor);
+}
+
+DOMHighResTimeStamp Performance::UnifiedClock::GetUnixAtZeroMonotonic() const {
+  // When a Performance object is first queried, use the current system time
+  // to calculate what the Unix time would be at the time the monotonic
+  // clock time was zero, assuming no manual changes to the system clock.
+  // This can be calculated as current_unix_time - current_monotonic_time.
+  if (UNLIKELY(!unix_at_zero_monotonic_)) {
+    unix_at_zero_monotonic_ = ConvertSecondsToDOMHighResTimeStamp(
+        clock_->Now().ToDoubleT() -
+        tick_clock_->NowTicks().since_origin().InSecondsF());
+  }
+  return unix_at_zero_monotonic_.value();
+}
+
+TimeTicks Performance::UnifiedClock::NowTicks() const {
+  return tick_clock_->NowTicks();
+}
+
+void Performance::SetClocksForTesting(const UnifiedClock* clock) {
+  unified_clock_ = clock;
+}
+
+void Performance::ResetTimeOriginForTesting(base::TimeTicks time_origin) {
+  time_origin_ = time_origin;
 }
 
 }  // namespace blink

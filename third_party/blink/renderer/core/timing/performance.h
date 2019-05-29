@@ -51,6 +51,11 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+namespace base {
+class Clock;
+class TickClock;
+}  // namespace base
+
 namespace blink {
 
 class PerformanceMarkOptions;
@@ -278,6 +283,23 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   void Trace(blink::Visitor*) override;
 
+  class UnifiedClock {
+   public:
+    UnifiedClock(const base::Clock* clock, const base::TickClock* tick_clock)
+        : clock_(clock), tick_clock_(tick_clock) {}
+    DOMHighResTimeStamp GetUnixAtZeroMonotonic() const;
+    TimeTicks NowTicks() const;
+
+   private:
+    const base::Clock* clock_;
+    const base::TickClock* tick_clock_;
+    mutable base::Optional<DOMHighResTimeStamp> unix_at_zero_monotonic_;
+  };
+
+  // The caller owns the |clock|.
+  void SetClocksForTesting(const UnifiedClock* clock);
+  void ResetTimeOriginForTesting(base::TimeTicks time_origin);
+
  private:
   void AddPaintTiming(PerformancePaintTiming::PaintType, TimeTicks start_time);
 
@@ -339,6 +361,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   Member<PerformanceEventTiming> first_input_timing_;
 
   TimeTicks time_origin_;
+  const UnifiedClock* unified_clock_;
 
   PerformanceEntryTypeMask observer_filter_options_;
   HeapLinkedHashSet<Member<PerformanceObserver>> observers_;
