@@ -117,6 +117,7 @@ uint32_t FindMemoryTypeIndex(SharedContextState* context_state,
 
 }  // namespace
 
+// static
 std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     SharedContextState* context_state,
     VulkanCommandPool* command_pool,
@@ -430,6 +431,11 @@ bool ExternalVkImageBacking::ProduceLegacyMailbox(
 std::unique_ptr<SharedImageRepresentationGLTexture>
 ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
                                          MemoryTypeTracker* tracker) {
+  if (!(usage() & SHARED_IMAGE_USAGE_GLES2)) {
+    DLOG(ERROR) << "The backing is not created with GLES2 usage.";
+    return nullptr;
+  }
+
 #if defined(OS_FUCHSIA)
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
@@ -628,35 +634,51 @@ bool ExternalVkImageBacking::WritePixels(
     return false;
   }
 
-  auto* vulkan_implementation =
-      context_state_->vk_context_provider()->GetVulkanImplementation();
+  if (!need_sychronization()) {
+    DCHECK(handles.empty());
+    command_buffer->Submit(0, nullptr, 0, nullptr);
+    EndAccessInternal(false /* readonly */, SemaphoreHandle());
+
+    auto* fence_helper = context_state_->vk_context_provider()
+                             ->GetDeviceQueue()
+                             ->GetFenceHelper();
+    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
+        std::move(command_buffer));
+    fence_helper->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
+                                                       stage_memory);
+
+    return true;
+  }
+
   std::vector<VkSemaphore> begin_access_semaphores;
   begin_access_semaphores.reserve(handles.size() + 1);
   for (auto& handle : handles) {
-    VkSemaphore semaphore = vulkan_implementation->ImportSemaphoreHandle(
+    VkSemaphore semaphore = vulkan_implementation()->ImportSemaphoreHandle(
         device(), std::move(handle));
     begin_access_semaphores.emplace_back(semaphore);
   }
 
   VkSemaphore end_access_semaphore =
-      vulkan_implementation->CreateExternalSemaphore(device());
+      vulkan_implementation()->CreateExternalSemaphore(device());
   command_buffer->Submit(begin_access_semaphores.size(),
                          begin_access_semaphores.data(), 1,
                          &end_access_semaphore);
-  gpu::SemaphoreHandle end_access_semphore_handle =
-      vulkan_implementation->GetSemaphoreHandle(device(), end_access_semaphore);
+
+  auto end_access_semphore_handle = vulkan_implementation()->GetSemaphoreHandle(
+      device(), end_access_semaphore);
   EndAccessInternal(false /* readonly */,
                     std::move(end_access_semphore_handle));
 
   auto* fence_helper =
       context_state_->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
-  begin_access_semaphores.emplace_back(end_access_semaphore);
-  fence_helper->EnqueueSemaphoresCleanupForSubmittedWork(
-      std::move(begin_access_semaphores));
   fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
       std::move(command_buffer));
+  begin_access_semaphores.emplace_back(end_access_semaphore);
+  fence_helper->EnqueueSemaphoresCleanupForSubmittedWork(
+      begin_access_semaphores);
   fence_helper->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
                                                      stage_memory);
+
   return true;
 }
 
@@ -708,18 +730,25 @@ bool ExternalVkImageBacking::BeginAccessInternal(
 void ExternalVkImageBacking::EndAccessInternal(
     bool readonly,
     SemaphoreHandle semaphore_handle) {
-  DCHECK(semaphore_handle.is_valid());
-
   if (readonly) {
     DCHECK_GT(reads_in_progress_, 0u);
     --reads_in_progress_;
-    read_semaphore_handles_.push_back(std::move(semaphore_handle));
   } else {
     DCHECK(is_write_in_progress_);
-    DCHECK(!write_semaphore_handle_.is_valid());
-    DCHECK(read_semaphore_handles_.empty());
     is_write_in_progress_ = false;
-    write_semaphore_handle_ = std::move(semaphore_handle);
+  }
+
+  if (need_sychronization()) {
+    DCHECK(semaphore_handle.is_valid());
+    if (readonly) {
+      read_semaphore_handles_.push_back(std::move(semaphore_handle));
+    } else {
+      DCHECK(!write_semaphore_handle_.is_valid());
+      DCHECK(read_semaphore_handles_.empty());
+      write_semaphore_handle_ = std::move(semaphore_handle);
+    }
+  } else {
+    DCHECK(!semaphore_handle.is_valid());
   }
 }
 

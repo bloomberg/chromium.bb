@@ -106,12 +106,14 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
     begin_semaphores->back().initVulkan(semaphore);
   }
 
-  // Create an |end_access_semaphore_| which will be signalled by the caller.
-  end_access_semaphore_ =
-      vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
-  DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
-  end_semaphores->emplace_back();
-  end_semaphores->back().initVulkan(end_access_semaphore_);
+  if (backing_impl()->need_sychronization()) {
+    // Create an |end_access_semaphore_| which will be signalled by the caller.
+    end_access_semaphore_ =
+        vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
+    DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
+    end_semaphores->emplace_back();
+    end_semaphores->back().initVulkan(end_access_semaphore_);
+  }
 
   // Create backend texture from the VkImage.
   GrVkAlloc alloc(backing_impl()->memory(), 0 /* offset */,
@@ -127,16 +129,22 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
 
 void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
   DCHECK_NE(access_mode_, kNone);
-  DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
 
-  auto handle = vk_implementation()->GetSemaphoreHandle(vk_device(),
-                                                        end_access_semaphore_);
-  DCHECK(handle.is_valid());
+  SemaphoreHandle handle;
+  if (backing_impl()->need_sychronization()) {
+    DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
 
-  // We're done with the semaphore, enqueue deferred cleanup.
-  fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
-      end_access_semaphore_);
-  end_access_semaphore_ = VK_NULL_HANDLE;
+    handle = vk_implementation()->GetSemaphoreHandle(vk_device(),
+                                                     end_access_semaphore_);
+    DCHECK(handle.is_valid());
+
+    // We're done with the semaphore, enqueue deferred cleanup.
+    fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
+        end_access_semaphore_);
+    end_access_semaphore_ = VK_NULL_HANDLE;
+  } else {
+    DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
+  }
 
   backing_impl()->EndAccess(readonly, std::move(handle));
 }

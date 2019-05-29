@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -47,15 +48,22 @@ class ExternalVkImageBacking : public SharedImageBacking {
 
   ~ExternalVkImageBacking() override;
 
-  VkImage image() { return image_; }
-  VkDeviceMemory memory() { return memory_; }
-  size_t memory_size() { return memory_size_; }
-  VkFormat vk_format() { return vk_format_; }
-  SharedContextState* context_state() { return context_state_; }
-  VkDevice device() {
-    return context_state_->vk_context_provider()
+  VkImage image() const { return image_; }
+  VkDeviceMemory memory() const { return memory_; }
+  size_t memory_size() const { return memory_size_; }
+  VkFormat vk_format() const { return vk_format_; }
+  SharedContextState* context_state() const { return context_state_; }
+  VulkanImplementation* vulkan_implementation() const {
+    return context_state()->vk_context_provider()->GetVulkanImplementation();
+  }
+  VkDevice device() const {
+    return context_state()
+        ->vk_context_provider()
         ->GetDeviceQueue()
         ->GetVulkanDevice();
+  }
+  bool need_sychronization() const {
+    return usage() & SHARED_IMAGE_USAGE_GLES2;
   }
 
   // Notifies the backing that an access will start. Return false if there is
