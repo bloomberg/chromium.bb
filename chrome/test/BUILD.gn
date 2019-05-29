@@ -1848,8 +1848,6 @@ if (!is_android) {
         "../browser/chromeos/file_manager/gallery_browsertest.cc",
         "../browser/chromeos/file_manager/gallery_jstest.cc",
         "../browser/chromeos/file_manager/image_loader_jstest.cc",
-        "../browser/chromeos/file_manager/mount_test_util.cc",
-        "../browser/chromeos/file_manager/mount_test_util.h",
         "../browser/chromeos/file_manager/video_player_browsertest.cc",
         "../browser/chromeos/file_manager/video_player_jstest.cc",
         "../browser/chromeos/first_run/chromeos_first_run_browsertest.cc",
