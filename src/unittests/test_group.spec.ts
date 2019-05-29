@@ -6,8 +6,6 @@ Unit tests for parameterization system.
 import {
   DefaultFixture,
   Fixture,
-  FixtureCreate,
-  makeDefaultFixtureCreate,
   TestGroup,
 } from '../framework/index.js';
 
@@ -30,8 +28,6 @@ group.test('default_fixture', DefaultFixture, (t0) => {
 
 group.test('custom_fixture', DefaultFixture, (t0) => {
   class Printer extends DefaultFixture {
-    public static create: FixtureCreate<Printer> = makeDefaultFixtureCreate(Printer);
-
     public print() {
       this.log(JSON.stringify(this.params));
     }

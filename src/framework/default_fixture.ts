@@ -1,21 +1,6 @@
-import { CaseRecorder } from './logger.js';
-import { IParamsAny } from './params/index.js';
-import { Fixture, FixtureCreate } from './test_group.js';
-
-export function makeDefaultFixtureCreate
-    <FC extends typeof DefaultFixture, F extends DefaultFixture>(fixture: FC): FixtureCreate<F> {
-  return async (log: CaseRecorder, params: IParamsAny) => {
-    return new fixture(log, params) as F;
-  };
-}
+import { Fixture } from './test_group.js';
 
 export class DefaultFixture extends Fixture {
-  public static create = makeDefaultFixtureCreate(DefaultFixture);
-
-  public constructor(log: CaseRecorder, params: IParamsAny) {
-    super(log, params);
-  }
-
   public warn(msg?: string) {
     this.rec.warn(msg);
   }

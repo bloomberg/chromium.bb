@@ -2,9 +2,8 @@ export const description = `
 Unit tests for parameterization system.
 `;
 
-import { DefaultFixture, makeDefaultFixtureCreate } from '../framework/default_fixture.js';
+import { DefaultFixture } from '../framework/default_fixture.js';
 import {
-  FixtureCreate,
   IParamsSpec,
   objectEquals,
   ParamSpecIterable,
@@ -18,8 +17,6 @@ import {
 export const group = new TestGroup();
 
 class ParamsTest extends DefaultFixture {
-  public static create: FixtureCreate<ParamsTest> = makeDefaultFixtureCreate(ParamsTest);
-
   public test(act: ParamSpecIterable, exp: IParamsSpec[]) {
     this.expect(objectEquals(Array.from(act), exp));
   }

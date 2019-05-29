@@ -1,36 +1,21 @@
 import * as Shaderc from '@webgpu/shaderc';
 import { getGPU } from '../framework/gpu/implementation.js';
-import { CaseRecorder, Fixture, FixtureCreate, IParamsAny } from '../framework/index.js';
-
-interface IGPUTestOpts {
-  device: GPUDevice;
-  shaderc: Shaderc.Shaderc;
-}
+import { Fixture } from '../framework/index.js';
 
 const shaderc: Promise<Shaderc.Shaderc> = Shaderc.instantiate();
 
-export function makeGPUTestCreate<
-    FC extends typeof GPUTest, F extends GPUTest>(fixture: FC): FixtureCreate<F> {
-  return async (log: CaseRecorder, params: IParamsAny) => {
+export class GPUTest extends Fixture {
+  public device: GPUDevice = undefined as any;
+  public queue: GPUQueue = undefined as any;
+  public shaderc: Shaderc.Shaderc = undefined as any;
+
+  public async init(): Promise<void> {
+    super.init();
     const gpu = await getGPU();
     const adapter = await gpu.requestAdapter();
-    const device = await adapter.requestDevice({});
-    return new fixture(log, params, {device, shaderc: await shaderc}) as F;
-  };
-}
-
-export class GPUTest extends Fixture {
-  public static create = makeGPUTestCreate(GPUTest);
-
-  public device: GPUDevice;
-  public queue: GPUQueue;
-  public shaderc: Shaderc.Shaderc;
-
-  public constructor(log: CaseRecorder, params: IParamsAny, opts: IGPUTestOpts) {
-    super(log, params);
-    this.device = opts.device;
+    this.device = await adapter.requestDevice({});
     this.queue = this.device.getQueue();
-    this.shaderc = opts.shaderc;
+    this.shaderc = await shaderc;
   }
 
   public makeShaderModule(type: ('f' | 'v' | 'c'), source: string): GPUShaderModule {

@@ -13,21 +13,18 @@ interface IRunCase {
   run: () => Promise<IResult>;
 }
 
-export type FixtureCreate<F extends Fixture> =
-    (log: CaseRecorder, params: IParamsAny) => Promise<F>;
-
-interface IFixture<F extends Fixture> {
-  create: FixtureCreate<F>;
-}
+type IFixture<F extends Fixture> = new(log: CaseRecorder, params: IParamsAny) => F;
 
 export abstract class Fixture {
   public params: IParamsAny;
   protected rec: CaseRecorder;
 
-  protected constructor(log: CaseRecorder, params: IParamsAny) {
+  public constructor(log: CaseRecorder, params: IParamsAny) {
     this.rec = log;
     this.params = params;
   }
+
+  public async init(): Promise<void> {}
 
   public log(msg: string) {
     this.rec.log(msg);
@@ -37,8 +34,7 @@ export abstract class Fixture {
 export class TestGroup {
   private tests: ICase[] = [];
 
-  public constructor() {
-  }
+  public constructor() {}
 
   public testp<F extends Fixture>(name: string,
                                   params: IParamsSpec,
@@ -76,7 +72,8 @@ export class TestGroup {
     const n = params ? (name + '/' + JSON.stringify(params)) : name;
     const p = params ? params : {};
     this.tests.push({ name: n, run: async (log) => {
-      const inst = await fixture.create(log, p);
+      const inst = new fixture(log, p);
+      await inst.init();
       return fn(inst);
     }});
   }

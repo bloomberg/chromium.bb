@@ -2,14 +2,12 @@ export const description = `
 copy{Buffer,Texture}To{Buffer,Texture} tests.
 `;
 
-import { FixtureCreate, TestGroup } from '../../framework/index.js';
-import { GPUTest, makeGPUTestCreate } from '../gpu_test.js';
+import { TestGroup } from '../../framework/index.js';
+import { GPUTest } from '../gpu_test.js';
 
 export const group = new TestGroup();
 
-class CopyTest extends GPUTest {
-  public static create: FixtureCreate<CopyTest> = makeGPUTestCreate(CopyTest);
-}
+class CopyTest extends GPUTest {}
 
 group.test('b2b', CopyTest, async (t) => {
   const data = new Uint32Array([0x01020304]);
