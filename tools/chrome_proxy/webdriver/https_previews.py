@@ -152,7 +152,6 @@ class HttpsPreviewsBaseClass():
       self._AssertShowingLitePage(t, 'Hello world', 1)
 
   # Verifies that a Lite Page pageload sends a DRP pingback.
-  # TODO(robertogden): Set this to M73 once merged.
   @ChromeVersionEqualOrAfterM(74)
   def testPingbackSent(self):
     with TestDriver() as t:
@@ -277,6 +276,32 @@ class HttpsPreviewsNavigationThrottle(HttpsPreviewsBaseClass, IntegrationTest):
 class HttpsPreviewsURLLoader(HttpsPreviewsBaseClass, IntegrationTest):
   def getVersion(self):
     return URL_LOADER_VERSION
+
+  # Verifies that if a streaming preview is being served but needs to be
+  # aborted, changing location.href will load the original page.
+  #
+  # This test only works for the URLLoader version.
+  @ChromeVersionEqualOrAfterM(75)
+  def testChromeStreamingAbort(self):
+    url = 'https://mobilespeed-test.appspot.com/static/litepagetests/simple.html'
+    with TestDriver() as t:
+      self.EnableLitePageServerPreviewsAndInit(t)
+      t.LoadURL(url)
+      self._AssertShowingLitePage(t, 'Hello world', 1)
+      self.assertNotEqual(url,
+        t.ExecuteJavascriptStatement('window.location.href'))
+
+      # Although this is not a streaming DOM, the critical behavior to be tested
+      # is that once a preview is committed in the renderer, changing
+      # location.href loads the original page. The timing of this call is not
+      # important.
+      t.ExecuteJavascriptStatement('window.location.href += "&abort"')
+
+      t.SleepUntilHistogramHasEntry('Previews.PageEndReason.LitePageRedirect',
+        30)
+
+      self.assertEqual(url,
+                       t.ExecuteJavascriptStatement('window.location.href'))
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
