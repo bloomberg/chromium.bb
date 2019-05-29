@@ -23,8 +23,8 @@ test(() => {
 }, 'document.featurePolicy.features always advertises vr.');
 
 // Add the token, which was generated with the following command:
-// tools/origin_trials/generate_token.py http://127.0.0.1:8000 WebXRDeviceM73 --expire-timestamp=2000000000
-let token = "AkdUKG/76uPyi1gvtP+q4o8XF9C6DWpF45h6xzMHwBFS+cfXrgo0zMHkA1T9ovuz+VVtxacaS/dc8F8JeWpcqAoAAABWeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViWFJEZXZpY2VNNzMiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=";
+// tools/origin_trials/generate_token.py http://127.0.0.1:8000 WebXRDeviceM76 --expire-timestamp=2000000000
+let token = "AkyVxpb70lHShWfDAoWZVaVN2iZ9BxVFtnErcD8gysTmnF+SNXlduVTCLBpcr1V2q/MFrjeqPb2BlFALolT1bAwAAABWeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViWFJEZXZpY2VNNzYiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=";
 OriginTrialsHelper.add_token(token);
 
 // The WebXR APIs should be available now.

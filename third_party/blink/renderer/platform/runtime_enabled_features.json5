@@ -1626,7 +1626,7 @@
     },
     {
       name: "WebXR",
-      origin_trial_feature_name: "WebXRDeviceM73",
+      origin_trial_feature_name: "WebXRDeviceM76",
       status: "experimental",
     },
     {
