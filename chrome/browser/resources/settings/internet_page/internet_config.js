@@ -122,6 +122,12 @@ Polymer({
    * @private
    */
   getDialogTitle_: function() {
+    // If no properties are available yet, wait until they are set as part of
+    // open().
+    if (!this.managedProperties_) {
+      return '';
+    }
+
     const name = /** @type {string} */ (
         CrOnc.getActiveValue(this.managedProperties_.Name));
     if (name) {
