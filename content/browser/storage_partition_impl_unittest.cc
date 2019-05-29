@@ -1387,8 +1387,7 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheSpecificURL) {
   base::RunLoop().RunUntilIdle();
 }
 
-// TODO(https://crbug.com/925957): Flakes, especially under Fuchsia.
-TEST_F(StoragePartitionImplTest, DISABLED_ClearCodeCacheDateRange) {
+TEST_F(StoragePartitionImplTest, ClearCodeCacheDateRange) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
   ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
