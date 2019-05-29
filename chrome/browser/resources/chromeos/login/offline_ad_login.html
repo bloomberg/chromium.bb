@@ -81,7 +81,7 @@
     <oobe-dialog id="credsStep" hidden="[[unlockPasswordStep]]"
         aria-label$="[[adWelcomeMessage]]" has-buttons>
       <hd-iron-icon slot="oobe-icon" icon1x="oobe-enrollment-32:briefcase"
-          icon2x="oobe-enrollment-64:briefcase">
+          icon2x="oobe-enrollment-64:briefcase" hidden="[[!isDomainJoin]]">
       </hd-iron-icon>
       <h1 slot="title" id="welcomeMsg"
           class="welcome-message">[[adWelcomeMessage]]</h1>
