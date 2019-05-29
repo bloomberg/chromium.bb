@@ -21,6 +21,7 @@
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/bluetooth/bluetooth_device_scanning_prompt_controller.h"
 #include "content/browser/bluetooth/bluetooth_metrics.h"
+#include "content/browser/bluetooth/bluetooth_util.h"
 #include "content/browser/bluetooth/frame_connected_bluetooth_devices.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -28,6 +29,7 @@
 #include "content/common/bluetooth/web_bluetooth_device_id.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -258,14 +260,23 @@ void WebBluetoothServiceImpl::OnBluetoothScanningPromptEvent(
   DCHECK((*client)->prompt_controller() == prompt_controller);
 
   auto result = blink::mojom::WebBluetoothResult::SUCCESS;
-  if (event == BluetoothScanningPrompt::Event::kAllow)
+  if (event == BluetoothScanningPrompt::Event::kAllow) {
     result = blink::mojom::WebBluetoothResult::SUCCESS;
-  else if (event == BluetoothScanningPrompt::Event::kBlock)
+    StoreAllowedScanOptions((*client)->scan_options());
+  } else if (event == BluetoothScanningPrompt::Event::kBlock) {
     result = blink::mojom::WebBluetoothResult::SCANNING_BLOCKED;
-  else if (event == BluetoothScanningPrompt::Event::kCanceled)
+    const url::Origin requesting_origin =
+        render_frame_host_->GetLastCommittedOrigin();
+    const url::Origin embedding_origin =
+        web_contents()->GetMainFrame()->GetLastCommittedOrigin();
+    GetContentClient()->browser()->BlockBluetoothScanning(
+        web_contents()->GetBrowserContext(), requesting_origin,
+        embedding_origin);
+  } else if (event == BluetoothScanningPrompt::Event::kCanceled) {
     result = blink::mojom::WebBluetoothResult::PROMPT_CANCELED;
-  else
+  } else {
     NOTREACHED();
+  }
 
   (*client)->RunRequestScanningStartCallback(std::move(result));
   (*client)->set_prompt_controller(nullptr);
@@ -1147,6 +1158,21 @@ void WebBluetoothServiceImpl::RequestScanningStartImpl(
     return;
   }
 
+  const url::Origin requesting_origin =
+      render_frame_host_->GetLastCommittedOrigin();
+  const url::Origin embedding_origin =
+      web_contents()->GetMainFrame()->GetLastCommittedOrigin();
+
+  bool blocked = GetContentClient()->browser()->IsBluetoothScanningBlocked(
+      web_contents()->GetBrowserContext(), requesting_origin, embedding_origin);
+
+  if (blocked) {
+    auto result = blink::mojom::RequestScanningStartResult::NewErrorResult(
+        blink::mojom::WebBluetoothResult::SCANNING_BLOCKED);
+    std::move(callback).Run(std::move(result));
+    return;
+  }
+
   if (discovery_callback_) {
     auto result = blink::mojom::RequestScanningStartResult::NewErrorResult(
         blink::mojom::WebBluetoothResult::PROMPT_CANCELED);
@@ -1155,6 +1181,20 @@ void WebBluetoothServiceImpl::RequestScanningStartImpl(
   }
 
   if (discovery_session_) {
+    if (AreScanFiltersAllowed(options->filters)) {
+      auto scanning_client = std::make_unique<ScanningClient>(
+          std::move(client), std::move(options), std::move(callback), nullptr);
+      scanning_client->RunRequestScanningStartCallback(
+          blink::mojom::WebBluetoothResult::SUCCESS);
+      scanning_client->set_allow_send_event(true);
+      scanning_clients_.push_back(std::move(scanning_client));
+      return;
+    }
+
+    // TODO(https://crbug.com/953075): If the scan filters aren't allowed by
+    // user, we need to update the filters which are used on the previously
+    // started discovery session.
+
     // By resetting |device_scanning_prompt_controller_|, it returns an error if
     // there are duplicate calls to RequestScanningStart().
     device_scanning_prompt_controller_ =
@@ -1185,11 +1225,23 @@ void WebBluetoothServiceImpl::OnStartDiscoverySession(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!discovery_session_);
 
+  discovery_session_ = std::move(session);
+
+  if (AreScanFiltersAllowed(options->filters)) {
+    auto scanning_client = std::make_unique<ScanningClient>(
+        std::move(client), std::move(options), std::move(discovery_callback_),
+        nullptr);
+    scanning_client->RunRequestScanningStartCallback(
+        blink::mojom::WebBluetoothResult::SUCCESS);
+    scanning_client->set_allow_send_event(true);
+    scanning_clients_.push_back(std::move(scanning_client));
+    return;
+  }
+
   device_scanning_prompt_controller_ =
       std::make_unique<BluetoothDeviceScanningPromptController>(
           this, render_frame_host_);
 
-  discovery_session_ = std::move(session);
   scanning_clients_.push_back(std::make_unique<ScanningClient>(
       std::move(client), std::move(options), std::move(discovery_callback_),
       device_scanning_prompt_controller_.get()));
@@ -1634,6 +1686,50 @@ BluetoothAllowedDevices& WebBluetoothServiceImpl::allowed_devices() {
   return allowed_devices_map->GetOrCreateAllowedDevices(GetOrigin());
 }
 
+void WebBluetoothServiceImpl::StoreAllowedScanOptions(
+    const blink::mojom::WebBluetoothRequestLEScanOptions& options) {
+  if (options.filters.has_value()) {
+    for (const auto& filter : options.filters.value())
+      allowed_scan_filters_.push_back(filter.Clone());
+  } else {
+    accept_all_advertisements_ = true;
+  }
+}
+
+bool WebBluetoothServiceImpl::AreScanFiltersAllowed(
+    const base::Optional<ScanFilters>& filters) const {
+  if (accept_all_advertisements_) {
+    // Previously allowed accepting all advertisements and no filters. In this
+    // case since filtered advertisements are a subset of all advertisements,
+    // any filters should be allowed.
+    return true;
+  }
+
+  if (!filters.has_value()) {
+    // |acceptAllAdvertisements| is set in the Bluetooth scanning options, but
+    // accepting all advertisements has not been allowed yet, in this case the
+    // permission prompt needs to be shown to the user.
+    return false;
+  }
+
+  // If each |filter| in |filters| can be found in |allowed_scan_filters_|,
+  // then |filters| are allowed, otherwise |filters| are not allowed.
+  for (const auto& filter : filters.value()) {
+    bool allowed = false;
+    for (const auto& allowed_filter : allowed_scan_filters_) {
+      if (AreScanFiltersSame(*filter, *allowed_filter)) {
+        allowed = true;
+        break;
+      }
+    }
+
+    if (!allowed)
+      return false;
+  }
+
+  return true;
+}
+
 void WebBluetoothServiceImpl::ClearState() {
   // Releasing the adapter will drop references to callbacks that have not yet
   // been executed. The binding must be closed first so that this is allowed.
@@ -1649,6 +1745,8 @@ void WebBluetoothServiceImpl::ClearState() {
       new FrameConnectedBluetoothDevices(render_frame_host_));
   device_chooser_controller_.reset();
   device_scanning_prompt_controller_.reset();
+  allowed_scan_filters_.clear();
+  accept_all_advertisements_ = false;
   BluetoothAdapterFactoryWrapper::Get().ReleaseAdapter(this);
 }
 

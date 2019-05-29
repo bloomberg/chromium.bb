@@ -1577,6 +1577,18 @@ class CONTENT_EXPORT ContentBrowserClient {
       const RenderFrameHost* frame_host,
       bool user_gesture,
       NavigationDownloadPolicy* download_policy) const;
+
+  // Returns whether a site is blocked to use Bluetooth scanning API.
+  virtual bool IsBluetoothScanningBlocked(
+      content::BrowserContext* browser_context,
+      const url::Origin& requesting_origin,
+      const url::Origin& embedding_origin) const;
+
+  // Blocks a site to use Bluetooth scanning API.
+  virtual void BlockBluetoothScanning(
+      content::BrowserContext* browser_context,
+      const url::Origin& requesting_origin,
+      const url::Origin& embedding_origin) const;
 };
 
 }  // namespace content

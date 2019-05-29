@@ -1417,6 +1417,7 @@ test("content_unittests") {
     "../browser/bluetooth/bluetooth_allowed_devices_unittest.cc",
     "../browser/bluetooth/bluetooth_blocklist_unittest.cc",
     "../browser/bluetooth/bluetooth_device_chooser_controller_unittest.cc",
+    "../browser/bluetooth/bluetooth_util_unittest.cc",
     "../browser/bluetooth/frame_connected_bluetooth_devices_unittest.cc",
     "../browser/browser_associated_interface_unittest.cc",
     "../browser/browser_main_loop_unittest.cc",

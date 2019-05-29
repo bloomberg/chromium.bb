@@ -601,6 +601,16 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool user_gesture,
       content::NavigationDownloadPolicy* download_policy) const override;
 
+  bool IsBluetoothScanningBlocked(
+      content::BrowserContext* browser_context,
+      const url::Origin& requesting_origin,
+      const url::Origin& embedding_origin) const override;
+
+  void BlockBluetoothScanning(
+      content::BrowserContext* browser_context,
+      const url::Origin& requesting_origin,
+      const url::Origin& embedding_origin) const override;
+
   content::PreviewsState DetermineAllowedPreviewsWithoutHoldback(
       content::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,

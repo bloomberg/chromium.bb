@@ -84,6 +84,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   friend class FrameConnectedBluetoothDevicesTest;
   using PrimaryServicesRequestCallback =
       base::OnceCallback<void(device::BluetoothDevice*)>;
+  using ScanFilters = std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>;
 
   class ScanningClient {
    public:
@@ -109,6 +110,10 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
     void RunRequestScanningStartCallback(
         blink::mojom::WebBluetoothResult result);
+
+    const blink::mojom::WebBluetoothRequestLEScanOptions& scan_options() {
+      return *options_;
+    }
 
    private:
     void DisconnectionHandler();
@@ -335,6 +340,10 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   url::Origin GetOrigin();
   BluetoothAllowedDevices& allowed_devices();
 
+  void StoreAllowedScanOptions(
+      const blink::mojom::WebBluetoothRequestLEScanOptions& options);
+  bool AreScanFiltersAllowed(const base::Optional<ScanFilters>& filters) const;
+
   // Clears all state (maps, sets, etc).
   void ClearState();
 
@@ -376,6 +385,13 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   // List of clients that we must broadcast scan changes to.
   std::vector<std::unique_ptr<ScanningClient>> scanning_clients_;
+
+  // Allowed Bluetooth scanning filters.
+  ScanFilters allowed_scan_filters_;
+
+  // Whether a site has been allowed to receive all Bluetooth advertisement
+  // packets.
+  bool accept_all_advertisements_ = false;
 
   // The lifetime of this instance is exclusively managed by the RFH that
   // owns it so we use a "Binding" as opposed to a "StrongBinding" which deletes

@@ -5851,3 +5851,35 @@ void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
     }
   }
 }
+
+bool ChromeContentBrowserClient::IsBluetoothScanningBlocked(
+    content::BrowserContext* browser_context,
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin) const {
+  const HostContentSettingsMap* const content_settings =
+      HostContentSettingsMapFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+
+  if (content_settings->GetContentSetting(
+          requesting_origin.GetURL(), embedding_origin.GetURL(),
+          CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
+          std::string()) == CONTENT_SETTING_BLOCK) {
+    return true;
+  }
+
+  return false;
+}
+
+void ChromeContentBrowserClient::BlockBluetoothScanning(
+    content::BrowserContext* browser_context,
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin) const {
+  HostContentSettingsMap* const content_settings =
+      HostContentSettingsMapFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+
+  content_settings->SetContentSettingDefaultScope(
+      requesting_origin.GetURL(), embedding_origin.GetURL(),
+      CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING, std::string(),
+      CONTENT_SETTING_BLOCK);
+}

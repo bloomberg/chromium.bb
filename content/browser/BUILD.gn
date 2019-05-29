@@ -540,6 +540,8 @@ jumbo_source_set("browser") {
     "bluetooth/bluetooth_device_scanning_prompt_controller.h",
     "bluetooth/bluetooth_metrics.cc",
     "bluetooth/bluetooth_metrics.h",
+    "bluetooth/bluetooth_util.cc",
+    "bluetooth/bluetooth_util.h",
     "bluetooth/frame_connected_bluetooth_devices.cc",
     "bluetooth/frame_connected_bluetooth_devices.h",
     "bluetooth/web_bluetooth_service_impl.cc",

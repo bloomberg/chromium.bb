@@ -1002,4 +1002,16 @@ void ContentBrowserClient::AugmentNavigationDownloadPolicy(
     bool user_gesture,
     NavigationDownloadPolicy* download_policy) const {}
 
+bool ContentBrowserClient::IsBluetoothScanningBlocked(
+    content::BrowserContext* browser_context,
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin) const {
+  return false;
+}
+
+void ContentBrowserClient::BlockBluetoothScanning(
+    content::BrowserContext* browser_context,
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin) const {}
+
 }  // namespace content
