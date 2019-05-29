@@ -488,9 +488,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
   bool is_signed_exchange_inner_response_ = false;
 
-  // True if this resource is served from the prefetch cache. Currently this
-  // flag is used only for prefetched signed exchanges.
-  // TODO(horo): Mark this also for general prefetch cases.
+  // True if this resource is served from the prefetch cache.
   bool was_in_prefetch_cache_ = false;
 
   // True if this resource was loaded from the network.

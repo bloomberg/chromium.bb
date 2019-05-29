@@ -90,6 +90,9 @@ void PopulateResourceResponse(
   response->head.network_accessed = response_info.network_accessed;
   response->head.async_revalidation_requested =
       response_info.async_revalidation_requested;
+  response->head.was_in_prefetch_cache =
+      !(request->load_flags() & net::LOAD_PREFETCH) &&
+      response_info.unused_since_prefetch;
   if (info->ShouldReportRawHeaders()) {
     response->head.raw_request_response_info =
         network::BuildRawRequestResponseInfo(*request, raw_request_headers,

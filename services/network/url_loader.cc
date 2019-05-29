@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/static_cookie_policy.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -83,7 +84,9 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->head.network_accessed = response_info.network_accessed;
   response->head.async_revalidation_requested =
       response_info.async_revalidation_requested;
-
+  response->head.was_in_prefetch_cache =
+      !(request->load_flags() & net::LOAD_PREFETCH) &&
+      response_info.unused_since_prefetch;
   response->head.effective_connection_type =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
