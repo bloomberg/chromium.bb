@@ -113,7 +113,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
         else:
             yield "third_party/blink/renderer/core/css/properties/" + property_['namespace_group'].lower() + ".h"
             if property_['direction_aware_options']:
-                yield "third_party/blink/renderer/core/style_property_shorthand.h"
+                yield "third_party/blink/renderer/core/css/properties/css_direction_aware_resolver.h"
             for include in self.apply_includes(property_):
                 yield 'third_party/blink/renderer/' + include
         if property_['runtime_flag']:

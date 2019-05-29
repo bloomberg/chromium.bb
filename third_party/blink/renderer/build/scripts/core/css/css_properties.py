@@ -241,8 +241,14 @@ class CSSProperties(object):
         set_if_none(property_, 'custom_compare', False)
         set_if_none(property_, 'mutable', False)
 
-        if property_['direction_aware_options'] and not property_['style_builder_template']:
-            property_['style_builder_template'] = 'direction_aware'
+        if property_['direction_aware_options']:
+            if not property_['style_builder_template']:
+                property_['style_builder_template'] = 'direction_aware'
+            options = property_['direction_aware_options']
+            assert 'resolver' in options, 'resolver option is required'
+            assert 'physical_group' in options, 'physical_group option is required'
+            options['resolver_name'] = NameStyleConverter(options['resolver'])
+            options['physical_group_name'] = NameStyleConverter(options['physical_group'])
 
     @property
     def default_parameters(self):

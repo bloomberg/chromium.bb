@@ -22,6 +22,7 @@ using namespace cssvalue;
 class ComputedStyle;
 class CSSValue;
 class StyleColor;
+class StylePropertyShorthand;
 
 class ComputedStyleUtils {
   STATIC_ONLY(ComputedStyleUtils);

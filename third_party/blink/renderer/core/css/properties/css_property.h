@@ -20,10 +20,7 @@ namespace blink {
 class ComputedStyle;
 class CrossThreadStyleValue;
 class LayoutObject;
-class StylePropertyShorthand;
 class SVGComputedStyle;
-
-enum PhysicalBoxSide { kTopSide, kRightSide, kBottomSide, kLeftSide };
 
 class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
  public:
@@ -107,24 +104,6 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
         property_id_(property_id),
         flags_(flags),
         repetition_separator_(repetition_separator) {}
-
-  static const StylePropertyShorthand& BorderDirections();
-  static const CSSProperty& ResolveAfterToPhysicalProperty(
-      TextDirection,
-      WritingMode,
-      const StylePropertyShorthand&);
-  static const CSSProperty& ResolveBeforeToPhysicalProperty(
-      TextDirection,
-      WritingMode,
-      const StylePropertyShorthand&);
-  static const CSSProperty& ResolveEndToPhysicalProperty(
-      TextDirection,
-      WritingMode,
-      const StylePropertyShorthand&);
-  static const CSSProperty& ResolveStartToPhysicalProperty(
-      TextDirection,
-      WritingMode,
-      const StylePropertyShorthand&);
 
  private:
   CSSPropertyID property_id_;

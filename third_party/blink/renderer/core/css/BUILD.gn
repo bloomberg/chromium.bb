@@ -420,6 +420,8 @@ blink_core_sources("css") {
     "part_names.h",
     "properties/computed_style_utils.cc",
     "properties/computed_style_utils.h",
+    "properties/css_direction_aware_resolver.cc",
+    "properties/css_direction_aware_resolver.h",
     "properties/css_parsing_utils.cc",
     "properties/css_parsing_utils.h",
     "properties/css_property.cc",

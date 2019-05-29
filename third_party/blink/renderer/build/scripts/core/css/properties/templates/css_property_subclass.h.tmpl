@@ -96,37 +96,20 @@ class {{property_classname}} final : public {{property.namespace_group}} {
       const LayoutObject*,
       Node*,
       bool allow_visited_style) const override {
-    // Directional properties are resolved by resolveDirectionAwareProperty()
+    // Directional properties are resolved by CSSDirectionAwareResolver
     // before calling CSSValueFromComputedStyleInternal.
     NOTREACHED();
     return nullptr;
   }
-    {% if property.direction_aware_options.logical_side == "width" %}
+    {% set options = property.direction_aware_options %}
+    {% set resolver_name = options.resolver_name.to_upper_camel_case() %}
+    {% set physical_group_name = options.physical_group_name.to_upper_camel_case() %}
   const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection direction,
       blink::WritingMode writing_mode) const override {
-    if (IsHorizontalWritingMode(writing_mode))
-      return Get{{property.direction_aware_options.shorthand_for_physical_side}}Width();
-    return Get{{property.direction_aware_options.shorthand_for_physical_side}}Height();
+    return CSSDirectionAwareResolver::Resolve{{resolver_name}}(direction, writing_mode,
+        CSSDirectionAwareResolver::{{physical_group_name}}Group());
   }
-    {% elif property.direction_aware_options.logical_side == "height" %}
-  const CSSProperty& ResolveDirectionAwareProperty(
-      TextDirection direction,
-      blink::WritingMode writing_mode) const override {
-    if (IsHorizontalWritingMode(writing_mode))
-      return Get{{property.direction_aware_options.shorthand_for_physical_side}}Height();
-    return Get{{property.direction_aware_options.shorthand_for_physical_side}}Width();
-  }
-    {% else %}
-  const CSSProperty& ResolveDirectionAwareProperty(
-      TextDirection direction,
-      blink::WritingMode writing_mode) const override {
-    return Resolve{{property.direction_aware_options.logical_side[0].upper() + property.direction_aware_options.logical_side[1:]}}ToPhysicalProperty(
-      direction,
-      writing_mode,
-      {{property.direction_aware_options.shorthand_for_physical_side}}());
-  }
-    {% endif %}
   {% endif %}
   {% if property.style_builder_declare %}
 
