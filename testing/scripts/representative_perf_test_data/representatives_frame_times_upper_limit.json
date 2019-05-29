@@ -114,10 +114,6 @@
       "avg": 84.24052,
       "ci_095": 34.49607228
     },
-    "cc_poster_circle": {
-      "avg": 75.5703894,
-      "ci_095": 15.79465651
-    },
     "infinite_scroll_root_fixed_n_layers_99": {
       "avg": 53.85195,
       "ci_095": 13.26379689
