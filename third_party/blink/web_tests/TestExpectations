@@ -5495,10 +5495,6 @@ crbug.com/936108 virtual/streams-native/http/tests/streams/transferable/readable
 crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass Timeout ]
 crbug.com/936615 [ Win7 ] external/wpt/kv-storage/values.https.html [ Timeout Pass ]
 
-# Device Sensor Events were restricted to secure browsing contexts in M74, with a flag available until M76 to undo the change in case of an emergency.
-crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
-crbug.com/932078 virtual/insecure-device-sensor-events/http/tests/security/powerfulFeatureRestrictions/device-orientation-handler-not-fired-on-insecure-origin.html [ Skip ]
-
 crbug.com/935064 external/wpt/content-security-policy/inheritance/iframe-all-local-schemes.sub.html [ Failure ]
 
 # Sheriff 2019-02-28

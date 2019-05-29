@@ -408,9 +408,9 @@ enum WebFeature {
   kGetUserMediaSecureOrigin = 667,
   // The above items are available in M41 branch.
 
-  kDeviceMotionInsecureOrigin = 668,
+  kDeviceMotionInsecureOrigin_Obsolete = 668,
   kDeviceMotionSecureOrigin = 669,
-  kDeviceOrientationInsecureOrigin = 670,
+  kDeviceOrientationInsecureOrigin_Obsolete = 670,
   kDeviceOrientationSecureOrigin = 671,
   kSandboxViaIFrame = 672,
   kSandboxViaCSP = 673,
@@ -642,7 +642,7 @@ enum WebFeature {
   kExternalAddSearchProvider = 981,
   kExternalIsSearchProviderInstalled = 982,
   kV8Permissions_RequestAll_Method = 983,
-  kDeviceOrientationAbsoluteInsecureOrigin = 987,
+  kDeviceOrientationAbsoluteInsecureOrigin_Obsolete = 987,
   kDeviceOrientationAbsoluteSecureOrigin = 988,
   kFontFaceConstructor = 989,
   kServiceWorkerControlledPage = 990,

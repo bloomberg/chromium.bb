@@ -1233,10 +1233,6 @@
       status: "stable",
     },
     {
-      // Controlled through the base::Feature with the same name.
-      name: "RestrictDeviceSensorEventsToSecureContexts",
-    },
-    {
       name: "RestrictLazyFrameLoadingToDataSaver",
     },
     {

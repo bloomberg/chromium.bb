@@ -39,23 +39,12 @@ void DeviceOrientationAbsoluteController::DidAddEventListener(
   if (event_type != EventTypeName())
     return;
 
+  // TOOD(crbug.com/932078): Investigate if this ever called with no |frame|.
   LocalFrame* frame = GetDocument().GetFrame();
   if (frame) {
-    if (GetDocument().IsSecureContext()) {
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kDeviceOrientationAbsoluteSecureOrigin);
-    } else {
-      Deprecation::CountDeprecation(
-          GetDocument(), WebFeature::kDeviceOrientationAbsoluteInsecureOrigin);
-      // TODO: add rappor logging of insecure origins as in
-      // DeviceOrientationController.
-      if (frame->GetSettings()->GetStrictPowerfulFeatureRestrictions())
-        return;
-      if (RuntimeEnabledFeatures::
-              RestrictDeviceSensorEventsToSecureContextsEnabled()) {
-        return;
-      }
-    }
+    SECURITY_CHECK(GetDocument().IsSecureContext());
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kDeviceOrientationAbsoluteSecureOrigin);
   }
 
   if (!has_event_listener_) {

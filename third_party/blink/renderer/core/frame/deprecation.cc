@@ -160,24 +160,6 @@ double MilestoneDate(Milestone milestone) {
   return 0;
 }
 
-String GetDeviceSensorDeprecationMessage(const char* event_name,
-                                         const char* status_url) {
-  static constexpr char kConcreteMessage[] =
-      "The `%s` event is deprecated on insecure origins and will be removed in "
-      "%s. Event handlers can still be registered but are no longer invoked "
-      "since %s. See %s for more details.";
-  static constexpr char kGenericMessage[] =
-      "The `%s` event is deprecated on insecure origins and will be removed. "
-      "See %s for more details.";
-
-  if (blink::RuntimeEnabledFeatures::
-          RestrictDeviceSensorEventsToSecureContextsEnabled()) {
-    return String::Format(kConcreteMessage, event_name, MilestoneString(kM76),
-                          MilestoneString(kM74), status_url);
-  }
-  return String::Format(kGenericMessage, event_name, status_url);
-}
-
 struct DeprecationInfo {
   String id;
   Milestone anticipated_removal;
@@ -305,24 +287,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "https://www.chromestatus.com/feature/6170540112871424")};
 
     // Powerful features on insecure origins (https://goo.gl/rStTGz)
-    case WebFeature::kDeviceMotionInsecureOrigin:
-      return {"DeviceMotionInsecureOrigin", kM76,
-              GetDeviceSensorDeprecationMessage(
-                  "devicemotion",
-                  "https://www.chromestatus.com/feature/5688035094036480")};
-
-    case WebFeature::kDeviceOrientationInsecureOrigin:
-      return {"DeviceOrientationInsecureOrigin", kM76,
-              GetDeviceSensorDeprecationMessage(
-                  "deviceorientation",
-                  "https://www.chromestatus.com/feature/5468407470227456")};
-
-    case WebFeature::kDeviceOrientationAbsoluteInsecureOrigin:
-      return {"DeviceOrientationAbsoluteInsecureOrigin", kM76,
-              GetDeviceSensorDeprecationMessage(
-                  "deviceorientationabsolute",
-                  "https://www.chromestatus.com/feature/5468407470227456")};
-
     case WebFeature::kGeolocationInsecureOrigin:
     case WebFeature::kGeolocationInsecureOriginIframe:
       return {"GeolocationInsecureOrigin", kUnknown,

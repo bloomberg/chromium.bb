@@ -43,23 +43,11 @@ void DeviceMotionController::DidAddEventListener(
   if (event_type != EventTypeName())
     return;
 
+  // TOOD(crbug.com/932078): Investigate if this ever called with no |frame|.
   LocalFrame* frame = GetDocument().GetFrame();
   if (frame) {
-    if (GetDocument().IsSecureContext()) {
-      UseCounter::Count(GetDocument(), WebFeature::kDeviceMotionSecureOrigin);
-    } else {
-      Deprecation::CountDeprecation(GetDocument(),
-                                    WebFeature::kDeviceMotionInsecureOrigin);
-      HostsUsingFeatures::CountAnyWorld(
-          GetDocument(),
-          HostsUsingFeatures::Feature::kDeviceMotionInsecureHost);
-      if (frame->GetSettings()->GetStrictPowerfulFeatureRestrictions())
-        return;
-      if (RuntimeEnabledFeatures::
-              RestrictDeviceSensorEventsToSecureContextsEnabled()) {
-        return;
-      }
-    }
+    SECURITY_CHECK(GetDocument().IsSecureContext());
+    UseCounter::Count(GetDocument(), WebFeature::kDeviceMotionSecureOrigin);
   }
 
   if (!has_event_listener_) {
