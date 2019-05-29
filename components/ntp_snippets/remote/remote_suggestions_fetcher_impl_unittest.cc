@@ -148,20 +148,20 @@ class MockSnippetsAvailableCallback {
 };
 
 void ParseJson(const std::string& json,
-               const SuccessCallback& success_callback,
-               const ErrorCallback& error_callback) {
+               SuccessCallback success_callback,
+               ErrorCallback error_callback) {
   base::JSONReader json_reader;
   base::Optional<base::Value> value = json_reader.ReadToValue(json);
   if (value) {
-    success_callback.Run(std::move(*value));
+    std::move(success_callback).Run(std::move(*value));
   } else {
-    error_callback.Run(json_reader.GetErrorMessage());
+    std::move(error_callback).Run(json_reader.GetErrorMessage());
   }
 }
 
 void ParseJsonDelayed(const std::string& json,
-                      const SuccessCallback& success_callback,
-                      const ErrorCallback& error_callback) {
+                      SuccessCallback success_callback,
+                      ErrorCallback error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ParseJson, json, std::move(success_callback),

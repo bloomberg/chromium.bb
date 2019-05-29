@@ -100,10 +100,10 @@ void NTPJsonFetcher::OnSimpleLoaderComplete(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       *response_body,
-      base::BindRepeating(&NTPJsonFetcher::OnJsonParseSuccess,
-                          weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&NTPJsonFetcher::OnJsonParseError,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&NTPJsonFetcher::OnJsonParseSuccess,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&NTPJsonFetcher::OnJsonParseError,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void NTPJsonFetcher::OnJsonParseSuccess(base::Value parsed_json) {

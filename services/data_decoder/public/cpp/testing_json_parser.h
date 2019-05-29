@@ -30,8 +30,8 @@ class TestingJsonParser : public SafeJsonParser {
   // not on the stack). It will delete itself after calling one of the
   // callbacks.
   TestingJsonParser(const std::string& unsafe_json,
-                    const SuccessCallback& success_callback,
-                    const ErrorCallback& error_callback);
+                    SuccessCallback success_callback,
+                    ErrorCallback error_callback);
   ~TestingJsonParser() override;
 
  private:

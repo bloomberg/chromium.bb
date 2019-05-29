@@ -34,10 +34,9 @@ class DataDecoder {
   void ParseXml(const std::string& unsafe_xml,
                 data_decoder::XmlParserCallback callback);
 
-  void ParseJson(
-      const std::string& unsafe_json,
-      const data_decoder::SafeJsonParser::SuccessCallback& success_callback,
-      const data_decoder::SafeJsonParser::ErrorCallback& error_callback);
+  void ParseJson(const std::string& unsafe_json,
+                 data_decoder::SafeJsonParser::SuccessCallback success_callback,
+                 data_decoder::SafeJsonParser::ErrorCallback error_callback);
 
  private:
   std::unique_ptr<service_manager::Connector> connector_;

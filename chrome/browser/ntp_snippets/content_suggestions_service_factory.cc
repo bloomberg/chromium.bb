@@ -170,7 +170,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
   auto suggestions_fetcher = std::make_unique<RemoteSuggestionsFetcherImpl>(
       identity_manager, url_loader_factory, pref_service, language_histogram,
-      base::Bind(
+      base::BindRepeating(
           &data_decoder::SafeJsonParser::Parse,
           content::ServiceManagerConnection::GetForProcess()->GetConnector()),
       GetFetchEndpoint(), api_key, user_classifier);

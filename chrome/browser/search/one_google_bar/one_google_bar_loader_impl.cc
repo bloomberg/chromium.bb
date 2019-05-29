@@ -336,10 +336,10 @@ void OneGoogleBarLoaderImpl::LoadDone(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       response,
-      base::BindRepeating(&OneGoogleBarLoaderImpl::JsonParsed,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&OneGoogleBarLoaderImpl::JsonParseFailed,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&OneGoogleBarLoaderImpl::JsonParsed,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&OneGoogleBarLoaderImpl::JsonParseFailed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OneGoogleBarLoaderImpl::JsonParsed(base::Value value) {

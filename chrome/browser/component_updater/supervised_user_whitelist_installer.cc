@@ -182,8 +182,9 @@ void CheckForSanitizedWhitelistOnTaskRunner(
   data_decoder::JsonSanitizer::Sanitize(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       unsafe_json,
-      base::Bind(&OnWhitelistSanitizationResult, crx_id, task_runner, callback),
-      base::Bind(&OnWhitelistSanitizationError, whitelist_path));
+      base::BindOnce(&OnWhitelistSanitizationResult, crx_id, task_runner,
+                     callback),
+      base::BindOnce(&OnWhitelistSanitizationError, whitelist_path));
 }
 
 void RemoveUnregisteredWhitelistsOnTaskRunner(

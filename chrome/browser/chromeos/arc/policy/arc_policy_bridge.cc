@@ -436,9 +436,9 @@ void ArcPolicyBridge::ReportCompliance(const std::string& request,
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       request,
-      base::Bind(&ArcPolicyBridge::OnReportComplianceParseSuccess,
-                 weak_ptr_factory_.GetWeakPtr(), repeating_callback),
-      base::Bind(&OnReportComplianceParseFailure, repeating_callback));
+      base::BindOnce(&ArcPolicyBridge::OnReportComplianceParseSuccess,
+                     weak_ptr_factory_.GetWeakPtr(), repeating_callback),
+      base::BindOnce(&OnReportComplianceParseFailure, repeating_callback));
 }
 
 void ArcPolicyBridge::ReportCloudDpsRequested(

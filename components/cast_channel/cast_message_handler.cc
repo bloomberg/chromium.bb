@@ -301,10 +301,10 @@ void CastMessageHandler::OnMessage(const CastSocket& socket,
         cast_channel::CastMessage_PayloadType_STRING) {
       data_decoder::SafeJsonParser::ParseBatch(
           connector_.get(), message.payload_utf8(),
-          base::BindRepeating(&CastMessageHandler::HandleCastInternalMessage,
-                              weak_ptr_factory_.GetWeakPtr(), socket.id(),
-                              message.source_id(), message.destination_id()),
-          base::BindRepeating(&ReportParseError), data_decoder_batch_id_);
+          base::BindOnce(&CastMessageHandler::HandleCastInternalMessage,
+                         weak_ptr_factory_.GetWeakPtr(), socket.id(),
+                         message.source_id(), message.destination_id()),
+          base::BindOnce(&ReportParseError), data_decoder_batch_id_);
     } else {
       DLOG(ERROR) << "Dropping internal message with binary payload: "
                   << message.namespace_();

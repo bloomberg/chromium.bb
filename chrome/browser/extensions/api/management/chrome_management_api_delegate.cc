@@ -290,11 +290,11 @@ void ChromeManagementAPIDelegate::
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       manifest_str,
-      base::Bind(
+      base::BindOnce(
           &extensions::ManagementGetPermissionWarningsByManifestFunction::
               OnParseSuccess,
           function),
-      base::Bind(
+      base::BindOnce(
           &extensions::ManagementGetPermissionWarningsByManifestFunction::
               OnParseFailure,
           function));

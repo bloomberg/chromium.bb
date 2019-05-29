@@ -20,9 +20,10 @@ namespace {
 
 SafeJsonParser* CreateTestingJsonParser(
     const std::string& unsafe_json,
-    const SafeJsonParser::SuccessCallback& success_callback,
-    const SafeJsonParser::ErrorCallback& error_callback) {
-  return new TestingJsonParser(unsafe_json, success_callback, error_callback);
+    SafeJsonParser::SuccessCallback success_callback,
+    SafeJsonParser::ErrorCallback error_callback) {
+  return new TestingJsonParser(unsafe_json, std::move(success_callback),
+                               std::move(error_callback));
 }
 
 }  // namespace
@@ -36,11 +37,11 @@ TestingJsonParser::ScopedFactoryOverride::~ScopedFactoryOverride() {
 }
 
 TestingJsonParser::TestingJsonParser(const std::string& unsafe_json,
-                                     const SuccessCallback& success_callback,
-                                     const ErrorCallback& error_callback)
+                                     SuccessCallback success_callback,
+                                     ErrorCallback error_callback)
     : unsafe_json_(unsafe_json),
-      success_callback_(success_callback),
-      error_callback_(error_callback) {}
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)) {}
 
 TestingJsonParser::~TestingJsonParser() {}
 
@@ -53,11 +54,11 @@ void TestingJsonParser::Start() {
   // completion callbacks may quit the run loop without leaking |this|.
   base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      value_with_error.value
-          ? base::Bind(success_callback_,
-                       base::Passed(std::move(*value_with_error.value)))
-          : base::Bind(error_callback_, value_with_error.error_message));
+      FROM_HERE, value_with_error.value
+                     ? base::BindOnce(std::move(success_callback_),
+                                      std::move(*value_with_error.value))
+                     : base::BindOnce(std::move(error_callback_),
+                                      value_with_error.error_message));
 }
 
 }  // namespace data_decoder

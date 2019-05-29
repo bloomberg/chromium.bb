@@ -91,8 +91,8 @@ void JsonSanitizerTest::Sanitize(const std::string& json) {
   run_loop_.reset(new base::RunLoop);
   JsonSanitizer::Sanitize(
       nullptr, json,
-      base::Bind(&JsonSanitizerTest::OnSuccess, base::Unretained(this)),
-      base::Bind(&JsonSanitizerTest::OnError, base::Unretained(this)));
+      base::BindOnce(&JsonSanitizerTest::OnSuccess, base::Unretained(this)),
+      base::BindOnce(&JsonSanitizerTest::OnError, base::Unretained(this)));
 
   // We should never get a result immediately.
   EXPECT_EQ(State::STATE_IDLE, state_);

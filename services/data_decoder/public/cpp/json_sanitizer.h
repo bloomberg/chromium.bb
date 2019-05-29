@@ -30,7 +30,7 @@ namespace data_decoder {
 // the resulting JSON, which might save some space.
 class JsonSanitizer {
  public:
-  using StringCallback = base::Callback<void(const std::string&)>;
+  using StringCallback = base::OnceCallback<void(const std::string&)>;
 
   // Starts sanitizing the passed in unsafe JSON string. Either the passed
   // |success_callback| or the |error_callback| will be called with the result
@@ -41,8 +41,8 @@ class JsonSanitizer {
   // service manager connection context object that the embedder provides.
   static void Sanitize(service_manager::Connector* connector,
                        const std::string& unsafe_json,
-                       const StringCallback& success_callback,
-                       const StringCallback& error_callback);
+                       StringCallback success_callback,
+                       StringCallback error_callback);
 
  protected:
   JsonSanitizer() {}

@@ -13,13 +13,12 @@
 
 namespace data_decoder {
 
-SafeJsonParserAndroid::SafeJsonParserAndroid(
-    const std::string& unsafe_json,
-    const SuccessCallback& success_callback,
-    const ErrorCallback& error_callback)
+SafeJsonParserAndroid::SafeJsonParserAndroid(const std::string& unsafe_json,
+                                             SuccessCallback success_callback,
+                                             ErrorCallback error_callback)
     : unsafe_json_(unsafe_json),
-      success_callback_(success_callback),
-      error_callback_(error_callback) {}
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)) {}
 
 SafeJsonParserAndroid::~SafeJsonParserAndroid() {}
 
@@ -27,10 +26,10 @@ void SafeJsonParserAndroid::Start() {
   JsonSanitizer::Sanitize(
       /*connector=*/nullptr,  // connector is unused on Android.
       unsafe_json_,
-      base::Bind(&SafeJsonParserAndroid::OnSanitizationSuccess,
-                 base::Unretained(this)),
-      base::Bind(&SafeJsonParserAndroid::OnSanitizationError,
-                 base::Unretained(this)));
+      base::BindOnce(&SafeJsonParserAndroid::OnSanitizationSuccess,
+                     base::Unretained(this)),
+      base::BindOnce(&SafeJsonParserAndroid::OnSanitizationError,
+                     base::Unretained(this)));
 }
 
 void SafeJsonParserAndroid::OnSanitizationSuccess(
@@ -43,15 +42,15 @@ void SafeJsonParserAndroid::OnSanitizationSuccess(
                                                     base::JSON_PARSE_RFC);
 
   if (!value_with_error.value) {
-    error_callback_.Run(value_with_error.error_message);
+    std::move(error_callback_).Run(value_with_error.error_message);
     return;
   }
 
-  success_callback_.Run(std::move(*value_with_error.value));
+  std::move(success_callback_).Run(std::move(*value_with_error.value));
 }
 
 void SafeJsonParserAndroid::OnSanitizationError(const std::string& error) {
-  error_callback_.Run(error);
+  std::move(error_callback_).Run(error);
   delete this;
 }
 

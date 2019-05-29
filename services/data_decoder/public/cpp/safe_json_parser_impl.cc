@@ -19,12 +19,12 @@ namespace data_decoder {
 SafeJsonParserImpl::SafeJsonParserImpl(
     service_manager::Connector* connector,
     const std::string& unsafe_json,
-    const SuccessCallback& success_callback,
-    const ErrorCallback& error_callback,
+    SuccessCallback success_callback,
+    ErrorCallback error_callback,
     const base::Optional<base::Token>& batch_id)
     : unsafe_json_(unsafe_json),
-      success_callback_(success_callback),
-      error_callback_(error_callback) {
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)) {
   // If no batch ID has been provided, use a random instance ID to guarantee the
   // connection is to a new service running in its own process.
   connector->BindInterface(
@@ -70,10 +70,10 @@ void SafeJsonParserImpl::ReportResults(base::Optional<base::Value> parsed_json,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error.empty() && parsed_json) {
     if (!success_callback_.is_null())
-      success_callback_.Run(std::move(*parsed_json));
+      std::move(success_callback_).Run(std::move(*parsed_json));
   } else {
     if (!error_callback_.is_null())
-      error_callback_.Run(error);
+      std::move(error_callback_).Run(error);
   }
 
   // The parsing is done whether an error occured or not, so this instance can

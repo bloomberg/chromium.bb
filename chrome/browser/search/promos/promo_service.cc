@@ -161,10 +161,10 @@ void PromoService::OnLoadDone(std::unique_ptr<std::string> response_body) {
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       response,
-      base::BindRepeating(&PromoService::OnJsonParsed,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&PromoService::OnJsonParseFailed,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PromoService::OnJsonParsed,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PromoService::OnJsonParseFailed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PromoService::OnJsonParsed(base::Value value) {

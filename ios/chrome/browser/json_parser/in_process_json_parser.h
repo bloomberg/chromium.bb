@@ -24,15 +24,14 @@ class Value;
 // have to be added to SafeJsonParser and this class removed.
 class InProcessJsonParser {
  public:
-  // TODO(crbug.com/964232): Convert to base::OnceCallback with SafeJsonParser.
-  using SuccessCallback = base::Callback<void(base::Value)>;
-  using ErrorCallback = base::Callback<void(const std::string&)>;
+  using SuccessCallback = base::OnceCallback<void(base::Value)>;
+  using ErrorCallback = base::OnceCallback<void(const std::string&)>;
 
   // As with SafeJsonParser, runs either |success_callback| or |error_callback|
   // on the calling thread, but not before the call returns.
   static void Parse(const std::string& unsafe_json,
-                    const SuccessCallback& success_callback,
-                    const ErrorCallback& error_callback);
+                    SuccessCallback success_callback,
+                    ErrorCallback error_callback);
 
   InProcessJsonParser() = delete;
 };

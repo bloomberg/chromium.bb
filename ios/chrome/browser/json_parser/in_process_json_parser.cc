@@ -15,21 +15,21 @@ namespace {
 void ParseJsonOnBackgroundThread(
     scoped_refptr<base::TaskRunner> task_runner,
     const std::string& unsafe_json,
-    const InProcessJsonParser::SuccessCallback& success_callback,
-    const InProcessJsonParser::ErrorCallback& error_callback) {
+    InProcessJsonParser::SuccessCallback success_callback,
+    InProcessJsonParser::ErrorCallback error_callback) {
   DCHECK(task_runner);
   base::JSONReader::ValueWithError value_with_error =
       base::JSONReader::ReadAndReturnValueWithError(unsafe_json,
                                                     base::JSON_PARSE_RFC);
   if (value_with_error.value) {
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(success_callback, std::move(*value_with_error.value)));
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce(std::move(success_callback),
+                                         std::move(*value_with_error.value)));
   } else {
     task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(
-            error_callback,
+            std::move(error_callback),
             base::StringPrintf(
                 "%s (%d:%d)", value_with_error.error_message.c_str(),
                 value_with_error.error_line, value_with_error.error_column)));
@@ -39,11 +39,11 @@ void ParseJsonOnBackgroundThread(
 
 // static
 void InProcessJsonParser::Parse(const std::string& unsafe_json,
-                                const SuccessCallback& success_callback,
-                                const ErrorCallback& error_callback) {
+                                SuccessCallback success_callback,
+                                ErrorCallback error_callback) {
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ParseJsonOnBackgroundThread,
                      base::ThreadTaskRunnerHandle::Get(), unsafe_json,
-                     success_callback, error_callback));
+                     std::move(success_callback), std::move(error_callback)));
 }

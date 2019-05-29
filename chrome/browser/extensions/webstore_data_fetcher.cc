@@ -124,8 +124,8 @@ void WebstoreDataFetcher::OnSimpleLoaderComplete(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       *response_body,
-      base::Bind(&WebstoreDataFetcher::OnJsonParseSuccess, AsWeakPtr()),
-      base::Bind(&WebstoreDataFetcher::OnJsonParseFailure, AsWeakPtr()));
+      base::BindOnce(&WebstoreDataFetcher::OnJsonParseSuccess, AsWeakPtr()),
+      base::BindOnce(&WebstoreDataFetcher::OnJsonParseFailure, AsWeakPtr()));
 }
 
 }  // namespace extensions

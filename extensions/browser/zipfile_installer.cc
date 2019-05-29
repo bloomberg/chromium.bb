@@ -140,8 +140,8 @@ void ZipFileInstaller::ManifestRead(
 
   data_decoder::SafeJsonParser::Parse(
       connector_, *manifest_content,
-      base::Bind(&ZipFileInstaller::ManifestParsed, this, unzip_dir),
-      base::Bind(&ZipFileInstaller::ManifestParsingFailed, this));
+      base::BindOnce(&ZipFileInstaller::ManifestParsed, this, unzip_dir),
+      base::BindOnce(&ZipFileInstaller::ManifestParsingFailed, this));
 }
 
 void ZipFileInstaller::ManifestParsingFailed(const std::string& error) {

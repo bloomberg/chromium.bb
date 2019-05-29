@@ -44,8 +44,9 @@ void WebstoreInstallHelper::Start(
 
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      manifest_, base::Bind(&WebstoreInstallHelper::OnJSONParseSucceeded, this),
-      base::Bind(&WebstoreInstallHelper::OnJSONParseFailed, this));
+      manifest_,
+      base::BindOnce(&WebstoreInstallHelper::OnJSONParseSucceeded, this),
+      base::BindOnce(&WebstoreInstallHelper::OnJSONParseFailed, this));
 
   if (icon_url_.is_empty()) {
     icon_decode_complete_ = true;

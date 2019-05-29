@@ -380,10 +380,10 @@ void PaymentManifestParser::ParsePaymentMethodManifest(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       content,
-      base::Bind(&JsonParserCallback<PaymentMethodCallback>::OnSuccess,
-                 json_callback),
-      base::Bind(&JsonParserCallback<PaymentMethodCallback>::OnError,
-                 json_callback));
+      base::BindOnce(&JsonParserCallback<PaymentMethodCallback>::OnSuccess,
+                     json_callback),
+      base::BindOnce(&JsonParserCallback<PaymentMethodCallback>::OnError,
+                     json_callback));
 }
 
 void PaymentManifestParser::ParseWebAppManifest(const std::string& content,
@@ -400,10 +400,10 @@ void PaymentManifestParser::ParseWebAppManifest(const std::string& content,
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       content,
-      base::Bind(&JsonParserCallback<WebAppCallback>::OnSuccess,
-                 parser_callback),
-      base::Bind(&JsonParserCallback<WebAppCallback>::OnError,
-                 parser_callback));
+      base::BindOnce(&JsonParserCallback<WebAppCallback>::OnSuccess,
+                     parser_callback),
+      base::BindOnce(&JsonParserCallback<WebAppCallback>::OnError,
+                     parser_callback));
 }
 
 void PaymentManifestParser::ParseWebAppInstallationInfo(
@@ -419,10 +419,12 @@ void PaymentManifestParser::ParseWebAppInstallationInfo(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       content,
-      base::Bind(&JsonParserCallback<WebAppInstallationInfoCallback>::OnSuccess,
-                 sw_parser_callback),
-      base::Bind(&JsonParserCallback<WebAppInstallationInfoCallback>::OnError,
-                 sw_parser_callback));
+      base::BindOnce(
+          &JsonParserCallback<WebAppInstallationInfoCallback>::OnSuccess,
+          sw_parser_callback),
+      base::BindOnce(
+          &JsonParserCallback<WebAppInstallationInfoCallback>::OnError,
+          sw_parser_callback));
 }
 
 // static

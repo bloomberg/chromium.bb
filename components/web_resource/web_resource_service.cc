@@ -83,11 +83,12 @@ void WebResourceService::OnSimpleLoaderComplete(
     if (response_body->empty() || *response_body == "{}") {
       OnUnpackFinished(base::Value(base::Value::Type::DICTIONARY));
     } else {
-      parse_json_callback_.Run(*response_body,
-                               base::Bind(&WebResourceService::OnUnpackFinished,
-                                          weak_ptr_factory_.GetWeakPtr()),
-                               base::Bind(&WebResourceService::OnUnpackError,
-                                          weak_ptr_factory_.GetWeakPtr()));
+      parse_json_callback_.Run(
+          *response_body,
+          base::BindOnce(&WebResourceService::OnUnpackFinished,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&WebResourceService::OnUnpackError,
+                         weak_ptr_factory_.GetWeakPtr()));
     }
   } else {
     // Don't parse data if attempt to download was unsuccessful.

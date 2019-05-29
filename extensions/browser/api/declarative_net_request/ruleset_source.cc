@@ -347,19 +347,20 @@ void RulesetSource::IndexAndPersistJSONRuleset(
   // the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  auto error_callback = base::BindRepeating(&OnSafeJSONParserError,
-                                            repeating_callback, json_path_);
+  auto error_callback =
+      base::BindOnce(&OnSafeJSONParserError, repeating_callback, json_path_);
 
-  auto success_callback = base::BindRepeating(&OnSafeJSONParserSuccess, Clone(),
-                                              repeating_callback);
+  auto success_callback =
+      base::BindOnce(&OnSafeJSONParserSuccess, Clone(), repeating_callback);
 
   if (decoder_batch_id) {
-    data_decoder::SafeJsonParser::ParseBatch(connector, json_contents,
-                                             success_callback, error_callback,
-                                             *decoder_batch_id);
+    data_decoder::SafeJsonParser::ParseBatch(
+        connector, json_contents, std::move(success_callback),
+        std::move(error_callback), *decoder_batch_id);
   } else {
     data_decoder::SafeJsonParser::Parse(connector, json_contents,
-                                        success_callback, error_callback);
+                                        std::move(success_callback),
+                                        std::move(error_callback));
   }
 }
 

@@ -137,11 +137,11 @@ void DigitalAssetLinksHandler::OnURLLoadComplete(
   data_decoder::SafeJsonParser::Parse(
       /* connector=*/nullptr,  // Connector is unused on Android.
       *response_body,
-      base::Bind(&DigitalAssetLinksHandler::OnJSONParseSucceeded,
-                 weak_ptr_factory_.GetWeakPtr(), package, fingerprint,
-                 relationship),
-      base::Bind(&DigitalAssetLinksHandler::OnJSONParseFailed,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DigitalAssetLinksHandler::OnJSONParseSucceeded,
+                     weak_ptr_factory_.GetWeakPtr(), package, fingerprint,
+                     relationship),
+      base::BindOnce(&DigitalAssetLinksHandler::OnJSONParseFailed,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   url_loader_.reset(nullptr);
 }

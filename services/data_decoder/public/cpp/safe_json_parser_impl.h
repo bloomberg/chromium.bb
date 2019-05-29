@@ -28,8 +28,8 @@ class SafeJsonParserImpl : public SafeJsonParser {
  public:
   SafeJsonParserImpl(service_manager::Connector* connector,
                      const std::string& unsafe_json,
-                     const SuccessCallback& success_callback,
-                     const ErrorCallback& error_callback,
+                     SuccessCallback success_callback,
+                     ErrorCallback error_callback,
                      const base::Optional<base::Token>& batch_id);
 
  private:

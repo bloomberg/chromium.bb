@@ -262,12 +262,12 @@ PopularSitesImpl::PopularSitesImpl(
     const TemplateURLService* template_url_service,
     VariationsService* variations_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    ParseJSONCallback parse_json)
+    const ParseJSONCallback& parse_json)
     : prefs_(prefs),
       template_url_service_(template_url_service),
       variations_(variations_service),
       url_loader_factory_(std::move(url_loader_factory)),
-      parse_json_(std::move(parse_json)),
+      parse_json_(parse_json),
       is_fallback_(false),
       sections_(
           ParseSites(*prefs->GetList(prefs::kPopularSitesJsonPref),
@@ -465,10 +465,10 @@ void PopularSitesImpl::OnSimpleLoaderComplete(
   }
 
   parse_json_.Run(*response_body,
-                  base::Bind(&PopularSitesImpl::OnJsonParsed,
-                             weak_ptr_factory_.GetWeakPtr()),
-                  base::Bind(&PopularSitesImpl::OnJsonParseFailed,
-                             weak_ptr_factory_.GetWeakPtr()));
+                  base::BindOnce(&PopularSitesImpl::OnJsonParsed,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  base::BindOnce(&PopularSitesImpl::OnJsonParseFailed,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PopularSitesImpl::OnJsonParsed(base::Value json) {

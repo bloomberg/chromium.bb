@@ -126,10 +126,10 @@ void IntentConfigHelper::ParseConfig(const std::string& json_config) {
   // Parse JSON in utility process via Data Decoder Service.
   data_decoder::SafeJsonParser::Parse(
       connection->GetConnector(), json_config,
-      base::BindRepeating(&IntentConfigHelper::ParseConfigDone,
-                          weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&IntentConfigHelper::ParseConfigFailed,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&IntentConfigHelper::ParseConfigDone,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&IntentConfigHelper::ParseConfigFailed,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void IntentConfigHelper::ParseConfigDone(base::Value config_value) {

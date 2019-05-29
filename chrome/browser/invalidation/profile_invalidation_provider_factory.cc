@@ -56,7 +56,7 @@ std::unique_ptr<InvalidationService> CreateInvalidationServiceForSenderId(
           ->driver(),
       profile->GetPrefs(),
       base::BindRepeating(
-          data_decoder::SafeJsonParser::Parse,
+          &data_decoder::SafeJsonParser::Parse,
           content::ServiceManagerConnection::GetForProcess()->GetConnector()),
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess()

@@ -271,10 +271,10 @@ void SearchSuggestLoaderImpl::LoadDone(
   data_decoder::SafeJsonParser::Parse(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       response,
-      base::BindRepeating(&SearchSuggestLoaderImpl::JsonParsed,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&SearchSuggestLoaderImpl::JsonParseFailed,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&SearchSuggestLoaderImpl::JsonParsed,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&SearchSuggestLoaderImpl::JsonParseFailed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SearchSuggestLoaderImpl::JsonParsed(base::Value value) {

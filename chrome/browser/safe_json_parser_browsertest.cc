@@ -64,27 +64,28 @@ class SafeJsonParserTest : public InProcessBrowserTest {
     SafeJsonParser::SuccessCallback success_callback;
     SafeJsonParser::ErrorCallback error_callback;
     if (value_with_error.value) {
-      success_callback =
-          base::Bind(&SafeJsonParserTest::ExpectValue, base::Unretained(this),
-                     base::Passed(std::move(*value_with_error.value)));
-      error_callback = base::Bind(&SafeJsonParserTest::FailWithError,
-                                  base::Unretained(this));
+      success_callback = base::BindOnce(&SafeJsonParserTest::ExpectValue,
+                                        base::Unretained(this),
+                                        std::move(*value_with_error.value));
+      error_callback = base::BindOnce(&SafeJsonParserTest::FailWithError,
+                                      base::Unretained(this));
     } else {
-      success_callback = base::Bind(&SafeJsonParserTest::FailWithValue,
-                                    base::Unretained(this));
-      error_callback =
-          base::Bind(&SafeJsonParserTest::ExpectError, base::Unretained(this),
-                     value_with_error.error_message);
+      success_callback = base::BindOnce(&SafeJsonParserTest::FailWithValue,
+                                        base::Unretained(this));
+      error_callback = base::BindOnce(&SafeJsonParserTest::ExpectError,
+                                      base::Unretained(this),
+                                      value_with_error.error_message);
     }
 
     if (batch_id) {
       SafeJsonParser::ParseBatch(
           content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-          json, success_callback, error_callback, *batch_id);
+          json, std::move(success_callback), std::move(error_callback),
+          *batch_id);
     } else {
       SafeJsonParser::Parse(
           content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-          json, success_callback, error_callback);
+          json, std::move(success_callback), std::move(error_callback));
     }
 
     message_loop_runner_->Run();

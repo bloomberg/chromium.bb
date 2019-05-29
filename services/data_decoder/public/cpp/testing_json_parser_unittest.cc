@@ -22,11 +22,12 @@ class TestingJsonParserTest : public testing::Test {
  public:
   void Parse(const std::string& input) {
     base::RunLoop run_loop;
-    SafeJsonParser::Parse(/* connector=*/nullptr, input,
-                          base::Bind(&SuccessCallback, base::Unretained(this),
-                                     run_loop.QuitClosure()),
-                          base::Bind(&ErrorCallback, base::Unretained(this),
-                                     run_loop.QuitClosure()));
+    SafeJsonParser::Parse(
+        /* connector=*/nullptr, input,
+        base::BindOnce(&SuccessCallback, base::Unretained(this),
+                       run_loop.QuitClosure()),
+        base::BindOnce(&ErrorCallback, base::Unretained(this),
+                       run_loop.QuitClosure()));
     run_loop.Run();
   }
 
