@@ -22,11 +22,13 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/fake_browsing_data_counter_wrapper_producer.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -207,7 +209,6 @@ TEST_F(ClearBrowsingDataManagerTest, TestOnPreferenceChanged) {
   if (!IsNewClearBrowsingDataUIEnabled()) {
     return;
   }
-  ASSERT_EQ("en", GetApplicationContext()->GetApplicationLocale());
   [manager_ loadModel:model_];
   NSArray* timeRangeItems =
       [model_ itemsInSectionWithIdentifier:SectionIdentifierTimeRange];
@@ -218,9 +219,14 @@ TEST_F(ClearBrowsingDataManagerTest, TestOnPreferenceChanged) {
   // Changes of Time Range should trigger updates on Time Range item's
   // detailText.
   time_range_pref_.SetValue(2);
-  EXPECT_NSEQ(@"Past Week", timeRangeItem.detailText);
+  EXPECT_NSEQ(l10n_util::GetNSString(
+                  IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_WEEK),
+              timeRangeItem.detailText);
   time_range_pref_.SetValue(3);
-  EXPECT_NSEQ(@"Last 4 Weeks", timeRangeItem.detailText);
+  EXPECT_NSEQ(
+      l10n_util::GetNSString(
+          IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_LAST_FOUR_WEEKS),
+      timeRangeItem.detailText);
 }
 
 }  // namespace

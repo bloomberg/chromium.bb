@@ -504,23 +504,23 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OPEN_HISTORY_BUTTON" desc="Title of a button that allows the user to open history.google.com. [Length: 15em]">
         Open history.google.com
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_BEGINNING_OF_TIME" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data since the beginning of time. In titlecase. [Length: 22em] [iOS only]">
-        Beginning of Time
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_BEGINNING_OF_TIME" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data since the beginning of time. In titlecase.">
+        All Time
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_LAST_FOUR_WEEKS" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the last 4 weeks. In titlecase. [Length: 22em] [iOS only]">
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_LAST_FOUR_WEEKS" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the last 4 weeks. In titlecase.">
         Last 4 Weeks
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_OLDER_THAN_30_DAYS" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data that is older than 30 days. In titlecase. [Length: 22em] [iOS only]">
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_OLDER_THAN_30_DAYS" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data that is older than 30 days. In titlecase.">
         Older than 30 days
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_DAY" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past day. In titlecase. [Length: 22em] [iOS only]">
-        Past Day
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_DAY" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past day. In titlecase.">
+        Last 24 Hours
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_HOUR" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past hour. In titlecase. [Length: 22em] [iOS only]">
-        Past Hour
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_HOUR" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past hour. In titlecase.">
+        Last Hour
       </message>
-      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_WEEK" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past week. In titlecase. [Length: 22em] [iOS only]">
-        Past Week
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_OPTION_PAST_WEEK" desc="Label of a time range option. This is used to specify that the user wishes to clear their browsing data for the past week. In titlecase.">
+        Last 7 Days
       </message>
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE" desc="Title for the view that allows the user to pick a time range. The selector is used to pick the time period for which to clear the browsing data. In titlecase. [Length: 13em] [iOS only]">
         Time Range
