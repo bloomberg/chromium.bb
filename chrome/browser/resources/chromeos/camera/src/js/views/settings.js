@@ -40,6 +40,13 @@ cca.views.BaseSettings.prototype = {
 };
 
 /**
+ * @override
+ */
+cca.views.BaseSettings.prototype.focus = function() {
+  this.rootElement_.querySelector('[tabindex]').focus();
+};
+
+/**
  * Opens sub-settings.
  * @param {string} id Settings identifier.
  * @private
