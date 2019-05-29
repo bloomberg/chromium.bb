@@ -131,13 +131,13 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
 
     EXPECT_EQ(&dummy_holder->GetDocument(),
               cached_contents_->SingleOwnerDocument());
-    FrameUseCounter& use_counter1 =
-        dummy_holder->GetDocument().Loader()->GetUseCounter();
+    UseCounterHelper& use_counter1 =
+        dummy_holder->GetDocument().Loader()->GetUseCounterHelper();
     EXPECT_TRUE(
         use_counter1.IsCounted(CSSPropertyID::kBackgroundColor,
-                               FrameUseCounter::CSSPropertyType::kDefault));
+                               UseCounterHelper::CSSPropertyType::kDefault));
     EXPECT_FALSE(use_counter1.IsCounted(
-        CSSPropertyID::kColor, FrameUseCounter::CSSPropertyType::kDefault));
+        CSSPropertyID::kColor, UseCounterHelper::CSSPropertyType::kDefault));
 
     // Change owner document.
     cached_contents_->UnregisterClient(sheet);
@@ -160,15 +160,15 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
   rule2->Properties();
   EXPECT_TRUE(HasParsedProperties(rule2));
 
-  FrameUseCounter& use_counter2 =
-      dummy_holder2->GetDocument().Loader()->GetUseCounter();
+  UseCounterHelper& use_counter2 =
+      dummy_holder2->GetDocument().Loader()->GetUseCounterHelper();
   EXPECT_TRUE(sheet2);
   EXPECT_TRUE(use_counter2.IsCounted(
-      CSSPropertyID::kColor, FrameUseCounter::CSSPropertyType::kDefault));
+      CSSPropertyID::kColor, UseCounterHelper::CSSPropertyType::kDefault));
 
   EXPECT_FALSE(
       use_counter2.IsCounted(CSSPropertyID::kBackgroundColor,
-                             FrameUseCounter::CSSPropertyType::kDefault));
+                             UseCounterHelper::CSSPropertyType::kDefault));
 }
 
 }  // namespace blink

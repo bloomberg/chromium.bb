@@ -187,10 +187,10 @@ using ui::mojom::ImeTextSpanThickness;
 
 namespace {
 
-class FrameUseCounterObserverImpl final : public FrameUseCounter::Observer {
+class UseCounterHelperObserverImpl final : public UseCounterHelper::Observer {
  public:
-  FrameUseCounterObserverImpl(ScriptPromiseResolver* resolver,
-                              WebFeature feature)
+  UseCounterHelperObserverImpl(ScriptPromiseResolver* resolver,
+                               WebFeature feature)
       : resolver_(resolver), feature_(feature) {}
 
   bool OnCountFeature(WebFeature feature) final {
@@ -201,14 +201,14 @@ class FrameUseCounterObserverImpl final : public FrameUseCounter::Observer {
   }
 
   void Trace(blink::Visitor* visitor) override {
-    FrameUseCounter::Observer::Trace(visitor);
+    UseCounterHelper::Observer::Trace(visitor);
     visitor->Trace(resolver_);
   }
 
  private:
   Member<ScriptPromiseResolver> resolver_;
   WebFeature feature_;
-  DISALLOW_COPY_AND_ASSIGN(FrameUseCounterObserverImpl);
+  DISALLOW_COPY_AND_ASSIGN(UseCounterHelperObserverImpl);
 };
 
 }  // namespace
@@ -3199,13 +3199,13 @@ bool Internals::isUseCounted(Document* document, uint32_t feature) {
 bool Internals::isCSSPropertyUseCounted(Document* document,
                                         const String& property_name) {
   return document->IsUseCounted(unresolvedCSSPropertyID(property_name),
-                                FrameUseCounter::CSSPropertyType::kDefault);
+                                UseCounterHelper::CSSPropertyType::kDefault);
 }
 
 bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
                                                 const String& property_name) {
   return document->IsUseCounted(unresolvedCSSPropertyID(property_name),
-                                FrameUseCounter::CSSPropertyType::kAnimation);
+                                UseCounterHelper::CSSPropertyType::kAnimation);
 }
 
 void Internals::clearUseCounter(Document* document, uint32_t feature) {
@@ -3268,8 +3268,8 @@ ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
     return promise;
   }
 
-  loader->GetUseCounter().AddObserver(
-      MakeGarbageCollected<FrameUseCounterObserverImpl>(
+  loader->GetUseCounterHelper().AddObserver(
+      MakeGarbageCollected<UseCounterHelperObserverImpl>(
           resolver, static_cast<WebFeature>(use_counter_feature)));
   return promise;
 }

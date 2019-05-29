@@ -258,7 +258,7 @@ void HTMLIFrameElement::ParseAttribute(
     // To avoid polluting the console, this is being recorded only once per
     // page.
     if (name == "gesture" && value == "media" && GetDocument().Loader() &&
-        !GetDocument().Loader()->GetUseCounter().HasRecordedMeasurement(
+        !GetDocument().Loader()->GetUseCounterHelper().HasRecordedMeasurement(
             WebFeature::kHTMLIFrameElementGestureMedia)) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kHTMLIFrameElementGestureMedia);

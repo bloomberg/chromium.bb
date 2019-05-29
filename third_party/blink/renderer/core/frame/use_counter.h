@@ -104,13 +104,10 @@ class UseCounterMuteScope {
   Member<DocumentLoader> loader_;
 };
 
-// This is an implementation class of use counters for a Frame. Although
-// FrameUseCounter doesn't inherit UseCounter, a frame-related UseCounter is
-// associated with a FrameUseCounter and calls to the UseCounter will eventually
-// be redirected/delegated to the FrameUseCounter for actual processing.
-//
-// Changes on FrameUseCounter are observable by FrameUseCounter::Observer.
-class CORE_EXPORT FrameUseCounter final {
+// This class provides an implementation of UseCounter - see the class comment
+// of blink::UseCounter for the feature.
+// Changes on UseCounterHelper are observable by UseCounterHelper::Observer.
+class CORE_EXPORT UseCounterHelper final {
   DISALLOW_NEW();
 
  public:
@@ -135,9 +132,10 @@ class CORE_EXPORT FrameUseCounter final {
   // distinguish them.
   enum class CSSPropertyType { kDefault, kAnimation };
 
-  explicit FrameUseCounter(Context = kDefaultContext, CommitState = kPreCommit);
+  explicit UseCounterHelper(Context = kDefaultContext,
+                            CommitState = kPreCommit);
 
-  // An interface to observe FrameUseCounter changes. Note that this is never
+  // An interface to observe UseCounterHelper changes. Note that this is never
   // notified when the counter is disabled by |m_muteCount| or when |m_context|
   // is kDisabledContext.
   class Observer : public GarbageCollected<Observer> {
@@ -157,7 +155,7 @@ class CORE_EXPORT FrameUseCounter final {
 
   bool IsCounted(CSSPropertyID unresolved_property, CSSPropertyType) const;
 
-  // Retains a reference to the observer to notify of FrameUseCounter changes.
+  // Retains a reference to the observer to notify of UseCounterHelper changes.
   void AddObserver(Observer*);
 
   // Invoked when a new document is loaded into the main frame of the page.
@@ -197,8 +195,8 @@ class CORE_EXPORT FrameUseCounter final {
   // If non-zero, ignore all 'count' calls completely.
   unsigned mute_count_;
 
-  // The scope represented by this FrameUseCounter instance, which must be fixed
-  // for the duration of a page but can change when a new page is loaded.
+  // The scope represented by this UseCounterHelper instance, which must be
+  // fixed for the duration of a page but can change when a new page is loaded.
   Context context_;
   // CommitState tracks whether navigation has commited. Prior to commit,
   // UseCounters are logged locally and delivered to the browser only once the
@@ -214,7 +212,7 @@ class CORE_EXPORT FrameUseCounter final {
 
   HeapHashSet<Member<Observer>> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(FrameUseCounter);
+  DISALLOW_COPY_AND_ASSIGN(UseCounterHelper);
 };
 
 }  // namespace blink

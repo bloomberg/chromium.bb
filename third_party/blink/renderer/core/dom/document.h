@@ -1564,7 +1564,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void CountUse(mojom::WebFeature feature) final;
   void CountUse(mojom::WebFeature feature) const;
   void CountUse(CSSPropertyID property_id,
-                FrameUseCounter::CSSPropertyType) const;
+                UseCounterHelper::CSSPropertyType) const;
   // Count |feature| only when this document is associated with a cross-origin
   // iframe.
   void CountUseOnlyInCrossOriginIframe(mojom::WebFeature feature) const;
@@ -1574,7 +1574,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // Return whether the property was previously counted for this document.
   // NOTE: only for use in testing.
   bool IsUseCounted(CSSPropertyID property,
-                    FrameUseCounter::CSSPropertyType) const;
+                    UseCounterHelper::CSSPropertyType) const;
   void ClearUseCounterForTesting(mojom::WebFeature);
 
  protected:

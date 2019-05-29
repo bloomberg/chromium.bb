@@ -571,7 +571,7 @@ void DocumentLoader::BodyLoadingFinished(
   ResourceError resource_error = error.value();
   if (network_utils::IsCertificateTransparencyRequiredError(
           resource_error.ErrorCode())) {
-    GetUseCounter().Count(
+    GetUseCounterHelper().Count(
         WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad,
         GetFrame());
   }
@@ -1191,7 +1191,7 @@ void DocumentLoader::StartLoadingInternal() {
   if (!frame_->IsMainFrame() && response_.GetCTPolicyCompliance() ==
                                     ResourceResponse::kCTPolicyDoesNotComply) {
     // Exclude main-frame navigations; those are tracked elsewhere.
-    GetUseCounter().Count(
+    GetUseCounterHelper().Count(
         WebFeature::kCertificateTransparencyNonCompliantResourceInSubframe,
         GetFrame());
   }
@@ -1409,7 +1409,7 @@ void DocumentLoader::DidCommitNavigation(
                              PreloadHelper::kOnlyLoadNonMedia);
 
   frame_->GetPage()->DidCommitLoad(frame_);
-  GetUseCounter().DidCommitLoad(frame_);
+  GetUseCounterHelper().DidCommitLoad(frame_);
 
   // Report legacy TLS versions after Page::DidCommitLoad, because the latter
   // clears the console.

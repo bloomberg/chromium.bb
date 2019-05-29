@@ -8083,9 +8083,9 @@ void Document::CountUse(mojom::WebFeature feature) {
 }
 
 void Document::CountUse(CSSPropertyID property,
-                        FrameUseCounter::CSSPropertyType type) const {
+                        UseCounterHelper::CSSPropertyType type) const {
   if (DocumentLoader* loader = Loader()) {
-    loader->GetUseCounter().Count(property, type, GetFrame());
+    loader->GetUseCounterHelper().Count(property, type, GetFrame());
   }
 }
 
@@ -8098,22 +8098,22 @@ void Document::CountUseOnlyInCrossOriginIframe(
 
 bool Document::IsUseCounted(mojom::WebFeature feature) const {
   if (DocumentLoader* loader = Loader()) {
-    return loader->GetUseCounter().HasRecordedMeasurement(feature);
+    return loader->GetUseCounterHelper().HasRecordedMeasurement(feature);
   }
   return false;
 }
 
 bool Document::IsUseCounted(CSSPropertyID property,
-                            FrameUseCounter::CSSPropertyType type) const {
+                            UseCounterHelper::CSSPropertyType type) const {
   if (DocumentLoader* loader = Loader()) {
-    return loader->GetUseCounter().IsCounted(property, type);
+    return loader->GetUseCounterHelper().IsCounted(property, type);
   }
   return false;
 }
 
 void Document::ClearUseCounterForTesting(mojom::WebFeature feature) {
   if (DocumentLoader* loader = Loader())
-    loader->GetUseCounter().ClearMeasurementForTesting(feature);
+    loader->GetUseCounterHelper().ClearMeasurementForTesting(feature);
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;

@@ -266,8 +266,7 @@ class CORE_EXPORT DocumentLoader
 
   bool IsListingFtpDirectory() const { return listing_ftp_directory_; }
 
-  // TODO(yhirano): Rename this to GetFrameUseCounter.
-  FrameUseCounter& GetUseCounter() { return use_counter_; }
+  UseCounterHelper& GetUseCounterHelper() { return use_counter_; }
   Dactyloscoper& GetDactyloscoper() { return dactyloscoper_; }
 
   int ErrorCode() const { return error_code_; }
@@ -480,12 +479,12 @@ class CORE_EXPORT DocumentLoader
   Member<SourceKeyedCachedMetadataHandler> cached_metadata_handler_;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
 
-  // This FrameUseCounter tracks feature usage associated with the lifetime of
+  // This UseCounterHelper tracks feature usage associated with the lifetime of
   // the document load. Features recorded prior to commit will be recorded
   // locally. Once committed, feature usage will be piped to the browser side
   // page load metrics that aggregates usage from frames to one page load and
   // report feature usage to UMA histograms per page load.
-  FrameUseCounter use_counter_;
+  UseCounterHelper use_counter_;
 
   Dactyloscoper dactyloscoper_;
 };

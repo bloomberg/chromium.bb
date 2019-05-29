@@ -1391,7 +1391,7 @@ void LocalFrame::ForceSynchronousDocumentInstall(
   // Do not track PageVisits for inspector, web page popups, and validation
   // message overlays (the other callers of this method).
   if (GetDocument()->IsSVGDocument())
-    loader_.GetDocumentLoader()->GetUseCounter().DidCommitLoad(this);
+    loader_.GetDocumentLoader()->GetUseCounterHelper().DidCommitLoad(this);
 }
 
 bool LocalFrame::IsProvisional() const {
