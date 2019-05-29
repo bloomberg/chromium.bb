@@ -383,7 +383,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   if (preview_image_)
     preview_image_->SetVisible(!tab->IsActive());
 
-  UpdateCardContent(tab->data());
+  UpdateCardContent(tab);
   // If widget is already visible and anchored to the correct tab we should not
   // try to reset the anchor view or reshow.
   if (widget_->IsVisible() && GetAnchorView() == tab &&
@@ -474,11 +474,11 @@ void TabHoverCardBubbleView::FadeInToShow() {
   fade_animation_delegate_->FadeIn();
 }
 
-void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
-  title_label_->SetText(data.title);
+void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
+  title_label_->SetText(tab->data().title);
 
   base::string16 domain = url_formatter::FormatUrl(
-      data.last_committed_url,
+      tab->data().last_committed_url,
       url_formatter::kFormatUrlOmitDefaults |
           url_formatter::kFormatUrlOmitHTTPS |
           url_formatter::kFormatUrlOmitTrivialSubdomains |
@@ -490,12 +490,12 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
   if (preview_image_ && preview_image_->GetVisible()) {
     // If there is no valid thumbnail data, blank out the preview, else wait for
     // the image data to be decoded and update momentarily.
-    if (!data.thumbnail.AsImageSkiaAsync(
+    if (!tab->data().thumbnail.AsImageSkiaAsync(
             base::BindOnce(&TabHoverCardBubbleView::UpdatePreviewImage,
                            weak_factory_.GetWeakPtr()))) {
       // Check the no-preview color and size to see if it needs to be
       // regenerated. DPI or theme change can cause a regeneration.
-      const SkColor foreground_color = GetThemeProvider()->GetColor(
+      const SkColor foreground_color = tab->GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND);
 
       // Set the no-preview placeholder image. All sizes are in DIPs.
@@ -510,7 +510,7 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
       preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
 
       // Also possibly regenerate the background if it has changed.
-      const SkColor background_color = GetThemeProvider()->GetColor(
+      const SkColor background_color = tab->GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND);
       if (!preview_image_->background() ||
           preview_image_->background()->get_color() != background_color) {

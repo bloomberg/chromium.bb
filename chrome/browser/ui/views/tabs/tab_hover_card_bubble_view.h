@@ -23,7 +23,6 @@ class Widget;
 }  // namespace views
 
 class Tab;
-struct TabRendererData;
 
 // Dialog that displays an informational hover card containing page information.
 class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
@@ -55,8 +54,8 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
   void FadeInToShow();
 
-  // Updates and formats title and domain with given data.
-  void UpdateCardContent(TabRendererData data);
+  // Updates and formats title, domain, and preview image.
+  void UpdateCardContent(const Tab* tab);
 
   void UpdatePreviewImage(gfx::ImageSkia preview_image);
 
