@@ -5,12 +5,15 @@
 #include "chrome/browser/chromeos/login/saml/saml_password_expiry_notification.h"
 
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/session/session_activation_observer.h"
+#include "ash/public/cpp/session/session_controller.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -109,57 +112,75 @@ const base::TaskTraits kRecheckTaskTraits = {
     content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
-// A task to check again if the notification should be shown at a later time.
-// This has weak pointers so that it pending tasks can be canceled.
-class RecheckTask {
+// Returns true if |profile| is still valid.
+bool IsValidProfile(Profile* profile) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager && profile_manager->IsValidProfile(profile);
+}
+
+// Returns true if showing the notification is enabled for this profile.
+bool IsEnabledForProfile(Profile* profile) {
+  return chromeos::ProfileHelper::IsPrimaryProfile(profile) &&
+         profile->GetPrefs()->GetBoolean(
+             prefs::kSamlInSessionPasswordChangeEnabled);
+}
+
+// The Rechecker checks periodically if the notification should be shown or
+// updated. When it checks depends on when the password will expire.
+// There is only at most one Rechecker at a time - for the primary user.
+class Rechecker : public ash::SessionActivationObserver {
  public:
-  void Run(Profile* profile) {
-    MaybeShowSamlPasswordExpiryNotification(profile);
-  }
+  // Checks again if the notification should be shown, and maybe shows it.
+  void Recheck();
 
-  // Check again whether to show notification for |profile| after |delay|.
-  void PostDelayed(Profile* profile, base::TimeDelta delay) {
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, kRecheckTaskTraits,
-        base::BindOnce(&RecheckTask::Run, weak_ptr_factory.GetWeakPtr(),
-                       profile),
-        delay);
-  }
+  // Calls recheck after the given |delay|.
+  void RecheckAfter(base::TimeDelta delay);
 
-  // Cancel any scheduled tasks to check again.
-  void CancelIfPending() { weak_ptr_factory.InvalidateWeakPtrs(); }
+  // Cancels any pending tasks to call Recheck again.
+  void CancelPendingRecheck();
+
+  // ash::SessionActivationObserver:
+  void OnSessionActivated(bool activated) override {}  // Not needed.
+  void OnLockStateChanged(bool locked) override;
+
+  // Ensures the singleton is initialized and started for the given profile.
+  static void StartForProfile(Profile* profile);
+  // Stops and deletes the Rechecker singleton.
+  static void Stop();
 
  private:
-  base::WeakPtrFactory<RecheckTask> weak_ptr_factory{this};
+  // The constructor and destructor also maintain the singleton instance.
+  Rechecker(Profile* profile, const AccountId& account_id);
+  ~Rechecker() override;
+
+  // Singleton, since we only ever need one instance_ for the primary user.
+  static Rechecker* instance_;
+
+  Profile* profile_;
+  const AccountId account_id_;
+  base::WeakPtrFactory<Rechecker> weak_ptr_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(Rechecker);
 };
 
-// Keep only a single instance of the RecheckTask, so that we can easily cancel
-// all pending tasks just by invalidating weak pointers to this one task.
-base::NoDestructor<RecheckTask> recheck_task_instance;
+void Rechecker::Recheck() {
+  // This cancels any pending call to Recheck - we don't want some bug to cause
+  // us to queue up lots of calls to Recheck in the future, we only want one.
+  CancelPendingRecheck();
 
-}  // namespace
-
-void MaybeShowSamlPasswordExpiryNotification(Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // This cancels any pending RecheckTask - we don't want a situation where
-  // accidentally this function more than once means lots of identical
-  // RecheckTasks are added to the work queue.
-  recheck_task_instance->CancelIfPending();
-
-  // This could be run after a long delay. Check it still makes sense to run.
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager || !profile_manager->IsValidProfile(profile)) {
+  // In case the profile has been deleted since this task was posted.
+  if (!IsValidProfile(profile_)) {
+    delete this;  // No need to keep calling recheck.
     return;
   }
 
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
   SamlPasswordAttributes attrs = SamlPasswordAttributes::LoadFromPrefs(prefs);
-  if (!prefs->GetBoolean(prefs::kSamlInSessionPasswordChangeEnabled) ||
-      !attrs.has_expiration_time()) {
-    // No information about password expiry, or this feature is disabled.
-    // Hide the notification (just in case it is shown) and return.
-    DismissSamlPasswordExpiryNotification(profile);
+  if (!IsEnabledForProfile(profile_) || !attrs.has_expiration_time()) {
+    // Feature is not enabled for this profile, or profile is not primary, or
+    // there is no expiration time. Dismiss if shown, and stop checking.
+    DismissSamlPasswordExpiryNotification(profile_);
+    delete this;
     return;
   }
 
@@ -174,25 +195,95 @@ void MaybeShowSamlPasswordExpiryNotification(Profile* profile) {
   if (less_than_n_days <= advance_warning_days) {
     // The password is expired, or expires in less than |advance_warning_days|.
     // So we show a notification immediately.
-    ShowSamlPasswordExpiryNotification(profile, less_than_n_days);
+    ShowSamlPasswordExpiryNotification(profile_, less_than_n_days);
     // We check again whether to reshow / update the notification after one day:
-    recheck_task_instance->PostDelayed(profile, kOneDay);
-    return;
+    RecheckAfter(kOneDay);
+
+  } else {
+    // We have not yet reached the advance warning threshold. Check again
+    // once we have arrived at expiry_time minus advance_warning_days...
+    base::TimeDelta recheck_delay =
+        time_until_expiry - base::TimeDelta::FromDays(advance_warning_days);
+    // But, wait an extra hour so that when this code is next run, it is clear
+    // we are now inside advance_warning_days (and not right on the boundary).
+    recheck_delay += kOneHour;
+    RecheckAfter(recheck_delay);
+  }
+}
+
+void Rechecker::RecheckAfter(base::TimeDelta delay) {
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, kRecheckTaskTraits,
+      base::BindOnce(&Rechecker::Recheck, weak_ptr_factory_.GetWeakPtr()),
+      std::max(delay, kOneHour));
+  // This always waits at least one hour before calling Recheck again - we don't
+  // want some bug to cause this code to run every millisecond.
+}
+
+void Rechecker::CancelPendingRecheck() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void Rechecker::OnLockStateChanged(bool locked) {
+  if (!locked) {
+    // TODO(olsen): Reshow the notification when screen is unlocked.
+  }
+}
+
+// static
+void Rechecker::StartForProfile(Profile* profile) {
+  if (!instance_) {
+    const AccountId account_id =
+        ProfileHelper::Get()->GetUserByProfile(profile)->GetAccountId();
+    new Rechecker(profile, account_id);
+  }
+  DCHECK(instance_ && instance_->profile_ == profile);
+  instance_->Recheck();
+}
+
+// static
+void Rechecker::Stop() {
+  delete instance_;
+}
+
+// static
+Rechecker* Rechecker::instance_ = nullptr;
+
+Rechecker::Rechecker(Profile* profile, const AccountId& account_id)
+    : profile_(profile), account_id_(account_id) {
+  // There must not be an existing singleton instance.
+  DCHECK(!instance_);
+  instance_ = this;
+
+  // Add |this| as a SessionActivationObserver to see when the screen is locked.
+  auto* session_controller = ash::SessionController::Get();
+  if (session_controller) {
+    session_controller->AddSessionActivationObserverForAccountId(account_id_,
+                                                                 this);
+  }
+}
+
+Rechecker::~Rechecker() {
+  // Remove this as a SessionActivationObserver.
+  auto* session_controller = ash::SessionController::Get();
+  if (session_controller) {
+    session_controller->RemoveSessionActivationObserverForAccountId(account_id_,
+                                                                    this);
   }
 
-  // We have not yet reached the advance warning threshold. Run this code again
-  // once we have arrived at expiry_time minus advance_warning_days...
-  base::TimeDelta recheck_delay =
-      time_until_expiry - base::TimeDelta::FromDays(advance_warning_days);
-  // But, wait an extra hour so that when this code is next run, it is clear we
-  // are now inside advance_warning_days (and not right on the boundary).
-  recheck_delay += kOneHour;
-  // And never wait less than an hour before running again - we don't want some
-  // bug causing this code to run every millisecond...
-  recheck_delay = std::max(recheck_delay, kOneHour);
+  // This should still be the singleton instance.
+  DCHECK_EQ(this, instance_);
+  instance_ = nullptr;
+}
 
-  // Check again whether to show notification after recheck_delay.
-  recheck_task_instance->PostDelayed(profile, recheck_delay);
+}  // namespace
+
+void MaybeShowSamlPasswordExpiryNotification(Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (IsEnabledForProfile(profile)) {
+    Rechecker::StartForProfile(profile);
+  }
 }
 
 void ShowSamlPasswordExpiryNotification(Profile* profile,
@@ -215,6 +306,11 @@ void DismissSamlPasswordExpiryNotification(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
       kNotificationHandlerType, kNotificationId);
+}
+
+void ResetSamlPasswordExpiryNotificationForTesting() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  Rechecker::Stop();
 }
 
 }  // namespace chromeos

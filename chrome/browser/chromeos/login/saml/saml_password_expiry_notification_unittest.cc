@@ -7,6 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -15,6 +17,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/login/auth/saml_password_attributes.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,11 +54,22 @@ class SamlPasswordExpiryNotificationTest : public testing::Test {
         prefs::kSamlPasswordExpirationAdvanceWarningDays,
         kAdvanceWarningTime.InDays());
 
+    std::unique_ptr<FakeChromeUserManager> fake_user_manager =
+        std::make_unique<FakeChromeUserManager>();
+    fake_user_manager->AddUser(user_manager::StubAccountId());
+    fake_user_manager->LoginUser(user_manager::StubAccountId());
+    ASSERT_TRUE(fake_user_manager->GetPrimaryUser());
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(fake_user_manager));
+
     display_service_tester_ =
         std::make_unique<NotificationDisplayServiceTester>(profile_);
   }
 
-  void TearDown() override { display_service_tester_.reset(); }
+  void TearDown() override {
+    display_service_tester_.reset();
+    ResetSamlPasswordExpiryNotificationForTesting();
+  }
 
  protected:
   base::Optional<Notification> Notification() {
@@ -78,6 +93,8 @@ class SamlPasswordExpiryNotificationTest : public testing::Test {
       base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
   TestingProfile* profile_;
+
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
 };
 
