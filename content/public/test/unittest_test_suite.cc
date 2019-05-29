@@ -11,7 +11,9 @@
 #include "base/rand_util.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "content/browser/network_service_instance_impl.h"
 #include "content/test/test_blink_web_unit_test_support.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/blink.h"
 
 #if defined(USE_AURA)
@@ -28,6 +30,31 @@
 
 namespace content {
 
+namespace {
+
+// The global NetworkService object could be created in some tests due to
+// various StoragePartition calls. Since it has a mojo pipe that is bound using
+// the current thread, which goes away between tests, we need to destruct it to
+// avoid calls being dropped silently.
+class ResetNetworkServiceBetweenTests : public testing::EmptyTestEventListener {
+ public:
+  ResetNetworkServiceBetweenTests() = default;
+
+  void OnTestEnd(const testing::TestInfo& test_info) override {
+    // If the network::NetworkService object was instantiated during a unit test
+    // it will be deleted because network_service_instance.cc has it in a
+    // SequenceLocalStorageSlot. However we want to synchronously destruct the
+    // InterfacePtr pointing to it to avoid it getting the connection error
+    // later and have other tests use the InterfacePtr that is invalid.
+    ResetNetworkServiceForTesting();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResetNetworkServiceBetweenTests);
+};
+
+}  // namespace
+
 UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
     : test_suite_(test_suite) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -35,6 +62,12 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
       command_line->GetSwitchValueASCII(switches::kEnableFeatures);
   std::string disabled =
       command_line->GetSwitchValueASCII(switches::kDisableFeatures);
+
+  ForceCreateNetworkServiceDirectlyForTesting();
+
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(new ResetNetworkServiceBetweenTests);
 
   // Unit tests don't currently work with the Network Service enabled.
   // base::TestSuite will reset the FeatureList, so modify the underlying

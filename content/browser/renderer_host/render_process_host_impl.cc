@@ -109,6 +109,7 @@
 #include "content/browser/media/midi_host.h"
 #include "content/browser/mime_registry_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/network_service_instance_impl.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"

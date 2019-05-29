@@ -103,6 +103,8 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void TearDown() override {
+    system_network_context_.reset();
+
     signin_ui_web_contents_.reset();
 
     signin_browser_context_.reset();

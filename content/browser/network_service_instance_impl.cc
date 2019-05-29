@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/network_service_instance.h"
+#include "content/browser/network_service_instance_impl.h"
 
 #include <map>
 #include <memory>
@@ -17,12 +17,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/network_service_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -45,9 +47,16 @@ constexpr char kKrb5CCEnvName[] = "KRB5CCNAME";
 constexpr char kKrb5ConfEnvName[] = "KRB5_CONFIG";
 #endif
 
+bool g_force_create_network_service_directly = false;
 network::mojom::NetworkServicePtr* g_network_service_ptr = nullptr;
 network::NetworkConnectionTracker* g_network_connection_tracker;
-network::NetworkService* g_network_service;
+
+std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
+  static base::NoDestructor<
+      base::SequenceLocalStorageSlot<std::unique_ptr<network::NetworkService>>>
+      service;
+  return service->Get();
+}
 
 network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
   network::mojom::NetworkServiceParamsPtr network_service_params =
@@ -80,14 +89,14 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
 }
 
 void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
-  if (g_network_service) {
+  if (GetLocalNetworkService()) {
     // GetNetworkServiceImpl() was already called and created the object, so
     // just bind it.
-    g_network_service->Bind(std::move(request));
+    GetLocalNetworkService()->Bind(std::move(request));
     return;
   }
 
-  g_network_service = new network::NetworkService(
+  GetLocalNetworkService() = std::make_unique<network::NetworkService>(
       nullptr, std::move(request), GetContentClient()->browser()->GetNetLog());
 }
 
@@ -112,10 +121,12 @@ void OnNetworkServiceCrash() {
 }  // namespace
 
 network::mojom::NetworkService* GetNetworkService() {
-  service_manager::Connector* connector =
-      base::FeatureList::IsEnabled(network::features::kNetworkService)
-          ? ServiceManagerConnection::GetForProcess()->GetConnector()
-          : nullptr;
+  service_manager::Connector* connector = nullptr;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      ServiceManagerConnection::GetForProcess() &&  // null in unit tests.
+      !g_force_create_network_service_directly) {
+    connector = ServiceManagerConnection::GetForProcess()->GetConnector();
+  }
   return GetNetworkServiceFromConnector(connector);
 }
 
@@ -145,13 +156,12 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
       auto request = mojo::MakeRequest(g_network_service_ptr);
       auto leaked_pipe = request.PassMessagePipe().release();
     } else {
-      if (is_network_service_enabled) {
+      if (is_network_service_enabled && connector) {
         connector->BindInterface(mojom::kNetworkServiceName,
                                  g_network_service_ptr);
         g_network_service_ptr->set_connection_error_handler(
             base::BindOnce(&OnNetworkServiceCrash));
       } else {
-        DCHECK(!g_network_service_ptr->is_bound());
         base::PostTaskWithTraits(
             FROM_HERE, {BrowserThread::IO},
             base::BindOnce(CreateNetworkServiceOnIO,
@@ -237,12 +247,12 @@ RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler) {
 network::NetworkService* GetNetworkServiceImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  if (!g_network_service) {
-    g_network_service = new network::NetworkService(
+  if (!GetLocalNetworkService()) {
+    GetLocalNetworkService() = std::make_unique<network::NetworkService>(
         nullptr, nullptr, GetContentClient()->browser()->GetNetLog());
   }
 
-  return g_network_service;
+  return GetLocalNetworkService().get();
 }
 
 #if defined(OS_CHROMEOS)
@@ -309,6 +319,15 @@ scoped_refptr<base::DeferredSequencedTaskRunner> GetNetworkTaskRunner() {
   static base::NoDestructor<scoped_refptr<base::DeferredSequencedTaskRunner>>
       instance(new base::DeferredSequencedTaskRunner());
   return instance->get();
+}
+
+void ForceCreateNetworkServiceDirectlyForTesting() {
+  g_force_create_network_service_directly = true;
+}
+
+void ResetNetworkServiceForTesting() {
+  delete g_network_service_ptr;
+  g_network_service_ptr = nullptr;
 }
 
 }  // namespace content

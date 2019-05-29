@@ -77,7 +77,13 @@ class AndroidTelemetryServiceTest : public testing::Test {
         std::make_unique<AndroidTelemetryService>(sb_service_.get(), profile());
   }
 
-  void TearDown() override {}
+  void TearDown() override {
+    // Make sure the NetworkContext owned by SafeBrowsingService is destructed
+    // before the NetworkService object..
+    browser_process_->safe_browsing_service()->ShutDown();
+    browser_process_->SetSafeBrowsingService(nullptr);
+    base::RunLoop().RunUntilIdle();
+  }
 
   bool CanSendPing(download::DownloadItem* item) {
     return telemetry_service_->CanSendPing(item);
