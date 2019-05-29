@@ -63,11 +63,25 @@ public class TaskTraits {
         CHOREOGRAPHER_FRAME.mIsChoreographerFrame = true;
     }
 
+    // For tasks that should run on the thread pool instead of the main thread.
+    // Note that currently also tasks which lack this trait will execute on the
+    // thread pool unless a trait for a named thread is given.
+    // TODO(skyostil@): Make it required to state the thread affinity for all
+    // tasks.
+    public static final TaskTraits THREAD_POOL = new TaskTraits().threadPool();
+    public static final TaskTraits THREAD_POOL_USER_BLOCKING =
+            THREAD_POOL.taskPriority(TaskPriority.USER_BLOCKING);
+    public static final TaskTraits THREAD_POOL_USER_VISIBLE =
+            THREAD_POOL.taskPriority(TaskPriority.USER_VISIBLE);
+    public static final TaskTraits THREAD_POOL_BEST_EFFORT =
+            THREAD_POOL.taskPriority(TaskPriority.BEST_EFFORT);
+
     // For convenience of the JNI code, we use primitive types only.
     // Note shutdown behavior is not supported on android.
     boolean mPrioritySetExplicitly;
     int mPriority;
     boolean mMayBlock;
+    boolean mUseThreadPool;
     byte mExtensionId;
     byte mExtensionData[];
     boolean mIsChoreographerFrame;
@@ -81,6 +95,7 @@ public class TaskTraits {
         mPrioritySetExplicitly = other.mPrioritySetExplicitly;
         mPriority = other.mPriority;
         mMayBlock = other.mMayBlock;
+        mUseThreadPool = other.mUseThreadPool;
         mExtensionId = other.mExtensionId;
         mExtensionData = other.mExtensionData;
     }
@@ -102,6 +117,12 @@ public class TaskTraits {
     public TaskTraits mayBlock() {
         TaskTraits taskTraits = new TaskTraits(this);
         taskTraits.mMayBlock = true;
+        return taskTraits;
+    }
+
+    public TaskTraits threadPool() {
+        TaskTraits taskTraits = new TaskTraits(this);
+        taskTraits.mUseThreadPool = true;
         return taskTraits;
     }
 
@@ -158,6 +179,7 @@ public class TaskTraits {
         hash = 37 * hash + (mPrioritySetExplicitly ? 0 : 1);
         hash = 37 * hash + mPriority;
         hash = 37 * hash + (mMayBlock ? 0 : 1);
+        hash = 37 * hash + (mUseThreadPool ? 0 : 1);
         hash = 37 * hash + (int) mExtensionId;
         hash = 37 * hash + Arrays.hashCode(mExtensionData);
         hash = 37 * hash + (mIsChoreographerFrame ? 0 : 1);

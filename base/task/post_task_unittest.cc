@@ -106,6 +106,9 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
   EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, {MayBlock()}, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());
 
+  EXPECT_TRUE(PostTaskWithTraits(FROM_HERE, {ThreadPool()}, DoNothing()));
+  EXPECT_FALSE(executor_.runner()->HasPendingTask());
+
   // Task runners without extension should not be the executor's.
   auto task_runner = CreateTaskRunnerWithTraits({});
   EXPECT_NE(executor_.runner(), task_runner);
@@ -115,6 +118,19 @@ TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
   EXPECT_NE(executor_.runner(), single_thread_task_runner);
 #if defined(OS_WIN)
   auto comsta_task_runner = CreateCOMSTATaskRunnerWithTraits({});
+  EXPECT_NE(executor_.runner(), comsta_task_runner);
+#endif  // defined(OS_WIN)
+
+  // Thread pool task runners should not be the executor's.
+  task_runner = CreateTaskRunnerWithTraits({ThreadPool()});
+  EXPECT_NE(executor_.runner(), task_runner);
+  sequenced_task_runner = CreateSequencedTaskRunnerWithTraits({ThreadPool()});
+  EXPECT_NE(executor_.runner(), sequenced_task_runner);
+  single_thread_task_runner =
+      CreateSingleThreadTaskRunnerWithTraits({ThreadPool()});
+  EXPECT_NE(executor_.runner(), single_thread_task_runner);
+#if defined(OS_WIN)
+  comsta_task_runner = CreateCOMSTATaskRunnerWithTraits({ThreadPool()});
   EXPECT_NE(executor_.runner(), comsta_task_runner);
 #endif  // defined(OS_WIN)
 }

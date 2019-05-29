@@ -46,9 +46,10 @@ TaskExecutor* GetTaskExecutorForTraits(const TaskTraits& traits) {
       << "Ref. Prerequisite section of post_task.h.\n\n"
          "Hint: if this is in a unit test, you're likely merely missing a "
          "base::test::ScopedTaskEnvironment member in your fixture.\n";
-  return executor ? executor
-                  : static_cast<internal::ThreadPoolImpl*>(
-                        ThreadPoolInstance::Get());
+  // TODO(skyostil): Make thread affinity a required trait.
+  if (!executor || traits.use_thread_pool())
+    return static_cast<internal::ThreadPoolImpl*>(ThreadPoolInstance::Get());
+  return executor;
 }
 
 }  // namespace
