@@ -4033,4 +4033,9 @@
   <message name="IDS_GNUBBY_NOTIFICATION_MESSAGE" desc="Text for notifications informing user that Chrome is requestor for U2FD.">
     Please tap your power button
   </message>
+
+  <!-- Strings for login screen extension UI -->
+  <message name="IDS_LOGIN_EXTENSION_UI_DIALOG_TITLE" desc="Dialog title for windows opened from a login screen extension. These windows will be displayed over the login screen.">
+    This authentication service is hosted by <ph name="EXTENSION_NAME">$1<ex>Identity Provider Name</ex></ph>
+  </message>
 </grit-part>
