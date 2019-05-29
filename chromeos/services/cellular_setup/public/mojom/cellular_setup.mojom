@@ -80,12 +80,8 @@ interface ActivationDelegate {
 
 // Interface used to set up a cellular connection.
 interface CellularSetup {
-  // Entrypoint to the activation flow. |cellular_network_guid| corresponds to
-  // the GUID associated with the cellular network, obtained via
-  // chromeos::NetworkState::guid(). |delegate|'s OnActivationFinished()
-  // function is guaranteed to be called. If |delegate| becomes disconnected
+  // Entrypoint to the activation flow. If |delegate| becomes disconnected
   // during the activation process, activation is cancelled.
-  StartActivation(
-      string cellular_network_guid,
-      ActivationDelegate delegate) => (CarrierPortalHandler observer);
+  StartActivation(ActivationDelegate delegate)
+      => (CarrierPortalHandler observer);
 };

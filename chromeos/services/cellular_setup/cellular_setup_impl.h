@@ -29,8 +29,7 @@ class CellularSetupImpl : public CellularSetupBase {
   CellularSetupImpl();
 
   // mojom::CellularSetup:
-  void StartActivation(const std::string& cellular_network_guid,
-                       mojom::ActivationDelegatePtr delegate,
+  void StartActivation(mojom::ActivationDelegatePtr delegate,
                        StartActivationCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(CellularSetupImpl);

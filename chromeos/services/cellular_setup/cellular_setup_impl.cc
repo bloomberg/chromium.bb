@@ -37,7 +37,6 @@ CellularSetupImpl::CellularSetupImpl() = default;
 CellularSetupImpl::~CellularSetupImpl() = default;
 
 void CellularSetupImpl::StartActivation(
-    const std::string& cellular_network_guid,
     mojom::ActivationDelegatePtr delegate,
     StartActivationCallback callback) {
   // TODO(khorimoto): Actually return a CarrierPortalObserver instead of
