@@ -88,7 +88,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // cases that we use a different URL from history than the frame's src.
   virtual bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      const GURL& default_url);
+      const GURL& default_url,
+      mojom::NavigationClientAssociatedPtrInfo* navigation_client);
 
   // Navigation requests -------------------------------------------------------
 

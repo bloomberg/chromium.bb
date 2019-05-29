@@ -2137,7 +2137,8 @@ void NavigationControllerImpl::NotifyUserActivation() {
 
 bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& default_url) {
+    const GURL& default_url,
+    mojom::NavigationClientAssociatedPtrInfo* navigation_client) {
   NavigationEntryImpl* entry =
       GetEntryWithUniqueID(render_frame_host->nav_entry_id());
   if (!entry)
@@ -2175,6 +2176,9 @@ bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
 
   if (!request)
     return false;
+
+  request->SetNavigationClient(std::move(*navigation_client),
+                               render_frame_host->GetSiteInstance()->GetId());
 
   render_frame_host->frame_tree_node()->navigator()->Navigate(
       std::move(request), ReloadType::NONE, RestoreType::NONE);

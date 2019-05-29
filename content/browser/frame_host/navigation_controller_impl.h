@@ -99,7 +99,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // navigation to |default_url| should be done instead.
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      const GURL& default_url);
+      const GURL& default_url,
+      mojom::NavigationClientAssociatedPtrInfo* navigation_client);
 
   // Navigates to a specified offset from the "current entry". Currently records
   // a histogram indicating whether the session history navigation would only

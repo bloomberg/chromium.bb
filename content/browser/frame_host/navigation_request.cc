@@ -638,14 +638,8 @@ NavigationRequest::NavigationRequest(
 
     if (IsPerNavigationMojoInterfaceEnabled()) {
       DCHECK(navigation_client.is_valid());
-      request_navigation_client_ = mojom::NavigationClientAssociatedPtr();
-      request_navigation_client_.Bind(std::move(navigation_client));
-      // Binds the OnAbort callback
-      HandleInterfaceDisconnection(
-          &request_navigation_client_,
-          base::BindOnce(&NavigationRequest::OnRendererAbortedNavigation,
-                         base::Unretained(this)));
-      associated_site_instance_id_ = source_site_instance_->GetId();
+      SetNavigationClient(std::move(navigation_client),
+                          source_site_instance_->GetId());
     }
   } else if (entry) {
     DCHECK(!navigation_client.is_valid());
@@ -2759,6 +2753,26 @@ void NavigationRequest::UpdateStateFollowingRedirect(
 #endif
 
   navigation_handle_->SetCompleteCallback(std::move(callback));
+}
+
+void NavigationRequest::SetNavigationClient(
+    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+    int32_t associated_site_instance_id) {
+  DCHECK(from_begin_navigation_ ||
+         common_params_.is_history_navigation_in_new_child_frame);
+  DCHECK(!request_navigation_client_);
+  if (!navigation_client.is_valid())
+    return;
+
+  request_navigation_client_ = mojom::NavigationClientAssociatedPtr();
+  request_navigation_client_.Bind(std::move(navigation_client));
+
+  // Binds the OnAbort callback
+  HandleInterfaceDisconnection(
+      &request_navigation_client_,
+      base::BindOnce(&NavigationRequest::OnRendererAbortedNavigation,
+                     base::Unretained(this)));
+  associated_site_instance_id_ = associated_site_instance_id;
 }
 
 }  // namespace content

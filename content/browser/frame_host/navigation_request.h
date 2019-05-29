@@ -419,6 +419,14 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   Referrer& sanitized_referrer() { return sanitized_referrer_; }
 
+  // This should be a private method. The only valid reason to be used
+  // outside of the class constructor is in the case of an initial history
+  // navigation in a subframe. This allows a browser-initiated NavigationRequest
+  // to be canceled by the renderer.
+  void SetNavigationClient(
+      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      int32_t associated_site_instance_id);
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
