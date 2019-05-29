@@ -77,7 +77,7 @@
       Can remotely change your device setup.
     </message>
     <message name="IDS_MANAGEMENT_DEVICE_MANAGED_DATA" desc="Continuation of the managed device clarification sentence explaining device user data management.">
-      Controls how your device data is handled. Google processes your device data exclusively under the direction of your device manager and solely for the purposes specified by your device manager.
+      Controls how your device data is handled. How Google processes and uses your device data is determined by your device manager.
     </message>
     <!-- Device and account managed clarification -->
     <message name="IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_CLARIFICATION" desc="First part of the sentence of the managed device and account clarification, when enrollment domain equals account domain.">
@@ -87,7 +87,7 @@
       Can remotely change your device and account setup.
     </message>
     <message name="IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_DATA" desc="Continuation of the managed device and account clarification sentence explaining device and account user data management.">
-      Controls how your device and account data is handled. Google processes your device and account data exclusively under the direction of your device and account manager and solely for the purposes specified by your device and account manager.
+      Controls how your device and account data is handled. How Google processes and uses your device and account data is determined by your device and account manager.
     </message>
   </if>
   <!-- Account managed clarification -->
@@ -101,7 +101,7 @@
     Can remotely change your account setup.
   </message>
   <message name="IDS_MANAGEMENT_ACCOUNT_MANAGED_DATA" desc="Continuation of the managed account clarification sentence explaining account user data management.">
-    Controls how your account data is handled. Google processes your account data exclusively under the direction of your account manager and solely for the purposes specified by your account manager.
+    Controls how your account data is handled. How Google processes and uses your account data is determined by your account manager.
   </message>
 
   <if expr="chromeos">
