@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "components/exo/input_trace.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/pointer_gesture_pinch_delegate.h"
 #include "components/exo/relative_pointer_delegate.h"
@@ -322,6 +323,8 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   if (!focus_surface_)
     return;
 
+  TRACE_EXO_INPUT_EVENT(event);
+
   if (event->IsMouseEvent() &&
       event->type() != ui::ET_MOUSE_EXITED &&
       event->type() != ui::ET_MOUSE_CAPTURE_CHANGED) {
@@ -429,6 +432,8 @@ void Pointer::OnGestureEvent(ui::GestureEvent* event) {
 
   if (!focus_surface_ || !pinch_delegate_)
     return;
+
+  TRACE_EXO_INPUT_EVENT(event);
 
   switch (event->type()) {
     case ui::ET_GESTURE_PINCH_BEGIN:
