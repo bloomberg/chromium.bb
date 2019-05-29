@@ -7,11 +7,17 @@
 
 #include "base/base_export.h"
 
+#include <stdlib.h>
+
 namespace base {
 
 class CommandLine;
 
 namespace win {
+
+// Allow the embedder to set custom handlers.
+BASE_EXPORT void SetInvalidParamHandler(_invalid_parameter_handler handler);
+BASE_EXPORT void SetPurecallHandler(_purecall_handler handler);
 
 // Register the invalid param handler and pure call handler to be able to
 // notify breakpad when it happens.
