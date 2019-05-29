@@ -357,6 +357,7 @@ void PaintOpReader::Read(PaintImage* image) {
   if (transfer_cache_entry_id == kInvalidImageTransferCacheEntryId)
     return;
 
+  // The transfer cache entry for an image may not exist if the upload fails.
   if (auto* entry =
           options_.transfer_cache->GetEntryAs<ServiceImageTransferCacheEntry>(
               transfer_cache_entry_id)) {
@@ -366,10 +367,6 @@ void PaintOpReader::Read(PaintImage* image) {
                  .set_id(PaintImage::GetNextId())
                  .set_image(entry->image(), PaintImage::kNonLazyStableId)
                  .TakePaintImage();
-  } else {
-    // If a transfer cache id exists, we must have a valid entry for it in the
-    // cache.
-    SetInvalid();
   }
 }
 
