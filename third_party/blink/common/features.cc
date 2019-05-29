@@ -242,13 +242,6 @@ const base::Feature kFileHandlingAPI{"FileHandlingAPI",
 const base::Feature kForbidSyncXHRInPageDismissal{
     "ForbidSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Emergency lever that can be used to restore DeviceOrientationEvent and
-// DeviceMotionEvent functionality in non-secure browsing contexts.
-// See: https://crbug.com/932078.
-const base::Feature kRestrictDeviceSensorEventsToSecureContexts{
-    "RestrictDeviceSensorEventsToSecureContexts",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const char kMixedContentAutoupgradeModeParamName[] = "mode";
 const char kMixedContentAutoupgradeModeBlockable[] = "blockable";
 const char kMixedContentAutoupgradeModeOptionallyBlockable[] =

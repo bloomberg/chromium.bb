@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>Device Sensor Events on Insecure Origin. Codifies expected behavior once https://github.com/w3c/deviceorientation/issues/47 is resolved.</title>
+<title>Device Sensor Events not exposed to insecure origins</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="/resources/get-host-info.js"></script>
@@ -25,13 +25,16 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
   window.location = get_host_info().UNAUTHENTICATED_ORIGIN + window.location.pathname;
   promise_test(_ => new Promise(_ => {}), "Stall tests on the wrong host.");
 } else {
-
   test(() => {
     assert_false('DeviceMotionEvent' in window);
     assert_false('DeviceOrientationEvent' in window);
+    assert_false('DeviceOrientationAbsoluteEvent' in window);
     assert_false('DeviceMotionEventAcceleration' in window);
     assert_false('DeviceMotionEventRotationRate' in window);
-  }, 'Event interfaces are not exposed on `window`.');
+    assert_false('ondevicemotion' in window);
+    assert_false('ondeviceorientation' in window);
+    assert_false('ondeviceorientationabsolute' in window);
+  }, 'Event interfaces and event handlers are not exposed on `window`.');
 
   sensor_test(sensorProvider => {
     const FAKE_ACCELERATION_DATA = [1, 2, 3];
@@ -42,14 +45,20 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     setMockSensorDataForType(sensorProvider, device.mojom.SensorType.GYROSCOPE, FAKE_GYROSCOPE_DATA);
 
     return waitForLackOfEvent('devicemotion');
-  }, 'DeviceMotionEvent never fires.');
+  }, 'addEventListener() for `devicemotion` does not crash but the handler never fires.');
 
   sensor_test(sensorProvider => {
     const FAKE_ORIENTATION_DATA = [1.1, 2.2, 3.3];
     setMockSensorDataForType(sensorProvider, device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES, FAKE_ORIENTATION_DATA);
 
     return waitForLackOfEvent('deviceorientation');
-  }, 'DeviceOrientationEvent never fires.');
-}
+  }, 'addEventListener() for `deviceorientation` does not crash but the handler never fires.');
 
+  sensor_test(sensorProvider => {
+    const FAKE_ORIENTATION_DATA = [1.1, 2.2, 3.3];
+    setMockSensorDataForType(sensorProvider, device.mojom.SensorType.ABSOLUTE_ORIENTATION_EULER_ANGLES, FAKE_ORIENTATION_DATA);
+
+    return waitForLackOfEvent('deviceorientationabsolute');
+  }, 'addEventListener() for `deviceorientationabsolute` does not crash but the handler never fires.');
+}
 </script>

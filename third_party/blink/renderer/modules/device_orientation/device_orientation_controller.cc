@@ -54,27 +54,16 @@ void DeviceOrientationController::DidAddEventListener(
   if (event_type != EventTypeName())
     return;
 
+  // TOOD(crbug.com/932078): Investigate if this ever called with no |frame|.
   LocalFrame* frame = GetDocument().GetFrame();
   if (frame) {
-    if (GetDocument().IsSecureContext()) {
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kDeviceOrientationSecureOrigin);
-    } else {
-      Deprecation::CountDeprecation(
-          GetDocument(), WebFeature::kDeviceOrientationInsecureOrigin);
-      HostsUsingFeatures::CountAnyWorld(
-          GetDocument(),
-          HostsUsingFeatures::Feature::kDeviceOrientationInsecureHost);
-      if (GetDocument()
-              .GetFrame()
-              ->GetSettings()
-              ->GetStrictPowerfulFeatureRestrictions())
-        return;
-      if (RuntimeEnabledFeatures::
-              RestrictDeviceSensorEventsToSecureContextsEnabled()) {
-        return;
-      }
-    }
+    // TODO(crbug.com/967734): MediaControlsOrientationLock calls into this
+    // from potentially non-secure contexts. Do a no-op instead of crashing.
+    if (!GetDocument().IsSecureContext())
+      return;
+
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kDeviceOrientationSecureOrigin);
   }
 
   if (!has_event_listener_) {
