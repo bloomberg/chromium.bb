@@ -33,7 +33,7 @@ static const uint32_t tileable_texture_source_formats[] = { DRM_FORMAT_GR88, DRM
 							    DRM_FORMAT_UYVY, DRM_FORMAT_YUYV };
 
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID,
-						   DRM_FORMAT_NV12,   DRM_FORMAT_P010 };
+						   DRM_FORMAT_NV12, DRM_FORMAT_P010 };
 
 struct i915_device {
 	uint32_t gen;

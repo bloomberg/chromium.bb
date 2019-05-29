@@ -35,12 +35,12 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_XRGB8888 };
 
 #ifdef MTK_MT8183
-static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_NV21, DRM_FORMAT_NV12,
-                                                   DRM_FORMAT_YUYV, DRM_FORMAT_YVU420,
-                                                   DRM_FORMAT_YVU420_ANDROID };
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8,     DRM_FORMAT_NV21,
+						   DRM_FORMAT_NV12,   DRM_FORMAT_YUYV,
+						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
 #else
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
-                                                   DRM_FORMAT_YVU420_ANDROID };
+						   DRM_FORMAT_YVU420_ANDROID };
 #endif
 
 static int mediatek_init(struct driver *drv)
@@ -74,7 +74,7 @@ static int mediatek_init(struct driver *drv)
 	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
-                               BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 #endif
 
 	return drv_modify_linear_combinations(drv);
@@ -233,7 +233,7 @@ static uint32_t mediatek_resolve_format(uint32_t format, uint64_t use_flags)
 #ifdef MTK_MT8183
 		/* Only for MT8183 Camera subsystem requires NV12 */
 		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
-                        return DRM_FORMAT_NV12;
+			return DRM_FORMAT_NV12;
 #endif
 		return DRM_FORMAT_YVU420;
 	default:
