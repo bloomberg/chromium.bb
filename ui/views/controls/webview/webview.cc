@@ -363,6 +363,11 @@ void WebView::AttachWebContents() {
     return;
 
   holder_->Attach(view_to_attach);
+  // Attach() asynchronously sets the bounds of the widget. Pepper expects
+  // fullscreen widgets to be sized immediately, so force a layout now.
+  // See https://crbug.com/361408 and https://crbug.com/id=959118.
+  if (is_embedding_fullscreen_widget_)
+    holder_->Layout();
 
   // We set the parent accessible of the native view to be our parent.
   if (parent())
