@@ -1327,6 +1327,11 @@ void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
     return;
 
   Profile* profile = Profile::FromWebUI(web_ui());
+  if (!AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile) &&
+      !AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
+    return;
+  }
+
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
   identity_manager_->AddObserver(this);
 }
