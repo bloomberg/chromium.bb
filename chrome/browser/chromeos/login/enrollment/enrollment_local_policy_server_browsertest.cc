@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/oobe_screens_utils.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -44,17 +45,13 @@ namespace {
 
 constexpr char kTestDomain[] = "test-domain.com";
 
-void OnScreenExit(base::OnceClosure closure,
-                  EnrollmentScreen::Result expected,
-                  EnrollmentScreen::Result actual) {
-  EXPECT_EQ(expected, actual);
-  std::move(closure).Run();
-}
+std::string GetDmTokenFromPolicy(const std::string& blob) {
+  enterprise_management::PolicyFetchResponse policy;
+  CHECK(policy.ParseFromString(blob));
 
-EnrollmentScreen::ScreenExitCallback UserCannotSkipCallback(
-    base::OnceClosure closure) {
-  return base::AdaptCallbackForRepeating(base::BindOnce(
-      OnScreenExit, std::move(closure), EnrollmentScreen::Result::BACK));
+  enterprise_management::PolicyData policy_data;
+  CHECK(policy_data.ParseFromString(policy.policy_data()));
+  return policy_data.request_token();
 }
 
 }  // namespace
@@ -496,11 +493,9 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentForced) {
       kTestDomain));
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
-  base::RunLoop loop;
-  enrollment_screen()->set_exit_callback_for_testing(
-      UserCannotSkipCallback(loop.QuitClosure()));
+  enrollment_ui_.SetExitHandler();
   enrollment_screen()->OnCancel();
-  loop.Run();
+  EXPECT_EQ(EnrollmentScreen::Result::BACK, enrollment_ui_.WaitForScreenExit());
 }
 
 // Device is disabled.
@@ -601,6 +596,65 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, CorruptedVPD) {
 
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
+}
+
+class EnrollmentRecoveryTest : public EnrollmentLocalPolicyServerBase {
+ public:
+  EnrollmentRecoveryTest() : EnrollmentLocalPolicyServerBase() {
+    device_state_.SetState(
+        DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
+  }
+
+  ~EnrollmentRecoveryTest() override = default;
+
+ protected:
+  void SetUpInProcessBrowserTestFixture() override {
+    EnrollmentLocalPolicyServerBase::SetUpInProcessBrowserTestFixture();
+
+    // This triggers recovery enrollment.
+    device_state_.RequestDevicePolicyUpdate()->policy_data()->Clear();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnrollmentRecoveryTest);
+};
+
+IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, Success) {
+  test::SkipToEnrollmentOnRecovery();
+
+  ASSERT_TRUE(StartupUtils::IsDeviceRegistered());
+  ASSERT_TRUE(InstallAttributes::Get()->IsEnterpriseManaged());
+  // No DM Token
+  ASSERT_TRUE(
+      GetDmTokenFromPolicy(FakeSessionManagerClient::Get()->device_policy())
+          .empty());
+
+  // User can't skip.
+  enrollment_ui_.SetExitHandler();
+  enrollment_screen()->OnCancel();
+  EXPECT_EQ(EnrollmentScreen::Result::BACK, enrollment_ui_.WaitForScreenExit());
+
+  enrollment_screen()->OnLoginDone(FakeGaiaMixin::kEnterpriseUser1,
+                                   FakeGaiaMixin::kFakeAuthCode);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+
+  // DM Token is in the device policy.
+  EXPECT_FALSE(
+      GetDmTokenFromPolicy(FakeSessionManagerClient::Get()->device_policy())
+          .empty());
+}
+
+IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, DifferentDomain) {
+  test::SkipToEnrollmentOnRecovery();
+
+  ASSERT_TRUE(StartupUtils::IsDeviceRegistered());
+  ASSERT_TRUE(InstallAttributes::Get()->IsEnterpriseManaged());
+  enrollment_screen()->OnLoginDone(FakeGaiaMixin::kFakeUserEmail,
+                                   FakeGaiaMixin::kFakeAuthCode);
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepError);
+  enrollment_ui_.ExpectErrorMessage(
+      IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_USER, true);
+  enrollment_ui_.RetryAfterError();
 }
 
 }  // namespace chromeos

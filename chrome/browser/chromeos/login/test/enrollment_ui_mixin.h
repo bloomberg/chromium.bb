@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 
 namespace chromeos {
@@ -68,7 +70,18 @@ class EnrollmentUIMixin : public InProcessBrowserTestMixin {
   // Proceeds with selected license.
   void UseSelectedLicense();
 
+  void SetExitHandler();
+  // Runs loop until the enrollment screen reports exit. It will return the
+  // last result returned by the enrollment screen.
+  // NOTE: Please call SetExitHandler above before cancelling the screen.
+  EnrollmentScreen::Result WaitForScreenExit();
+
  private:
+  base::Optional<EnrollmentScreen::Result> screen_result_;
+  base::Optional<base::RunLoop> screen_exit_waiter_;
+
+  void HandleScreenExit(EnrollmentScreen::Result result);
+
   DISALLOW_COPY_AND_ASSIGN(EnrollmentUIMixin);
 };
 

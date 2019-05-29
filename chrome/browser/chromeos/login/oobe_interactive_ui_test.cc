@@ -9,7 +9,6 @@
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
@@ -17,8 +16,6 @@
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h"
-#include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
-#include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
@@ -27,6 +24,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/oobe_screens_utils.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -34,23 +32,16 @@
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/discover_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -79,14 +70,6 @@ std::string ArcStateToString(ArcState arc_state) {
   return "unknown";
 }
 
-void WaitForOobeWelcomeScreen() {
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-      content::NotificationService::AllSources());
-  observer.Wait();
-  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
-}
-
 void RunWelcomeScreenChecks() {
 #if defined(GOOGLE_CHROME_BUILD)
   constexpr int kNumberOfVideosPlaying = 1;
@@ -105,33 +88,14 @@ void RunWelcomeScreenChecks() {
       kNumberOfVideosPlaying);
 }
 
-void TapWelcomeNext() {
-  test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
-}
-
-void WaitForNetworkSelectionScreen() {
-  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
-  LOG(INFO) << "OobeInteractiveUITest: Switched to 'network-selection' screen.";
-}
-
 void RunNetworkSelectionScreenChecks() {
   test::OobeJS().ExpectTrue(
       "!$('oobe-network-md').$.networkDialog.querySelector('oobe-next-button'"
       ").disabled");
 }
 
-void TapNetworkSelectionNext() {
-  test::OobeJS().ExecuteAsync(
-      "$('oobe-network-md').$.networkDialog.querySelector('oobe-next-button')"
-      ".click()");
-}
 
 #if defined(GOOGLE_CHROME_BUILD)
-void WaitForEulaScreen() {
-  OobeScreenWaiter(EulaView::kScreenId).Wait();
-  LOG(INFO) << "OobeInteractiveUITest: Switched to 'eula' screen.";
-}
-
 void RunEulaScreenChecks() {
   // Wait for actual EULA to appear.
   test::OobeJS()
@@ -139,26 +103,7 @@ void RunEulaScreenChecks() {
       ->Wait();
   test::OobeJS().ExpectTrue("!$('oobe-eula-md').$.acceptButton.disabled");
 }
-
-void TapEulaAccept() {
-  test::OobeJS().TapOnPath({"oobe-eula-md", "acceptButton"});
-}
 #endif
-
-void WaitForUpdateScreen() {
-  OobeScreenWaiter(UpdateView::kScreenId).Wait();
-  test::OobeJS().CreateVisibilityWaiter(true, {"update"})->Wait();
-
-  LOG(INFO) << "OobeInteractiveUITest: Switched to 'update' screen.";
-}
-
-void ExitUpdateScreenNoUpdate() {
-  UpdateScreen* screen = static_cast<UpdateScreen*>(
-      WizardController::default_controller()->GetScreen(UpdateView::kScreenId));
-  UpdateEngineClient::Status status;
-  status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
-  screen->UpdateStatusChanged(status);
-}
 
 void WaitForGaiaSignInScreen(bool arc_available) {
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
@@ -189,44 +134,6 @@ void LogInAsRegularUser() {
   LOG(INFO) << "OobeInteractiveUITest: Logged in.";
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
-void WaitForSyncConsentScreen() {
-  LOG(INFO) << "OobeInteractiveUITest: Waiting for 'sync-consent' screen.";
-  OobeScreenWaiter(SyncConsentScreenView::kScreenId).Wait();
-}
-
-void ExitScreenSyncConsent() {
-  SyncConsentScreen* screen = static_cast<SyncConsentScreen*>(
-      WizardController::default_controller()->GetScreen(
-          SyncConsentScreenView::kScreenId));
-
-  screen->SetProfileSyncDisabledByPolicyForTesting(true);
-  screen->OnStateChanged(nullptr);
-  LOG(INFO) << "OobeInteractiveUITest: Waiting for 'sync-consent' screen "
-               "to close.";
-  OobeScreenExitWaiter(SyncConsentScreenView::kScreenId).Wait();
-}
-#endif
-
-void WaitForFingerprintScreen() {
-  LOG(INFO) << "OobeInteractiveUITest: Waiting for 'fingerprint-setup' screen.";
-  OobeScreenWaiter(FingerprintSetupScreenView::kScreenId).Wait();
-  LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
-               "to show.";
-  test::OobeJS().CreateVisibilityWaiter(true, {"fingerprint-setup"})->Wait();
-  LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
-               "to initializes.";
-  test::OobeJS()
-      .CreateVisibilityWaiter(true, {"fingerprint-setup-impl"})
-      ->Wait();
-  LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
-               "to show setupFingerprint.";
-  test::OobeJS()
-      .CreateVisibilityWaiter(true,
-                              {"fingerprint-setup-impl", "setupFingerprint"})
-      ->Wait();
-}
-
 void RunFingerprintScreenChecks() {
   test::OobeJS().ExpectVisible("fingerprint-setup");
   test::OobeJS().ExpectVisible("fingerprint-setup-impl");
@@ -243,24 +150,6 @@ void RunFingerprintScreenChecks() {
       ->Wait();
 }
 
-void ExitFingerprintPinSetupScreen() {
-  test::OobeJS().ExpectVisiblePath({"fingerprint-setup-impl", "placeFinger"});
-  // This might be the last step in flow. Synchronious execute gets stuck as
-  // WebContents may be destroyed in the process. So it may never return.
-  // So we use ExecuteAsync() here.
-  test::OobeJS().ExecuteAsync(
-      "$('fingerprint-setup-impl').$.setupFingerprintLater.click()");
-  LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
-               "to close.";
-  OobeScreenExitWaiter(FingerprintSetupScreenView::kScreenId).Wait();
-  LOG(INFO) << "OobeInteractiveUITest: 'fingerprint-setup' screen done.";
-}
-
-void WaitForDiscoverScreen() {
-  OobeScreenWaiter(DiscoverScreenView::kScreenId).Wait();
-  LOG(INFO) << "OobeInteractiveUITest: Switched to 'discover' screen.";
-}
-
 void RunDiscoverScreenChecks() {
   test::OobeJS().ExpectVisible("discover");
   test::OobeJS().ExpectVisible("discover-impl");
@@ -270,17 +159,6 @@ void RunDiscoverScreenChecks() {
   test::OobeJS().ExpectTrue(
       "!$('discover-impl').root.querySelector('discover-pin-setup-module').$."
       "setup.hidden");
-}
-
-void ExitDiscoverPinSetupScreen() {
-  // This might be the last step in flow. Synchronious execute gets stuck as
-  // WebContents may be destroyed in the process. So it may never return.
-  // So we use ExecuteAsync() here.
-  test::OobeJS().ExecuteAsync(
-      "$('discover-impl').root.querySelector('discover-pin-setup-module')."
-      "$.setupSkipButton.click()");
-  OobeScreenExitWaiter(DiscoverScreenView::kScreenId).Wait();
-  LOG(INFO) << "OobeInteractiveUITest: 'discover' screen done.";
 }
 
 // Waits for the ARC terms of service screen to be shown, it accepts or
@@ -624,53 +502,52 @@ class OobeInteractiveUITest
   EmbeddedTestServerSetupMixin arc_tos_server_setup_{&mixin_host_,
                                                      &arc_tos_server_};
   OobeEndToEndTestSetupMixin setup_{&mixin_host_, &arc_tos_server_, GetParam()};
-
   DISALLOW_COPY_AND_ASSIGN(OobeInteractiveUITest);
 };
 
 void OobeInteractiveUITest::SimpleEndToEnd() {
   ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver get_auth_token_observer;
 
-  WaitForOobeWelcomeScreen();
+  test::WaitForWelcomeScreen();
   RunWelcomeScreenChecks();
-  TapWelcomeNext();
+  test::TapWelcomeNext();
 
-  WaitForNetworkSelectionScreen();
+  test::WaitForNetworkSelectionScreen();
   RunNetworkSelectionScreenChecks();
-  TapNetworkSelectionNext();
+  test::TapNetworkSelectionNext();
 
 #if defined(GOOGLE_CHROME_BUILD)
-  WaitForEulaScreen();
+  test::WaitForEulaScreen();
   RunEulaScreenChecks();
-  TapEulaAccept();
+  test::TapEulaAccept();
 #endif
 
-  WaitForUpdateScreen();
-  ExitUpdateScreenNoUpdate();
+  test::WaitForUpdateScreen();
+  test::ExitUpdateScreenNoUpdate();
 
   WaitForGaiaSignInScreen(test_setup()->arc_state() != ArcState::kNotAvailable);
   LogInAsRegularUser();
 
 #if defined(GOOGLE_CHROME_BUILD)
-  WaitForSyncConsentScreen();
-  ExitScreenSyncConsent();
+  test::WaitForSyncConsentScreen();
+  test::ExitScreenSyncConsent();
 #endif
 
   if (test_setup()->is_quick_unlock_enabled()) {
-    WaitForFingerprintScreen();
+    test::WaitForFingerprintScreen();
     RunFingerprintScreenChecks();
-    ExitFingerprintPinSetupScreen();
+    test::ExitFingerprintPinSetupScreen();
   }
 
   if (test_setup()->is_tablet()) {
-    WaitForDiscoverScreen();
+    test::WaitForDiscoverScreen();
     RunDiscoverScreenChecks();
 
     EXPECT_TRUE(get_auth_token_observer.get_auth_token_password().has_value());
     EXPECT_EQ(get_auth_token_observer.get_auth_token_password().value(),
               FakeGaiaMixin::kFakeUserPassword);
 
-    ExitDiscoverPinSetupScreen();
+    test::ExitDiscoverPinSetupScreen();
   }
 
   if (test_setup()->arc_state() != ArcState::kNotAvailable) {
@@ -867,24 +744,24 @@ IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, RegularEphemeralUser) {
   LogInAsRegularUser();
 
 #if defined(GOOGLE_CHROME_BUILD)
-  WaitForSyncConsentScreen();
-  ExitScreenSyncConsent();
+  test::WaitForSyncConsentScreen();
+  test::ExitScreenSyncConsent();
 #endif
 
   if (test_setup()->is_quick_unlock_enabled()) {
-    WaitForFingerprintScreen();
+    test::WaitForFingerprintScreen();
     RunFingerprintScreenChecks();
-    ExitFingerprintPinSetupScreen();
+    test::ExitFingerprintPinSetupScreen();
   }
 
   if (test_setup()->is_tablet()) {
-    WaitForDiscoverScreen();
+    test::WaitForDiscoverScreen();
     RunDiscoverScreenChecks();
 
     EXPECT_TRUE(get_auth_token_observer.get_auth_token_password().has_value());
     EXPECT_EQ("", get_auth_token_observer.get_auth_token_password().value());
 
-    ExitDiscoverPinSetupScreen();
+    test::ExitDiscoverPinSetupScreen();
   }
 
   if (test_setup()->arc_state() != ArcState::kNotAvailable) {
