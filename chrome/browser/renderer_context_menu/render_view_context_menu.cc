@@ -439,6 +439,15 @@ int FindUMAEnumValueForCommand(int id, UmaEnumIdLookupType type) {
   return it->second;
 }
 
+// Returns true if the command id is for opening a link.
+bool IsCommandForOpenLink(int id) {
+  return id == IDC_CONTENT_CONTEXT_OPENLINKNEWTAB ||
+         id == IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW ||
+         id == IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD ||
+         (id >= IDC_OPEN_LINK_IN_PROFILE_FIRST &&
+          id <= IDC_OPEN_LINK_IN_PROFILE_LAST);
+}
+
 // Usually a new tab is expected where this function is used,
 // however users should be able to open a tab in background
 // or in a new window.
@@ -959,6 +968,7 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
 
   // chrome://downloads link context.
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK) &&
+      IsCommandForOpenLink(id) &&
       GetDocumentURL(params_) == GURL("chrome://downloads")) {
     base::RecordAction(base::UserMetricsAction(
         "Downloads_OpenUrlOfDownloadedItemFromContextMenu"));
