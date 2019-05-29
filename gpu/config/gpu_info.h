@@ -24,10 +24,6 @@
 typedef unsigned long VisualID;
 #endif
 
-namespace gfx {
-enum class BufferFormat;
-}
-
 namespace gpu {
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -333,9 +329,6 @@ struct GPU_EXPORT GPUInfo {
 
   ImageDecodeAcceleratorSupportedProfiles
       image_decode_accelerator_supported_profiles;
-
-  std::vector<gfx::BufferFormat>
-      supported_buffer_formats_for_allocation_and_texturing;
 
 #if defined(USE_X11)
   VisualID system_visual;

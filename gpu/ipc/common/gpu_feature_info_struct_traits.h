@@ -9,6 +9,7 @@
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/common/gpu_feature_info.mojom.h"
+#include "ui/gfx/mojo/buffer_types_struct_traits.h"
 
 namespace mojo {
 
@@ -172,6 +173,12 @@ struct StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo> {
   static const std::vector<uint32_t>& applied_gpu_driver_bug_list_entries(
       const gpu::GpuFeatureInfo& info) {
     return info.applied_gpu_driver_bug_list_entries;
+  }
+
+  static std::vector<gfx::BufferFormat>
+  supported_buffer_formats_for_allocation_and_texturing(
+      const gpu::GpuFeatureInfo& input) {
+    return input.supported_buffer_formats_for_allocation_and_texturing;
   }
 };
 

@@ -311,7 +311,7 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
       buffer_formats += ",  ";
     buffer_formats += gfx::BufferFormatToString(buffer_format);
     const bool supported = base::ContainsValue(
-        gpu_info.supported_buffer_formats_for_allocation_and_texturing,
+        gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
         buffer_format);
     buffer_formats += supported ? ": supported" : ": not supported";
   }

@@ -6,8 +6,6 @@
 
 #include "gpu/config/gpu_info.h"
 
-#include "ui/gfx/buffer_format_util.h"
-
 namespace {
 
 void EnumerateGPUDevice(const gpu::GPUInfo::GPUDevice& device,
@@ -253,9 +251,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     ImageDecodeAcceleratorSupportedProfiles
         image_decode_accelerator_supported_profiles;
 
-    std::vector<gfx::BufferFormat>
-        supported_buffer_formats_for_allocation_and_texturing;
-
 #if defined(USE_X11)
     VisualID system_visual;
     VisualID rgba_visual;
@@ -331,14 +326,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt64("rgbaVisual", rgba_visual);
 #endif
   enumerator->AddBool("oopRasterizationSupported", oop_rasterization_supported);
-  std::string supported_formats;
-  for (const auto& format :
-       supported_buffer_formats_for_allocation_and_texturing) {
-    supported_formats += gfx::BufferFormatToString(format);
-    supported_formats += " ";
-  }
-  enumerator->AddString("supportedBufferFormatsForAllocationAndTexturing",
-                        supported_formats);
   enumerator->EndAuxAttributes();
 }
 

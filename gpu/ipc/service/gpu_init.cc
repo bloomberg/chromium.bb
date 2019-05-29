@@ -244,7 +244,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
                                         .requires_mojo;
   params.viz_display_compositor = features::IsVizDisplayCompositorEnabled();
   ui::OzonePlatform::InitializeForGPU(params);
-  gpu_info_.supported_buffer_formats_for_allocation_and_texturing =
+  const std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->GetSupportedFormatsForTexturing();
@@ -408,6 +408,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     base::android::AndroidImageReader::DisableSupport();
   }
 #endif
+#if defined(USE_OZONE)
+  gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
+      std::move(supported_buffer_formats_for_texturing);
+#endif
 
   return true;
 }
@@ -447,7 +451,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
                                         .requires_mojo;
   params.viz_display_compositor = features::IsVizDisplayCompositorEnabled();
   ui::OzonePlatform::InitializeForGPU(params);
-  gpu_info_.supported_buffer_formats_for_allocation_and_texturing =
+  const std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing =
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->GetSupportedFormatsForTexturing();
@@ -537,6 +541,11 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   if (use_swiftshader) {
     AdjustInfoToSwiftShader();
   }
+
+#if defined(USE_OZONE)
+  gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
+      std::move(supported_buffer_formats_for_texturing);
+#endif
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
 }

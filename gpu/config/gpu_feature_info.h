@@ -11,6 +11,10 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/gpu_export.h"
 
+namespace gfx {
+enum class BufferFormat;
+}
+
 namespace gl {
 class GLContext;
 }  // namespace gl
@@ -77,6 +81,11 @@ struct GPU_EXPORT GpuFeatureInfo {
   std::vector<uint32_t> applied_gpu_blacklist_entries;
   // Applied gpu driver bug list entry indices.
   std::vector<uint32_t> applied_gpu_driver_bug_list_entries;
+
+  // BufferFormats that can be allocated and then bound, if known and provided
+  // by the platform.
+  std::vector<gfx::BufferFormat>
+      supported_buffer_formats_for_allocation_and_texturing;
 };
 
 }  // namespace gpu
