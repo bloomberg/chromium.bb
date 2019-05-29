@@ -134,21 +134,6 @@ class CORE_EXPORT FindBuffer {
                                   const Node* search_range_end_node,
                                   const Node* node_after_block);
 
-  class CORE_EXPORT InvisibleLayoutScope {
-    STACK_ALLOCATED();
-
-   public:
-    InvisibleLayoutScope() {}
-    ~InvisibleLayoutScope();
-
-    void EnsureRecalc(Node& block_root);
-    bool DidRecalc() { return did_recalc_; }
-
-   private:
-    bool did_recalc_ = false;
-    Member<Element> invisible_root_;
-  };
-
   // Mapping for position in buffer -> actual node where the text came from,
   // along with the offset in the NGOffsetMapping of this find_buffer.
   // This is needed because when we find a match in the buffer, we want to know
@@ -190,14 +175,12 @@ class CORE_EXPORT FindBuffer {
                        LayoutBlockFlow& block_flow,
                        const EphemeralRangeInFlatTree& range);
 
-  InvisibleLayoutScope invisible_layout_scope_;
   Member<Node> node_after_block_;
   Vector<UChar> buffer_;
   Vector<BufferNodeMapping> buffer_node_mappings_;
   Vector<DisplayLockContext::ScopedForcedUpdate> scoped_forced_update_list_;
 
   const NGOffsetMapping* offset_mapping_ = nullptr;
-  bool mapping_needs_recalc_ = false;
 };
 
 }  // namespace blink
