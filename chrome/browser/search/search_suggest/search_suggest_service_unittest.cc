@@ -258,23 +258,34 @@ TEST_F(SearchSuggestServiceTest, BlocklistUnchangedOnInvalidHash) {
   uint8_t hash1[5] = {'a', 'b', '?', 'd', '\0'};
   uint8_t hash2[5] = {'a', '_', 'b', 'm', '\0'};
   uint8_t hash3[5] = {'A', 'B', 'C', 'D', '\0'};
-  uint8_t hash4[6] = {'a', 'b', 'c', 'd', 'e', '\0'};
   std::string expected = std::string();
 
   service()->BlocklistSearchSuggestionWithHash(0, 1234, hash1);
   service()->BlocklistSearchSuggestionWithHash(0, 1234, hash2);
   service()->BlocklistSearchSuggestionWithHash(0, 1234, hash3);
-  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash4);
   ASSERT_EQ(expected, service()->GetBlocklistAsString());
 }
 
-TEST_F(SearchSuggestServiceTest, ShortHashUpdatesBlackist) {
+TEST_F(SearchSuggestServiceTest, ShortHashDoesNotUpdateBlackist) {
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   ASSERT_EQ(std::string(), service()->GetBlocklistAsString());
 
   uint8_t hash1[4] = {'a', 'b', 'c', '\0'};
   uint8_t hash2[5] = {'d', 'e', '\0', 'f', '\0'};
-  std::string expected = "0_1234:abc;1_5678:de";
+  std::string expected = std::string();
+
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash1);
+  service()->BlocklistSearchSuggestionWithHash(1, 5678, hash2);
+  ASSERT_EQ(expected, service()->GetBlocklistAsString());
+}
+
+TEST_F(SearchSuggestServiceTest, LongHashIsTruncated) {
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_EQ(std::string(), service()->GetBlocklistAsString());
+
+  uint8_t hash1[6] = {'a', 'b', 'c', 'd', 'e', '\0'};
+  uint8_t hash2[7] = {'d', 'e', 'f', 'g', '\0', 'h', 'i'};
+  std::string expected = "0_1234:abcd;1_5678:defg";
 
   service()->BlocklistSearchSuggestionWithHash(0, 1234, hash1);
   service()->BlocklistSearchSuggestionWithHash(1, 5678, hash2);

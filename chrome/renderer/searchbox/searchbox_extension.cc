@@ -1063,7 +1063,7 @@ void NewTabPageBindings::BlocklistSearchSuggestionWithHash(
     int task_version,
     int task_id,
     const std::string& hash) {
-  if (hash.length() > 4) {
+  if (hash.length() != 4) {
     return;
   }
 
