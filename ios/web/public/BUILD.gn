@@ -34,8 +34,6 @@ source_set("public") {
     "navigation_item.h",
     "navigation_manager.h",
     "reload_type.h",
-    "security/cert_policy.h",
-    "security/certificate_policy_cache.h",
     "service_manager_connection.h",
     "url_data_source_ios.h",
     "url_scheme_util.h",

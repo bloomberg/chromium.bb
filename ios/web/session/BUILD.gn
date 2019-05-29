@@ -7,6 +7,7 @@ source_set("session") {
   deps = [
     "//base",
     "//ios/web/public",
+    "//ios/web/public/security",
     "//ios/web/public/session",
     "//net",
   ]
@@ -25,6 +26,7 @@ source_set("unittests") {
   testonly = true
   deps = [
     "//ios/web/public",
+    "//ios/web/public/security",
     "//ios/web/public/session",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
