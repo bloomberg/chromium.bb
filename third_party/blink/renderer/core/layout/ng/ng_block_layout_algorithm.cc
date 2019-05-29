@@ -36,6 +36,16 @@
 namespace blink {
 namespace {
 
+inline scoped_refptr<const NGLayoutResult> LayoutInflow(
+    const NGConstraintSpace& space,
+    const NGBreakToken* break_token,
+    NGLayoutInputNode* node,
+    NGInlineChildLayoutContext* context) {
+  auto* inline_node = DynamicTo<NGInlineNode>(node);
+  return inline_node ? inline_node->Layout(space, break_token, context)
+                     : To<NGBlockNode>(node)->Layout(space, break_token);
+}
+
 // Return true if a child is to be cleared past adjoining floats. These are
 // floats that would otherwise (if 'clear' were 'none') be pulled down by the
 // BFC block offset of the child. If the child is to clear floats, though, we
@@ -1240,8 +1250,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   NGConstraintSpace child_space = CreateConstraintSpaceForChild(
       child, child_data, child_available_size_, /* is_new_fc */ false,
       forced_bfc_block_offset, has_clearance_past_adjoining_floats);
-  scoped_refptr<const NGLayoutResult> layout_result =
-      child.Layout(child_space, child_break_token, inline_child_layout_context);
+  scoped_refptr<const NGLayoutResult> layout_result = LayoutInflow(
+      child_space, child_break_token, &child, inline_child_layout_context);
 
   // To save space of the stack when we recurse into |NGBlockNode::Layout|
   // above, the rest of this function is continued within |FinishInflow|.
@@ -1422,7 +1432,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
     NGConstraintSpace new_child_space = CreateConstraintSpaceForChild(
         child, *child_data, child_available_size_, /* is_new_fc */ false,
         child_bfc_block_offset);
-    layout_result = child.Layout(new_child_space, child_break_token,
+    layout_result = LayoutInflow(new_child_space, child_break_token, &child,
                                  inline_child_layout_context);
 
     if (layout_result->Status() == NGLayoutResult::kBfcBlockOffsetResolved) {
@@ -1436,7 +1446,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       new_child_space = CreateConstraintSpaceForChild(
           child, *child_data, child_available_size_, /* is_new_fc */ false,
           child_bfc_block_offset);
-      layout_result = child.Layout(new_child_space, child_break_token,
+      layout_result = LayoutInflow(new_child_space, child_break_token, &child,
                                    inline_child_layout_context);
     }
 

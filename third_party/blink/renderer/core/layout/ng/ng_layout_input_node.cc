@@ -62,15 +62,6 @@ void AppendNodeToString(NGLayoutInputNode node,
 
 }  // namespace
 
-scoped_refptr<const NGLayoutResult> NGLayoutInputNode::Layout(
-    const NGConstraintSpace& space,
-    const NGBreakToken* break_token,
-    NGInlineChildLayoutContext* context) {
-  auto* inline_node = DynamicTo<NGInlineNode>(this);
-  return inline_node ? inline_node->Layout(space, break_token, context)
-                     : To<NGBlockNode>(*this).Layout(space, break_token);
-}
-
 MinMaxSize NGLayoutInputNode::ComputeMinMaxSize(
     WritingMode writing_mode,
     const MinMaxSizeInput& input,
