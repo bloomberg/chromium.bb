@@ -266,11 +266,11 @@ absl::optional<std::string> ParseTypeKeyFromComment(Parser* p) {
   }
 
   SkipWhitespace(&p_speculative, false);
-  const char* key_string = "type key";
-  if (!absl::StartsWith(p_speculative.data, key_string)) {
+  const char kTypeKeyPrefix[] = "type key";
+  if (!absl::StartsWith(p_speculative.data, kTypeKeyPrefix)) {
     return absl::nullopt;
   }
-  p_speculative.data += sizeof(key_string);
+  p_speculative.data += strlen(kTypeKeyPrefix);
 
   SkipWhitespace(&p_speculative, false);
   Parser p_speculative2{p_speculative.data};
@@ -938,7 +938,7 @@ AstNode* ParseRule(Parser* p) {
   const char* assign_start = p->data;
   AssignType assign_type = ParseAssignmentType(p);
   if (assign_type != AssignType::kAssign) {
-    Logger::Error("No assignment opperator found!");
+    Logger::Error("No assignment operator found! assign_type: %d", assign_type);
     return nullptr;
   }
   AstNode* assign_node = AddNode(
