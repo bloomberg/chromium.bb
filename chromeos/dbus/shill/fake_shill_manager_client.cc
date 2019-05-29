@@ -231,9 +231,7 @@ const char kRoamingRequired[] = "required";
 const char FakeShillManagerClient::kFakeEthernetNetworkGuid[] = "eth1_guid";
 
 FakeShillManagerClient::FakeShillManagerClient()
-    : interactive_delay_(0),
-      cellular_technology_(shill::kNetworkTechnologyGsm),
-      weak_ptr_factory_(this) {
+    : cellular_technology_(shill::kNetworkTechnologyGsm) {
   ParseCommandLineSwitch();
 }
 
@@ -298,7 +296,7 @@ void FakeShillManagerClient::RequestScan(const std::string& type,
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::ScanCompleted,
                      weak_ptr_factory_.GetWeakPtr(), device_path),
-      base::TimeDelta::FromSeconds(interactive_delay_));
+      interactive_delay_);
 }
 
 void FakeShillManagerClient::EnableTechnology(
@@ -318,7 +316,7 @@ void FakeShillManagerClient::EnableTechnology(
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::SetTechnologyEnabled,
                      weak_ptr_factory_.GetWeakPtr(), type, callback, true),
-      base::TimeDelta::FromSeconds(interactive_delay_));
+      interactive_delay_);
 }
 
 void FakeShillManagerClient::DisableTechnology(
@@ -337,7 +335,7 @@ void FakeShillManagerClient::DisableTechnology(
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::SetTechnologyEnabled,
                      weak_ptr_factory_.GetWeakPtr(), type, callback, false),
-      base::TimeDelta::FromSeconds(interactive_delay_));
+      interactive_delay_);
 }
 
 void FakeShillManagerClient::ConfigureService(
@@ -637,8 +635,12 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
   }
 }
 
-int FakeShillManagerClient::GetInteractiveDelay() const {
+base::TimeDelta FakeShillManagerClient::GetInteractiveDelay() const {
   return interactive_delay_;
+}
+
+void FakeShillManagerClient::SetInteractiveDelay(base::TimeDelta delay) {
+  interactive_delay_ = delay;
 }
 
 void FakeShillManagerClient::SetBestServiceToConnect(
@@ -1143,7 +1145,7 @@ bool FakeShillManagerClient::ParseOption(const std::string& arg0,
     int seconds = 3;
     if (!arg1.empty())
       base::StringToInt(arg1, &seconds);
-    interactive_delay_ = seconds;
+    interactive_delay_ = base::TimeDelta::FromSeconds(seconds);
     return true;
   } else if (arg0 == "sim_lock") {
     bool locked = (arg1 == "1");

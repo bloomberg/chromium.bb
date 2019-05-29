@@ -216,6 +216,14 @@ struct NetworkStateProperties {
 };
 
 struct DeviceStateProperties {
+  // IP address for the primary network corresponding to the device type. If no
+  // network is in a connected state, or the address type is not available,
+  // these will be empty. When there are multiple IP addresses, only the first
+  // is provided.
+  array<uint8> ipv4_address;
+  array<uint8> ipv6_address;
+  // AA:BB formatted MAC address for the device. Use for display purposes only.
+  string mac_address;
   // Set if the device is currently scanning.
   bool scanning = false;
   // The SIM lock status if Type = Cellular and a SIM is present.
@@ -260,6 +268,10 @@ interface CrosNetworkConfig {
   // CrosNetworkConfigObserver::OnDeviceStateListChanged() can be used to be
   // notified when the enabled state changes.
   SetNetworkTypeEnabledState(NetworkType type, bool enabled) => (bool success);
+
+  // Requests a scan for new networks. If the list updates,
+  // CrosNetworkConfigObserver::OnNetworkStateListChanged() will be signaled.
+  RequestNetworkScan(NetworkType type);
 };
 
 interface CrosNetworkConfigObserver {

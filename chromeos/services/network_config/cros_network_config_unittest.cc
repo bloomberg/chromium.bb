@@ -225,6 +225,15 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
         EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
         EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->state);
 
+        // IP address match those set up in FakeShillManagerClient::
+        // SetupDefaultEnvironment(). TODO(stevenjb): Support setting
+        // expectations explicitly in NetworkStateTestHelper.
+        std::vector<uint8_t> ipv4_expected{100, 0, 0, 1};
+        EXPECT_EQ(ipv4_expected, devices[0]->ipv4_address);
+        std::vector<uint8_t> ipv6_expected{0, 0, 0, 0, 0, 0, 0, 0,
+                                           1, 0, 0, 0, 0, 0, 0, 1};
+        EXPECT_EQ(ipv6_expected, devices[0]->ipv6_address);
+
         EXPECT_EQ(mojom::NetworkType::kEthernet, devices[1]->type);
         EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[1]->state);
 
@@ -273,6 +282,38 @@ TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
         EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
         EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->state);
       }));
+}
+
+TEST_F(CrosNetworkConfigTest, RequestNetworkScan) {
+  class ScanningObserver : public CrosNetworkConfigTestObserver {
+   public:
+    explicit ScanningObserver(CrosNetworkConfig* cros_network_config)
+        : cros_network_config_(cros_network_config) {}
+    void OnDeviceStateListChanged() override {
+      cros_network_config_->GetDeviceStateList(base::BindOnce(
+          [](bool* wifi_scanning,
+             std::vector<mojom::DeviceStatePropertiesPtr> devices) {
+            for (auto& device : devices) {
+              if (device->type == mojom::NetworkType::kWiFi)
+                *wifi_scanning = device->scanning;
+            }
+          },
+          &wifi_scanning_));
+    }
+    CrosNetworkConfig* cros_network_config_;
+    bool wifi_scanning_ = false;
+  };
+  ScanningObserver observer(cros_network_config());
+  cros_network_config()->AddObserver(observer.GenerateInterfacePtr());
+  base::RunLoop().RunUntilIdle();
+
+  // Set a short delay so that the scan does not complete before the
+  // CrosNetworkConfig observer method gets fired.
+  helper().manager_test()->SetInteractiveDelay(
+      base::TimeDelta::FromMilliseconds(1));
+  cros_network_config()->RequestNetworkScan(mojom::NetworkType::kWiFi);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(observer.wifi_scanning_);
 }
 
 TEST_F(CrosNetworkConfigTest, NetworkListChanged) {

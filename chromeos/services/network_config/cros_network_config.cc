@@ -9,11 +9,13 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
+#include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
 #include "components/device_event_log/device_event_log.h"
+#include "net/base/ip_address.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -244,6 +246,18 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
 
   auto result = mojom::DeviceStateProperties::New();
   result->type = type;
+  net::IPAddress ipv4_address;
+  if (ipv4_address.AssignFromIPLiteral(
+          device->GetIpAddressByType(shill::kTypeIPv4))) {
+    result->ipv4_address = ipv4_address.CopyBytesToVector();
+  }
+  net::IPAddress ipv6_address;
+  if (ipv6_address.AssignFromIPLiteral(
+          device->GetIpAddressByType(shill::kTypeIPv6))) {
+    result->ipv6_address = ipv6_address.CopyBytesToVector();
+  }
+  result->mac_address =
+      network_util::FormattedMacAddress(device->mac_address());
   result->scanning = device->scanning();
   result->state = technology_state;
   result->managed_network_available =
@@ -398,6 +412,10 @@ void CrosNetworkConfig::SetNetworkTypeEnabledState(
   std::move(callback).Run(true);
 }
 
+void CrosNetworkConfig::RequestNetworkScan(mojom::NetworkType type) {
+  network_state_handler_->RequestScan(MojoTypeToPattern(type));
+}
+
 // NetworkStateHandlerObserver
 void CrosNetworkConfig::NetworkListChanged() {
   observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
@@ -429,8 +447,7 @@ void CrosNetworkConfig::ActiveNetworksChanged(
   });
 }
 
-void CrosNetworkConfig::ScanCompleted(const DeviceState* device) {
-  // Scanning state of device may have updated.
+void CrosNetworkConfig::DevicePropertiesUpdated(const DeviceState* device) {
   DeviceListChanged();
 }
 

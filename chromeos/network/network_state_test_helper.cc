@@ -72,8 +72,17 @@ void NetworkStateTestHelper::ResetDevicesAndServices() {
 
   // A Wifi device should always exist and default to enabled.
   manager_test_->AddTechnology(shill::kTypeWifi, true /* enabled */);
-  device_test_->AddDevice("/device/wifi1", shill::kTypeWifi, "wifi_device1");
+  const char* kDevicePath = "/device/wifi1";
+  device_test_->AddDevice(kDevicePath, shill::kTypeWifi, "wifi_device1");
 
+  // Set initial IPConfigs for the wifi device. The IPConfigs are set up in
+  // FakeShillManagerClient::SetupDefaultEnvironment() and do not get cleared.
+  base::ListValue ip_configs;
+  ip_configs.AppendString("ipconfig_v4_path");
+  ip_configs.AppendString("ipconfig_v6_path");
+  device_test_->SetDeviceProperty(kDevicePath, shill::kIPConfigsProperty,
+                                  ip_configs,
+                                  /*notify_changed=*/false);
   base::RunLoop().RunUntilIdle();
 }
 

@@ -35,13 +35,14 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       mojom::NetworkType type,
       bool enabled,
       SetNetworkTypeEnabledStateCallback callback) override;
+  void RequestNetworkScan(mojom::NetworkType type) override;
 
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;
   void DeviceListChanged() override;
   void ActiveNetworksChanged(
       const std::vector<const NetworkState*>& active_networks) override;
-  void ScanCompleted(const DeviceState* device) override;
+  void DevicePropertiesUpdated(const DeviceState* device) override;
   void OnShuttingDown() override;
 
  private:

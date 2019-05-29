@@ -88,7 +88,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
                            const std::string& state) override;
   void SortManagerServices(bool notify) override;
   void SetupDefaultEnvironment() override;
-  int GetInteractiveDelay() const override;
+  base::TimeDelta GetInteractiveDelay() const override;
+  void SetInteractiveDelay(base::TimeDelta delay) override;
   void SetBestServiceToConnect(const std::string& service_path) override;
   const NetworkThrottlingStatus& GetNetworkThrottlingStatus() override;
   bool GetFastTransitionStatus() override;
@@ -127,8 +128,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   // Dictionary of technology -> list of property dictionaries
   base::DictionaryValue stub_geo_networks_;
 
-  // Seconds to delay interactive actions
-  int interactive_delay_;
+  // Delay for interactive actions
+  base::TimeDelta interactive_delay_;
 
   // Initial state for fake services.
   std::map<std::string, std::string> shill_initial_state_map_;
@@ -159,7 +160,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FakeShillManagerClient> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeShillManagerClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeShillManagerClient);
 };
