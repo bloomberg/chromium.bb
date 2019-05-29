@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -659,37 +658,7 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
   if (!context)
     return;
 
-  // TODO(yoichio): We should remove these counters when v0 APIs are removed.
-  // crbug.com/946875.
-  if (const OriginTrialContext* origin_trial_context =
-          OriginTrialContext::FromOrCreate(context)) {
-    if (feature == WebFeature::kHTMLImports &&
-        origin_trial_context->IsFeatureEnabled(
-            OriginTrialFeature::kHTMLImports) &&
-        !RuntimeEnabledFeatures::HTMLImportsEnabledByRuntimeFlag()) {
-      UseCounter::Count(context, WebFeature::kHTMLImportsOnReverseOriginTrials);
-    } else if (feature == WebFeature::kElementCreateShadowRoot &&
-               origin_trial_context->IsFeatureEnabled(
-                   OriginTrialFeature::kShadowDOMV0) &&
-               !RuntimeEnabledFeatures::ShadowDOMV0EnabledByRuntimeFlag()) {
-      UseCounter::Count(
-          context, WebFeature::kElementCreateShadowRootOnReverseOriginTrials);
-    } else if (feature == WebFeature::kDocumentRegisterElement &&
-               origin_trial_context->IsFeatureEnabled(
-                   OriginTrialFeature::kCustomElementsV0) &&
-               !RuntimeEnabledFeatures::
-                   CustomElementsV0EnabledByRuntimeFlag()) {
-      UseCounter::Count(
-          context, WebFeature::kDocumentRegisterElementOnReverseOriginTrials);
-    }
-  }
-  // TODO(dcheng): Maybe this should be a virtual on ExecutionContext?
-  if (auto* document = DynamicTo<Document>(context)) {
-    Deprecation::CountDeprecation(*document, feature);
-    return;
-  }
-  if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context))
-    scope->CountDeprecation(feature);
+  context->CountDeprecation(feature);
 }
 
 void Deprecation::CountDeprecation(const Document& document,

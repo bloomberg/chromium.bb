@@ -66,6 +66,7 @@ class NullExecutionContext
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
   void CountUse(mojom::WebFeature) override {}
+  void CountDeprecation(mojom::WebFeature) override {}
 
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;

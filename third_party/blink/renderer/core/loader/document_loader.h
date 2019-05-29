@@ -275,6 +275,7 @@ class CORE_EXPORT DocumentLoader
 
   // UseCounter
   void CountUse(mojom::WebFeature) override;
+  void CountDeprecation(mojom::WebFeature) override;
 
  protected:
   bool had_transient_activation() const { return had_transient_activation_; }

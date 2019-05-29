@@ -234,6 +234,7 @@
 #include "third_party/blink/renderer/core/loader/prerenderer_client.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -8079,6 +8080,32 @@ void Document::CountUse(mojom::WebFeature feature) {
   if (DocumentLoader* loader = Loader()) {
     loader->CountUse(feature);
   }
+}
+
+void Document::CountDeprecation(mojom::WebFeature feature) {
+  // TODO(yoichio): We should remove these counters when v0 APIs are removed.
+  // crbug.com/946875.
+  if (const OriginTrialContext* origin_trial_context =
+          OriginTrialContext::FromOrCreate(this)) {
+    if (feature == WebFeature::kHTMLImports &&
+        origin_trial_context->IsFeatureEnabled(
+            OriginTrialFeature::kHTMLImports) &&
+        !RuntimeEnabledFeatures::HTMLImportsEnabledByRuntimeFlag()) {
+      CountUse(WebFeature::kHTMLImportsOnReverseOriginTrials);
+    } else if (feature == WebFeature::kElementCreateShadowRoot &&
+               origin_trial_context->IsFeatureEnabled(
+                   OriginTrialFeature::kShadowDOMV0) &&
+               !RuntimeEnabledFeatures::ShadowDOMV0EnabledByRuntimeFlag()) {
+      CountUse(WebFeature::kElementCreateShadowRootOnReverseOriginTrials);
+    } else if (feature == WebFeature::kDocumentRegisterElement &&
+               origin_trial_context->IsFeatureEnabled(
+                   OriginTrialFeature::kCustomElementsV0) &&
+               !RuntimeEnabledFeatures::
+                   CustomElementsV0EnabledByRuntimeFlag()) {
+      CountUse(WebFeature::kDocumentRegisterElementOnReverseOriginTrials);
+    }
+  }
+  Deprecation::CountDeprecation(Loader(), feature);
 }
 
 void Document::CountUse(CSSPropertyID property,
