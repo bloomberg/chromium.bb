@@ -6,8 +6,12 @@ package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.support.annotation.VisibleForTesting;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -29,6 +33,7 @@ import java.util.Map;
 
 /** A class that handles model and view creation for the Entity suggestions. */
 public class EntitySuggestionProcessor implements SuggestionProcessor {
+    private final static String TAG = "EntitySP";
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
     private final Map<String, List<PropertyModel>> mPendingImageRequests;
@@ -107,11 +112,26 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
                 });
     }
 
+    @VisibleForTesting
+    public void applyImageDominantColor(String colorSpec, PropertyModel model) {
+        int color = ContextCompat.getColor(mContext, R.color.modern_secondary_color);
+
+        if (!TextUtils.isEmpty(colorSpec)) {
+            try {
+                color = Color.parseColor(colorSpec);
+            } catch (IllegalArgumentException e) {
+                Log.i(TAG, "Failed to parse dominant color: " + colorSpec);
+            }
+        }
+        model.set(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR, color);
+    }
+
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         SuggestionViewDelegate delegate =
                 mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
 
+        applyImageDominantColor(suggestion.getImageDominantColor(), model);
         fetchEntityImage(suggestion, model);
 
         model.set(EntitySuggestionViewProperties.SUBJECT_TEXT, suggestion.getDisplayText());

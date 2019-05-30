@@ -566,9 +566,15 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
   ScopedJavaLocalRef<jstring> destination_url =
       ConvertUTF8ToJavaString(env, match.destination_url.spec());
   ScopedJavaLocalRef<jstring> image_url;
+  ScopedJavaLocalRef<jstring> image_dominant_color;
 
   if (!match.image_url.empty()) {
     image_url = ConvertUTF8ToJavaString(env, match.image_url);
+  }
+
+  if (!match.image_dominant_color.empty()) {
+    image_dominant_color =
+        ConvertUTF8ToJavaString(env, match.image_dominant_color);
   }
 
   BookmarkModel* bookmark_model =
@@ -580,7 +586,7 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       ToJavaIntArray(env, contents_class_styles), description,
       ToJavaIntArray(env, description_class_offsets),
       ToJavaIntArray(env, description_class_styles), janswer, fill_into_edit,
-      destination_url, image_url,
+      destination_url, image_url, image_dominant_color,
       bookmark_model && bookmark_model->IsBookmarked(match.destination_url),
       match.SupportsDeletion());
 }

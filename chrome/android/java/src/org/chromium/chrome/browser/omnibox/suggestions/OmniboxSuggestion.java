@@ -75,6 +75,7 @@ public class OmniboxSuggestion {
     private final String mFillIntoEdit;
     private final String mUrl;
     private final String mImageUrl;
+    private final String mImageDominantColor;
     private final int mRelevance;
     private final int mTransition;
     private final boolean mIsStarred;
@@ -84,7 +85,7 @@ public class OmniboxSuggestion {
             String displayText, List<MatchClassification> displayTextClassifications,
             String description, List<MatchClassification> descriptionClassifications,
             SuggestionAnswer answer, String fillIntoEdit, String url, String imageUrl,
-            boolean isStarred, boolean isDeletable) {
+            String imageDominantColor, boolean isStarred, boolean isDeletable) {
         mType = nativeType;
         mIsSearchType = isSearchType;
         mRelevance = relevance;
@@ -97,6 +98,7 @@ public class OmniboxSuggestion {
         mFillIntoEdit = TextUtils.isEmpty(fillIntoEdit) ? displayText : fillIntoEdit;
         mUrl = url;
         mImageUrl = imageUrl;
+        mImageDominantColor = imageDominantColor;
         mIsStarred = isStarred;
         mIsDeletable = isDeletable;
     }
@@ -144,6 +146,11 @@ public class OmniboxSuggestion {
     @Nullable
     public String getImageUrl() {
         return mImageUrl;
+    }
+
+    @Nullable
+    public String getImageDominantColor() {
+        return mImageDominantColor;
     }
 
     /**
@@ -258,7 +265,7 @@ public class OmniboxSuggestion {
                         prefs.getBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_DELETABLE + i, false);
                 OmniboxSuggestion suggestion = new OmniboxSuggestion(nativeType, !isSearchType, 0,
                         0, displayText, classifications, description, classifications, null, "",
-                        url, null, isStarred, isDeletable);
+                        url, null, null, isStarred, isDeletable);
                 suggestions.add(suggestion);
             }
         }

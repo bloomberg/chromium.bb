@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.view.MotionEvent;
 
@@ -65,6 +66,17 @@ public class EntitySuggestionViewBinder {
         }
     }
 
+    private static void applySuggestionImage(PropertyModel model, EntitySuggestionView view) {
+        Bitmap bitmap = model.get(EntitySuggestionViewProperties.IMAGE_BITMAP);
+        if (bitmap != null) {
+            view.setImageBitmap(bitmap);
+            return;
+        }
+
+        int color = model.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR);
+        view.setImageColor(color);
+    }
+
     /** @see PropertyModelChangeProcessor.ViewBinder#bind(Object, Object, Object) */
     public static void bind(
             PropertyModel model, EntitySuggestionView view, PropertyKey propertyKey) {
@@ -75,8 +87,9 @@ public class EntitySuggestionViewBinder {
             view.setSubjectText(model.get(EntitySuggestionViewProperties.SUBJECT_TEXT));
         } else if (EntitySuggestionViewProperties.DESCRIPTION_TEXT.equals(propertyKey)) {
             view.setDescriptionText(model.get(EntitySuggestionViewProperties.DESCRIPTION_TEXT));
-        } else if (EntitySuggestionViewProperties.IMAGE_BITMAP.equals(propertyKey)) {
-            view.setImageBitmap(model.get(EntitySuggestionViewProperties.IMAGE_BITMAP));
+        } else if (EntitySuggestionViewProperties.IMAGE_BITMAP.equals(propertyKey)
+                || EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR.equals(propertyKey)) {
+            applySuggestionImage(model, view);
         }
     }
 }
