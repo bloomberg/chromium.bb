@@ -336,12 +336,8 @@ void DownloadDriverImpl::OnDownloadsInitialized(
   if (is_ready_)
     return;
 
-  if (!active_downloads_only ||
-      base::FeatureList::IsEnabled(
-          features::kUseInProgressDownloadManagerForDownloadService)) {
-    client_->OnDriverReady(true);
-    is_ready_ = true;
-  }
+  client_->OnDriverReady(true);
+  is_ready_ = true;
 }
 
 void DownloadDriverImpl::OnManagerGoingDown(

@@ -84,11 +84,11 @@ class DownloadDriverImplTest : public testing::Test {
 TEST_F(DownloadDriverImplTest, ManagerLateInitialization) {
   driver_->Initialize(&mock_client_);
 
-  EXPECT_CALL(mock_client_, OnDriverReady(true)).Times(0);
+  EXPECT_CALL(mock_client_, OnDriverReady(true)).Times(1);
   static_cast<AllDownloadEventNotifier::Observer*>(driver_.get())
       ->OnDownloadsInitialized(&coordinator_, true);
 
-  EXPECT_CALL(mock_client_, OnDriverReady(true)).Times(1);
+  EXPECT_CALL(mock_client_, OnDriverReady(true)).Times(0);
   static_cast<AllDownloadEventNotifier::Observer*>(driver_.get())
       ->OnDownloadsInitialized(&coordinator_, false);
 }
