@@ -2471,9 +2471,11 @@ void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
 }
 
 void MainThreadSchedulerImpl::OnExitNestedRunLoop() {
-  DCHECK(!main_thread_only().running_queues.empty());
   queueing_time_estimator_.OnExecutionStarted(
-      real_time_domain()->Now(), main_thread_only().running_queues.top().get());
+      real_time_domain()->Now(),
+      main_thread_only().running_queues.empty()
+          ? nullptr
+          : main_thread_only().running_queues.top().get());
   main_thread_only().nested_runloop = false;
   ApplyVirtualTimePolicy();
 }
