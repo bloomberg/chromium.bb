@@ -394,6 +394,7 @@ crbug.com/911772 [ mac nvidia-0xfe9 ] conformance2/textures/canvas/tex-3d-r16f-r
 crbug.com/929398 [ mac nvidia-0xfe9 ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 crbug.com/934556 [ mac nvidia-0xfe9 ] conformance2/textures/canvas_sub_rectangle/tex-3d-r11f_g11f_b10f-rgb-unsigned_int_10f_11f_11f_rev.html [ RetryOnFailure ]
 crbug.com/952282 [ mac nvidia-0xfe9 ] conformance2/rendering/framebuffer-unsupported.html [ RetryOnFailure ]
+crbug.com/965209 [ mac nvidia-0xfe9 ] conformance2/samplers/multi-context-sampler-test.html [ RetryOnFailure ]
 crbug.com/756537 [ mac nvidia ] deqp/functional/gles3/shaderoperator/* [ Failure ]
 crbug.com/907599 [ mac nvidia debug ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
 
