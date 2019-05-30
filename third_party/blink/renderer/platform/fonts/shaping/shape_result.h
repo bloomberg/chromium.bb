@@ -333,6 +333,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   String ToString() const;
   void ToString(StringBuilder*) const;
 
+  class GlyphOffset;
   struct RunInfo;
   RunInfo* InsertRunForTesting(unsigned start_index,
                                unsigned num_characters,
@@ -455,7 +456,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   void InsertRun(scoped_refptr<ShapeResult::RunInfo>);
   void ReorderRtlRuns(unsigned run_size_before);
 
-  template <bool is_horizontal_run>
+  template <bool is_horizontal_run, bool has_non_zero_glyph_offsets>
   void ComputeRunInkBounds(const ShapeResult::RunInfo&,
                            float run_advance,
                            FloatRect* ink_bounds) const;
@@ -487,11 +488,27 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // Tracks whether any runs contain glyphs with a y-offset != 0.
   unsigned has_vertical_offsets_ : 1;
 
+ private:
   friend class HarfBuzzShaper;
   friend class ShapeResultBuffer;
   friend class ShapeResultBloberizer;
   friend class ShapeResultView;
   friend class ShapeResultTest;
+
+  template <bool has_non_zero_glyph_offsets>
+  float ForEachGlyphImpl(float initial_advance,
+                         GlyphCallback,
+                         void* context,
+                         const RunInfo& run) const;
+
+  template <bool has_non_zero_glyph_offsets>
+  float ForEachGlyphImpl(float initial_advance,
+                         unsigned from,
+                         unsigned to,
+                         unsigned index_offset,
+                         GlyphCallback,
+                         void* context,
+                         const RunInfo& run) const;
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const ShapeResult&);

@@ -157,7 +157,7 @@ class PLATFORM_EXPORT ShapeResultView final
 
   unsigned CharacterIndexOffsetForGlyphData(const RunInfoPart&) const;
 
-  template <bool is_horizontal_run>
+  template <bool is_horizontal_run, bool has_glyph_offsets>
   void ComputePartInkBounds(const ShapeResultView::RunInfoPart&,
                             float run_advance,
                             FloatRect* ink_bounds) const;
@@ -189,7 +189,23 @@ class PLATFORM_EXPORT ShapeResultView final
   float width_;
   Vector<std::unique_ptr<RunInfoPart>, 4> parts_;
 
+ private:
   friend class ShapeResult;
+
+  template <bool has_glyph_offsets>
+  float ForEachGlyphImpl(float initial_advance,
+                         GlyphCallback,
+                         void* context,
+                         const RunInfoPart& part) const;
+
+  template <bool has_glyph_offsets>
+  float ForEachGlyphImpl(float initial_advance,
+                         unsigned from,
+                         unsigned to,
+                         unsigned index_offset,
+                         GlyphCallback,
+                         void* context,
+                         const RunInfoPart& part) const;
 };
 
 }  // namespace blink
