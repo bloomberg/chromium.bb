@@ -1043,16 +1043,6 @@
       'ToTAndroidCFI',
     ],
   },
-  'non_network_service_browser_tests': {
-    'modifications': {
-      # chromium.chromiumos
-      'linux-chromeos-dbg': {
-        'swarming': {
-          'shards': 21,
-        },
-      },
-    },
-  },
   'non_network_service_webkit_layout_tests' : {
     'remove_from': [
       'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported

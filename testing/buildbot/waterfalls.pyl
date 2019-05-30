@@ -709,7 +709,7 @@
           'linux-trusty',
         ],
         'test_suites': {
-          'gtest_tests': 'linux_chromeos_with_non_network_service_gtests',
+          'gtest_tests': 'linux_chromeos_gtests',
         },
       },
       'linux-chromeos-rel': {
