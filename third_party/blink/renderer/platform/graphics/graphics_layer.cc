@@ -1069,18 +1069,21 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
     client_.GraphicsLayersDidChange();
 }
 
-void GraphicsLayer::SetContentsPropertyTreeState(
-    const PropertyTreeState& layer_state) {
+void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
+                                          const IntPoint& layer_offset) {
   DCHECK(ContentsLayer());
 
-  if (contents_property_tree_state_) {
-    if (*contents_property_tree_state_ == layer_state)
+  if (contents_layer_state_) {
+    if (contents_layer_state_->state == layer_state &&
+        contents_layer_state_->offset == layer_offset)
       return;
-    *contents_property_tree_state_ = layer_state;
+    contents_layer_state_->state = layer_state;
+    contents_layer_state_->offset = layer_offset;
   } else {
-    contents_property_tree_state_ =
-        std::make_unique<PropertyTreeState>(layer_state);
+    contents_layer_state_ =
+        std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
   }
+
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     client_.GraphicsLayersDidChange();
 }
