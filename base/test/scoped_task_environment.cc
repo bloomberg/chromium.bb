@@ -594,12 +594,11 @@ void ScopedTaskEnvironment::RunUntilIdle() {
 }
 
 void ScopedTaskEnvironment::FastForwardBy(TimeDelta delta) {
-  MessageLoopCurrent::ScopedNestableTaskAllower allow;
   DCHECK(mock_time_domain_);
   mock_time_domain_->SetStopWhenMessagePumpIsIdle(false);
   mock_time_domain_->SetAllowTimeToAutoAdvanceUntil(mock_time_domain_->Now() +
                                                     delta);
-  RunLoop().RunUntilIdle();
+  RunLoop{RunLoop::Type::kNestableTasksAllowed}.RunUntilIdle();
   mock_time_domain_->SetStopWhenMessagePumpIsIdle(true);
   mock_time_domain_->SetAllowTimeToAutoAdvanceUntil(TimeTicks::Max());
 }
