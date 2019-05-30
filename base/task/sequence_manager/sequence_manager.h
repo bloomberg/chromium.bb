@@ -68,7 +68,7 @@ class BASE_EXPORT SequenceManager {
     // so we are making Settings move-only in preparation.
     Settings(Settings&& move_from) noexcept;
 
-    MessageLoop::Type message_loop_type = MessageLoop::TYPE_DEFAULT;
+    MessagePump::Type message_loop_type = MessagePump::Type::DEFAULT;
     bool randomised_sampling_enabled = false;
     const TickClock* clock = DefaultTickClock::GetInstance();
 
@@ -216,8 +216,8 @@ class BASE_EXPORT SequenceManager::Settings::Builder {
   Builder();
   ~Builder();
 
-  // Sets the MessageLoop::Type which is sued to create a MessagePump.
-  Builder& SetMessageLoopType(MessageLoop::Type message_loop_type);
+  // Sets the MessagePump::Type which is used to create a MessagePump.
+  Builder& SetMessagePumpType(MessagePump::Type message_loop_type);
 
   Builder& SetRandomisedSamplingEnabled(bool randomised_sampling_enabled);
 
@@ -275,7 +275,7 @@ CreateSequenceManagerOnCurrentThread(SequenceManager::Settings settings);
 
 // Create a SequenceManager using the given MessagePump on the current thread.
 // MessagePump instances can be created with
-// MessageLoop::CreateMessagePumpForType().
+// MessagePump::CreateMessagePumpForType().
 BASE_EXPORT std::unique_ptr<SequenceManager>
 CreateSequenceManagerOnCurrentThreadWithPump(
     std::unique_ptr<MessagePump> message_pump,

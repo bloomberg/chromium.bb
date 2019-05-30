@@ -10,7 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/run_loop.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -66,9 +66,9 @@ CreateSequenceManagerForMainThreadType(
     return nullptr;
   } else {
     return sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump(
-        MessageLoop::CreateMessagePumpForType(*type),
+        MessagePump::Create(*type),
         base::sequence_manager::SequenceManager::Settings::Builder()
-            .SetMessageLoopType(*type)
+            .SetMessagePumpType(*type)
             .Build());
   }
 }

@@ -21,6 +21,7 @@ include_rules = [
   "+base/logging.h",
   "+base/message_loop/message_loop.h",
   "+base/message_loop/message_loop_current.h",
+  "+base/message_loop/message_pump.h",
   "+base/metrics/field_trial.h",
   "+base/metrics/field_trial_params.h",
   "+base/metrics/histogram_functions.h",

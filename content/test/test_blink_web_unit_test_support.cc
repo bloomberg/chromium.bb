@@ -166,8 +166,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
     DCHECK_EQ(scheduler_type, SchedulerType::kRealScheduler);
     main_thread_scheduler_ =
         blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
-            base::MessageLoop::CreateMessagePumpForType(
-                base::MessageLoop::TYPE_DEFAULT));
+            base::MessagePump::Create(base::MessagePump::Type::DEFAULT));
     base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
         "BlinkTestSupport");
   }

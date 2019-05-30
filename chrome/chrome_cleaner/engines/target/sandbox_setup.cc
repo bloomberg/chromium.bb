@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/engines/target/engine_commands_impl.h"
 #include "chrome/chrome_cleaner/engines/target/libraries.h"
@@ -41,7 +42,7 @@ class EngineMojoSandboxTargetHooks : public MojoSandboxTargetHooks {
   scoped_refptr<EngineDelegate> engine_delegate_;
   MojoTaskRunner* mojo_task_runner_;
 
-  base::MessageLoop message_loop_;
+  base::SingleThreadTaskExecutor single_thread_task_executor_;
 
   std::unique_ptr<EngineCommandsImpl> engine_commands_impl_;
 

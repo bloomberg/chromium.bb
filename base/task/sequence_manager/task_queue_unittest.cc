@@ -17,7 +17,7 @@ namespace {
 
 TEST(TaskQueueTest, TaskQueueVoters) {
   auto sequence_manager = CreateSequenceManagerOnCurrentThreadWithPump(
-      MessageLoop::CreateMessagePumpForType(MessageLoop::TYPE_DEFAULT));
+      MessagePump::Create(MessagePump::Type::DEFAULT));
 
   auto queue = sequence_manager->CreateTaskQueue(TaskQueue::Spec("test"));
 
@@ -66,7 +66,7 @@ TEST(TaskQueueTest, TaskQueueVoters) {
 
 TEST(TaskQueueTest, ShutdownQueueBeforeEnabledVoterDeleted) {
   auto sequence_manager = CreateSequenceManagerOnCurrentThreadWithPump(
-      MessageLoop::CreateMessagePumpForType(MessageLoop::TYPE_DEFAULT));
+      MessagePump::Create(MessagePump::Type::DEFAULT));
   auto queue = sequence_manager->CreateTaskQueue(TaskQueue::Spec("test"));
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
@@ -81,7 +81,7 @@ TEST(TaskQueueTest, ShutdownQueueBeforeEnabledVoterDeleted) {
 
 TEST(TaskQueueTest, ShutdownQueueBeforeDisabledVoterDeleted) {
   auto sequence_manager = CreateSequenceManagerOnCurrentThreadWithPump(
-      MessageLoop::CreateMessagePumpForType(MessageLoop::TYPE_DEFAULT));
+      MessagePump::Create(MessagePump::Type::DEFAULT));
   auto queue = sequence_manager->CreateTaskQueue(TaskQueue::Spec("test"));
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =

@@ -181,7 +181,7 @@ class SequenceManagerWithMessagePumpPerfTestDelegate
  public:
   SequenceManagerWithMessagePumpPerfTestDelegate(
       const char* name,
-      MessageLoop::Type type,
+      MessagePump::Type type,
       bool randomised_sampling_enabled = false)
       : name_(name) {
     auto settings =
@@ -190,7 +190,7 @@ class SequenceManagerWithMessagePumpPerfTestDelegate
             .Build();
     SetSequenceManager(SequenceManagerForTest::Create(
         std::make_unique<internal::ThreadControllerWithMessagePumpImpl>(
-            MessageLoop ::CreateMessagePumpForType(type), settings),
+            MessagePump::Create(type), settings),
         std::move(settings)));
 
     // ThreadControllerWithMessagePumpImpl doesn't provide a default task
@@ -612,20 +612,20 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
       case PerfTestType::kUseSequenceManagerWithMessagePump:
         return std::make_unique<SequenceManagerWithMessagePumpPerfTestDelegate>(
             " SequenceManager with MessagePumpDefault ",
-            MessageLoop::TYPE_DEFAULT);
+            MessagePump::Type::DEFAULT);
 
       case PerfTestType::kUseSequenceManagerWithUIMessagePump:
         return std::make_unique<SequenceManagerWithMessagePumpPerfTestDelegate>(
-            " SequenceManager with MessagePumpForUI ", MessageLoop::TYPE_UI);
+            " SequenceManager with MessagePumpForUI ", MessagePump::Type::UI);
 
       case PerfTestType::kUseSequenceManagerWithIOMessagePump:
         return std::make_unique<SequenceManagerWithMessagePumpPerfTestDelegate>(
-            " SequenceManager with MessagePumpForIO ", MessageLoop::TYPE_IO);
+            " SequenceManager with MessagePumpForIO ", MessagePump::Type::IO);
 
       case PerfTestType::kUseSequenceManagerWithMessagePumpAndRandomSampling:
         return std::make_unique<SequenceManagerWithMessagePumpPerfTestDelegate>(
             " SequenceManager with MessagePumpDefault and random sampling ",
-            MessageLoop::TYPE_DEFAULT, true);
+            MessagePump::Type::DEFAULT, true);
 
       case PerfTestType::kUseMessageLoop:
         return std::make_unique<MessageLoopPerfTestDelegate>(

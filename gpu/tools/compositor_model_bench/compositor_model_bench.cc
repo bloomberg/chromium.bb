@@ -26,9 +26,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "gpu/tools/compositor_model_bench/render_model_utils.h"
@@ -116,7 +116,7 @@ class Simulator {
 
     LOG(INFO) << "Running " << sims_remaining_.size() << " simulations.";
 
-    message_loop_.task_runner()->PostTask(
+    single_thread_task_executor_.task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&Simulator::ProcessEvents, weak_factory_.GetWeakPtr()));
     run_loop_.Run();
@@ -324,7 +324,7 @@ class Simulator {
       current_sim_->Resize(window_width_, window_height_);
   }
 
-  base::MessageLoop message_loop_;
+  base::SingleThreadTaskExecutor single_thread_task_executor_;
   base::RunLoop run_loop_;
 
   // Simulation task list for this execution

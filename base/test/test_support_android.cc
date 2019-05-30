@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_android.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
@@ -214,8 +214,10 @@ void InitAndroidTestPaths(const FilePath& test_data_dir) {
 }
 
 void InitAndroidTestMessageLoop() {
-  if (!MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUIStub))
-    LOG(INFO) << "MessagePumpForUIFactory already set, unable to override.";
+  // NOTE something else such as a JNI call may have already overridden the UI
+  // factory.
+  if (!MessagePump::IsMessagePumpForUIFactoryOveridden())
+    MessagePump::OverrideMessagePumpForUIFactory(&CreateMessagePumpForUIStub);
 }
 
 }  // namespace base

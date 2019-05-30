@@ -544,8 +544,7 @@ class SequenceManagerTaskEnvironment : public Thread::TaskEnvironment {
 
   void BindToCurrentThread(base::TimerSlack timer_slack) override {
     sequence_manager_->BindToMessagePump(
-        base::MessageLoop::CreateMessagePumpForType(
-            base::MessageLoop::TYPE_DEFAULT));
+        base::MessagePump::Create(base::MessagePump::Type::DEFAULT));
     sequence_manager_->SetTimerSlack(timer_slack);
   }
 

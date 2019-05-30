@@ -13,13 +13,13 @@
 #include "base/debug/stack_trace.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_config.h"
@@ -175,11 +175,12 @@ void NonEmbedderProcessInit() {
 int RunServiceManager(MainDelegate* delegate) {
   NonEmbedderProcessInit();
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::SingleThreadTaskExecutor main_thread_task_executor(
+      base::MessagePump::Type::UI);
 
   base::Thread ipc_thread("IPC thread");
   ipc_thread.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+      base::Thread::Options(base::MessagePump::Type::IO, 0));
   mojo::core::ScopedIPCSupport ipc_support(
       ipc_thread.task_runner(),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
@@ -215,7 +216,8 @@ int RunService(MainDelegate* delegate) {
 
   service_manager::ServiceExecutableEnvironment environment;
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::SingleThreadTaskExecutor main_thread_task_executor(
+      base::MessagePump::Type::UI);
   base::RunLoop run_loop;
 
   std::string service_name =

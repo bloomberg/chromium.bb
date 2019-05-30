@@ -156,7 +156,7 @@ class FixtureWithMockTaskRunner final : public Fixture {
             ThreadTaskRunnerHandle::Get(),
             mock_tick_clock(),
             SequenceManager::Settings::Builder()
-                .SetMessageLoopType(MessageLoop::Type::TYPE_DEFAULT)
+                .SetMessagePumpType(MessagePump::Type::DEFAULT)
                 .SetRandomisedSamplingEnabled(false)
                 .SetTickClock(mock_tick_clock())
                 .Build())) {
@@ -227,7 +227,7 @@ class FixtureWithMockMessagePump : public Fixture {
     auto pump = std::make_unique<MockTimeMessagePump>(&mock_clock_);
     pump_ = pump.get();
     auto settings = SequenceManager::Settings::Builder()
-                        .SetMessageLoopType(MessageLoop::Type::TYPE_DEFAULT)
+                        .SetMessagePumpType(MessagePump::Type::DEFAULT)
                         .SetRandomisedSamplingEnabled(false)
                         .SetTickClock(mock_tick_clock())
                         .Build();
@@ -314,7 +314,7 @@ class FixtureWithMessageLoop : public Fixture {
 
     sequence_manager_ = SequenceManagerForTest::CreateOnCurrentThread(
         SequenceManager::Settings::Builder()
-            .SetMessageLoopType(MessageLoop::Type::TYPE_DEFAULT)
+            .SetMessagePumpType(MessagePump::Type::DEFAULT)
             .SetRandomisedSamplingEnabled(false)
             .SetTickClock(mock_tick_clock())
             .Build());

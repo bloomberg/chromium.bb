@@ -448,9 +448,7 @@ void ShellMainDelegate::PreCreateMainMessageLoop() {
 #if defined(OS_ANDROID)
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kRunWebTests)) {
-    bool success =
-        base::MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUI);
-    CHECK(success) << "Unable to initialize the message pump for Android";
+    base::MessagePump::OverrideMessagePumpForUIFactory(&CreateMessagePumpForUI);
   }
 #elif defined(OS_MACOSX)
   RegisterShellCrApp();

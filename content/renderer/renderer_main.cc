@@ -81,10 +81,9 @@ std::unique_ptr<base::MessagePump> CreateMainThreadMessagePump() {
   // As long as scrollbars on Mac are painted with Cocoa, the message pump
   // needs to be backed by a Foundation-level loop to process NSTimers. See
   // http://crbug.com/306348#c24 for details.
-  return std::make_unique<base::MessagePumpNSRunLoop>();
+  return base::MessagePump::Create(base::MessagePump::Type::NS_RUNLOOP);
 #else
-  return base::MessageLoop::CreateMessagePumpForType(
-      base::MessageLoop::TYPE_DEFAULT);
+  return base::MessagePump::Create(base::MessagePump::Type::DEFAULT);
 #endif
 }
 

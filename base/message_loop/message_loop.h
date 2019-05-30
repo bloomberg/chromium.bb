@@ -79,68 +79,29 @@ class SequenceManagerImpl;
 //
 // Please be SURE your task is reentrant (nestable) and all global variables
 // are stable and accessible before calling SetNestableTasksAllowed(true).
-
+//
+// DEPRECATED: Use a SingleThreadTaskExecutor instead or ScopedTaskEnvironment
+// for tests. TODO(https://crbug.com/891670/) remove this class.
 class BASE_EXPORT MessageLoop {
  public:
-  // A MessageLoop has a particular type, which indicates the set of
-  // asynchronous events it may process in addition to tasks and timers.
-  //
-  // TYPE_DEFAULT
-  //   This type of ML only supports tasks and timers.
-  //
-  // TYPE_UI
-  //   This type of ML also supports native UI events (e.g., Windows messages).
-  //   See also MessageLoopForUI.
-  //
-  // TYPE_IO
-  //   This type of ML also supports asynchronous IO.  See also
-  //   MessageLoopForIO.
-  //
-  // TYPE_JAVA
-  //   This type of ML is backed by a Java message handler which is responsible
-  //   for running the tasks added to the ML. This is only for use on Android.
-  //   TYPE_JAVA behaves in essence like TYPE_UI, except during construction
-  //   where it does not use the main thread specific pump factory.
-  //
-  // TYPE_CUSTOM
-  //   MessagePump was supplied to constructor.
-  //
-  enum class Type {
-    TYPE_DEFAULT,
-    TYPE_UI,
-    TYPE_CUSTOM,
-    TYPE_IO,
-#if defined(OS_ANDROID)
-    TYPE_JAVA,
-#endif  // defined(OS_ANDROID)
-  };
+  using Type = MessagePump::Type;
 
-  static constexpr Type TYPE_DEFAULT = Type::TYPE_DEFAULT;
-  static constexpr Type TYPE_UI = Type::TYPE_UI;
-  static constexpr Type TYPE_CUSTOM = Type::TYPE_CUSTOM;
-  static constexpr Type TYPE_IO = Type::TYPE_IO;
+  static constexpr Type TYPE_DEFAULT = Type::DEFAULT;
+  static constexpr Type TYPE_UI = Type::UI;
+  static constexpr Type TYPE_CUSTOM = Type::CUSTOM;
+  static constexpr Type TYPE_IO = Type::IO;
 #if defined(OS_ANDROID)
-  static constexpr Type TYPE_JAVA = Type::TYPE_JAVA;
+  static constexpr Type TYPE_JAVA = Type::JAVA;
 #endif  // defined(OS_ANDROID)
 
   // Normally, it is not necessary to instantiate a MessageLoop.  Instead, it
   // is typical to make use of the current thread's MessageLoop instance.
-  explicit MessageLoop(Type type = Type::TYPE_DEFAULT);
+  explicit MessageLoop(Type type = Type::DEFAULT);
   // Creates a TYPE_CUSTOM MessageLoop with the supplied MessagePump, which must
   // be non-NULL.
   explicit MessageLoop(std::unique_ptr<MessagePump> custom_pump);
 
   virtual ~MessageLoop();
-
-  using MessagePumpFactory = std::unique_ptr<MessagePump>();
-  // Uses the given base::MessagePumpForUIFactory to override the default
-  // MessagePump implementation for 'TYPE_UI'. Returns true if the factory
-  // was successfully registered.
-  static bool InitMessagePumpForUIFactory(MessagePumpFactory* factory);
-
-  // Creates the default MessagePump based on |type|. Caller owns return
-  // value.
-  static std::unique_ptr<MessagePump> CreateMessagePumpForType(Type type);
 
   // Set the timer slack for this message loop.
   void SetTimerSlack(TimerSlack timer_slack);

@@ -140,7 +140,7 @@ class BASE_EXPORT SequenceManagerImpl
   scoped_refptr<SingleThreadTaskRunner> GetTaskRunner();
   bool IsBoundToCurrentThread() const;
   MessagePump* GetMessagePump() const;
-  bool IsType(MessageLoop::Type type) const;
+  bool IsType(MessagePump::Type type) const;
   void SetAddQueueTimeToTasks(bool enable);
   void SetTaskExecutionAllowed(bool allowed);
   bool IsTaskExecutionAllowed() const;
@@ -151,7 +151,7 @@ class BASE_EXPORT SequenceManagerImpl
   void BindToCurrentThread(std::unique_ptr<MessagePump> pump);
   void DeletePendingTasks();
   bool HasTasks();
-  MessageLoop::Type GetType() const;
+  MessagePump::Type GetType() const;
 
   // Requests that a task to process work is scheduled.
   void ScheduleWork();

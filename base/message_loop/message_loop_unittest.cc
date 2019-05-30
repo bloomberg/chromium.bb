@@ -605,6 +605,9 @@ class MessageLoopTypedTest
 #if defined(OS_ANDROID)
       case MessageLoop::TYPE_JAVA:
 #endif  // defined(OS_ANDROID)
+#if defined(OS_MACOSX)
+      case MessagePump::Type::NS_RUNLOOP:
+#endif  // defined(OS_MACOSX)
         break;
     }
     NOTREACHED();

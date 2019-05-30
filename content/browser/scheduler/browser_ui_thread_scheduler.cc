@@ -9,7 +9,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/sequence_manager.h"
@@ -38,7 +38,7 @@ BrowserUIThreadScheduler::BrowserUIThreadScheduler()
     : owned_sequence_manager_(
           base::sequence_manager::CreateUnboundSequenceManager(
               base::sequence_manager::SequenceManager::Settings::Builder()
-                  .SetMessageLoopType(base::MessageLoop::TYPE_UI)
+                  .SetMessagePumpType(base::MessageLoop::TYPE_UI)
                   .Build())),
       task_queues_(BrowserThread::UI,
                    owned_sequence_manager_.get(),
@@ -48,7 +48,7 @@ BrowserUIThreadScheduler::BrowserUIThreadScheduler()
   owned_sequence_manager_->SetDefaultTaskRunner(handle_.GetDefaultTaskRunner());
 
   owned_sequence_manager_->BindToMessagePump(
-      base::MessageLoop::CreateMessagePumpForType(base::MessageLoop::TYPE_UI));
+      base::MessagePump::Create(base::MessagePump::Type::UI));
 }
 
 BrowserUIThreadScheduler::BrowserUIThreadScheduler(

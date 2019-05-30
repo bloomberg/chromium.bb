@@ -17,7 +17,7 @@ using ::base::sequence_manager::TaskQueue;
 BrowserIOTaskEnvironment::BrowserIOTaskEnvironment()
     : sequence_manager_(CreateUnboundSequenceManager(
           SequenceManager::Settings::Builder()
-              .SetMessageLoopType(base::MessageLoop::TYPE_IO)
+              .SetMessagePumpType(base::MessageLoop::TYPE_IO)
               .Build())) {
   Init(sequence_manager_.get());
 }
@@ -49,7 +49,7 @@ void BrowserIOTaskEnvironment::BindToCurrentThread(
     base::TimerSlack timer_slack) {
   DCHECK(sequence_manager_);
   sequence_manager_->BindToMessagePump(
-      base::MessageLoop::CreateMessagePumpForType(base::MessageLoop::TYPE_IO));
+      base::MessagePump::Create(base::MessagePump::Type::IO));
   sequence_manager_->SetTimerSlack(timer_slack);
   sequence_manager_->SetDefaultTaskRunner(GetDefaultTaskRunner());
 }

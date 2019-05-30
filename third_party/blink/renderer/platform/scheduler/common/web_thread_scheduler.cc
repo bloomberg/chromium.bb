@@ -21,7 +21,7 @@ WebThreadScheduler::CreateMainThreadScheduler(
     std::unique_ptr<base::MessagePump> message_pump,
     base::Optional<base::Time> initial_virtual_time) {
   auto settings = base::sequence_manager::SequenceManager::Settings::Builder()
-                      .SetMessageLoopType(base::MessageLoop::TYPE_DEFAULT)
+                      .SetMessagePumpType(base::MessagePump::Type::DEFAULT)
                       .SetRandomisedSamplingEnabled(true)
                       .SetAddQueueTimeToTasks(true)
                       .Build();

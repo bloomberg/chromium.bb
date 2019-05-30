@@ -35,7 +35,7 @@ class BrowserTaskQueuesTest : public testing::Test {
  protected:
   BrowserTaskQueuesTest()
       : sequence_manager_(CreateSequenceManagerOnCurrentThreadWithPump(
-            MessageLoop::CreateMessagePumpForType(MessageLoop::TYPE_DEFAULT))),
+            base::MessagePump::Create(base::MessagePump::Type::DEFAULT))),
         queues_(std::make_unique<BrowserTaskQueues>(
             BrowserThread::UI,
             sequence_manager_.get(),

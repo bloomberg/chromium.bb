@@ -91,7 +91,7 @@ int32_t MessageLoopResource::AttachToCurrentThread() {
   AddRef();
   slot->Set(this);
 
-  loop_.reset(new base::MessageLoop);
+  single_thread_task_executor_.reset(new base::SingleThreadTaskExecutor);
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   // Post all pending work to the message loop.
@@ -123,7 +123,7 @@ int32_t MessageLoopResource::Run() {
 
   if (should_destroy_ && nested_invocations_ == 0) {
     task_runner_ = NULL;
-    loop_.reset();
+    single_thread_task_executor_.reset();
     destroyed_ = true;
   }
   return PP_OK;
@@ -172,7 +172,7 @@ void MessageLoopResource::DetachFromThread() {
   // Note that the message loop must be destroyed on the thread it was created
   // on.
   task_runner_ = NULL;
-  loop_.reset();
+  single_thread_task_executor_.reset();
 
   // Cancel out the AddRef in AttachToCurrentThread().
   Release();
