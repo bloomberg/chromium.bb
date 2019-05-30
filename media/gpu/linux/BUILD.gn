@@ -12,6 +12,8 @@ source_set("linux") {
   sources = [
     "dmabuf_video_frame_pool.cc",
     "dmabuf_video_frame_pool.h",
+    "mailbox_video_frame_converter.cc",
+    "mailbox_video_frame_converter.h",
     "platform_video_frame_pool.cc",
     "platform_video_frame_pool.h",
     "platform_video_frame_utils.cc",
@@ -21,9 +23,11 @@ source_set("linux") {
   deps = [
     "//base",
     "//media",
+    "//media/gpu:command_buffer_helper",
     "//media/gpu:common",
     "//ui/gfx:buffer_types",
     "//ui/gfx:memory_buffer",
+    "//ui/gl",
   ]
 
   if (use_ozone) {
@@ -41,6 +45,7 @@ source_set("video_frame_mapper") {
   deps = [
     "//base",
     "//media",
+    "//media/gpu:command_buffer_helper",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
   ]
