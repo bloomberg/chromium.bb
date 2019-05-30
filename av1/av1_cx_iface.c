@@ -157,7 +157,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,                       // row_mt
   0,                       // tile_columns
   0,                       // tile_rows
-  0,                       // enable_tpl_model
+  1,                       // enable_tpl_model
   7,                       // arnr_max_frames
   5,                       // arnr_strength
   0,                       // min_gf_interval; 0 -> default decision
