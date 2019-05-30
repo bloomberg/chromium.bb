@@ -122,6 +122,7 @@ x86_internal_release_boards = frozenset([
     'kalista',
     'kefka',
     'kip',
+    'kumo',
     'lakitu',
     'lakitu-gpu',
     'lakitu-nc',
@@ -205,6 +206,9 @@ dustbuster_boards = frozenset([
 ])
 
 lakitu_boards = frozenset([
+    # Although its name doesn't indicate any lakitu relevance,
+    # kumo board is developed by the lakitu-dev team.
+    'kumo',
     'lakitu',
     'lakitu-gpu',
     'lakitu-nc',

@@ -2204,6 +2204,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
+      'kumo',
       'samus-kernelnext',
       'zork',
   ])
@@ -2784,6 +2785,14 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.beaglebone,
       boards=['beaglebone'],
       description='Incremental Beaglebone Builder',
+  )
+
+  site_config.Add(
+      'kumo-incremental',
+      site_config.templates.incremental,
+      site_config.templates.internal_incremental,
+      site_config.templates.lakitu_notification_emails,
+      board_configs['kumo'],
   )
 
   site_config.Add(
@@ -3868,6 +3877,12 @@ def ApplyCustomOverrides(site_config):
       ),
 
       'lakitu-st-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_notification_emails,
+          sign_types=['base'],
+          paygen=False,
+      ),
+
+      'kumo-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
           paygen=False,

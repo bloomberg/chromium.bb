@@ -90,6 +90,7 @@
     kevin64-paladin
     kip-paladin
     kukui-paladin
+    kumo-paladin
     lakitu-gpu-paladin
     lakitu-paladin
     lakitu-st-paladin
@@ -2400,6 +2401,18 @@
   kukui-tot-chrome-pfq-informational-tryjob
   kukui-tot-chromium-pfq-informational-tryjob
   kukui-unittest-stress
+  kumo-compile-only-pre-cq
+  kumo-full-tryjob
+  kumo-incremental-tryjob
+  kumo-llvm-next-toolchain-tryjob
+  kumo-llvm-toolchain-tryjob
+  kumo-no-vmtest-pre-cq
+  kumo-paladin-tryjob
+  kumo-payloads-tryjob
+  kumo-postsubmit-tryjob
+  kumo-pre-cq
+  kumo-release-tryjob
+  kumo-unittest-stress
   lakitu-compile-only-pre-cq
   lakitu-external-pre-cq
   lakitu-full-tryjob
@@ -2666,6 +2679,7 @@
     kevin64-paladin-tryjob
     kip-paladin-tryjob
     kukui-paladin-tryjob
+    kumo-paladin-tryjob
     lakitu-gpu-paladin-tryjob
     lakitu-paladin-tryjob
     lakitu-st-paladin-tryjob
