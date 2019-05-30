@@ -398,6 +398,7 @@ FindBuffer::BufferNodeMapping FindBuffer::MappingForIndex(
 PositionInFlatTree FindBuffer::PositionAtStartOfCharacterAtIndex(
     unsigned index) const {
   DCHECK_LT(index, buffer_.size());
+  DCHECK(offset_mapping_);
   BufferNodeMapping entry = MappingForIndex(index);
   return ToPositionInFlatTree(offset_mapping_->GetLastPosition(
       index - entry.offset_in_buffer + entry.offset_in_mapping));
@@ -406,6 +407,7 @@ PositionInFlatTree FindBuffer::PositionAtStartOfCharacterAtIndex(
 PositionInFlatTree FindBuffer::PositionAtEndOfCharacterAtIndex(
     unsigned index) const {
   DCHECK_LT(index, buffer_.size());
+  DCHECK(offset_mapping_);
   BufferNodeMapping entry = MappingForIndex(index);
   return ToPositionInFlatTree(offset_mapping_->GetFirstPosition(
       index - entry.offset_in_buffer + entry.offset_in_mapping + 1));
@@ -414,8 +416,18 @@ PositionInFlatTree FindBuffer::PositionAtEndOfCharacterAtIndex(
 void FindBuffer::AddTextToBuffer(const Text& text_node,
                                  LayoutBlockFlow& block_flow,
                                  const EphemeralRangeInFlatTree& range) {
-  if (!offset_mapping_)
+  if (!offset_mapping_) {
     offset_mapping_ = NGInlineNode::GetOffsetMapping(&block_flow);
+
+    if (UNLIKELY(!offset_mapping_)) {
+      // TODO(crbug.com/955678): There are certain cases where we fail to
+      // compute // |NGOffsetMapping| due to failures in layout. As the root
+      // cause is hard to fix at the moment, we work around it here so that the
+      // production build doesn't crash.
+      NOTREACHED();
+      return;
+    }
+  }
 
   Position node_start =
       (&text_node == range.StartPosition().ComputeContainerNode())
