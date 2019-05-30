@@ -45,8 +45,15 @@ using protocol::TextEvent;
 using protocol::MouseEvent;
 using protocol::TouchEvent;
 
-int sign(float num) {
-  return (num > 0) ? 1 : (num < 0) ? -1 : 0;
+enum class ScrollDirection {
+  DOWN = -1,
+  UP = 1,
+  NONE = 0,
+};
+
+ScrollDirection WheelDeltaToScrollDirection(float num) {
+  return (num > 0) ? ScrollDirection::UP
+                   : (num < 0) ? ScrollDirection::DOWN : ScrollDirection::NONE;
 }
 
 bool IsDomModifierKey(ui::DomCode dom_code) {
@@ -144,15 +151,18 @@ class InputInjectorX11 : public InputInjector {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
     std::set<int> pressed_keys_;
-    webrtc::DesktopVector latest_mouse_position_;
-    float wheel_ticks_x_;
-    float wheel_ticks_y_;
+    webrtc::DesktopVector latest_mouse_position_ =
+        webrtc::DesktopVector(-1, -1);
+    float wheel_ticks_x_ = 0;
+    float wheel_ticks_y_ = 0;
     base::Time latest_tick_y_event_;
-    int latest_tick_y_direction_;
+    // The direction of the last scroll event that resulted in at least one
+    // "tick" being injected.
+    ScrollDirection latest_tick_y_direction_ = ScrollDirection::NONE;
 
     // X11 graphics context.
-    Display* display_;
-    Window root_window_;
+    Display* display_ = XOpenDisplay(nullptr);
+    Window root_window_ = BadValue;
 
     // Number of buttons we support.
     // Left, Right, Middle, VScroll Up/Down, HScroll Left/Right, back, forward.
@@ -168,7 +178,7 @@ class InputInjectorX11 : public InputInjector {
 
     std::unique_ptr<X11CharacterInjector> character_injector_;
 
-    bool saved_auto_repeat_enabled_;
+    bool saved_auto_repeat_enabled_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -218,14 +228,7 @@ void InputInjectorX11::Start(
 
 InputInjectorX11::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner),
-      latest_mouse_position_(-1, -1),
-      wheel_ticks_x_(0.0f),
-      wheel_ticks_y_(0.0f),
-      latest_tick_y_direction_(0),
-      display_(XOpenDisplay(nullptr)),
-      root_window_(BadValue),
-      saved_auto_repeat_enabled_(false) {}
+    : task_runner_(task_runner) {}
 
 bool InputInjectorX11::Core::Init() {
   CHECK(display_);
@@ -527,14 +530,15 @@ void InputInjectorX11::Core::InjectMouseEvent(const MouseEvent& event) {
     //
     // The effect when a trackpad is used is that the first tick in either
     // direction occurs sooner; subsequent ticks are mostly unaffected.
-    const int current_tick_y_direction = sign(event.wheel_delta_y());
+    const ScrollDirection current_tick_y_direction =
+        WheelDeltaToScrollDirection(event.wheel_delta_y());
     if ((base::Time::Now() - latest_tick_y_event_ > kContinuousScrollTimeout) ||
         latest_tick_y_direction_ != current_tick_y_direction) {
-      ticks_y = current_tick_y_direction;
+      ticks_y = static_cast<int>(current_tick_y_direction);
     }
   }
   if (ticks_y != 0) {
-    latest_tick_y_direction_ = sign(ticks_y);
+    latest_tick_y_direction_ = WheelDeltaToScrollDirection(ticks_y);
     latest_tick_y_event_ = base::Time::Now();
     InjectScrollWheelClicks(VerticalScrollWheelToX11ButtonNumber(ticks_y),
                             abs(ticks_y));
