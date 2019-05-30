@@ -6,6 +6,14 @@
 
 namespace device {
 
+uint16_t MockWMRController::ProductId() {
+  return 0;
+}
+
+uint16_t MockWMRController::VendorId() {
+  return 0;
+}
+
 MockWMRInputSource::MockWMRInputSource(ControllerFrameData data,
                                        unsigned int id)
     : data_(data), id_(id) {}
@@ -24,6 +32,10 @@ MockWMRInputSource::Kind() const {
 
 bool MockWMRInputSource::IsPointingSupported() const {
   return true;
+}
+
+std::unique_ptr<WMRController> MockWMRInputSource::Controller() const {
+  return std::make_unique<MockWMRController>();
 }
 
 ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceHandedness

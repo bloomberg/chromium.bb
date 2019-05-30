@@ -229,15 +229,21 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
                  L"Oculus Remote");
       }
     } else if (this->source() == GAMEPAD_SOURCE_WIN_MR) {
-      if (dest.hand == GamepadHand::kLeft) {
+      // For compatibility with Edge and existing libraries, Win MR may plumb
+      // an input_state and corresponding gamepad up via the Pose for the
+      // purposes of exposing the Gamepad ID that should be used.
+      // If it is present, use that, otherwise, just use the same prefix as
+      // Edge uses.
+      if (source->pose && source->pose->input_state &&
+          source->pose->input_state.value().size() > 0 &&
+          source->pose->input_state.value()[0]->gamepad) {
+        Gamepad id_gamepad =
+            source->pose->input_state.value()[0]->gamepad.value();
         swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Windows Mixed Reality (Left)");
-      } else if (dest.hand == GamepadHand::kRight) {
-        swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Windows Mixed Reality (Right)");
+                 id_gamepad.id);
       } else {
         swprintf(base::as_writable_wcstr(dest.id), Gamepad::kIdLengthCap,
-                 L"Windows Mixed Reality");
+                 L"Spatial Controller (Spatial Interaction Source) 0000-0000");
       }
     }
 

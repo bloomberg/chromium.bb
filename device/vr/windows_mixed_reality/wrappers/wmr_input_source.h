@@ -8,8 +8,34 @@
 #include <wrl.h>
 
 #include <cstdint>
+#include <memory>
 
 namespace device {
+class WMRController {
+ public:
+  virtual ~WMRController() = default;
+
+  virtual uint16_t ProductId() = 0;
+  virtual uint16_t VendorId() = 0;
+};
+
+class WMRControllerImpl : public WMRController {
+ public:
+  explicit WMRControllerImpl(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::UI::Input::Spatial::ISpatialInteractionController>
+          controller);
+  ~WMRControllerImpl() override;
+
+  uint16_t ProductId() override;
+  uint16_t VendorId() override;
+
+ private:
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionController>
+      controller_;
+};
+
 class WMRInputSource {
  public:
   virtual ~WMRInputSource() = default;
@@ -21,6 +47,7 @@ class WMRInputSource {
 
   // Uses ISpatialInteractionSource2.
   virtual bool IsPointingSupported() const = 0;
+  virtual std::unique_ptr<WMRController> Controller() const = 0;
 
   // Uses ISpatialInteractionSource3.
   virtual ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceHandedness
@@ -45,6 +72,7 @@ class WMRInputSourceImpl : public WMRInputSource {
 
   // Uses ISpatialInteractionSource2.
   bool IsPointingSupported() const override;
+  std::unique_ptr<WMRController> Controller() const override;
 
   // Uses ISpatialInteractionSource3.
   ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceHandedness

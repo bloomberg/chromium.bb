@@ -8,6 +8,14 @@
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_source.h"
 
 namespace device {
+class MockWMRController : public WMRController {
+ public:
+  MockWMRController() = default;
+  ~MockWMRController() override = default;
+
+  uint16_t ProductId() override;
+  uint16_t VendorId() override;
+};
 
 class MockWMRInputSource : public WMRInputSource {
  public:
@@ -18,6 +26,7 @@ class MockWMRInputSource : public WMRInputSource {
   ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceKind Kind()
       const override;
   bool IsPointingSupported() const override;
+  std::unique_ptr<WMRController> Controller() const override;
   ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceHandedness
   Handedness() const override;
 

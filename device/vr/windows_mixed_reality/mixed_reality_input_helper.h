@@ -32,6 +32,8 @@ struct ParsedInputState {
   mojom::XRInputSourceStatePtr source_state;
   std::unordered_map<ButtonName, GamepadBuilder::ButtonData> button_data;
   GamepadPose gamepad_pose;
+  uint16_t vendor_id = 0;
+  uint16_t product_id = 0;
   ParsedInputState();
   ~ParsedInputState();
   ParsedInputState(ParsedInputState&& other);

@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/strings/safe_sprintf.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/util/gamepad_builder.h"
@@ -179,16 +180,46 @@ mojom::XRGamepadPtr GetWebVRGamepad(ParsedInputState input_state) {
   AddButton(gamepad, nullptr);  // Nothing seems to trigger this button in Edge.
   AddButtonWithAxes(gamepad, input_state.button_data[ButtonName::kTouchpad]);
 
+  auto handedness = input_state.source_state->description->handedness;
+
   gamepad->timestamp = base::TimeTicks::Now();
-  gamepad->hand = input_state.source_state->description->handedness;
+  gamepad->hand = handedness;
   gamepad->controller_id = input_state.source_state->source_id;
 
+  // We need to ensure that we have a VRPose so that we can attach input_states
+  // and therefore a gamepad to plumb up the Gamepad Id with VendorId/ProductId.
   if (input_state.gamepad_pose.not_null) {
     gamepad->pose = ConvertToVRPose(input_state.gamepad_pose);
     gamepad->can_provide_position = input_state.gamepad_pose.position.not_null;
     gamepad->can_provide_orientation =
         input_state.gamepad_pose.orientation.not_null;
+  } else {
+    gamepad->can_provide_orientation = false;
+    gamepad->can_provide_position = false;
+    gamepad->pose = mojom::VRPose::New();
   }
+
+  // Build the gamepad id, this prefix is used for all controller types and
+  // VendorId-ProductId is appended after it, padded with leading 0's.
+  char gamepad_id[Gamepad::kIdLengthCap];
+  base::strings::SafeSPrintf(
+      gamepad_id, "Spatial Controller (Spatial Interaction Source) %04X-%04X",
+      input_state.vendor_id, input_state.product_id);
+
+  // We have to use the GamepadBuilder because the mojom serialization complains
+  // if some of the values are missing/invalid.
+  GamepadBuilder builder(gamepad_id, GamepadBuilder::GamepadMapping::kNone,
+                         handedness);
+
+  auto input_source_state = mojom::XRInputSourceState::New();
+  input_source_state->gamepad = builder.GetGamepad();
+
+  // Typical chromium style would be to use the initializer list, but that
+  // doesn't seem to be compatible with the explicitly deleted move/copy
+  // constructors for the vector.
+  std::vector<mojom::XRInputSourceStatePtr> input_source_vector;
+  input_source_vector.push_back(std::move(input_source_state));
+  gamepad->pose->input_state = std::move(input_source_vector);
 
   return gamepad;
 }
@@ -494,6 +525,12 @@ ParsedInputState MixedRealityInputHelper::LockedParseWindowsSourceState(
       }
 
       input_state.gamepad_pose = gamepad_pose;
+    }
+
+    std::unique_ptr<WMRController> controller = source->Controller();
+    if (controller) {
+      input_state.product_id = controller->ProductId();
+      input_state.vendor_id = controller->VendorId();
     }
   }
 

@@ -17,10 +17,33 @@ using SourceHandedness =
 using SourceKind =
     ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceKind;
 
+using ABI::Windows::UI::Input::Spatial::ISpatialInteractionController;
 using ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource;
 using Microsoft::WRL::ComPtr;
 
 namespace device {
+
+WMRControllerImpl::WMRControllerImpl(
+    ComPtr<ISpatialInteractionController> controller)
+    : controller_(controller) {
+  DCHECK(controller_);
+}
+
+WMRControllerImpl::~WMRControllerImpl() = default;
+
+uint16_t WMRControllerImpl::ProductId() {
+  uint16_t id = 0;
+  HRESULT hr = controller_->get_ProductId(&id);
+  DCHECK(SUCCEEDED(hr));
+  return id;
+}
+
+uint16_t WMRControllerImpl::VendorId() {
+  uint16_t id = 0;
+  HRESULT hr = controller_->get_VendorId(&id);
+  DCHECK(SUCCEEDED(hr));
+  return id;
+}
 
 ABI::Windows::UI::Input::Spatial::ISpatialInteractionSource*
 WMRInputSource::GetRawPtr() const {
@@ -63,6 +86,17 @@ bool WMRInputSourceImpl::IsPointingSupported() const {
   HRESULT hr = source2_->get_IsPointingSupported(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
+}
+
+std::unique_ptr<WMRController> WMRInputSourceImpl::Controller() const {
+  if (!source2_)
+    return nullptr;
+  ComPtr<ISpatialInteractionController> controller;
+  HRESULT hr = source2_->get_Controller(&controller);
+  if (SUCCEEDED(hr))
+    return std::make_unique<WMRControllerImpl>(controller);
+
+  return nullptr;
 }
 
 SourceHandedness WMRInputSourceImpl::Handedness() const {
