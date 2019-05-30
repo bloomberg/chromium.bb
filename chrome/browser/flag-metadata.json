@@ -721,7 +721,7 @@
   {
     "name": "enable-app-grid-ghost",
     "owners": [ "mmourgos" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 78
   },
   {
     "name": "enable-app-list-search-autocomplete",
