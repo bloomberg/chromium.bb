@@ -320,18 +320,17 @@ void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   auto suggestion = controller->GetSuggestionAt(line_number_);
   std::vector<base::string16> text;
   text.push_back(suggestion.value);
-  text.push_back(suggestion.label);
-  // For rows with two lines, this value will be filled and may repeat
-  // information already provided in the label.
-  text.push_back(suggestion.additional_label);
 
-  base::string16 icon_description;
-  if (!suggestion.icon.empty()) {
-    const int id = controller->layout_model().GetIconAccessibleNameResourceId(
-        suggestion.icon);
-    if (id > 0)
-      text.push_back(l10n_util::GetStringUTF16(id));
+  if (!suggestion.label.empty()) {
+    // |label| is not populated for footers or autocomplete entries.
+    text.push_back(suggestion.label);
   }
+
+  if (!suggestion.additional_label.empty()) {
+    // |additional_label| is only populated in a passwords context.
+    text.push_back(suggestion.additional_label);
+  }
+
   node_data->SetName(base::JoinString(text, base::ASCIIToUTF16(" ")));
 
   // Options are selectable.
@@ -534,7 +533,7 @@ AutofillPopupSuggestionView::AutofillPopupSuggestionView(
 
 std::unique_ptr<views::View> AutofillPopupSuggestionView::CreateSubtextLabel() {
   base::string16 label_text =
-      popup_view_->controller()->GetSuggestionAt(line_number_).additional_label;
+      popup_view_->controller()->GetSuggestionAt(line_number_).label;
   if (label_text.empty())
     return nullptr;
 

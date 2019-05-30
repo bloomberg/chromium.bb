@@ -420,12 +420,8 @@ void AutofillExternalDelegate::InsertDataListValues(
   suggestions->insert(suggestions->begin(), data_list_values_.size(),
                       Suggestion());
   for (size_t i = 0; i < data_list_values_.size(); i++) {
-    // A suggestion's label has one line of disambiguating information to show
-    // to the user. However, when the two-line suggestion display experiment is
-    // enabled on desktop, label is replaced by additional label.
     (*suggestions)[i].value = data_list_values_[i];
     (*suggestions)[i].label = data_list_labels_[i];
-    (*suggestions)[i].additional_label = data_list_labels_[i];
     (*suggestions)[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
   }
 }

@@ -2061,19 +2061,18 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
     const std::vector<CreditCard*>& cards_to_suggest) const {
   std::vector<Suggestion> suggestions;
   base::string16 field_contents_lower = base::i18n::ToLower(field_contents);
+
   for (const CreditCard* credit_card : cards_to_suggest) {
     // The value of the stored data for this field type in the |credit_card|.
     base::string16 creditcard_field_value =
         credit_card->GetInfo(type, app_locale_);
     if (creditcard_field_value.empty())
       continue;
-    base::string16 creditcard_field_lower =
-        base::i18n::ToLower(creditcard_field_value);
 
     bool prefix_matched_suggestion;
     if (suggestion_selection::IsValidSuggestionForFieldContents(
-            creditcard_field_lower, field_contents_lower, type,
-            credit_card->record_type() == CreditCard::MASKED_SERVER_CARD,
+            base::i18n::ToLower(creditcard_field_value), field_contents_lower,
+            type, credit_card->record_type() == CreditCard::MASKED_SERVER_CARD,
             &prefix_matched_suggestion)) {
       // Make a new suggestion.
       suggestions.push_back(Suggestion());
@@ -2091,11 +2090,14 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       // cardholder name. The label should never repeat the value.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
         suggestion->value = credit_card->NetworkOrBankNameAndLastFourDigits();
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
         suggestion->label = credit_card->GetInfo(
             AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale_);
-        // The additional label will be used if two-line display is enabled.
-        suggestion->additional_label =
-            credit_card->DescriptiveExpiration(app_locale_);
+#else
+        suggestion->label = credit_card->DescriptiveExpiration(app_locale_);
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
       } else if (credit_card->number().empty()) {
         if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
           suggestion->label = credit_card->GetInfo(
@@ -2103,16 +2105,15 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         }
       } else {
 #if defined(OS_ANDROID)
-        // Since Android places the label on its own row, there's more
-        // horizontal space to work with. Show "Amex - 1234" rather than
-        // desktop's "****1234".
+        // E.g. "Visa  ••••1234".
         suggestion->label = credit_card->NetworkOrBankNameAndLastFourDigits();
-#else
+#elif defined(OS_IOS)
+        // TODO(crbug.com/968267): Use the same format for iOS and Android.
+        // E.g. "••••1234"".
         suggestion->label = credit_card->ObfuscatedLastFourDigits();
-        // Add the card number with expiry information in the additional
-        // label portion so that we an show it when two-line display is
-        // enabled.
-        suggestion->additional_label =
+#else
+        // E.g. "Visa  ••••1234, expires on 01/25".
+        suggestion->label =
             credit_card
                 ->NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
                     app_locale_);

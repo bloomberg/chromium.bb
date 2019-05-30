@@ -284,7 +284,6 @@ void PrepareSuggestions(bool add_profile_icon,
       // The given |suggestions| are already sorted from highest to lowest
       // ranking. Suggestions with lower indices have a higher ranking and
       // should be kept.
-      (*suggestions)[index_to_add_suggestion].additional_label = labels[i];
       (*suggestions)[index_to_add_suggestion].label = labels[i];
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
