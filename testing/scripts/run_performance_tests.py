@@ -341,10 +341,13 @@ def execute_telemetry_benchmark(
     else:
       return_code = test_env.run_command_with_output(
           command, env=env, stdoutfile=output_paths.logs)
+    expected_results_filename = os.path.join(temp_dir, 'test-results.json')
+    if os.path.exists(expected_results_filename):
+      shutil.move(expected_results_filename, output_paths.test_results)
+    else:
+      common.write_interrupted_test_results_to(output_paths.test_results, start)
     expected_perf_filename = os.path.join(temp_dir, 'histograms.json')
     shutil.move(expected_perf_filename, output_paths.perf_results)
-    expected_results_filename = os.path.join(temp_dir, 'test-results.json')
-    shutil.move(expected_results_filename, output_paths.test_results)
 
     csv_file_path = os.path.join(temp_dir, 'results.csv')
     if os.path.isfile(csv_file_path):
