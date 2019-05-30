@@ -93,8 +93,12 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
     return;
 
   if (!input_source_) {
-    input_source_ = MakeGarbageCollected<XRInputSource>(session_, 0,
+    // XRSession doesn't like source ID's of 0.  We should only be processing
+    // Canvas Input events in non-immersive sessions anyway, where we don't
+    // expect other controllers, so this number is somewhat arbitrary anyway.
+    input_source_ = MakeGarbageCollected<XRInputSource>(session_, 1,
                                                         XRInputSource::kScreen);
+    session_->AddTransientInputSource(input_source_);
   }
 
   // Get the event location relative to the canvas element.
@@ -115,6 +119,7 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
 }
 
 void XRCanvasInputProvider::ClearInputSource() {
+  session_->RemoveTransientInputSource(input_source_);
   input_source_ = nullptr;
 }
 

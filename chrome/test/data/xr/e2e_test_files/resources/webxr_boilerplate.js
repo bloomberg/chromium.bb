@@ -199,6 +199,7 @@ function requestMagicWindowSession() {
     session.updateRenderState({
       outputContext: ctx
     });
+    sessionInfos[sessionTypes.MAGIC_WINDOW].currentSession = session;
     onSessionStarted(session);
   })
   .then( () => {

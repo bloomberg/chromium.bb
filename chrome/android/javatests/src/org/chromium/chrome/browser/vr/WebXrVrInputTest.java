@@ -424,6 +424,40 @@ public class WebXrVrInputTest {
     }
 
     /**
+     * Tests that screen touches are registered as transient XR input when the viewer is Cardboard.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+            public void testTransientScreenTapsRegisteredOnCardboard_WebXr()
+            throws InterruptedException {
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_transient_input"),
+                PAGE_LOAD_TIMEOUT_S);
+        // Make it so that the webpage doesn't try to finish the JavaScript step after each input
+        // since we don't need to ack each one like with the Daydream controller.
+        mWebXrVrTestFramework.runJavaScriptOrFail(
+                "finishAfterEachInput = false", POLL_TIMEOUT_SHORT_MS);
+        int numIterations = 10;
+        mWebXrVrTestFramework.runJavaScriptOrFail(
+                "stepSetupListeners(" + String.valueOf(numIterations) + ")", POLL_TIMEOUT_SHORT_MS);
+
+        int x = mWebXrVrTestFramework.getCurrentContentView().getWidth() / 2;
+        int y = mWebXrVrTestFramework.getCurrentContentView().getHeight() / 2;
+        final View presentationView = mWebXrVrTestFramework.getCurrentContentView();
+
+        // Tap the screen a bunch of times and make sure that they're all registered.
+        spamScreenTaps(presentationView, x, y, numIterations);
+
+        mWebXrVrTestFramework.waitOnJavaScriptStep();
+        mWebXrVrTestFramework.endTest();
+    }
+
+    /**
      * Tests that focus is locked to the presenting display for purposes of VR input.
      */
     @Test

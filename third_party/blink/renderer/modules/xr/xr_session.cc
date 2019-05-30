@@ -827,6 +827,28 @@ void XRSession::OnInputStateChange(
   }
 }
 
+void XRSession::AddTransientInputSource(XRInputSource* input_source) {
+  if (ended_)
+    return;
+
+  // Ensure we're not overriding an input source that's already present.
+  DCHECK(!input_sources_->GetWithSourceId(input_source->source_id()));
+  input_sources_->SetWithSourceId(input_source->source_id(), input_source);
+
+  DispatchEvent(*XRInputSourcesChangeEvent::Create(
+      event_type_names::kInputsourceschange, this, {input_source}, {}));
+}
+
+void XRSession::RemoveTransientInputSource(XRInputSource* input_source) {
+  if (ended_)
+    return;
+
+  input_sources_->RemoveWithSourceId(input_source->source_id());
+
+  DispatchEvent(*XRInputSourcesChangeEvent::Create(
+      event_type_names::kInputsourceschange, this, {}, {input_source}));
+}
+
 void XRSession::OnSelectStart(XRInputSource* input_source) {
   // Discard duplicate events, or events after the session has ended.
   if (input_source->primaryInputPressed() || ended_)

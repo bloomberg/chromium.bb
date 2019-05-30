@@ -137,6 +137,9 @@ class XRSession final : public EventTargetWithInlineData,
 
   WTF::Vector<XRViewData>& views();
 
+  void AddTransientInputSource(XRInputSource*);
+  void RemoveTransientInputSource(XRInputSource*);
+
   void OnSelectStart(XRInputSource*);
   void OnSelectEnd(XRInputSource*);
   void OnSelect(XRInputSource*);
