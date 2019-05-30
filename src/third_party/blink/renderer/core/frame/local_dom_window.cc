@@ -108,6 +108,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -208,7 +209,7 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
 LocalDOMWindow::LocalDOMWindow()
     : DOMWindow(),
       visualViewport_(DOMVisualViewport::Create(this)),
-      unused_preloads_timer_(Platform::Current()->MainThread()->GetTaskRunner(),
+      unused_preloads_timer_(Thread::MainThread()->GetTaskRunner(),
                              this,
                              &LocalDOMWindow::WarnUnusedPreloads),
       should_print_when_finished_loading_(false) {}
