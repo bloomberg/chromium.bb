@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/filesystem_policy.h"
 #include "sandbox/win/src/interception.h"
@@ -215,7 +216,7 @@ ResultCode PolicyBase::CreateAlternateDesktop(bool alternate_winstation) {
 
     // Verify that everything is fine.
     if (!alternate_winstation_handle_ ||
-        GetWindowObjectName(alternate_winstation_handle_).empty())
+        base::win::GetWindowObjectName(alternate_winstation_handle_).empty())
       return SBOX_ERROR_CANNOT_CREATE_DESKTOP;
 
     // Create the destkop.
@@ -226,7 +227,7 @@ ResultCode PolicyBase::CreateAlternateDesktop(bool alternate_winstation) {
 
     // Verify that everything is fine.
     if (!alternate_desktop_handle_ ||
-        GetWindowObjectName(alternate_desktop_handle_).empty()) {
+        base::win::GetWindowObjectName(alternate_desktop_handle_).empty()) {
       return SBOX_ERROR_CANNOT_CREATE_DESKTOP;
     }
   } else {
@@ -242,7 +243,8 @@ ResultCode PolicyBase::CreateAlternateDesktop(bool alternate_winstation) {
 
     // Verify that everything is fine.
     if (!alternate_desktop_local_winstation_handle_ ||
-        GetWindowObjectName(alternate_desktop_local_winstation_handle_)
+        base::win::GetWindowObjectName(
+            alternate_desktop_local_winstation_handle_)
             .empty()) {
       return SBOX_ERROR_CANNOT_CREATE_DESKTOP;
     }

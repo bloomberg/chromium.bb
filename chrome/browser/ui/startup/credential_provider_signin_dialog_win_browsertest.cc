@@ -8,6 +8,7 @@
 #include "base/test/test_switches.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/startup/buildflags.h"
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win.h"
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -375,31 +376,86 @@ INSTANTIATE_TEST_SUITE_P(
 // the integration of the dialog into Chrome, This test mainly verifies
 // correct start up state if we provide the --gcpw-signin switch.
 
-class CredentialProviderSigninDialogWinIntegrationTest
+class CredentialProviderSigninDialogWinIntegrationTestBase
     : public CredentialProviderSigninDialogWinBaseTest {
  protected:
-  CredentialProviderSigninDialogWinIntegrationTest();
-
+  CredentialProviderSigninDialogWinIntegrationTestBase();
   // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      CredentialProviderSigninDialogWinIntegrationTestBase);
+};
+
+CredentialProviderSigninDialogWinIntegrationTestBase::
+    CredentialProviderSigninDialogWinIntegrationTestBase()
+    : CredentialProviderSigninDialogWinBaseTest() {}
+
+void CredentialProviderSigninDialogWinIntegrationTestBase::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  command_line->AppendSwitch(::credential_provider::kGcpwSigninSwitch);
+}
+
+// In the default state, the dialog would not be allowed to be displayed since
+// Chrome will not be running on Winlogon desktop.
+class CredentialProviderSigninDialogWinIntegrationDesktopVerificationTest
+    : public CredentialProviderSigninDialogWinIntegrationTestBase {
+ protected:
+  CredentialProviderSigninDialogWinIntegrationDesktopVerificationTest();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      CredentialProviderSigninDialogWinIntegrationDesktopVerificationTest);
+};
+
+CredentialProviderSigninDialogWinIntegrationDesktopVerificationTest::
+    CredentialProviderSigninDialogWinIntegrationDesktopVerificationTest()
+    : CredentialProviderSigninDialogWinIntegrationTestBase() {}
+
+IN_PROC_BROWSER_TEST_F(
+    CredentialProviderSigninDialogWinIntegrationDesktopVerificationTest,
+    DialogFailsToLoadOnIncorrectDesktop) {
+  // Normally the GCPW signin dialog should only run on "winlogon" desktops. If
+  // we are just running the test, we should not be under this desktop and the
+  // dialog should fail to load.
+
+  // No widgets should have been created.
+  views::Widget::Widgets all_widgets = views::test::WidgetTest::GetAllWidgets();
+  EXPECT_EQ(all_widgets.size(), 0ull);
+}
+
+#if BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
+
+// This test overrides the check for the correct desktop to allow the dialog to
+// be displayed even when not running on Winlogon desktop.
+class CredentialProviderSigninDialogWinIntegrationDialogDisplayTest
+    : public CredentialProviderSigninDialogWinIntegrationTestBase {
+ protected:
+  CredentialProviderSigninDialogWinIntegrationDialogDisplayTest();
+  ~CredentialProviderSigninDialogWinIntegrationDialogDisplayTest() override;
 
   // CredentialProviderSigninDialogWinBaseTest:
   void WaitForDialogToLoad() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CredentialProviderSigninDialogWinIntegrationTest);
+  DISALLOW_COPY_AND_ASSIGN(
+      CredentialProviderSigninDialogWinIntegrationDialogDisplayTest);
 };
 
-CredentialProviderSigninDialogWinIntegrationTest::
-    CredentialProviderSigninDialogWinIntegrationTest()
-    : CredentialProviderSigninDialogWinBaseTest() {}
-
-void CredentialProviderSigninDialogWinIntegrationTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  command_line->AppendSwitch(::credential_provider::kGcpwSigninSwitch);
+CredentialProviderSigninDialogWinIntegrationDialogDisplayTest::
+    CredentialProviderSigninDialogWinIntegrationDialogDisplayTest()
+    : CredentialProviderSigninDialogWinIntegrationTestBase() {
+  EnableGcpwSigninDialogForTesting(true);
 }
 
-void CredentialProviderSigninDialogWinIntegrationTest::WaitForDialogToLoad() {
+CredentialProviderSigninDialogWinIntegrationDialogDisplayTest::
+    ~CredentialProviderSigninDialogWinIntegrationDialogDisplayTest() {
+  EnableGcpwSigninDialogForTesting(false);
+}
+
+void CredentialProviderSigninDialogWinIntegrationDialogDisplayTest::
+    WaitForDialogToLoad() {
   // The browser has already been created by the time this start starts and
   // web_contents_ is not yet available. In this run case there should only
   // be one widget available and that widget should contain the web contents
@@ -412,7 +468,7 @@ void CredentialProviderSigninDialogWinIntegrationTest::WaitForDialogToLoad() {
   web_contents_ = web_dialog->web_contents();
   EXPECT_TRUE(web_contents_);
 
-  CredentialProviderSigninDialogWinBaseTest::WaitForDialogToLoad();
+  CredentialProviderSigninDialogWinIntegrationTestBase::WaitForDialogToLoad();
 
   // When running with --gcpw-signin, browser creation is completely bypassed
   // only a dialog for the signin should be created directly. In a normal
@@ -421,8 +477,9 @@ void CredentialProviderSigninDialogWinIntegrationTest::WaitForDialogToLoad() {
   EXPECT_FALSE(browser());
 }
 
-IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinIntegrationTest,
-                       ShowDialogOnlyTest) {
+IN_PROC_BROWSER_TEST_F(
+    CredentialProviderSigninDialogWinIntegrationDialogDisplayTest,
+    ShowDialogOnlyTest) {
   WaitForDialogToLoad();
   EXPECT_TRUE(
       ((Profile*)(web_contents_->GetBrowserContext()))->IsIncognitoProfile());
@@ -431,8 +488,9 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinIntegrationTest,
   RunUntilBrowserProcessQuits();
 }
 
-IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinIntegrationTest,
-                       EscapeClosesDialogTest) {
+IN_PROC_BROWSER_TEST_F(
+    CredentialProviderSigninDialogWinIntegrationDialogDisplayTest,
+    EscapeClosesDialogTest) {
   WaitForDialogToLoad();
   views::Widget::Widgets all_widgets = views::test::WidgetTest::GetAllWidgets();
   ui::KeyEvent escape_key_event(ui::EventType::ET_KEY_PRESSED,
@@ -441,3 +499,5 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinIntegrationTest,
   (*all_widgets.begin())->OnKeyEvent(&escape_key_event);
   RunUntilBrowserProcessQuits();
 }
+
+#endif  // BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)

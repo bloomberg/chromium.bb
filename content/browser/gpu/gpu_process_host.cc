@@ -414,13 +414,7 @@ class GpuSandboxedProcessLauncherDelegate
     if (UseOpenGLRenderer())
       return true;
 
-    HDESK thread_desktop = ::GetThreadDesktop(::GetCurrentThreadId());
-    if (!thread_desktop)
-      return false;
-
-    base::string16 desktop_name = sandbox::GetWindowObjectName(thread_desktop);
-    ::CloseDesktop(thread_desktop);
-    return !lstrcmpi(desktop_name.c_str(), L"winlogon");
+    return base::win::IsRunningUnderDesktopName(STRING16_LITERAL("winlogon"));
   }
 
   base::CommandLine cmd_line_;

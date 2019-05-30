@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/win/win_util.h"
 #include "sandbox/win/src/acl.h"
 #include "sandbox/win/src/sid.h"
 
@@ -127,29 +128,6 @@ ResultCode CreateAltDesktop(HWINSTA winsta, HDESK* desktop) {
   return SBOX_ERROR_CANNOT_CREATE_DESKTOP;
 }
 
-base::string16 GetWindowObjectName(HANDLE handle) {
-  // Get the size of the name.
-  DWORD size = 0;
-  ::GetUserObjectInformation(handle, UOI_NAME, nullptr, 0, &size);
-
-  if (!size) {
-    NOTREACHED();
-    return base::string16();
-  }
-
-  // Create the buffer that will hold the name.
-  std::unique_ptr<wchar_t[]> name_buffer(new wchar_t[size]);
-
-  // Query the name of the object.
-  if (!::GetUserObjectInformation(handle, UOI_NAME, name_buffer.get(), size,
-                                  &size)) {
-    NOTREACHED();
-    return base::string16();
-  }
-
-  return base::string16(name_buffer.get());
-}
-
 base::string16 GetFullDesktopName(HWINSTA winsta, HDESK desktop) {
   if (!desktop) {
     NOTREACHED();
@@ -158,11 +136,11 @@ base::string16 GetFullDesktopName(HWINSTA winsta, HDESK desktop) {
 
   base::string16 name;
   if (winsta) {
-    name = GetWindowObjectName(winsta);
+    name = base::win::GetWindowObjectName(winsta);
     name += L'\\';
   }
 
-  name += GetWindowObjectName(desktop);
+  name += base::win::GetWindowObjectName(desktop);
   return name;
 }
 

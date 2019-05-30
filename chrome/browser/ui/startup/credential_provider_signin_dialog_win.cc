@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string16.h"
 #include "base/syslog_logging.h"
+#include "base/win/win_util.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/startup/credential_provider_signin_info_fetcher_win.h"
@@ -31,6 +32,10 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace {
+
+#if BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
+bool g_enable_gcpw_signin_during_tests = false;
+#endif  // BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
 
 // This message must match the one sent in inline_login.js: sendLSTFetchResults.
 constexpr char kLSTFetchResultsMessage[] = "lstFetchResults";
@@ -391,22 +396,49 @@ bool ValidateSigninCompleteResult(const std::string& access_token,
          signin_result.is_dict();
 }
 
-void StartGCPWSignin(const base::CommandLine& command_line,
-                     content::BrowserContext* context) {
-  // This keep_alive is created since there is no browser created when
-  // --gcpw-logon is specified. Since there is no browser there is no holder of
-  // a ScopedKeepAlive present that will ensure Chrome kills itself when the
-  // last keep alive is released. So instead, keep the keep alive across the
-  // callbacks that will be sent during the signin process. Once the full fetch
-  // of the information necesssary for the GCPW is finished (or there is a
-  // failure) release the keep alive so that Chrome can shutdown.
+#if BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
+void EnableGcpwSigninDialogForTesting(bool enable) {
+  g_enable_gcpw_signin_during_tests = enable;
+}
+#endif  // BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
 
+bool CanStartGCPWSignin() {
+#if BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
+  if (g_enable_gcpw_signin_during_tests)
+    return true;
+#endif  // BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
+  // Ensure that we are running under a "winlogon" desktop before starting the
+  // gcpw sign in dialog.
+  return base::win::IsRunningUnderDesktopName(STRING16_LITERAL("winlogon"));
+}
+
+bool StartGCPWSignin(const base::CommandLine& command_line,
+                     content::BrowserContext* context) {
+  // If we are prevented from showing gcpw signin, return false and write our
+  // result so that the launch fails and the process can exit gracefully.
+  if (!CanStartGCPWSignin()) {
+    base::Value failure_result(base::Value::Type::DICTIONARY);
+    failure_result.SetKey(credential_provider::kKeyExitCode,
+                          base::Value(static_cast<int>(
+                              credential_provider::kUiecMissingSigninData)));
+    WriteResultToHandle(failure_result);
+    return false;
+  }
+
+  // This keep_alive is created since there is no browser created when
+  // --gcpw-logon is specified. Since there is no browser there is no holder
+  // of a ScopedKeepAlive present that will ensure Chrome kills itself when
+  // the last keep alive is released. So instead, keep the keep alive across
+  // the callbacks that will be sent during the signin process. Once the full
+  // fetch of the information necesssary for the GCPW is finished (or there is
+  // a failure) release the keep alive so that Chrome can shutdown.
   ShowCredentialProviderSigninDialog(
       command_line, context,
       base::BindOnce(&HandleSigninCompleteForGcpwLogin,
                      std::make_unique<ScopedKeepAlive>(
                          KeepAliveOrigin::CREDENTIAL_PROVIDER_SIGNIN_DIALOG,
                          KeepAliveRestartOption::DISABLED)));
+  return true;
 }
 
 views::WebDialogView* ShowCredentialProviderSigninDialog(

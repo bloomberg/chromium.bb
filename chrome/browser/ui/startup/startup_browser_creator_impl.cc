@@ -358,9 +358,14 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   // signin page.
   if (command_line_.HasSwitch(credential_provider::kGcpwSigninSwitch)) {
     DCHECK(profile_->IsIncognitoProfile());
-    // NOTE: All launch urls are ignored when running with --gcpw-logon since
+    // NOTE: All launch urls are ignored when running with --gcpw-signin since
     // this mode only loads Google's sign in page.
-    StartGCPWSignin(command_line_, profile_);
+
+    // If GCPW signin dialog fails, returning false here will allow Chrome to
+    // exit gracefully during the launch.
+    if (!StartGCPWSignin(command_line_, profile_))
+      return false;
+
     RecordLaunchModeHistogram(LM_CREDENTIAL_PROVIDER_SIGNIN);
     return true;
   }

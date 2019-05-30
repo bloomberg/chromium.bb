@@ -761,6 +761,38 @@ void* GetUser32FunctionPointer(const char* function_name,
   return nullptr;
 }
 
+string16 GetWindowObjectName(HANDLE handle) {
+  // Get the size of the name.
+  string16 object_name;
+
+  DWORD size = 0;
+  ::GetUserObjectInformation(handle, UOI_NAME, nullptr, 0, &size);
+  if (!size) {
+    DPCHECK(false);
+    return object_name;
+  }
+
+  LOG_ASSERT(size % sizeof(wchar_t) == 0u);
+
+  // Query the name of the object.
+  if (!::GetUserObjectInformation(
+          handle, UOI_NAME, WriteInto(&object_name, size / sizeof(wchar_t)),
+          size, &size)) {
+    DPCHECK(false);
+  }
+
+  return object_name;
+}
+
+bool IsRunningUnderDesktopName(StringPiece16 desktop_name) {
+  HDESK thread_desktop = ::GetThreadDesktop(::GetCurrentThreadId());
+  if (!thread_desktop)
+    return false;
+
+  string16 current_desktop_name = GetWindowObjectName(thread_desktop);
+  return EqualsCaseInsensitiveASCII(current_desktop_name, desktop_name);
+}
+
 ScopedDomainStateForTesting::ScopedDomainStateForTesting(bool state)
     : initial_state_(IsEnrolledToDomain()) {
   *GetDomainEnrollmentStateStorage() = state;

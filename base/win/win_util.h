@@ -31,6 +31,7 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 
 struct IPropertyStore;
 struct _tagpropertykey;
@@ -92,7 +93,8 @@ BASE_EXPORT bool SetAppIdForPropertyStore(IPropertyStore* property_store,
 
 // Adds the specified |command| using the specified |name| to the AutoRun key.
 // |root_key| could be HKCU or HKLM or the root of any user hive.
-BASE_EXPORT bool AddCommandToAutoRun(HKEY root_key, const string16& name,
+BASE_EXPORT bool AddCommandToAutoRun(HKEY root_key,
+                                     const string16& name,
                                      const string16& command);
 // Removes the command specified by |name| from the AutoRun key. |root_key|
 // could be HKCU or HKLM or the root of any user hive.
@@ -152,8 +154,8 @@ BASE_EXPORT bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd);
 // This is necessary to set compatible struct sizes for different versions
 // of certain Windows APIs (e.g. SystemParametersInfo).
 #define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(struct_name, member) \
-    offsetof(struct_name, member) + \
-    (sizeof static_cast<struct_name*>(NULL)->member)
+  offsetof(struct_name, member) +                                     \
+      (sizeof static_cast<struct_name*>(NULL)->member)
 
 // Returns true if the machine is enrolled to a domain.
 BASE_EXPORT bool IsEnrolledToDomain();
@@ -212,6 +214,14 @@ BASE_EXPORT bool PinUser32(NativeLibraryLoadError* error = nullptr);
 BASE_EXPORT void* GetUser32FunctionPointer(
     const char* function_name,
     NativeLibraryLoadError* error = nullptr);
+
+// Returns the name of a desktop or a window station.
+BASE_EXPORT string16 GetWindowObjectName(HANDLE handle);
+
+// Checks if the calling thread is running under a desktop with the name
+// given by |desktop_name|. |desktop_name| is ASCII case insensitive (non-ASCII
+// characters will be compared with exact matches).
+BASE_EXPORT bool IsRunningUnderDesktopName(StringPiece16 desktop_name);
 
 // Allows changing the domain enrolled state for the life time of the object.
 // The original state is restored upon destruction.

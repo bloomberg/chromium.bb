@@ -100,5 +100,31 @@ TEST(BaseWinUtilTest, String16FromGUID) {
   EXPECT_STREQ(as_wcstr(guid_string16), clsid_string.get());
 }
 
+TEST(BaseWinUtilTest, GetWindowObjectName) {
+  base::string16 created_desktop_name(STRING16_LITERAL("test_desktop"));
+  HDESK desktop_handle =
+      ::CreateDesktop(created_desktop_name.c_str(), nullptr, nullptr, 0,
+                      DESKTOP_CREATEWINDOW | DESKTOP_READOBJECTS |
+                          READ_CONTROL | WRITE_DAC | WRITE_OWNER,
+                      nullptr);
+
+  ASSERT_NE(desktop_handle, nullptr);
+  EXPECT_EQ(created_desktop_name, GetWindowObjectName(desktop_handle));
+  ASSERT_TRUE(::CloseDesktop(desktop_handle));
+}
+
+TEST(BaseWinUtilTest, IsRunningUnderDesktopName) {
+  HDESK thread_desktop = ::GetThreadDesktop(::GetCurrentThreadId());
+
+  ASSERT_NE(thread_desktop, nullptr);
+  base::string16 desktop_name = GetWindowObjectName(thread_desktop);
+
+  EXPECT_TRUE(IsRunningUnderDesktopName(desktop_name));
+  EXPECT_TRUE(IsRunningUnderDesktopName(base::ToLowerASCII(desktop_name)));
+  EXPECT_TRUE(IsRunningUnderDesktopName(base::ToUpperASCII(desktop_name)));
+  EXPECT_FALSE(IsRunningUnderDesktopName(
+      desktop_name + STRING16_LITERAL("_non_existent_desktop_name")));
+}
+
 }  // namespace win
 }  // namespace base

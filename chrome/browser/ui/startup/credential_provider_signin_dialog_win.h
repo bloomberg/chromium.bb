@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
+#include "chrome/browser/ui/startup/buildflags.h"
 
 namespace base {
 class CommandLine;
@@ -42,7 +43,9 @@ using HandleGcpwSigninCompleteResult =
 // to choose an  account to logon to Windows. Once the signin is complete, the
 // flow will automatically start requesting additional information required by
 // GCPW to complete Windows logon.
-void StartGCPWSignin(const base::CommandLine& command_line,
+// Returns false if the dialog could not be loaded due to the current execution
+// mode.
+bool StartGCPWSignin(const base::CommandLine& command_line,
                      content::BrowserContext* context);
 
 // This function displays a dialog window with a Gaia signin page. Once
@@ -53,5 +56,11 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
     const base::CommandLine& command_line,
     content::BrowserContext* context,
     HandleGcpwSigninCompleteResult signin_complete_handler);
+
+#if BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
+// Allow displaying of GCPW signin dialog when not under the winlogon desktop
+// for testing purposes.
+void EnableGcpwSigninDialogForTesting(bool enable);
+#endif  // BUILDFLAG(CAN_TEST_GCPW_SIGNIN_STARTUP)
 
 #endif  // CHROME_BROWSER_UI_STARTUP_CREDENTIAL_PROVIDER_SIGNIN_DIALOG_WIN_H_
