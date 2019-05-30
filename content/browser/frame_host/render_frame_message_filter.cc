@@ -54,6 +54,7 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -195,6 +196,75 @@ class RenderMessageCompletionCallback {
   scoped_refptr<RenderFrameMessageFilter> filter_;
   IPC::Message* reply_msg_;
 };
+
+// Send deprecation messages to the console about cookies that would be excluded
+// due to either SameSiteByDefaultCookies or CookiesWithoutSameSiteMustBeSecure.
+void SendDeprecationMessagesForSameSiteCookiesOnUI(
+    int render_process_id,
+    int render_frame_id,
+    const GURL& url,
+    net::CookieStatusList deprecated_cookies) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return;
+
+  // Return early if the frame has already been navigated away from.
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  RenderFrameHostImpl* root_frame_host = render_frame_host;
+  while (root_frame_host->GetParent() != nullptr)
+    root_frame_host = root_frame_host->GetParent();
+  if (root_frame_host != web_contents->GetMainFrame())
+    return;
+
+  bool log_unspecified_treated_as_lax_metric = false;
+  bool log_none_insecure_metric = false;
+
+  for (const auto& cookie_with_status : deprecated_cookies) {
+    if (cookie_with_status.status ==
+        net::CanonicalCookie::CookieInclusionStatus::
+            EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
+      log_unspecified_treated_as_lax_metric = true;
+      render_frame_host->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          "[Deprecation] A cookie associated with a cross-site resource at " +
+              url.possibly_invalid_spec() +
+              " was set without the `SameSite` attribute. "
+              "Starting in M77, Chrome will only deliver cookies with "
+              "cross-site requests if they are set with `SameSite=None`. You "
+              "can review cookies in developer tools under "
+              "Application>Storage>Cookies and see more details at "
+              "https://www.chromestatus.com/feature/5088147346030592.");
+    }
+    if (cookie_with_status.status ==
+        net::CanonicalCookie::CookieInclusionStatus::
+            EXCLUDE_SAMESITE_NONE_INSECURE) {
+      log_none_insecure_metric = true;
+      render_frame_host->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          "[Deprecation] A cookie associated with a resource at " +
+              url.possibly_invalid_spec() +
+              " was set with `SameSite=None` but without `Secure`. "
+              "Starting in M80, Chrome will only deliver cookies marked "
+              "`SameSite=None` if they are also marked `Secure`. You "
+              "can review cookies in developer tools under "
+              "Application>Storage>Cookies and see more details at "
+              "https://www.chromestatus.com/feature/5633521622188032.");
+    }
+  }
+
+  if (log_unspecified_treated_as_lax_metric) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        render_frame_host, blink::mojom::WebFeature::kCookieNoSameSite);
+  }
+  if (log_none_insecure_metric) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        render_frame_host,
+        blink::mojom::WebFeature::kCookieInsecureAndSameSiteNone);
+  }
+}
 
 }  // namespace
 
@@ -509,6 +579,32 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
   if (GetContentClient()->browser()->AllowGetCookie(
           url, site_for_cookies, cookie_list, resource_context_,
           render_process_id_, render_frame_id)) {
+    // Send deprecation messages to the console for cookies that are included,
+    // but would be excluded under SameSiteByDefaultCookies or
+    // CookiesWithoutSameSiteMustBeSecure.
+    net::CookieOptions options;
+    options.set_same_site_cookie_context(
+        net::cookie_util::ComputeSameSiteContextForScriptGet(
+            url, site_for_cookies, base::nullopt));
+    net::CookieStatusList deprecated_cookies;
+    for (const net::CanonicalCookie& cc : cookie_list) {
+      net::CanonicalCookie::CookieInclusionStatus
+          include_but_maybe_would_exclude_status =
+              net::cookie_util::CookieWouldBeExcludedDueToSameSite(cc, options);
+      if (include_but_maybe_would_exclude_status !=
+          net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+        deprecated_cookies.push_back(
+            {cc, include_but_maybe_would_exclude_status});
+      }
+    }
+    if (!deprecated_cookies.empty()) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(&SendDeprecationMessagesForSameSiteCookiesOnUI,
+                         render_process_id_, render_frame_id, url,
+                         std::move(deprecated_cookies)));
+    }
+
     std::move(callback).Run(net::CanonicalCookie::BuildCookieLine(cookie_list));
   } else {
     std::move(callback).Run(std::string());
@@ -589,6 +685,24 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
           render_frame_id)) {
     std::move(callback).Run();
     return;
+  }
+
+  // Send deprecation messages to the console for cookies that are included,
+  // but would be excluded under SameSiteByDefaultCookies or
+  // CookiesWithoutSameSiteMustBeSecure.
+  net::CanonicalCookie::CookieInclusionStatus
+      include_but_maybe_would_exclude_status =
+          net::cookie_util::CookieWouldBeExcludedDueToSameSite(*cookie,
+                                                               options);
+  if (include_but_maybe_would_exclude_status !=
+      net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    net::CookieStatusList deprecated_cookies = {
+        {*cookie, include_but_maybe_would_exclude_status}};
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&SendDeprecationMessagesForSameSiteCookiesOnUI,
+                       render_process_id_, render_frame_id, url,
+                       std::move(deprecated_cookies)));
   }
 
   // If the embedder overrides the cookie store then always use it, even if
