@@ -38,23 +38,23 @@ class StrikeDatabaseIntegratorTestStrikeDatabaseTest : public ::testing::Test {
             strike_database_service_.get());
   }
 
+  void TearDown() override {
+    // The destruction of |strike_database_service_|'s components is posted
+    // to a task runner, requires running the loop to complete.
+    strike_database_.reset();
+    strike_database_service_.reset();
+    scoped_task_environment_.RunUntilIdle();
+  }
+
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> db_provider_;
   base::ScopedTempDir temp_dir_;
+  std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> db_provider_;
   std::unique_ptr<StrikeDatabase> strike_database_service_;
   std::unique_ptr<StrikeDatabaseIntegratorTestStrikeDatabase> strike_database_;
 
  private:
-  leveldb_proto::ProtoDatabaseProvider* GetDBProvider() {
-    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    db_provider_ = std::make_unique<leveldb_proto::ProtoDatabaseProvider>(
-        temp_dir_.GetPath());
-
-    return db_provider_.get();
-  }
-
   base::HistogramTester histogram_tester_;
 };
 
