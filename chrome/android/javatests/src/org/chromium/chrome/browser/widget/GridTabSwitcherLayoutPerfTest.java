@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS;
 import static org.chromium.chrome.browser.UrlConstants.NTP_URL;
+import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_USER;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
@@ -29,6 +30,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -38,6 +40,7 @@ import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Arrays;
@@ -194,6 +197,94 @@ public class GridTabSwitcherLayoutPerfTest {
         assertEquals(mRepeat, frameRates.size());
         Log.i(TAG, "%s: fps = %.2f, maxFrameInterval = %.0f, dirtySpan = %.0f", description,
                 median(frameRates), median(frameInterval), median(dirtySpans));
+    }
+
+    @Test
+    @MediumTest
+    public void testGridToTabToCurrentNTP() throws InterruptedException {
+        prepareTabs(1, NTP_URL);
+        reportGridToTabPerf(false, false, "Grid-to-Tab to current NTP");
+    }
+
+    @Test
+    @MediumTest
+    public void testGridToTabToOtherNTP() throws InterruptedException {
+        prepareTabs(2, NTP_URL);
+        reportGridToTabPerf(true, false, "Grid-to-Tab to other NTP");
+    }
+
+    @Test
+    @MediumTest
+    public void testGridToTabToCurrentLive() throws InterruptedException {
+        prepareTabs(1, mUrl);
+        reportGridToTabPerf(false, false, "Grid-to-Tab to current live tab");
+    }
+
+    @Test
+    @MediumTest
+    public void testGridToTabToOtherLive() throws InterruptedException {
+        prepareTabs(2, mUrl);
+        reportGridToTabPerf(true, false, "Grid-to-Tab to other live tab");
+    }
+
+    @Test
+    @MediumTest
+    public void testGridToTabToOtherFrozen() throws InterruptedException {
+        prepareTabs(2, mUrl);
+        reportGridToTabPerf(true, true, "Grid-to-Tab to other frozen tab");
+    }
+
+    private void reportGridToTabPerf(boolean switchToAnotherTab, boolean killBeforeSwitching,
+            String description) throws InterruptedException {
+        List<Float> frameRates = new LinkedList<>();
+        List<Float> frameInterval = new LinkedList<>();
+        GridTabSwitcherLayout.PerfListener collector =
+                (frameRendered, elapsedMs, maxFrameInterval, dirtySpan) -> {
+            assertTrue(elapsedMs
+                    >= GridTabSwitcherLayout.ZOOMING_DURATION * CompositorAnimator.sDurationScale);
+            float fps = 1000.f * frameRendered / elapsedMs;
+            frameRates.add(fps);
+            frameInterval.add((float) maxFrameInterval);
+        };
+
+        Thread.sleep(mWaitingTime);
+
+        GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
+        for (int i = 0; i < mRepeat; i++) {
+            mGtsLayout.setPerfListenerForTesting(null);
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
+            assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+            Thread.sleep(1000);
+
+            int index = mActivityTestRule.getActivity().getCurrentTabModel().index();
+            final int targetIndex = switchToAnotherTab ? 1 - index : index;
+            Tab targetTab =
+                    mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(targetIndex);
+            if (killBeforeSwitching) {
+                WebContentsUtils.simulateRendererKilled(targetTab.getWebContents(), false);
+                Thread.sleep(1000);
+            }
+
+            mGtsLayout.setPerfListenerForTesting(collector);
+            Thread.sleep(mWaitingTime);
+            TestThreadUtils.runOnUiThreadBlocking(
+                    ()
+                            -> mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
+                                    targetIndex, FROM_USER));
+
+            final int expectedSize = i + 1;
+            CriteriaHelper.pollInstrumentationThread(() -> frameRates.size() == expectedSize,
+                    "Have not got PerfListener callback", DEFAULT_MAX_TIME_TO_POLL * 10,
+                    DEFAULT_POLLING_INTERVAL);
+            CriteriaHelper.pollInstrumentationThread(
+                    () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
+                    "Overview not hidden yet");
+            Thread.sleep(1000);
+        }
+        assertEquals(mRepeat, frameRates.size());
+        Log.i(TAG, "%s: fps = %.2f, maxFrameInterval = %.0f", description, median(frameRates),
+                median(frameInterval));
     }
 
     private float median(List<Float> list) {

@@ -100,11 +100,11 @@ public class GridTabSwitcherLayout
         super.show(time, animate);
 
         boolean showShrinkingAnimation =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
+                animate && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
         mGridTabSwitcher.prepareOverview();
 
         if (!showShrinkingAnimation) {
-            mGridController.showOverview(true);
+            mGridController.showOverview(animate);
             return;
         }
 
@@ -283,6 +283,8 @@ public class GridTabSwitcherLayout
         });
         mStartFrame = mFrameCount;
         mStartTime = SystemClock.elapsedRealtime();
+        mLastFrameTime = SystemClock.elapsedRealtime();
+        mMaxFrameInterval = 0;
         mTabToSwitcherAnimation.start();
     }
 
