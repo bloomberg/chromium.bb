@@ -1049,13 +1049,13 @@ TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
   AssertResultMatches(result, expected_data, base::size(expected_data));
 }
 
-TEST_F(AutocompleteResultTest, SortAndCullCapURLMatches) {
+TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
   base::test::ScopedFeatureList feature_list;
   std::map<std::string, std::string> parameters = {
       {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "3"}};
   feature_list.InitAndEnableFeatureWithParameters(
-      omnibox::kOmniboxCapURLMatches, parameters);
-  EXPECT_TRUE(OmniboxFieldTrial::IsCapURLMatchesFeatureEnabled());
+      omnibox::kOmniboxMaxURLMatches, parameters);
+  EXPECT_TRUE(OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled());
   EXPECT_EQ(OmniboxFieldTrial::GetMaxURLMatches(), 3u);
 
   // Case 1: Eject URL match for a search.

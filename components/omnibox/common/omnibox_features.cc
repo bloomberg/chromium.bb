@@ -85,7 +85,7 @@ const base::Feature kOmniboxLocalEntitySuggestions{
 // there are no more non-URL matches available.) If enabled, there is a
 // companion parameter - OmniboxMaxURLMatches - which specifies the maximum
 // desired number of URL-type matches.
-const base::Feature kOmniboxCapURLMatches{"OmniboxCapURLMatches",
+const base::Feature kOmniboxMaxURLMatches{"OmniboxMaxURLMatches",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to enable entity suggestion images and enhanced presentation

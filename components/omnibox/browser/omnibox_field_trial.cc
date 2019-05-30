@@ -649,7 +649,7 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
 
 size_t OmniboxFieldTrial::GetMaxURLMatches() {
   return base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kOmniboxCapURLMatches,
+      omnibox::kOmniboxMaxURLMatches,
       OmniboxFieldTrial::kOmniboxMaxURLMatchesParam,
       0);  // default
 }
@@ -716,8 +716,8 @@ bool OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() {
       omnibox::kOmniboxGroupSuggestionsBySearchVsUrl);
 }
 
-bool OmniboxFieldTrial::IsCapURLMatchesFeatureEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxCapURLMatches);
+bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxMaxURLMatches);
 }
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =

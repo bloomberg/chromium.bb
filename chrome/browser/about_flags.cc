@@ -751,6 +751,29 @@ const FeatureEntry::FeatureVariation
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
          base::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
 
+const FeatureEntry::FeatureParam kOmniboxMaxURLMatches2[] = {
+    {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "2"}};
+const FeatureEntry::FeatureParam kOmniboxMaxURLMatches3[] = {
+    {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "3"}};
+const FeatureEntry::FeatureParam kOmniboxMaxURLMatches4[] = {
+    {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "4"}};
+const FeatureEntry::FeatureParam kOmniboxMaxURLMatches5[] = {
+    {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "5"}};
+const FeatureEntry::FeatureParam kOmniboxMaxURLMatches6[] = {
+    {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "6"}};
+
+const FeatureEntry::FeatureVariation kOmniboxMaxURLMatchesVariations[] = {
+    {"2 matches", kOmniboxMaxURLMatches2, base::size(kOmniboxMaxURLMatches2),
+     nullptr},
+    {"3 matches", kOmniboxMaxURLMatches3, base::size(kOmniboxMaxURLMatches3),
+     nullptr},
+    {"4 matches", kOmniboxMaxURLMatches4, base::size(kOmniboxMaxURLMatches4),
+     nullptr},
+    {"5 matches", kOmniboxMaxURLMatches5, base::size(kOmniboxMaxURLMatches5),
+     nullptr},
+    {"6 matches", kOmniboxMaxURLMatches6, base::size(kOmniboxMaxURLMatches6),
+     nullptr}};
+
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_CHROMEOS)
 const FeatureEntry::FeatureParam kTranslateBubbleUIButton[] = {
@@ -2531,6 +2554,12 @@ const FeatureEntry kFeatureEntries[] = {
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
          "OmniboxUIMaxAutocompleteVariations")},
+
+    {"omnibox-max-url-matches", flag_descriptions::kOmniboxMaxURLMatchesName,
+     flag_descriptions::kOmniboxMaxURLMatchesDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxMaxURLMatches,
+                                    kOmniboxMaxURLMatchesVariations,
+                                    "OmniboxMaxURLMatchesVariations")},
 
     {"omnibox-ui-vertical-margin",
      flag_descriptions::kOmniboxUIVerticalMarginName,

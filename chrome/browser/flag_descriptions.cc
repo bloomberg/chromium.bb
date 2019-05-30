@@ -1309,6 +1309,11 @@ const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
 
+const char kOmniboxMaxURLMatchesName[] = "Omnibox Max URL Matches";
+const char kOmniboxMaxURLMatchesDescription[] =
+    "The maximum number of URL matches to show, unless there are no "
+    "replacements.";
+
 const char kOmniboxUIShowPlaceholderWhenCaretShowingName[] =
     "Omnibox UI Show Placeholder When Caret Showing";
 const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[] =

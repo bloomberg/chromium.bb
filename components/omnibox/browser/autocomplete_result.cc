@@ -181,7 +181,7 @@ void AutocompleteResult::SortAndCull(
     std::rotate(matches_.begin(), it, it + 1);
 
   size_t max_url_count = 0;
-  if (OmniboxFieldTrial::IsCapURLMatchesFeatureEnabled() &&
+  if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
       (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
     LimitNumberOfURLsShown(max_url_count, comparing_object);
 

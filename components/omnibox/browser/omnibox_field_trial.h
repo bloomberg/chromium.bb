@@ -439,7 +439,7 @@ bool IsGroupSuggestionsBySearchVsUrlFeatureEnabled();
 
 // Returns whether the feature to limit the number of shown URL matches
 // is enabled.
-bool IsCapURLMatchesFeatureEnabled();
+bool IsMaxURLMatchesFeatureEnabled();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:

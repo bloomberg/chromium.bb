@@ -797,6 +797,9 @@ extern const char kOmniboxUIOneClickUnelideDescription[];
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
+extern const char kOmniboxMaxURLMatchesName[];
+extern const char kOmniboxMaxURLMatchesDescription[];
+
 extern const char kOmniboxUIShowPlaceholderWhenCaretShowingName[];
 extern const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[];
 
