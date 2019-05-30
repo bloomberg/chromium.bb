@@ -52,8 +52,6 @@ class InputRouterImpl;
 }  // close namespace content
 
 namespace views {
-class WindowsSessionChangeObserver;
-
 namespace corewm {
 class Tooltip;
 }  // close namespace corewm
@@ -62,6 +60,7 @@ class Tooltip;
 namespace ui {
 class CursorLoader;
 class InputMethod;
+class SessionChangeObserver;
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
 class RubberbandOutline;
@@ -174,7 +173,7 @@ class RenderWebView final : public WebView
         // when this timer fires.
 
     // Observe Windows 'session changes':
-    std::unique_ptr<views::WindowsSessionChangeObserver> d_windowsSessionChangeObserver;
+    std::unique_ptr<ui::SessionChangeObserver> d_windowsSessionChangeObserver;
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     // State related to rubber band selection:
@@ -298,6 +297,7 @@ class RenderWebView final : public WebView
         const blink::WebMouseWheelEvent& wheel_event,
         const ui::LatencyInfo& latency_info) override {};
     bool IsWheelScrollInProgress() override;
+    bool IsAutoscrollInProgress() override;
     void SetMouseCapture(bool capture) override {};
 
     // content::InputRouterImplClient overrides:
@@ -332,7 +332,7 @@ class RenderWebView final : public WebView
     // ui::internal::InputMethodDelegate overrides:
     ui::EventDispatchDetails DispatchKeyEventPostIME(
         ui::KeyEvent* key_event,
-        base::OnceCallback<void(bool)> ack_callback) override;
+        DispatchKeyEventPostIMECallback ack_callback) override;
 
     // ui::TextInputClient overrides:
     void SetCompositionText(const ui::CompositionText& composition) override;
@@ -352,8 +352,8 @@ class RenderWebView final : public WebView
     FocusReason GetFocusReason() const override;
     bool GetTextRange(gfx::Range* range) const override;
     bool GetCompositionTextRange(gfx::Range* range) const override;
-    bool GetSelectionRange(gfx::Range* range) const override;
-    bool SetSelectionRange(const gfx::Range& range) override;
+    bool GetEditableSelectionRange(gfx::Range* range) const override;
+    bool SetEditableSelectionRange(const gfx::Range& range) override;
     bool DeleteRange(const gfx::Range& range) override;
     bool GetTextFromRange(const gfx::Range& range,
         base::string16* text) const override;
@@ -366,6 +366,9 @@ class RenderWebView final : public WebView
     void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
     ukm::SourceId GetClientSourceForMetrics() const override;
     bool ShouldDoLearning() override;
+    void SetCompositionFromExistingText(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override {};
 
     // DragDropDelegate overrides:
     void DragTargetEnter(

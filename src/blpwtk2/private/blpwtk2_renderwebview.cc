@@ -36,7 +36,7 @@
 #include <content/common/view_messages.h>
 #include <content/common/widget_messages.h>
 #include <content/public/renderer/render_view_observer.h>
-#include <content/renderer/gpu/layer_tree_view.h>
+#include <content/renderer/compositor/layer_tree_view.h>
 #include <content/renderer/render_thread_impl.h>
 #include <content/renderer/render_view_impl.h>
 #include <third_party/blink/public/web/web_local_frame.h>
@@ -48,7 +48,7 @@
 #include <ui/display/display.h>
 #include <ui/display/screen.h>
 #include <ui/events/blink/web_input_event.h>
-#include <ui/views/win/windows_session_change_observer.h>
+#include <ui/base/win/session_change_observer.h>
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
 #include <ui/base/win/rubberband_windows.h>
@@ -765,7 +765,7 @@ void RenderWebView::initialize()
     d_tooltip = std::make_unique<views::corewm::TooltipWin>(d_hwnd.get());
 
     d_windowsSessionChangeObserver =
-        std::make_unique<views::WindowsSessionChangeObserver>(
+        std::make_unique<ui::SessionChangeObserver>(
             base::Bind(&RenderWebView::onSessionChange, base::Unretained(this)));
 }
 
@@ -1665,6 +1665,12 @@ bool RenderWebView::IsWheelScrollInProgress()
     return false;
 }
 
+bool RenderWebView::IsAutoscrollInProgress()
+{
+    return false;
+}
+
+
 // content::InputRouterImplClient overrides:
 content::mojom::WidgetInputHandler* RenderWebView::GetWidgetInputHandler()
 {
@@ -1693,7 +1699,7 @@ bool RenderWebView::NeedsBeginFrameForFlingProgress()
 // ui::internal::InputMethodDelegate overrides:
 ui::EventDispatchDetails RenderWebView::DispatchKeyEventPostIME(
     ui::KeyEvent* key_event,
-    base::OnceCallback<void(bool)> ack_callback)
+    DispatchKeyEventPostIMECallback ack_callback)
 {
     if (!key_event->handled()) {
         if (d_inputRouterImpl) {
@@ -1705,7 +1711,7 @@ ui::EventDispatchDetails RenderWebView::DispatchKeyEventPostIME(
                     &RenderWebView::onKeyboardEventAck,
                     base::Unretained(this)));
         }
-        CallDispatchKeyEventPostIMEAck(key_event, std::move(ack_callback));
+        RunDispatchKeyEventPostIMECallback(key_event, std::move(ack_callback));
     }
 
     return ui::EventDispatchDetails();
@@ -1865,14 +1871,14 @@ bool RenderWebView::GetCompositionTextRange(gfx::Range* range) const
     return false;
 }
 
-bool RenderWebView::GetSelectionRange(gfx::Range* range) const
+bool RenderWebView::GetEditableSelectionRange(gfx::Range* range) const
 {
     range->set_start(d_selectionRange.start());
     range->set_end(d_selectionRange.end());
     return true;
 }
 
-bool RenderWebView::SetSelectionRange(const gfx::Range& range)
+bool RenderWebView::SetEditableSelectionRange(const gfx::Range& range)
 {
     NOTIMPLEMENTED();
     return false;

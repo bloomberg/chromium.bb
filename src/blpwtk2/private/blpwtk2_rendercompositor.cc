@@ -220,7 +220,7 @@ class RenderCompositorFrameSinkImpl : public viz::mojom::CompositorFrameSink,
     void SetBeginFrameSource(viz::BeginFrameSource* source) override;
     base::Optional<viz::HitTestRegionList> BuildHitTestData() override { return base::Optional<viz::HitTestRegionList>(); }
     void ReclaimResources(const std::vector<viz::ReturnedResource>& resources) override;
-    void SetTreeActivationCallback(const base::Closure& callback) override {}
+    void SetTreeActivationCallback(base::RepeatingClosure callback) override {}
     void DidReceiveCompositorFrameAck() override;
     void DidPresentCompositorFrame(
         uint32_t presentation_token,
@@ -883,7 +883,7 @@ void RenderCompositorFrameSinkImpl::SubmitCompositorFrame(
 {
     d_resources_to_reclaim = viz::TransferableResource::ReturnResources(frame.resource_list);
 
-    d_layer_tree_frame_sink->SubmitCompositorFrame(std::move(frame), false);
+    d_layer_tree_frame_sink->SubmitCompositorFrame(std::move(frame), /*hit_test_data_changed*/false, false);
 }
 
 void RenderCompositorFrameSinkImpl::SubmitCompositorFrameSync(
