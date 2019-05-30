@@ -11,9 +11,9 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision.h"
@@ -124,7 +124,7 @@ class BarcodeDetectionProviderMacTest
   MOCK_METHOD0(OnEnumerateSupportedFormats, void(void));
 
   std::unique_ptr<mojom::BarcodeDetectionProvider> provider_;
-  const base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   void* vision_framework_ = nullptr;
   bool is_vision_available_ = false;
 };
