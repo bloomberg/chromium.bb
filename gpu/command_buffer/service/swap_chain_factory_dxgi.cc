@@ -308,16 +308,16 @@ std::unique_ptr<SharedImageBacking> SwapChainFactoryDXGI::MakeBacking(
   }
   DCHECK(d3d11_texture);
 
-  unsigned target = GL_TEXTURE_2D;
+  const unsigned target = GL_TEXTURE_2D;
+  gl::GLApi* api = gl::g_current_gl_context;
+  const GLuint service_id = MakeTextureAndSetParameters(api, target);
+
   auto image = base::MakeRefCounted<gl::GLImageDXGISwapChain>(
       size, viz::BufferFormat(format), d3d11_texture, swap_chain);
   if (!image->BindTexImage(target)) {
     DLOG(ERROR) << "Failed to bind image to swap chain D3D11 texture.";
     return nullptr;
   }
-
-  gl::GLApi* api = gl::g_current_gl_context;
-  GLuint service_id = MakeTextureAndSetParameters(api, target);
 
   gles2::Texture* texture = nullptr;
   scoped_refptr<gles2::TexturePassthrough> passthrough_texture;
