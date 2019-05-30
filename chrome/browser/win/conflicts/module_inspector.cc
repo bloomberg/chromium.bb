@@ -106,8 +106,8 @@ ModuleInspector::ModuleInspector(
           base::FeatureList::IsEnabled(kDisableBackgroundModuleInspection)),
       test_connector_(nullptr),
       weak_ptr_factory_(this) {
-  // Use PostAfterStartupTask to be notified when startup is finished.
-  content::BrowserThread::PostAfterStartupTask(
+  // Use BEST_EFFORT as those will only run after startup is finished.
+  content::BrowserThread::PostBestEffortTask(
       FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
       base::BindOnce(&ModuleInspector::OnStartupFinished,
                      weak_ptr_factory_.GetWeakPtr()));
