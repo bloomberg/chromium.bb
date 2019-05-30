@@ -86,16 +86,6 @@ class NGLengthUtilsTest : public testing::Test {
                                            LengthResolvePhase::kLayout);
   }
 
-  LayoutUnit ComputeBlockSizeForFragment(
-      NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300),
-      LayoutUnit content_size = LayoutUnit()) {
-    NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
-                                ComputePadding(constraint_space, *style_);
-
-    return ::blink::ComputeBlockSizeForFragment(constraint_space, *style_,
-                                                border_padding, content_size);
-  }
-
   scoped_refptr<ComputedStyle> style_;
 };
 
@@ -118,6 +108,20 @@ class NGLengthUtilsTestWithNode : public NGLayoutTest {
                                 ComputePadding(constraint_space, *style_);
     return ::blink::ComputeInlineSizeForFragment(constraint_space, node,
                                                  border_padding, &sizes);
+  }
+
+  LayoutUnit ComputeBlockSizeForFragment(
+      NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300),
+      LayoutUnit content_size = LayoutUnit()) {
+    LayoutBox* body = ToLayoutBox(GetDocument().body()->GetLayoutObject());
+    body->SetStyle(style_);
+    body->SetPreferredLogicalWidthsDirty();
+    NGBlockNode node(body);
+
+    NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
+                                ComputePadding(constraint_space, *style_);
+    return ::blink::ComputeBlockSizeForFragment(constraint_space, node,
+                                                border_padding, content_size);
   }
 
   scoped_refptr<ComputedStyle> style_;
@@ -344,7 +348,7 @@ TEST_F(NGLengthUtilsTestWithNode, testComputeInlineSizeForFragment) {
             ComputeInlineSizeForFragment(constraint_space, sizes));
 }
 
-TEST_F(NGLengthUtilsTest, testComputeBlockSizeForFragment) {
+TEST_F(NGLengthUtilsTestWithNode, testComputeBlockSizeForFragment) {
   style_->SetLogicalHeight(Length::Percent(30));
   EXPECT_EQ(LayoutUnit(90), ComputeBlockSizeForFragment());
 
@@ -402,7 +406,7 @@ TEST_F(NGLengthUtilsTest, testComputeBlockSizeForFragment) {
   // TODO(layout-ng): test {min,max}-content on max-height.
 }
 
-TEST_F(NGLengthUtilsTest, testIndefinitePercentages) {
+TEST_F(NGLengthUtilsTestWithNode, testIndefinitePercentages) {
   style_->SetMinHeight(Length::Fixed(20));
   style_->SetHeight(Length::Percent(20));
 

@@ -69,7 +69,7 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   }
 
   container_builder_.SetBlockSize(ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(),
+      ConstraintSpace(), Node(),
       container_builder_.Borders() + container_builder_.Padding(),
       result.IntrinsicBlockSize()));
 

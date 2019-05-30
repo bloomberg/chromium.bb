@@ -262,7 +262,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     }
 
     block_size = ComputeBlockSizeForFragment(
-        new_space, style, fragment_geometry.border + fragment_geometry.padding,
+        new_space, node, fragment_geometry.border + fragment_geometry.padding,
         layout_result.IntrinsicBlockSize());
   }
 

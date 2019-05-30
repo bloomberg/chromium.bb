@@ -517,16 +517,20 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
 
 LayoutUnit ComputeBlockSizeForFragment(
     const NGConstraintSpace& constraint_space,
-    const ComputedStyle& style,
+    const NGBlockNode& node,
     const NGBoxStrut& border_padding,
     LayoutUnit content_size) {
+  // The final block-size of a table-cell is always its intrinsic size.
+  if (node.IsTableCell() && content_size != kIndefiniteSize)
+    return content_size;
+
   if (constraint_space.IsFixedSizeBlock())
     return constraint_space.AvailableSize().block_size;
 
   if (constraint_space.IsAnonymous())
     return content_size;
 
-  return ComputeBlockSizeForFragmentInternal(constraint_space, style,
+  return ComputeBlockSizeForFragmentInternal(constraint_space, node.Style(),
                                              border_padding, content_size);
 }
 
@@ -1042,8 +1046,8 @@ NGFragmentGeometry CalculateInitialFragmentGeometry(
       constraint_space, node, border_scrollbar_padding);
   LogicalSize border_box_size(
       ComputeInlineSizeForFragment(constraint_space, node, border_padding),
-      ComputeBlockSizeForFragment(constraint_space, node.Style(),
-                                  border_padding, default_block_size));
+      ComputeBlockSizeForFragment(constraint_space, node, border_padding,
+                                  default_block_size));
 
   if (UNLIKELY(border_box_size.inline_size <
                    border_scrollbar_padding.InlineSum() &&

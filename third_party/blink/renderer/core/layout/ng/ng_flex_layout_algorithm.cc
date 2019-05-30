@@ -41,7 +41,7 @@ LayoutUnit NGFlexLayoutAlgorithm::MainAxisContentExtent(
     LayoutUnit sum_hypothetical_main_size) {
   if (Style().IsColumnFlexDirection()) {
     return ComputeBlockSizeForFragment(
-               ConstraintSpace(), Style(), border_padding_,
+               ConstraintSpace(), Node(), border_padding_,
                sum_hypothetical_main_size + (border_padding_).BlockSum()) -
            border_scrollbar_padding_.BlockSum();
   }
@@ -324,7 +324,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   LayoutUnit intrinsic_block_size =
       intrinsic_block_content_size + border_scrollbar_padding_.BlockSum();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size);
+      ConstraintSpace(), Node(), border_padding_, intrinsic_block_size);
 
   container_builder_.SetBlockSize(block_size);
   container_builder_.SetIntrinsicBlockSize(

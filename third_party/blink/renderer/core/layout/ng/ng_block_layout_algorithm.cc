@@ -610,12 +610,8 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
       Node(), border_scrollbar_padding_, intrinsic_block_size_);
 
   // Recompute the block-axis size now that we know our content size.
-  // NOTE: For table cells, the block-size is just the intrinsic block-size.
-  border_box_size.block_size =
-      Node().IsTableCell()
-          ? intrinsic_block_size_
-          : ComputeBlockSizeForFragment(ConstraintSpace(), Style(),
-                                        border_padding_, intrinsic_block_size_);
+  border_box_size.block_size = ComputeBlockSizeForFragment(
+      ConstraintSpace(), Node(), border_padding_, intrinsic_block_size_);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
   // If our BFC block-offset is still unknown, we check:
@@ -1732,7 +1728,7 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   LayoutUnit used_block_size =
       BreakToken() ? BreakToken()->UsedBlockSize() : LayoutUnit();
   LayoutUnit block_size =
-      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), border_padding_,
+      ComputeBlockSizeForFragment(ConstraintSpace(), Node(), border_padding_,
                                   used_block_size + intrinsic_block_size_);
 
   block_size -= used_block_size;
