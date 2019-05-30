@@ -18,7 +18,7 @@ from chromite.lib import sudo
 DEFAULT_NAME = 'clang_tidy_warnings.tar.xz'
 TIDY_WARNINGS = 'clang_tidy_warnings'
 PARSING_SCRIPT = ('/mnt/host/source/src/third_party/toolchain-utils/'
-                  'clang_tidy/clang-tidy-parse-build-log.py')
+                  'clang_tidy/clang_tidy_parse_build_log.py')
 WORKING_DIR = '/usr/bin'
 
 
