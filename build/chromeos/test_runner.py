@@ -787,7 +787,7 @@ def main():
   tast_test_parser.add_argument(
       '--conditional', '--attr-expr', type=str, dest='conditional',
       help='A boolean expression whose matching tests will run '
-           '(eg: ("dep:chrome" || "dep:chrome_login")).')
+           '(eg: ("dep:chrome")).')
   tast_test_parser.add_argument(
       '--test', '-t', action='append', dest='tests',
       help='A Tast test to run in the device (eg: "ui.ChromeLogin").')

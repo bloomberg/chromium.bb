@@ -204,8 +204,8 @@ template("tast_test") {
 
   # Default the expression to match any chrome-related test.
   if (!defined(tast_attr_expr) && !defined(tast_tests)) {
-    tast_attr_expr = "!disabled && !\"group:*\" && !informational" +
-                     " && (\"dep:chrome\" || \"dep:chrome_login\")"
+    tast_attr_expr =
+        "!disabled && !\"group:*\" && !informational" + " && (\"dep:chrome\")"
   } else {
     assert(defined(tast_attr_expr) != defined(tast_tests),
            "Specify one of tast_tests or tast_attr_expr.")
