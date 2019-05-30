@@ -102,9 +102,6 @@ class GIN_EXPORT MultiHeapTracer : public v8::EmbedderHeapTracer {
   void EnterFinalPause(EmbedderStackState stack_state) override;
     // Notify all registered tracers that we're entering the final pause.
 
-  void AbortTracing() override;
-    // Nofity all registered tracers that tracing has been aborted.
-
   bool IsTracingDone() override;
     // Return 'true' if all the registered tracers have done tracing, and
     // 'false' otherwise.

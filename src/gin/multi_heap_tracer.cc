@@ -99,14 +99,6 @@ void MultiHeapTracer::EnterFinalPause(EmbedderStackState stack_state) {
   }
 }
 
-void MultiHeapTracer::AbortTracing() {
-  is_tracing_ = false;
-
-  for (auto&& id_and_tracer : tracers_) {
-    id_and_tracer.second->AbortTracing();
-  }
-}
-
 bool MultiHeapTracer::IsTracingDone() {
   for (auto&& id_and_tracer : tracers_) {
     if (!id_and_tracer.second->IsTracingDone()) {

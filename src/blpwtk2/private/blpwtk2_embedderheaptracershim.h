@@ -67,9 +67,6 @@ class EmbedderHeapTracerShim : public v8::EmbedderHeapTracer {
     EmbedderHeapTracerShim& operator=(EmbedderHeapTracerShim&&)      = delete;
         // Not implemented.
 
-    void AbortTracing() override;
-        // Notify the wrapped tracer that it should abort tracing.
-
     bool AdvanceTracing(double deadline_in_ms) override;
         // Notify the wrapped tracer that it should advance tracing, by the
         // specified 'deadline_in_ms'.  If 'deadline_in_ms' is 'Infinity',
@@ -102,12 +99,6 @@ class EmbedderHeapTracerShim : public v8::EmbedderHeapTracer {
                         // ----------------------------
                         // class EmbedderHeapTracerShim
                         // ----------------------------
-
-inline
-void EmbedderHeapTracerShim::AbortTracing()
-{
-    d_tracer_p->AbortTracing();
-}
 
 inline
 bool EmbedderHeapTracerShim::AdvanceTracing(double deadline_in_ms)
