@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 506 tests; 379 PASS, 127 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 506 tests; 380 PASS, 126 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: Error: assert_true: Expect pc.sctp to be instance of RTCSctpTransport expected true got false Reached unreachable code
@@ -235,7 +235,7 @@ PASS RTCRtpSender interface: operation getCapabilities(DOMString)
 FAIL RTCRtpSender interface: operation setParameters(RTCRtpSendParameters) assert_equals: property has wrong .length expected 1 but got 0
 PASS RTCRtpSender interface: operation getParameters()
 PASS RTCRtpSender interface: operation replaceTrack(MediaStreamTrack)
-FAIL RTCRtpSender interface: operation setStreams(MediaStream) assert_own_property: interface prototype object missing non-static operation expected property "setStreams" missing
+PASS RTCRtpSender interface: operation setStreams(MediaStream)
 PASS RTCRtpSender interface: operation getStats()
 PASS RTCRtpSender interface: attribute dtmf
 FAIL RTCRtpSender must be primary interface of new RTCPeerConnection().addTransceiver('audio').sender assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."

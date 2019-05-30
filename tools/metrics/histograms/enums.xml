@@ -23412,6 +23412,7 @@ Called by update_net_error_codes.py.-->
   <int value="2912" label="V8XRWebGLLayer_Constructor"/>
   <int value="2913" label="FetchKeepalive"/>
   <int value="2914" label="CSSTransitionCancelledByRemovingStyle"/>
+  <int value="2915" label="V8RTCRtpSender_SetStreams_Method"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

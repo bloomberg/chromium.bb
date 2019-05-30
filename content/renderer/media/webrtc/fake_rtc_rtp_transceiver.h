@@ -6,6 +6,8 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_FAKE_RTC_RTP_TRANSCEIVER_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
@@ -50,6 +52,8 @@ class FakeRTCRtpSender : public blink::WebRTCRtpSender {
                      blink::WebRTCVoidRequest) override;
   void GetStats(blink::WebRTCStatsReportCallback,
                 const std::vector<webrtc::NonStandardGroupId>&) override;
+  void SetStreams(
+      const blink::WebVector<blink::WebString>& stream_ids) override;
 
  private:
   base::Optional<std::string> track_id_;

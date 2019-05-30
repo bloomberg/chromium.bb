@@ -5,7 +5,10 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
 
 #include <memory>
+#include <string>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
@@ -512,6 +515,25 @@ RTCDTMFSender* RTCRtpSender::dtmf() {
         RTCDTMFSender::Create(pc_->GetExecutionContext(), std::move(handler));
   }
   return dtmf_;
+}
+
+void RTCRtpSender::setStreams(HeapVector<Member<MediaStream>> streams,
+                              ExceptionState& exception_state) {
+  if (pc_->IsClosed()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The RTCPeerConnection's signalingState is 'closed'.");
+    return;
+  }
+  if (pc_->sdp_semantics() != webrtc::SdpSemantics::kUnifiedPlan) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kOnlySupportedInUnifiedPlanMessage);
+    return;
+  }
+  WebVector<WebString> stream_ids;
+  for (auto stream : streams)
+    stream_ids.emplace_back(stream->id());
+  sender_->SetStreams(stream_ids);
 }
 
 void RTCRtpSender::Trace(blink::Visitor* visitor) {

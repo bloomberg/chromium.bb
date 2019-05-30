@@ -81,6 +81,8 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
                      WebRTCVoidRequest) override {}
   void GetStats(WebRTCStatsReportCallback,
                 const std::vector<webrtc::NonStandardGroupId>&) override {}
+  void SetStreams(
+      const blink::WebVector<blink::WebString>& stream_ids) override {}
 
  private:
   scoped_refptr<DummyRtpSenderInternal> internal_;

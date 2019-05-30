@@ -277,6 +277,15 @@ class RTCRtpSender::RTCRtpSenderInternal
     return true;
   }
 
+  void SetStreams(std::vector<std::string> stream_ids) {
+    DCHECK(main_task_runner_->BelongsToCurrentThread());
+    signaling_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RTCRtpSender::RTCRtpSenderInternal::SetStreamsOnSignalingThread,
+            this, std::move(stream_ids)));
+  }
+
  private:
   friend struct RTCRtpSender::RTCRtpSenderInternalTraits;
 
@@ -336,6 +345,11 @@ class RTCRtpSender::RTCRtpSenderInternal
       base::OnceCallback<void(webrtc::RTCError)> callback) {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
     std::move(callback).Run(std::move(result));
+  }
+
+  void SetStreamsOnSignalingThread(std::vector<std::string> stream_ids) {
+    DCHECK(signaling_task_runner_->BelongsToCurrentThread());
+    webrtc_sender_->SetStreams(stream_ids);
   }
 
   const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
@@ -458,6 +472,15 @@ void RTCRtpSender::GetStats(
     blink::WebRTCStatsReportCallback callback,
     const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   internal_->GetStats(std::move(callback), exposed_group_ids);
+}
+
+void RTCRtpSender::SetStreams(
+    const blink::WebVector<blink::WebString>& stream_ids) {
+  std::vector<std::string> ids;
+  for (auto stream_id : stream_ids)
+    ids.emplace_back(stream_id.Utf8());
+
+  internal_->SetStreams(std::move(ids));
 }
 
 void RTCRtpSender::ReplaceTrack(blink::WebMediaStreamTrack with_track,

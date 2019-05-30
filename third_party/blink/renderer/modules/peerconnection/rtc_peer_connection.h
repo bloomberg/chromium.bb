@@ -83,6 +83,8 @@ class V8RTCSessionDescriptionCallback;
 class V8RTCStatsCallback;
 class V8VoidFunction;
 
+extern const char kOnlySupportedInUnifiedPlanMessage[];
+
 // This enum is used to track usage of SDP during the transition of the default
 // "sdpSemantics" value from "Plan B" to "Unified Plan". Usage refers to
 // operations such as createOffer(), createAnswer(), setLocalDescription() and
@@ -341,6 +343,8 @@ class MODULES_EXPORT RTCPeerConnection final
   // Called by RTCIceTransport::OnStateChange to update the ice connection
   // state.
   void UpdateIceConnectionState();
+
+  webrtc::SdpSemantics sdp_semantics() { return sdp_semantics_; }
 
   void Trace(blink::Visitor*) override;
 

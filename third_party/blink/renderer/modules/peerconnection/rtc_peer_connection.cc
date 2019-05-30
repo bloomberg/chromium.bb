@@ -134,8 +134,6 @@ const char kSignalingStateClosedMessage[] =
     "The RTCPeerConnection's signalingState is 'closed'.";
 const char kModifiedSdpMessage[] =
     "The SDP does not match the previously generated SDP for this type";
-const char kOnlySupportedInUnifiedPlanMessage[] =
-    "This operation is only supported in 'unified-plan'.";
 
 // The maximum number of PeerConnections that can exist simultaneously.
 const int64_t kMaxPeerConnections = 500;
@@ -585,6 +583,9 @@ RTCSetSessionDescriptionOperation GetRTCVoidRequestOperationType(
 }
 
 }  // namespace
+
+const char kOnlySupportedInUnifiedPlanMessage[] =
+    "This operation is only supported in 'unified-plan'.";
 
 SdpUsageCategory DeduceSdpUsageCategory(const String& sdp_type,
                                         const String& sdp,

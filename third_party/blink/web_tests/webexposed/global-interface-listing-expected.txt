@@ -5930,6 +5930,7 @@ interface RTCRtpSender
     method getStats
     method replaceTrack
     method setParameters
+    method setStreams
 interface RTCRtpTransceiver
     attribute @@toStringTag
     getter currentDirection
