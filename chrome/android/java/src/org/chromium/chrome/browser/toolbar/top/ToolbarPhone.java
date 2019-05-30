@@ -1866,19 +1866,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         if (inTabSwitcherMode) {
             mUrlBar.setText("");
-            mLocationBar.updateStatusIcon();
-            // Early return here allows the location bar to remain visible and functional while
-            // the tab switcher (overview) is being displayed.
-            return true;
-        }
-
-        if (getToolbarDataProvider() != null && getToolbarDataProvider().getUrlBarData() != null) {
-            // Set the text back to the correct display text in case we've previously cleared
-            // it.
+        } else if (getToolbarDataProvider() != null
+                && getToolbarDataProvider().getUrlBarData() != null) {
             mUrlBar.setText(getToolbarDataProvider().getUrlBarData().displayText);
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -2096,9 +2089,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         if (mToggleTabStackButton != null) mToggleTabStackButton.setClickable(!hasFocus);
 
-        if (getToolbarDataProvider().isInOverviewAndShowingOmnibox() && !hasFocus) {
+        if (getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
             mUrlBar.setText("");
-            return;
+            if (!hasFocus) return;
         }
 
         triggerUrlFocusAnimation(hasFocus);
@@ -2149,9 +2142,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 mLocationBar.finishUrlFocusChange(hasFocus);
                 mUrlFocusChangeInProgress = false;
 
-                if (getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
-                    mLocationBar.updateVisualsForState();
-                    mUrlBar.setText("");
+                if (getToolbarDataProvider().shouldShowLocationBarInOverviewMode()) {
+                    mLocationBar.updateStatusIcon();
+
+                    if (getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
+                        mUrlBar.setText("");
+                    }
                 }
             }
         });
