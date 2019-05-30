@@ -68,7 +68,8 @@ export class TestGroup {
                                       params: (IParamsSpec | undefined),
                                       fixture: IFixture<F>,
                                       fn: TestFn<F>): void {
-    const validNames = /^[a-zA-Z0-9,.\- ']+$/;
+    // It would be OK to add more allowed characters here.
+    const validNames = /^[a-zA-Z0-9,.\-_ ']+$/;
     if (!validNames.test(name)) {
       throw new Error(`Invalid test name ${name}; must match ${validNames}`);
     }
