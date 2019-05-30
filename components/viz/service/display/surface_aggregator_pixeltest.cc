@@ -62,7 +62,13 @@ class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<RendererType> {
       base::TimeTicks() + base::TimeDelta::FromSeconds(1);
 };
 
-using RendererTypes = ::testing::Types<GLRenderer, SkiaRenderer>;
+using RendererTypes = ::testing::Types<GLRenderer,
+                                       SkiaRenderer
+#ifdef ENABLE_VIZ_VULKAN_TESTS
+                                       ,
+                                       cc::VulkanSkiaRenderer
+#endif
+                                       >;
 TYPED_TEST_SUITE(SurfaceAggregatorPixelTest, RendererTypes);
 
 SharedQuadState* CreateAndAppendTestSharedQuadState(
