@@ -289,9 +289,11 @@ HRESULT AXPlatformNodeTextRangeProviderWin::FindAttributeRange(
 
     DCHECK(current_start->GetAnchor() == current_end->GetAnchor());
 
-    current_platform_node =
-        static_cast<AXPlatformNodeWin*>(owner()->GetDelegate()->GetFromNodeID(
-            current_start->GetAnchor()->id()));
+    AXPlatformNodeDelegate* delegate = GetDelegate(current_start);
+    DCHECK(delegate);
+
+    current_platform_node = static_cast<AXPlatformNodeWin*>(
+        delegate->GetFromNodeID(current_start->GetAnchor()->id()));
 
     base::win::ScopedVariant current_attribute_value;
     if (FAILED(current_platform_node->GetTextAttributeValue(
@@ -358,11 +360,12 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
 
   base::win::ScopedVariant attribute_value_variant;
 
-  AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
-
   for (auto&& current_range : anchors) {
     DCHECK(current_range.anchor()->GetAnchor() ==
            current_range.focus()->GetAnchor());
+
+    AXPlatformNodeDelegate* delegate = GetDelegate(current_range.anchor());
+    DCHECK(delegate);
 
     AXPlatformNodeWin* platform_node = static_cast<AXPlatformNodeWin*>(
         delegate->GetFromNodeID(current_range.anchor()->GetAnchor()->id()));
@@ -455,9 +458,11 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   AXPositionInstance common_ancestor = start_->LowestCommonAncestor(*end_);
-  owner()
-      ->GetDelegate()
-      ->GetFromNodeID(common_ancestor->anchor_id())
+
+  AXPlatformNodeDelegate* delegate = GetDelegate(common_ancestor.get());
+  DCHECK(delegate);
+
+  delegate->GetFromNodeID(common_ancestor->anchor_id())
       ->GetNativeViewAccessible()
       ->QueryInterface(IID_PPV_ARGS(element));
 
@@ -759,9 +764,10 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
       start_->LowestCommonAncestor(*end_.get());
 
   if (!common_ancestor->GetAnchor()->children().empty()) {
-    descendants = owner()
-                      ->GetDelegate()
-                      ->GetFromNodeID(common_ancestor->anchor_id())
+    AXPlatformNodeDelegate* delegate = GetDelegate(common_ancestor.get());
+    DCHECK(delegate);
+
+    descendants = delegate->GetFromNodeID(common_ancestor->anchor_id())
                       ->GetDelegate()
                       ->GetDescendants();
   }
@@ -924,6 +930,16 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
 
   *units_moved = count;
   return current_endpoint;
+}
+
+AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
+    const ui::AXPosition<ui::AXNodePosition, ui::AXNode>* position) const {
+  AXTreeManager* manager =
+      AXTreeManagerMap::GetInstance().GetManager(position->tree_id());
+
+  return manager
+             ? manager->GetDelegate(position->tree_id(), position->anchor_id())
+             : owner()->GetDelegate();
 }
 
 }  // namespace ui

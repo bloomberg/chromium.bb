@@ -49,6 +49,14 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
 
  private:
   static AXTree* tree_;
+
+  // Returns the parent node of the provided child. Returns the parent
+  // node's tree id and node id through the provided output parameters,
+  // parent_tree_id and parent_id.
+  static AXNode* GetParent(AXNode* child,
+                           AXTreeID child_tree_id,
+                           AXTreeID* parent_tree_id,
+                           int32_t* parent_id);
 };
 
 }  // namespace ui

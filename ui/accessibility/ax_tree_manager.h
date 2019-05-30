@@ -29,9 +29,23 @@ class AX_EXPORT AXTreeManager {
   virtual AXPlatformNodeDelegate* GetDelegate(const AXTreeID tree_id,
                                               const int32_t node_id) const = 0;
 
-  // Exposes the root AXPlatformNodeDelegate for the accessibility tree.
+  // Exposes the AXPlatformNodeDelegate for the root of the given AXTree.
   virtual AXPlatformNodeDelegate* GetRootDelegate(
       const AXTreeID tree_id) const = 0;
+
+  // Returns the tree id of the tree managed by this AXTreeManager.
+  virtual AXTreeID GetTreeID() const = 0;
+
+  // Returns the tree id for the parent node of the child with the provided
+  // child_node_id and child_tree_id. This allows callers to access parent
+  // nodes outside their own tree.
+  virtual AXTreeID GetParentTreeID() const = 0;
+
+  // Return a pointer to the root of the tree.
+  virtual AXNode* GetRootAsAXNode() const = 0;
+
+  // If this tree has a parent tree, return the parent node in that tree.
+  virtual AXNode* GetParentNodeFromParentTreeAsAXNode() const = 0;
 };
 
 }  // namespace ui

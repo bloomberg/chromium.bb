@@ -14,6 +14,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -59,9 +60,25 @@ namespace content {
     EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, expected_text);               \
   }
 
+#define EXPECT_UIA_MOVE(text_range_provider, unit, count, expected_text, \
+                        expected_count)                                  \
+  {                                                                      \
+    int result_count;                                                    \
+    EXPECT_HRESULT_SUCCEEDED(                                            \
+        text_range_provider->Move(unit, count, &result_count));          \
+    EXPECT_EQ(expected_count, result_count);                             \
+    EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, expected_text);         \
+  }
+
 class AXPlatformNodeTextRangeProviderWinBrowserTest
     : public AccessibilityContentBrowserTest {
  protected:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
   void GetTextRangeProviderFromTextNode(
       ComPtr<ITextRangeProvider>& text_range_provider,
       BrowserAccessibility* target_browser_accessibility) {
@@ -716,6 +733,107 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       L"2overline 1overline 2line-through 1line-through 2sup 1sup 2bold 1bold "
       L"2",
       /*expected_count*/ -1);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       IFrameTraversal) {
+  LoadInitialAccessibilityTreeFromUrl(embedded_test_server()->GetURL(
+      "/accessibility/html/iframe-cross-process.html"));
+
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Text in iframe");
+
+  auto* node = FindNode(ax::mojom::Role::kStaticText, "After frame");
+  ASSERT_NE(nullptr, node);
+  EXPECT_TRUE(node->PlatformIsLeaf());
+  EXPECT_EQ(0u, node->PlatformChildCount());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, node);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"After frame");
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Word,
+      /*count*/ -1,
+      /*expected_text*/ L"iframeAfter frame",
+      /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Word,
+      /*count*/ -2,
+      /*expected_text*/ L"Text in iframeAfter frame",
+      /*expected_count*/ -2);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
+                                   TextPatternRangeEndpoint_End, TextUnit_Word,
+                                   /*count*/ -3,
+                                   /*expected_text*/ L"Text in",
+                                   /*expected_count*/ -3);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
+                                   TextPatternRangeEndpoint_End, TextUnit_Word,
+                                   /*count*/ 2,
+                                   /*expected_text*/ L"Text in iframeAfter",
+                                   /*expected_count*/ 2);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Line,
+      /*count*/ 1,
+      /*expected_text*/ L"Text in iframeAfter frame",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Document,
+      /*count*/ 1,
+      /*expected_text*/ L"",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ -17,
+      /*expected_text*/ L"iframeAfter frame",
+      /*expected_count*/ -17);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
+                                   TextPatternRangeEndpoint_End, TextUnit_Line,
+                                   /*count*/ -1,
+                                   /*expected_text*/ L"iframe",
+                                   /*expected_count*/ -1);
+
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Line);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Text in iframe");
+
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Document);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
+                          L"Before frameText in iframeAfter frame");
+
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
+                  /*count*/ 2,
+                  /*expected_text*/ L"Text",
+                  /*expected_count*/ 2);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
+                  /*count*/ -1,
+                  /*expected_text*/ L"frame",
+                  /*expected_count*/ -1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ 1,
+      /*expected_text*/ L"frameT",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
+                  /*count*/ 6,
+                  /*expected_text*/ L"e",
+                  /*expected_count*/ 6);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
+                  /*count*/ 19,
+                  /*expected_text*/ L"f",
+                  /*expected_count*/ 19);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
+                  /*count*/ -7,
+                  /*expected_text*/ L"e",
+                  /*expected_count*/ -7);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line,
+                  /*count*/ 1,
+                  /*expected_text*/ L"After frame",
+                  /*expected_count*/ 1);
+
+  text_range_provider->ExpandToEnclosingUnit(TextUnit_Document);
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
+                          L"Before frameText in iframeAfter frame");
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,

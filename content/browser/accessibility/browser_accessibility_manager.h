@@ -166,7 +166,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // Return whether or not we are currently able to fire events.
   virtual bool CanFireEvents();
 
-  // Return a pointer to the root of the tree, does not make a new reference.
+  // Return a pointer to the root of the tree.
   BrowserAccessibility* GetRoot();
 
   // Returns a pointer to the BrowserAccessibility object for a given AXNode.
@@ -180,7 +180,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   BrowserAccessibility* GetParentNodeFromParentTree();
 
   // Get the AXTreeData for this frame.
-  const ui::AXTreeData& GetTreeData();
+  const ui::AXTreeData& GetTreeData() const;
 
   // Called to notify the accessibility manager that its associated native
   // view got focused.
@@ -400,6 +400,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
                                           const int32_t node_id) const override;
   ui::AXPlatformNodeDelegate* GetRootDelegate(
       const ui::AXTreeID tree_id) const override;
+  AXTreeID GetTreeID() const override;
+  AXTreeID GetParentTreeID() const override;
+  ui::AXNode* GetRootAsAXNode() const override;
+  ui::AXNode* GetParentNodeFromParentTreeAsAXNode() const override;
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
 

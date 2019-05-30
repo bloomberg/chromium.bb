@@ -279,12 +279,7 @@ void BrowserAccessibilityManager::FireGeneratedEvent(
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
-  // tree_ can be null during destruction.
-  if (!tree_)
-    return nullptr;
-
-  // tree_->root() can be null during AXTreeObserver callbacks.
-  ui::AXNode* root = tree_->root();
+  ui::AXNode* root = GetRootAsAXNode();
   return root ? GetFromAXNode(root) : nullptr;
 }
 
@@ -305,37 +300,14 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromID(int32_t id) const {
 
 BrowserAccessibility*
 BrowserAccessibilityManager::GetParentNodeFromParentTree() {
-  if (!GetRoot())
-    return nullptr;
-
-  ui::AXTreeID parent_tree_id = GetTreeData().parent_tree_id;
+  ui::AXNode* parent = GetParentNodeFromParentTreeAsAXNode();
+  ui::AXTreeID parent_tree_id = GetParentTreeID();
   BrowserAccessibilityManager* parent_manager =
       BrowserAccessibilityManager::FromID(parent_tree_id);
-  if (!parent_manager)
-    return nullptr;
-
-  std::set<int32_t> host_node_ids =
-      parent_manager->ax_tree()->GetNodeIdsForChildTreeId(ax_tree_id_);
-
-#if !defined(NDEBUG)
-  if (host_node_ids.size() > 1)
-    DLOG(WARNING) << "Multiple nodes claim the same child tree id.";
-#endif
-
-  for (int32_t host_node_id : host_node_ids) {
-    BrowserAccessibility* parent_node = parent_manager->GetFromID(host_node_id);
-    if (parent_node) {
-      DCHECK_EQ(ax_tree_id_,
-                AXTreeID::FromString(parent_node->GetStringAttribute(
-                    ax::mojom::StringAttribute::kChildTreeId)));
-      return parent_node;
-    }
-  }
-
-  return nullptr;
+  return parent ? parent_manager->GetFromAXNode(parent) : nullptr;
 }
 
-const ui::AXTreeData& BrowserAccessibilityManager::GetTreeData() {
+const ui::AXTreeData& BrowserAccessibilityManager::GetTreeData() const {
   return tree_->data();
 }
 
@@ -1272,6 +1244,56 @@ ui::AXPlatformNodeDelegate* BrowserAccessibilityManager::GetDelegate(
   BrowserAccessibility* wrapper = manager->GetFromID(node_id);
   if (wrapper)
     return wrapper;
+
+  return nullptr;
+}
+
+AXTreeID BrowserAccessibilityManager::GetTreeID() const {
+  return ax_tree_id();
+}
+
+AXTreeID BrowserAccessibilityManager::GetParentTreeID() const {
+  return GetTreeData().parent_tree_id;
+}
+
+ui::AXNode* BrowserAccessibilityManager::GetRootAsAXNode() const {
+  // tree_ can be null during destruction.
+  if (!tree_)
+    return nullptr;
+
+  // tree_->root() can be null during AXTreeObserver callbacks.
+  return tree_->root();
+}
+
+ui::AXNode* BrowserAccessibilityManager::GetParentNodeFromParentTreeAsAXNode()
+    const {
+  if (!GetRootAsAXNode())
+    return nullptr;
+
+  ui::AXTreeID parent_tree_id = GetParentTreeID();
+  BrowserAccessibilityManager* parent_manager =
+      BrowserAccessibilityManager::FromID(parent_tree_id);
+  if (!parent_manager)
+    return nullptr;
+
+  std::set<int32_t> host_node_ids =
+      parent_manager->ax_tree()->GetNodeIdsForChildTreeId(ax_tree_id_);
+
+#if !defined(NDEBUG)
+  if (host_node_ids.size() > 1)
+    DLOG(WARNING) << "Multiple nodes claim the same child tree id.";
+#endif
+
+  for (int32_t host_node_id : host_node_ids) {
+    ui::AXNode* parent_node =
+        parent_manager->GetNodeFromTree(parent_tree_id, host_node_id);
+    if (parent_node) {
+      DCHECK_EQ(ax_tree_id_,
+                AXTreeID::FromString(parent_node->GetStringAttribute(
+                    ax::mojom::StringAttribute::kChildTreeId)));
+      return parent_node;
+    }
+  }
 
   return nullptr;
 }

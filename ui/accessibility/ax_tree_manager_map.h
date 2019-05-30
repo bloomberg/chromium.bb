@@ -28,6 +28,10 @@ class AX_EXPORT AXTreeManagerMap {
   void RemoveTreeManager(AXTreeID tree_id);
   AXTreeManager* GetManager(AXTreeID tree_id);
 
+  // If the child of the provided parent node exists in a separate child tree,
+  // return the tree manager for that child tree. Otherwise, return nullptr.
+  AXTreeManager* GetManagerForChildTree(const AXNode& parent_node);
+
  private:
   std::unordered_map<AXTreeID, AXTreeManager*, AXTreeIDHash> map_;
 };

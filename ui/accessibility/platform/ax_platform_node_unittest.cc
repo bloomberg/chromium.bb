@@ -61,7 +61,7 @@ void AXPlatformNodeTest::Init(
 
 AXNode* AXPlatformNodeTest::GetNodeFromTree(const ui::AXTreeID tree_id,
                                             const int32_t node_id) const {
-  if (tree_->data().tree_id == tree_id)
+  if (GetTreeID() == tree_id)
     return tree_->GetFromId(node_id);
 
   return nullptr;
@@ -84,7 +84,7 @@ AXPlatformNodeDelegate* AXPlatformNodeTest::GetDelegate(
 
 AXPlatformNodeDelegate* AXPlatformNodeTest::GetRootDelegate(
     const AXTreeID tree_id) const {
-  if (tree_->data().tree_id == tree_id) {
+  if (GetTreeID() == tree_id) {
     AXNode* root_node = GetRootNode();
 
     if (root_node) {
@@ -94,6 +94,22 @@ AXPlatformNodeDelegate* AXPlatformNodeTest::GetRootDelegate(
     }
   }
 
+  return nullptr;
+}
+
+AXTreeID AXPlatformNodeTest::GetTreeID() const {
+  return tree_->data().tree_id;
+}
+
+AXTreeID AXPlatformNodeTest::GetParentTreeID() const {
+  return GetTreeID();
+}
+
+ui::AXNode* AXPlatformNodeTest::GetRootAsAXNode() const {
+  return GetRootNode();
+}
+
+ui::AXNode* AXPlatformNodeTest::GetParentNodeFromParentTreeAsAXNode() const {
   return nullptr;
 }
 

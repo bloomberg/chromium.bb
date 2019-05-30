@@ -21,6 +21,7 @@
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -67,7 +68,8 @@ void BrowserAccessibility::Init(BrowserAccessibilityManager* manager,
 }
 
 bool BrowserAccessibility::PlatformIsLeaf() const {
-  if (InternalChildCount() == 0)
+  if (!HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId) &&
+      InternalChildCount() == 0)
     return true;
 
   // These types of objects may have children that we use as internal

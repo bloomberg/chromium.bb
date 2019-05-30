@@ -121,6 +121,9 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
       const int count,
       int* units_moved);
 
+  AXPlatformNodeDelegate* GetDelegate(
+      const ui::AXPosition<ui::AXNodePosition, ui::AXNode>* position) const;
+
   CComPtr<ui::AXPlatformNodeWin> owner_;
   AXPositionInstance start_;
   AXPositionInstance end_;

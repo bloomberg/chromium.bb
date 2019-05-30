@@ -45,6 +45,10 @@ class AXPlatformNodeTest : public testing::Test, public AXTreeManager {
                                       const int32_t node_id) const override;
   AXPlatformNodeDelegate* GetRootDelegate(
       const AXTreeID tree_id) const override;
+  AXTreeID GetTreeID() const override;
+  AXTreeID GetParentTreeID() const override;
+  ui::AXNode* GetRootAsAXNode() const override;
+  ui::AXNode* GetParentNodeFromParentTreeAsAXNode() const override;
 
  protected:
   AXNode* GetRootNode() const { return tree_->root(); }
