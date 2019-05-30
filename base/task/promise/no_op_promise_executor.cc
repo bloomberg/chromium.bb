@@ -55,7 +55,7 @@ scoped_refptr<internal::AbstractPromise> NoOpPromiseExecutor::Create(
     bool can_resolve,
     bool can_reject,
     RejectPolicy reject_policy) {
-  return MakeRefCounted<internal::AbstractPromise>(
+  return internal::AbstractPromise::Create(
       nullptr, from_here, nullptr, reject_policy,
       internal::AbstractPromise::ConstructWith<
           internal::DependentList::ConstructUnresolved,

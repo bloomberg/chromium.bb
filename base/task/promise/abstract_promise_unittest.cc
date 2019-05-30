@@ -184,19 +184,17 @@ class AbstractPromiseTest : public testing::Test {
     }
 
     operator scoped_refptr<AbstractPromise>() {
-      return subtle::AdoptRefIfNeeded(
-          new AbstractPromise(
-              std::move(settings.task_runner), settings.from_here,
-              std::move(settings.prerequisites), settings.reject_policy,
-              AbstractPromise::ConstructWith<DependentList::ConstructUnresolved,
-                                             TestExecutor>(),
-              settings.prerequisite_policy,
+      return AbstractPromise::Create(
+          std::move(settings.task_runner), settings.from_here,
+          std::move(settings.prerequisites), settings.reject_policy,
+          AbstractPromise::ConstructWith<DependentList::ConstructUnresolved,
+                                         TestExecutor>(),
+          settings.prerequisite_policy,
 #if DCHECK_IS_ON()
-              settings.resolve_executor_type, settings.reject_executor_type,
-              settings.executor_can_resolve, settings.executor_can_reject,
+          settings.resolve_executor_type, settings.reject_executor_type,
+          settings.executor_can_resolve, settings.executor_can_reject,
 #endif
-              std::move(settings.callback)),
-          AbstractPromise::kRefCountPreference);
+          std::move(settings.callback));
     }
 
    private:

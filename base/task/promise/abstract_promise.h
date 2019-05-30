@@ -115,48 +115,23 @@ class BASE_EXPORT AbstractPromise
   template <typename ConstructType,
             typename DerivedExecutorType,
             typename... ExecutorArgs>
-  AbstractPromise(scoped_refptr<TaskRunner>&& task_runner,
-                  const Location& from_here,
-                  std::unique_ptr<AdjacencyList> prerequisites,
-                  RejectPolicy reject_policy,
-                  ConstructWith<ConstructType, DerivedExecutorType>,
-                  ExecutorArgs&&... executor_args) noexcept
-      : task_runner_(std::move(task_runner)),
-        from_here_(std::move(from_here)),
-        value_(in_place_type_t<Executor>(),
-               in_place_type_t<DerivedExecutorType>(),
-               std::forward<ExecutorArgs>(executor_args)...),
-#if DCHECK_IS_ON()
-        reject_policy_(reject_policy),
-        resolve_argument_passing_type_(
-            GetExecutor()->ResolveArgumentPassingType()),
-        reject_argument_passing_type_(
-            GetExecutor()->RejectArgumentPassingType()),
-        executor_can_resolve_(GetExecutor()->CanResolve()),
-        executor_can_reject_(GetExecutor()->CanReject()),
-#endif
-        dependents_(ConstructType()),
-        prerequisites_(std::move(prerequisites)) {
-#if DCHECK_IS_ON()
-    {
-      CheckedAutoLock lock(GetCheckedLock());
-      if (executor_can_resolve_) {
-        this_resolve_ =
-            MakeRefCounted<DoubleMoveDetector>(from_here_, "resolve");
-      }
-
-      if (executor_can_reject_) {
-        this_reject_ = MakeRefCounted<DoubleMoveDetector>(from_here_, "reject");
-
-        if (reject_policy_ == RejectPolicy::kMustCatchRejection) {
-          this_must_catch_ = MakeRefCounted<LocationRef>(from_here_);
-        }
-      }
-    }
-#endif
-
-    if (prerequisites_)
-      AddAsDependentForAllPrerequisites();
+  static scoped_refptr<AbstractPromise> Create(
+      scoped_refptr<TaskRunner>&& task_runner,
+      const Location& from_here,
+      std::unique_ptr<AdjacencyList> prerequisites,
+      RejectPolicy reject_policy,
+      ConstructWith<ConstructType, DerivedExecutorType> tag,
+      ExecutorArgs&&... executor_args) {
+    scoped_refptr<AbstractPromise> promise = subtle::AdoptRefIfNeeded(
+        new internal::AbstractPromise(
+            std::move(task_runner), from_here, std::move(prerequisites),
+            reject_policy, tag, std::forward<ExecutorArgs>(executor_args)...),
+        AbstractPromise::kRefCountPreference);
+    // It's important this is called after |promise| has been initialized
+    // because otherwise it could trigger a scoped_refptr destructor on another
+    // thread before this thread has had a chance to increment the refcount.
+    promise->AddAsDependentForAllPrerequisites();
+    return promise;
   }
 
   AbstractPromise(const AbstractPromise&) = delete;
@@ -453,6 +428,50 @@ class BASE_EXPORT AbstractPromise
 
  private:
   friend base::RefCountedThreadSafe<AbstractPromise>;
+
+  template <typename ConstructType,
+            typename DerivedExecutorType,
+            typename... ExecutorArgs>
+  AbstractPromise(scoped_refptr<TaskRunner>&& task_runner,
+                  const Location& from_here,
+                  std::unique_ptr<AdjacencyList> prerequisites,
+                  RejectPolicy reject_policy,
+                  ConstructWith<ConstructType, DerivedExecutorType>,
+                  ExecutorArgs&&... executor_args) noexcept
+      : task_runner_(std::move(task_runner)),
+        from_here_(std::move(from_here)),
+        value_(in_place_type_t<Executor>(),
+               in_place_type_t<DerivedExecutorType>(),
+               std::forward<ExecutorArgs>(executor_args)...),
+#if DCHECK_IS_ON()
+        reject_policy_(reject_policy),
+        resolve_argument_passing_type_(
+            GetExecutor()->ResolveArgumentPassingType()),
+        reject_argument_passing_type_(
+            GetExecutor()->RejectArgumentPassingType()),
+        executor_can_resolve_(GetExecutor()->CanResolve()),
+        executor_can_reject_(GetExecutor()->CanReject()),
+#endif
+        dependents_(ConstructType()),
+        prerequisites_(std::move(prerequisites)) {
+#if DCHECK_IS_ON()
+    {
+      CheckedAutoLock lock(GetCheckedLock());
+      if (executor_can_resolve_) {
+        this_resolve_ =
+            MakeRefCounted<DoubleMoveDetector>(from_here_, "resolve");
+      }
+
+      if (executor_can_reject_) {
+        this_reject_ = MakeRefCounted<DoubleMoveDetector>(from_here_, "reject");
+
+        if (reject_policy_ == RejectPolicy::kMustCatchRejection) {
+          this_must_catch_ = MakeRefCounted<LocationRef>(from_here_);
+        }
+      }
+    }
+#endif
+  }
 
   NOINLINE ~AbstractPromise();
 

@@ -52,7 +52,7 @@ class Promise {
   Promise(scoped_refptr<TaskRunner> task_runner,
           const Location& location,
           RejectPolicy reject_policy)
-      : abstract_promise_(MakeRefCounted<internal::AbstractPromise>(
+      : abstract_promise_(internal::AbstractPromise::Create(
             std::move(task_runner),
             location,
             nullptr,
@@ -117,24 +117,23 @@ class Promise {
             std::is_const<std::remove_reference_t<RejectCallbackArgT>>::value,
         "Google C++ Style: References in function parameters must be const.");
 
-    return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
-        MakeRefCounted<internal::AbstractPromise>(
-            std::move(task_runner), from_here,
-            std::make_unique<internal::AbstractPromise::AdjacencyList>(
-                abstract_promise_),
-            RejectPolicy::kMustCatchRejection,
-            internal::AbstractPromise::ConstructWith<
-                internal::DependentList::ConstructUnresolved,
-                internal::ThenAndCatchExecutor<
-                    OnceClosure,  // Never called.
-                    OnceCallback<typename RejectCallbackTraits::SignatureType>,
-                    internal::NoCallback, RejectType,
-                    Resolved<ReturnedPromiseResolveT>,
-                    Rejected<ReturnedPromiseRejectT>>>(),
-            OnceClosure(),
-            static_cast<
-                OnceCallback<typename RejectCallbackTraits::SignatureType>>(
-                std::forward<RejectCb>(on_reject))));
+    return Promise<ReturnedPromiseResolveT,
+                   ReturnedPromiseRejectT>(internal::AbstractPromise::Create(
+        std::move(task_runner), from_here,
+        std::make_unique<internal::AbstractPromise::AdjacencyList>(
+            abstract_promise_),
+        RejectPolicy::kMustCatchRejection,
+        internal::AbstractPromise::ConstructWith<
+            internal::DependentList::ConstructUnresolved,
+            internal::ThenAndCatchExecutor<
+                OnceClosure,  // Never called.
+                OnceCallback<typename RejectCallbackTraits::SignatureType>,
+                internal::NoCallback, RejectType,
+                Resolved<ReturnedPromiseResolveT>,
+                Rejected<ReturnedPromiseRejectT>>>(),
+        OnceClosure(),
+        static_cast<OnceCallback<typename RejectCallbackTraits::SignatureType>>(
+            std::forward<RejectCb>(on_reject))));
   }
 
   template <typename RejectCb>
@@ -196,7 +195,7 @@ class Promise {
         "Google C++ Style: References in function parameters must be const.");
 
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
-        MakeRefCounted<internal::AbstractPromise>(
+        internal::AbstractPromise::Create(
             std::move(task_runner), from_here,
             std::make_unique<internal::AbstractPromise::AdjacencyList>(
                 abstract_promise_),
@@ -291,25 +290,24 @@ class Promise {
             std::is_const<std::remove_reference_t<RejectCallbackArgT>>::value,
         "Google C++ Style: References in function parameters must be const.");
 
-    return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
-        MakeRefCounted<internal::AbstractPromise>(
-            std::move(task_runner), from_here,
-            std::make_unique<internal::AbstractPromise::AdjacencyList>(
-                abstract_promise_),
-            RejectPolicy::kMustCatchRejection,
-            internal::AbstractPromise::ConstructWith<
-                internal::DependentList::ConstructUnresolved,
-                internal::ThenAndCatchExecutor<
-                    OnceCallback<typename ResolveCallbackTraits::SignatureType>,
-                    OnceCallback<typename RejectCallbackTraits::SignatureType>,
-                    ResolveType, RejectType, Resolved<ReturnedPromiseResolveT>,
-                    Rejected<ReturnedPromiseRejectT>>>(),
-            static_cast<
-                OnceCallback<typename ResolveCallbackTraits::SignatureType>>(
-                std::forward<ResolveCb>(on_resolve)),
-            static_cast<
-                OnceCallback<typename RejectCallbackTraits::SignatureType>>(
-                std::forward<RejectCb>(on_reject))));
+    return Promise<ReturnedPromiseResolveT,
+                   ReturnedPromiseRejectT>(internal::AbstractPromise::Create(
+        std::move(task_runner), from_here,
+        std::make_unique<internal::AbstractPromise::AdjacencyList>(
+            abstract_promise_),
+        RejectPolicy::kMustCatchRejection,
+        internal::AbstractPromise::ConstructWith<
+            internal::DependentList::ConstructUnresolved,
+            internal::ThenAndCatchExecutor<
+                OnceCallback<typename ResolveCallbackTraits::SignatureType>,
+                OnceCallback<typename RejectCallbackTraits::SignatureType>,
+                ResolveType, RejectType, Resolved<ReturnedPromiseResolveT>,
+                Rejected<ReturnedPromiseRejectT>>>(),
+        static_cast<
+            OnceCallback<typename ResolveCallbackTraits::SignatureType>>(
+            std::forward<ResolveCb>(on_resolve)),
+        static_cast<OnceCallback<typename RejectCallbackTraits::SignatureType>>(
+            std::forward<RejectCb>(on_reject))));
   }
 
   template <typename ResolveCb, typename RejectCb>
@@ -353,7 +351,7 @@ class Promise {
                   "|finally_callback| callback must have no arguments");
 
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
-        MakeRefCounted<internal::AbstractPromise>(
+        internal::AbstractPromise::Create(
             std::move(task_runner), from_here,
             std::make_unique<internal::AbstractPromise::AdjacencyList>(
                 abstract_promise_),
@@ -387,7 +385,7 @@ class Promise {
       const Location& from_here,
       Args&&... args) noexcept {
     scoped_refptr<internal::AbstractPromise> promise(
-        MakeRefCounted<internal::AbstractPromise>(
+        internal::AbstractPromise::Create(
             nullptr, from_here, nullptr, RejectPolicy::kMustCatchRejection,
             internal::AbstractPromise::ConstructWith<
                 internal::DependentList::ConstructResolved,
@@ -404,7 +402,7 @@ class Promise {
       const Location& from_here,
       Args&&... args) noexcept {
     scoped_refptr<internal::AbstractPromise> promise(
-        MakeRefCounted<internal::AbstractPromise>(
+        internal::AbstractPromise::Create(
             nullptr, from_here, nullptr, RejectPolicy::kMustCatchRejection,
             internal::AbstractPromise::ConstructWith<
                 internal::DependentList::ConstructRejected,
@@ -594,7 +592,7 @@ class Promises {
       prerequisite_list[i++].prerequisite = std::move(p);
     }
     return Promise<ReturnedPromiseResolveT, ReturnedPromiseRejectT>(
-        MakeRefCounted<internal::AbstractPromise>(
+        internal::AbstractPromise::Create(
             nullptr, from_here,
             std::make_unique<internal::AbstractPromise::AdjacencyList>(
                 std::move(prerequisite_list)),

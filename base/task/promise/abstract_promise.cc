@@ -45,7 +45,8 @@ const AbstractPromise* AbstractPromise::FindNonCurriedAncestor() const {
 }
 
 void AbstractPromise::AddAsDependentForAllPrerequisites() {
-  DCHECK(prerequisites_);
+  if (!prerequisites_)
+    return;
 
   // Note a curried promise will eventually get to all its children and pass
   // them catch responsibility through AddAsDependentForAllPrerequisites,

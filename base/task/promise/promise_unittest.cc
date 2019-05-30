@@ -1635,8 +1635,7 @@ TEST_F(MultiThreadedPromiseTest, SimpleThreadHopping) {
   run_loop.Run();
 }
 
-// TODO(https://crbug.com/966964): Flakily crashes due to heap corruption.
-TEST_F(MultiThreadedPromiseTest, DISABLED_CrossThreadThens) {
+TEST_F(MultiThreadedPromiseTest, CrossThreadThens) {
   ManualPromiseResolver<void> promise_resolver(FROM_HERE);
 
   auto resolve_task =

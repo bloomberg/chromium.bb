@@ -85,7 +85,7 @@ struct AllContainerHelper<Container, Promise<ResolveType, RejectType>> {
     for (auto& promise : promises) {
       prerequisite_list[i++].prerequisite = promise.abstract_promise_;
     }
-    return PromiseType(MakeRefCounted<AbstractPromise>(
+    return PromiseType(AbstractPromise::Create(
         nullptr, from_here,
         std::make_unique<AbstractPromise::AdjacencyList>(
             std::move(prerequisite_list)),
