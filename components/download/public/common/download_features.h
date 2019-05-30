@@ -41,6 +41,10 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
 // service.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
     kUseInProgressDownloadManagerForDownloadService;
+
+// Whether download resumption is allowed when there are no strong validators.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kAllowDownloadResumptionWithoutStrongValidators;
 }  // namespace features
 }  // namespace download
 

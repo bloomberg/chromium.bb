@@ -242,6 +242,9 @@ extern const char kDisallowUnsafeHttpDownloadsNameDescription[];
 extern const char kDisplayList2dCanvasName[];
 extern const char kDisplayList2dCanvasDescription[];
 
+extern const char kDownloadResumptionWithoutStrongValidatorsName[];
+extern const char kDownloadResumptionWithoutStrongValidatorsDescription[];
+
 extern const char kEnableAccessibilityImageDescriptionsName[];
 extern const char kEnableAccessibilityImageDescriptionsDescription[];
 

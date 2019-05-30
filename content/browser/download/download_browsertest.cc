@@ -903,6 +903,81 @@ class DownloadContentTest : public ContentBrowserTest {
     return observer->WaitForFinished();
   }
 
+  // Starts a download without strong validators, interrupts it, and resumes it.
+  // If |fail_content_validation| is true, download content will change during
+  // resumption.
+  void InterruptAndResumeDownloadWithoutStrongValidators(
+      bool fail_content_validation) {
+    int validation_length = 1024;
+    base::test::ScopedFeatureList scoped_feature_list;
+    std::map<std::string, std::string> params = {
+        {download::kDownloadContentValidationLengthFinchKey,
+         base::NumberToString(validation_length)}};
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        download::features::kAllowDownloadResumptionWithoutStrongValidators,
+        params);
+    SetupErrorInjectionDownloads();
+    GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+    GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+    TestDownloadHttpResponse::Parameters parameters =
+        TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+            inject_error_callback());
+    parameters.etag.clear();
+    parameters.last_modified.clear();
+    TestDownloadHttpResponse::StartServing(parameters, server_url);
+
+    int64_t interruption_offset = parameters.injected_errors.front();
+    download::DownloadItem* download =
+        StartDownloadAndReturnItem(shell(), server_url);
+    WaitForInterrupt(download);
+
+    ASSERT_EQ(interruption_offset, download->GetReceivedBytes());
+    ASSERT_EQ(parameters.size, download->GetTotalBytes());
+
+    parameters.ClearInjectedErrors();
+    if (fail_content_validation)
+      ++parameters.pattern_generator_seed;
+    TestDownloadHttpResponse::StartServing(parameters, server_url);
+
+    // Download should complete regardless whether content changes or not.
+    download->Resume(false);
+    WaitForCompletion(download);
+
+    ASSERT_EQ(parameters.size, download->GetReceivedBytes());
+    ASSERT_EQ(parameters.size, download->GetTotalBytes());
+    ASSERT_NO_FATAL_FAILURE(ReadAndVerifyFileContents(
+        parameters.pattern_generator_seed, parameters.size,
+        download->GetTargetFilePath()));
+
+    const TestDownloadResponseHandler::CompletedRequests& requests =
+        test_response_handler()->completed_requests();
+    ASSERT_EQ(fail_content_validation ? 3u : 2u, requests.size());
+
+    // The first request only transferrs bytes up until the interruption point.
+    EXPECT_EQ(interruption_offset, requests[0]->transferred_byte_count);
+
+    // The second request is a range request.
+    std::string value;
+    ASSERT_TRUE(requests[1]->http_request.headers.find(
+                    net::HttpRequestHeaders::kIfRange) ==
+                requests[1]->http_request.headers.end());
+
+    ASSERT_TRUE(requests[1]->http_request.headers.find(
+                    net::HttpRequestHeaders::kRange) !=
+                requests[1]->http_request.headers.end());
+    EXPECT_EQ(
+        base::StringPrintf("bytes=%" PRId64 "-",
+                           interruption_offset - validation_length),
+        requests[1]->http_request.headers.at(net::HttpRequestHeaders::kRange));
+    if (fail_content_validation) {
+      // The third request is a restart request.
+      ASSERT_TRUE(requests[2]->http_request.headers.find(
+                      net::HttpRequestHeaders::kRange) ==
+                  requests[2]->http_request.headers.end());
+      EXPECT_EQ(parameters.size, requests[2]->transferred_byte_count);
+    }
+  }
+
   TestDownloadResponseHandler* test_response_handler() {
     return &test_response_handler_;
   }
@@ -1508,7 +1583,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
 }
 
 // Test resumption with a response that contains strong validators.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, StrongValidators) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithStrongValidators) {
   SetupErrorInjectionDownloads();
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
   GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
@@ -1567,6 +1642,18 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, StrongValidators) {
   EXPECT_EQ(
       base::StringPrintf("bytes=%" PRId64 "-", interruption_offset),
       requests[1]->http_request.headers.at(net::HttpRequestHeaders::kRange));
+}
+
+// Test resumption when strong validators are not present in the response.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithoutStrongValidators) {
+  InterruptAndResumeDownloadWithoutStrongValidators(false);
+}
+
+// Test resumption when strong validators are not present in the response and
+// the content of the download changes.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       ResumeWithoutStrongValidatorsAndFailValidation) {
+  InterruptAndResumeDownloadWithoutStrongValidators(true);
 }
 
 // Resumption should only attempt to contact the final URL if the download has a

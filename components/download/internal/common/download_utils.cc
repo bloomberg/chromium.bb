@@ -7,11 +7,14 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/i18n/file_util_icu.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_stats.h"
@@ -29,6 +32,14 @@
 namespace download {
 
 namespace {
+// Default value for |kDownloadContentValidationLengthFinchKey|, when no
+// parameter is specified.
+const int64_t kDefaultContentValidationLength = 1024;
+
+// If the file_offset value from SaveInfo is equal to this, no content
+// validation will be performed and download stream will be written to
+// file starting at the offset from the response.
+const int64_t kInvalidFileWriteOffset = -1;
 
 void AppendExtraHeaders(net::HttpRequestHeaders* headers,
                         DownloadUrlParameters* params) {
@@ -162,6 +173,7 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
       // The response can be HTTP 200 or other error code when
       // |fetch_error_body| is true.
       save_info->offset = 0;
+      save_info->file_offset = kInvalidFileWriteOffset;
       save_info->hash_of_partial_file.clear();
       save_info->hash_state.reset();
       return DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -312,9 +324,13 @@ std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
   bool has_etag = !params->etag().empty();
 
   // Strong validator(i.e. etag or last modified) is required in range requests
-  // for download resumption and parallel download.
-  DCHECK(has_etag || has_last_modified);
-  if (!has_etag && !has_last_modified) {
+  // for download resumption and parallel download, unless
+  // |kAllowDownloadResumptionWithoutStrongValidators| is enabled.
+  bool allow_resumption =
+      has_etag || has_last_modified ||
+      base::FeatureList::IsEnabled(
+          features::kAllowDownloadResumptionWithoutStrongValidators);
+  if (!allow_resumption) {
     DVLOG(1) << "Creating partial request without strong validators.";
     AppendExtraHeaders(headers.get(), params);
     return headers;
@@ -589,5 +605,15 @@ download::DownloadItem::DownloadRenameResult RenameDownloadedFile(
              ? download::DownloadItem::DownloadRenameResult::SUCCESS
              : download::DownloadItem::DownloadRenameResult::
                    FAILURE_NAME_INVALID;
+}
+
+int64_t GetDownloadValidationLengthConfig() {
+  std::string finch_value = base::GetFieldTrialParamValueByFeature(
+      features::kAllowDownloadResumptionWithoutStrongValidators,
+      kDownloadContentValidationLengthFinchKey);
+  int64_t result;
+  return base::StringToInt64(finch_value, &result)
+             ? result
+             : kDefaultContentValidationLength;
 }
 }  // namespace download

@@ -332,13 +332,19 @@ void TestDownloadHttpResponse::SendResponseHeaders() {
 std::string TestDownloadHttpResponse::GetDefaultResponseHeaders() {
   std::string headers;
   // Send partial response.
-  if (parameters_.support_partial_response && parameters_.support_byte_ranges &&
-      request_.headers.find(net::HttpRequestHeaders::kIfRange) !=
-          request_.headers.end() &&
-      request_.headers.at(net::HttpRequestHeaders::kIfRange) ==
-          parameters_.etag &&
-      HandleRangeAssumingValidatorMatch(headers)) {
-    return headers;
+  if (parameters_.support_partial_response && parameters_.support_byte_ranges) {
+    bool has_if_range =
+        request_.headers.find(net::HttpRequestHeaders::kIfRange) !=
+        request_.headers.end();
+    if (((has_if_range &&
+          request_.headers.at(net::HttpRequestHeaders::kIfRange) ==
+              parameters_.etag) ||
+         (!has_if_range &&
+          request_.headers.find(net::HttpRequestHeaders::kRange) !=
+              request_.headers.end())) &&
+        HandleRangeAssumingValidatorMatch(headers)) {
+      return headers;
+    }
   }
 
   // Send precondition failed for "If-Match" request header.

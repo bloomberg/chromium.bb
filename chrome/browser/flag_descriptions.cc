@@ -359,6 +359,12 @@ const char kDisallowUnsafeHttpDownloadsNameDescription[] =
     "code), where the final download origin or any origin in the redirect "
     "chain is insecure.";
 
+const char kDownloadResumptionWithoutStrongValidatorsName[] =
+    "Allow download resumption without strong validators";
+const char kDownloadResumptionWithoutStrongValidatorsDescription[] =
+    "Allows download to resume instead of restarting from the begining if "
+    "strong validators are not present.";
+
 const char kEnableAccessibilityImageDescriptionsName[] =
     "Accessibility Image Descriptions";
 const char kEnableAccessibilityImageDescriptionsDescription[] =

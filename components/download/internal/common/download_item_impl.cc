@@ -46,6 +46,7 @@
 #include "components/download/internal/common/download_job_impl.h"
 #include "components/download/internal/common/parallel_download_utils.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
@@ -1143,8 +1144,10 @@ ResumeMode DownloadItemImpl::GetResumeMode() const {
   // We also can't continue if we don't have some verifier to make sure
   // we're getting the same file.
   bool restart_required =
-      (GetFullPath().empty() || (etag_.empty() && last_modified_time_.empty()));
-
+      (GetFullPath().empty() ||
+       (etag_.empty() && last_modified_time_.empty() &&
+        !base::FeatureList::IsEnabled(
+            features::kAllowDownloadResumptionWithoutStrongValidators)));
   // We won't auto-restart if we've used up our attempts or the
   // download has been paused by user action.
   bool user_action_required =
@@ -2390,6 +2393,17 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   download_params->set_hash_of_partial_file(GetHash());
   download_params->set_hash_state(std::move(hash_state_));
   download_params->set_guid(guid_);
+  if (etag_.empty() && last_modified_time_.empty() &&
+      base::FeatureList::IsEnabled(
+          features::kAllowDownloadResumptionWithoutStrongValidators)) {
+    download_params->set_use_if_range(false);
+    download_params->set_file_offset(download_params->offset());
+    int64_t validation_length = GetDownloadValidationLengthConfig();
+    download_params->set_offset(download_params->offset() > validation_length
+                                    ? download_params->offset() -
+                                          validation_length
+                                    : 0);
+  }
 
   // TODO(xingliu): Read |fetch_error_body| and |request_headers_| from the
   // cache, and don't copy them into DownloadItemImpl.

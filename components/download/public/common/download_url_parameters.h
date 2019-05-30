@@ -180,6 +180,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   // See |DownloadSaveInfo.length|.
   void set_length(int64_t length) { save_info_.length = length; }
 
+  // Sets the offset to start writing to the file. If set, The data received
+  // before |file_offset| are discarded or are used for validation purpose.
+  void set_file_offset(int64_t file_offset) {
+    save_info_.file_offset = file_offset;
+  }
+
   // If |offset| is non-zero, then |hash_of_partial_file| contains the raw
   // SHA-256 hash of the first |offset| bytes of the target file. Only
   // meaningful if a partial file exists and is identified by either the

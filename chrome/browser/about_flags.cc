@@ -2746,6 +2746,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kDownloadRename)},
 #endif
 
+    {"download-resumption-without-strong-validators",
+     flag_descriptions::kDownloadResumptionWithoutStrongValidatorsName,
+     flag_descriptions::kDownloadResumptionWithoutStrongValidatorsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         download::features::kAllowDownloadResumptionWithoutStrongValidators)},
+
 #if defined(OS_ANDROID)
     {"new-net-error-page-ui", flag_descriptions::kNewNetErrorPageUIName,
      flag_descriptions::kNewNetErrorPageUIDescription, kOsAndroid,
