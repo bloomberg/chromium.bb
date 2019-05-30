@@ -86,13 +86,9 @@ namespace apps {
 // static
 std::unique_ptr<content::NavigationThrottle>
 AppsNavigationThrottle::MaybeCreate(content::NavigationHandle* handle) {
-  if (!handle->IsInMainFrame())
-    return nullptr;
-
   content::WebContents* web_contents = handle->GetWebContents();
   if (!CanCreate(web_contents))
     return nullptr;
-
   return std::make_unique<AppsNavigationThrottle>(handle);
 }
 
@@ -417,11 +413,14 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
 content::NavigationThrottle::ThrottleCheckResult
 AppsNavigationThrottle::HandleRequest() {
   content::NavigationHandle* handle = navigation_handle();
-  // If the navigation happened without changing document or the
+  // If the navigation is from an iframe then no intent picker check is
+  // required. If the navigation happened without changing document or the
   // navigation resulted in an error page, don't check intent for the
   // navigation.
-  if (handle->IsSameDocument() || handle->IsErrorPage())
+  if (!handle->IsInMainFrame() || handle->IsSameDocument() ||
+      handle->IsErrorPage()) {
     return content::NavigationThrottle::PROCEED;
+  }
 
   DCHECK(!ui_displayed_);
 
