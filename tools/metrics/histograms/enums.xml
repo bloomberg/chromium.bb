@@ -61627,6 +61627,7 @@ Full version information for the fingerprint enum values:
   <int value="0" label="UserConsented"/>
   <int value="1" label="UserDenied"/>
   <int value="2" label="UserAbortedConsentFlow"/>
+  <int value="3" label="UserConsentedAfterBounce"/>
 </enum>
 
 <enum name="YoungGenerationHandling">

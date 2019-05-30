@@ -344,6 +344,8 @@ component("vr_base") {
     "keyboard_delegate.h",
     "keyboard_ui_interface.h",
     "macros.h",
+    "metrics/consent_flow_metrics_helper.cc",
+    "metrics/consent_flow_metrics_helper.h",
     "metrics/metrics_helper.cc",
     "metrics/metrics_helper.h",
     "metrics/session_metrics_helper.cc",

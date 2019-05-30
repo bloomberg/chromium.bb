@@ -572,6 +572,10 @@ jumbo_split_static_library("ui") {
     deps += [ "//chrome/browser/ui/webui/discards:mojo_bindings" ]
   }
 
+  if (enable_vr && is_win) {
+    deps += [ "//chrome/browser/vr:vr_base" ]
+  }
+
   if (is_android) {
     deps += [
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",

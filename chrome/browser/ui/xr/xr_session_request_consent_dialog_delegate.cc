@@ -6,9 +6,10 @@
 
 #include <utility>
 
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
+#include "chrome/browser/vr/metrics/consent_flow_metrics_helper.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 
@@ -18,7 +19,10 @@ XrSessionRequestConsentDialogDelegate::XrSessionRequestConsentDialogDelegate(
     content::WebContents* web_contents,
     base::OnceCallback<void(bool)> response_callback)
     : TabModalConfirmDialogDelegate(web_contents),
-      response_callback_(std::move(response_callback)) {}
+      response_callback_(std::move(response_callback)),
+      url_(web_contents->GetLastCommittedURL().GetAsReferrer().spec()),
+      metrics_helper_(
+          ConsentFlowMetricsHelper::InitFromWebContents(web_contents)) {}
 
 XrSessionRequestConsentDialogDelegate::
     ~XrSessionRequestConsentDialogDelegate() = default;
@@ -41,48 +45,33 @@ base::string16 XrSessionRequestConsentDialogDelegate::GetCancelButtonTitle() {
 }
 
 void XrSessionRequestConsentDialogDelegate::OnAccepted() {
-  std::move(response_callback_).Run(true);
-  LogUserAction(ConsentDialogAction::kUserAllowed);
-  LogConsentFlowDurationWhenConsentGranted();
+  OnUserActionTaken(true);
+  metrics_helper_->LogUserAction(
+      ConsentFlowMetricsHelper::ConsentDialogAction::kUserAllowed);
+  metrics_helper_->LogConsentFlowDurationWhenConsentGranted();
 }
 
 void XrSessionRequestConsentDialogDelegate::OnCanceled() {
-  std::move(response_callback_).Run(false);
-  LogUserAction(ConsentDialogAction::kUserDenied);
-  LogConsentFlowDurationWhenConsentNotGranted();
+  OnUserActionTaken(false);
+  metrics_helper_->LogUserAction(
+      ConsentFlowMetricsHelper::ConsentDialogAction::kUserDenied);
+  metrics_helper_->LogConsentFlowDurationWhenConsentNotGranted();
 }
 
 void XrSessionRequestConsentDialogDelegate::OnClosed() {
-  std::move(response_callback_).Run(false);
-  LogUserAction(ConsentDialogAction::kUserAbortedConsentFlow);
-  LogConsentFlowDurationWhenUserAborted();
+  OnUserActionTaken(false);
+  metrics_helper_->LogUserAction(
+      ConsentFlowMetricsHelper::ConsentDialogAction::kUserAbortedConsentFlow);
+  metrics_helper_->LogConsentFlowDurationWhenUserAborted();
+}
+
+void XrSessionRequestConsentDialogDelegate::OnUserActionTaken(bool allow) {
+  std::move(response_callback_).Run(allow);
+  metrics_helper_->OnDialogClosedWithConsent(url_, allow);
 }
 
 void XrSessionRequestConsentDialogDelegate::OnShowDialog() {
-  dialog_presented_at_ = base::TimeTicks::Now();
-}
-
-void XrSessionRequestConsentDialogDelegate::LogUserAction(
-    ConsentDialogAction action) {
-  UMA_HISTOGRAM_ENUMERATION("XR.WebXR.ConsentFlow", action);
-}
-
-void XrSessionRequestConsentDialogDelegate::
-    LogConsentFlowDurationWhenConsentGranted() {
-  UMA_HISTOGRAM_MEDIUM_TIMES("XR.WebXR.ConsentFlowDuration.ConsentGranted",
-                             base::TimeTicks::Now() - dialog_presented_at_);
-}
-
-void XrSessionRequestConsentDialogDelegate::
-    LogConsentFlowDurationWhenConsentNotGranted() {
-  UMA_HISTOGRAM_MEDIUM_TIMES("XR.WebXR.ConsentFlowDuration.ConsentNotGranted",
-                             base::TimeTicks::Now() - dialog_presented_at_);
-}
-
-void XrSessionRequestConsentDialogDelegate::
-    LogConsentFlowDurationWhenUserAborted() {
-  UMA_HISTOGRAM_MEDIUM_TIMES("XR.WebXR.ConsentFlowDuration.ConsentFlowAborted",
-                             base::TimeTicks::Now() - dialog_presented_at_);
+  metrics_helper_->OnShowDialog();
 }
 
 base::Optional<int>

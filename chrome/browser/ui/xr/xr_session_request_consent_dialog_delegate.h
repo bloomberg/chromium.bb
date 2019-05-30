@@ -5,7 +5,11 @@
 #ifndef CHROME_BROWSER_UI_XR_XR_SESSION_REQUEST_CONSENT_DIALOG_DELEGATE_H_
 #define CHROME_BROWSER_UI_XR_XR_SESSION_REQUEST_CONSENT_DIALOG_DELEGATE_H_
 
+#include <map>
+#include <string>
+
 #include "base/callback.h"
+#include "base/optional.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 
 namespace content {
@@ -13,6 +17,8 @@ class WebContents;
 }
 
 namespace vr {
+
+class ConsentFlowMetricsHelper;
 
 // Delegate to return appropriate strings for UI elements, and handle user's
 // responses from a TabModalConfirmDialog.
@@ -37,36 +43,19 @@ class XrSessionRequestConsentDialogDelegate
   void OnShowDialog();
 
  private:
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused. Adding a value at the end is okay.
-  enum class ConsentDialogAction : int {
-    // The user gave permission to enter an immersive presentation.
-    kUserAllowed = 0,
-    // The user denied permission to enter an immersive presentation.
-    kUserDenied = 1,
-    // The user aborted the consent flow by clicking on the permission
-    // dialog's 'X' system button.
-    kUserAbortedConsentFlow = 2,
-    // To insert a new enum, assign the next numeric value to it, and replace
-    // the value of of this enum with the value of the added enum.
-    kMaxValue = kUserAbortedConsentFlow,
-  };
-
   // TabModalConfirmDialogDelegate:
   void OnAccepted() override;
   void OnCanceled() override;
   void OnClosed() override;
 
-  // Metrics helpers
-  void LogUserAction(ConsentDialogAction action);
-  void LogConsentFlowDurationWhenConsentGranted();
-  void LogConsentFlowDurationWhenConsentNotGranted();
-  void LogConsentFlowDurationWhenUserAborted();
+  void OnUserActionTaken(bool allow);
 
   base::OnceCallback<void(bool)> response_callback_;
 
+  std::string url_;
+
   // Metrics related
-  base::TimeTicks dialog_presented_at_;
+  ConsentFlowMetricsHelper* metrics_helper_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(XrSessionRequestConsentDialogDelegate);
 };

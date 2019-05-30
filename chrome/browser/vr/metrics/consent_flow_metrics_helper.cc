@@ -1,0 +1,67 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/vr/metrics/consent_flow_metrics_helper.h"
+
+#include "base/metrics/histogram_macros.h"
+
+namespace vr {
+namespace {
+static constexpr base::TimeDelta kUserActionBounceTime =
+    base::TimeDelta::FromMinutes(1);
+}  // namespace
+
+ConsentFlowMetricsHelper::ConsentFlowMetricsHelper() = default;
+ConsentFlowMetricsHelper::~ConsentFlowMetricsHelper() = default;
+
+// static
+ConsentFlowMetricsHelper* ConsentFlowMetricsHelper::InitFromWebContents(
+    content::WebContents* contents) {
+  ConsentFlowMetricsHelper::CreateForWebContents(contents);
+  return ConsentFlowMetricsHelper::FromWebContents(contents);
+}
+
+ConsentFlowMetricsHelper::ConsentFlowMetricsHelper(
+    content::WebContents* contents) {}
+
+void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenConsentGranted() {
+  UMA_HISTOGRAM_MEDIUM_TIMES("XR.WebXR.ConsentFlowDuration.ConsentGranted",
+                             base::TimeTicks::Now() - dialog_presented_at_);
+}
+
+void ConsentFlowMetricsHelper::LogUserAction(ConsentDialogAction action) {
+  UMA_HISTOGRAM_ENUMERATION("XR.WebXR.ConsentFlow", action);
+}
+
+void ConsentFlowMetricsHelper::OnDialogClosedWithConsent(const std::string& url,
+                                                         bool is_granted) {
+  if (is_granted && previous_consent_ && previous_consent_flow_end_time_ &&
+      (last_visited_url_ == url)) {
+    if (!previous_consent_.value() &&
+        (base::Time::Now() - previous_consent_flow_end_time_.value()) <
+            kUserActionBounceTime)
+      LogUserAction(ConsentDialogAction::kUserAllowedAfterBounce);
+  }
+
+  previous_consent_ = is_granted;
+  last_visited_url_ = url;
+  previous_consent_flow_end_time_ = base::Time::Now();
+}
+
+void ConsentFlowMetricsHelper::OnShowDialog() {
+  dialog_presented_at_ = base::TimeTicks::Now();
+}
+
+void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenConsentNotGranted() {
+  UMA_HISTOGRAM_MEDIUM_TIMES("XR.WebXR.ConsentFlowDuration.ConsentNotGranted",
+                             base::TimeTicks::Now() - dialog_presented_at_);
+}
+
+void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenUserAborted() {
+  UMA_HISTOGRAM_MEDIUM_TIMES("XR.WebXR.ConsentFlowDuration.ConsentFlowAborted",
+                             base::TimeTicks::Now() - dialog_presented_at_);
+}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ConsentFlowMetricsHelper)
+}  // namespace vr
