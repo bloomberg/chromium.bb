@@ -195,7 +195,7 @@ class BASE_EXPORT TaskTraits {
             trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>{},
             args...)),
         priority_(
-            trait_helpers::GetEnum<TaskPriority, TaskPriority::USER_VISIBLE>(
+            trait_helpers::GetEnum<TaskPriority, TaskPriority::USER_BLOCKING>(
                 args...)),
         shutdown_behavior_(
             trait_helpers::GetEnum<TaskShutdownBehavior,

@@ -118,11 +118,13 @@ class BrowserTaskTraitsMappingTest : public BrowserTaskExecutorTest {
     EXPECT_EQ(GetQueueType({ID, BrowserTaskType::kBootstrap}),
               QueueType::kBootstrap);
     EXPECT_EQ(GetQueueType({ID, BrowserTaskType::kDefault}),
-              QueueType::kDefault);
+              QueueType::kUserBlocking);
     EXPECT_EQ(GetQueueType({ID, BrowserTaskType::kNavigation}),
               QueueType::kNavigationAndPreconnection);
     EXPECT_EQ(GetQueueType({ID, BrowserTaskType::kPreconnect}),
               QueueType::kNavigationAndPreconnection);
+
+    EXPECT_EQ(GetQueueType({ID}), QueueType::kUserBlocking);
   }
 
  private:

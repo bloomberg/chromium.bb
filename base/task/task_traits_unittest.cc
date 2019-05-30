@@ -11,7 +11,7 @@ namespace base {
 TEST(TaskTraitsTest, Default) {
   constexpr TaskTraits traits = {};
   EXPECT_FALSE(traits.priority_set_explicitly());
-  EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
+  EXPECT_EQ(TaskPriority::USER_BLOCKING, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
   EXPECT_EQ(ThreadPolicy::PREFER_BACKGROUND, traits.thread_policy());
   EXPECT_FALSE(traits.may_block());
@@ -31,7 +31,7 @@ TEST(TaskTraitsTest, TaskPriority) {
 TEST(TaskTraitsTest, TaskShutdownBehavior) {
   constexpr TaskTraits traits = {TaskShutdownBehavior::BLOCK_SHUTDOWN};
   EXPECT_FALSE(traits.priority_set_explicitly());
-  EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
+  EXPECT_EQ(TaskPriority::USER_BLOCKING, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::BLOCK_SHUTDOWN, traits.shutdown_behavior());
   EXPECT_EQ(ThreadPolicy::PREFER_BACKGROUND, traits.thread_policy());
   EXPECT_FALSE(traits.may_block());
@@ -41,7 +41,7 @@ TEST(TaskTraitsTest, TaskShutdownBehavior) {
 TEST(TaskTraitsTest, ThreadPolicy) {
   constexpr TaskTraits traits = {ThreadPolicy::MUST_USE_FOREGROUND};
   EXPECT_FALSE(traits.priority_set_explicitly());
-  EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
+  EXPECT_EQ(TaskPriority::USER_BLOCKING, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
   EXPECT_EQ(ThreadPolicy::MUST_USE_FOREGROUND, traits.thread_policy());
   EXPECT_FALSE(traits.may_block());
@@ -51,7 +51,7 @@ TEST(TaskTraitsTest, ThreadPolicy) {
 TEST(TaskTraitsTest, MayBlock) {
   constexpr TaskTraits traits = {MayBlock()};
   EXPECT_FALSE(traits.priority_set_explicitly());
-  EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
+  EXPECT_EQ(TaskPriority::USER_BLOCKING, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
   EXPECT_EQ(ThreadPolicy::PREFER_BACKGROUND, traits.thread_policy());
   EXPECT_TRUE(traits.may_block());
@@ -61,7 +61,7 @@ TEST(TaskTraitsTest, MayBlock) {
 TEST(TaskTraitsTest, WithBaseSyncPrimitives) {
   constexpr TaskTraits traits = {WithBaseSyncPrimitives()};
   EXPECT_FALSE(traits.priority_set_explicitly());
-  EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
+  EXPECT_EQ(TaskPriority::USER_BLOCKING, traits.priority());
   EXPECT_EQ(TaskShutdownBehavior::SKIP_ON_SHUTDOWN, traits.shutdown_behavior());
   EXPECT_EQ(ThreadPolicy::PREFER_BACKGROUND, traits.thread_policy());
   EXPECT_FALSE(traits.may_block());
