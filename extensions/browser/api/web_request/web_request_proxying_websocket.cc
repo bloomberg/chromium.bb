@@ -144,8 +144,8 @@ void WebRequestProxyingWebSocket::SendFrame(
   proxied_socket_->SendFrame(fin, type, data);
 }
 
-void WebRequestProxyingWebSocket::SendFlowControl(int64_t quota) {
-  proxied_socket_->SendFlowControl(quota);
+void WebRequestProxyingWebSocket::AddReceiveFlowControlQuota(int64_t quota) {
+  proxied_socket_->AddReceiveFlowControlQuota(quota);
 }
 
 void WebRequestProxyingWebSocket::StartClosingHandshake(

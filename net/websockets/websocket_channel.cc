@@ -392,7 +392,7 @@ WebSocketChannel::ChannelState WebSocketChannel::SendFrame(
   // |this| may have been deleted.
 }
 
-ChannelState WebSocketChannel::SendFlowControl(int64_t quota) {
+ChannelState WebSocketChannel::AddReceiveFlowControlQuota(int64_t quota) {
   DCHECK(state_ == CONNECTING || state_ == CONNECTED || state_ == SEND_CLOSED ||
          state_ == CLOSE_WAIT);
   // TODO(ricea): Kill the renderer if it tries to send us a negative quota

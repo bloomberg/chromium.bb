@@ -519,19 +519,20 @@ void WebSocketChannelImpl::ProcessSendQueue() {
     client_->DidConsumeBufferedAmount(consumed_buffered_amount);
 }
 
-void WebSocketChannelImpl::FlowControlIfNecessary() {
+void WebSocketChannelImpl::AddReceiveFlowControlIfNecessary() {
   if (!handle_ || received_data_size_for_flow_control_ <
                       kReceivedDataSizeForFlowControlHighWaterMark) {
     return;
   }
-  handle_->FlowControl(received_data_size_for_flow_control_);
+  handle_->AddReceiveFlowControlQuota(received_data_size_for_flow_control_);
   received_data_size_for_flow_control_ = 0;
 }
 
-void WebSocketChannelImpl::InitialFlowControl() {
+void WebSocketChannelImpl::InitialReceiveFlowControl() {
   DCHECK_EQ(received_data_size_for_flow_control_, 0u);
   DCHECK(handle_);
-  handle_->FlowControl(kReceivedDataSizeForFlowControlHighWaterMark * 2);
+  handle_->AddReceiveFlowControlQuota(
+      kReceivedDataSizeForFlowControlHighWaterMark * 2);
 }
 
 void WebSocketChannelImpl::AbortAsyncOperations() {
@@ -575,7 +576,7 @@ void WebSocketChannelImpl::DidConnect(WebSocketHandle* handle,
     return;
   }
 
-  InitialFlowControl();
+  InitialReceiveFlowControl();
 
   handshake_throttle_.reset();
 
@@ -664,7 +665,7 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
 
   receiving_message_data_.Append(data, SafeCast<uint32_t>(size));
   received_data_size_for_flow_control_ += size;
-  FlowControlIfNecessary();
+  AddReceiveFlowControlIfNecessary();
   if (!fin) {
     return;
   }
@@ -756,7 +757,7 @@ void WebSocketChannelImpl::OnCompletion(
   if (connect_info_) {
     // No flow control quota is supplied to the browser until we are ready to
     // receive messages. This fixes crbug.com/786776.
-    InitialFlowControl();
+    InitialReceiveFlowControl();
 
     client_->DidConnect(std::move(connect_info_->selected_protocol),
                         std::move(connect_info_->extensions));

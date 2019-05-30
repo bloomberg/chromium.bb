@@ -145,8 +145,8 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel,
                     wtf_size_t total_size,
                     uint64_t* consumed_buffered_amount);
   void ProcessSendQueue();
-  void FlowControlIfNecessary();
-  void InitialFlowControl();
+  void AddReceiveFlowControlIfNecessary();
+  void InitialReceiveFlowControl();
   void FailAsError(const String& reason) {
     Fail(reason, mojom::ConsoleMessageLevel::kError,
          location_at_construction_->Clone());

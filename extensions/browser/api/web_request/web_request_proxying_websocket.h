@@ -65,7 +65,7 @@ class WebRequestProxyingWebSocket
   void SendFrame(bool fin,
                  network::mojom::WebSocketMessageType type,
                  const std::vector<uint8_t>& data) override;
-  void SendFlowControl(int64_t quota) override;
+  void AddReceiveFlowControlQuota(int64_t quota) override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
   // mojom::WebSocketClient methods:

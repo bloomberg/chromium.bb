@@ -88,7 +88,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   void SendFrame(bool fin,
                  mojom::WebSocketMessageType type,
                  const std::vector<uint8_t>& data) override;
-  void SendFlowControl(int64_t quota) override;
+  void AddReceiveFlowControlQuota(int64_t quota) override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
   bool handshake_succeeded() const { return handshake_succeeded_; }
@@ -168,9 +168,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // Delay used for per-renderer WebSocket throttling.
   base::TimeDelta delay_;
 
-  // SendFlowControl() is delayed when OnFlowControl() is called before
-  // AddChannel() is called.
-  // Zero indicates there is no pending SendFlowControl().
+  // AddReceiveFlowControlQuota() is delayed when OnFlowControl() is called
+  // before AddChannel() is called.
+  // Zero indicates there is no pending AddReceiveFlowControlQuota().
   int64_t pending_flow_control_quota_;
 
   uint32_t options_;

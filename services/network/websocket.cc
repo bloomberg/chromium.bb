@@ -422,9 +422,9 @@ void WebSocket::SendFrame(bool fin,
                       data.size());
 }
 
-void WebSocket::SendFlowControl(int64_t quota) {
-  DVLOG(3) << "WebSocket::OnFlowControl @" << reinterpret_cast<void*>(this)
-           << " quota=" << quota;
+void WebSocket::AddReceiveFlowControlQuota(int64_t quota) {
+  DVLOG(3) << "WebSocket::AddReceiveFlowControlQuota @"
+           << reinterpret_cast<void*>(this) << " quota=" << quota;
 
   if (!channel_) {
     // WebSocketChannel is not yet created due to the delay introduced by
@@ -434,7 +434,7 @@ void WebSocket::SendFlowControl(int64_t quota) {
     return;
   }
 
-  ignore_result(channel_->SendFlowControl(quota));
+  ignore_result(channel_->AddReceiveFlowControlQuota(quota));
 }
 
 void WebSocket::StartClosingHandshake(uint16_t code,
@@ -548,7 +548,7 @@ void WebSocket::AddChannel(
   channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
                                   site_for_cookies, headers_to_pass);
   if (quota > 0)
-    SendFlowControl(quota);
+    AddReceiveFlowControlQuota(quota);
 }
 
 void WebSocket::OnAuthRequiredComplete(
