@@ -17,7 +17,7 @@
 
   const results = await Audits2TestRunner.waitForResults();
   TestRunner.addResult(`\n=============== Lighthouse Results ===============`);
-  TestRunner.addResult(`disableDeviceEmulation: ${results.configSettings.disableDeviceEmulation}`);
+  TestRunner.addResult(`emulatedFormFactor: ${results.configSettings.emulatedFormFactor}`);
   TestRunner.addResult(`disableStorageReset: ${results.configSettings.disableStorageReset}`);
   TestRunner.addResult(`throttlingMethod: ${results.configSettings.throttlingMethod}`);
 
