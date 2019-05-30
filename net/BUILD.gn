@@ -1667,6 +1667,7 @@ component("net") {
       "third_party/quiche/src/quic/platform/api/quic_mem_slice_storage.h",
       "third_party/quiche/src/quic/platform/api/quic_mutex.cc",
       "third_party/quiche/src/quic/platform/api/quic_mutex.h",
+      "third_party/quiche/src/quic/platform/api/quic_optional.h",
       "third_party/quiche/src/quic/platform/api/quic_pcc_sender.h",
       "third_party/quiche/src/quic/platform/api/quic_prefetch.h",
       "third_party/quiche/src/quic/platform/api/quic_ptr_util.h",
@@ -3164,6 +3165,7 @@ if (is_linux) {
 
   executable("epoll_quic_client") {
     sources = [
+      "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
       "third_party/quiche/src/quic/tools/quic_client_bin.cc",
       "third_party/quiche/src/quic/tools/quic_epoll_client_factory.cc",
       "third_party/quiche/src/quic/tools/quic_epoll_client_factory.h",
@@ -3491,8 +3493,6 @@ source_set("simple_quic_tools") {
     "third_party/quiche/src/quic/core/quic_process_packet_interface.h",
     "third_party/quiche/src/quic/core/quic_time_wait_list_manager.cc",
     "third_party/quiche/src/quic/core/quic_time_wait_list_manager.h",
-    "third_party/quiche/src/quic/core/stateless_rejector.cc",
-    "third_party/quiche/src/quic/core/stateless_rejector.h",
     "third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h",
     "third_party/quiche/src/quic/platform/api/quic_system_event_loop.h",
     "third_party/quiche/src/quic/tools/quic_backend_response.cc",
@@ -3548,6 +3548,7 @@ source_set("simple_quic_tools") {
 if (!is_ios) {
   executable("quic_client") {
     sources = [
+      "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
       "third_party/quiche/src/quic/tools/quic_toy_client.cc",
       "third_party/quiche/src/quic/tools/quic_toy_client.h",
       "tools/quic/quic_simple_client_bin.cc",
@@ -5414,6 +5415,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/quic_packet_creator_test.cc",
     "third_party/quiche/src/quic/core/quic_packet_generator_test.cc",
     "third_party/quiche/src/quic/core/quic_packet_number_test.cc",
+    "third_party/quiche/src/quic/core/quic_packets_test.cc",
     "third_party/quiche/src/quic/core/quic_received_packet_manager_test.cc",
     "third_party/quiche/src/quic/core/quic_sent_packet_manager_test.cc",
     "third_party/quiche/src/quic/core/quic_server_id_test.cc",
@@ -5683,7 +5685,6 @@ test("net_unittests") {
       "third_party/quiche/src/quic/core/http/quic_spdy_server_stream_base_test.cc",
       "third_party/quiche/src/quic/core/quic_epoll_alarm_factory_test.cc",
       "third_party/quiche/src/quic/core/quic_epoll_connection_helper_test.cc",
-      "third_party/quiche/src/quic/core/stateless_rejector_test.cc",
       "third_party/quiche/src/quic/tools/quic_client_test.cc",
       "third_party/quiche/src/quic/tools/quic_memory_cache_backend_test.cc",
       "third_party/quiche/src/quic/tools/quic_server_test.cc",
