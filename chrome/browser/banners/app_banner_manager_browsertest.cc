@@ -117,6 +117,18 @@ class AppBannerManagerTest : public AppBannerManager {
 
   void InvalidateWeakPtrs() override { weak_factory_.InvalidateWeakPtrs(); }
 
+  bool IsSupportedAppPlatform(const base::string16& platform) const override {
+    return base::EqualsASCII(platform, "chrome_web_store");
+  }
+
+  bool IsRelatedAppInstalled(
+      const blink::Manifest::RelatedApplication& related_app) const override {
+    // Corresponds to the id listed in manifest_listing_related_chrome_app.json.
+    return base::EqualsASCII(related_app.platform.string(),
+                             "chrome_web_store") &&
+           base::EqualsASCII(related_app.id.string(), "installed-extension-id");
+  }
+
  private:
   base::Closure on_done_;
 
@@ -468,18 +480,45 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerReprompt) {
                                 SHOWING_WEB_APP_BANNER, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, PreferRelatedApplications) {
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, PreferRelatedAppUnknown) {
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/manifest_test_page.html?manifest="
+      "manifest_prefer_related_apps_unknown.json");
+  TriggerBannerFlowWithNavigation(browser(), manager.get(), test_url,
+                                  false /* expected_will_show */,
+                                  State::PENDING_ENGAGEMENT);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, PreferRelatedChromeApp) {
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   base::HistogramTester histograms;
 
   GURL test_url = embedded_test_server()->GetURL(
       "/banners/manifest_test_page.html?manifest="
-      "manifest_prefer_related_apps_empty.json");
+      "manifest_prefer_related_chrome_app.json");
   TriggerBannerFlowWithNavigation(browser(), manager.get(), test_url,
                                   false /* expected_will_show */,
                                   State::COMPLETE);
+  histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
+                                PREFER_RELATED_APPLICATIONS, 1);
+}
 
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
+                       ListedRelatedChromeAppInstalled) {
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  base::HistogramTester histograms;
+
+  GURL test_url = embedded_test_server()->GetURL(
+      "/banners/manifest_test_page.html?manifest="
+      "manifest_listing_related_chrome_app.json");
+  TriggerBannerFlowWithNavigation(browser(), manager.get(), test_url,
+                                  false /* expected_will_show */,
+                                  State::COMPLETE);
   histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
                                 PREFER_RELATED_APPLICATIONS, 1);
 }

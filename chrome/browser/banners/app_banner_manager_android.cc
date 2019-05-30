@@ -386,6 +386,18 @@ void AppBannerManagerAndroid::HideAmbientBadge() {
     infobar_service->RemoveInfoBar(ambient_badge_infobar);
 }
 
+bool AppBannerManagerAndroid::IsSupportedAppPlatform(
+    const base::string16& platform) const {
+  // TODO(https://crbug.com/949430): Implement for Android apps.
+  return false;
+}
+
+bool AppBannerManagerAndroid::IsRelatedAppInstalled(
+    const blink::Manifest::RelatedApplication& related_app) const {
+  // TODO(https://crbug.com/949430): Implement for Android apps.
+  return false;
+}
+
 base::WeakPtr<AppBannerManager> AppBannerManagerAndroid::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

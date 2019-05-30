@@ -175,6 +175,10 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns whether the site is already installed as a web app.
   bool CheckIfInstalled();
 
+  // Returns whether the site would prefer a related application be installed
+  // instead of the PWA or a related application is already installed.
+  bool ShouldDeferToRelatedApplication() const;
+
   // Return a string identifying this app for metrics.
   virtual std::string GetAppIdentifier();
 
@@ -194,6 +198,14 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns true if the kBypassAppBannerEngagementChecks flag is set.
   bool ShouldBypassEngagementChecks() const;
+
+  // Returns whether installation of apps from |platform| is supported on the
+  // current device.
+  virtual bool IsSupportedAppPlatform(const base::string16& platform) const = 0;
+
+  // Returns whether |related_app| is already installed.
+  virtual bool IsRelatedAppInstalled(
+      const blink::Manifest::RelatedApplication& related_app) const = 0;
 
   // Returns true if the web app at |start_url| has already been installed, or
   // should be considered installed. On Android, we rely on a heuristic that

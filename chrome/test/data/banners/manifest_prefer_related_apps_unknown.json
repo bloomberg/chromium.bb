@@ -1,5 +1,5 @@
 {
-  "name": "Manifest prefer related apps empty",
+  "name": "Manifest prefer related apps unknown",
   "icons": [
     {
       "src": "/banners/image-512px.png",
@@ -10,5 +10,9 @@
   "scope": ".",
   "start_url": ".",
   "display": "standalone",
-  "prefer_related_applications": true
+  "prefer_related_applications": true,
+  "related_applications": [{
+    "platform": "unknown platform",
+    "id": "abcdef"
+  }]
 }

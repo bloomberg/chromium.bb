@@ -9,6 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -25,10 +26,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/referrer.h"
 #include "extensions/browser/extension_system.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "ui/gfx/color_utils.h"
 
-class PwaInstallViewBrowserTest : public InProcessBrowserTest {
+class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   PwaInstallViewBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
@@ -39,13 +42,16 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
         features::kDesktopPWAsOmniboxInstall);
 
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
+    https_server_.RegisterRequestHandler(
+        base::BindRepeating(&PwaInstallViewBrowserTest::RequestInterceptor,
+                            base::Unretained(this)));
     ASSERT_TRUE(https_server_.Start());
 
-    InProcessBrowserTest::SetUp();
+    extensions::ExtensionBrowserTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitchASCII(
         network::switches::kUnsafelyTreatInsecureOriginAsSecure,
@@ -53,6 +59,8 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
+
     pwa_install_view_ =
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar_button_provider()
@@ -64,6 +72,17 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
     app_banner_manager_ =
         banners::TestAppBannerManagerDesktop::CreateForWebContents(
             web_contents_);
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> RequestInterceptor(
+      const net::test_server::HttpRequest& request) {
+    if (request.relative_url != intercept_request_path_)
+      return nullptr;
+    auto http_response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    http_response->set_code(net::HTTP_FOUND);
+    http_response->set_content(intercept_request_response_);
+    return std::move(http_response);
   }
 
   content::WebContents* GetCurrentTab() {
@@ -157,7 +176,10 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+
   net::EmbeddedTestServer https_server_;
+  std::string intercept_request_path_;
+  std::string intercept_request_response_;
 
   PageActionIconView* pwa_install_view_ = nullptr;
   content::WebContents* web_contents_ = nullptr;
@@ -327,19 +349,69 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, BouncedInstallIgnored) {
   TestInstallBounce(base::TimeDelta::FromMinutes(70), 0);
 }
 
-// Omnibox install button shouldn't show for a PWA that prefers a related app
-// over the web app.
-IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
-                       SuppressForPreferredRelatedApp) {
+// Omnibox install promotion should show if there are no viable related apps
+// even if prefer_related_applications is true.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, PreferRelatedAppUnknown) {
   NavigateToURL(
       https_server_.GetURL("/banners/manifest_test_page.html?manifest="
-                           "manifest_prefer_related_apps_empty.json"));
+                           "manifest_prefer_related_apps_unknown.json"));
   ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
-  EXPECT_FALSE(pwa_install_view_->GetVisible());
 
-  // Site should still be considered installable even if it's not promoted in
-  // the omnibox.
+  EXPECT_TRUE(pwa_install_view_->GetVisible());
+}
+
+// Omnibox install promotion should not show if prefer_related_applications is
+// false but a related Chrome app is installed.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, PreferRelatedChromeApp) {
+  NavigateToURL(
+      https_server_.GetURL("/banners/manifest_test_page.html?manifest="
+                           "manifest_prefer_related_chrome_app.json"));
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+
+  EXPECT_FALSE(pwa_install_view_->GetVisible());
   EXPECT_TRUE(base::EqualsASCII(
       banners::AppBannerManager::GetInstallableWebAppName(web_contents_),
-      "Manifest prefer related apps empty"));
+      "Manifest prefer related chrome app"));
+}
+
+// Omnibox install promotion should not show if prefer_related_applications is
+// true and a Chrome app listed as related.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
+                       ListedRelatedChromeAppInstalled) {
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("app"));
+
+  intercept_request_path_ = "/banners/manifest_listing_related_chrome_app.json";
+  intercept_request_response_ = R"(
+    {
+      "name": "Manifest listing related chrome app",
+      "icons": [
+        {
+          "src": "/banners/image-512px.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ],
+      "scope": ".",
+      "start_url": ".",
+      "display": "standalone",
+      "prefer_related_applications": false,
+      "related_applications": [{
+        "platform": "chrome_web_store",
+        "id": ")";
+  intercept_request_response_ += extension->id();
+  intercept_request_response_ += R"(",
+        "comment": "This is the id of test/data/extensions/app"
+      }]
+    }
+  )";
+
+  NavigateToURL(https_server_.GetURL(
+      "/banners/manifest_test_page.html?manifest=" + intercept_request_path_));
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+
+  EXPECT_FALSE(pwa_install_view_->GetVisible());
+  EXPECT_TRUE(base::EqualsASCII(
+      banners::AppBannerManager::GetInstallableWebAppName(web_contents_),
+      "Manifest listing related chrome app"));
 }

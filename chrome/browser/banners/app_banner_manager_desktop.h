@@ -12,6 +12,10 @@
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace extensions {
+class ExtensionRegistry;
+}
+
 namespace web_app {
 enum class InstallResultCode;
 }
@@ -37,6 +41,9 @@ class AppBannerManagerDesktop
   // AppBannerManager overrides.
   base::WeakPtr<AppBannerManager> GetWeakPtr() override;
   void InvalidateWeakPtrs() override;
+  bool IsSupportedAppPlatform(const base::string16& platform) const override;
+  bool IsRelatedAppInstalled(
+      const blink::Manifest::RelatedApplication& related_app) const override;
 
   // Called when the web app install initiated by a banner has completed.
   virtual void DidFinishCreatingWebApp(const web_app::AppId& app_id,
@@ -65,6 +72,7 @@ class AppBannerManagerDesktop
 
   void CreateWebApp(WebappInstallSource install_source);
 
+  extensions::ExtensionRegistry* extension_registry_;
   base::WeakPtrFactory<AppBannerManagerDesktop> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

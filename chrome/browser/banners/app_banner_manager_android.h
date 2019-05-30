@@ -110,6 +110,9 @@ class AppBannerManagerAndroid
   void MaybeShowAmbientBadge() override;
   base::WeakPtr<AppBannerManager> GetWeakPtr() override;
   void InvalidateWeakPtrs() override;
+  bool IsSupportedAppPlatform(const base::string16& platform) const override;
+  bool IsRelatedAppInstalled(
+      const blink::Manifest::RelatedApplication& related_app) const override;
 
  private:
   friend class content::WebContentsUserData<AppBannerManagerAndroid>;

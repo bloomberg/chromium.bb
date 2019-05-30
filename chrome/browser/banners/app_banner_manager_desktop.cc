@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
@@ -17,9 +18,14 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 
 namespace {
+
+// Platform values defined in:
+// https://github.com/w3c/manifest/wiki/Platforms
+const char kPlatformChromeWebStore[] = "chrome_web_store";
 
 bool gDisableTriggeringForTesting = false;
 
@@ -39,7 +45,9 @@ void AppBannerManagerDesktop::DisableTriggeringForTesting() {
 
 AppBannerManagerDesktop::AppBannerManagerDesktop(
     content::WebContents* web_contents)
-    : AppBannerManager(web_contents) { }
+    : AppBannerManager(web_contents),
+      extension_registry_(extensions::ExtensionRegistry::Get(
+          web_contents->GetBrowserContext())) {}
 
 AppBannerManagerDesktop::~AppBannerManagerDesktop() { }
 
@@ -49,6 +57,28 @@ base::WeakPtr<AppBannerManager> AppBannerManagerDesktop::GetWeakPtr() {
 
 void AppBannerManagerDesktop::InvalidateWeakPtrs() {
   weak_factory_.InvalidateWeakPtrs();
+}
+
+bool AppBannerManagerDesktop::IsSupportedAppPlatform(
+    const base::string16& platform) const {
+  return base::EqualsASCII(platform, kPlatformChromeWebStore);
+
+  // TODO(https://crbug.com/949430): Implement for ARC apps on Chrome OS.
+}
+
+bool AppBannerManagerDesktop::IsRelatedAppInstalled(
+    const blink::Manifest::RelatedApplication& related_app) const {
+  const base::string16& platform = related_app.platform.string();
+  if (!base::EqualsASCII(platform, kPlatformChromeWebStore))
+    return false;
+
+  std::string id = base::UTF16ToUTF8(related_app.id.string());
+  return !id.empty() &&
+
+         extension_registry_->GetExtensionById(
+             id, extensions::ExtensionRegistry::ENABLED) != nullptr;
+
+  // TODO(https://crbug.com/949430): Implement for ARC apps on Chrome OS.
 }
 
 bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(

@@ -258,6 +258,18 @@ bool AppBannerManager::CheckIfInstalled() {
                                      manifest_.start_url, manifest_url_);
 }
 
+bool AppBannerManager::ShouldDeferToRelatedApplication() const {
+  for (const auto& related_app : manifest_.related_applications) {
+    if (manifest_.prefer_related_applications &&
+        IsSupportedAppPlatform(related_app.platform.string())) {
+      return true;
+    }
+    if (IsRelatedAppInstalled(related_app))
+      return true;
+  }
+  return false;
+}
+
 std::string AppBannerManager::GetAppIdentifier() {
   DCHECK(!manifest_.IsEmpty());
   return manifest_.start_url.spec();
@@ -354,7 +366,7 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
   }
 
-  if (manifest_.prefer_related_applications) {
+  if (ShouldDeferToRelatedApplication()) {
     SetInstallableWebAppCheckResult(
         InstallableWebAppCheckResult::kByUserRequest);
     Stop(PREFER_RELATED_APPLICATIONS);
