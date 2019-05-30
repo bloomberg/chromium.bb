@@ -64,6 +64,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   // This should be true prior to calling ImportLxdContainer.
   bool IsImportLxdContainerProgressSignalConnected() override;
 
+  // This should be true before expecting to recieve
+  // PendingAppListUpdatesSignal.
+  bool IsPendingAppListUpdatesSignalConnected() override;
+
   // Fake version of the method that launches an application inside a running
   // Container. |callback| is called after the method call finishes.
   void LaunchContainerApplication(

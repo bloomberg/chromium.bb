@@ -98,6 +98,12 @@ bool FakeCiceroneClient::IsImportLxdContainerProgressSignalConnected() {
   return is_import_lxd_container_progress_signal_connected_;
 }
 
+// Currently no tests need to change the output of this method. If you want to
+// add one, make it return a variable like the above examples.
+bool FakeCiceroneClient::IsPendingAppListUpdatesSignalConnected() {
+  return true;
+}
+
 void FakeCiceroneClient::LaunchContainerApplication(
     const vm_tools::cicerone::LaunchContainerApplicationRequest& request,
     DBusMethodCallback<vm_tools::cicerone::LaunchContainerApplicationResponse>

@@ -133,6 +133,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
   // This should be true prior to calling ImportLxdContainer.
   virtual bool IsImportLxdContainerProgressSignalConnected() = 0;
 
+  // This should be true before expecting to recieve
+  // PendingAppListUpdatesSignal.
+  virtual bool IsPendingAppListUpdatesSignalConnected() = 0;
+
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.
   virtual void LaunchContainerApplication(
