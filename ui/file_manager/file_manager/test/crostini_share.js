@@ -6,11 +6,15 @@ const shareBase = {
   // Params for 'Share with Linux'.
   vmNameTermina: 'termina',
   vmNameSelectorLinux: 'linux',
+  toastSharedTextLinux: '1 folder shared with Linux',
+  toastActionTextLinux: 'Manage Linux sharing',
   enumUmaShareWithLinux: 12,
   enumUmaManageLinuxSharing: 13,
   // Params for 'Share with Plugin VM'.
   vmNamePluginVm: 'PvmDefault',
   vmNameSelectorPluginVm: 'plugin-vm',
+  toastSharedTextPluginVm: '1 folder shared with Plugin VM',
+  toastActionTextPluginVm: 'Manage Plugin VM sharing',
   enumUmaShareWithPluginVm: 16,
   enumUmaManagePluginVmSharing: 17,
 };
@@ -41,7 +45,9 @@ shareBase.verifyShareWithDialog =
   await test.waitForElementLost(dialog);
 };
 
-shareBase.testSharePaths = async (vmName, vmNameSelector, enumUma, done) => {
+shareBase.testSharePaths = async (
+    vmName, vmNameSelector, toastSharedText, toastActionText, enumUma,
+    done) => {
   const share = 'share-with-' + vmNameSelector;
   const manage = 'manage-' + vmNameSelector + '-sharing';
   const menuNoShareWith = '#file-context-menu:not([hidden]) ' +
@@ -114,6 +120,16 @@ shareBase.testSharePaths = async (vmName, vmNameSelector, enumUma, done) => {
                '#container:not([hidden])') ||
         test.pending('wait for toast');
   });
+  assertEquals(
+      document.querySelector('#toast')
+          .shadowRoot.querySelector('#text')
+          .innerText,
+      toastSharedText);
+  assertEquals(
+      document.querySelector('#toast')
+          .shadowRoot.querySelector('#action')
+          .innerText,
+      toastActionText);
 
   // Right-click 'photos' directory.
   // Check 'Share with <VM>' is not shown in menu.
@@ -247,12 +263,14 @@ shareBase.testSharePaths = async (vmName, vmNameSelector, enumUma, done) => {
 crostiniShare.testSharePaths = done => {
   shareBase.testSharePaths(
       shareBase.vmNameTermina, shareBase.vmNameSelectorLinux,
+      shareBase.toastSharedTextLinux, shareBase.toastActionTextLinux,
       shareBase.enumUmaShareWithLinux, done);
 };
 
 pluginVmShare.testSharePaths = done => {
   shareBase.testSharePaths(
       shareBase.vmNamePluginVm, shareBase.vmNameSelectorPluginVm,
+      shareBase.toastSharedTextPluginVm, shareBase.toastActionTextPluginVm,
       shareBase.enumUmaShareWithPluginVm, done);
 };
 
