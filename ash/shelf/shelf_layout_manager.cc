@@ -627,6 +627,7 @@ void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
   suspend_visibility_update_ = false;
   UpdateVisibilityState();
+  LayoutShelf();
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
@@ -638,6 +639,7 @@ void ShelfLayoutManager::OnOverviewModeEnding(
 void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
   suspend_visibility_update_ = false;
   UpdateVisibilityState();
+  LayoutShelf();
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
 }
 
@@ -753,6 +755,7 @@ void ShelfLayoutManager::OnScreenCopiedBeforeRotation() {
   if (suspend_visibility_update_) {
     suspend_visibility_update_ = false;
     UpdateVisibilityState();
+    LayoutShelf();
     MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
   }
 }
