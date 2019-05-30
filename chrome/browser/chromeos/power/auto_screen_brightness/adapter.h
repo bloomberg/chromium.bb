@@ -86,7 +86,7 @@ class Adapter : public AlsReader::Observer,
     double darkening_log_lux_threshold = 0.6;
     double stabilization_threshold = 0.15;
 
-    ModelCurve model_curve = ModelCurve::kPersonal;
+    ModelCurve model_curve = ModelCurve::kLatest;
 
     // Average ambient value is calculated over the past
     // |auto_brightness_als_horizon|. This is only used for brightness update,

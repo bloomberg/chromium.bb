@@ -33,11 +33,11 @@ class GaussianTrainer : public Trainer {
     // reasonable change would be between
     // brightness_old/(1+|brightness_step_size|) and
     // brightness_old*(1+|brightness_step_size|)
-    double brightness_step_size = 0.2;
+    double brightness_step_size = 1.5;
 
     // Similar to |brightness_step_size| except it defines reasonable brightness
     // change scale between target brightness and model predicted brightness.
-    double model_brightness_step_size = 0.3;
+    double model_brightness_step_size = 2.0;
 
     // One training data point could modify all the points on the curve, but its
     // effect is greatest on the point nearest to it (as measured by difference
