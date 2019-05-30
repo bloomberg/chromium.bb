@@ -66,6 +66,10 @@
 
 #include <memory>
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class ApplicationCacheHost;
@@ -276,6 +280,9 @@ class CORE_EXPORT DocumentLoader
   // UseCounter
   void CountUse(mojom::WebFeature) override;
   void CountDeprecation(mojom::WebFeature) override;
+
+  // The caller owns the |clock| which must outlive the DocumentLoader.
+  void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
 
  protected:
   bool had_transient_activation() const { return had_transient_activation_; }
@@ -488,6 +495,8 @@ class CORE_EXPORT DocumentLoader
   UseCounterHelper use_counter_;
 
   Dactyloscoper dactyloscoper_;
+
+  const base::TickClock* clock_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

@@ -83,6 +83,10 @@
     EXPECT_FLOAT_EQ((expected).Height(), (actual).Height()); \
   } while (false)
 
+namespace base {
+class TickClock;
+}
+
 namespace cc {
 class AnimationHost;
 }
@@ -109,7 +113,8 @@ void LoadFrame(WebLocalFrame*, const std::string& url);
 // Same as above, but for WebLocalFrame::LoadHTMLString().
 void LoadHTMLString(WebLocalFrame*,
                     const std::string& html,
-                    const WebURL& base_url);
+                    const WebURL& base_url,
+                    const base::TickClock* clock = nullptr);
 // Same as above, but for WebLocalFrame::RequestFromHistoryItem/Load.
 void LoadHistoryItem(WebLocalFrame*,
                      const WebHistoryItem&,

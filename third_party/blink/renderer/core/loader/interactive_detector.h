@@ -19,6 +19,10 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/pod_interval.h"
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace blink {
 
 class Document;
@@ -116,8 +120,15 @@ class CORE_EXPORT InteractiveDetector
 
   void Trace(Visitor*) override;
 
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_testing);
+  // The caller owns the |clock| which must outlive the InteractiveDetector.
+  void SetTickClockForTesting(const base::TickClock* clock);
+
  private:
   friend class InteractiveDetectorTest;
+
+  const base::TickClock* clock_;
 
   TimeTicks interactive_time_;
   TimeTicks interactive_detection_time_;

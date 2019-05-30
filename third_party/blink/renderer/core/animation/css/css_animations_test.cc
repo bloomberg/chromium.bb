@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -80,13 +81,13 @@ TEST_F(CSSAnimationsTest, RetargetedTransition) {
   element->setAttribute(html_names::kClassAttr, "contrast2");
   GetPage().Animator().ServiceScriptedAnimations(CurrentTimeTicks());
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_DOUBLE_EQ(0.6, GetContrastFilterAmount(element));
+  EXPECT_NEAR(0.6, GetContrastFilterAmount(element), 0.00000000001);
 
   // As it has been retargeted, advancing halfway should go to 0.3.
   AdvanceClockSeconds(0.5);
   GetPage().Animator().ServiceScriptedAnimations(CurrentTimeTicks());
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_DOUBLE_EQ(0.3, GetContrastFilterAmount(element));
+  EXPECT_NEAR(0.3, GetContrastFilterAmount(element), 0.00000000001);
 }
 
 // Test that when an incompatible in progress compositor transition

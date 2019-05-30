@@ -130,11 +130,14 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
 
 void LoadHTMLString(WebLocalFrame* frame,
                     const std::string& html,
-                    const WebURL& base_url) {
+                    const WebURL& base_url,
+                    const base::TickClock* clock) {
   auto* impl = To<WebLocalFrameImpl>(frame);
-  impl->CommitNavigation(
-      WebNavigationParams::CreateWithHTMLString(html, base_url),
-      nullptr /* extra_data */);
+  std::unique_ptr<WebNavigationParams> navigation_params =
+      WebNavigationParams::CreateWithHTMLString(html, base_url);
+  navigation_params->tick_clock = clock;
+  impl->CommitNavigation(std::move(navigation_params),
+                         nullptr /* extra_data */);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 

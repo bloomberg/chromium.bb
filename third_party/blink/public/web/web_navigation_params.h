@@ -39,6 +39,10 @@
 #include "base/memory/scoped_refptr.h"
 #endif
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class KURL;
@@ -316,6 +320,9 @@ struct BLINK_EXPORT WebNavigationParams {
   };
   WebVector<std::unique_ptr<PrefetchedSignedExchange>>
       prefetched_signed_exchanges;
+  // An optional tick clock to be used for document loader timing. This is used
+  // for testing.
+  const base::TickClock* tick_clock = nullptr;
 };
 
 }  // namespace blink

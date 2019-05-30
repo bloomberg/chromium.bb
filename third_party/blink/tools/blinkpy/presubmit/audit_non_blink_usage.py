@@ -205,6 +205,7 @@ _CONFIG = [
             'base::Clock',
             'base::DefaultClock',
             'base::DefaultTickClock',
+            'base::TestMockTimeTaskRunner',
             'base::TickClock',
 
             # cc painting types.

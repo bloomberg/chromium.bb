@@ -33,6 +33,7 @@
 #include <utility>
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/default_tick_clock.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/origin_policy/origin_policy.h"
@@ -133,7 +134,9 @@ DocumentLoader::DocumentLoader(
       devtools_navigation_token_(params_->devtools_navigation_token),
       had_sticky_activation_(params_->is_user_activated),
       was_discarded_(params_->was_discarded),
-      use_counter_() {
+      use_counter_(),
+      clock_(params_->tick_clock ? params_->tick_clock
+                                 : base::DefaultTickClock::GetInstance()) {
   DCHECK(frame_);
 
   // TODO(nasko): How should this work with OOPIF?
@@ -170,7 +173,7 @@ DocumentLoader::DocumentLoader(
     document_load_timing_.SetInputStart(timings.input_start);
   if (timings.navigation_start.is_null()) {
     // If we don't have any navigation timings yet, it starts now.
-    document_load_timing_.SetNavigationStart(CurrentTimeTicks());
+    document_load_timing_.SetNavigationStart(clock_->NowTicks());
   } else {
     document_load_timing_.SetNavigationStart(timings.navigation_start);
     if (!timings.redirect_start.is_null()) {
@@ -665,7 +668,7 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
   if (response_end_time.is_null())
     response_end_time = time_of_last_data_received_;
   if (response_end_time.is_null())
-    response_end_time = CurrentTimeTicks();
+    response_end_time = clock_->NowTicks();
   GetTiming().SetResponseEnd(response_end_time);
 
   if (!frame_)
@@ -994,7 +997,7 @@ void DocumentLoader::HandleData(const char* data, size_t length) {
   DCHECK(data);
   DCHECK(length);
   DCHECK(!frame_->GetPage()->Paused());
-  time_of_last_data_received_ = CurrentTimeTicks();
+  time_of_last_data_received_ = clock_->NowTicks();
 
   if (listing_ftp_directory_ || loading_mhtml_archive_) {
     data_buffer_->Append(data, length);
@@ -1109,7 +1112,7 @@ void DocumentLoader::LoadEmpty() {
   // stop this loader.
   if (!frame_)
     return;
-  FinishedLoading(CurrentTimeTicks());
+  FinishedLoading(clock_->NowTicks());
 }
 
 void DocumentLoader::StartLoading() {
@@ -1229,7 +1232,7 @@ void DocumentLoader::StartLoadingInternal() {
     body_loader_->StartLoadingBody(this, false /* use_isolated_code_cache */);
     if (body_loader_) {
       // If we did not finish synchronously, load empty document instead.
-      FinishedLoading(CurrentTimeTicks());
+      FinishedLoading(clock_->NowTicks());
     }
     // FinishedLoading call above must commit navigation for mhtml archive.
     CHECK_GE(state_, kCommitted);
