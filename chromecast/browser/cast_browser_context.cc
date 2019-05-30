@@ -18,6 +18,7 @@
 #include "chromecast/browser/cast_download_manager_delegate.h"
 #include "chromecast/browser/cast_permission_manager.h"
 #include "chromecast/browser/url_request_context_factory.h"
+#include "components/keyed_service/core/simple_key_map.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/resource_context.h"
@@ -54,9 +55,13 @@ CastBrowserContext::CastBrowserContext(
       shared_cors_origin_access_list_(
           content::SharedCorsOriginAccessList::Create()) {
   InitWhileIOAllowed();
+  simple_factory_key_ =
+      std::make_unique<SimpleFactoryKey>(GetPath(), IsOffTheRecord());
+  SimpleKeyMap::GetInstance()->Associate(this, simple_factory_key_.get());
 }
 
 CastBrowserContext::~CastBrowserContext() {
+  SimpleKeyMap::GetInstance()->Dissociate(this);
   BrowserContext::NotifyWillBeDestroyed(this);
   ShutdownStoragePartitions();
   content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,

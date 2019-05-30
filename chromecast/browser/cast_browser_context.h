@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 
@@ -81,6 +82,7 @@ class CastBrowserContext final : public content::BrowserContext {
   base::FilePath path_;
   std::unique_ptr<CastResourceContext> resource_context_;
   std::unique_ptr<content::PermissionControllerDelegate> permission_manager_;
+  std::unique_ptr<SimpleFactoryKey> simple_factory_key_;
   scoped_refptr<content::SharedCorsOriginAccessList>
       shared_cors_origin_access_list_;
 

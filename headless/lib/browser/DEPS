@@ -1,5 +1,6 @@
 include_rules = [
   "+cc/base",
+  "+components/keyed_service/core",
   "+components/printing/browser",
   "+components/printing/common",
   "+components/security_state",

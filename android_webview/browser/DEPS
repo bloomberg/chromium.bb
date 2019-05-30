@@ -16,6 +16,7 @@ include_rules = [
   "+components/crash/core",
   "+components/download/public/common",
   "+components/heap_profiling",
+  "+components/keyed_service/core",
   "+components/minidump_uploader",
   "+components/navigation_interception",
   "+components/policy/core/browser",
