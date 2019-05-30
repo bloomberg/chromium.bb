@@ -44,9 +44,9 @@ class TabGridContainerViewBinder {
         } else if (VISIBILITY_LISTENER == propertyKey) {
             view.setVisibilityListener(model.get(VISIBILITY_LISTENER));
         } else if (INITIAL_SCROLL_INDEX == propertyKey) {
-            // recyclerview.scrollToPosition() behaves incorrectly after cold start.
-            ((GridLayoutManager) view.getLayoutManager())
-                    .scrollToPositionWithOffset(model.get(INITIAL_SCROLL_INDEX), 0);
+            // RecyclerView#scrollToPosition(int) behaves incorrectly first time after cold start.
+            int index = (Integer) model.get(INITIAL_SCROLL_INDEX);
+            ((GridLayoutManager) view.getLayoutManager()).scrollToPositionWithOffset(index, 0);
         } else if (TOP_CONTROLS_HEIGHT == propertyKey) {
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
             params.topMargin = model.get(TOP_CONTROLS_HEIGHT);

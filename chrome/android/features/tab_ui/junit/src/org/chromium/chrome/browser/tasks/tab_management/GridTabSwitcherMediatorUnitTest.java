@@ -17,8 +17,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcherMediator.INITIAL_SCROLL_INDEX_OFFSET;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.view.View;
@@ -369,8 +367,6 @@ public class GridTabSwitcherMediatorUnitTest {
                 equalTo(CONTROL_HEIGHT_DEFAULT));
         assertThat(mModel.get(TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT),
                 equalTo(CONTROL_HEIGHT_DEFAULT));
-        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX),
-                equalTo(Math.max(mTabModel.index() - INITIAL_SCROLL_INDEX_OFFSET, 0)));
     }
 
     private Tab prepareTab(int id, String title) {

@@ -18,8 +18,12 @@ class TabListContainerProperties {
             .WritableObjectPropertyKey<TabListRecyclerView.VisibilityListener> VISIBILITY_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<>();
 
-    public static final PropertyModel.WritableIntPropertyKey INITIAL_SCROLL_INDEX =
-            new PropertyModel.WritableIntPropertyKey();
+    /**
+     * Integer, but not {@link PropertyModel.WritableIntPropertyKey} so that we can force update on
+     * the same value.
+     */
+    public static final PropertyModel.WritableObjectPropertyKey INITIAL_SCROLL_INDEX =
+            new PropertyModel.WritableObjectPropertyKey(true);
 
     public static final PropertyModel.WritableBooleanPropertyKey ANIMATE_VISIBILITY_CHANGES =
             new PropertyModel.WritableBooleanPropertyKey();
