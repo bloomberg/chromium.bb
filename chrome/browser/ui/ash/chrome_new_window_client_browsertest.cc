@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest, IncognitoDisabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientWebAppBrowserTest, OpenWebApp) {
-  InstallTestBookmarkApp(GetAppUrlHost());
+  InstallTestBookmarkApp();
   const GURL app_url = https_server().GetURL(GetAppUrlHost(), GetAppUrlPath());
   const char* key =
       arc::ArcWebContentsData::ArcWebContentsData::kArcTransitionFlag;

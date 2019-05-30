@@ -344,8 +344,11 @@ void AppsNavigationThrottle::ShowIntentPickerForApps(
     const GURL& url,
     std::vector<IntentPickerAppInfo> apps,
     IntentPickerResponse callback) {
-  if (apps.empty())
+  if (apps.empty()) {
+    IntentPickerTabHelper::SetShouldShowIcon(web_contents, false);
+    ui_displayed_ = false;
     return;
+  }
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;

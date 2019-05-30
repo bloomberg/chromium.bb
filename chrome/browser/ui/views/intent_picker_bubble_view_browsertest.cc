@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/web_application_info.h"
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
@@ -245,6 +246,33 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
   EXPECT_TRUE(
       content::NavigateIframeToURL(initial_tab, "iframe", out_of_scope_url));
   EXPECT_TRUE(intent_picker_view->GetVisible());
+}
+
+// Tests that the intent picker icon is not visible if the navigatation
+// redirects to a URL that doesn't have an installed PWA.
+IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
+                       DoesNotShowIntentPickerWhenRedirectedOutOfScope) {
+  InstallTestBookmarkApp(GetOtherAppUrlHost(), /*app_scope=*/"/");
+
+  const GURL out_of_scope_url =
+      https_server().GetURL(GetAppUrlHost(), GetOutOfScopeUrlPath());
+  const GURL in_scope_url = https_server().GetURL(GetOtherAppUrlHost(), "/");
+  const GURL redirect_url = https_server().GetURL(
+      GetOtherAppUrlHost(), CreateServerRedirect(out_of_scope_url));
+
+  PageActionIconView* intent_picker_view =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar_button_provider()
+          ->GetOmniboxPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
+
+  OpenNewTab(in_scope_url);
+  EXPECT_TRUE(intent_picker_view->GetVisible());
+
+  ClickLinkAndWaitForURL(browser()->tab_strip_model()->GetActiveWebContents(),
+                         redirect_url, out_of_scope_url, LinkTarget::SELF,
+                         GetParam());
+  EXPECT_FALSE(intent_picker_view->GetVisible());
 }
 
 INSTANTIATE_TEST_SUITE_P(
