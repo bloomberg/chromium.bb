@@ -20,6 +20,7 @@
 #include "extensions/common/mojo/guest_view.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
 
 namespace extensions {
 
@@ -89,15 +90,19 @@ void MimeHandlerViewEmbedder::DidStartNavigation(
 
 void MimeHandlerViewEmbedder::ReadyToCommitNavigation(
     content::NavigationHandle* handle) {
-  if (handle->GetFrameTreeNodeId() == frame_tree_node_id_ &&
-      !render_frame_host_) {
-    DCHECK_EQ(handle->GetURL(), resource_url_);
+  if (handle->GetFrameTreeNodeId() != frame_tree_node_id_)
+    return;
+  if (!render_frame_host_) {
     render_frame_host_ = handle->GetRenderFrameHost();
-      // In such cases the print helper might need to postMessage to the frame
-      // container and we should ensure one exists already. Note that in general
-      // <embed> and <object> navigations
     GetContainerManager()->SetInternalId(internal_id_);
   }
+}
+
+void MimeHandlerViewEmbedder::DidFinishNavigation(
+    content::NavigationHandle* handle) {
+  if (frame_tree_node_id_ != handle->GetFrameTreeNodeId())
+    return;
+  CheckSandboxFlags();
 }
 
 void MimeHandlerViewEmbedder::RenderFrameCreated(
@@ -210,6 +215,14 @@ void MimeHandlerViewEmbedder::ReadyToCreateMimeHandlerView(
   ready_to_create_mime_handler_view_ = ready_to_create_mime_handler_view;
   if (!ready_to_create_mime_handler_view_)
     GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
+}
+
+void MimeHandlerViewEmbedder::CheckSandboxFlags() {
+  if (!render_frame_host_->IsSandboxed(blink::WebSandboxFlags::kPlugins))
+    return;
+  // Notify the renderer to load an empty page instead.
+  GetContainerManager()->LoadEmptyPage(resource_url_);
+  GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
 }
 
 }  // namespace extensions

@@ -22,6 +22,7 @@
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -639,4 +640,34 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
       embedded_test_server()->GetURL("/adopt_node_in_onload_no_crash.html"));
   // Run some JavaScript in embedder and make sure it is not crashed.
   ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(), "true"));
+}
+
+// Verifies that sandboxed frames do not create GuestViews (plugins are
+// blocked in sandboxed frames).
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       DoNotLoadInSandboxedFrame) {
+  // Use the testing subclass of MimeHandlerViewGuest.
+  GetGuestViewManager()->RegisterTestGuestViewType<MimeHandlerViewGuest>(
+      base::Bind(&TestMimeHandlerViewGuest::Create));
+
+  const extensions::Extension* extension = LoadTestExtension();
+  ASSERT_TRUE(extension);
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/test_sandboxed_frame.html"));
+
+  auto* guest_view_manager = GetGuestViewManager();
+  // The page contains three <iframes> where two are sandboxed. The expectation
+  // is that the sandboxed frames do not end up creating a MimeHandlerView.
+  // Therefore, it suffices to wait for one GuestView to be created, then remove
+  // the non-sandboxed frame, and ensue there are no GuestViews left.
+  if (guest_view_manager->num_guests_created() == 0)
+    ASSERT_TRUE(guest_view_manager->WaitForNextGuestCreated());
+  ASSERT_EQ(1U, guest_view_manager->num_guests_created());
+  // Remove the non-sandboxed frame.
+  ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(),
+                              "remove_frame('notsandboxed');"));
+  // The page is expected to embed only '1' GuestView. If there is GuestViews
+  // embedded inside other frames we should be timing out here.
+  guest_view_manager->WaitForAllGuestsDeleted();
 }

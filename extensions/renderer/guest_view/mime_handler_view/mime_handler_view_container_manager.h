@@ -94,6 +94,7 @@ class MimeHandlerViewContainerManager
 
   // mojom::MimeHandlerViewContainerManager overrides.
   void SetInternalId(const std::string& token_id) override;
+  void LoadEmptyPage(const GURL& resource_url) override;
   void CreateBeforeUnloadControl(
       CreateBeforeUnloadControlCallback callback) override;
   void DestroyFrameContainer(int32_t element_instance_id) override;

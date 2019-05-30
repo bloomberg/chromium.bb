@@ -180,6 +180,7 @@ bool HTMLPlugInElement::RequestObjectInternal(
   ObjectContentType object_type = GetObjectContentType();
   bool handled_externally =
       object_type == ObjectContentType::kExternalPlugin &&
+      AllowedToLoadPlugin(completed_url, service_type_) &&
       GetDocument().GetFrame()->Client()->IsPluginHandledExternally(
           *this, completed_url,
           service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)

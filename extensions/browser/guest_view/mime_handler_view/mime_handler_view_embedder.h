@@ -49,6 +49,7 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void DidStartNavigation(content::NavigationHandle* handle) override;
   void ReadyToCommitNavigation(content::NavigationHandle* handle) override;
+  void DidFinishNavigation(content::NavigationHandle* handle) override;
 
   void ReadyToCreateMimeHandlerView(bool result);
 
@@ -63,6 +64,11 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   void DidCreateMimeHandlerViewGuest(content::WebContents* guest_web_contents);
   // Returns null before |render_frame_host_| is known.
   mojom::MimeHandlerViewContainerManager* GetContainerManager();
+
+  // Checks the sandbox state of |render_frame_host_|. If the frame is sandboxed
+  // it will send an IPC to renderer to show an empty page and immediately
+  // deletes |this|.
+  void CheckSandboxFlags();
 
   // The ID for the embedder frame of MimeHandlerViewGuest.
   int32_t frame_tree_node_id_;
