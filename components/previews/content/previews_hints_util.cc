@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/stringprintf.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
 #include "components/previews/core/previews_features.h"
@@ -56,6 +57,10 @@ const optimization_guide::proto::PageHint* FindPageHintForURL(
     }
   }
   return nullptr;
+}
+
+std::string HashHostForDictionary(const std::string& host) {
+  return base::StringPrintf("%x", base::PersistentHash(host));
 }
 
 }  // namespace previews

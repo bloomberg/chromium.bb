@@ -13,6 +13,7 @@ namespace optimization_guide {
 namespace prefs {
 
 extern const char kHintLoadedCounts[];
+extern const char kHintsFetcherTopHostBlacklist[];
 
 // Registers the optimization guide's prefs.
 void RegisterProfilePrefs(PrefRegistrySimple* registry);

@@ -14,8 +14,17 @@ namespace prefs {
 // loaded, broken down by hint source.
 const char kHintLoadedCounts[] = "optimization_guide.hint_loaded_counts";
 
+// A dictionary pref that stores the set of hosts that cannot have hints fetched
+// for until visited again after DataSaver was enabled. If The hash of the host
+// is in the dictionary, then it is on the blacklist and should not be used, the
+// |value| in the key-value pair is not used.
+const char kHintsFetcherTopHostBlacklist[] =
+    "optimization_guide.hintsfetcher.top_host_blacklist";
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kHintLoadedCounts, PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(kHintsFetcherTopHostBlacklist,
+                                   PrefRegistry::LOSSY_PREF);
 }
 
 }  // namespace prefs

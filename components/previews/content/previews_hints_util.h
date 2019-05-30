@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_HINTS_UTIL_H_
 #define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_HINTS_UTIL_H_
 
+#include <string>
+
 class GURL;
 namespace optimization_guide {
 namespace proto {
@@ -29,6 +31,15 @@ bool IsDisabledPerOptimizationHintExperiment(
 const optimization_guide::proto::PageHint* FindPageHintForURL(
     const GURL& gurl,
     const optimization_guide::proto::Hint* hint);
+
+// The host is hashed and returned as a string because base::DictionaryValue
+// only accepts strings as keys. Note, some hash collisions could occur on
+// hosts. For querying the blacklist, collisions are acceptable as they would
+// only block additional hosts. For updating the blacklist, a collision would
+// enable a site that should remain on the blacklist. However, the likelihood
+// of a collision for the number of hosts allowed in the blacklist is
+// practically zero.
+std::string HashHostForDictionary(const std::string& host);
 
 }  // namespace previews
 
