@@ -534,7 +534,9 @@ static struct lookahead_entry *setup_arf_or_arf2(
     int *temporal_filtered, EncodeFrameParams *const frame_params) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
+#if !CONFIG_REALTIME_ONLY
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+#endif
 
   assert(arf_src_index <= rc->frames_to_key);
   *temporal_filtered = 0;
@@ -553,12 +555,14 @@ static struct lookahead_entry *setup_arf_or_arf2(
       cpi->is_arf_filter_off[which_arf] = 1;
       cpi->no_show_kf = 1;
     } else {
+#if !CONFIG_REALTIME_ONLY
       if (oxcf->arnr_max_frames > 0) {
         // Produce the filtered ARF frame.
         av1_temporal_filter(cpi, arf_src_index);
         aom_extend_frame_borders(&cpi->alt_ref_buffer, av1_num_planes(cm));
         *temporal_filtered = 1;
       }
+#endif
     }
     frame_params->show_frame = 0;
   }
