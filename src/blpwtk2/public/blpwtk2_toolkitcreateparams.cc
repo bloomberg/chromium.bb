@@ -69,8 +69,7 @@ struct ToolkitCreateParamsImpl final
 
 
     // patch section: renderer ui
-
-
+    bool d_rendererUIEnabled;
 
     ToolkitCreateParamsImpl();
 };
@@ -103,9 +102,7 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
 
 
     // patch section: renderer ui
-
-
-
+    , d_rendererUIEnabled(false)
 {
 }
 
@@ -274,8 +271,10 @@ void ToolkitCreateParams::disableIsolatedProfile()
 
 
 // patch section: renderer ui
-
-
+void ToolkitCreateParams::setRendererUIEnabled(bool rendererUIEnabled)
+{
+    d_impl->d_rendererUIEnabled = rendererUIEnabled;
+}
 
 ThreadMode ToolkitCreateParams::threadMode() const
 {
@@ -405,8 +404,10 @@ bool ToolkitCreateParams::isIsolatedProfile() const
 
 
 // patch section: renderer ui
-
-
+bool ToolkitCreateParams::rendererUIEnabled() const
+{
+    return d_impl->d_rendererUIEnabled;
+}
 
 }  // close namespace blpwtk2
 
