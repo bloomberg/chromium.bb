@@ -403,7 +403,7 @@ class MockLegacyCacheStorage : public LegacyCacheStorage {
       scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
-      CacheStorageManager* cache_storage_manager,
+      LegacyCacheStorageManager* cache_storage_manager,
       const url::Origin& origin,
       CacheStorageOwner owner)
       : LegacyCacheStorage(origin_path,

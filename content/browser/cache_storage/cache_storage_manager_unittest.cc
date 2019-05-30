@@ -337,7 +337,7 @@ class CacheStorageManagerTest : public testing::Test {
     quota_manager_proxy_ = new MockCacheStorageQuotaManagerProxy(
         mock_quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
 
-    cache_manager_ = CacheStorageManager::Create(
+    cache_manager_ = LegacyCacheStorageManager::Create(
         temp_dir_path, base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(), quota_manager_proxy_, observers_);
 
@@ -748,7 +748,7 @@ class CacheStorageManagerTest : public testing::Test {
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
   scoped_refptr<MockCacheStorageQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<CacheStorageContextImpl::ObserverList> observers_;
-  scoped_refptr<CacheStorageManager> cache_manager_;
+  scoped_refptr<LegacyCacheStorageManager> cache_manager_;
 
   CacheStorageCacheHandle callback_cache_handle_;
   int callback_bool_;
@@ -1085,7 +1085,8 @@ TEST_F(CacheStorageManagerTest, DataPersists) {
   EXPECT_TRUE(Open(origin2_, "raz"));
   EXPECT_TRUE(Delete(origin1_, "bar"));
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  cache_manager_ = CacheStorageManager::CreateForTesting(cache_manager_.get());
+  cache_manager_ =
+      LegacyCacheStorageManager::CreateForTesting(cache_manager_.get());
   EXPECT_EQ(2u, Keys(origin1_));
   std::vector<std::string> expected_keys;
   expected_keys.push_back("foo");
@@ -1097,7 +1098,8 @@ TEST_F(CacheStorageManagerMemoryOnlyTest, DataLostWhenMemoryOnly) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(Open(origin2_, "baz"));
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  cache_manager_ = CacheStorageManager::CreateForTesting(cache_manager_.get());
+  cache_manager_ =
+      LegacyCacheStorageManager::CreateForTesting(cache_manager_.get());
   EXPECT_EQ(0u, Keys(origin1_));
 }
 
@@ -1398,7 +1400,8 @@ TEST_F(CacheStorageManagerTest, CacheSizePaddedAfterReopen) {
   // Create a new CacheStorageManager that hasn't yet loaded the origin.
   CreateStorageManager();
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  cache_manager_ = CacheStorageManager::CreateForTesting(cache_manager_.get());
+  cache_manager_ =
+      LegacyCacheStorageManager::CreateForTesting(cache_manager_.get());
   EXPECT_TRUE(Open(origin1_, kCacheName));
 
   base::RunLoop().RunUntilIdle();
@@ -1470,7 +1473,8 @@ TEST_F(CacheStorageManagerTest, PersistedCacheKeyUsed) {
   // Create a new CacheStorageManager that hasn't yet loaded the origin.
   CreateStorageManager();
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  cache_manager_ = CacheStorageManager::CreateForTesting(cache_manager_.get());
+  cache_manager_ =
+      LegacyCacheStorageManager::CreateForTesting(cache_manager_.get());
 
   // Reopening the origin/cache creates a new CacheStorage instance with a new
   // random key.
@@ -1664,7 +1668,8 @@ TEST_F(CacheStorageManagerTest, MAYBE_GetAllOriginsUsageWithOldIndex) {
   // Create a new CacheStorageManager that hasn't yet loaded the origin.
   CreateStorageManager();
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  cache_manager_ = CacheStorageManager::CreateForTesting(cache_manager_.get());
+  cache_manager_ =
+      LegacyCacheStorageManager::CreateForTesting(cache_manager_.get());
 
   // Create a second value (V2) in the cache.
   EXPECT_TRUE(Open(origin1_, kCacheName));
@@ -1732,7 +1737,8 @@ TEST_F(CacheStorageManagerTest, MAYBE_GetOriginSizeWithOldIndex) {
   // Create a new CacheStorageManager that hasn't yet loaded the origin.
   CreateStorageManager();
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  cache_manager_ = CacheStorageManager::CreateForTesting(cache_manager_.get());
+  cache_manager_ =
+      LegacyCacheStorageManager::CreateForTesting(cache_manager_.get());
 
   // Reopen the cache and write a second value (V2).
   EXPECT_TRUE(Open(origin1_, kCacheName));
@@ -1825,7 +1831,7 @@ TEST_F(CacheStorageManagerTest, DeleteUnreferencedCacheDirectories) {
       CachePut(callback_cache_handle_.value(), GURL("http://example.com/foo")));
 
   // Create an unreferenced directory next to the referenced one.
-  base::FilePath origin_path = CacheStorageManager::ConstructOriginPath(
+  base::FilePath origin_path = LegacyCacheStorageManager::ConstructOriginPath(
       cache_manager_->root_path(), origin1_, CacheStorageOwner::kCacheAPI);
   base::FilePath unreferenced_path = origin_path.AppendASCII("bar");
   EXPECT_TRUE(CreateDirectory(unreferenced_path));
@@ -1834,7 +1840,8 @@ TEST_F(CacheStorageManagerTest, DeleteUnreferencedCacheDirectories) {
   // Create a new StorageManager so that the next time the cache is opened
   // the unreferenced directory can be deleted.
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  cache_manager_ = CacheStorageManager::CreateForTesting(cache_manager_.get());
+  cache_manager_ =
+      LegacyCacheStorageManager::CreateForTesting(cache_manager_.get());
 
   // Verify that the referenced cache still works.
   EXPECT_TRUE(Open(origin1_, "foo"));
@@ -2424,7 +2431,8 @@ TEST_F(CacheStorageQuotaClientDiskOnlyTest, QuotaDeleteUnloadedOriginData) {
 
   // Create a new CacheStorageManager that hasn't yet loaded the origin.
   quota_manager_proxy_->SimulateQuotaManagerDestroyed();
-  cache_manager_ = CacheStorageManager::CreateForTesting(cache_manager_.get());
+  cache_manager_ =
+      LegacyCacheStorageManager::CreateForTesting(cache_manager_.get());
   quota_client_.reset(new CacheStorageQuotaClient(
       cache_manager_->AsWeakPtr(), CacheStorageOwner::kCacheAPI));
 

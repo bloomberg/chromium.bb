@@ -35,8 +35,6 @@ class QuotaManagerProxy;
 
 namespace content {
 
-class CacheStorageQuotaClient;
-
 namespace cache_storage_manager_unittest {
 class CacheStorageManagerTest;
 }
@@ -61,7 +59,53 @@ class CONTENT_EXPORT CacheStorageManager
     : public base::RefCountedThreadSafe<CacheStorageManager,
                                         BrowserThread::DeleteOnIOThread> {
  public:
-  static scoped_refptr<CacheStorageManager> Create(
+  // Open the CacheStorage for the given origin and owner.  A reference counting
+  // handle is returned which can be stored and used similar to a weak pointer.
+  virtual CacheStorageHandle OpenCacheStorage(const url::Origin& origin,
+                                              CacheStorageOwner owner) = 0;
+
+  // QuotaClient and Browsing Data Deletion support.
+  virtual void GetAllOriginsUsage(
+      CacheStorageOwner owner,
+      CacheStorageContext::GetUsageInfoCallback callback) = 0;
+  virtual void GetOriginUsage(
+      const url::Origin& origin_url,
+      CacheStorageOwner owner,
+      storage::QuotaClient::GetUsageCallback callback) = 0;
+  virtual void GetOrigins(
+      CacheStorageOwner owner,
+      storage::QuotaClient::GetOriginsCallback callback) = 0;
+  virtual void GetOriginsForHost(
+      const std::string& host,
+      CacheStorageOwner owner,
+      storage::QuotaClient::GetOriginsCallback callback) = 0;
+  virtual void DeleteOriginData(
+      const url::Origin& origin,
+      CacheStorageOwner owner,
+      storage::QuotaClient::DeletionCallback callback) = 0;
+  virtual void DeleteOriginData(const url::Origin& origin,
+                                CacheStorageOwner owner) = 0;
+
+  // This must be called before any of the public Cache functions above.
+  virtual void SetBlobParametersForCache(
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context) = 0;
+
+  static bool IsValidQuotaOrigin(const url::Origin& origin);
+
+ protected:
+  friend class base::DeleteHelper<CacheStorageManager>;
+  friend class base::RefCountedThreadSafe<CacheStorageManager>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+
+  virtual ~CacheStorageManager() = default;
+};
+
+// A concrete implementation of the CacheStorageManager interface using
+// the legacy disk_cache backend.
+// TODO(crbug.com/940449): Move this code into a separate file under /legacy.
+class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
+ public:
+  static scoped_refptr<LegacyCacheStorageManager> Create(
       const base::FilePath& path,
       scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
       scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
@@ -71,8 +115,8 @@ class CONTENT_EXPORT CacheStorageManager
   // Create a new manager using the underlying configuration of the given
   // manager, but with its own list of storage objects.  This is only used
   // for testing.
-  static scoped_refptr<CacheStorageManager> CreateForTesting(
-      CacheStorageManager* old_manager);
+  static scoped_refptr<LegacyCacheStorageManager> CreateForTesting(
+      LegacyCacheStorageManager* old_manager);
 
   // Map a database identifier (computed from an origin) to the path.
   static base::FilePath ConstructOriginPath(const base::FilePath& root_path,
@@ -82,12 +126,29 @@ class CONTENT_EXPORT CacheStorageManager
   // Open the CacheStorage for the given origin and owner.  A reference counting
   // handle is returned which can be stored and used similar to a weak pointer.
   CacheStorageHandle OpenCacheStorage(const url::Origin& origin,
-                                      CacheStorageOwner owner);
+                                      CacheStorageOwner owner) override;
 
-  // This must be called before creating any of the public *Cache functions
-  // above.
+  void GetAllOriginsUsage(
+      CacheStorageOwner owner,
+      CacheStorageContext::GetUsageInfoCallback callback) override;
+  void GetOriginUsage(const url::Origin& origin_url,
+                      CacheStorageOwner owner,
+                      storage::QuotaClient::GetUsageCallback callback) override;
+  void GetOrigins(CacheStorageOwner owner,
+                  storage::QuotaClient::GetOriginsCallback callback) override;
+  void GetOriginsForHost(
+      const std::string& host,
+      CacheStorageOwner owner,
+      storage::QuotaClient::GetOriginsCallback callback) override;
+  void DeleteOriginData(
+      const url::Origin& origin,
+      CacheStorageOwner owner,
+      storage::QuotaClient::DeletionCallback callback) override;
+  void DeleteOriginData(const url::Origin& origin,
+                        CacheStorageOwner owner) override;
+
   void SetBlobParametersForCache(
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context) override;
 
   void NotifyCacheListChanged(const url::Origin& origin);
   void NotifyCacheContentChanged(const url::Origin& origin,
@@ -105,48 +166,27 @@ class CONTENT_EXPORT CacheStorageManager
                                 const url::Origin& origin,
                                 CacheStorageOwner owner);
 
-  static bool IsValidQuotaOrigin(const url::Origin& origin);
-
  private:
-  friend class base::DeleteHelper<CacheStorageManager>;
-  friend class base::RefCountedThreadSafe<CacheStorageManager>;
   friend class cache_storage_manager_unittest::CacheStorageManagerTest;
   friend class CacheStorageContextImpl;
-  friend class CacheStorageQuotaClient;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
   typedef std::map<std::pair<url::Origin, CacheStorageOwner>,
                    std::unique_ptr<LegacyCacheStorage>>
       CacheStorageMap;
 
-  CacheStorageManager(
+  LegacyCacheStorageManager(
       const base::FilePath& path,
       scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
       scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       scoped_refptr<CacheStorageContextImpl::ObserverList> observers);
 
-  virtual ~CacheStorageManager();
+  ~LegacyCacheStorageManager() override;
 
-  // QuotaClient and Browsing Data Deletion support
-  void GetAllOriginsUsage(CacheStorageOwner owner,
-                          CacheStorageContext::GetUsageInfoCallback callback);
   void GetAllOriginsUsageGetSizes(
       std::unique_ptr<std::vector<StorageUsageInfo>> usage_info,
       CacheStorageContext::GetUsageInfoCallback callback);
 
-  void GetOriginUsage(const url::Origin& origin_url,
-                      CacheStorageOwner owner,
-                      storage::QuotaClient::GetUsageCallback callback);
-  void GetOrigins(CacheStorageOwner owner,
-                  storage::QuotaClient::GetOriginsCallback callback);
-  void GetOriginsForHost(const std::string& host,
-                         CacheStorageOwner owner,
-                         storage::QuotaClient::GetOriginsCallback callback);
-  void DeleteOriginData(const url::Origin& origin,
-                        CacheStorageOwner owner,
-                        storage::QuotaClient::DeletionCallback callback);
-  void DeleteOriginData(const url::Origin& origin, CacheStorageOwner owner);
   void DeleteOriginDidClose(const url::Origin& origin,
                             CacheStorageOwner owner,
                             storage::QuotaClient::DeletionCallback callback,
@@ -187,8 +227,8 @@ class CONTENT_EXPORT CacheStorageManager
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  base::WeakPtrFactory<CacheStorageManager> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(CacheStorageManager);
+  base::WeakPtrFactory<LegacyCacheStorageManager> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(LegacyCacheStorageManager);
 };
 
 }  // namespace content

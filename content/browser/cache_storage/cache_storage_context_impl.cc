@@ -154,7 +154,7 @@ void CacheStorageContextImpl::CreateCacheStorageManager(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   DCHECK(!cache_manager_);
-  cache_manager_ = CacheStorageManager::Create(
+  cache_manager_ = LegacyCacheStorageManager::Create(
       user_data_directory, std::move(cache_task_runner), task_runner_,
       std::move(quota_manager_proxy), observers_);
 }

@@ -69,7 +69,7 @@ void BackgroundFetchTestDataManager::InitializeOnIOThread() {
   quota_manager_proxy_ =
       base::MakeRefCounted<MockBGFQuotaManagerProxy>(mock_quota_manager_.get());
 
-  cache_manager_ = CacheStorageManager::Create(
+  cache_manager_ = LegacyCacheStorageManager::Create(
       storage_partition_->GetPath(), base::ThreadTaskRunnerHandle::Get(),
       base::ThreadTaskRunnerHandle::Get(), quota_manager_proxy_,
       base::MakeRefCounted<CacheStorageContextImpl::ObserverList>());

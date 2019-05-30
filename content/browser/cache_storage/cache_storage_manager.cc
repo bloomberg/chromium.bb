@@ -92,7 +92,7 @@ void ListOriginsAndLastModifiedOnTaskRunner(
     if (index.ParseFromString(protobuf)) {
       if (index.has_origin()) {
         if (path ==
-            CacheStorageManager::ConstructOriginPath(
+            LegacyCacheStorageManager::ConstructOriginPath(
                 root_path, url::Origin::Create(GURL(index.origin())), owner)) {
           if (base::GetFileInfo(path, &file_info)) {
             int64_t storage_size = CacheStorage::kSizeUnknown;
@@ -155,7 +155,7 @@ void OneOriginSizeReported(base::OnceClosure callback,
 }  // namespace
 
 // static
-scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
+scoped_refptr<LegacyCacheStorageManager> LegacyCacheStorageManager::Create(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
     scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
@@ -167,25 +167,27 @@ scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
                     .AppendASCII("CacheStorage");
   }
 
-  return base::WrapRefCounted(new CacheStorageManager(
+  return base::WrapRefCounted(new LegacyCacheStorageManager(
       root_path, std::move(cache_task_runner), std::move(scheduler_task_runner),
       std::move(quota_manager_proxy), std::move(observers)));
 }
 
 // static
-scoped_refptr<CacheStorageManager> CacheStorageManager::CreateForTesting(
-    CacheStorageManager* old_manager) {
-  scoped_refptr<CacheStorageManager> manager(new CacheStorageManager(
-      old_manager->root_path(), old_manager->cache_task_runner(),
-      old_manager->scheduler_task_runner(),
-      old_manager->quota_manager_proxy_.get(), old_manager->observers_));
+scoped_refptr<LegacyCacheStorageManager>
+LegacyCacheStorageManager::CreateForTesting(
+    LegacyCacheStorageManager* old_manager) {
+  scoped_refptr<LegacyCacheStorageManager> manager(
+      new LegacyCacheStorageManager(
+          old_manager->root_path(), old_manager->cache_task_runner(),
+          old_manager->scheduler_task_runner(),
+          old_manager->quota_manager_proxy_.get(), old_manager->observers_));
   manager->SetBlobParametersForCache(old_manager->blob_storage_context());
   return manager;
 }
 
-CacheStorageManager::~CacheStorageManager() = default;
+LegacyCacheStorageManager::~LegacyCacheStorageManager() = default;
 
-CacheStorageHandle CacheStorageManager::OpenCacheStorage(
+CacheStorageHandle LegacyCacheStorageManager::OpenCacheStorage(
     const url::Origin& origin,
     CacheStorageOwner owner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -194,9 +196,9 @@ CacheStorageHandle CacheStorageManager::OpenCacheStorage(
   // object is needed.  This ensures we create the listener on the correct
   // thread.
   if (!memory_pressure_listener_) {
-    memory_pressure_listener_ =
-        std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
-            &CacheStorageManager::OnMemoryPressure, base::Unretained(this)));
+    memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+        base::BindRepeating(&LegacyCacheStorageManager::OnMemoryPressure,
+                            base::Unretained(this)));
   }
 
   CacheStorageMap::const_iterator it = cache_storage_map_.find({origin, owner});
@@ -211,7 +213,7 @@ CacheStorageHandle CacheStorageManager::OpenCacheStorage(
   return it->second.get()->CreateHandle();
 }
 
-void CacheStorageManager::SetBlobParametersForCache(
+void LegacyCacheStorageManager::SetBlobParametersForCache(
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cache_storage_map_.empty());
@@ -219,20 +221,22 @@ void CacheStorageManager::SetBlobParametersForCache(
   blob_context_ = blob_storage_context;
 }
 
-void CacheStorageManager::NotifyCacheListChanged(const url::Origin& origin) {
+void LegacyCacheStorageManager::NotifyCacheListChanged(
+    const url::Origin& origin) {
   observers_->Notify(FROM_HERE,
                      &CacheStorageContextImpl::Observer::OnCacheListChanged,
                      origin);
 }
 
-void CacheStorageManager::NotifyCacheContentChanged(const url::Origin& origin,
-                                                    const std::string& name) {
+void LegacyCacheStorageManager::NotifyCacheContentChanged(
+    const url::Origin& origin,
+    const std::string& name) {
   observers_->Notify(FROM_HERE,
                      &CacheStorageContextImpl::Observer::OnCacheContentChanged,
                      origin, name);
 }
 
-void CacheStorageManager::CacheStorageUnreferenced(
+void LegacyCacheStorageManager::CacheStorageUnreferenced(
     LegacyCacheStorage* cache_storage,
     const url::Origin& origin,
     CacheStorageOwner owner) {
@@ -254,7 +258,7 @@ bool CacheStorageManager::IsValidQuotaOrigin(const url::Origin& origin) {
   return !origin.opaque();
 }
 
-void CacheStorageManager::GetAllOriginsUsage(
+void LegacyCacheStorageManager::GetAllOriginsUsage(
     CacheStorageOwner owner,
     CacheStorageContext::GetUsageInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -278,12 +282,12 @@ void CacheStorageManager::GetAllOriginsUsage(
       FROM_HERE,
       base::BindOnce(&ListOriginsAndLastModifiedOnTaskRunner, usages_ptr,
                      root_path_, owner),
-      base::BindOnce(&CacheStorageManager::GetAllOriginsUsageGetSizes,
+      base::BindOnce(&LegacyCacheStorageManager::GetAllOriginsUsageGetSizes,
                      weak_ptr_factory_.GetWeakPtr(), std::move(usages),
                      std::move(callback)));
 }
 
-void CacheStorageManager::GetAllOriginsUsageGetSizes(
+void LegacyCacheStorageManager::GetAllOriginsUsageGetSizes(
     std::unique_ptr<std::vector<StorageUsageInfo>> usages,
     CacheStorageContext::GetUsageInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -317,7 +321,7 @@ void CacheStorageManager::GetAllOriginsUsageGetSizes(
   }
 }
 
-void CacheStorageManager::GetOriginUsage(
+void LegacyCacheStorageManager::GetOriginUsage(
     const url::Origin& origin,
     CacheStorageOwner owner,
     storage::QuotaClient::GetUsageCallback callback) {
@@ -327,7 +331,7 @@ void CacheStorageManager::GetOriginUsage(
   LegacyCacheStorage::From(cache_storage)->Size(std::move(callback));
 }
 
-void CacheStorageManager::GetOrigins(
+void LegacyCacheStorageManager::GetOrigins(
     CacheStorageOwner owner,
     storage::QuotaClient::GetOriginsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -349,7 +353,7 @@ void CacheStorageManager::GetOrigins(
       std::move(callback));
 }
 
-void CacheStorageManager::GetOriginsForHost(
+void LegacyCacheStorageManager::GetOriginsForHost(
     const std::string& host,
     CacheStorageOwner owner,
     storage::QuotaClient::GetOriginsCallback callback) {
@@ -375,7 +379,7 @@ void CacheStorageManager::GetOriginsForHost(
                      std::move(callback)));
 }
 
-void CacheStorageManager::DeleteOriginData(
+void LegacyCacheStorageManager::DeleteOriginData(
     const url::Origin& origin,
     CacheStorageOwner owner,
     storage::QuotaClient::DeletionCallback callback) {
@@ -391,18 +395,18 @@ void CacheStorageManager::DeleteOriginData(
   cache_storage->ResetManager();
   cache_storage_map_.erase({origin, owner});
   cache_storage->GetSizeThenCloseAllCaches(
-      base::BindOnce(&CacheStorageManager::DeleteOriginDidClose,
+      base::BindOnce(&LegacyCacheStorageManager::DeleteOriginDidClose,
                      weak_ptr_factory_.GetWeakPtr(), origin, owner,
                      std::move(callback), base::WrapUnique(cache_storage)));
 }
 
-void CacheStorageManager::DeleteOriginData(const url::Origin& origin,
-                                           CacheStorageOwner owner) {
+void LegacyCacheStorageManager::DeleteOriginData(const url::Origin& origin,
+                                                 CacheStorageOwner owner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DeleteOriginData(origin, owner, base::DoNothing());
 }
 
-void CacheStorageManager::DeleteOriginDidClose(
+void LegacyCacheStorageManager::DeleteOriginDidClose(
     const url::Origin& origin,
     CacheStorageOwner owner,
     storage::QuotaClient::DeletionCallback callback,
@@ -434,7 +438,7 @@ void CacheStorageManager::DeleteOriginDidClose(
       base::BindOnce(&DeleteOriginDidDeleteDir, std::move(callback)));
 }
 
-CacheStorageManager::CacheStorageManager(
+LegacyCacheStorageManager::LegacyCacheStorageManager(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
     scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
@@ -455,7 +459,7 @@ CacheStorageManager::CacheStorageManager(
 }
 
 // static
-base::FilePath CacheStorageManager::ConstructOriginPath(
+base::FilePath LegacyCacheStorageManager::ConstructOriginPath(
     const base::FilePath& root_path,
     const url::Origin& origin,
     CacheStorageOwner owner) {
@@ -469,7 +473,7 @@ base::FilePath CacheStorageManager::ConstructOriginPath(
   return root_path.AppendASCII(origin_hash_hex);
 }
 
-void CacheStorageManager::OnMemoryPressure(
+void LegacyCacheStorageManager::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   if (level != base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL)
     return;
