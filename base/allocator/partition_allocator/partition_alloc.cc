@@ -356,10 +356,7 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
                                    size_t new_size,
                                    const char* type_name) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-  // Make MEMORY_TOOL_REPLACES_ALLOCATOR behave the same for max size
-  // as other alloc code.
-  if (new_size > kGenericMaxDirectMapped)
-    return nullptr;
+  CHECK_MAX_SIZE_OR_RETURN_NULLPTR(new_size, flags);
   void* result = realloc(ptr, new_size);
   CHECK(result || flags & PartitionAllocReturnNull);
   return result;
