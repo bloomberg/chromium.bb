@@ -52,13 +52,12 @@ public class FeedSchedulerBridge implements FeedScheduler {
     }
 
     @Override
-    public int shouldSessionRequestData(SessionManagerState sessionManagerState) {
+    public int shouldSessionRequestData(SessionState sessionState) {
         if (mNativeBridge == 0) return SchedulerApi.RequestBehavior.UNKNOWN;
 
         @NativeRequestBehavior
-        int nativeBehavior = nativeShouldSessionRequestData(mNativeBridge,
-                sessionManagerState.hasContent, sessionManagerState.contentCreationDateTimeMs,
-                sessionManagerState.hasOutstandingRequest);
+        int nativeBehavior = nativeShouldSessionRequestData(mNativeBridge, sessionState.hasContent,
+                sessionState.contentCreationDateTimeMs, sessionState.hasOutstandingRequest);
         // If this breaks, it is because SchedulerApi.RequestBehavior and the NativeRequestBehavior
         // defined in feed_scheduler_host.h have diverged. If this happens during a feed DEPS roll,
         // it likely means that the native side needs to be updated. Note that this will not catch
