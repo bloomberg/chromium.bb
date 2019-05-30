@@ -104,7 +104,6 @@ void SurfaceManager::SetTickClockForTesting(const base::TickClock* tick_clock) {
 Surface* SurfaceManager::CreateSurface(
     base::WeakPtr<SurfaceClient> surface_client,
     const SurfaceInfo& surface_info,
-    bool needs_sync_tokens,
     bool block_activation_on_parent) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(surface_info.is_valid());
@@ -122,9 +121,9 @@ Surface* SurfaceManager::CreateSurface(
   if (!allocation_group)
     return nullptr;
 
-  std::unique_ptr<Surface> surface = std::make_unique<Surface>(
-      surface_info, this, allocation_group, surface_client, needs_sync_tokens,
-      block_activation_on_parent);
+  std::unique_ptr<Surface> surface =
+      std::make_unique<Surface>(surface_info, this, allocation_group,
+                                surface_client, block_activation_on_parent);
   surface->SetDependencyDeadline(
       std::make_unique<SurfaceDependencyDeadline>(tick_clock_));
   surface_map_[surface_info.id()] = std::move(surface);

@@ -30,12 +30,10 @@ Surface::Surface(const SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
                  SurfaceAllocationGroup* allocation_group,
                  base::WeakPtr<SurfaceClient> surface_client,
-                 bool needs_sync_tokens,
                  bool block_activation_on_parent)
     : surface_info_(surface_info),
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
-      needs_sync_tokens_(needs_sync_tokens),
       block_activation_on_parent_(block_activation_on_parent),
       allocation_group_(allocation_group),
       weak_factory_(this) {

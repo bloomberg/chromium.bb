@@ -24,6 +24,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_dependency_deadline.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -42,7 +43,6 @@ class LatencyInfo;
 
 namespace viz {
 
-class SurfaceClient;
 class SurfaceAllocationGroup;
 class SurfaceManager;
 
@@ -84,7 +84,6 @@ class VIZ_SERVICE_EXPORT Surface final {
           SurfaceManager* surface_manager,
           SurfaceAllocationGroup* allocation_group,
           base::WeakPtr<SurfaceClient> surface_client,
-          bool needs_sync_tokens,
           bool block_activation_on_parent);
   ~Surface();
 
@@ -115,7 +114,11 @@ class VIZ_SERVICE_EXPORT Surface final {
   // Decrements the reference count on resources specified by |resources|.
   void UnrefResources(const std::vector<ReturnedResource>& resources);
 
-  bool needs_sync_tokens() const { return needs_sync_tokens_; }
+  // If |surface_client_| is dead, we can't return resources so sync tokens
+  // don't matter anyway.
+  bool needs_sync_tokens() const {
+    return surface_client_ ? surface_client_->NeedsSyncTokens() : false;
+  }
 
   bool block_activation_on_parent() const {
     return block_activation_on_parent_;
@@ -313,7 +316,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   // set to true, this surface will be unthrottled and the surface that is
   // created after it will also not be throttled.
   bool seen_first_surface_dependency_ = false;
-  const bool needs_sync_tokens_;
   // When false, this surface will not be subject to child throttling even if
   // it's not embedded yet.
   bool block_activation_on_parent_ = false;

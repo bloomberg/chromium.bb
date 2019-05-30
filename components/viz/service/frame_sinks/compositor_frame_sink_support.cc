@@ -200,6 +200,10 @@ void CompositorFrameSinkSupport::OnSurfacePresented(
   DidPresentCompositorFrame(frame_token, feedback);
 }
 
+bool CompositorFrameSinkSupport::NeedsSyncTokens() const {
+  return needs_sync_tokens_;
+}
+
 void CompositorFrameSinkSupport::RefResources(
     const std::vector<TransferableResource>& resources) {
   surface_resource_holder_.RefResources(resources);
@@ -498,8 +502,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
     }
 
     current_surface = surface_manager_->CreateSurface(
-        weak_factory_.GetWeakPtr(), surface_info, needs_sync_tokens_,
-        block_activation_on_parent);
+        weak_factory_.GetWeakPtr(), surface_info, block_activation_on_parent);
     if (!current_surface) {
       TRACE_EVENT_INSTANT0("viz", "Surface belongs to another client",
                            TRACE_EVENT_SCOPE_THREAD);

@@ -18,4 +18,8 @@ StubSurfaceClient::TakeCopyOutputRequests(
   return std::vector<std::unique_ptr<CopyOutputRequest>>();
 }
 
+bool StubSurfaceClient::NeedsSyncTokens() const {
+  return true;
+}
+
 }  // namespace viz

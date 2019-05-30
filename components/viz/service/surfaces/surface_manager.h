@@ -80,7 +80,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // A temporary reference will be added to the new Surface.
   Surface* CreateSurface(base::WeakPtr<SurfaceClient> surface_client,
                          const SurfaceInfo& surface_info,
-                         bool needs_sync_tokens,
                          bool block_activation_on_parent);
 
   // Marks |surface_id| for destruction. The surface will get destroyed when

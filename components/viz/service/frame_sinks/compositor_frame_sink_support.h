@@ -125,6 +125,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       base::TimeTicks expected_display_time) override;
   void OnSurfacePresented(uint32_t frame_token,
                           const gfx::PresentationFeedback& feedback) override;
+  bool NeedsSyncTokens() const override;
 
   // mojom::CompositorFrameSink helpers.
   void SetNeedsBeginFrame(bool needs_begin_frame);
