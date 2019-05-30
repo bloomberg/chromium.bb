@@ -765,7 +765,7 @@ need to be translated for each locale.-->
         Shared from <ph name="DEVICE_NAME">$1<ex>Ted's Pixel 2</ex></ph>
       </message>
       <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_SUCCESS" desc="The title text for the comformation notification when the user successfully share a tab to other devices.">
-        Sending to <ph name="DEVICE_NAME">$1<ex>Ted's Pixel 2</ex></ph>
+        Sending to <ph name="DEVICE_NAME">$1<ex>Ted's Pixel 2</ex></ph>...
       </message>
       <message name="IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_FAILURE_TITLE" desc="The title text for the comformation notification when the user failed to share a tab to other devices.">
         Failed to send
