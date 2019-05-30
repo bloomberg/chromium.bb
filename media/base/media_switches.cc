@@ -199,16 +199,10 @@ const base::Feature kPictureInPicture {
 #endif
 };
 
-// Only decode preload=metadata elements upon visibility. macOS still has some
-// undiagnosed performance and test issues, so isn't enabled yet.
-const base::Feature kPreloadMetadataLazyLoad {
-  "PreloadMetadataLazyLoad",
-#if defined(OS_MACOSX)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+// Only decode preload=metadata elements upon visibility.
+// TODO(crbug.com/879406): Remove this after M76 ships to stable
+const base::Feature kPreloadMetadataLazyLoad{"PreloadMetadataLazyLoad",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Let videos be resumed via remote controls (for example, the notification)
 // when in background.
