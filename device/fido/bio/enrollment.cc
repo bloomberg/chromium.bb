@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/bio/bio_enrollment.h"
+#include "device/fido/bio/enrollment.h"
 
 #include "components/cbor/diagnostic_writer.h"
 #include "components/device_event_log/device_event_log.h"

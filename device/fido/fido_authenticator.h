@@ -17,7 +17,7 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_supported_options.h"
-#include "device/fido/bio/bio_enrollment.h"
+#include "device/fido/bio/enrollment.h"
 #include "device/fido/credential_management.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"

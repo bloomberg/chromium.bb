@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/bio/bio_enrollment_handler.h"
+#include "device/fido/bio/enrollment_handler.h"
 
 #include "base/bind.h"
-#include "device/fido/bio/bio_enrollment.h"
+#include "device/fido/bio/enrollment.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
 

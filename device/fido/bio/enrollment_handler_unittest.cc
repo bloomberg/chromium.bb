@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/test/scoped_task_environment.h"
-#include "device/fido/bio/bio_enrollment_handler.h"
+#include "device/fido/bio/enrollment_handler.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_fido_device_factory.h"
