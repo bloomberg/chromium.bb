@@ -4,7 +4,7 @@
 
 /** @fileoverview Tests for Chrome OS settings page. */
 
-/** @const {string} Path general Chrome browser settings. */
+// Path to general chrome browser settings and associated utilities.
 const BROWSER_SETTINGS_PATH = '../';
 
 // Polymer BrowserTest fixture.
@@ -13,12 +13,9 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "ash/public/cpp/ash_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
-/**
- * Generic text fixture for CrOS Polymer Settings elements to be overridden by
- * individual element tests.
- * @constructor
- * @extends {PolymerTest}
- */
+
+// Generic text fixture for CrOS Polymer Settings elements to be overridden by
+// individual element tests.
 const OSSettingsBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
@@ -44,11 +41,7 @@ const OSSettingsBrowserTest = class extends PolymerTest {
   }
 };
 
-/**
- * Test fixture for the Smb Shares page.
- * @constructor
- * @extends {OSSettingsBrowserTest}
- */
+// Test fixture for the Smb Shares page.
 OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
