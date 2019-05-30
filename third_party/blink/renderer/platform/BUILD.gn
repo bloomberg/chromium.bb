@@ -99,33 +99,6 @@ compiled_action("character_data") {
   args = rebase_path(outputs, root_build_dir)
 }
 
-action("instrumentation_probes") {
-  script = "../build/scripts/make_instrumenting_probes.py"
-
-  input_file = "probe/platform_probes.pidl"
-  inputs = [
-    input_file,
-    "probe/platform_probes.json5",
-    "../build/scripts/templates/instrumenting_probes_impl.cc.tmpl",
-    "../build/scripts/templates/instrumenting_probes_inl.h.tmpl",
-    "../build/scripts/templates/probe_sink.h.tmpl",
-  ]
-
-  outputs = [
-    "$blink_platform_output_dir/platform_probe_sink.h",
-    "$blink_platform_output_dir/platform_probes_impl.cc",
-    "$blink_platform_output_dir/platform_probes_inl.h",
-  ]
-
-  args = [
-    rebase_path(inputs[0], root_build_dir),
-    "--config",
-    rebase_path("probe/platform_probes.json5", root_build_dir),
-    "--output_dir",
-    rebase_path(blink_platform_output_dir, root_build_dir),
-  ]
-}
-
 executable("character_data_generator") {
   sources = [
     "text/character_property_data.h",
@@ -149,7 +122,6 @@ group("make_platform_generated") {
     ":character_data",
     ":color_data",
     ":font_family_names",
-    ":instrumentation_probes",
     ":runtime_enabled_features",
     "//third_party/blink/renderer/platform/network:make_generated",
   ]
@@ -1257,10 +1229,6 @@ jumbo_component("platform") {
     "prerender.cc",
     "prerender.h",
     "prerender_client.h",
-    "probe/platform_probes.cc",
-    "probe/platform_probes.h",
-    "probe/platform_trace_events_agent.cc",
-    "probe/platform_trace_events_agent.h",
     "resolution_units.h",
     "shared_buffer.cc",
     "shared_buffer.h",
@@ -1402,8 +1370,7 @@ jumbo_component("platform") {
   # Add in the generated files.
   sources += get_target_outputs(":character_data") +
              get_target_outputs(":color_data") +
-             get_target_outputs(":font_family_names") +
-             get_target_outputs(":instrumentation_probes")
+             get_target_outputs(":font_family_names")
   set_sources_assignment_filter([ "*.pickle" ])
   sources += get_target_outputs(":runtime_enabled_features")
   set_sources_assignment_filter(sources_assignment_filter)
