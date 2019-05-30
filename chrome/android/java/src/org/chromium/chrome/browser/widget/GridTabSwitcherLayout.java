@@ -105,7 +105,7 @@ public class GridTabSwitcherLayout
             return;
         }
 
-        shrinkTab(mGridTabSwitcher::getThumbnailLocationOfCurrentTab);
+        shrinkTab(() -> mGridTabSwitcher.getThumbnailLocationOfCurrentTab(false));
     }
 
     @Override
@@ -166,8 +166,12 @@ public class GridTabSwitcherLayout
 
     @Override
     public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
-        // TODO(crbug.com/964406): implement zoom-in animation.
         startHiding(mTabModelSelector.getCurrentTabId(), false);
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
+            mGridTabSwitcher.postHiding();
+            return;
+        }
+        expandTab(mGridTabSwitcher.getThumbnailLocationOfCurrentTab(true));
     }
 
     @Override
@@ -221,6 +225,53 @@ public class GridTabSwitcherLayout
                 mTabToSwitcherAnimation = null;
                 // Step 2: fade in the real GTS RecyclerView.
                 mGridController.showOverview(true);
+
+                reportAnimationPerf();
+            }
+        });
+        mStartFrame = mFrameCount;
+        mStartTime = SystemClock.elapsedRealtime();
+        mTabToSwitcherAnimation.start();
+    }
+
+    /**
+     * Animate expanding a tab from a source {@link Rect} area.
+     * @param source The source {@link Rect} area.
+     */
+    private void expandTab(Rect source) {
+        LayoutTab sourceLayoutTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
+                mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NEED_TITLE);
+
+        mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
+
+        forceAnimationToFinish();
+
+        CompositorAnimationHandler handler = getAnimationHandler();
+        Collection<Animator> animationList = new ArrayList<>(5);
+
+        // Zoom in the source tab
+        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
+                LayoutTab.SCALE, source.width() / (getWidth() * mDpToPx), 1, ZOOMING_DURATION));
+        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.X,
+                source.left / mDpToPx, 0f, ZOOMING_DURATION));
+        animationList.add(CompositorAnimator.ofFloatProperty(
+                handler, sourceLayoutTab, LayoutTab.Y, source.top / mDpToPx, 0f, ZOOMING_DURATION));
+        animationList.add(CompositorAnimator.ofFloatProperty(
+                handler, sourceLayoutTab, LayoutTab.DECORATION_ALPHA, 0f, 1f, ZOOMING_DURATION));
+        // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
+        // down, making the "create group" visible for a while.
+        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
+                LayoutTab.MAX_CONTENT_HEIGHT, getWidth(),
+                sourceLayoutTab.getUnclampedOriginalContentHeight(), ZOOMING_DURATION,
+                BakedBezierInterpolator.FADE_IN_CURVE));
+
+        mTabToSwitcherAnimation = new AnimatorSet();
+        mTabToSwitcherAnimation.playTogether(animationList);
+        mTabToSwitcherAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mTabToSwitcherAnimation = null;
+                mGridTabSwitcher.postHiding();
 
                 reportAnimationPerf();
             }

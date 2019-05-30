@@ -48,9 +48,18 @@ public interface GridTabSwitcher {
     void prepareOverview();
 
     /**
+     * This is called after the compositor animation is done, for potential clean-up work.
+     * {@link OverviewModeBehavior.OverviewModeObserver#onOverviewModeFinishedHiding} happens after
+     * the Android View animation, but before the compositor animation.
+     */
+    void postHiding();
+
+    /**
+     * @param forceUpdate Whether to measure the current location again. If not, return the last
+     *                    location measured on last layout, which can be wrong after scrolling.
      * @return The {@link Rect} of the thumbnail of the current tab, relative to the
      *         GridTabSwitcher {@link TabListRecyclerView} coordinates.
      */
     @NonNull
-    Rect getThumbnailLocationOfCurrentTab();
+    Rect getThumbnailLocationOfCurrentTab(boolean forceUpdate);
 }

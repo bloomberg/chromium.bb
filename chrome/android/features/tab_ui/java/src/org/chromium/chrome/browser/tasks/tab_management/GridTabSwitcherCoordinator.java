@@ -112,8 +112,14 @@ public class GridTabSwitcherCoordinator
     }
 
     @Override
+    public void postHiding() {
+        mMediator.postHiding();
+    }
+
+    @Override
     @NonNull
-    public Rect getThumbnailLocationOfCurrentTab() {
+    public Rect getThumbnailLocationOfCurrentTab(boolean forceUpdate) {
+        if (forceUpdate) mTabGridCoordinator.updateThumbnailLocation();
         return mTabGridCoordinator.getThumbnailLocationOfCurrentTab();
     }
 

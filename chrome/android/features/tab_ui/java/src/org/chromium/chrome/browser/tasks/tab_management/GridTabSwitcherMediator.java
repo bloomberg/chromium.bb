@@ -19,6 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -145,7 +146,8 @@ class GridTabSwitcherMediator
                     if (modelFilter instanceof TabGroupModelFilter) {
                         ((TabGroupModelFilter) modelFilter).recordSessionsCount(tab);
                     }
-                    setVisibility(false);
+                    hideOverview(
+                            !ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION));
                 }
             }
         };
@@ -208,7 +210,7 @@ class GridTabSwitcherMediator
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
     }
 
-    public void prepareOverview() {
+    void prepareOverview() {
         mResetHandler.resetWithTabList(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter());
         int initialPosition = Math.max(
@@ -250,12 +252,15 @@ class GridTabSwitcherMediator
 
     @Override
     public void finishedHiding() {
-        // TODO(crbug.com/964406): see if we can lazily release it.
-        mResetHandler.resetWithTabList(null);
-        mContainerViewModel.set(INITIAL_SCROLL_INDEX, 0);
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeFinishedHiding();
         }
+    }
+
+    void postHiding() {
+        // TODO(crbug.com/964406): see if we can lazily release it.
+        mResetHandler.resetWithTabList(null);
+        mContainerViewModel.set(INITIAL_SCROLL_INDEX, 0);
     }
 
     /**

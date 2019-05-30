@@ -54,6 +54,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -67,7 +69,8 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features.DisableFeatures(ChromeFeatureList.TAB_SWITCHER_ON_RETURN)
+@DisableFeatures(ChromeFeatureList.TAB_SWITCHER_ON_RETURN)
+@EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
 public class GridTabSwitcherMediatorUnitTest {
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -284,7 +287,7 @@ public class GridTabSwitcherMediatorUnitTest {
     @Test
     public void resetsToNullAfterHidingFinishes() {
         initAndAssertAllProperties();
-        mMediator.finishedHiding();
+        mMediator.postHiding();
         verify(mResetHandler).resetWithTabList(eq(null));
         assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
     }
