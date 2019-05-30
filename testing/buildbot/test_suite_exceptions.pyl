@@ -1758,7 +1758,7 @@
         ],
       },
       # chromium.webkit.
-      'WebKit Linux Trusty ASAN': {
+      'WebKit Linux ASAN': {
         'args': [
           '--additional-expectations',
           '../../third_party/blink/web_tests/ASANExpectations',
@@ -1775,7 +1775,7 @@
           'shards': 20,
         },
       },
-      'WebKit Linux Trusty Leak': {
+      'WebKit Linux Leak': {
         'args': [
           '--additional-expectations',
           '../../third_party/blink/web_tests/LeakExpectations',
@@ -1792,7 +1792,7 @@
           'shards': 10,
         },
       },
-      'WebKit Linux Trusty MSAN': {
+      'WebKit Linux MSAN': {
         'args': [
           '--additional-expectations',
           '../../third_party/blink/web_tests/MSANExpectations',
