@@ -198,9 +198,9 @@ class NET_EXPORT HttpUtil {
   // Given a comma separated ordered list of language codes, return
   // the list with a qvalue appended to each language.
   // The way qvalues are assigned is rather simple. The qvalue
-  // starts with 1.0 and is decremented by 0.2 for each successive entry
-  // in the list until it reaches 0.2. All the entries after that are
-  // assigned the same qvalue of 0.2. Also, note that the 1st language
+  // starts with 1.0 and is decremented by 0.1 for each successive entry
+  // in the list until it reaches 0.1. All the entries after that are
+  // assigned the same qvalue of 0.1. Also, note that the 1st language
   // will not have a qvalue added because the absence of a qvalue implicitly
   // means q=1.0.
   //
