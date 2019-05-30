@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
+#include "chrome/services/cups_proxy/public/mojom/proxy.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace chromeos {
@@ -22,8 +23,9 @@ const service_manager::Manifest& GetCupsProxyManifest() {
                                service_manager::Manifest::
                                    InstanceSharingPolicy::kSingleton)
                            .Build())
-          .ExposeCapability(mojom::kCupsProxierCapability,
-                            service_manager::Manifest::InterfaceList<>())
+          .ExposeCapability(mojom::kStartCupsProxyServiceCapability,
+                            service_manager::Manifest::InterfaceList<
+                                mojom::StartCupsProxyService>())
           .Build()};
   return *manifest;
 }

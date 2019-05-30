@@ -7,5 +7,5 @@ module chromeos.printing.mojom;
 // Service id.
 const string kCupsProxyServiceName = "cups_proxy";
 
-// IppProxier capability id.
-const string kCupsProxierCapability = "cups_proxier";
+// StartCupsProxyService capability id.
+const string kStartCupsProxyServiceCapability = "start_cups_proxy_service";

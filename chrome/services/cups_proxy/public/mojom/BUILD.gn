@@ -8,6 +8,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [
     "constants.mojom",
+    "proxy.mojom",
   ]
 
   public_deps = [

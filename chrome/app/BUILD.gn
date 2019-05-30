@@ -460,6 +460,7 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chrome/browser/chromeos/supervision/mojom",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
+      "//chrome/services/cups_proxy/public/mojom",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/device_sync/public/cpp:manifest",

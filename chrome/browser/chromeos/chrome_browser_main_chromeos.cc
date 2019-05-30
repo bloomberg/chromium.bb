@@ -97,6 +97,7 @@
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/power/process_data_collector.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
+#include "chrome/browser/chromeos/printing/cups_proxy_service_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
@@ -687,6 +688,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       std::make_unique<chromeos::SessionTerminationManager>();
   lock_to_single_user_manager_ =
       std::make_unique<policy::LockToSingleUserManager>();
+
+  cups_proxy_service_manager_ = std::make_unique<CupsProxyServiceManager>();
 
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }

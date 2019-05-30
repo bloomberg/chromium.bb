@@ -6,12 +6,20 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace chromeos {
 
 FakeCupsProxyClient::FakeCupsProxyClient() = default;
 FakeCupsProxyClient::~FakeCupsProxyClient() = default;
+
+void FakeCupsProxyClient::WaitForServiceToBeAvailable(
+    dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
 
 void FakeCupsProxyClient::BootstrapMojoConnection(
     base::ScopedFD fd,

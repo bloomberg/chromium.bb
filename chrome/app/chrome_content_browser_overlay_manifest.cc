@@ -53,6 +53,7 @@
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
+#include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/device_sync/public/cpp/manifest.h"
@@ -177,6 +178,9 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability(
             chromeos::network_config::mojom::kServiceName,
             chromeos::network_config::mojom::kNetworkConfigCapability)
+        .RequireCapability(
+            chromeos::printing::mojom::kCupsProxyServiceName,
+            chromeos::printing::mojom::kStartCupsProxyServiceCapability)
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "cellular_setup",
             service_manager::Manifest::InterfaceList<
