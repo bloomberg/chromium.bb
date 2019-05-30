@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.customtabs.TrustedWebUtils;
 import android.support.customtabs.TrustedWebUtils.SplashScreenParamKey;
@@ -27,6 +28,9 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.webapps.SplashController;
 import org.chromium.chrome.browser.webapps.SplashDelegate;
+import org.chromium.chrome.browser.webapps.SplashscreenObserver;
+import org.chromium.content_public.browser.ScreenOrientationProvider;
+import org.chromium.ui.base.ActivityWindowAndroid;
 
 import javax.inject.Inject;
 
@@ -56,20 +60,27 @@ import javax.inject.Inject;
  * gc-ed when it finishes its job (to that end, it removes all observers it has set).
  * If these lifecycle assumptions change, consider whether @ActivityScope needs to be added.
  */
-public class TwaSplashController implements InflationObserver, SplashDelegate {
+public class TwaSplashController
+        implements InflationObserver, SplashDelegate, SplashscreenObserver {
     private final SplashController mSplashController;
     private final Activity mActivity;
+    private final ActivityWindowAndroid mActivityWindowAndroid;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
+    private final ScreenOrientationProvider mScreenOrientationProvider;
     private final SplashImageHolder mSplashImageCache;
     private final CustomTabIntentDataProvider mIntentDataProvider;
 
     @Inject
     public TwaSplashController(SplashController splashController, Activity activity,
-            ActivityLifecycleDispatcher lifecycleDispatcher, SplashImageHolder splashImageCache,
+            ActivityWindowAndroid activityWindowAndroid,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
+            ScreenOrientationProvider screenOrientationProvider, SplashImageHolder splashImageCache,
             CustomTabIntentDataProvider intentDataProvider) {
         mSplashController = splashController;
         mActivity = activity;
+        mActivityWindowAndroid = activityWindowAndroid;
         mLifecycleDispatcher = lifecycleDispatcher;
+        mScreenOrientationProvider = screenOrientationProvider;
         mSplashImageCache = splashImageCache;
         mIntentDataProvider = intentDataProvider;
 
@@ -78,7 +89,14 @@ public class TwaSplashController implements InflationObserver, SplashDelegate {
         mSplashController.setConfig(
                 this, true /* isWindowInitiallyTranslucent */, splashHideAnimationDurationMs);
 
+        mSplashController.addObserver(this);
         lifecycleDispatcher.register(this);
+
+        // Setting the screen orientation while the activity is translucent throws an exception on
+        // O (but not on O MR1). Delay setting it.
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
+            mScreenOrientationProvider.delayOrientationRequests(mActivityWindowAndroid);
+        }
     }
 
     @Override
@@ -113,6 +131,14 @@ public class TwaSplashController implements InflationObserver, SplashDelegate {
     public void onPostInflationStartup() {
         mSplashController.bringSplashBackToFront();
     }
+
+    @Override
+    public void onTranslucencyRemoved() {
+        mScreenOrientationProvider.runDelayedOrientationRequests(mActivityWindowAndroid);
+    }
+
+    @Override
+    public void onSplashscreenHidden(long startTimestamp, long endTimestamp) {}
 
     private void applyCustomizationsToSplashScreenView(ImageView imageView) {
         Bundle params = getSplashScreenParamsFromIntent();

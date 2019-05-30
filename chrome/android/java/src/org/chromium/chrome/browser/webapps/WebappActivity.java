@@ -865,10 +865,11 @@ public class WebappActivity extends SingleTabActivity {
 
     /** Sets the screen orientation. */
     private void applyScreenOrientation() {
-        if (mWebappInfo.isSplashProvidedByWebApk()) {
+        if (mWebappInfo.isSplashProvidedByWebApk()
+                && Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
             // When the splash screen is provided by the WebAPK, the activity is initially
             // translucent. Setting the screen orientation while the activity is translucent
-            // throws an exception. Delay setting it.
+            // throws an exception on O (but not O MR1). Delay setting it.
             ScreenOrientationProvider.getInstance().delayOrientationRequests(getWindowAndroid());
 
             addSplashscreenObserver(new SplashscreenObserver() {
