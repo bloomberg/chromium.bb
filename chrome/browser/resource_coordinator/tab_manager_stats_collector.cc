@@ -131,9 +131,9 @@ class TabManagerStatsCollector::SwapMetricsDelegate
 TabManagerStatsCollector::TabManagerStatsCollector() : weak_factory_(this) {
   SessionRestore::AddObserver(this);
 
-  // Post an after startup task that starts the periodic sampling of freezing
-  // and discarding stats.
-  content::BrowserThread::PostAfterStartupTask(
+  // Post BEST_EFFORT task (which will only run after startup is completed) that
+  // starts the periodic sampling of freezing and discarding stats.
+  content::BrowserThread::PostBestEffortTask(
       FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
       base::BindOnce(&TabManagerStatsCollector::StartPeriodicSampling,
                      weak_factory_.GetWeakPtr()));
