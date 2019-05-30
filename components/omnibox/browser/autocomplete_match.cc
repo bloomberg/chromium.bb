@@ -233,7 +233,6 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::SEARCH_WHAT_YOU_TYPED:
     case Type::SEARCH_SUGGEST:
     case Type::SEARCH_SUGGEST_ENTITY:
-    case Type::SEARCH_SUGGEST_PERSONALIZED:
     case Type::SEARCH_SUGGEST_PROFILE:
     case Type::SEARCH_OTHER_ENGINE:
     case Type::CONTACT_DEPRECATED:
@@ -242,7 +241,8 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::CLIPBOARD_IMAGE:
       return vector_icons::kSearchIcon;
 
-    case Type::SEARCH_HISTORY: {
+    case Type::SEARCH_HISTORY:
+    case Type::SEARCH_SUGGEST_PERSONALIZED: {
       if (base::FeatureList::IsEnabled(
               omnibox::kOmniboxSuggestionTransparencyOptions) ||
           base::FeatureList::IsEnabled(
