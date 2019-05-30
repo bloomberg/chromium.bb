@@ -473,7 +473,8 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
             params.visual_properties.display_mode,
             /*is_frozen=*/params.main_frame_routing_id == MSG_ROUTING_NONE,
             params.hidden, params.never_visible,
-            /*widget_request=*/nullptr);
+            /*widget_request=*/nullptr,
+            params.view_id);
         // The lifetime |render_widget_| is handled manually for the
         // mainframe widget. The matching Release() is in Initialize().
         render_widget->AddRef();

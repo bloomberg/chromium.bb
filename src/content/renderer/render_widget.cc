@@ -439,8 +439,10 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
                            bool is_frozen,
                            bool hidden,
                            bool never_visible,
-                           mojom::WidgetRequest widget_request)
+                           mojom::WidgetRequest widget_request,
+                           int32_t view_id)
     : routing_id_(widget_routing_id),
+      view_id_(view_id),
       compositor_deps_(compositor_deps),
       webwidget_internal_(nullptr),
       auto_resize_mode_(false),
@@ -1748,7 +1750,8 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
       GenerateLayerTreeSettings(compositor_deps_, for_child_local_root_frame_,
                                 screen_info_.rect.size(),
                                 screen_info_.device_scale_factor),
-      compositor_deps_->CreateUkmRecorderFactory());
+      compositor_deps_->CreateUkmRecorderFactory(),
+      view_id_);
 
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportSize(), screen_info_);
