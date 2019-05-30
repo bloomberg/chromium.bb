@@ -574,8 +574,7 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
   if (owning_button->GetNativeTheme() != native_theme_)
     return std::move(border);
 
-  std::unique_ptr<views::LabelButtonAssetBorder> gtk_border(
-      new views::LabelButtonAssetBorder(owning_button->style()));
+  auto gtk_border = std::make_unique<views::LabelButtonAssetBorder>();
 
   gtk_border->set_insets(border->GetInsets());
 

@@ -80,12 +80,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   bool GetIsDefault() const;
   void SetIsDefault(bool is_default);
 
-  // Gets or sets the button's overall style; the default is |STYLE_TEXTBUTTON|.
-  // DEPRECATED: ButtonStyle is deprecated. Use MdTextButton in place of
-  // |STYLE_BUTTON|.
-  ButtonStyle style() const { return style_; }
-  void SetStyleDeprecated(ButtonStyle style);
-
   // Sets the spacing between the image and the text.
   int GetImageLabelSpacing() const;
   void SetImageLabelSpacing(int spacing);
@@ -215,9 +209,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Whether or not the button appears or behaves as the default button in its
   // current context;
   bool is_default_ = false;
-
-  // The button's overall style.
-  ButtonStyle style_ = STYLE_TEXTBUTTON;
 
   // True if current border was set by UpdateThemedBorder.
   bool border_is_themed_border_ = true;

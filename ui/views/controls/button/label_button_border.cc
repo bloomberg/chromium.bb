@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "cc/paint/paint_flags.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -22,10 +21,6 @@
 namespace views {
 
 namespace {
-
-// Insets for the unified button images. This assumes that the images
-// are of a 9 grid, of 5x5 size each.
-constexpr int kButtonInsets = 5;
 
 // The text-button hot and pushed image IDs; normal is unadorned by default.
 constexpr int kTextHoveredImages[] = IMAGE_GRID(IDR_TEXTBUTTON_HOVER);
@@ -67,59 +62,21 @@ gfx::Size LabelButtonBorder::GetMinimumSize() const {
   return gfx::Size();
 }
 
-LabelButtonAssetBorder::LabelButtonAssetBorder(Button::ButtonStyle style) {
-  set_insets(GetDefaultInsetsForStyle(style));
+LabelButtonAssetBorder::LabelButtonAssetBorder() {
+  set_insets(GetDefaultInsets());
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::Insets insets(kButtonInsets);
-  if (style == Button::STYLE_BUTTON) {
-    SetPainter(false, Button::STATE_NORMAL,
-               Painter::CreateImagePainter(
-                   *rb.GetImageSkiaNamed(IDR_BUTTON_NORMAL), insets));
-    SetPainter(false, Button::STATE_HOVERED,
-               Painter::CreateImagePainter(
-                   *rb.GetImageSkiaNamed(IDR_BUTTON_HOVER), insets));
-    SetPainter(false, Button::STATE_PRESSED,
-               Painter::CreateImagePainter(
-                   *rb.GetImageSkiaNamed(IDR_BUTTON_PRESSED), insets));
-    SetPainter(false, Button::STATE_DISABLED,
-               Painter::CreateImagePainter(
-                   *rb.GetImageSkiaNamed(IDR_BUTTON_DISABLED), insets));
-    SetPainter(true, Button::STATE_NORMAL,
-               Painter::CreateImagePainter(
-                   *rb.GetImageSkiaNamed(IDR_BUTTON_FOCUSED_NORMAL), insets));
-    SetPainter(true, Button::STATE_HOVERED,
-               Painter::CreateImagePainter(
-                   *rb.GetImageSkiaNamed(IDR_BUTTON_FOCUSED_HOVER), insets));
-    SetPainter(true, Button::STATE_PRESSED,
-               Painter::CreateImagePainter(
-                   *rb.GetImageSkiaNamed(IDR_BUTTON_FOCUSED_PRESSED), insets));
-    SetPainter(true, Button::STATE_DISABLED,
-               Painter::CreateImagePainter(
-                   *rb.GetImageSkiaNamed(IDR_BUTTON_DISABLED), insets));
-  } else if (style == Button::STYLE_TEXTBUTTON) {
-    SetPainter(false, Button::STATE_HOVERED,
-               Painter::CreateImageGridPainter(kTextHoveredImages));
-    SetPainter(false, Button::STATE_PRESSED,
-               Painter::CreateImageGridPainter(kTextPressedImages));
-  }
+  SetPainter(false, Button::STATE_HOVERED,
+             Painter::CreateImageGridPainter(kTextHoveredImages));
+  SetPainter(false, Button::STATE_PRESSED,
+             Painter::CreateImageGridPainter(kTextPressedImages));
 }
 
 LabelButtonAssetBorder::~LabelButtonAssetBorder() = default;
 
 // static
-gfx::Insets LabelButtonAssetBorder::GetDefaultInsetsForStyle(
-    Button::ButtonStyle style) {
-  gfx::Insets insets;
-  if (style == Button::STYLE_BUTTON) {
-    insets = gfx::Insets(8, 13);
-  } else if (style == Button::STYLE_TEXTBUTTON) {
-    insets = LayoutProvider::Get()->GetInsetsMetric(
-        InsetsMetric::INSETS_LABEL_BUTTON);
-  } else {
-    NOTREACHED();
-  }
-  return insets;
+gfx::Insets LabelButtonAssetBorder::GetDefaultInsets() {
+  return LayoutProvider::Get()->GetInsetsMetric(
+      InsetsMetric::INSETS_LABEL_BUTTON);
 }
 
 bool LabelButtonAssetBorder::PaintsButtonState(bool focused,

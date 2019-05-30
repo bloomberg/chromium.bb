@@ -32,7 +32,7 @@ class VIEWS_EXPORT PlatformStyle {
   // typical Cancel/OK button group.
   static const bool kIsOkButtonLeading;
 
-  // Minimum size for platform-styled buttons (Button::STYLE_BUTTON).
+  // Minimum size for platform-styled buttons.
   static const int kMinLabelButtonWidth;
   static const int kMinLabelButtonHeight;
 
@@ -91,8 +91,7 @@ class VIEWS_EXPORT PlatformStyle {
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
 
   // Applies platform styles to |label| and fills |color_by_state| with the text
-  // colors for normal, pressed, hovered, and disabled states, if the colors for
-  // Button::STYLE_BUTTON buttons differ from those provided by ui::NativeTheme.
+  // colors for normal, pressed, hovered, and disabled states.
   static void ApplyLabelButtonTextStyle(Label* label,
                                         ButtonColorByState* color_by_state);
 

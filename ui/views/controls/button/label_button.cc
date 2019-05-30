@@ -157,26 +157,6 @@ void LabelButton::SetIsDefault(bool is_default) {
   OnPropertyChanged(&is_default_, UpdateStyleToIndicateDefaultStatus());
 }
 
-void LabelButton::SetStyleDeprecated(ButtonStyle style) {
-  // All callers currently pass STYLE_BUTTON, and should only call this once, to
-  // change from the default style.
-  DCHECK_EQ(style, STYLE_BUTTON);
-  DCHECK_EQ(style_, STYLE_TEXTBUTTON);
-  DCHECK(!GetWidget()) << "Can't change button style after adding to a Widget.";
-
-  style_ = style;
-
-  SetFocusPainter(nullptr);
-  SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  SetFocusForPlatform();
-  set_request_focus_on_press(true);
-  SetMinSize(gfx::Size(PlatformStyle::kMinLabelButtonWidth,
-                       PlatformStyle::kMinLabelButtonHeight));
-
-  // Themed borders will be set once the button is added to a Widget, since that
-  // provides the value of GetNativeTheme().
-}
-
 int LabelButton::GetImageLabelSpacing() const {
   return image_label_spacing_;
 }
@@ -190,11 +170,8 @@ void LabelButton::SetImageLabelSpacing(int spacing) {
 }
 
 std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
-  if (style_ != Button::STYLE_TEXTBUTTON)
-    return std::make_unique<LabelButtonAssetBorder>(style_);
   auto border = std::make_unique<LabelButtonBorder>();
-  border->set_insets(
-      views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(style_));
+  border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsets());
   return border;
 }
 
@@ -211,15 +188,6 @@ gfx::Size LabelButton::CalculatePreferredSize() const {
     Label label(GetText(), {label_->font_list()});
     label.SetLineHeight(label_->line_height());
     label.SetShadows(label_->shadows());
-
-    if (style_ == STYLE_BUTTON) {
-      // Some text appears wider when rendered normally than when rendered bold.
-      // Accommodate the widest, as buttons may show bold and shouldn't resize.
-      const int current_width = label.GetPreferredSize().width();
-      label.SetFontList(cached_default_button_font_list_);
-      if (label.GetPreferredSize().width() < current_width)
-        label.SetFontList(label_->font_list());
-    }
 
     // Calculate the required size.
     const gfx::Size preferred_label_size = label.GetPreferredSize();
@@ -432,27 +400,15 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
 
 void LabelButton::ResetColorsFromNativeTheme() {
   const ui::NativeTheme* theme = GetNativeTheme();
-  bool button_style = style() == STYLE_BUTTON;
-  // Button colors are used only for STYLE_BUTTON, otherwise we use label
-  // colors. As it turns out, these are almost always the same color anyway in
-  // pre-MD, although in the MD world labels and buttons get different colors.
-  // TODO(estade): simplify this by removing STYLE_BUTTON.
+  // Since this is a LabelButton, use the label colors.
   SkColor colors[STATE_COUNT] = {
-      theme->GetSystemColor(button_style
-                                ? ui::NativeTheme::kColorId_ButtonEnabledColor
-                                : ui::NativeTheme::kColorId_LabelEnabledColor),
-      theme->GetSystemColor(button_style
-                                ? ui::NativeTheme::kColorId_ButtonHoverColor
-                                : ui::NativeTheme::kColorId_LabelEnabledColor),
-      theme->GetSystemColor(button_style
-                                ? ui::NativeTheme::kColorId_ButtonHoverColor
-                                : ui::NativeTheme::kColorId_LabelEnabledColor),
-      theme->GetSystemColor(button_style
-                                ? ui::NativeTheme::kColorId_ButtonDisabledColor
-                                : ui::NativeTheme::kColorId_LabelDisabledColor),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelDisabledColor),
   };
 
-  // Use hardcoded colors for inverted color scheme support and STYLE_BUTTON.
+  // Use hardcoded colors for inverted color scheme support.
   if (color_utils::IsInvertedColorScheme()) {
     colors[STATE_NORMAL] = colors[STATE_HOVERED] = colors[STATE_PRESSED] =
         SK_ColorWHITE;
@@ -461,8 +417,6 @@ void LabelButton::ResetColorsFromNativeTheme() {
     label_->SetAutoColorReadabilityEnabled(true);
     label_->SetShadows(gfx::ShadowValues());
   } else {
-    if (style() == STYLE_BUTTON)
-      PlatformStyle::ApplyLabelButtonTextStyle(label_, &colors);
     label_->SetBackground(nullptr);
     label_->SetAutoColorReadabilityEnabled(false);
   }

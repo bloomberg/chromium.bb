@@ -58,14 +58,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     STATE_COUNT,
   };
 
-  // Button styles with associated images and border painters.
-  // TODO(msw): Add Menu, ComboBox, etc.
-  enum ButtonStyle {
-    STYLE_BUTTON = 0,
-    STYLE_TEXTBUTTON,
-    STYLE_COUNT,
-  };
-
   // An enum describing the events on which a button should notify its listener.
   enum NotifyAction {
     NOTIFY_ON_PRESS,
