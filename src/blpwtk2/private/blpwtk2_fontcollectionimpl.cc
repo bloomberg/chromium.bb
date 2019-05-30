@@ -22,6 +22,7 @@
 
 #include <blpwtk2_fontcollectionimpl.h>
 #include "base/debug/alias.h"
+#include "base/stl_util.h"
 #include <base/files/memory_mapped_file.h>
 #include <base/strings/string16.h>
 
@@ -255,7 +256,7 @@ HRESULT FontFileStream::RuntimeClassInitialize(const std::wstring& font_file)
 
     // Put some debug information on stack.
     WCHAR font_name[MAX_PATH];
-    path.value().copy(font_name, arraysize(font_name));
+    path.value().copy(font_name, base::size(font_name));
     base::debug::Alias(font_name);
 
     if (d_memory->Initialize(path)) {
