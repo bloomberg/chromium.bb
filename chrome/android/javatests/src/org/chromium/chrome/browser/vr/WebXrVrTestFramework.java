@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.vr;
 import org.junit.Assert;
 
 import org.chromium.chrome.browser.vr.rules.VrTestRule;
+import org.chromium.chrome.browser.vr.util.PermissionUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
@@ -50,6 +51,10 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
         runJavaScriptOrFail(
                 "sessionTypeToRequest = sessionTypes.IMMERSIVE", POLL_TIMEOUT_LONG_MS, webContents);
         enterSessionWithUserGesture(webContents);
+
+        PermissionUtils.waitForConsentPrompt(getRule().getActivity());
+        PermissionUtils.acceptConsentPrompt(getRule().getActivity());
+
         pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
                 POLL_TIMEOUT_LONG_MS, webContents);
         Assert.assertTrue("Immersive session started, but VR Shell not in presentation mode",

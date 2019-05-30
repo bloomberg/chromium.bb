@@ -33,10 +33,10 @@ public class WebXrArTestFramework extends WebXrTestFramework {
 
         enterSessionWithUserGesture(webContents);
 
-        // We expect the AR-specific AR session consent prompt but should not get
-        // prompted for page camera permission.
-        PermissionUtils.waitForArConsentPrompt(getRule().getActivity());
-        PermissionUtils.acceptArConsentPrompt(getRule().getActivity());
+        // We expect a session consent prompt (in this case the AR-specific one), but should not
+        // get prompted for page camera permission.
+        PermissionUtils.waitForConsentPrompt(getRule().getActivity());
+        PermissionUtils.acceptConsentPrompt(getRule().getActivity());
 
         pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.AR].currentSession != null",
                 POLL_TIMEOUT_LONG_MS, webContents);
@@ -56,8 +56,8 @@ public class WebXrArTestFramework extends WebXrTestFramework {
 
         // We expect the AR-specific AR session consent prompt but should not get
         // prompted for page camera permission.
-        PermissionUtils.waitForArConsentPrompt(getRule().getActivity());
-        PermissionUtils.declineArConsentPrompt(getRule().getActivity());
+        PermissionUtils.waitForConsentPrompt(getRule().getActivity());
+        PermissionUtils.declineConsentPrompt(getRule().getActivity());
 
         pollJavaScriptBooleanOrFail(
                 "sessionInfos[sessionTypes.AR].error != null", POLL_TIMEOUT_LONG_MS, webContents);

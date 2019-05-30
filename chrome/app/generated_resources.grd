@@ -226,6 +226,9 @@ are declared in tools/grit/grit_rule.gni.
       <!-- Strings that are only used when VR devices are supported -->
       <if expr="enable_vr">
         <part file="vr_strings.grdp" />
+        <if expr="not is_android">
+          <part file="xr_consent_ui_strings.grdp" />
+        </if>
       </if>
 
       <!-- TODO add all of your "string table" messages here.  Remember to

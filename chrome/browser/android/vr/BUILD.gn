@@ -89,6 +89,13 @@ static_library("vr_android") {
     ]
   }
 
+  if (enable_gvr_services) {
+    sources += [
+      "gvr_consent_helper_impl.cc",
+      "gvr_consent_helper_impl.h",
+    ]
+  }
+
   deps = [
     ":ui_factory",
     "//base",
