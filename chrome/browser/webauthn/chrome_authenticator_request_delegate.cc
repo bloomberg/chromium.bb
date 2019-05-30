@@ -265,7 +265,7 @@ std::string TouchIdMetadataSecret(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
   std::string key = prefs->GetString(kWebAuthnTouchIdMetadataSecretPrefName);
   if (key.empty() || !base::Base64Decode(key, &key)) {
-    key = device::fido::mac::CredentialMetadata::GenerateRandomSecret();
+    key = device::fido::mac::GenerateCredentialMetadataSecret();
     std::string encoded_key;
     base::Base64Encode(key, &encoded_key);
     prefs->SetString(kWebAuthnTouchIdMetadataSecretPrefName, encoded_key);

@@ -93,9 +93,8 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
   }
 
   // Decrypt the user entity from the credential ID.
-  base::Optional<CredentialMetadata::UserEntity> credential_user =
-      CredentialMetadata::UnsealCredentialId(metadata_secret(), RpId(),
-                                             credential->credential_id);
+  base::Optional<UserEntity> credential_user =
+      UnsealCredentialId(metadata_secret(), RpId(), credential->credential_id);
   if (!credential_user) {
     // The keychain query already filtered for the RP ID encoded under this
     // operation's metadata secret, so the credential id really should have

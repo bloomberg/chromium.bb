@@ -123,8 +123,7 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
 
   // Delete the key pair for this RP + user handle if one already exists.
   base::Optional<std::string> encoded_rp_id_user_id =
-      CredentialMetadata::EncodeRpIdAndUserId(metadata_secret(), RpId(),
-                                              request().user.id);
+      EncodeRpIdAndUserId(metadata_secret(), RpId(), request().user.id);
   if (!encoded_rp_id_user_id) {
     // Internal error.
     std::move(callback())
@@ -230,10 +229,9 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
 
 base::Optional<std::vector<uint8_t>>
 MakeCredentialOperation::GenerateCredentialIdForRequest() const {
-  return CredentialMetadata::SealCredentialId(
+  return SealCredentialId(
       metadata_secret(), RpId(),
-      CredentialMetadata::UserEntity::FromPublicKeyCredentialUserEntity(
-          request().user));
+      UserEntity::FromPublicKeyCredentialUserEntity(request().user));
 }
 
 }  // namespace mac

@@ -88,7 +88,7 @@ base::Optional<Credential> FindCredentialInKeychain(
     return base::nullopt;
   }
   base::Optional<std::string> encoded_rp_id =
-      CredentialMetadata::EncodeRpId(metadata_secret, rp_id);
+      EncodeRpId(metadata_secret, rp_id);
   if (!encoded_rp_id) {
     return base::nullopt;
   }
