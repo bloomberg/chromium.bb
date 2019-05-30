@@ -404,6 +404,11 @@ bool Element::IsFocusableStyle() const {
                EVisibility::kVisible;
   }
 
+  // Update style if we're in a display-locked subtree, because it isn't
+  // included in the normal style updates.
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*this))
+    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+
   if (IsInsideInvisibleSubtree()) {
     const ComputedStyle* style =
         const_cast<Element*>(this)->EnsureComputedStyle();
