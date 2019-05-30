@@ -253,6 +253,15 @@ void ElementInnerTextCollector::ProcessLayoutText(const LayoutText& layout_text,
   }
 
   const NGOffsetMapping* const mapping = GetOffsetMapping(layout_text);
+  if (!mapping) {
+    // TODO(crbug.com/967995): There are certain cases where we fail to compute
+    // |NGOffsetMapping| due to failures in layout. As the root cause is hard to
+    // fix at the moment, we work around it here so that the production build
+    // doesn't crash.
+    NOTREACHED() << layout_text;
+    return;
+  }
+
   const NGMappingUnitRange range = mapping->GetMappingUnitsForNode(text_node);
   for (const NGOffsetMappingUnit& unit : range) {
     result_.EmitText(
