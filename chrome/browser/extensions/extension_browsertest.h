@@ -62,6 +62,10 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     // Allow older manifest versions (typically these can't be loaded - we allow
     // them for testing).
     kFlagAllowOldManifestVersions = 1 << 3,
+
+    // Pass the FOR_LOGIN_SCREEN flag when loading the extension. This flag is
+    // usually provided for force-installed extension on the login screen.
+    kFlagLoadForLoginScreen = 1 << 4,
   };
 
   ExtensionBrowserTest();

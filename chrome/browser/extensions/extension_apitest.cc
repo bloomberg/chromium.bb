@@ -259,6 +259,8 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
         browser_test_flags |=
             ExtensionBrowserTest::kFlagAllowOldManifestVersions;
       }
+      if (flags & kFlagLoadForLoginScreen)
+        browser_test_flags |= ExtensionBrowserTest::kFlagLoadForLoginScreen;
       extension = LoadExtensionWithFlags(extension_path, browser_test_flags);
     }
     if (!extension) {
