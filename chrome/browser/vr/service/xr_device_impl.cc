@@ -27,8 +27,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/vr/service/xr_session_request_consent_manager.h"
-#elif defined(OS_ANDROID)
-#include "chrome/browser/vr/service/gvr_consent_helper.h"
 #endif
 
 namespace vr {
@@ -138,81 +136,38 @@ void XRDeviceImpl::RequestSession(
     return;
   }
 
-  // Inline sessions do not need permissions. WebVR did not require
-  // permissions.
-  // TODO(crbug.com/968221): Address privacy requirements for inline sessions
-  if (!options->immersive || options->use_legacy_webvr_render_path) {
-    DoRequestSession(std::move(options), std::move(callback));
+#if defined(OS_WIN)
+  if (!options->environment_integration &&  // disable consent dialog for AR
+      options->immersive) {
+    // Present a consent dialog.
+    XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
+        GetWebContents(),
+        base::BindOnce(&XRDeviceImpl::OnUserConsent,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(options),
+                       std::move(callback)));
     return;
   }
-
-  // TODO(crbug.com/968233): Unify the below consent flow.
-#if defined(OS_ANDROID)
-
-  if (options->environment_integration) {
-    // The session has requested AR mode. This will only work if
-    // the ARCore-backed runtime is available and enabled, and that has
-    // its own separate consent prompt. Otherwise, the session request will
-    // fail since no other runtimes support environment integration. In
-    // either case, there's no need to show the VR-specific consent prompt.
-    DoRequestSession(std::move(options), std::move(callback));
-    return;
-  } else {
-    // GVR.
-    if (!render_frame_host_) {
-      // Reject promise.
-      std::move(callback).Run(nullptr);
-    } else {
-      GvrConsentHelper::GetInstance()->PromptUserAndGetConsent(
-          render_frame_host_->GetProcess()->GetID(),
-          render_frame_host_->GetRoutingID(),
-          base::BindOnce(&XRDeviceImpl::OnConsentResult,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                         std::move(callback)));
-    }
-    return;
-  }
-
-#elif defined(OS_WIN)
-
-  DCHECK(!options->environment_integration);
-  XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
-      GetWebContents(),
-      base::BindOnce(&XRDeviceImpl::OnConsentResult,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                     std::move(callback)));
-  return;
-
-#else
-
-  NOTREACHED();
-
 #endif
+
+  OnUserConsent(std::move(options), std::move(callback), true);
 }
 
-void XRDeviceImpl::OnConsentResult(
+void XRDeviceImpl::OnUserConsent(
     device::mojom::XRSessionOptionsPtr options,
     device::mojom::XRDevice::RequestSessionCallback callback,
-    bool is_consent_granted) {
-  if (!is_consent_granted) {
+    bool allowed) {
+  if (!allowed) {
     std::move(callback).Run(nullptr);
     return;
   }
 
   // Re-check for another device instance after a potential user consent.
-  // TODO(crbug.com/967513): prevent such races.
   if (XRRuntimeManager::GetInstance()->IsOtherDevicePresenting(this)) {
     // Can't create sessions while an immersive session exists.
     std::move(callback).Run(nullptr);
     return;
   }
 
-  DoRequestSession(std::move(options), std::move(callback));
-}
-
-void XRDeviceImpl::DoRequestSession(
-    device::mojom::XRSessionOptionsPtr options,
-    device::mojom::XRDevice::RequestSessionCallback callback) {
   // Get the runtime we'll be creating a session with.
   BrowserXRRuntime* runtime =
       XRRuntimeManager::GetInstance()->GetRuntimeForOptions(options.get());
