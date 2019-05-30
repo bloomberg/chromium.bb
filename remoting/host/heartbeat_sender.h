@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "net/base/backoff_entry.h"
 #include "remoting/base/grpc_support/grpc_channel.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/proto/remoting/v1/directory_messages.pb.h"
@@ -127,11 +128,10 @@ class HeartbeatSender final : public SignalStrategy::Listener {
 
   base::OneShotTimer heartbeat_timer_;
 
-  int failed_heartbeat_count_ = 0;
+  net::BackoffEntry backoff_;
 
   int sequence_id_ = 0;
   bool heartbeat_succeeded_ = false;
-  int timed_out_heartbeats_count_ = 0;
 
   // Fields to send and indicate completion of sending host-offline-reason.
   std::string host_offline_reason_;

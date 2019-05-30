@@ -39,11 +39,36 @@ constexpr base::TimeDelta kMinimumHeartbeatInterval =
     base::TimeDelta::FromMinutes(3);
 constexpr base::TimeDelta kHeartbeatResponseTimeout =
     base::TimeDelta::FromSeconds(30);
-constexpr base::TimeDelta kResendDelay = base::TimeDelta::FromSeconds(10);
 constexpr base::TimeDelta kResendDelayOnHostNotFound =
     base::TimeDelta::FromSeconds(10);
 
 const int kMaxResendOnHostNotFoundCount = 12;  // 2 minutes (12 x 10 seconds).
+
+const net::BackoffEntry::Policy kBackoffPolicy = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
+
+    // Initial delay for exponential back-off in ms. (10s)
+    10000,
+
+    // Factor by which the waiting time will be multiplied.
+    2,
+
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.5,
+
+    // Maximum amount of time we are willing to delay our request in ms. (10m)
+    600000,
+
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
+
+    // Starts with initial delay.
+    false,
+};
 
 using HeartbeatResponseCallback =
     base::OnceCallback<void(const grpc::Status&,
@@ -128,7 +153,8 @@ HeartbeatSender::HeartbeatSender(
       signal_strategy_(signal_strategy),
       host_key_pair_(host_key_pair),
       client_(std::make_unique<HeartbeatClient>(oauth_token_getter)),
-      log_to_server_(log_to_server) {
+      log_to_server_(log_to_server),
+      backoff_(&kBackoffPolicy) {
   DCHECK(host_key_pair_.get());
   DCHECK(log_to_server_);
 
@@ -233,7 +259,7 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
 
   if (status.ok()) {
     heartbeat_succeeded_ = true;
-    failed_heartbeat_count_ = 0;
+    backoff_.Reset();
 
     // Notify listener of the first successful heartbeat.
     if (on_heartbeat_successful_callback_) {
@@ -247,7 +273,7 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
       return;
     }
   } else {
-    failed_heartbeat_count_++;
+    backoff_.InformOfRequest(false);
   }
 
   if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
@@ -261,7 +287,7 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
   // exit.
   if (status.error_code() == grpc::StatusCode::NOT_FOUND &&
       (heartbeat_succeeded_ ||
-       (failed_heartbeat_count_ > kMaxResendOnHostNotFoundCount))) {
+       (backoff_.failure_count() > kMaxResendOnHostNotFoundCount))) {
     if (on_unknown_host_id_error_) {
       std::move(on_unknown_host_id_error_).Run();
     }
@@ -287,8 +313,10 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
     // TODO(yuweih): Handle sequence ID mismatch case. This is not implemented
     // in the server yet.
     default:
-      delay = pow(2.0, failed_heartbeat_count_) * (1 + base::RandDouble()) *
-              kResendDelay;
+      delay = backoff_.GetTimeUntilRelease();
+      LOG(ERROR) << "Heartbeat failed due to unexpected error: "
+                 << status.error_code() << ", " << status.error_message()
+                 << ". Will retry in " << delay;
       break;
   }
 

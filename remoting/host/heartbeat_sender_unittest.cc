@@ -147,6 +147,10 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
  protected:
   HeartbeatSender* heartbeat_sender() { return heartbeat_sender_.get(); }
 
+  const net::BackoffEntry& GetBackoff() const {
+    return heartbeat_sender_->backoff_;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   test::GrpcTestServer<MockDirectoryService> test_server_;
@@ -417,6 +421,45 @@ TEST_F(HeartbeatSenderTest, SendHeartbeatLogEntryOnHeartbeat) {
   run_loop.Run();
 
   ASSERT_EQ(1u, received_log_entries_.size());
+}
+
+TEST_F(HeartbeatSenderTest, FailedToHeartbeat_Backoff) {
+  base::RunLoop run_loop;
+
+  EXPECT_CALL(*test_server_, Heartbeat(_, _, _))
+      .WillOnce([&](grpc::ServerContext*,
+                    const apis::v1::HeartbeatRequest* request,
+                    apis::v1::HeartbeatResponse* response) {
+        EXPECT_EQ(0, GetBackoff().failure_count());
+        ValidateHeartbeat(*request, /* ftl */ true, /* xmpp */ true, 0);
+        return grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable");
+      })
+      .WillOnce([&](grpc::ServerContext*,
+                    const apis::v1::HeartbeatRequest* request,
+                    apis::v1::HeartbeatResponse* response) {
+        EXPECT_EQ(1, GetBackoff().failure_count());
+        ValidateHeartbeat(*request, /* ftl */ true, /* xmpp */ true, 1);
+        return grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable");
+      })
+      .WillOnce([&](grpc::ServerContext*,
+                    const apis::v1::HeartbeatRequest* request,
+                    apis::v1::HeartbeatResponse* response) {
+        EXPECT_EQ(2, GetBackoff().failure_count());
+        ValidateHeartbeat(*request, /* ftl */ true, /* xmpp */ true, 2);
+        return grpc::Status::OK;
+      });
+
+  EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).WillOnce([&]() {
+    run_loop.Quit();
+  });
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        ftl_signal_strategy_->Connect();
+        xmpp_signal_strategy_->Connect();
+      }));
+  run_loop.Run();
+  ASSERT_EQ(0, GetBackoff().failure_count());
 }
 
 }  // namespace remoting
