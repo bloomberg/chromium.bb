@@ -395,8 +395,8 @@ void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
   //
   // If we're about to run SendVSync now, fetch a fresh head pose now and use
   // that for both the controller update and for SendVSync. If not, just use
-  // a recent-ish head pose for the controller update, falling back to an
-  // identity transform if needed.
+  // a recent-ish head pose for the controller update, or get a new pose if
+  // that isn't available.
 
   webxr_vsync_pending_ = true;
   pending_time_ = frame_time;
@@ -405,13 +405,16 @@ void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
   if (ShouldDrawWebVr()) {
     gfx::Transform head_mat;
     device::mojom::VRPosePtr pose;
-    if (can_animate) {
-      // Get a fresh head pose.
+    // We need a new head pose if we're about to start a new animating frame,
+    // or if we don't have a current animating frame from which we could
+    // get a recent one. We don't want to fall back to an identity transform
+    // since that would cause controller position glitches, especially for
+    // 6DoF headsets.
+    if (can_animate || !webxr_.HaveAnimatingFrame()) {
       pose = GetHeadPose(&head_mat);
-    } else if (webxr_.HaveAnimatingFrame()) {
-      // Get the most-recently-used head pose, if available. If we don't have an
-      // animating frame, it's OK to use the default head_mat value which is an
-      // identity transform.
+    } else {
+      // Get the most-recently-used head pose from the current animating frame.
+      // (The condition above guarantees that we have one.)
       head_mat = webxr_.GetAnimatingFrame()->head_pose;
     }
 
