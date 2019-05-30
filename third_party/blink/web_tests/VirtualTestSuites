@@ -657,8 +657,8 @@
   {
     "prefix" : "lazyload-policy",
     "base": "external/wpt/feature-policy/experimental-features/lazyload",
-    "args": ["--enable-blink-features=LazyFrameLoading,LazyImageLoading,AutomaticLazyImageLoading",
-             "--disable-blink-features=RestrictAutomaticLazyImageLoadingToDataSaver"]
+    "args": ["--enable-blink-features=LazyFrameLoading,AutomaticLazyFrameLoading,LazyImageLoading,AutomaticLazyImageLoading",
+             "--disable-blink-features=RestrictAutomaticLazyFrameLoadingToDataSaver,RestrictAutomaticLazyImageLoadingToDataSaver"]
   },
   {
     "prefix": "display-lock",

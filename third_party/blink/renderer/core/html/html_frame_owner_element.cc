@@ -77,9 +77,9 @@ bool DoesParentAllowLazyLoadingChildren(Document& document) {
   return containing_frame_owner->ShouldLazyLoadChildren();
 }
 
-bool IsFrameLazyLoadable(Document& document,
+bool IsFrameLazyLoadable(const Document& document,
                          const KURL& url,
-                         bool is_load_attr_lazy,
+                         bool is_loading_attr_lazy,
                          bool should_lazy_load_children) {
   if (!RuntimeEnabledFeatures::LazyFrameLoadingEnabled() &&
       !RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) {
@@ -92,7 +92,7 @@ bool IsFrameLazyLoadable(Document& document,
   if (!url.ProtocolIsInHTTPFamily())
     return false;
 
-  if (is_load_attr_lazy)
+  if (is_loading_attr_lazy)
     return true;
 
   if (!should_lazy_load_children ||
@@ -105,12 +105,28 @@ bool IsFrameLazyLoadable(Document& document,
     return false;
   }
 
+  return true;
+}
+
+bool ShouldLazilyLoadFrame(const Document& document,
+                           bool is_loading_attr_lazy) {
+  DCHECK(document.GetSettings());
+  if (!RuntimeEnabledFeatures::LazyFrameLoadingEnabled() ||
+      !document.GetSettings()->GetLazyLoadEnabled()) {
+    return false;
+  }
+
+  if (is_loading_attr_lazy)
+    return true;
+  if (!RuntimeEnabledFeatures::AutomaticLazyFrameLoadingEnabled())
+    return false;
+
   // If lazy loading is restricted to only Data Saver users, then avoid
   // lazy loading unless Data Saver is enabled, taking the Data Saver
   // holdback into consideration.
-  if (RuntimeEnabledFeatures::RestrictLazyFrameLoadingToDataSaverEnabled() &&
-      ((document.GetSettings() &&
-        document.GetSettings()->GetDataSaverHoldbackWebApi()) ||
+  if (RuntimeEnabledFeatures::
+          RestrictAutomaticLazyFrameLoadingToDataSaverEnabled() &&
+      (document.GetSettings()->GetDataSaverHoldbackWebApi() ||
        !GetNetworkStateNotifier().SaveDataEnabled())) {
     return false;
   }
@@ -452,10 +468,11 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   bool loading_lazy_set = EqualIgnoringASCIICase(loading_attr, "lazy") ||
                           (IsLoadingFrameDefaultEagerEnforced() &&
                            !EqualIgnoringASCIICase(loading_attr, "eager"));
+
   if (!lazy_load_frame_observer_ &&
       IsFrameLazyLoadable(GetDocument(), url, loading_lazy_set,
                           should_lazy_load_children_)) {
-    // By default, avoid deferring subresources inside a lazily loaded frame.
+    // Avoid automatically deferring subresources inside a lazily loaded frame.
     // This will make it possible for subresources in hidden frames to load that
     // will never be visible, as well as make it so that deferred frames that
     // have multiple layers of iframes inside them can load faster once they're
@@ -468,9 +485,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     if (RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled())
       lazy_load_frame_observer_->StartTrackingVisibilityMetrics();
 
-    if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled() &&
-        GetDocument().GetSettings() &&
-        GetDocument().GetSettings()->GetLazyLoadEnabled()) {
+    if (ShouldLazilyLoadFrame(GetDocument(), loading_lazy_set)) {
       lazy_load_frame_observer_->DeferLoadUntilNearViewport(request,
                                                             child_load_type);
       return true;

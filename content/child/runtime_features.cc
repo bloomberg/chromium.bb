@@ -389,7 +389,11 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kLazyImageVisibleLoadTimeMetrics))
     WebRuntimeFeatures::EnableLazyImageVisibleLoadTimeMetrics(true);
 
-  WebRuntimeFeatures::EnableRestrictLazyFrameLoadingToDataSaver(
+  WebRuntimeFeatures::EnableAutomaticLazyFrameLoading(
+      base::GetFieldTrialParamByFeatureAsBool(
+          features::kLazyFrameLoading, "automatic-lazy-load-frames-enabled",
+          false));
+  WebRuntimeFeatures::EnableRestrictAutomaticLazyFrameLoadingToDataSaver(
       base::GetFieldTrialParamByFeatureAsBool(
           features::kLazyFrameLoading,
           "restrict-lazy-load-frames-to-data-saver-only", false));
