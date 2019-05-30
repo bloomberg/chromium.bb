@@ -516,7 +516,6 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
   struct macroblock_plane *const p = x->plane;
   struct macroblockd_plane *const pd = xd->plane;
   const AQ_MODE aq_mode = cpi->oxcf.aq_mode;
-  const DELTAQ_MODE deltaq_mode = cpi->oxcf.deltaq_mode;
   int i, orig_rdmult;
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
@@ -629,7 +628,8 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
       x->rdmult = av1_cyclic_refresh_get_rdmult(cpi->cyclic_refresh);
   }
 
-  if (deltaq_mode != NO_DELTA_Q) x->rdmult = set_deltaq_rdmult(cpi, xd);
+  if (cm->delta_q_info.delta_q_present_flag)
+    x->rdmult = set_deltaq_rdmult(cpi, xd);
 
   // Set error per bit for current rdmult
   set_error_per_bit(x, x->rdmult);
@@ -3328,6 +3328,19 @@ BEGIN_PARTITION_SEARCH:
 }
 #undef NUM_SIMPLE_MOTION_FEATURES
 
+#define MAX_PYR_LEVEL_FROMTOP_DELTAQ 0
+static int is_frame_tpl_eligible(AV1_COMP *const cpi) {
+  const int max_pyr_level_fromtop_deltaq = 0;
+  const int pyr_lev_from_top =
+      cpi->twopass.gf_group.pyramid_height -
+      cpi->twopass.gf_group.pyramid_level[cpi->twopass.gf_group.index];
+  if (pyr_lev_from_top > max_pyr_level_fromtop_deltaq ||
+      cpi->twopass.gf_group.pyramid_height <= max_pyr_level_fromtop_deltaq + 1)
+    return 0;
+  else
+    return 1;
+}
+
 static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
                             int mi_row, int mi_col, int orig_rdmult) {
   assert(IMPLIES(cpi->twopass.gf_group.size > 0,
@@ -3345,7 +3358,7 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
 
   if (tpl_frame->is_valid == 0) return orig_rdmult;
 
-  if (cpi->common.show_frame) return orig_rdmult;
+  if (!is_frame_tpl_eligible(cpi)) return orig_rdmult;
 
   if (cpi->twopass.gf_group.index >= MAX_LAG_BUFFERS) return orig_rdmult;
 
@@ -3418,13 +3431,7 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   if (tpl_frame->is_valid == 0) return cm->base_qindex;
 
-#define MAX_PYR_LEVEL_FROMTOP_DELTAQ 0
-  const int pyr_lev_from_top =
-      cpi->twopass.gf_group.pyramid_height -
-      cpi->twopass.gf_group.pyramid_level[cpi->twopass.gf_group.index];
-  if (pyr_lev_from_top > MAX_PYR_LEVEL_FROMTOP_DELTAQ ||
-      cpi->twopass.gf_group.pyramid_height <= MAX_PYR_LEVEL_FROMTOP_DELTAQ + 1)
-    return cm->base_qindex;
+  if (!is_frame_tpl_eligible(cpi)) return cm->base_qindex;
 
   if (cpi->twopass.gf_group.index >= MAX_LAG_BUFFERS) return cm->base_qindex;
 
@@ -3484,24 +3491,26 @@ static void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, sb_size);
 
   int current_qindex = cm->base_qindex;
-  if (cpi->oxcf.deltaq_mode == DELTA_Q_PERCEPTUAL) {
-    if (DELTA_Q_PERCEPTUAL_MODULATION == 1) {
-      const int block_wavelet_energy_level =
-          av1_block_wavelet_energy_level(cpi, x, sb_size);
-      x->sb_energy_level = block_wavelet_energy_level;
-      current_qindex = av1_compute_q_from_energy_level_deltaq_mode(
-          cpi, block_wavelet_energy_level);
-    } else {
-      const int block_var_level = av1_log_block_var(cpi, x, sb_size);
-      x->sb_energy_level = block_var_level;
+  if (cm->delta_q_info.delta_q_present_flag) {
+    if (cpi->oxcf.deltaq_mode == DELTA_Q_PERCEPTUAL) {
+      if (DELTA_Q_PERCEPTUAL_MODULATION == 1) {
+        const int block_wavelet_energy_level =
+            av1_block_wavelet_energy_level(cpi, x, sb_size);
+        x->sb_energy_level = block_wavelet_energy_level;
+        current_qindex = av1_compute_q_from_energy_level_deltaq_mode(
+            cpi, block_wavelet_energy_level);
+      } else {
+        const int block_var_level = av1_log_block_var(cpi, x, sb_size);
+        x->sb_energy_level = block_var_level;
+        current_qindex =
+            av1_compute_q_from_energy_level_deltaq_mode(cpi, block_var_level);
+      }
+    } else if (cpi->oxcf.deltaq_mode == DELTA_Q_OBJECTIVE) {
+      assert(cpi->oxcf.enable_tpl_model);
+      // Setup deltaq based on tpl stats
       current_qindex =
-          av1_compute_q_from_energy_level_deltaq_mode(cpi, block_var_level);
+          get_q_for_deltaq_objective(cpi, sb_size, 0, mi_row, mi_col);
     }
-  } else if (cpi->oxcf.deltaq_mode == DELTA_Q_OBJECTIVE) {
-    assert(cpi->oxcf.enable_tpl_model);
-    // Setup deltaq based on tpl stats
-    current_qindex =
-        get_q_for_deltaq_objective(cpi, sb_size, 0, mi_row, mi_col);
   }
 
   const int qmask = ~(delta_q_info->delta_q_res - 1);
@@ -3527,7 +3536,7 @@ static void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
   // keep track of any non-zero delta-q used
   td->deltaq_used |= (xd->delta_qindex != 0);
 
-  if (cpi->oxcf.deltaq_mode != NO_DELTA_Q && cpi->oxcf.deltalf_mode) {
+  if (cm->delta_q_info.delta_q_present_flag && cpi->oxcf.deltalf_mode) {
     const int lfmask = ~(delta_q_info->delta_lf_res - 1);
     const int delta_lf_from_base =
         ((xd->delta_qindex / 2 + delta_q_info->delta_lf_res / 2) & lfmask);
@@ -4509,11 +4518,22 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   // Set delta_q_present_flag before it is used for the first time
   cm->delta_q_info.delta_lf_res = DEFAULT_DELTA_LF_RES;
   cm->delta_q_info.delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
+
+  // Turn off cm->delta_q_info.delta_q_present_flag if objective delta_q is used
+  // for ineligible frames. That effectively will turn off row_mt usage.
+  // Note objective delta_q and tpl eligible frames are only altref frames
+  // currently.
+  if (cm->delta_q_info.delta_q_present_flag) {
+    if (cpi->oxcf.deltaq_mode == DELTA_Q_OBJECTIVE &&
+        !is_frame_tpl_eligible(cpi))
+      cm->delta_q_info.delta_q_present_flag = 0;
+  }
+
   // Reset delta_q_used flag
   cpi->deltaq_used = 0;
 
   cm->delta_q_info.delta_lf_present_flag =
-      cpi->oxcf.deltaq_mode != NO_DELTA_Q && cpi->oxcf.deltalf_mode;
+      cm->delta_q_info.delta_q_present_flag && cpi->oxcf.deltalf_mode;
   cm->delta_q_info.delta_lf_multi = DEFAULT_DELTA_LF_MULTI;
 
   // update delta_q_present_flag and delta_lf_present_flag based on
@@ -4801,7 +4821,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cpi->row_mt_sync_read_ptr = av1_row_mt_sync_read_dummy;
     cpi->row_mt_sync_write_ptr = av1_row_mt_sync_write_dummy;
     cpi->row_mt = 0;
-    if (cpi->oxcf.row_mt && (cpi->oxcf.max_threads > 1)) {
+    if (cpi->oxcf.row_mt && (cpi->oxcf.max_threads > 1) &&
+        !cm->delta_q_info.delta_q_present_flag) {
       cpi->row_mt = 1;
       cpi->row_mt_sync_read_ptr = av1_row_mt_sync_read;
       cpi->row_mt_sync_write_ptr = av1_row_mt_sync_write;
