@@ -28,6 +28,7 @@ source_set("overlays") {
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/overlays/web_content_area",
     "//ios/chrome/common/ui_util",
   ]
 }

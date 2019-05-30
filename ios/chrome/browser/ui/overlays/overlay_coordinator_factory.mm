@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/overlays/overlay_coordinator_factory+initialization.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
+#import "ios/chrome/browser/ui/overlays/web_content_area/web_content_area_supported_overlay_coordinator_classes.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,8 +30,8 @@
   NSArray<Class>* supportedCoordinatorClasses = @[];
   switch (modality) {
     case OverlayModality::kWebContentArea:
-      // TODO(crbug.com/941745): Reset |supportedCoordinatorClasses| to contain
-      // OverlayRequestCoordinator classes once implemented.
+      supportedCoordinatorClasses =
+          web_content_area::GetSupportedOverlayCoordinatorClasses();
       break;
   }
   return [[self alloc] initWithBrowser:browser

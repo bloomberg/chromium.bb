@@ -222,7 +222,7 @@
 - (void)startBrowserContainer {
   self.browserContainerCoordinator = [[BrowserContainerCoordinator alloc]
       initWithBaseViewController:nil
-                    browserState:self.browserState];
+                         browser:self.browser];
   [self.browserContainerCoordinator start];
 }
 
