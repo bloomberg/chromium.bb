@@ -297,8 +297,7 @@ void PipWindowResizer::CompleteDrag() {
     base::TimeDelta duration =
         base::TimeDelta::FromMilliseconds(kPipSnapToEdgeAnimationDurationMs);
     ::wm::ConvertRectFromScreen(GetTarget()->parent(), &bounds);
-    wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, bounds, /*animate=*/true,
-                             duration);
+    wm::SetBoundsEvent event(bounds, /*animate=*/true, duration);
     window_state()->OnWMEvent(&event);
 
     // Animate opacity back to normal opacity:

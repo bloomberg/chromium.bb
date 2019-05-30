@@ -758,8 +758,7 @@ void WindowState::UpdatePipBounds() {
       PipPositioner::GetPositionAfterMovementAreaChange(this);
   ::wm::ConvertRectFromScreen(window()->GetRootWindow(), &new_bounds);
   if (window()->bounds() != new_bounds) {
-    wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, new_bounds,
-                             /*animate=*/true);
+    wm::SetBoundsEvent event(new_bounds, /*animate=*/true);
     OnWMEvent(&event);
   }
 }

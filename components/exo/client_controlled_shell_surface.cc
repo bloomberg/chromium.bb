@@ -19,6 +19,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/client_controlled_state.h"
 #include "ash/wm/drag_details.h"
@@ -89,13 +90,15 @@ class ClientControlledStateDelegate
   }
   void HandleBoundsRequest(ash::wm::WindowState* window_state,
                            ash::WindowStateType requested_state,
-                           const gfx::Rect& bounds) override {
-    gfx::Rect bounds_in_screen(bounds);
-    ::wm::ConvertRectToScreen(window_state->window()->GetRootWindow(),
-                              &bounds_in_screen);
-    int64_t display_id = display::Screen::GetScreen()
-                             ->GetDisplayNearestWindow(window_state->window())
-                             .id();
+                           const gfx::Rect& bounds_in_display,
+                           int64_t display_id) override {
+    const display::Screen* screen = display::Screen::GetScreen();
+    display::Display target_display;
+    if (!screen->GetDisplayWithDisplayId(display_id, &target_display))
+      return;
+
+    gfx::Rect bounds_in_screen(bounds_in_display);
+    bounds_in_screen.Offset(target_display.bounds().OffsetFromOrigin());
 
     shell_surface_->OnBoundsChangeEvent(
         window_state->GetStateType(), requested_state, display_id,
@@ -590,9 +593,22 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
             ? window_bounds
             : frame_view->GetClientBoundsForWindowBounds(window_bounds);
     gfx::Size current_size = frame_view->GetBoundsForClientView().size();
-    bool is_resize = client_bounds.size() != current_size;
+    bool is_resize = client_bounds.size() != current_size &&
+                     !widget_->IsMaximized() && !widget_->IsFullscreen();
+
     bounds_changed_callback_.Run(current_state, requested_state, display_id,
                                  client_bounds, is_resize, bounds_change);
+
+    auto* window_state = GetWindowState();
+    if (server_reparent_window_ &&
+        window_state->GetDisplay().id() != display_id) {
+      ScopedSetBoundsLocally scoped_set_bounds(this);
+      int container_id = window_state->window()->parent()->id();
+      aura::Window* new_parent =
+          ash::Shell::GetRootWindowControllerWithDisplayId(display_id)
+              ->GetContainer(container_id);
+      new_parent->AddChild(window_state->window());
+    }
   }
 }
 
@@ -664,6 +680,9 @@ void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
 
 void ClientControlledShellSurface::OnWindowAddedToRootWindow(
     aura::Window* window) {
+  if (client_controlled_state_->set_bounds_locally())
+    return;
+
   ScopedLockedToRoot scoped_locked_to_root(widget_);
   UpdateWidgetBounds();
 }

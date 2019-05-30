@@ -115,7 +115,7 @@ void BaseState::CenterWindow(WindowState* window_state) {
     gfx::Rect center_in_parent =
         screen_util::GetDisplayWorkAreaBoundsInParent(window);
     center_in_parent.ClampToCenteredSize(window->bounds().size());
-    const wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, center_in_parent,
+    const wm::SetBoundsEvent event(center_in_parent,
                                    /*animate=*/true);
     window_state->OnWMEvent(&event);
   }

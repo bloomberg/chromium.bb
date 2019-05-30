@@ -150,6 +150,7 @@ void SetBoundsInScreen(aura::Window* window,
 
       // Client controlled window will have its own logic on client side
       // to adjust bounds.
+      // TODO(oshima): Use WM_EVENT_SET_BOUNDS with target display id.
       auto* window_state = wm::GetWindowState(window);
       if (!window_state || !window_state->allow_set_bounds_direct()) {
         gfx::Point origin = bounds_in_screen.origin();

@@ -205,7 +205,7 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 
 void WorkspaceLayoutManager::SetChildBounds(aura::Window* child,
                                             const gfx::Rect& requested_bounds) {
-  wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, requested_bounds);
+  wm::SetBoundsEvent event(requested_bounds);
   wm::GetWindowState(child)->OnWMEvent(&event);
   UpdateShelfVisibility();
 }

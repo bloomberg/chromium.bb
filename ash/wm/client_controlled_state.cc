@@ -108,7 +108,8 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
                 << ", state=" << state_type_ << ", next_state=" << next_state;
 
         // Then ask delegate to set the desired bounds for the snap state.
-        delegate_->HandleBoundsRequest(window_state, next_state, bounds);
+        delegate_->HandleBoundsRequest(window_state, next_state, bounds,
+                                       window_state->GetDisplay().id());
       }
       break;
     }
@@ -129,8 +130,13 @@ void ClientControlledState::DetachState(WindowState* window_state) {}
 void ClientControlledState::HandleWorkspaceEvents(WindowState* window_state,
                                                   const WMEvent* event) {
   // Client is responsible for adjusting bounds after workspace bounds change.
-
-  if (event->type() == WM_EVENT_ADDED_TO_WORKSPACE) {
+  if (window_state->IsSnapped()) {
+    gfx::Rect bounds = GetSnappedWindowBoundsInParent(
+        window_state->window(), window_state->GetStateType());
+    // Then ask delegate to set the desired bounds for the snap state.
+    delegate_->HandleBoundsRequest(window_state, window_state->GetStateType(),
+                                   bounds, window_state->GetDisplay().id());
+  } else if (event->type() == WM_EVENT_ADDED_TO_WORKSPACE) {
     aura::Window* window = window_state->window();
     gfx::Rect bounds = window->bounds();
     AdjustBoundsForMinimumWindowVisibility(window->GetRootWindow()->bounds(),
@@ -211,8 +217,25 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
       } else if (!window_state->IsPinned()) {
         // TODO(oshima): Define behavior for pinned app.
         bounds_change_animation_duration_ = set_bounds_event->duration();
-        delegate_->HandleBoundsRequest(window_state,
-                                       window_state->GetStateType(), bounds);
+        int64_t display_id = set_bounds_event->display_id();
+        auto* window = window_state->window();
+        if (display_id == display::kInvalidDisplayId) {
+          display_id = display::Screen::GetScreen()
+                           ->GetDisplayNearestWindow(window)
+                           .id();
+        }
+#if DCHECK_IS_ON()
+        gfx::Rect bounds_in_display(bounds);
+        // The coordinates of the WindowState's parent must be same as display
+        // coordinates. The following code is only to verify this condition.
+        const aura::Window* root = window->GetRootWindow();
+        aura::Window::ConvertRectToTarget(window->parent(), root,
+                                          &bounds_in_display);
+        DCHECK_EQ(bounds_in_display.x(), bounds.x());
+        DCHECK_EQ(bounds_in_display.y(), bounds.y());
+#endif
+        delegate_->HandleBoundsRequest(
+            window_state, window_state->GetStateType(), bounds, display_id);
       }
       break;
     }

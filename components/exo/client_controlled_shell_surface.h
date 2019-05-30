@@ -49,8 +49,13 @@ class ClientControlledShellSurface
 
   using GeometryChangedCallback =
       base::RepeatingCallback<void(const gfx::Rect& geometry)>;
+
   void set_geometry_changed_callback(const GeometryChangedCallback& callback) {
     geometry_changed_callback_ = callback;
+  }
+
+  void set_server_reparent_window(bool reparent) {
+    server_reparent_window_ = reparent;
   }
 
   // Set bounds in root window coordinates relative to the given display.
@@ -319,6 +324,10 @@ class ClientControlledShellSurface
   // drag details are cleaned up, we want to consider that as a regular
   // bounds update, not a drag move/resize update.
   bool in_drag_ = false;
+
+  // N uses older protocol which expects that server will reparent the window.
+  // TODO(oshima): Remove this once all boards are migrated to P or above.
+  bool server_reparent_window_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };

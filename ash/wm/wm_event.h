@@ -9,6 +9,7 @@
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -144,10 +145,10 @@ class ASH_EXPORT WMEvent {
 class ASH_EXPORT SetBoundsEvent : public WMEvent {
  public:
   SetBoundsEvent(
-      WMEventType type,
       const gfx::Rect& requested_bounds,
       bool animate = false,
       base::TimeDelta duration = WindowState::kBoundsChangeSlideDuration);
+  SetBoundsEvent(const gfx::Rect& requested_bounds, int64_t display_id);
   ~SetBoundsEvent() override;
 
   const gfx::Rect& requested_bounds() const { return requested_bounds_; }
@@ -156,10 +157,13 @@ class ASH_EXPORT SetBoundsEvent : public WMEvent {
 
   base::TimeDelta duration() const { return duration_; }
 
+  int64_t display_id() const { return display_id_; }
+
  private:
-  gfx::Rect requested_bounds_;
-  bool animate_;
-  base::TimeDelta duration_;
+  const gfx::Rect requested_bounds_;
+  const int64_t display_id_ = display::kInvalidDisplayId;
+  const bool animate_;
+  const base::TimeDelta duration_;
 
   DISALLOW_COPY_AND_ASSIGN(SetBoundsEvent);
 };

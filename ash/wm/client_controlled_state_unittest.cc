@@ -5,6 +5,7 @@
 #include "ash/wm/client_controlled_state.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_util.h"
@@ -39,7 +40,8 @@ class TestClientControlledStateDelegate
 
   void HandleBoundsRequest(WindowState* window_state,
                            ash::WindowStateType requested_state,
-                           const gfx::Rect& bounds) override {
+                           const gfx::Rect& bounds,
+                           int64_t display_id) override {
     requested_bounds_ = bounds;
     if (requested_state != window_state->GetStateType()) {
       DCHECK(requested_state == ash::WindowStateType::kLeftSnapped ||
@@ -47,6 +49,7 @@ class TestClientControlledStateDelegate
       old_state_ = window_state->GetStateType();
       new_state_ = requested_state;
     }
+    display_id_ = display_id;
   }
 
   WindowStateType old_state() const { return old_state_; }
@@ -55,10 +58,13 @@ class TestClientControlledStateDelegate
 
   const gfx::Rect& requested_bounds() const { return requested_bounds_; }
 
+  int64_t display_id() const { return display_id_; }
+
   void Reset() {
     old_state_ = WindowStateType::kDefault;
     new_state_ = WindowStateType::kDefault;
     requested_bounds_.SetRect(0, 0, 0, 0);
+    display_id_ = display::kInvalidDisplayId;
   }
 
   void mark_as_deleted() { deleted_ = true; }
@@ -66,6 +72,7 @@ class TestClientControlledStateDelegate
  private:
   WindowStateType old_state_ = WindowStateType::kDefault;
   WindowStateType new_state_ = WindowStateType::kDefault;
+  int64_t display_id_ = display::kInvalidDisplayId;
   gfx::Rect requested_bounds_;
   bool deleted_ = false;
 
@@ -362,6 +369,37 @@ TEST_F(ClientControlledStateTest, SnapWindow) {
   EXPECT_EQ(WindowStateType::kRightSnapped, delegate()->new_state());
 }
 
+TEST_F(ClientControlledStateTest, SnapInSecondaryDisplay) {
+  UpdateDisplay("800x600, 600x500");
+  widget()->SetBounds(gfx::Rect(800, 0, 100, 200));
+
+  display::Screen* screen = display::Screen::GetScreen();
+
+  const int64_t second_display_id = screen->GetAllDisplays()[1].id();
+  EXPECT_EQ(second_display_id, screen->GetDisplayNearestWindow(window()).id());
+
+  widget_delegate()->EnableSnap();
+
+  // Make sure the requested bounds for snapped window is local to display.
+  const WMEvent snap_left_event(WM_EVENT_CYCLE_SNAP_LEFT);
+  window_state()->OnWMEvent(&snap_left_event);
+
+  EXPECT_EQ(second_display_id, delegate()->display_id());
+  EXPECT_EQ(gfx::Rect(0, 0, 300, 500 - kShelfSize),
+            delegate()->requested_bounds());
+
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  // Make sure moving to another display tries to update the bounds.
+  auto first_display = screen->GetAllDisplays()[0];
+  delegate()->Reset();
+  state()->set_bounds_locally(true);
+  window()->SetBoundsInScreen(delegate()->requested_bounds(), first_display);
+  state()->set_bounds_locally(false);
+  EXPECT_EQ(first_display.id(), delegate()->display_id());
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 600 - kShelfSize),
+            delegate()->requested_bounds());
+}
+
 // Pin events should be applied immediately.
 TEST_F(ClientControlledStateTest, Pinned) {
   ASSERT_FALSE(window_state()->IsPinned());
@@ -496,14 +534,13 @@ TEST_F(ClientControlledStateTest, MoveWindowToDisplay) {
 
   MoveWindowToDisplay(window(), second_display_id);
 
-  // Make sure that the window is moved to the destination root
-  // window and also send bounds change request in the root window's
-  // coordinates.
-  EXPECT_EQ(second_display_id, screen->GetDisplayNearestWindow(window()).id());
-  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), delegate()->requested_bounds());
+  // Make sure that the boundsChange request has correct destination
+  // information.
+  EXPECT_EQ(second_display_id, delegate()->display_id());
+  EXPECT_EQ(window()->bounds(), delegate()->requested_bounds());
 }
 
-TEST_F(ClientControlledStateTest, MoveWindowToDisplayWindowVisibility) {
+TEST_F(ClientControlledStateTest, MoveWindowToDisplayOutOfBounds) {
   UpdateDisplay("1000x500, 500x500");
 
   state()->set_bounds_locally(true);
@@ -519,9 +556,13 @@ TEST_F(ClientControlledStateTest, MoveWindowToDisplayWindowVisibility) {
 
   MoveWindowToDisplay(window(), second_display_id);
 
-  // Ensure |ash::wm::kMinimumOnScreenArea + 1| window visibility for window
-  // added to a new workspace.
-  EXPECT_EQ(gfx::Rect(1474, 0, 100, 200), widget()->GetWindowBoundsInScreen());
+  // Make sure that the boundsChange request has correct destination
+  // information.
+  EXPECT_EQ(second_display_id, delegate()->display_id());
+  // The bounds is constrained by
+  // |wm::AdjustBoundsToEnsureMinimumWindowVisibility| in the secondary
+  // display.
+  EXPECT_EQ(gfx::Rect(475, 0, 100, 200), delegate()->requested_bounds());
 }
 
 }  // namespace wm

@@ -39,9 +39,11 @@ class ASH_EXPORT ClientControlledState : public BaseState {
     // might come from a state change request |requested_state| (currently it
     // should only be a snapped window state). Delegate may choose to ignore the
     // request, set the given bounds, or set the different bounds.
-    virtual void HandleBoundsRequest(WindowState* window_state,
-                                     WindowStateType requested_state,
-                                     const gfx::Rect& requested_bounds) = 0;
+    virtual void HandleBoundsRequest(
+        WindowState* window_state,
+        WindowStateType requested_state,
+        const gfx::Rect& requested_bounds_in_display,
+        int64_t display_id) = 0;
   };
 
   // Adjust bounds to ensure window visibility, which is used for window added

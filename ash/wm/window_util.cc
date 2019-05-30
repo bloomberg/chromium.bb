@@ -12,6 +12,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
+#include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -174,17 +175,18 @@ bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
   DCHECK(window);
   WindowState* window_state = GetWindowState(window);
   if (window_state->allow_set_bounds_direct()) {
-    aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
-    if (root) {
-      gfx::Rect bounds = window->bounds();
-      MoveWindowToRoot(window, root);
-      // Client controlled won't update the bounds upon the root window
-      // Change. Explicitly update the bounds so that the client can
-      // make decision.
-      window->SetBounds(bounds);
-      return true;
-    }
-    return false;
+    display::Display display;
+    if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
+                                                               &display))
+      return false;
+    gfx::Rect bounds = window->bounds();
+    gfx::Rect work_area_in_display(display.size());
+    work_area_in_display.Inset(display.GetWorkAreaInsets());
+    wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_display,
+                                                    &bounds);
+    wm::SetBoundsEvent event(bounds, display_id);
+    window_state->OnWMEvent(&event);
+    return true;
   }
   aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
   // Update restore bounds to target root window.

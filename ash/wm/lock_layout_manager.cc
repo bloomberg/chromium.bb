@@ -82,7 +82,7 @@ void LockLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 void LockLayoutManager::SetChildBounds(aura::Window* child,
                                        const gfx::Rect& requested_bounds) {
   wm::WindowState* window_state = wm::GetWindowState(child);
-  wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, requested_bounds);
+  wm::SetBoundsEvent event(requested_bounds);
   window_state->OnWMEvent(&event);
 }
 
