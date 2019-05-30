@@ -198,8 +198,8 @@ void Scrollbar::AutoscrollPressedPart(TimeDelta delay) {
   }
 
   // Handle the arrows and track by injecting a scroll update.
-  if (base::FeatureList::IsEnabled(features::kScrollbarInjectScrollGestures)) {
-    InjectScrollGesture(WebInputEvent::kGestureScrollUpdate);
+  if (IsScrollGestureInjectionEnabled()) {
+    InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollUpdate);
   } else {
     scrollable_area_->UserScroll(
         PressedPartScrollGranularity(),
@@ -279,8 +279,12 @@ void Scrollbar::MoveThumb(int pos, bool dragging_document) {
         delta;
     destination_position =
         scrollable_area_->ClampScrollOffset(orientation_, destination_position);
-    scrollable_area_->SetScrollOffsetSingleAxis(
-        orientation_, destination_position, kUserScroll);
+    if (IsScrollGestureInjectionEnabled()) {
+      InjectGestureScrollUpdateForThumbMove(destination_position);
+    } else {
+      scrollable_area_->SetScrollOffsetSingleAxis(
+          orientation_, destination_position, kUserScroll);
+    }
     document_drag_pos_ = pos;
     return;
   }
@@ -309,8 +313,12 @@ void Scrollbar::MoveThumb(int pos, bool dragging_document) {
     float new_offset = static_cast<float>(thumb_pos + delta) *
                            (max_offset - min_offset) / (track_len - thumb_len) +
                        min_offset;
-    scrollable_area_->SetScrollOffsetSingleAxis(orientation_, new_offset,
-                                                kUserScroll);
+    if (IsScrollGestureInjectionEnabled()) {
+      InjectGestureScrollUpdateForThumbMove(new_offset);
+    } else {
+      scrollable_area_->SetScrollOffsetSingleAxis(orientation_, new_offset,
+                                                  kUserScroll);
+    }
   }
 }
 
@@ -399,31 +407,59 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
       }
       break;
     case WebInputEvent::kGestureScrollEnd:
+      // If we see a GSE targeted at the scrollbar, clear the state that
+      // says we injected GestureScrollBegin, since we no longer need to inject
+      // a GSE ourselves.
+      injected_gesture_scroll_begin_ = false;
+      FALLTHROUGH;
     case WebInputEvent::kGestureLongPress:
     case WebInputEvent::kGestureFlingStart:
       scroll_pos_ = 0;
       pressed_pos_ = 0;
       SetPressedPart(kNoPart, evt.GetType());
       return false;
-    case WebInputEvent::kGestureTap: {
-      if (pressed_part_ != kThumbPart && pressed_part_ != kNoPart &&
-          scrollable_area_ &&
-          scrollable_area_
-              ->UserScroll(
-                  PressedPartScrollGranularity(),
-                  ToScrollDelta(PressedPartScrollDirectionPhysical(), 1))
-              .DidScroll()) {
-        return true;
-      }
-      scroll_pos_ = 0;
-      pressed_pos_ = 0;
-      SetPressedPart(kNoPart, evt.GetType());
-      return false;
-    }
+    case WebInputEvent::kGestureTap:
+      return HandleTapGesture();
     default:
       // By default, we assume that gestures don't deselect the scrollbar.
       return true;
   }
+}
+
+bool Scrollbar::HandleTapGesture() {
+  if (pressed_part_ != kThumbPart && pressed_part_ != kNoPart &&
+      scrollable_area_) {
+    ScrollOffset delta = ToScrollDelta(PressedPartScrollDirectionPhysical(), 1);
+    if (DeltaWillScroll(delta)) {
+      if (IsScrollGestureInjectionEnabled()) {
+        // Taps perform a single scroll begin/update/end sequence of gesture
+        // events. There's no autoscroll timer since long press is not treated
+        // the same as holding a mouse down.
+        // TODO(dlibby): Injecting GSE immediately after GSU causes scroll snap
+        // to be applied immediately when the GSE is handled, which makes it
+        // look like an instant scroll to the snap position (and if this is the
+        // button part, most likely doesn't give the user any visual indication
+        // as button scrolls are small enough that they don't exceed thresholds
+        // needed to advance to the next snap point).
+        // The GSE should probably be queued up as a delayed task
+        // (proportional to the tap gesture timeout?). At that point we should
+        // also clear state related to pressed_part_, etc.
+        InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollBegin);
+        InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollUpdate);
+        InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollEnd);
+      } else {
+        scrollable_area_->UserScroll(
+            PressedPartScrollGranularity(),
+            ToScrollDelta(PressedPartScrollDirectionPhysical(), 1));
+      }
+      return true;
+    }
+  }
+
+  scroll_pos_ = 0;
+  pressed_pos_ = 0;
+  SetPressedPart(kNoPart, WebInputEvent::Type::kGestureTap);
+  return false;
 }
 
 void Scrollbar::MouseMoved(const WebMouseEvent& evt) {
@@ -431,10 +467,14 @@ void Scrollbar::MouseMoved(const WebMouseEvent& evt) {
   if (pressed_part_ == kThumbPart) {
     if (GetTheme().ShouldSnapBackToDragOrigin(*this, evt)) {
       if (scrollable_area_) {
-        scrollable_area_->SetScrollOffsetSingleAxis(
-            orientation_,
-            drag_origin_ + scrollable_area_->MinimumScrollOffset(orientation_),
-            kUserScroll);
+        float destination_position =
+            drag_origin_ + scrollable_area_->MinimumScrollOffset(orientation_);
+        if (IsScrollGestureInjectionEnabled()) {
+          InjectGestureScrollUpdateForThumbMove(destination_position);
+        } else {
+          scrollable_area_->SetScrollOffsetSingleAxis(
+              orientation_, destination_position, kUserScroll);
+        }
       }
     } else {
       MoveThumb(orientation_ == kHorizontalScrollbar
@@ -501,8 +541,8 @@ void Scrollbar::MouseUp(const WebMouseEvent& mouse_event) {
       scrollable_area_->MouseExitedScrollbar(*this);
     }
 
-    if (base::FeatureList::IsEnabled(features::kScrollbarInjectScrollGestures))
-      InjectScrollGesture(WebInputEvent::kGestureScrollEnd);
+    if (IsScrollGestureInjectionEnabled())
+      InjectScrollGestureForPressedPart(WebInputEvent::kGestureScrollEnd);
   }
 }
 
@@ -516,10 +556,6 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
   int pressed_pos = Orientation() == kHorizontalScrollbar
                         ? ConvertFromRootFrame(position).X()
                         : ConvertFromRootFrame(position).Y();
-
-  if (base::FeatureList::IsEnabled(features::kScrollbarInjectScrollGestures) &&
-      scrollable_area_ && pressed_part_ != kNoPart)
-    InjectScrollGesture(WebInputEvent::kGestureScrollBegin);
 
   if ((pressed_part_ == kBackTrackPart || pressed_part_ == kForwardTrackPart) &&
       GetTheme().ShouldCenterOnThumb(*this, evt)) {
@@ -547,9 +583,46 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
   AutoscrollPressedPart(GetTheme().InitialAutoscrollTimerDelay());
 }
 
-void Scrollbar::InjectScrollGesture(WebInputEvent::Type gesture_type) {
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kScrollbarInjectScrollGestures));
+bool Scrollbar::IsScrollGestureInjectionEnabled() const {
+  return base::FeatureList::IsEnabled(features::kScrollbarInjectScrollGestures);
+}
+
+void Scrollbar::InjectScrollGestureForPressedPart(
+    WebInputEvent::Type gesture_type) {
+  ScrollOffset delta = ToScrollDelta(PressedPartScrollDirectionPhysical(), 1);
+  ScrollGranularity granularity = PressedPartScrollGranularity();
+  InjectScrollGesture(gesture_type, delta, granularity);
+}
+
+// Injects a GestureScrollUpdate event to change the scroll offset based on
+// the passed in parameter. This parameter is the target offset for the axis
+// which described by |orientation_|.
+void Scrollbar::InjectGestureScrollUpdateForThumbMove(
+    float single_axis_target_offset) {
+  DCHECK(scrollable_area_);
+  DCHECK(pressed_part_ == kThumbPart);
+
+  // Convert the target offset to the delta that will be injected as part of a
+  // GestureScrollUpdate event.
+  ScrollOffset current_offset =
+      scrollable_area_->GetScrollAnimator().CurrentOffset();
+  float desired_x = orientation_ == kHorizontalScrollbar
+                        ? single_axis_target_offset
+                        : current_offset.Width();
+  float desired_y = orientation_ == kVerticalScrollbar
+                        ? single_axis_target_offset
+                        : current_offset.Height();
+  ScrollOffset desired_offset(desired_x, desired_y);
+  ScrollOffset scroll_delta = desired_offset - current_offset;
+
+  InjectScrollGesture(WebInputEvent::Type::kGestureScrollUpdate, scroll_delta,
+                      ScrollGranularity::kScrollByPrecisePixel);
+}
+
+void Scrollbar::InjectScrollGesture(WebInputEvent::Type gesture_type,
+                                    ScrollOffset delta,
+                                    ScrollGranularity granularity) {
+  DCHECK(IsScrollGestureInjectionEnabled());
   DCHECK(scrollable_area_);
 
   if (gesture_type == WebInputEvent::Type::kGestureScrollEnd &&
@@ -564,7 +637,6 @@ void Scrollbar::InjectScrollGesture(WebInputEvent::Type gesture_type) {
   // node.
   // Note that we don't apply the restriction to GSE since we want to send
   // that regardless in order to complete the gesture sequence.
-  ScrollOffset delta = ToScrollDelta(PressedPartScrollDirectionPhysical(), 1);
   if ((gesture_type == WebInputEvent::Type::kGestureScrollUpdate ||
        gesture_type == WebInputEvent::Type::kGestureScrollBegin) &&
       !DeltaWillScroll(delta))
@@ -573,16 +645,18 @@ void Scrollbar::InjectScrollGesture(WebInputEvent::Type gesture_type) {
   if (gesture_type == WebInputEvent::Type::kGestureScrollUpdate &&
       !injected_gesture_scroll_begin_) {
     // If we're injecting a scroll update, but haven't yet injected a scroll
-    // begin, do so now. This can happen in the following scenario:
+    // begin, do so now. This can happen with the following sequence of events:
     // - on mouse down the delta computed won't actually scroll (therefore
     //   GSB/GSU not injected).
     // - node/scrollable area changes size such that its scroll offset is no
     //   longer at the end.
     // - autoscroll timer fires and we inject a scroll update.
-    InjectScrollGesture(WebInputEvent::Type::kGestureScrollBegin);
+    // Additionally, thumb drags via mouse follow this pattern, since we don't
+    // know the delta direction until the mouse actually moves.
+    InjectScrollGesture(WebInputEvent::Type::kGestureScrollBegin, delta,
+                        granularity);
   }
 
-  ScrollGranularity granularity = PressedPartScrollGranularity();
   scrollable_area_->InjectGestureScrollEvent(WebGestureDevice::kScrollbar,
                                              delta, granularity, gesture_type);
 

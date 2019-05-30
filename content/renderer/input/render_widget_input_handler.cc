@@ -622,11 +622,25 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
         ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
 
     if (params.type == WebInputEvent::Type::kGestureScrollUpdate) {
-      scrollbar_latency_info.AddLatencyNumberWithTimestamp(
-          last_injected_gesture_was_begin_
-              ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
-              : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-          original_timestamp, 1);
+      if (input_event.GetType() != WebInputEvent::Type::kGestureScrollUpdate) {
+        scrollbar_latency_info.AddLatencyNumberWithTimestamp(
+            last_injected_gesture_was_begin_
+                ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
+                : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+            original_timestamp, 1);
+      } else {
+        // If we're injecting a GSU in response to a GSU (touch drags of the
+        // scrollbar thumb in Blink handles GSUs, and reverses them with
+        // injected GSUs), the LatencyInfo will already have the appropriate
+        // SCROLL_UPDATE component set.
+        DCHECK(
+            scrollbar_latency_info.FindLatency(
+                ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+                nullptr) ||
+            scrollbar_latency_info.FindLatency(
+                ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+                nullptr));
+      }
     }
 
     std::unique_ptr<cc::SwapPromiseMonitor> swap_promise_monitor;

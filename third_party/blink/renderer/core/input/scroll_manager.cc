@@ -871,7 +871,15 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
       scrollbar = result.GetScrollbar();
   }
 
-  if (scrollbar) {
+  // Gesture scroll events injected by scrollbars should not be routed back to
+  // the scrollbar itself as they are intended to perform the scroll action on
+  // the scrollable area. Scrollbar injected gestures don't clear
+  // scrollbar_handling_scroll_gesture_ because touch-based scroll gestures need
+  // to continue going to the scrollbar first so that the scroll direction
+  // can be made proportional to the scroll thumb/ScrollableArea size and
+  // inverted.
+  if (scrollbar &&
+      gesture_event.SourceDevice() != WebGestureDevice::kScrollbar) {
     bool should_update_capture = false;
     if (scrollbar->GestureEvent(gesture_event, &should_update_capture)) {
       if (should_update_capture)

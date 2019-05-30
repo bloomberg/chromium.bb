@@ -361,6 +361,12 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, ScrollbarButtonLatency) {
   RunScrollbarButtonLatencyTest();
 }
 
+IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, ScrollbarThumbDragLatency) {
+  LoadURL();
+
+  RunScrollbarThumbDragLatencyTest();
+}
+
 class ScrollLatencyCompositedScrollbarBrowserTest
     : public ScrollLatencyBrowserTest {
  public:

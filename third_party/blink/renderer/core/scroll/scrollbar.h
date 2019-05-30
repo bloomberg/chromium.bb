@@ -199,7 +199,13 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   void StartTimerIfNeeded(TimeDelta delay);
   void StopTimerIfNeeded();
   void AutoscrollPressedPart(TimeDelta delay);
-  void InjectScrollGesture(WebInputEvent::Type gesture_type);
+  bool HandleTapGesture();
+  bool IsScrollGestureInjectionEnabled() const;
+  void InjectScrollGestureForPressedPart(WebInputEvent::Type gesture_type);
+  void InjectGestureScrollUpdateForThumbMove(float single_axis_target_offset);
+  void InjectScrollGesture(WebInputEvent::Type type,
+                           ScrollOffset delta,
+                           ScrollGranularity granularity);
   ScrollDirectionPhysical PressedPartScrollDirectionPhysical();
   ScrollGranularity PressedPartScrollGranularity();
 
