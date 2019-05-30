@@ -18,6 +18,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewParent;
 
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -27,6 +28,13 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
  */
 class TabListRecyclerView extends RecyclerView {
     public static final long BASE_ANIMATION_DURATION_MS = 218;
+
+    /**
+     * Field trial parameter for downsampling scaling factor.
+     */
+    private static final String DOWNSAMPLING_SCALE_PARAM = "downsampling-scale";
+
+    private static final float DEFAULT_DOWNSAMPLING_SCALE = 0.5f;
 
     /**
      * An interface to listen to visibility related changes on this {@link RecyclerView}.
@@ -125,6 +133,16 @@ class TabListRecyclerView extends RecyclerView {
         return mLastDirtyTime;
     }
 
+    private float getDownsamplingScale() {
+        String scale = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.TAB_TO_GTS_ANIMATION, DOWNSAMPLING_SCALE_PARAM);
+        try {
+            return Float.valueOf(scale);
+        } catch (NumberFormatException e) {
+            return DEFAULT_DOWNSAMPLING_SCALE;
+        }
+    }
+
     /**
      * Create a DynamicResource for this RecyclerView.
      * The view resource can be obtained by {@link #getResourceId} in compositor layer.
@@ -138,6 +156,7 @@ class TabListRecyclerView extends RecyclerView {
                 return dirty;
             }
         };
+        mDynamicView.setDownsamplingScale(getDownsamplingScale());
         loader.registerResource(getResourceId(), mDynamicView);
     }
 
