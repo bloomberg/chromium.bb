@@ -801,11 +801,17 @@ void VrShell::RecordVrStartAction(VrStartAction action) {
   }
 }
 
-void VrShell::RecordPresentationStartAction(PresentationStartAction action) {
+// TODO(https://crbug.com/965744): Rename below method to better reflect its
+// purpose (recording a start of immersive VR session).
+void VrShell::RecordPresentationStartAction(
+    PresentationStartAction action,
+    const device::mojom::XRRuntimeSessionOptions& options) {
+  DCHECK(options.immersive);
+  DCHECK(!options.environment_integration);
   SessionMetricsHelper* metrics_helper =
       SessionMetricsHelper::FromWebContents(web_contents_);
   if (metrics_helper)
-    metrics_helper->RecordPresentationStartAction(action);
+    metrics_helper->RecordPresentationStartAction(action, options);
 }
 
 void VrShell::ShowSoftInput(JNIEnv* env,

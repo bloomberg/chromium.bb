@@ -76,6 +76,16 @@ class XR final : public EventTargetWithInlineData,
   TimeTicks NavigationStart() const { return navigation_start_; }
 
  private:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class SessionRequestStatus : int {
+    // `requestSession` succeeded.
+    kSuccess = 0,
+    // `requestSession` failed with other (unknown) error.
+    kOtherError = 1,
+    kMaxValue = kOtherError,
+  };
+
   class PendingSessionQuery final
       : public GarbageCollected<PendingSessionQuery> {
     DISALLOW_COPY_AND_ASSIGN(PendingSessionQuery);
@@ -121,11 +131,13 @@ class XR final : public EventTargetWithInlineData,
   void OnEnvironmentProviderDisconnect();
   void OnMagicWindowProviderDisconnect();
 
+  // Reports that session request has returned.
+  void ReportRequestSessionResult(XRSession::SessionMode session_mode,
+                                  SessionRequestStatus status);
+
   bool pending_device_ = false;
 
   // Indicates whether use of requestDevice has already been logged.
-  bool did_log_requestDevice_ = false;
-  bool did_log_returned_device_ = false;
   bool did_log_supports_immersive_ = false;
 
   // Indicates whether we've already logged a request for an immersive session.

@@ -10,6 +10,9 @@
 
 #include "base/macros.h"
 
+#include "chrome/browser/vr/metrics/session_metrics_helper.h"
+#include "chrome/browser/vr/service/interface_set.h"
+#include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -18,7 +21,7 @@
 namespace content {
 class RenderFrameHost;
 class WebContents;
-}
+}  // namespace content
 
 namespace device {
 class VRDisplayImpl;
@@ -71,8 +74,12 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   content::WebContents* GetWebContents();
 
  private:
-  void ReportRequestPresent();
   bool IsAnotherHostPresenting();
+
+  // Returns currently active instance of SessionMetricsHelper from WebContents.
+  // If the instance is not present on WebContents, it will be created with the
+  // assumption that we are not already in VR.
+  SessionMetricsHelper* GetSessionMetricsHelper();
 
   bool InternalSupportsSession(device::mojom::XRSessionOptions* options);
   void OnInlineSessionCreated(
@@ -80,6 +87,11 @@ class XRDeviceImpl : public device::mojom::XRDevice {
       device::mojom::XRDevice::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session,
       device::mojom::XRSessionControllerPtr controller);
+  // Called when inline session gets disconnected. |session_id| is the value
+  // returned by |magic_window_controllers_| when adding session controller to
+  // it.
+  void OnInlineSessionDisconnected(size_t session_id);
+
   void OnSessionCreated(
       device::mojom::XRDeviceId session_runtime_id,
       device::mojom::XRDevice::RequestSessionCallback callback,
@@ -100,9 +112,7 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   // This is required for WebVR 1.1 backwards compatibility.
   device::mojom::VRDisplayClientPtr client_;
 
-  mojo::InterfacePtrSet<device::mojom::XRSessionController>
-      magic_window_controllers_;
-  int next_key_ = 0;
+  InterfaceSet<device::mojom::XRSessionControllerPtr> magic_window_controllers_;
 
   base::WeakPtrFactory<XRDeviceImpl> weak_ptr_factory_;
 

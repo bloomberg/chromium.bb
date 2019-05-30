@@ -22,13 +22,14 @@
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "device/vr/public/cpp/session_mode.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "jni/VrShellDelegate_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
+using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
-using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
 namespace vr {
@@ -150,6 +151,8 @@ void VrShellDelegate::OnPresentResult(
     base::OnceCallback<void(device::mojom::XRSessionPtr)> callback,
     bool success) {
   DVLOG(1) << __FUNCTION__ << ": success=" << success;
+  DCHECK(options);
+
   if (!success) {
     std::move(callback).Run(nullptr);
     possible_presentation_start_action_ = base::nullopt;
@@ -171,7 +174,7 @@ void VrShellDelegate::OnPresentResult(
   // from there.
   if (possible_presentation_start_action_) {
     vr_shell_->RecordPresentationStartAction(
-        *possible_presentation_start_action_);
+        *possible_presentation_start_action_, *options);
     possible_presentation_start_action_ = base::nullopt;
   }
 

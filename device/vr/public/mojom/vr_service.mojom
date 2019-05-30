@@ -48,8 +48,9 @@ struct XRSessionOptions {
   bool environment_integration;
 
   // This flag ensures that render paths that are only supported in WebXR are
-  // not used for WebVR 1.1.
-  bool use_legacy_webvr_render_path;
+  // not used for WebVR 1.1. It is also used for metrics to distinguish between
+  // WebVR and WebXR APIs.
+  bool is_legacy_webvr;
 };
 
 // This structure contains all the mojo interfaces for different kinds of

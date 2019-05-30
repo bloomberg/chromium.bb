@@ -244,9 +244,16 @@ void XR::DispatchSupportsSession(PendingSessionQuery* query) {
 
 ScriptPromise XR::requestSession(ScriptState* script_state,
                                  const String& mode) {
+  // TODO(https://crbug.com/968622): Make sure we don't forget to call
+  // metrics-related methods when the promise gets resolved/rejected.
+
   LocalFrame* frame = GetFrame();
   if (!frame || !frame->GetDocument()) {
     // Reject if the frame is inaccessible.
+
+    // Do *not* record an UKM event in this case (we won't be able to access the
+    // Document to get UkmRecorder anyway).
+
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
@@ -258,6 +265,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 
   if (session_mode == XRSession::kModeImmersiveAR &&
       !AreArRuntimeFeaturesEnabled(doc)) {
+    ReportRequestSessionResult(session_mode, SessionRequestStatus::kOtherError);
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
                           script_state->GetIsolate(),
@@ -278,6 +286,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
                              ReportOptions::kReportOnFailure)) {
     // Only allow the call to be made if the appropriate feature policy is in
     // place.
+    ReportRequestSessionResult(session_mode, SessionRequestStatus::kOtherError);
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
@@ -286,6 +295,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 
   // Only one immersive session can be active at a time.
   if (is_immersive && frameProvider()->immersive_session()) {
+    ReportRequestSessionResult(session_mode, SessionRequestStatus::kOtherError);
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
@@ -295,6 +305,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   // All immersive sessions require a user gesture.
   bool has_user_activation = LocalFrame::HasTransientUserActivation(frame);
   if (is_immersive && !has_user_activation) {
+    ReportRequestSessionResult(session_mode, SessionRequestStatus::kOtherError);
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError,
@@ -308,6 +319,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   // it was for an inline mode.  In which case, we'll end up creating the
   // session in OnRequestSessionReturned.
   if (!service_ && session_mode != XRSession::kModeInline) {
+    ReportRequestSessionResult(session_mode, SessionRequestStatus::kOtherError);
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
@@ -333,6 +345,9 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 }
 
 void XR::DispatchRequestSession(PendingSessionQuery* query) {
+  // TODO(https://crbug.com/968622): Make sure we don't forget to call
+  // metrics-related methods when the promise gets resolved/rejected.
+
   if (!device_) {
     // If we don't have a device by the time we reach this call, there is no XR
     // hardware. Attempt to create a sensorless session.
@@ -340,10 +355,13 @@ void XR::DispatchRequestSession(PendingSessionQuery* query) {
     // OnRequestSessionReturned() and inline CreateSensorlessInlineSession().
     if (query->mode == XRSession::kModeInline) {
       XRSession* session = CreateSensorlessInlineSession();
+
+      ReportRequestSessionResult(query->mode, SessionRequestStatus::kSuccess);
       query->resolver->Resolve(session);
       return;
     }
 
+    ReportRequestSessionResult(query->mode, SessionRequestStatus::kOtherError);
     // TODO(https://crbug.com/962991): The spec says to reject with null.
     // Clarify/fix the spec. In other places where we have no device or no
     // service we return kNotSupportedError.
@@ -397,25 +415,16 @@ void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
         WTF::Bind(&XR::OnDeviceDisconnect, WrapWeakPersistent(this)));
 
     // Log metrics
-    if (!did_log_returned_device_ || !did_log_supports_immersive_) {
-      Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
-      if (doc) {
-        ukm::builders::XR_WebXR ukm_builder(ukm_source_id_);
-        ukm_builder.SetReturnedDevice(1);
-        did_log_returned_device_ = true;
+    if (!did_log_supports_immersive_) {
+      device::mojom::blink::XRSessionOptionsPtr session_options =
+          device::mojom::blink::XRSessionOptions::New();
+      session_options->immersive = true;
 
-        ukm_builder.Record(doc->UkmRecorder());
-
-        device::mojom::blink::XRSessionOptionsPtr session_options =
-            device::mojom::blink::XRSessionOptions::New();
-        session_options->immersive = true;
-
-        // TODO(http://crbug.com/872086) This shouldn't need to be called.
-        // This information should be logged on the browser side.
-        device_->SupportsSession(
-            std::move(session_options),
-            WTF::Bind(&XR::ReportImmersiveSupported, WrapPersistent(this)));
-      }
+      // TODO(http://crbug.com/872086) This shouldn't need to be called.
+      // This information should be logged on the browser side.
+      device_->SupportsSession(
+          std::move(session_options),
+          WTF::Bind(&XR::ReportImmersiveSupported, WrapPersistent(this)));
     }
   }
 
@@ -465,10 +474,14 @@ void XR::OnRequestSessionReturned(
     // DispatchRequestSession() and inline CreateSensorlessInlineSession().
     if (query->mode == XRSession::kModeInline) {
       XRSession* session = CreateSensorlessInlineSession();
+
+      ReportRequestSessionResult(query->mode, SessionRequestStatus::kSuccess);
+
       query->resolver->Resolve(session);
       return;
     }
 
+    ReportRequestSessionResult(query->mode, SessionRequestStatus::kOtherError);
     auto* exception = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported);
     query->resolver->Reject(exception);
@@ -519,6 +532,8 @@ void XR::OnRequestSessionReturned(
 
   UseCounter::Count(ExecutionContext::From(query->resolver->GetScriptState()),
                     WebFeature::kWebXrSessionCreated);
+
+  ReportRequestSessionResult(query->mode, SessionRequestStatus::kSuccess);
   query->resolver->Resolve(session);
 }
 
@@ -530,6 +545,18 @@ void XR::ReportImmersiveSupported(bool supported) {
     ukm_builder.Record(doc->UkmRecorder());
     did_log_supports_immersive_ = true;
   }
+}
+
+void XR::ReportRequestSessionResult(XRSession::SessionMode session_mode,
+                                    SessionRequestStatus status) {
+  Document* doc = GetFrame() ? GetFrame()->GetDocument() : nullptr;
+  if (!doc)
+    return;
+
+  ukm::builders::XR_WebXR_SessionRequest(GetSourceId())
+      .SetMode(static_cast<int64_t>(session_mode))
+      .SetStatus(static_cast<int64_t>(status))
+      .Record(doc->UkmRecorder());
 }
 
 void XR::AddedEventListener(const AtomicString& event_type,

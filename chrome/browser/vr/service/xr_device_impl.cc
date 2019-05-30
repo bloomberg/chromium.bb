@@ -53,8 +53,7 @@ device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
       device::mojom::XRRuntimeSessionOptions::New();
   runtime_options->immersive = options->immersive;
   runtime_options->environment_integration = options->environment_integration;
-  runtime_options->use_legacy_webvr_render_path =
-      options->use_legacy_webvr_render_path;
+  runtime_options->is_legacy_webvr = options->is_legacy_webvr;
   return runtime_options;
 }
 
@@ -70,6 +69,10 @@ XRDeviceImpl::XRDeviceImpl(content::RenderFrameHost* render_frame_host,
       binding_(this),
       weak_ptr_factory_(this) {
   binding_.Bind(std::move(request));
+  magic_window_controllers_.set_connection_error_handler(base::BindRepeating(
+      &XRDeviceImpl::OnInlineSessionDisconnected,
+      base::Unretained(this)));  // Unretained is OK since the collection is
+                                 // owned by XRDeviceImpl.
 }
 
 void XRDeviceImpl::OnInlineSessionCreated(
@@ -85,9 +88,33 @@ void XRDeviceImpl::OnInlineSessionCreated(
   // Start giving out magic window data if we are focused.
   controller->SetFrameDataRestricted(!in_focused_frame_);
 
-  magic_window_controllers_.AddPtr(std::move(controller));
+  auto id = magic_window_controllers_.AddPtr(std::move(controller));
+
+  // Note: We might be recording an inline session that was created by WebVR.
+  GetSessionMetricsHelper()->RecordInlineSessionStart(id);
 
   OnSessionCreated(session_runtime_id, std::move(callback), std::move(session));
+}
+
+void XRDeviceImpl::OnInlineSessionDisconnected(size_t session_id) {
+  // Notify metrics helper that inline session was stopped.
+  auto* metrics_helper = GetSessionMetricsHelper();
+  metrics_helper->RecordInlineSessionStop(session_id);
+}
+
+SessionMetricsHelper* XRDeviceImpl::GetSessionMetricsHelper() {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host_);
+  SessionMetricsHelper* metrics_helper =
+      SessionMetricsHelper::FromWebContents(web_contents);
+  if (!metrics_helper) {
+    // This will only happen if we are not already in VR; set start params
+    // accordingly.
+    metrics_helper =
+        SessionMetricsHelper::CreateForWebContents(web_contents, Mode::kNoVr);
+  }
+
+  return metrics_helper;
 }
 
 void XRDeviceImpl::OnSessionCreated(
@@ -187,7 +214,7 @@ void XRDeviceImpl::OnUserConsent(
       render_frame_host_ ? render_frame_host_->GetRoutingID() : -1;
 
   if (runtime_options->immersive) {
-    ReportRequestPresent();
+    GetSessionMetricsHelper()->ReportRequestPresent(*runtime_options);
 
     base::OnceCallback<void(device::mojom::XRSessionPtr)> immersive_callback =
         base::BindOnce(&XRDeviceImpl::OnSessionCreated,
@@ -212,20 +239,6 @@ void XRDeviceImpl::SupportsSession(
     device::mojom::XRDevice::SupportsSessionCallback callback) {
   XRRuntimeManager::GetInstance()->SupportsSession(std::move(options),
                                                    std::move(callback));
-}
-
-void XRDeviceImpl::ReportRequestPresent() {
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host_);
-  SessionMetricsHelper* metrics_helper =
-      SessionMetricsHelper::FromWebContents(web_contents);
-  if (!metrics_helper) {
-    // This will only happen if we are not already in VR, set start params
-    // accordingly.
-    metrics_helper =
-        SessionMetricsHelper::CreateForWebContents(web_contents, Mode::kNoVr);
-  }
-  metrics_helper->ReportRequestPresent();
 }
 
 void XRDeviceImpl::ExitPresent() {

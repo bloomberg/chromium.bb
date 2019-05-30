@@ -7615,6 +7615,12 @@ be describing additional metrics about the same event.
 
 <event name="XR.WebXR" singular="True">
   <owner>billorr@chromium.org</owner>
+  <summary>
+    Records information about WebXR methods that were used in a single
+    navigation. The event will be recorded as the WebXR functions are called -
+    since the event is singular, the data that will eventualy be sent will
+    contain a union of metrics that were set in an event.
+  </summary>
   <metric name="DidGetGamepads">
     <obsolete>
       Deprecated in M75.
@@ -7632,6 +7638,7 @@ be describing additional metrics about the same event.
   <metric name="DidRequestAvailableDevices">
     <summary>
       Boolean value that indicates that the API to enumerate devices was called.
+      This API is only exposed through WebVR.
     </summary>
   </metric>
   <metric name="DidRequestPose">
@@ -7652,7 +7659,7 @@ be describing additional metrics about the same event.
   <metric name="ReturnedDevice">
     <summary>
       Boolean value that indicates that a device was returned by the API to
-      enumerate devices.
+      enumerate devices. This API is only exposed through WebVR.
     </summary>
   </metric>
   <metric name="ReturnedPresentationCapableDevice">
@@ -7664,7 +7671,10 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="XR.WebXR.PresentationSession">
-  <owner>offenwanger@chromium.org</owner>
+  <obsolete>
+    Deprecated 5/2019
+  </obsolete>
+  <owner>xr-dev@chromium.org</owner>
   <summary>
     Records data for a presentation session, where WebXR is running an exclusive
     presentation to some device.
@@ -7679,14 +7689,67 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="StartAction">
     <summary>
-      A metric to track specifically how the user got into XR presentation. 0:
-      Other, catch all. 1: RequestFrom2DBrowsing, the page requested
-      presentation while Chrome was in 2D mode. 2: RequestFromVRBrowsing, the
-      page requested presentation while Chrome was in VR browsing mode. 3:
-      HeadsetActivation, the user activated the VR headset while in 2D browsing
-      on the page, which listens for headset activations to request
-      presentation. 4: DeepLinkedApp (Obsolete), The page was launched in Chrome
-      from the VR system home (e.g., Daydream Home) and requested presentation.
+      An enum value to track specifically how the user got into XR presentation.
+      See `vr::PresentationStartAction` for enum type declaration. 0: Other,
+      catch all. 1: RequestFrom2DBrowsing, the page requested presentation while
+      Chrome was in 2D mode. 2: RequestFromVRBrowsing, the page requested
+      presentation while Chrome was in VR browsing mode. 3: HeadsetActivation,
+      the user activated the VR headset while in 2D browsing on the page, which
+      listens for headset activations to request presentation. 4: DeepLinkedApp
+      (Obsolete), The page was launched in Chrome from the VR system home (e.g.,
+      Daydream Home) and requested presentation.
+    </summary>
+  </metric>
+</event>
+
+<event name="XR.WebXR.Session">
+  <owner>billorr@chromium.org</owner>
+  <owner>bialpio@chromium.org</owner>
+  <owner>xr-dev@chromium.org</owner>
+  <summary>
+    When session ends, records data for a WebXR / WebVR session.
+  </summary>
+  <metric name="Duration">
+    <summary>
+      The approximate amount of time (in seconds) that elapsed from session
+      creation to session end. Times are reported accurately when low, for
+      example, under a minute, and get rounded to minutes and then hours as they
+      get larger. This is done by SessionTracker::GetRoundedDurationInSeconds.
+      For inline sessions, this might get pretty large.
+    </summary>
+  </metric>
+  <metric name="IsLegacyWebVR">
+    <summary>
+      Boolean value indicating whether a session was created using the legacy
+      WebVR API rather than WebXR.
+    </summary>
+  </metric>
+  <metric name="Mode">
+    <summary>
+      An enum value specifying WebXR session's mode. See `device::SessionMode`
+      for enum type declaration. 0: Unknown, catch all. 1: Inline session. 2:
+      Immersive VR session. 3: Immersive AR session.
+    </summary>
+  </metric>
+</event>
+
+<event name="XR.WebXR.SessionRequest">
+  <owner>xr-dev@chromium.org</owner>
+  <summary>
+    Recorded when promise returned by `requestSession` gets resolved / rejected.
+  </summary>
+  <metric name="Mode">
+    <summary>
+      An enum value that indicates that the `requestSession` API was called to
+      request session with this mode. See `device::SessionMode` for enum type
+      declaration. 0: Unknown, catch all. 1: Inline session was requested. 2:
+      Immersive VR session was requested. 3: Immersive AR session was requested.
+    </summary>
+  </metric>
+  <metric name="Status">
+    <summary>
+      An enum value that describes the result of the call to `requestSession`
+      method. See `` for enum type declaration. 0: Success. 1: Other failure.
     </summary>
   </metric>
 </event>

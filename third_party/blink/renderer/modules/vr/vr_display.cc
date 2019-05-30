@@ -150,6 +150,7 @@ VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
   device::mojom::blink::XRSessionOptionsPtr options =
       device::mojom::blink::XRSessionOptions::New();
   options->immersive = false;
+  options->is_legacy_webvr = true;
   device_ptr_->RequestSession(
       std::move(options),
       WTF::Bind(&VRDisplay::OnNonImmersiveSessionRequestReturned,
@@ -542,7 +543,7 @@ ScriptPromise VRDisplay::requestPresent(
     device::mojom::blink::XRSessionOptionsPtr options =
         device::mojom::blink::XRSessionOptions::New();
     options->immersive = true;
-    options->use_legacy_webvr_render_path = true;
+    options->is_legacy_webvr = true;
 
     device_ptr_->RequestSession(
         std::move(options),
