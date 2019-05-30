@@ -645,17 +645,17 @@ class ArcDefaultAppTest : public ArcAppModelBuilderRecreate {
   DISALLOW_COPY_AND_ASSIGN(ArcDefaultAppTest);
 };
 
-class ArcAppLauncherForDefaulAppTest : public ArcDefaultAppTest {
+class ArcAppLauncherForDefaultAppTest : public ArcDefaultAppTest {
  public:
-  ArcAppLauncherForDefaulAppTest() = default;
-  ~ArcAppLauncherForDefaulAppTest() override = default;
+  ArcAppLauncherForDefaultAppTest() = default;
+  ~ArcAppLauncherForDefaultAppTest() override = default;
 
  protected:
   // ArcDefaultAppTest:
   bool IsWaitDefaultAppsNeeded() const override { return false; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherForDefaulAppTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherForDefaultAppTest);
 };
 
 class ArcPlayStoreAppTest : public ArcDefaultAppTest {
@@ -2555,7 +2555,7 @@ TEST_P(ArcDefaultAppTest, DisableDefaultApps) {
   EXPECT_FALSE(prefs->GetApp(app_id));
 }
 
-TEST_P(ArcAppLauncherForDefaulAppTest, AppIconUpdated) {
+TEST_P(ArcAppLauncherForDefaultAppTest, AppIconUpdated) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -2610,7 +2610,7 @@ TEST_P(ArcAppLauncherForDefaulAppTest, AppIconUpdated) {
 
 // Validates that default app icon can be loaded for non-default dips, that do
 // not exist in Chrome image.
-TEST_P(ArcAppLauncherForDefaulAppTest, AppIconNonDefaultDip) {
+TEST_P(ArcAppLauncherForDefaultAppTest, AppIconNonDefaultDip) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -2630,7 +2630,7 @@ TEST_P(ArcAppLauncherForDefaulAppTest, AppIconNonDefaultDip) {
   icon_loader.reset();
 }
 
-TEST_P(ArcAppLauncherForDefaulAppTest, AppLauncherForDefaultApps) {
+TEST_P(ArcAppLauncherForDefaultAppTest, AppLauncherForDefaultApps) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -2783,7 +2783,7 @@ INSTANTIATE_TEST_SUITE_P(,
                          ArcDefaultAppTest,
                          ::testing::ValuesIn(kUnmanagedArcStates));
 INSTANTIATE_TEST_SUITE_P(,
-                         ArcAppLauncherForDefaulAppTest,
+                         ArcAppLauncherForDefaultAppTest,
                          ::testing::ValuesIn(kUnmanagedArcStates));
 INSTANTIATE_TEST_SUITE_P(,
                          ArcDefaultAppForManagedUserTest,
