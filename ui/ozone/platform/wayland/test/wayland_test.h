@@ -11,7 +11,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/buildflags.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
@@ -29,8 +30,6 @@ namespace ui {
 
 const uint32_t kXdgShellV5 = 5;
 const uint32_t kXdgShellV6 = 6;
-
-class WaylandSurfaceFactory;
 
 // WaylandTest is a base class that sets up a display, window, and test server,
 // and allows easy synchronization between them.
@@ -52,7 +51,7 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
 
   MockPlatformWindowDelegate delegate_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
-  std::unique_ptr<WaylandConnectionProxy> connection_proxy_;
+  std::unique_ptr<WaylandBufferManagerGpu> buffer_manager_gpu_;
   std::unique_ptr<WaylandConnection> connection_;
   std::unique_ptr<WaylandWindow> window_;
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;

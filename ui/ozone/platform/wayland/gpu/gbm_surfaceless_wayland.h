@@ -16,7 +16,7 @@
 
 namespace ui {
 
-class WaylandConnectionProxy;
+class WaylandBufferManagerGpu;
 class WaylandSurfaceFactory;
 
 // A GLSurface for Wayland Ozone platform that uses surfaceless drawing. Drawing
@@ -26,7 +26,7 @@ class WaylandSurfaceFactory;
 class GbmSurfacelessWayland : public gl::SurfacelessEGL {
  public:
   GbmSurfacelessWayland(WaylandSurfaceFactory* surface_factory,
-                        WaylandConnectionProxy* connection,
+                        WaylandBufferManagerGpu* buffer_manager,
                         gfx::AcceleratedWidget widget);
 
   void QueueOverlayPlane(OverlayPlane plane);
@@ -92,7 +92,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
   void FenceRetired(PendingFrame* frame);
 
   WaylandSurfaceFactory* const surface_factory_;
-  WaylandConnectionProxy* const connection_;
+  WaylandBufferManagerGpu* const buffer_manager_;
   std::vector<OverlayPlane> planes_;
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.

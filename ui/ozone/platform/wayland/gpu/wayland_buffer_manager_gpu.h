@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_CONNECTION_PROXY_H_
-#define UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_CONNECTION_PROXY_H_
+#ifndef UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_BUFFER_MANAGER_GPU_H_
+#define UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_BUFFER_MANAGER_GPU_H_
 
 #include <memory>
 
@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
-#include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"
+#include "ui/ozone/public/interfaces/wayland/wayland_buffer_manager.mojom.h"
 
 #if defined(WAYLAND_GBM)
 #include "ui/ozone/common/linux/gbm_device.h"  // nogncheck
@@ -34,16 +34,21 @@ class WaylandWindow;
 // Forwards calls through an associated mojo connection to WaylandBufferManager
 // on the browser process side.
 //
-// It's guaranteed that WaylandConnectionProxy makes mojo calls on the right
+// It's guaranteed that WaylandBufferManagerGpu makes mojo calls on the right
 // sequence.
-class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
+class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
  public:
-  explicit WaylandConnectionProxy(WaylandSurfaceFactory* factory);
-  ~WaylandConnectionProxy() override;
+  using BufferManagerHostPtr = ozone::mojom::WaylandBufferManagerHostPtr;
 
-  // WaylandConnectionProxy overrides:
-  void SetWaylandConnection(ozone::mojom::WaylandConnectionPtr wc_ptr) override;
+  explicit WaylandBufferManagerGpu(WaylandSurfaceFactory* factory);
+  ~WaylandBufferManagerGpu() override;
+
+  // WaylandBufferManagerGpu overrides:
+  void SetWaylandBufferManagerHost(
+      BufferManagerHostPtr buffer_manager_host_ptr) override;
+
   void ResetGbmDevice() override;
+
   // These two calls get the surface, which backs the |widget| and notifies it
   // about the submission and the presentation. After the surface receives the
   // OnSubmission call, it can schedule a new buffer for swap.
@@ -74,7 +79,7 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   void CreateShmBasedBuffer(gfx::AcceleratedWidget widget,
                             base::ScopedFD shm_fd,
                             size_t length,
-                            const gfx::Size size,
+                            gfx::Size size,
                             uint32_t buffer_id);
 
   // Asks Wayland to find a wl_buffer with the |buffer_id| and attach the
@@ -102,9 +107,9 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   }
 #endif
 
-  // Adds a WaylandConnectionClient binding.
-  void AddBindingWaylandConnectionClient(
-      ozone::mojom::WaylandConnectionClientRequest request);
+  // Adds a WaylandBufferManagerGpu binding.
+  void AddBindingWaylandBufferManagerGpu(
+      ozone::mojom::WaylandBufferManagerGpuRequest request);
 
  private:
   void CreateDmabufBasedBufferInternal(gfx::AcceleratedWidget widget,
@@ -119,7 +124,7 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   void CreateShmBasedBufferInternal(gfx::AcceleratedWidget widget,
                                     base::ScopedFD shm_fd,
                                     size_t length,
-                                    const gfx::Size size,
+                                    gfx::Size size,
                                     uint32_t buffer_id);
   void CommitBufferInternal(gfx::AcceleratedWidget widget,
                             uint32_t buffer_id,
@@ -137,14 +142,14 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   std::unique_ptr<GbmDevice> gbm_device_;
 #endif
 
-  mojo::BindingSet<ozone::mojom::WaylandConnectionClient> bindings_;
+  mojo::BindingSet<ozone::mojom::WaylandBufferManagerGpu> bindings_;
 
-  // A pointer to a WaylandConnection object, which always lives on a browser
-  // process side. It's used for a multi-process mode.
-  ozone::mojom::WaylandConnectionPtr wc_ptr_;
-  ozone::mojom::WaylandConnectionPtrInfo wc_ptr_info_;
+  // A pointer to a WaylandBufferManagerHost object, which always lives on a
+  // browser process side. It's used for a multi-process mode.
+  BufferManagerHostPtr buffer_manager_host_ptr_;
+  ozone::mojom::WaylandBufferManagerHostPtrInfo buffer_manager_host_ptr_info_;
 
-  mojo::AssociatedBinding<ozone::mojom::WaylandConnectionClient>
+  mojo::AssociatedBinding<ozone::mojom::WaylandBufferManagerGpu>
       associated_binding_;
 
   // A task runner, which is initialized in a multi-process mode. It is used to
@@ -155,9 +160,9 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // CommitBuffer call.
   scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(WaylandConnectionProxy);
+  DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerGpu);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_CONNECTION_PROXY_H_
+#endif  // UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_BUFFER_MANAGER_GPU_H_

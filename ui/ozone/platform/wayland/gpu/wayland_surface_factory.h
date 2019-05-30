@@ -19,14 +19,14 @@ namespace ui {
 
 class GbmSurfacelessWayland;
 class WaylandConnection;
-class WaylandConnectionProxy;
+class WaylandBufferManagerGpu;
 
 class WaylandSurfaceFactory : public SurfaceFactoryOzone {
  public:
   explicit WaylandSurfaceFactory(WaylandConnection* connection);
   ~WaylandSurfaceFactory() override;
 
-  void SetProxy(WaylandConnectionProxy* proxy);
+  void SetBufferManager(WaylandBufferManagerGpu* buffer_manager);
 
   // These methods are used, when a dmabuf based approach is used.
   void RegisterSurface(gfx::AcceleratedWidget widget,
@@ -53,7 +53,7 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
 
  private:
   WaylandConnection* const connection_;
-  WaylandConnectionProxy* connection_proxy_ = nullptr;
+  WaylandBufferManagerGpu* buffer_manager_ = nullptr;
   std::unique_ptr<GLOzone> egl_implementation_;
 
   std::map<gfx::AcceleratedWidget, GbmSurfacelessWayland*>

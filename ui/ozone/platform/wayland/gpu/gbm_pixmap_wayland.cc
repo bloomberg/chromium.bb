@@ -21,7 +21,7 @@
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/public/overlay_plane.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -29,15 +29,15 @@
 namespace ui {
 
 GbmPixmapWayland::GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
-                                   WaylandConnectionProxy* connection,
+                                   WaylandBufferManagerGpu* buffer_manager,
                                    gfx::AcceleratedWidget widget)
     : surface_manager_(surface_manager),
-      connection_(connection),
+      buffer_manager_(buffer_manager),
       widget_(widget) {}
 
 GbmPixmapWayland::~GbmPixmapWayland() {
   if (gbm_bo_ && widget_ != gfx::kNullAcceleratedWidget)
-    connection_->DestroyBuffer(widget_, GetUniqueId());
+    buffer_manager_->DestroyBuffer(widget_, GetUniqueId());
 }
 
 bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
@@ -45,7 +45,7 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
                                         gfx::BufferUsage usage) {
   TRACE_EVENT0("wayland", "GbmPixmapWayland::InitializeBuffer");
 
-  if (!connection_->gbm_device())
+  if (!buffer_manager_->gbm_device())
     return false;
 
   uint32_t flags = 0;
@@ -74,7 +74,8 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
   }
 
   const uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
-  gbm_bo_ = connection_->gbm_device()->CreateBuffer(fourcc_format, size, flags);
+  gbm_bo_ =
+      buffer_manager_->gbm_device()->CreateBuffer(fourcc_format, size, flags);
   if (!gbm_bo_) {
     LOG(ERROR) << "Cannot create bo with format= "
                << gfx::BufferFormatToString(format) << " and usage "
@@ -182,7 +183,7 @@ void GbmPixmapWayland::CreateDmabufBasedBuffer() {
     return;
   }
   // Asks Wayland to create a wl_buffer based on the |file| fd.
-  connection_->CreateDmabufBasedBuffer(
+  buffer_manager_->CreateDmabufBasedBuffer(
       widget_, std::move(fd), GetBufferSize(), strides, offsets, modifiers,
       gbm_bo_->GetFormat(), plane_count, GetUniqueId());
 }

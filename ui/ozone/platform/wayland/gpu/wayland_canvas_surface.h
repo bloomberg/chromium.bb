@@ -16,11 +16,11 @@
 
 namespace ui {
 
-class WaylandConnectionProxy;
+class WaylandBufferManagerGpu;
 
 class WaylandCanvasSurface : public SurfaceOzoneCanvas {
  public:
-  WaylandCanvasSurface(WaylandConnectionProxy* connection,
+  WaylandCanvasSurface(WaylandBufferManagerGpu* buffer_manager,
                        gfx::AcceleratedWidget widget);
   ~WaylandCanvasSurface() override;
 
@@ -33,7 +33,7 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
  private:
   void OnGetSizeForWidget(const gfx::Size& widget_size) { size_ = widget_size; }
 
-  WaylandConnectionProxy* const connection_;
+  WaylandBufferManagerGpu* const buffer_manager_;
   const gfx::AcceleratedWidget widget_;
 
   gfx::Size size_;

@@ -12,7 +12,6 @@
 
 #include "base/files/file.h"
 #include "base/message_loop/message_pump_libevent.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -26,18 +25,16 @@
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_touch.h"
-#include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"
 
 namespace ui {
 
-class WaylandBufferManager;
+class WaylandBufferManagerHost;
 class WaylandOutputManager;
 class WaylandWindow;
 class WaylandZwpLinuxDmabuf;
 class WaylandShm;
 
 class WaylandConnection : public PlatformEventSource,
-                          public ozone::mojom::WaylandConnection,
                           public base::MessagePumpLibevent::FdWatcher {
  public:
   WaylandConnection();
@@ -45,58 +42,6 @@ class WaylandConnection : public PlatformEventSource,
 
   bool Initialize();
   bool StartProcessingEvents();
-
-  // ozone::mojom::WaylandConnection overrides:
-  //
-  // These overridden methods below are invoked by the GPU when hardware
-  // accelerated rendering is used.
-  void SetWaylandConnectionClient(
-      ozone::mojom::WaylandConnectionClientAssociatedPtrInfo client) override;
-  //
-  // Called by the GPU and asks to import a wl_buffer based on a gbm file
-  // descriptor using zwp_linux_dmabuf protocol. Check comments in the
-  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
-  void CreateDmabufBasedBuffer(gfx::AcceleratedWidget widget,
-                               mojo::ScopedHandle dmabuf_fd,
-                               const gfx::Size& size,
-                               const std::vector<uint32_t>& strides,
-                               const std::vector<uint32_t>& offsets,
-                               const std::vector<uint64_t>& modifiers,
-                               uint32_t format,
-                               uint32_t planes_count,
-                               uint32_t buffer_id) override;
-  // Called by the GPU and asks to import a wl_buffer based on a shared memory
-  // file descriptor using wl_shm protocol. Check comments in the
-  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
-  void CreateShmBasedBuffer(gfx::AcceleratedWidget widget,
-                            mojo::ScopedHandle shm_fd,
-                            uint64_t length,
-                            const gfx::Size& size,
-                            uint32_t buffer_id) override;
-  // Called by the GPU to destroy the imported wl_buffer with a |buffer_id|.
-  void DestroyBuffer(gfx::AcceleratedWidget widget,
-                     uint32_t buffer_id) override;
-  // Called by the GPU and asks to attach a wl_buffer with a |buffer_id| to a
-  // WaylandWindow with the specified |widget|.
-  // Calls OnSubmission and OnPresentation on successful swap and pixels
-  // presented.
-  void CommitBuffer(gfx::AcceleratedWidget widget,
-                    uint32_t buffer_id,
-                    const gfx::Rect& damage_region) override;
-
-  // These methods are exclusively used by the WaylandBufferManager to notify
-  // the |client_associated_ptr_| about buffer swaps' results.
-  // TODO(msisov): move these and the above mojo methods into the
-  // WaylandBufferManager and establish end-to-end communication with
-  // WaylandBufferManagerGpu and WaylandBufferManagerHost instead (basically, to
-  // avoid having the WaylandConnection as proxy in between).
-  // https://crbug.com/947411
-  void OnSubmission(gfx::AcceleratedWidget widget,
-                    uint32_t buffer_id,
-                    const gfx::SwapResult& swap_result);
-  void OnPresentation(gfx::AcceleratedWidget widget,
-                      uint32_t buffer_id,
-                      const gfx::PresentationFeedback& feedback);
 
   // Schedules a flush of the Wayland connection.
   void ScheduleFlush();
@@ -146,24 +91,15 @@ class WaylandConnection : public PlatformEventSource,
     return wayland_cursor_position_.get();
   }
 
-  WaylandBufferManager* buffer_manager() const { return buffer_manager_.get(); }
+  WaylandBufferManagerHost* buffer_manager_host() const {
+    return buffer_manager_host_.get();
+  }
 
   WaylandZwpLinuxDmabuf* zwp_dmabuf() const { return zwp_dmabuf_.get(); }
 
   WaylandShm* shm() const { return shm_.get(); }
 
-  // Returns bound pointer to own mojo interface.
-  ozone::mojom::WaylandConnectionPtr BindInterface();
-
-  // Unbinds the interface and clears the state of the |buffer_manager_|. Used
-  // only when the GPU channel, which uses the mojo pipe to this interface, is
-  // destroyed.
-  void OnChannelDestroyed();
-
   std::vector<gfx::BufferFormat> GetSupportedBufferFormats();
-
-  void SetTerminateGpuCallback(
-      base::OnceCallback<void(std::string)> terminate_gpu_cb);
 
   // Starts drag with |data| to be delivered, |operation| supported by the
   // source side initiated the dragging.
@@ -205,9 +141,6 @@ class WaylandConnection : public PlatformEventSource,
   // base::MessagePumpLibevent::FdWatcher
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
-
-  // Terminates the GPU process on invalid data received
-  void TerminateGpuProcess(std::string reason);
 
   // Make sure data device is properly initialized
   void EnsureDataDevice();
@@ -253,22 +186,13 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
   std::unique_ptr<WaylandShm> shm_;
-
-  // Objects that are using when GPU runs in own process.
-  std::unique_ptr<WaylandBufferManager> buffer_manager_;
+  std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
 
   bool scheduled_flush_ = false;
   bool watching_ = false;
   base::MessagePumpLibevent::FdWatchController controller_;
 
   uint32_t serial_ = 0;
-
-  ozone::mojom::WaylandConnectionClientAssociatedPtr client_associated_ptr_;
-  mojo::Binding<ozone::mojom::WaylandConnection> binding_;
-
-  // A callback, which is used to terminate a GPU process in case of invalid
-  // data sent by the GPU to the browser process.
-  base::OnceCallback<void(std::string)> terminate_gpu_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandConnection);
 };

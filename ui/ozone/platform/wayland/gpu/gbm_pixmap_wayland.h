@@ -18,12 +18,12 @@
 namespace ui {
 
 class WaylandSurfaceFactory;
-class WaylandConnectionProxy;
+class WaylandBufferManagerGpu;
 
 class GbmPixmapWayland : public gfx::NativePixmap {
  public:
   GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
-                   WaylandConnectionProxy* connection,
+                   WaylandBufferManagerGpu* buffer_manager,
                    gfx::AcceleratedWidget widget);
 
   // Creates a buffer object and initializes the pixmap buffer.
@@ -61,7 +61,7 @@ class GbmPixmapWayland : public gfx::NativePixmap {
   WaylandSurfaceFactory* const surface_manager_;
 
   // Represents a connection to Wayland.
-  WaylandConnectionProxy* const connection_;
+  WaylandBufferManagerGpu* const buffer_manager_;
 
   // Represents widget this pixmap backs.
   const gfx::AcceleratedWidget widget_;

@@ -25,7 +25,7 @@ const service_manager::Manifest& GetContentGpuManifest() {
                                 "IPC.mojom.ChannelBootstrap",
                                 "ui.ozone.mojom.DeviceCursor",
                                 "ui.ozone.mojom.DrmDevice",
-                                "ui.ozone.mojom.WaylandConnectionClient",
+                                "ui.ozone.mojom.WaylandBufferManagerGpu",
                                 "ui.mojom.ScenicGpuService",
                                 "viz.mojom.CompositingModeReporter",
                                 "viz.mojom.VizMain",

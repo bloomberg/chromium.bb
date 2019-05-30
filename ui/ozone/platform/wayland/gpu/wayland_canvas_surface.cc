@@ -13,7 +13,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/posix/eintr_wrapper.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 
 namespace ui {
 
@@ -25,13 +25,14 @@ void DeleteSharedMemoryMapping(void* pixels, void* context) {
 
 }  // namespace
 
-WaylandCanvasSurface::WaylandCanvasSurface(WaylandConnectionProxy* connection,
-                                           gfx::AcceleratedWidget widget)
-    : connection_(connection), widget_(widget) {}
+WaylandCanvasSurface::WaylandCanvasSurface(
+    WaylandBufferManagerGpu* buffer_manager,
+    gfx::AcceleratedWidget widget)
+    : buffer_manager_(buffer_manager), widget_(widget) {}
 
 WaylandCanvasSurface::~WaylandCanvasSurface() {
   if (sk_surface_)
-    connection_->DestroyBuffer(widget_, buffer_id_);
+    buffer_manager_->DestroyBuffer(widget_, buffer_id_);
 }
 
 sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
@@ -53,8 +54,8 @@ sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
       base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
           std::move(shm_region));
   base::subtle::ScopedFDPair fd_pair = platform_shm.PassPlatformHandle();
-  connection_->CreateShmBasedBuffer(widget_, std::move(fd_pair.fd), length,
-                                    size_, ++buffer_id_);
+  buffer_manager_->CreateShmBasedBuffer(widget_, std::move(fd_pair.fd), length,
+                                        size_, ++buffer_id_);
 
   auto shm_mapping_on_heap =
       std::make_unique<base::WritableSharedMemoryMapping>(
@@ -79,7 +80,7 @@ void WaylandCanvasSurface::ResizeCanvas(const gfx::Size& viewport_size) {
   // smaller than the old size).
   if (sk_surface_) {
     sk_surface_.reset();
-    connection_->DestroyBuffer(widget_, buffer_id_);
+    buffer_manager_->DestroyBuffer(widget_, buffer_id_);
   }
   size_ = viewport_size;
 }
@@ -87,7 +88,7 @@ void WaylandCanvasSurface::ResizeCanvas(const gfx::Size& viewport_size) {
 void WaylandCanvasSurface::PresentCanvas(const gfx::Rect& damage) {
   // TODO(https://crbug.com/930664): add support for submission and presentation
   // callbacks.
-  connection_->CommitBuffer(widget_, buffer_id_, damage);
+  buffer_manager_->CommitBuffer(widget_, buffer_id_, damage);
 }
 
 std::unique_ptr<gfx::VSyncProvider>

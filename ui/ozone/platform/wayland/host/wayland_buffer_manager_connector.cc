@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/wayland/host/wayland_connection_connector.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_connector.h"
 
 #include "base/bind.h"
 #include "base/task_runner_util.h"
-#include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 
 namespace ui {
 
@@ -31,29 +31,29 @@ void BindInterfaceInGpuProcess(mojo::InterfaceRequest<Interface> request,
 
 }  // namespace
 
-WaylandConnectionConnector::WaylandConnectionConnector(
-    WaylandConnection* connection)
-    : connection_(connection) {}
+WaylandBufferManagerConnector::WaylandBufferManagerConnector(
+    WaylandBufferManagerHost* buffer_manager)
+    : buffer_manager_(buffer_manager) {}
 
-WaylandConnectionConnector::~WaylandConnectionConnector() = default;
+WaylandBufferManagerConnector::~WaylandBufferManagerConnector() = default;
 
-void WaylandConnectionConnector::OnGpuProcessLaunched(
+void WaylandBufferManagerConnector::OnGpuProcessLaunched(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
     const base::RepeatingCallback<void(IPC::Message*)>& send_callback) {}
 
-void WaylandConnectionConnector::OnChannelDestroyed(int host_id) {
-  connection_->OnChannelDestroyed();
+void WaylandBufferManagerConnector::OnChannelDestroyed(int host_id) {
+  buffer_manager_->OnChannelDestroyed();
 }
 
-void WaylandConnectionConnector::OnMessageReceived(
+void WaylandBufferManagerConnector::OnMessageReceived(
     const IPC::Message& message) {
   NOTREACHED() << "This class should only be used with mojo transport but here "
                   "we're wrongly getting invoked to handle IPC communication.";
 }
 
-void WaylandConnectionConnector::OnGpuServiceLaunched(
+void WaylandBufferManagerConnector::OnGpuServiceLaunched(
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     GpuHostBindInterfaceCallback binder,
@@ -63,34 +63,37 @@ void WaylandConnectionConnector::OnGpuServiceLaunched(
 
   io_runner_ = io_runner;
   auto on_terminate_gpu_cb =
-      base::BindOnce(&WaylandConnectionConnector::OnTerminateGpuProcess,
+      base::BindOnce(&WaylandBufferManagerConnector::OnTerminateGpuProcess,
                      base::Unretained(this));
-  connection_->SetTerminateGpuCallback(std::move(on_terminate_gpu_cb));
+  buffer_manager_->SetTerminateGpuCallback(std::move(on_terminate_gpu_cb));
 
   base::PostTaskAndReplyWithResult(
       ui_runner.get(), FROM_HERE,
-      base::BindOnce(&WaylandConnection::BindInterface,
-                     base::Unretained(connection_)),
-      base::BindOnce(&WaylandConnectionConnector::OnWaylandConnectionPtrBinded,
-                     base::Unretained(this)));
+      base::BindOnce(&WaylandBufferManagerHost::BindInterface,
+                     base::Unretained(buffer_manager_)),
+      base::BindOnce(
+          &WaylandBufferManagerConnector::OnBufferManagerHostPtrBinded,
+          base::Unretained(this)));
 }
 
-void WaylandConnectionConnector::OnWaylandConnectionPtrBinded(
-    ozone::mojom::WaylandConnectionPtr wc_ptr) const {
-  ozone::mojom::WaylandConnectionClientPtr wcp_ptr;
-  auto request = mojo::MakeRequest(&wcp_ptr);
+void WaylandBufferManagerConnector::OnBufferManagerHostPtrBinded(
+    ozone::mojom::WaylandBufferManagerHostPtr buffer_manager_host_ptr) const {
+  ozone::mojom::WaylandBufferManagerGpuPtr buffer_manager_gpu_ptr;
+  auto request = mojo::MakeRequest(&buffer_manager_gpu_ptr);
   BindInterfaceInGpuProcess(std::move(request), binder_);
-  wcp_ptr->SetWaylandConnection(std::move(wc_ptr));
+  DCHECK(buffer_manager_host_ptr);
+  buffer_manager_gpu_ptr->SetWaylandBufferManagerHost(
+      std::move(buffer_manager_host_ptr));
 
 #if defined(WAYLAND_GBM)
-  if (!connection_->zwp_dmabuf()) {
+  if (!buffer_manager_->CanCreateDmabufBasedBuffer()) {
     LOG(WARNING) << "zwp_linux_dmabuf is not available.";
-    wcp_ptr->ResetGbmDevice();
+    buffer_manager_gpu_ptr->ResetGbmDevice();
   }
 #endif
 }
 
-void WaylandConnectionConnector::OnTerminateGpuProcess(std::string message) {
+void WaylandBufferManagerConnector::OnTerminateGpuProcess(std::string message) {
   io_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(terminate_callback_),
                                                  std::move(message)));
 }

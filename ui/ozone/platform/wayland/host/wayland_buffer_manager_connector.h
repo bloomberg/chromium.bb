@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CONNECTION_CONNECTOR_H_
-#define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CONNECTION_CONNECTOR_H_
+#ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_BUFFER_MANAGER_CONNECTOR_H_
+#define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_BUFFER_MANAGER_CONNECTOR_H_
 
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
-#include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"
+#include "ui/ozone/public/interfaces/wayland/wayland_buffer_manager.mojom.h"
 
 namespace ui {
 
-class WaylandConnection;
+class WaylandBufferManagerHost;
 
-// A connector class, which instantiates a connection between
-// WaylandConnectionProxy on the GPU side and the WaylandConnection object on
-// the browser process side.
-class WaylandConnectionConnector : public GpuPlatformSupportHost {
+// A connector class which instantiates a connection between
+// WaylandBufferManagerGpu on the GPU side and the WaylandBufferManagerHost
+// object on the browser process side.
+class WaylandBufferManagerConnector : public GpuPlatformSupportHost {
  public:
-  WaylandConnectionConnector(WaylandConnection* connection);
-  ~WaylandConnectionConnector() override;
+  explicit WaylandBufferManagerConnector(
+      WaylandBufferManagerHost* buffer_manager);
+  ~WaylandBufferManagerConnector() override;
 
   // GpuPlatformSupportHost:
   void OnGpuProcessLaunched(
@@ -37,23 +38,23 @@ class WaylandConnectionConnector : public GpuPlatformSupportHost {
       GpuHostTerminateCallback terminate_callback) override;
 
  private:
-  void OnWaylandConnectionPtrBinded(
-      ozone::mojom::WaylandConnectionPtr wc_ptr) const;
+  void OnBufferManagerHostPtrBinded(
+      ozone::mojom::WaylandBufferManagerHostPtr buffer_manager_host_ptr) const;
 
   void OnTerminateGpuProcess(std::string message);
 
   // Non-owning pointer, which is used to bind a mojo pointer to the
-  // WaylandConnection.
-  WaylandConnection* connection_ = nullptr;
+  // WaylandBufferManagerHost.
+  WaylandBufferManagerHost* const buffer_manager_;
 
   GpuHostBindInterfaceCallback binder_;
   GpuHostTerminateCallback terminate_callback_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(WaylandConnectionConnector);
+  DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerConnector);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CONNECTION_CONNECTOR_H_
+#endif  // UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_BUFFER_MANAGER_CONNECTOR_H_
