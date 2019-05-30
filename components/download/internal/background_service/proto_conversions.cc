@@ -293,7 +293,7 @@ Entry ProtoConversions::EntryFromProto(const protodb::Entry& proto) {
   entry.cleanup_attempt_count = proto.cleanup_attempt_count();
   entry.has_upload_data = proto.has_upload_data();
   entry.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag({proto.traffic_annotation()});
+      net::CreateMutableNetworkTrafficAnnotationTag(proto.traffic_annotation());
   entry.bytes_downloaded = proto.bytes_downloaded();
   for (const auto& url : proto.url_chain())
     entry.url_chain.emplace_back(url);
