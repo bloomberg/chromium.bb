@@ -112,43 +112,35 @@ void CompositorFrameSinkSupport::SetBeginFrameSource(
 void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   DCHECK(surface);
   DCHECK(surface->HasActiveFrame());
+  DCHECK(!surface->HasPendingFrame());
 
   pending_surfaces_.erase(surface);
   if (pending_surfaces_.empty())
     UpdateNeedsBeginFramesInternal();
 
-  const LocalSurfaceId& local_surface_id =
-      surface->surface_id().local_surface_id();
-  const LocalSurfaceId& last_activated_local_surface_id =
-      last_activated_surface_id_.local_surface_id();
+  if (surface->surface_id() == last_activated_surface_id_)
+    return;
 
-  if (!last_activated_surface_id_.is_valid() ||
-      local_surface_id > last_activated_local_surface_id) {
-    if (last_activated_surface_id_.is_valid()) {
-      if (last_activated_local_surface_id.embed_token() ==
-          local_surface_id.embed_token()) {
-        DCHECK_GE(local_surface_id.parent_sequence_number(),
-                  last_activated_local_surface_id.parent_sequence_number());
-        DCHECK_GE(local_surface_id.child_sequence_number(),
-                  last_activated_local_surface_id.child_sequence_number());
-      }
+  Surface* previous_surface =
+      surface_manager_->GetSurfaceForId(last_activated_surface_id_);
 
-      Surface* prev_surface =
-          surface_manager_->GetSurfaceForId(last_activated_surface_id_);
-      DCHECK(prev_surface);
-      surface->SetPreviousFrameSurface(prev_surface);
-      surface_manager_->MarkSurfaceForDestruction(prev_surface->surface_id());
-    }
+  if (!previous_surface) {
     last_activated_surface_id_ = surface->surface_id();
-  } else if (surface->surface_id() < last_activated_surface_id_) {
+  } else if (previous_surface->GetActiveFrameIndex() <
+             surface->GetActiveFrameIndex()) {
+    surface_manager_->MarkSurfaceForDestruction(last_activated_surface_id_);
+    last_activated_surface_id_ = surface->surface_id();
+    // TODO(samans): Why is this not done when creating the surface?
+    surface->SetPreviousFrameSurface(previous_surface);
+  } else {
+    DCHECK_GT(previous_surface->GetActiveFrameIndex(),
+              surface->GetActiveFrameIndex());
     // We can get into a situation where a child-initiated synchronization is
     // deferred until after a parent-initiated synchronization happens resulting
     // in activations happening out of order. In that case, we simply discard
     // the stale surface.
     surface_manager_->MarkSurfaceForDestruction(surface->surface_id());
   }
-
-  DCHECK(surface->HasActiveFrame());
 
   // Check if this is a display root surface and the SurfaceId is changing.
   if (is_root_ && (!referenced_local_surface_id_ ||

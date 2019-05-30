@@ -3554,4 +3554,27 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_FALSE(child_surface4->HasActiveFrame());
 }
 
+// Verifies that the value of last active surface is correct after embed token
+// changes. https://crbug.com/967012
+TEST_F(SurfaceSynchronizationTest,
+       CheckLastActiveSurfaceAfterEmbedTokenChange) {
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId parent_id2(
+      kParentFrameSink, LocalSurfaceId(1, base::UnguessableToken::Create()));
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* parent_surface1 = GetSurfaceForId(parent_id1);
+  EXPECT_TRUE(parent_surface1->HasActiveFrame());
+  EXPECT_FALSE(parent_surface1->HasPendingFrame());
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  Surface* parent_surface2 = GetSurfaceForId(parent_id2);
+  EXPECT_TRUE(parent_surface2->HasActiveFrame());
+  EXPECT_FALSE(parent_surface2->HasPendingFrame());
+
+  // Even though |parent_id1| has a larger sequence number, the value of
+  // |last_activated_surface_id| should be |parent_id2|.
+  EXPECT_EQ(parent_id2, parent_support().last_activated_surface_id());
+}
+
 }  // namespace viz
