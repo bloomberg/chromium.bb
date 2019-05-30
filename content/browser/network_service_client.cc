@@ -32,9 +32,11 @@
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/cookies/cookie_util.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/ssl/client_cert_store.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
@@ -359,6 +361,91 @@ void FinishGenerateNegotiateAuthToken(
 }
 #endif
 
+void DeprecateSameSiteCookies(int process_id,
+                              int routing_id,
+                              const net::CookieStatusList& excluded_cookies) {
+  // Navigation requests start in the browser, before process_id is assigned, so
+  // the id is set to network::mojom::kBrowserProcessId. In these situations,
+  // the routing_id is the frame tree node id, and can be used directly.
+  RenderFrameHostImpl* frame = nullptr;
+  if (process_id == network::mojom::kBrowserProcessId) {
+    FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(routing_id);
+    if (ftn)
+      frame = ftn->current_frame_host();
+  } else {
+    frame = RenderFrameHostImpl::FromID(process_id, routing_id);
+  }
+
+  if (!frame)
+    return;
+
+  // Because of the nature of mojo and calling cross process, there's the
+  // possibility of calling this method after the page has already been
+  // navigated away from, which is DCHECKed against in
+  // LogWebFeatureForCurrentPage. We're replicating the DCHECK here and
+  // returning early should this be the case.
+  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
+
+  RenderFrameHostImpl* root_frame_host = frame;
+  while (root_frame_host->GetParent() != nullptr)
+    root_frame_host = root_frame_host->GetParent();
+
+  if (root_frame_host != web_contents->GetMainFrame())
+    return;
+
+  bool samesite_treated_as_lax_cookies = false;
+  bool samesite_none_insecure_cookies = false;
+
+  for (const net::CookieWithStatus& excluded_cookie : excluded_cookies) {
+    std::string cookie_url =
+        net::cookie_util::CookieOriginToURL(excluded_cookie.cookie.Domain(),
+                                            excluded_cookie.cookie.IsSecure())
+            .possibly_invalid_spec();
+
+    if (excluded_cookie.status ==
+        net::CanonicalCookie::CookieInclusionStatus::
+            EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
+      samesite_treated_as_lax_cookies = true;
+
+      frame->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          "[Deprecation] A cookie associated with a cross-site resource at " +
+              cookie_url +
+              " was set without the `SameSite` attribute. "
+              "Starting in M77, Chrome will only deliver cookies with "
+              "cross-site requests if they are set with `SameSite=None`. You "
+              "can review cookies in developer tools under "
+              "Application>Storage>Cookies and see more details at "
+              "https://www.chromestatus.com/feature/5088147346030592.");
+    }
+
+    if (excluded_cookie.status == net::CanonicalCookie::CookieInclusionStatus::
+                                      EXCLUDE_SAMESITE_NONE_INSECURE) {
+      samesite_none_insecure_cookies = true;
+
+      frame->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          "[Deprecation] A cookie associated with a resource at " + cookie_url +
+              " was set with `SameSite=None` but without `Secure`. "
+              "Starting in M80, Chrome will only deliver cookies marked "
+              "`SameSite=None` if they are also marked `Secure`. You "
+              "can review cookies in developer tools under "
+              "Application>Storage>Cookies and see more details at "
+              "https://www.chromestatus.com/feature/5633521622188032.");
+    }
+  }
+
+  if (samesite_treated_as_lax_cookies) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        frame, blink::mojom::WebFeature::kCookieNoSameSite);
+  }
+
+  if (samesite_none_insecure_cookies) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        frame, blink::mojom::WebFeature::kCookieInsecureAndSameSiteNone);
+  }
+}
+
 }  // namespace
 
 NetworkServiceClient::NetworkServiceClient(
@@ -640,5 +727,29 @@ void NetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
                      std::move(prefs), std::move(callback)));
 }
 #endif
+
+void NetworkServiceClient::OnFlaggedRequestCookies(
+    int32_t process_id,
+    int32_t routing_id,
+    const net::CookieStatusList& excluded_cookies) {
+  DeprecateSameSiteCookies(process_id, routing_id, excluded_cookies);
+}
+
+void NetworkServiceClient::OnFlaggedResponseCookies(
+    int32_t process_id,
+    int32_t routing_id,
+    const net::CookieAndLineStatusList& excluded_cookies) {
+  net::CookieStatusList excluded_list;
+
+  for (const auto& excluded_cookie : excluded_cookies) {
+    // If there's no cookie, it was a parsing error and wouldn't be deprecated
+    if (excluded_cookie.cookie) {
+      excluded_list.push_back(
+          {excluded_cookie.cookie.value(), excluded_cookie.status});
+    }
+  }
+
+  DeprecateSameSiteCookies(process_id, routing_id, excluded_list);
+}
 
 }  // namespace content

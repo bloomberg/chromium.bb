@@ -29,6 +29,7 @@
 #include "net/base/static_cookie_policy.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_private_key.h"
@@ -431,10 +432,10 @@ URLLoader::URLLoader(
     url_request_->set_allow_credentials(false);
   }
 
+  url_request_->SetRequestHeadersCallback(base::BindRepeating(
+      &URLLoader::SetRawRequestHeadersAndNotify, base::Unretained(this)));
+
   if (want_raw_headers_) {
-    url_request_->SetRequestHeadersCallback(
-        base::Bind(&net::HttpRawRequestHeaders::Assign,
-                   base::Unretained(&raw_request_headers_)));
     url_request_->SetResponseHeadersCallback(
         base::Bind(&URLLoader::SetRawResponseHeaders, base::Unretained(this)));
   }
@@ -1114,6 +1115,32 @@ int URLLoader::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
+  if (network_service_client_) {
+    // For now we're only using excluded/flagged cookies pertaining to the
+    // samesite-by-default and samesite-none-must-be-secure features, so the
+    // flagged cookies are being further filtered beofre sending.
+    net::CookieAndLineStatusList flagged_cookies;
+    for (const auto& cookie_line_and_status :
+         url_request_->not_stored_cookies()) {
+      if (cookie_line_and_status.status ==
+              net::CanonicalCookie::CookieInclusionStatus::
+                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
+          cookie_line_and_status.status ==
+              net::CanonicalCookie::CookieInclusionStatus::
+                  EXCLUDE_SAMESITE_NONE_INSECURE) {
+        flagged_cookies.emplace_back(cookie_line_and_status.cookie,
+                                     cookie_line_and_status.cookie_string,
+                                     cookie_line_and_status.status);
+      }
+    }
+
+    if (!flagged_cookies.empty()) {
+      // TODO(crbug.com/856777): add OnRawResponse once implemented
+      network_service_client_->OnFlaggedResponseCookies(
+          GetProcessId(), GetRenderFrameId(), flagged_cookies);
+    }
+  }
+
   if (header_client_) {
     header_client_->OnHeadersReceived(
         original_response_headers->raw_headers(),
@@ -1317,6 +1344,37 @@ void URLLoader::CompletePendingWrite(bool success) {
 void URLLoader::SetRawResponseHeaders(
     scoped_refptr<const net::HttpResponseHeaders> headers) {
   raw_response_headers_ = headers;
+}
+
+void URLLoader::SetRawRequestHeadersAndNotify(
+    net::HttpRawRequestHeaders headers) {
+  if (network_service_client_) {
+    // TODO(crbug.com/856777): Add OnRawRequest once implemented
+
+    // For now we're only using excluded/flagged cookies pertaining to the
+    // samesite-by-default and samesite-none-must-be-secure features, so the
+    // flagged cookies are being further filtered before sending.
+    net::CookieStatusList flagged_cookies;
+    for (const auto& cookie_and_status : url_request_->not_sent_cookies()) {
+      if (cookie_and_status.status ==
+              net::CanonicalCookie::CookieInclusionStatus::
+                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
+          cookie_and_status.status ==
+              net::CanonicalCookie::CookieInclusionStatus::
+                  EXCLUDE_SAMESITE_NONE_INSECURE) {
+        flagged_cookies.push_back(
+            {cookie_and_status.cookie, cookie_and_status.status});
+      }
+    }
+
+    if (!flagged_cookies.empty()) {
+      network_service_client_->OnFlaggedRequestCookies(
+          GetProcessId(), GetRenderFrameId(), flagged_cookies);
+    }
+  }
+
+  if (want_raw_headers_)
+    raw_request_headers_.Assign(std::move(headers));
 }
 
 void URLLoader::SendUploadProgress(const net::UploadProgress& progress) {

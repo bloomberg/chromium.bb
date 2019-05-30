@@ -347,4 +347,23 @@ bool StructTraits<
   return true;
 }
 
+bool StructTraits<network::mojom::CookieAndLineWithStatusDataView,
+                  net::CookieAndLineWithStatus>::
+    Read(network::mojom::CookieAndLineWithStatusDataView c,
+         net::CookieAndLineWithStatus* out) {
+  base::Optional<net::CanonicalCookie> cookie;
+  std::string cookie_string;
+  net::CanonicalCookie::CookieInclusionStatus status;
+  if (!c.ReadCookie(&cookie))
+    return false;
+  if (!c.ReadCookieString(&cookie_string))
+    return false;
+  if (!c.ReadStatus(&status))
+    return false;
+
+  *out = {cookie, cookie_string, status};
+
+  return true;
+}
+
 }  // namespace mojo

@@ -123,6 +123,25 @@ struct StructTraits<network::mojom::CookieWithStatusDataView,
                    net::CookieWithStatus* out);
 };
 
+template <>
+struct StructTraits<network::mojom::CookieAndLineWithStatusDataView,
+                    net::CookieAndLineWithStatus> {
+  static const base::Optional<net::CanonicalCookie>& cookie(
+      const net::CookieAndLineWithStatus& c) {
+    return c.cookie;
+  }
+  static const std::string& cookie_string(
+      const net::CookieAndLineWithStatus& c) {
+    return c.cookie_string;
+  }
+  static const net::CanonicalCookie::CookieInclusionStatus& status(
+      const net::CookieAndLineWithStatus& c) {
+    return c.status;
+  }
+  static bool Read(network::mojom::CookieAndLineWithStatusDataView cookie,
+                   net::CookieAndLineWithStatus* out);
+};
+
 }  // namespace mojo
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_COOKIE_MANAGER_MOJOM_TRAITS_H_
