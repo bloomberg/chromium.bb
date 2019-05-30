@@ -5,9 +5,9 @@
 #include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +38,7 @@ class PowerMonitorBroadcastSourceTest : public testing::Test {
 
   base::PowerMonitor* monitor() { return power_monitor_.get(); }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   PowerMonitorBroadcastSource* power_monitor_source_ptr_;
