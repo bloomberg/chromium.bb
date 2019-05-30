@@ -203,6 +203,7 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     @RetryOnFailure
+    @DisabledTest(message = "Test is flaky, see crbug.com/968797")
     public void testAbortMetrics_OtherAborted_TabClosed()
             throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
