@@ -5,8 +5,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "services/ws/input_devices/input_device_server.h"
 #include "services/ws/public/cpp/input_devices/input_device_client.h"
@@ -42,7 +42,7 @@ class InputDeviceTest : public testing::Test {
   InputDeviceTest() {}
   ~InputDeviceTest() override {}
 
-  void RunUntilIdle() { task_runner_->RunUntilIdle(); }
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
   void AddClientAsObserver(TestInputDeviceClient* client) {
     server_.AddObserver(client->GetIntefacePtr());
@@ -54,10 +54,6 @@ class InputDeviceTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-        base::Time::Now(), base::TimeTicks::Now());
-    message_loop_.SetTaskRunner(task_runner_);
-
     ui::DeviceDataManager::CreateInstance();
     server_.RegisterAsObserver();
   }
@@ -65,8 +61,8 @@ class InputDeviceTest : public testing::Test {
   void TearDown() override { ui::DeviceDataManager::DeleteInstance(); }
 
  private:
-  base::MessageLoop message_loop_;
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   InputDeviceServer server_;
 
   DISALLOW_COPY_AND_ASSIGN(InputDeviceTest);
