@@ -26,13 +26,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/history/core/browser/default_top_sites_provider.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/top_sites_impl.h"
 #include "components/history/core/browser/top_sites_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/ntp_tiles/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -56,6 +59,14 @@ struct RawPrepopulatedPage {
 #if !defined(OS_ANDROID)
 // Android does not use prepopulated pages.
 const RawPrepopulatedPage kRawPrepopulatedPages[] = {
+#if defined(GOOGLE_CHROME_BUILD)
+    {
+        IDS_NTP_DEFAULT_SEARCH_URL,
+        IDS_NTP_DEFAULT_SEARCH_TITLE,
+        IDS_ONBOARDING_WELCOME_SEARCH,
+        SkColorSetRGB(63, 132, 197),
+    },
+#endif
     {
         IDS_WEBSTORE_URL,
         IDS_EXTENSION_WEB_STORE_TITLE_SHORT,
@@ -76,6 +87,11 @@ void InitializePrepopulatedPageList(
     const RawPrepopulatedPage& page = kRawPrepopulatedPages[i];
     if (hide_web_store_icon && page.url_id == IDS_WEBSTORE_URL)
       continue;
+    if (page.url_id == IDS_NTP_DEFAULT_SEARCH_URL &&
+        !base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut)) {
+      continue;
+    }
+
     prepopulated_pages->push_back(history::PrepopulatedPage(
         GURL(l10n_util::GetStringUTF8(page.url_id)),
         l10n_util::GetStringUTF16(page.title_id), page.favicon_id, page.color));

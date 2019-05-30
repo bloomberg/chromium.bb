@@ -208,6 +208,7 @@
       <part file="login_dialog_strings.grdp" />
       <part file="new_or_sad_tab_strings.grdp" />
       <part file="ntp_snippets_strings.grdp" />
+      <part file="ntp_tiles_strings.grdp" />
       <part file="omnibox_strings.grdp" />
       <part file="page_info_strings.grdp" />
       <part file="password_manager_strings.grdp" />
