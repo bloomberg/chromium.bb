@@ -61,6 +61,10 @@ class MockWebGraphisContext3DProviderWrapper
     return gpu_feature_info_;
   }
 
+  const WebglPreferences& GetWebglPreferences() const override {
+    return webgl_preferences_;
+  }
+
   viz::GLHelper* GetGLHelper() override { return nullptr; }
 
   gpu::gles2::GLES2Interface* ContextGL() override {
@@ -97,6 +101,7 @@ class MockWebGraphisContext3DProviderWrapper
   scoped_refptr<viz::TestContextProvider> test_context_provider_;
   gpu::Capabilities capabilities_;
   gpu::GpuFeatureInfo gpu_feature_info_;
+  WebglPreferences webgl_preferences_;
   cc::ImageDecodeCache* image_decode_cache_;
 };
 

@@ -4,10 +4,15 @@
 
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 
+#include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "cc/paint/paint_image.h"
 #include "cc/tiles/gpu_image_decode_cache.h"
 #include "components/viz/common/gl_helper.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -51,6 +56,69 @@ const gpu::Capabilities& WebGraphicsContext3DProviderImpl::GetCapabilities()
 const gpu::GpuFeatureInfo& WebGraphicsContext3DProviderImpl::GetGpuFeatureInfo()
     const {
   return provider_->GetGpuFeatureInfo();
+}
+
+const blink::WebglPreferences&
+WebGraphicsContext3DProviderImpl::GetWebglPreferences() const {
+  static bool initialized = false;
+  static blink::WebglPreferences prefs;
+  if (!initialized) {
+    initialized = true;
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    auto gpu_feature_info = GetGpuFeatureInfo();
+
+    if (gpu_feature_info.IsWorkaroundEnabled(MAX_MSAA_SAMPLE_COUNT_4)) {
+      prefs.msaa_sample_count = 4;
+    }
+    if (command_line->HasSwitch(switches::kWebglMSAASampleCount)) {
+      std::string sample_count =
+          command_line->GetSwitchValueASCII(switches::kWebglMSAASampleCount);
+      uint32_t count;
+      if (base::StringToUint(sample_count, &count)) {
+        prefs.msaa_sample_count = count;
+      }
+    }
+
+    if (command_line->HasSwitch(switches::kWebglAntialiasingMode)) {
+      std::string mode =
+          command_line->GetSwitchValueASCII(switches::kWebglAntialiasingMode);
+      if (mode == "none") {
+        prefs.anti_aliasing_mode = blink::kAntialiasingModeNone;
+      } else if (mode == "explicit") {
+        prefs.anti_aliasing_mode = blink::kAntialiasingModeMSAAExplicitResolve;
+      } else if (mode == "implicit") {
+        prefs.anti_aliasing_mode = blink::kAntialiasingModeMSAAImplicitResolve;
+      } else if (mode == "screenspace") {
+        prefs.anti_aliasing_mode =
+            blink::kAntialiasingModeScreenSpaceAntialiasing;
+      } else {
+        prefs.anti_aliasing_mode = blink::kAntialiasingModeUnspecified;
+      }
+    }
+
+    // Set default context limits for WebGL.
+#if defined(OS_ANDROID)
+    prefs.max_active_webgl_contexts = 8u;
+#else
+    prefs.max_active_webgl_contexts = 16u;
+#endif
+    prefs.max_active_webgl_contexts_on_worker = 4u;
+
+    if (command_line->HasSwitch(switches::kMaxActiveWebGLContexts)) {
+      std::string max_contexts =
+          command_line->GetSwitchValueASCII(switches::kMaxActiveWebGLContexts);
+      uint32_t max_val;
+      if (base::StringToUint(max_contexts, &max_val)) {
+        // It shouldn't be common for users to override this. If they do,
+        // just override both values.
+        prefs.max_active_webgl_contexts = max_val;
+        prefs.max_active_webgl_contexts_on_worker = max_val;
+      }
+    }
+  }
+
+  return prefs;
 }
 
 viz::GLHelper* WebGraphicsContext3DProviderImpl::GetGLHelper() {

@@ -191,8 +191,7 @@ void WebGLRenderingContextBase::InitializeWebGLContextLimits(
   MutexLocker locker(WebGLContextLimitMutex());
   if (!webgl_context_limits_initialized_) {
     // These do not change over the lifetime of the browser.
-    auto webgl_preferences =
-        context_provider->GetGpuFeatureInfo().webgl_preferences;
+    auto webgl_preferences = context_provider->GetWebglPreferences();
     max_active_webgl_contexts_ = webgl_preferences.max_active_webgl_contexts;
     max_active_webgl_contexts_on_worker_ =
         webgl_preferences.max_active_webgl_contexts_on_worker;

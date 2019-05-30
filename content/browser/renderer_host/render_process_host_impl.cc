@@ -2992,6 +2992,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kJavaScriptFlags,
     switches::kLogFile,
     switches::kLoggingLevel,
+    switches::kMaxActiveWebGLContexts,
     switches::kMaxUntiledLayerWidth,
     switches::kMaxUntiledLayerHeight,
     switches::kMSEAudioBufferSizeLimitMb,
@@ -3027,6 +3028,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kVideoThreads,
     switches::kVideoUnderflowThresholdMs,
     switches::kVModule,
+    switches::kWebglAntialiasingMode,
+    switches::kWebglMSAASampleCount,
     // Please keep these in alphabetical order. Compositor switches here should
     // also be added to chrome/browser/chromeos/login/chrome_restart_request.cc.
     cc::switches::kCCScrollAnimationDurationForTesting,

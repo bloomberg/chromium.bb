@@ -526,57 +526,6 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   // initialization than commandline switches.
   AppendWorkaroundsToCommandLine(gpu_feature_info, command_line);
 
-  if (gpu_feature_info.IsWorkaroundEnabled(MAX_MSAA_SAMPLE_COUNT_4)) {
-    gpu_feature_info.webgl_preferences.msaa_sample_count = 4;
-  }
-
-  if (command_line->HasSwitch(switches::kWebglMSAASampleCount)) {
-    std::string sample_count =
-        command_line->GetSwitchValueASCII(switches::kWebglMSAASampleCount);
-    uint32_t count;
-    if (base::StringToUint(sample_count, &count)) {
-      gpu_feature_info.webgl_preferences.msaa_sample_count = count;
-    }
-  }
-
-  if (command_line->HasSwitch(switches::kWebglAntialiasingMode)) {
-    std::string mode =
-        command_line->GetSwitchValueASCII(switches::kWebglAntialiasingMode);
-    if (mode == "none") {
-      gpu_feature_info.webgl_preferences.anti_aliasing_mode =
-          kAntialiasingModeNone;
-    } else if (mode == "explicit") {
-      gpu_feature_info.webgl_preferences.anti_aliasing_mode =
-          kAntialiasingModeMSAAExplicitResolve;
-    } else if (mode == "implicit") {
-      gpu_feature_info.webgl_preferences.anti_aliasing_mode =
-          kAntialiasingModeMSAAImplicitResolve;
-    } else if (mode == "screenspace") {
-      gpu_feature_info.webgl_preferences.anti_aliasing_mode =
-          kAntialiasingModeScreenSpaceAntialiasing;
-    } else {
-      gpu_feature_info.webgl_preferences.anti_aliasing_mode =
-          kAntialiasingModeUnspecified;
-    }
-  }
-
-// Set default context limits for WebGL.
-#if defined(OS_ANDROID)
-  gpu_feature_info.webgl_preferences.max_active_webgl_contexts = 8u;
-#else
-  gpu_feature_info.webgl_preferences.max_active_webgl_contexts = 16u;
-#endif
-  gpu_feature_info.webgl_preferences.max_active_webgl_contexts_on_worker = 4u;
-
-  uint32_t override_val = gpu_preferences.max_active_webgl_contexts;
-  if (override_val) {
-    // It shouldn't be common for users to override this. If they do,
-    // just override both values.
-    gpu_feature_info.webgl_preferences.max_active_webgl_contexts = override_val;
-    gpu_feature_info.webgl_preferences.max_active_webgl_contexts_on_worker =
-        override_val;
-  }
-
   return gpu_feature_info;
 }
 

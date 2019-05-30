@@ -566,6 +566,10 @@ const char kLogFile[] = "log-file";
 const char kMainFrameResizesAreOrientationChanges[] =
     "main-frame-resizes-are-orientation-changes";
 
+// Allows user to override maximum number of active WebGL contexts per
+// renderer process.
+const char kMaxActiveWebGLContexts[] = "max-active-webgl-contexts";
+
 // Sets the maximium decoded image size limitation.
 const char kMaxDecodedImageSizeMb[] = "max-decoded-image-size-mb";
 
@@ -826,6 +830,13 @@ const char kValidateInputEventStream[] = "validate-input-event-stream";
 // will be used as a filter to determine if the child process should have the
 // kWaitForDebugger flag passed on or not.
 const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
+
+// Set the antialiasing method used for webgl. (none, explicit, implicit, or
+// screenspace)
+const char kWebglAntialiasingMode[] = "webgl-antialiasing-mode";
+
+// Set a default sample count for webgl if msaa is enabled.
+const char kWebglMSAASampleCount[] = "webgl-msaa-sample-count";
 
 // Disables encryption of RTP Media for WebRTC. When Chrome embeds Content, it
 // ignores this switch on its stable and beta channels.

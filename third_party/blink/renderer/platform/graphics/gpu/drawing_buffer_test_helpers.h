@@ -54,6 +54,9 @@ class WebGraphicsContext3DProviderForTests
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
     return gpu_feature_info_;
   }
+  const WebglPreferences& GetWebglPreferences() const override {
+    return webgl_preferences_;
+  }
   viz::GLHelper* GetGLHelper() override { return nullptr; }
   void SetLostContextCallback(base::Closure) override {}
   void SetErrorMessageCallback(
@@ -71,6 +74,7 @@ class WebGraphicsContext3DProviderForTests
   std::unique_ptr<gpu::webgpu::WebGPUInterface> webgpu_;
   gpu::Capabilities capabilities_;
   gpu::GpuFeatureInfo gpu_feature_info_;
+  WebglPreferences webgl_preferences_;
   viz::TestSharedImageInterface test_shared_image_interface_;
 };
 

@@ -17,23 +17,6 @@ enum GpuFeatureStatus {
   Max
 };
 
-// gpu::AntialiasingMode
-enum AntialiasingMode {
-  kUnspecified,
-  kNone,
-  kMSAAImplicitResolve,
-  kMSAAExplicitResolve,
-  kScreenSpaceAntialiasing
-};
-
-// gpu::WebglPreferences
-struct WebglPreferences {
-  AntialiasingMode anti_aliasing_mode;
-  uint32 msaa_sample_count;
-  uint32 max_active_webgl_contexts;
-  uint32 max_active_webgl_contexts_on_worker;
-};
-
 // gpu:GpuFeatureInfo
 struct GpuFeatureInfo {
   // The array should have one entry for each GpuFeatureType. The size of the
@@ -51,9 +34,6 @@ struct GpuFeatureInfo {
 
   // WebGL extensions disabled by GpuDriverBugWorkarounds, separated by ' '.
   string disabled_webgl_extensions;
-
-  // Preferences for WebGL.
-  WebglPreferences webgl_preferences;
 
   // The array contains a list of gpu blacklist entry indices that apply in the
   // current platform. The entries are defined in

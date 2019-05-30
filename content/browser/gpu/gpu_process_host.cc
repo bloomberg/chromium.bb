@@ -250,8 +250,6 @@ static const char* const kSwitchNames[] = {
 #if defined(OS_ANDROID)
     switches::kEnableReachedCodeProfiler,
 #endif
-    switches::kWebglAntialiasingMode,
-    switches::kWebglMSAASampleCount,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and

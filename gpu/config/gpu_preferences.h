@@ -139,10 +139,6 @@ struct GPU_EXPORT GpuPreferences {
   // ===================================
   // Settings from //gpu/config/gpu_switches.h
 
-  // Allows user to override the maximum number of WebGL contexts. A value of 0
-  // uses the defaults, which are encoded in the GPU process's code.
-  uint32_t max_active_webgl_contexts = 0;
-
   // Enables the use of SurfaceControl for overlays on Android.
   bool enable_android_surface_control = false;
 

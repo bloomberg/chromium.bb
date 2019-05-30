@@ -705,31 +705,29 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
     gl_->GetIntegerv(GL_MAX_SAMPLES_ANGLE, &max_sample_count);
   }
 
-  auto webgl_preferences =
-      ContextProvider()->GetGpuFeatureInfo().webgl_preferences;
-  if (webgl_preferences.anti_aliasing_mode ==
-      gpu::kAntialiasingModeUnspecified) {
+  auto webgl_preferences = ContextProvider()->GetWebglPreferences();
+  if (webgl_preferences.anti_aliasing_mode == kAntialiasingModeUnspecified) {
     if (use_multisampling) {
-      anti_aliasing_mode_ = gpu::kAntialiasingModeMSAAExplicitResolve;
+      anti_aliasing_mode_ = kAntialiasingModeMSAAExplicitResolve;
       if (extensions_util_->SupportsExtension(
               "GL_EXT_multisampled_render_to_texture")) {
-        anti_aliasing_mode_ = gpu::kAntialiasingModeMSAAImplicitResolve;
+        anti_aliasing_mode_ = kAntialiasingModeMSAAImplicitResolve;
       } else if (extensions_util_->SupportsExtension(
                      "GL_CHROMIUM_screen_space_antialiasing") &&
                  ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
                      gpu::USE_FRAMEBUFFER_CMAA)) {
-        anti_aliasing_mode_ = gpu::kAntialiasingModeScreenSpaceAntialiasing;
+        anti_aliasing_mode_ = kAntialiasingModeScreenSpaceAntialiasing;
       }
     } else {
-      anti_aliasing_mode_ = gpu::kAntialiasingModeNone;
+      anti_aliasing_mode_ = kAntialiasingModeNone;
     }
   } else {
     if ((webgl_preferences.anti_aliasing_mode ==
-             gpu::kAntialiasingModeMSAAImplicitResolve &&
+             kAntialiasingModeMSAAImplicitResolve &&
          !extensions_util_->SupportsExtension(
              "GL_EXT_multisampled_render_to_texture")) ||
         (webgl_preferences.anti_aliasing_mode ==
-             gpu::kAntialiasingModeScreenSpaceAntialiasing &&
+             kAntialiasingModeScreenSpaceAntialiasing &&
          !extensions_util_->SupportsExtension(
              "GL_CHROMIUM_screen_space_antialiasing"))) {
       DLOG(ERROR) << "Invalid anti-aliasing mode specified.";
@@ -746,7 +744,7 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   storage_texture_supported_ =
       (webgl_version_ > kWebGL1 ||
        extensions_util_->SupportsExtension("GL_EXT_texture_storage")) &&
-      anti_aliasing_mode_ == gpu::kAntialiasingModeScreenSpaceAntialiasing;
+      anti_aliasing_mode_ == kAntialiasingModeScreenSpaceAntialiasing;
 
   sample_count_ = std::min(
       static_cast<int>(webgl_preferences.msaa_sample_count), max_sample_count);
@@ -1089,12 +1087,11 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
     if (!depth_stencil_buffer_)
       gl_->GenRenderbuffers(1, &depth_stencil_buffer_);
     gl_->BindRenderbuffer(GL_RENDERBUFFER, depth_stencil_buffer_);
-    if (anti_aliasing_mode_ == gpu::kAntialiasingModeMSAAImplicitResolve) {
+    if (anti_aliasing_mode_ == kAntialiasingModeMSAAImplicitResolve) {
       gl_->RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, sample_count_,
                                              GL_DEPTH24_STENCIL8_OES,
                                              size.Width(), size.Height());
-    } else if (anti_aliasing_mode_ ==
-               gpu::kAntialiasingModeMSAAExplicitResolve) {
+    } else if (anti_aliasing_mode_ == kAntialiasingModeMSAAExplicitResolve) {
       gl_->RenderbufferStorageMultisampleCHROMIUM(
           GL_RENDERBUFFER, sample_count_, GL_DEPTH24_STENCIL8_OES, size.Width(),
           size.Height());
@@ -1249,12 +1246,12 @@ void DrawingBuffer::ResolveMultisampleFramebufferInternal() {
   }
 
   gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
-  if (anti_aliasing_mode_ == gpu::kAntialiasingModeScreenSpaceAntialiasing)
+  if (anti_aliasing_mode_ == kAntialiasingModeScreenSpaceAntialiasing)
     gl_->ApplyScreenSpaceAntialiasingCHROMIUM();
 }
 
 void DrawingBuffer::ResolveIfNeeded() {
-  if (anti_aliasing_mode_ != gpu::kAntialiasingModeNone &&
+  if (anti_aliasing_mode_ != kAntialiasingModeNone &&
       !contents_change_resolved_)
     ResolveMultisampleFramebufferInternal();
   contents_change_resolved_ = true;
@@ -1276,7 +1273,7 @@ void DrawingBuffer::RestoreAllState() {
 }
 
 bool DrawingBuffer::Multisample() const {
-  return anti_aliasing_mode_ != gpu::kAntialiasingModeNone;
+  return anti_aliasing_mode_ != kAntialiasingModeNone;
 }
 
 void DrawingBuffer::Bind(GLenum target) {
@@ -1534,7 +1531,7 @@ void DrawingBuffer::AttachColorBufferToReadFramebuffer() {
 
   gl_->BindTexture(texture_target, id);
 
-  if (anti_aliasing_mode_ == gpu::kAntialiasingModeMSAAImplicitResolve) {
+  if (anti_aliasing_mode_ == kAntialiasingModeMSAAImplicitResolve) {
     gl_->FramebufferTexture2DMultisampleEXT(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_target, id, 0,
         sample_count_);
@@ -1545,7 +1542,7 @@ void DrawingBuffer::AttachColorBufferToReadFramebuffer() {
 }
 
 bool DrawingBuffer::WantExplicitResolve() {
-  return anti_aliasing_mode_ == gpu::kAntialiasingModeMSAAExplicitResolve;
+  return anti_aliasing_mode_ == kAntialiasingModeMSAAExplicitResolve;
 }
 
 bool DrawingBuffer::WantDepthOrStencil() {
@@ -1564,7 +1561,7 @@ bool DrawingBuffer::SetupRGBEmulationForBlitFramebuffer(
     return false;
   }
 
-  if (anti_aliasing_mode_ != gpu::kAntialiasingModeNone)
+  if (anti_aliasing_mode_ != kAntialiasingModeNone)
     return false;
 
   bool has_emulated_rgb = !allocate_alpha_channel_ && have_alpha_channel_;

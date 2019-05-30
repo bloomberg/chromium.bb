@@ -47,6 +47,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   GrContext* GetGrContext() override;
   const gpu::Capabilities& GetCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
+  const blink::WebglPreferences& GetWebglPreferences() const override;
   viz::GLHelper* GetGLHelper() override;
   void SetLostContextCallback(base::RepeatingClosure) override;
   void SetErrorMessageCallback(
