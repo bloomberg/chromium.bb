@@ -934,7 +934,7 @@ if (is_win) {
       "//components/crash/content/app:chrome_crashpad_handler",
     ]
 
-    if (using_sanitizer) {
+    if (is_asan) {
       # crashpad_handler requires the ASan runtime at its @executable_path.
       sources += [ "$root_out_dir/libclang_rt.asan_osx_dynamic.dylib" ]
       public_deps += [ "//build/config/sanitizers:copy_asan_runtime" ]
@@ -1010,7 +1010,8 @@ if (is_win) {
         # Convert the symlink source and destination to an absolute paths, which
         # makes symlinking easier (now pwd manipulation).
         rebase_path("$root_out_dir/resources/inspector"),
-        rebase_path("$root_out_dir/$chrome_product_full_name.app/Contents/Frameworks/$chrome_framework_name.framework/Versions/$chrome_version_full/Resources/inspector"),
+        rebase_path(
+            "$root_out_dir/$chrome_product_full_name.app/Contents/Frameworks/$chrome_framework_name.framework/Versions/$chrome_version_full/Resources/inspector"),
       ]
 
       deps = [

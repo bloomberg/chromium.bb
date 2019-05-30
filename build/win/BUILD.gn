@@ -109,11 +109,9 @@ if (is_win) {
         data += [ "$root_out_dir/ucrtbased.dll" ]
       }
       if (is_asan) {
-        if (current_cpu == "x64") {
-          data += [ "$clang_base_path/lib/clang/$clang_version/lib/windows/clang_rt.asan_dynamic-x86_64.dll" ]
-        } else {
-          data += [ "$clang_base_path/lib/clang/$clang_version/lib/windows/clang_rt.asan_dynamic-i386.dll" ]
-        }
+        assert(target_cpu == "x64",
+               "ASan is only supported in 64-bit builds on Windows.")
+        data += [ "$clang_base_path/lib/clang/$clang_version/lib/windows/clang_rt.asan_dynamic-x86_64.dll" ]
       }
       if (current_cpu != "arm64") {
         data += [
