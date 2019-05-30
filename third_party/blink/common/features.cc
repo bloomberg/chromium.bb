@@ -211,14 +211,8 @@ const base::Feature kFreezeBackgroundTabOnNetworkIdle{
 
 // Freeze non-timer task queues in background, after allowed grace time.
 // "stop" is a legacy name.
-const base::Feature kStopNonTimersInBackground {
-  "stop-non-timers-in-background",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kStopNonTimersInBackground{
+    "stop-non-timers-in-background", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable text snippets in URL fragments. https://crbug.com/919204.
 const base::Feature kTextFragmentAnchor{"TextFragmentAnchor",
