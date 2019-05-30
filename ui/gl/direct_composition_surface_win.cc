@@ -301,10 +301,12 @@ void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
 }
 
 // static
-void DirectCompositionSurfaceWin::SetPreferYUY2OverlaysForTesting() {
+void DirectCompositionSurfaceWin::SetOverlayFormatUsedForTesting(
+    DXGI_FORMAT format) {
+  DCHECK(format == DXGI_FORMAT_NV12 || format == DXGI_FORMAT_YUY2);
   InitializeHardwareOverlaySupport();
-  g_overlay_format_used = DXGI_FORMAT_YUY2;
-  DCHECK_EQ(DXGI_FORMAT_YUY2, GetOverlayFormatUsed());
+  g_overlay_format_used = format;
+  DCHECK_EQ(format, GetOverlayFormatUsed());
 }
 
 // static

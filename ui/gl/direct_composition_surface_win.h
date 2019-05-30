@@ -74,7 +74,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
 
   static void SetScaledOverlaysSupportedForTesting(bool value);
 
-  static void SetPreferYUY2OverlaysForTesting();
+  static void SetOverlayFormatUsedForTesting(DXGI_FORMAT format);
 
   // GLSurfaceEGL implementation.
   bool Initialize(GLSurfaceFormat format) override;
