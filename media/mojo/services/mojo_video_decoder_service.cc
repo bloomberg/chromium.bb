@@ -314,7 +314,7 @@ void MojoVideoDecoderService::OnDecoderReset() {
 }
 
 void MojoVideoDecoderService::OnDecoderOutput(scoped_refptr<VideoFrame> frame) {
-  DVLOG(3) << __func__;
+  DVLOG(3) << __func__ << " pts=" << frame->timestamp().InMilliseconds();
   DCHECK(client_);
   DCHECK(decoder_);
   TRACE_EVENT1("media", "MojoVideoDecoderService::OnDecoderOutput",
