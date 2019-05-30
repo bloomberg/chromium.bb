@@ -10,11 +10,11 @@
 (function() {
 
 /**
- * The Plugin VM is named 'PluginVm'.
+ * The Plugin VM is named 'PvmDefault'.
  * https://cs.chromium.org/chromium/src/chrome/browser/chromeos/plugin_vm/plugin_vm_util.h?q=kPluginVmName
  * @type {string}
  */
-const PLUGIN_VM = 'PluginVm';
+const PLUGIN_VM = 'PvmDefault';
 
 Polymer({
   is: 'settings-plugin-vm-shared-paths',

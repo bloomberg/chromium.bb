@@ -16,8 +16,6 @@ class Profile;
 
 namespace plugin_vm {
 
-extern const char kPluginVmDefaultName[];
-
 // The PluginVmManager is responsible for connecting to the D-Bus services to
 // manage the Plugin Vm.
 class PluginVmManager : public KeyedService {

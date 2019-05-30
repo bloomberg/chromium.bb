@@ -30,10 +30,10 @@ function CrostiniImpl() {
 CrostiniImpl.DEFAULT_VM = 'termina';
 
 /**
- * Plugin VM 'PluginVm'.
+ * Plugin VM 'PvmDefault'.
  * @const
  */
-CrostiniImpl.PLUGIN_VM = 'PluginVm';
+CrostiniImpl.PLUGIN_VM = 'PvmDefault';
 
 /**
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth

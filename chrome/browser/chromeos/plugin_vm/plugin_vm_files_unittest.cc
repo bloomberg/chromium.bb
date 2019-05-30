@@ -25,7 +25,7 @@ const char kLsbRelease[] =
 class PluginVmFilesTest : public testing::Test {
  public:
   void Callback(bool expected, const base::FilePath& dir, bool result) {
-    EXPECT_EQ(dir, my_files_.Append("PluginVm"));
+    EXPECT_EQ(dir, my_files_.Append("PvmDefault"));
     EXPECT_EQ(result, expected);
   }
 
@@ -57,7 +57,7 @@ TEST_F(PluginVmFilesTest, DirNotExists) {
 }
 
 TEST_F(PluginVmFilesTest, DirAlreadyExists) {
-  base::CreateDirectory(my_files_.Append("PluginVm"));
+  base::CreateDirectory(my_files_.Append("PvmDefault"));
   EnsureDefaultSharedDirExists(profile_.get(),
                                base::BindOnce(&PluginVmFilesTest::Callback,
                                               base::Unretained(this), true));
@@ -67,7 +67,7 @@ TEST_F(PluginVmFilesTest, DirAlreadyExists) {
 TEST_F(PluginVmFilesTest, FileAlreadyExists) {
   base::FilePath my_files =
       file_manager::util::GetMyFilesFolderForProfile(profile_.get());
-  base::FilePath path = my_files.Append("PluginVm");
+  base::FilePath path = my_files.Append("PvmDefault");
   EXPECT_TRUE(base::CreateDirectory(my_files));
   EXPECT_EQ(base::WriteFile(path, "", 0), 0);
   EnsureDefaultSharedDirExists(profile_.get(),

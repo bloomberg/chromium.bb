@@ -9,7 +9,7 @@ const shareBase = {
   enumUmaShareWithLinux: 12,
   enumUmaManageLinuxSharing: 13,
   // Params for 'Share with Plugin VM'.
-  vmNamePluginVm: 'PluginVm',
+  vmNamePluginVm: 'PvmDefault',
   vmNameSelectorPluginVm: 'plugin-vm',
   enumUmaShareWithPluginVm: 16,
   enumUmaManagePluginVmSharing: 17,
@@ -70,7 +70,7 @@ shareBase.testSharePaths = async (vmName, vmNameSelector, enumUma, done) => {
   const menuHidden = '#file-context-menu[hidden]';
   const androidRoot = '#directory-tree [volume-type-icon="android_files"]';
 
-  const shareLabel = {'termina': 'Linux apps', 'PluginVm': 'Plugin VM'};
+  const shareLabel = {'termina': 'Linux apps', 'PvmDefault': 'Plugin VM'};
   const givePermission = `Give ${shareLabel[vmName]} permission to modify `;
 
   const oldSharePaths = chrome.fileManagerPrivate.sharePathsWithCrostini;

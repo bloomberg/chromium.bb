@@ -28,10 +28,10 @@ pluginVm.testLabelIconContextMenu = async (done) => {
     ['#new-folder', true],
   ];
 
-  const pluginVmFolder = '#file-list [file-name="PluginVm"]';
+  const pluginVmFolder = '#file-list [file-name="PvmDefault"]';
   const photosSubfolder = '#file-list [file-name="photos"]';
   const iconFolder =
-      '#file-list [file-name="PluginVm"] [file-type-icon="plugin_vm"]';
+      '#file-list [file-name="PvmDefault"] [file-type-icon="plugin_vm"]';
   const fileMenuShown = '#file-context-menu:not([hidden])';
 
   const iconDirTree = '#directory-tree [file-type-icon="plugin_vm"]';
@@ -53,7 +53,7 @@ pluginVm.testLabelIconContextMenu = async (done) => {
     });
   }
 
-  // Verify that /PluginVm has label 'Plugin VM'.
+  // Verify that /PvmDefault has label 'Plugin VM'.
   await test.setupAndWaitUntilReady([], [], []);
   test.addEntries(
       [test.ENTRIES.pluginVm, test.ENTRIES.photosInPluginVm], [], []);
@@ -64,15 +64,15 @@ pluginVm.testLabelIconContextMenu = async (done) => {
   // Verify folder icon.
   await test.waitForElement(iconFolder);
 
-  // Verify /PluginVm folder context menu.
+  // Verify /PvmDefault folder context menu.
   await waitForMenuItems(pluginVmFolder, fileMenuShown, fileMenu);
 
-  // Change to 'PluginVm' directory, photos folder is shown.
+  // Change to 'PvmDefault' directory, photos folder is shown.
   assertTrue(test.fakeMouseDoubleClick(pluginVmFolder));
   await test.waitForFiles(
       test.TestEntryInfo.getExpectedRows([test.ENTRIES.photos]));
 
-  // Verify /PluginVm/photos folder context menu.
+  // Verify /PvmDefault/photos folder context menu.
   await waitForMenuItems(photosSubfolder, fileMenuShown, fileMenuSubfolder);
 
   done();

@@ -1151,13 +1151,13 @@ util.getEntryLabel = (locationInfo, entry) => {
     return util.getRootTypeLabel(locationInfo);
   }
 
-  // Special case for MyFiles/Downloads and MyFiles/PluginVm.
+  // Special case for MyFiles/Downloads and MyFiles/PvmDefault.
   if (locationInfo &&
       locationInfo.rootType == VolumeManagerCommon.RootType.DOWNLOADS) {
     if (util.isMyFilesVolumeEnabled() && entry.fullPath == '/Downloads') {
       return str('DOWNLOADS_DIRECTORY_LABEL');
     }
-    if (util.isPluginVmEnabled() && entry.fullPath == '/PluginVm') {
+    if (util.isPluginVmEnabled() && entry.fullPath == '/PvmDefault') {
       return str('PLUGIN_VM_DIRECTORY_LABEL');
     }
   }
@@ -1167,7 +1167,7 @@ util.getEntryLabel = (locationInfo, entry) => {
 
 /**
  * Returns true if specified entry is a special entry such as MyFiles/Downloads,
- * MyFiles/PluginVm or Linux files root which cannot be modified such as
+ * MyFiles/PvmDefault or Linux files root which cannot be modified such as
  * deleted/cut or renamed.
  *
  * @param {!VolumeManager} volumeManager
@@ -1196,7 +1196,7 @@ util.isNonModifiable = (volumeManager, entry) => {
     if (util.isMyFilesVolumeEnabled() && entry.fullPath === '/Downloads') {
       return true;
     }
-    if (util.isPluginVmEnabled() && entry.fullPath === '/PluginVm') {
+    if (util.isPluginVmEnabled() && entry.fullPath === '/PvmDefault') {
       return true;
     }
   }

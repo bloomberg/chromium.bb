@@ -77,7 +77,7 @@ suite('SharedPaths', function() {
   });
 
   test('Remove', function() {
-    return setPrefs({'path1': ['PluginVm'], 'path2': ['PluginVm']})
+    return setPrefs({'path1': ['PvmDefault'], 'path2': ['PvmDefault']})
         .then(() => {
           assertEquals(
               2, page.shadowRoot.querySelectorAll('.settings-box').length);
@@ -91,9 +91,9 @@ suite('SharedPaths', function() {
           return pluginVmBrowserProxy.whenCalled('removePluginVmSharedPath');
         })
         .then(([vmName, path]) => {
-          assertEquals('PluginVm', vmName);
+          assertEquals('PvmDefault', vmName);
           assertEquals('path1', path);
-          return setPrefs({'path2': ['PluginVm']});
+          return setPrefs({'path2': ['PvmDefault']});
         })
         .then(() => {
           assertEquals(
@@ -106,7 +106,7 @@ suite('SharedPaths', function() {
           return pluginVmBrowserProxy.whenCalled('removePluginVmSharedPath');
         })
         .then(([vmName, path]) => {
-          assertEquals('PluginVm', vmName);
+          assertEquals('PvmDefault', vmName);
           assertEquals('path2', path);
           return setPrefs({'ignored': ['ignore']});
         })

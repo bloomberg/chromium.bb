@@ -50,8 +50,6 @@ class PluginVmManagerFactory : public BrowserContextKeyedServiceFactory {
 
 }  // namespace
 
-const char kPluginVmDefaultName[] = "PvmDefault";
-
 PluginVmManager* PluginVmManager::GetForProfile(Profile* profile) {
   return PluginVmManagerFactory::GetForProfile(profile);
 }
@@ -85,7 +83,7 @@ void PluginVmManager::LaunchPluginVm() {
 void PluginVmManager::StopPluginVm() {
   vm_tools::plugin_dispatcher::StopVmRequest request;
   request.set_owner_id(owner_id_);
-  request.set_vm_name_uuid(kPluginVmDefaultName);
+  request.set_vm_name_uuid(kPluginVmName);
 
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->StopVm(
       std::move(request), base::DoNothing());
@@ -100,7 +98,7 @@ void PluginVmManager::OnStartPluginVmDispatcher(bool success) {
 
   vm_tools::plugin_dispatcher::ListVmRequest request;
   request.set_owner_id(owner_id_);
-  request.set_vm_name_uuid(kPluginVmDefaultName);
+  request.set_vm_name_uuid(kPluginVmName);
 
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->ListVms(
       std::move(request), base::BindOnce(&PluginVmManager::OnListVms,
@@ -131,7 +129,7 @@ void PluginVmManager::OnListVms(
     case vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED: {
       vm_tools::plugin_dispatcher::StartVmRequest request;
       request.set_owner_id(owner_id_);
-      request.set_vm_name_uuid(kPluginVmDefaultName);
+      request.set_vm_name_uuid(kPluginVmName);
 
       chromeos::DBusThreadManager::Get()
           ->GetVmPluginDispatcherClient()
@@ -163,7 +161,7 @@ void PluginVmManager::OnStartVm(
 void PluginVmManager::ShowVm() {
   vm_tools::plugin_dispatcher::ShowVmRequest request;
   request.set_owner_id(owner_id_);
-  request.set_vm_name_uuid(kPluginVmDefaultName);
+  request.set_vm_name_uuid(kPluginVmName);
 
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->ShowVm(
       std::move(request), base::BindOnce(&PluginVmManager::OnShowVm,

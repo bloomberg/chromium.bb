@@ -222,7 +222,7 @@ void PluginVmImageManager::OnFDPrepared(
   vm_tools::concierge::ImportDiskImageRequest request;
   request.set_cryptohome_id(
       chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
-  request.set_disk_path(kPluginVmDefaultName);
+  request.set_disk_path(kPluginVmName);
   request.set_storage_location(
       vm_tools::concierge::STORAGE_CRYPTOHOME_PLUGINVM);
   request.set_source_size(downloaded_plugin_vm_image_size_);

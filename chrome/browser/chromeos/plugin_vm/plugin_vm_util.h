@@ -21,7 +21,7 @@ namespace plugin_vm {
 constexpr char kPluginVmAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
 
 // Name of the Plugin VM.
-constexpr char kPluginVmName[] = "PluginVm";
+constexpr char kPluginVmName[] = "PvmDefault";
 
 // Checks if PluginVm is allowed for the current profile.
 bool IsPluginVmAllowedForProfile(const Profile* profile);
