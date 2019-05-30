@@ -36,6 +36,7 @@
 #include <content/public/common/context_menu_params.h>
 #include <ui/gfx/native_widget_types.h>
 #include <third_party/blink/public/web/web_text_direction.h>
+#include <ui/compositor/compositor_gpu_observer.h>
 
 namespace content {
 class WebContents;
@@ -78,7 +79,8 @@ class WebViewImpl final : public WebView,
                           private NativeViewWidgetDelegate,
                           public content::WebContentsDelegate,
                           private content::WebContentsObserver,
-                          private base::SupportsWeakPtr<WebViewImpl>
+                          private base::SupportsWeakPtr<WebViewImpl>,
+                          public ui::CompositorGpuObserver
 {
     // DATA
     std::unique_ptr<DevToolsFrontendHostDelegateImpl> d_devToolsFrontEndHost;
@@ -98,6 +100,7 @@ class WebViewImpl final : public WebView,
     bool d_ncHitTestPendingAck;
     int d_lastNCHitTestResult;
     int d_hostId;
+    ui::Compositor* d_gpuCompositor = nullptr;
 
     void createWidget(blpwtk2::NativeView parent);
 
@@ -177,6 +180,11 @@ class WebViewImpl final : public WebView,
 
     // patch section: gpu
 
+    // Sets Error Message Callback to receive the GPU error messages
+    // from the GPU command buffer channel
+    bool StartObservingGpuCompositor();
+    bool StopObservingGpuCompositor();
+
 
 
     DISALLOW_COPY_AND_ASSIGN(WebViewImpl);
@@ -244,6 +252,8 @@ class WebViewImpl final : public WebView,
 
 
     // patch section: gpu
+    void OnCompositorGpuErrorMessage(const std::string& message) override;
+    void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
 
     // patch section: print to pdf
