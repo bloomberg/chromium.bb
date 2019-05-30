@@ -15,12 +15,15 @@ const service_manager::Manifest& GetMediaGalleryUtilManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(chrome::mojom::kMediaGalleryUtilServiceName)
           .WithDisplayName(IDS_UTILITY_PROCESS_MEDIA_GALLERY_UTILITY_NAME)
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("utility")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("utility")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability("parse_media",
                             service_manager::Manifest::InterfaceList<
                                 chrome::mojom::MediaParserFactory>())

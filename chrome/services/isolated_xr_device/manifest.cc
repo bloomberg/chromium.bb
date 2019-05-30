@@ -15,9 +15,12 @@ const service_manager::Manifest& GetXrDeviceServiceManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(device::mojom::kVrIsolatedServiceName)
           .WithDisplayName(IDS_ISOLATED_XR_PROCESS_NAME)
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("xr_compositing")
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("xr_compositing")
+                  .Build())
           .ExposeCapability("xr_device_test_hook",
                             service_manager::Manifest::InterfaceList<
                                 device_test::mojom::XRServiceTestHook>())

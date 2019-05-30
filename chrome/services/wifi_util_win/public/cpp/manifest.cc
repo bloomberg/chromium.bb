@@ -15,12 +15,15 @@ const service_manager::Manifest& GetWifiUtilWinManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(chrome::mojom::kWifiUtilWinServiceName)
           .WithDisplayName(IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME)
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("none_and_elevated")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("none_and_elevated")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability("wifi_credentials",
                             service_manager::Manifest::InterfaceList<
                                 chrome::mojom::WiFiCredentialsGetter>())

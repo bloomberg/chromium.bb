@@ -48,8 +48,8 @@
 #if defined(OS_WIN)
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/util_win/util_win_service.h"
+#include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
-#include "components/services/quarantine/quarantine_features_win.h"  // nogncheck
 #include "components/services/quarantine/quarantine_service.h"  // nogncheck
 #endif
 

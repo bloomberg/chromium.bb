@@ -16,12 +16,15 @@ const service_manager::Manifest& GetPdfCompositorManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kServiceName)
           .WithDisplayName(IDS_PDF_COMPOSITOR_SERVICE_DISPLAY_NAME)
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("pdf_compositor")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("pdf_compositor")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability(
               "compositor",
               service_manager::Manifest::InterfaceList<mojom::PdfCompositor>())

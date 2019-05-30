@@ -5,6 +5,7 @@
 #include "media/mojo/services/media_manifest.h"
 
 #include "base/no_destructor.h"
+#include "media/mojo/buildflags.h"
 #include "media/mojo/interfaces/constants.mojom.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -20,6 +21,18 @@ const service_manager::Manifest& GetMediaManifest() {
     service_manager::ManifestBuilder()
         .WithServiceName(mojom::kMediaServiceName)
         .WithDisplayName("Media Service")
+        .WithOptions(
+            service_manager::ManifestOptionsBuilder()
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS) || \
+    BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+                .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                       kOutOfProcessBuiltin)
+                .WithSandboxType("utility")
+#else
+                .WithExecutionMode(
+                    service_manager::Manifest::ExecutionMode::kInProcessBuiltin)
+#endif
+                .Build())
         .ExposeCapability(
             "media:media",
             service_manager::Manifest::InterfaceList<mojom::MediaService>())

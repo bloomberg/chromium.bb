@@ -31,7 +31,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "components/services/quarantine/common_win.h"
-#include "components/services/quarantine/quarantine_features_win.h"
+#include "components/services/quarantine/public/cpp/quarantine_features_win.h"
 #include "url/gurl.h"
 
 namespace quarantine {

@@ -17,12 +17,15 @@ const service_manager::Manifest& GetCupsProxyManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kCupsProxyServiceName)
           .WithDisplayName("CupsProxyService")
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("utility")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSingleton)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("utility")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSingleton)
+                  .Build())
           .ExposeCapability(mojom::kStartCupsProxyServiceCapability,
                             service_manager::Manifest::InterfaceList<
                                 mojom::StartCupsProxyService>())

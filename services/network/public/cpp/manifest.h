@@ -9,7 +9,8 @@
 
 namespace network {
 
-const service_manager::Manifest& GetManifest();
+service_manager::Manifest GetManifest(
+    service_manager::Manifest::ExecutionMode execution_mode);
 
 }  // namespace network
 

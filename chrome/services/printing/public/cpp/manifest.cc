@@ -21,12 +21,15 @@ const service_manager::Manifest& GetChromePrintingManifest() {
     service_manager::ManifestBuilder()
         .WithServiceName(printing::mojom::kChromePrintingServiceName)
         .WithDisplayName(IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME)
-        .WithOptions(service_manager::ManifestOptionsBuilder()
-                         .WithSandboxType("utility")
-                         .WithInstanceSharingPolicy(
-                             service_manager::Manifest::InstanceSharingPolicy::
-                                 kSharedAcrossGroups)
-                         .Build())
+        .WithOptions(
+            service_manager::ManifestOptionsBuilder()
+                .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                       kOutOfProcessBuiltin)
+                .WithSandboxType("utility")
+                .WithInstanceSharingPolicy(
+                    service_manager::Manifest::InstanceSharingPolicy::
+                        kSharedAcrossGroups)
+                .Build())
         .ExposeCapability("converter",
                           service_manager::Manifest::InterfaceList<
 #if defined(OS_WIN)

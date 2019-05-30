@@ -485,10 +485,9 @@ class ServiceManagerContext::InProcessServiceManagerContext
       : service_manager_thread_task_runner_(
             service_manager_thread_task_runner) {}
 
-  void Start(
-      std::vector<service_manager::Manifest> manifests,
-      mojo::PendingRemote<service_manager::mojom::Service> system_remote,
-      ServiceRequestHandler request_handler) {
+  void Start(std::vector<service_manager::Manifest> manifests,
+             mojo::PendingRemote<service_manager::mojom::Service> system_remote,
+             ServiceRequestHandler request_handler) {
     service_manager_thread_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(

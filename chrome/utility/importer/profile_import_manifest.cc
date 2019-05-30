@@ -14,12 +14,15 @@ const service_manager::Manifest& GetProfileImportManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(chrome::mojom::kProfileImportServiceName)
           .WithDisplayName(IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME)
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("none")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("none")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability("import", service_manager::Manifest::InterfaceList<
                                           chrome::mojom::ProfileImport>())
           .Build()};

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SERVICES_QUARANTINE_QUARANTINE_FEATURES_WIN_H_
-#define COMPONENTS_SERVICES_QUARANTINE_QUARANTINE_FEATURES_WIN_H_
+#ifndef COMPONENTS_SERVICES_QUARANTINE_PUBLIC_CPP_QUARANTINE_FEATURES_WIN_H_
+#define COMPONENTS_SERVICES_QUARANTINE_PUBLIC_CPP_QUARANTINE_FEATURES_WIN_H_
 
 #include "base/feature_list.h"
 
@@ -15,4 +15,4 @@ extern const base::Feature kInvokeAttachmentServices;
 
 }  // namespace quarantine
 
-#endif  // COMPONENTS_SERVICES_QUARANTINE_QUARANTINE_FEATURES_WIN_H_
+#endif  // COMPONENTS_SERVICES_QUARANTINE_PUBLIC_CPP_QUARANTINE_FEATURES_WIN_H_

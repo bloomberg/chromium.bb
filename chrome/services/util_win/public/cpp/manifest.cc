@@ -15,12 +15,15 @@ const service_manager::Manifest& GetUtilWinManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(chrome::mojom::kUtilWinServiceName)
           .WithDisplayName(IDS_UTILITY_PROCESS_UTILITY_WIN_NAME)
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("none")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("none")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability("util_win",
                             service_manager::Manifest::InterfaceList<
                                 chrome::mojom::UtilWin>())

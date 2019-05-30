@@ -16,11 +16,14 @@ const service_manager::Manifest& GetManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kProxyResolverServiceName)
           .WithDisplayName(IDS_PROXY_RESOLVER_DISPLAY_NAME)
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability("factory", service_manager::Manifest::InterfaceList<
                                            mojom::ProxyResolverFactory>())
           .Build()};

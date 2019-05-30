@@ -30,7 +30,6 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/shape_detection/public/cpp/manifest.h"
 #include "services/tracing/manifest.h"
-#include "services/tracing/public/cpp/tracing_features.h"
 #include "services/video_capture/public/cpp/manifest.h"
 #include "services/viz/public/cpp/manifest.h"
 
@@ -54,26 +53,6 @@ bool IsAudioServiceOutOfProcess() {
          !GetContentClient()->browser()->OverridesAudioManager();
 }
 
-// TODO(https://crbug.com/781334): Remove these helpers and just update the
-// manifest definitions to be marked out-of-process. This is here only to avoid
-// extra churn when transitioning away from content_packaged_services.
-service_manager::Manifest MakeOutOfProcess(
-    const service_manager::Manifest& manifest) {
-  service_manager::Manifest copy(manifest);
-  copy.options.execution_mode =
-      service_manager::Manifest::ExecutionMode::kOutOfProcessBuiltin;
-  return copy;
-}
-
-template <typename Predicate>
-service_manager::Manifest MakeOutOfProcessIf(
-    Predicate predicate,
-    const service_manager::Manifest& manifest) {
-  if (predicate())
-    return MakeOutOfProcess(manifest);
-  return manifest;
-}
-
 }  // namespace
 
 const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
@@ -91,46 +70,42 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
           GetContentUtilityManifest(),
 
           heap_profiling::GetManifest(),
-          MakeOutOfProcessIf([] { return IsAudioServiceOutOfProcess(); },
-                             audio::GetManifest()),
+          audio::GetManifest(IsAudioServiceOutOfProcess()
+                                 ? service_manager::Manifest::ExecutionMode::
+                                       kOutOfProcessBuiltin
+                                 : service_manager::Manifest::ExecutionMode::
+                                       kInProcessBuiltin),
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-          MakeOutOfProcess(media::GetCdmManifest()),
+          media::GetCdmManifest(),
 #endif
-
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS) || \
-    BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-          MakeOutOfProcess(media::GetMediaManifest()),
-#else
           media::GetMediaManifest(),
-#endif
-          MakeOutOfProcess(data_decoder::GetManifest()),
+          data_decoder::GetManifest(),
           device::GetManifest(),
           media_session::GetManifest(),
           metrics::GetManifest(),
-          MakeOutOfProcessIf([] { return !IsInProcessNetworkService(); },
-                             network::GetManifest()),
+          network::GetManifest(
+              IsInProcessNetworkService()
+                  ? service_manager::Manifest::ExecutionMode::kInProcessBuiltin
+                  : service_manager::Manifest::ExecutionMode::
+                        kOutOfProcessBuiltin),
           resource_coordinator::GetManifest(),
-          MakeOutOfProcess(shape_detection::GetManifest()),
-          MakeOutOfProcessIf(
-              [] {
-                return !base::FeatureList::IsEnabled(
-                    features::kTracingServiceInProcess);
-              },
-              tracing::GetManifest()),
-          MakeOutOfProcessIf(
-              [] {
-                return features::IsVideoCaptureServiceEnabledForOutOfProcess();
-              },
-              video_capture::GetManifest()),
-          MakeOutOfProcess(viz::GetManifest()),
+          shape_detection::GetManifest(),
+          tracing::GetManifest(),
+          video_capture::GetManifest(
+              features::IsVideoCaptureServiceEnabledForOutOfProcess()
+                  ? service_manager::Manifest::ExecutionMode::
+                        kOutOfProcessBuiltin
+                  : service_manager::Manifest::ExecutionMode::
+                        kInProcessBuiltin),
+          viz::GetManifest(),
 #if defined(OS_LINUX)
           font_service::GetManifest(),
 #endif
 #if defined(OS_CHROMEOS)
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
           // TODO(https://crbug.com/929340): This doesn't belong here!
-          MakeOutOfProcess(chromeos::assistant::GetAudioDecoderManifest()),
+          chromeos::assistant::GetAudioDecoderManifest(),
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // defined(OS_CHROMEOS)
       }};

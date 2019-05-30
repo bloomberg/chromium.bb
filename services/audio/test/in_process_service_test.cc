@@ -130,7 +130,9 @@ class InProcessServiceTest : public testing::Test {
                  .RequireCapability(mojom::kServiceName, "info")
                  .RequireCapability(service_manager::mojom::kServiceName,
                                     "service_manager:service_manager")
-                 .PackageService(GetManifest())
+                 .PackageService(
+                     GetManifest(service_manager::Manifest::ExecutionMode ::
+                                     kInProcessBuiltin))
                  .Build()}),
         audio_manager_(
             std::make_unique<media::TestAudioThread>(use_audio_thread)),

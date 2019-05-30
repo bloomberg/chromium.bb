@@ -163,6 +163,7 @@ source_set("media_manifest") {
   ]
   deps = [
     "//base",
+    "//media/mojo:buildflags",
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:constants",
     "//services/service_manager/public/cpp",

@@ -15,12 +15,15 @@ const service_manager::Manifest& GetRemovableStorageWriterManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(chrome::mojom::kRemovableStorageWriterServiceName)
           .WithDisplayName(IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME)
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("none_and_elevated")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("none_and_elevated")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability("removable_storage_writer",
                             service_manager::Manifest::InterfaceList<
                                 chrome::mojom::RemovableStorageWriter>())

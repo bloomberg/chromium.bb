@@ -9,7 +9,8 @@
 
 namespace video_capture {
 
-const service_manager::Manifest& GetManifest();
+service_manager::Manifest GetManifest(
+    service_manager::Manifest::ExecutionMode execution_mode);
 
 }  // namespace video_capture
 

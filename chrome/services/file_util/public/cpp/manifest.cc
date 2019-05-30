@@ -23,12 +23,15 @@ const service_manager::Manifest& GetFileUtilManifest() {
     service_manager::ManifestBuilder()
         .WithServiceName(chrome::mojom::kFileUtilServiceName)
         .WithDisplayName(IDS_UTILITY_PROCESS_FILE_UTILITY_NAME)
-        .WithOptions(service_manager::ManifestOptionsBuilder()
-                         .WithSandboxType("utility")
-                         .WithInstanceSharingPolicy(
-                             service_manager::Manifest::InstanceSharingPolicy::
-                                 kSharedAcrossGroups)
-                         .Build())
+        .WithOptions(
+            service_manager::ManifestOptionsBuilder()
+                .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                       kOutOfProcessBuiltin)
+                .WithSandboxType("utility")
+                .WithInstanceSharingPolicy(
+                    service_manager::Manifest::InstanceSharingPolicy::
+                        kSharedAcrossGroups)
+                .Build())
 #if defined(OS_CHROMEOS)
         .ExposeCapability("zip_file", service_manager::Manifest::InterfaceList<
                                           chrome::mojom::ZipFileCreator>())

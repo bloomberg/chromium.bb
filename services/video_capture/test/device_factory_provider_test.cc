@@ -17,11 +17,10 @@ namespace video_capture {
 
 const char kTestServiceName[] = "video_capture_unittests";
 
-service_manager::Manifest MakeVideoCaptureManifestForExecutable() {
-  service_manager::Manifest manifest = GetManifest();
+service_manager::Manifest MakeVideoCaptureManifestForUnsandboxedExecutable() {
+  service_manager::Manifest manifest(GetManifest(
+      service_manager::Manifest::ExecutionMode::kStandaloneExecutable));
   manifest.options.sandbox_type = "none";
-  manifest.options.execution_mode =
-      service_manager::Manifest::ExecutionMode::kStandaloneExecutable;
   return manifest;
 }
 
@@ -35,7 +34,7 @@ DeviceFactoryProviderTest::SharedMemoryVirtualDeviceContext::
 
 DeviceFactoryProviderTest::DeviceFactoryProviderTest()
     : test_service_manager_(
-          {MakeVideoCaptureManifestForExecutable(),
+          {MakeVideoCaptureManifestForUnsandboxedExecutable(),
            service_manager::ManifestBuilder()
                .WithServiceName(kTestServiceName)
                .RequireCapability(mojom::kServiceName, "tests")

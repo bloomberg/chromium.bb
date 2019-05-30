@@ -20,13 +20,6 @@ static_library("quarantine") {
     "quarantine_win.cc",
   ]
 
-  if (is_win) {
-    sources += [
-      "quarantine_features_win.cc",
-      "quarantine_features_win.h",
-    ]
-  }
-
   public_deps = [
     "//components/services/quarantine/public/mojom",
   ]
@@ -38,6 +31,10 @@ static_library("quarantine") {
     "//services/service_manager/public/cpp",
     "//url",
   ]
+
+  if (is_win) {
+    deps += [ "//components/services/quarantine/public/cpp:features" ]
+  }
 
   if (is_mac) {
     libs = [
@@ -118,6 +115,10 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//url",
   ]
+
+  if (is_win) {
+    deps += [ "//components/services/quarantine/public/cpp:features" ]
+  }
 
   if (is_mac) {
     libs = [

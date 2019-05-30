@@ -14,12 +14,15 @@ const service_manager::Manifest& GetNoopManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(chrome::mojom::kNoopServiceName)
           .WithDisplayName(IDS_UTILITY_PROCESS_NOOP_SERVICE_NAME)
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("network")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("network")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability(
               "noop",
               service_manager::Manifest::InterfaceList<chrome::mojom::Noop>())

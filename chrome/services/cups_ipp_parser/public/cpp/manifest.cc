@@ -17,12 +17,15 @@ const service_manager::Manifest& GetCupsIppParserManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(chrome::mojom::kCupsIppParserServiceName)
           .WithDisplayName(IDS_UTILITY_PROCESS_CUPS_IPP_PARSER_SERVICE_NAME)
-          .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .WithSandboxType("utility")
-                           .WithInstanceSharingPolicy(
-                               service_manager::Manifest::
-                                   InstanceSharingPolicy::kSharedAcrossGroups)
-                           .Build())
+          .WithOptions(
+              service_manager::ManifestOptionsBuilder()
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kOutOfProcessBuiltin)
+                  .WithSandboxType("utility")
+                  .WithInstanceSharingPolicy(
+                      service_manager::Manifest::InstanceSharingPolicy::
+                          kSharedAcrossGroups)
+                  .Build())
           .ExposeCapability("ipp_parser",
                             service_manager::Manifest::InterfaceList<
                                 chrome::mojom::IppParser>())

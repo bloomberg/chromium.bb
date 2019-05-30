@@ -15,4 +15,21 @@ source_set("manifest") {
     "//components/services/quarantine/public/mojom",
     "//services/service_manager/public/cpp",
   ]
+
+  if (is_win) {
+    deps += [ ":features" ]
+  }
+}
+
+if (is_win) {
+  source_set("features") {
+    sources = [
+      "quarantine_features_win.cc",
+      "quarantine_features_win.h",
+    ]
+
+    public_deps = [
+      "//base",
+    ]
+  }
 }
