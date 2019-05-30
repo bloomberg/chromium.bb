@@ -101,6 +101,10 @@ round_up_pow2(size_t a, size_t b)
 #endif
 #if defined(__AVX2__) && (ALIGN_SIZE % 32)
   #error "AVX2 requires 32-byte alignment. ALIGN_SIZE is not a multiple of 32 bytes."
+#elif defined(__ARM_NEON) && (ALIGN_SIZE % 32)
+  /* 32-byte alignment allows us to extract more performance from */
+  /* fancy-upsampling algorithms when using NEON. */
+  #error "NEON optimizations rely on 32-byte alignment. ALIGN_SIZE is not a multiple of 32 bytes."
 #endif
 #endif
 
