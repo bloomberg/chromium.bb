@@ -373,37 +373,38 @@ class GitWrapper(SCMWrapper):
                'Candidate refs were %s.' % (commit, remote_refs))
     return None
 
-  def apply_patch_ref(self, patch_repo, patch_ref, target_ref, options,
+  def apply_patch_ref(self, patch_repo, patch_rev, target_rev, options,
                       file_list):
     """Apply a patch on top of the revision we're synced at.
 
-    The patch ref is given by |patch_repo|@|patch_ref|, and the current revision
-    is |base_rev|.
-    We also need the |target_ref| that the patch was uploaded against. We use
-    it to find a merge base between |patch_rev| and |base_rev|, so we can find
-    what commits constitute the patch:
+    The patch ref is given by |patch_repo|@|patch_rev|.
+    |target_rev| is usually the branch that the |patch_rev| was uploaded against
+    (e.g. 'refs/heads/master'), but this is not required.
+
+    We cherry-pick all commits reachable from |patch_rev| on top of the curret
+    HEAD, excluding those reachable from |target_rev|
+    (i.e. git cherry-pick target_rev..patch_rev).
 
     Graphically, it looks like this:
 
-     ... -> merge_base -> [possibly already landed commits] -> target_ref
-                       \
-                        -> [possibly not yet landed dependent CLs] -> patch_rev
+     ... -> o -> [possibly already landed commits] -> target_rev
+             \
+              -> [possibly not yet landed dependent CLs] -> patch_rev
 
-    Next, we apply the commits |merge_base..patch_rev| on top of whatever is
-    currently checked out, denoted |base_rev|. Typically, it'd be a revision
-    from |target_ref|, but this is not required.
+    The final checkout state is then:
 
-    Graphically, we cherry pick |merge_base..patch_rev| on top of |base_rev|:
-
-     ... -> base_rev -> [possibly not yet landed dependent CLs] -> patch_rev
+     ... -> HEAD -> [possibly not yet landed dependent CLs] -> patch_rev
 
     After application, if |options.reset_patch_ref| is specified, we soft reset
-    the just cherry-picked changes, keeping them in git index only.
+    the cherry-picked changes, keeping them in git index only.
 
     Args:
-      patch_repo: The patch origin. e.g. 'https://foo.googlesource.com/bar'
-      patch_ref: The ref to the patch. e.g. 'refs/changes/1234/34/1'.
-      target_ref: The ref the patch was uploaded against.
+      patch_repo: The patch origin.
+          e.g. 'https://foo.googlesource.com/bar'
+      patch_rev: The revision to patch.
+          e.g. 'refs/changes/1234/34/1'.
+      target_rev: The revision to use when finding the merge base.
+          Typically, the branch that the patch was uploaded against.
           e.g. 'refs/heads/master' or 'refs/heads/infra/config'.
       options: The options passed to gclient.
       file_list: A list where modified files will be appended.
@@ -417,66 +418,42 @@ class GitWrapper(SCMWrapper):
 
     base_rev = self._Capture(['rev-parse', 'HEAD'])
 
-    if not target_ref:
-      target_ref = self._GetTargetBranchForCommit(base_rev) or base_rev
-    elif not target_ref.startswith(('refs/heads/', 'refs/branch-heads/')):
-      # TODO(ehmaldonado): Support all refs.
-      raise gclient_utils.Error(
-          'target_ref must be in refs/heads/** or refs/branch-heads/**. '
-          'Got %s instead.' % target_ref)
-    elif target_ref == 'refs/heads/master':
-      # We handle refs/heads/master separately because bot_update treats it
-      # differently than other refs: it will fetch refs/heads/foo to
-      # refs/heads/foo, but refs/heads/master to refs/remotes/origin/master.
-      # It's not strictly necessary, but it simplifies the rest of the code.
-      target_ref = 'refs/remotes/%s/master' % self.remote
-    elif scm.GIT.IsValidRevision(self.checkout_path, target_ref):
-      # The target ref for the change is already available, so we don't need to
-      # do anything.
-      # This is a common case. When applying a patch to a top-level solution,
-      # bot_update will fetch the target ref for the change and sync the
-      # solution to it.
-      pass
-    else:
-      # The target ref is not available. We check next for a remote version of
-      # it (e.g. refs/remotes/origin/<branch>) and fetch it if it's not
-      # available.
-      self.Print('%s is not an existing ref.' % target_ref)
-      original_target_ref = target_ref
-      target_ref = ''.join(scm.GIT.RefToRemoteRef(target_ref, self.remote))
-      self.Print('Trying with %s' % target_ref)
-      if not scm.GIT.IsValidRevision(self.checkout_path, target_ref):
-        self.Print(
-            '%s is not an existing ref either. Will proceed to fetch it.'
-            % target_ref)
-        url, _ = gclient_utils.SplitUrlRevision(self.url)
-        mirror = self._GetMirror(url, options, target_ref)
-        if mirror:
-          self._UpdateMirrorIfNotContains(
-              mirror, options, 'branch', target_ref, original_target_ref)
-        self._Fetch(options, refspec=target_ref)
+    if not target_rev:
+      # TODO(ehmaldonado): Raise an error once |target_rev| is mandatory.
+      target_rev = self._GetTargetBranchForCommit(base_rev) or base_rev
+    elif target_rev.startswith('refs/heads/'):
+      # If |target_rev| is in refs/heads/**, try first to find the corresponding
+      # remote ref for it, since |target_rev| might point to a local ref which
+      # is not up to date with the corresponding remote ref.
+      remote_ref = ''.join(scm.GIT.RefToRemoteRef(target_rev, self.remote))
+      self.Print('Trying the correspondig remote ref for %r: %r\n' % (
+          target_rev, remote_ref))
+      if scm.GIT.IsValidRevision(self.checkout_path, remote_ref):
+        target_rev = remote_ref
+    elif not scm.GIT.IsValidRevision(self.checkout_path, target_rev):
+      # Fetch |target_rev| if it's not already available.
+      url, _ = gclient_utils.SplitUrlRevision(self.url)
+      mirror = self._GetMirror(url, options, target_rev)
+      if mirror:
+        rev_type = 'branch' if target_rev.startswith('refs/') else 'hash'
+        self._UpdateMirrorIfNotContains(mirror, options, rev_type, target_rev)
+      self._Fetch(options, refspec=target_rev)
 
-    self.Print('===Applying patch ref===')
-    self.Print('Patch ref is %r @ %r. Target branch for patch is %r. '
-               'Current HEAD is %r. Current dir is %r' % (
-                   patch_repo, patch_ref, target_ref, base_rev,
-                   self.checkout_path))
+    self.Print('===Applying patch===')
+    self.Print('Revision to patch is %r @ %r.' % (patch_repo, patch_rev))
+    self.Print('Will cherrypick %r .. %r on top of %r.' % (
+        target_rev, patch_rev, base_rev))
+    self.Print('Current dir is %r' % self.checkout_path)
     self._Capture(['reset', '--hard'])
-    self._Capture(['fetch', patch_repo, patch_ref])
+    self._Capture(['fetch', patch_repo, patch_rev])
     patch_rev = self._Capture(['rev-parse', 'FETCH_HEAD'])
 
-    try:
-      if not options.rebase_patch_ref:
-        self._Capture(['checkout', patch_rev])
-      else:
-        # Find the merge-base between the branch_rev and patch_rev to find out
-        # the changes we need to cherry-pick on top of base_rev.
-        merge_base = self._Capture(['merge-base', target_ref, patch_rev])
-        self.Print('Merge base of %s and %s is %s' % (
-            target_ref, patch_rev, merge_base))
-        if merge_base == patch_rev:
-          # If the merge-base is patch_rev, it means patch_rev is already part
-          # of the history, so just check it out.
+    if not options.rebase_patch_ref:
+      self._Capture(['checkout', patch_rev])
+    else:
+      try:
+        if scm.GIT.IsAncestor(self.checkout_path, patch_rev, target_rev):
+          # If |patch_rev| is an ancestor of |target_rev|, check it out.
           self._Capture(['checkout', patch_rev])
         else:
           # If a change was uploaded on top of another change, which has already
@@ -484,28 +461,29 @@ class GitWrapper(SCMWrapper):
           # redundant, since it has already landed and its changes incorporated
           # in the tree.
           # We pass '--keep-redundant-commits' to ignore those changes.
-          self._Capture(['cherry-pick', merge_base + '..' + patch_rev,
+          self._Capture(['cherry-pick', target_rev + '..' + patch_rev,
                          '--keep-redundant-commits'])
 
-      if file_list is not None:
-        file_list.extend(self._GetDiffFilenames(base_rev))
+      except subprocess2.CalledProcessError as e:
+        self.Print('Failed to apply patch.')
+        self.Print('Revision to patch was %r @ %r.' % (patch_repo, patch_rev))
+        self.Print('Tried to cherrypick %r .. %r on top of %r.' % (
+            target_rev, patch_rev, base_rev))
+        self.Print('Current dir is %r' % self.checkout_path)
+        self.Print('git returned non-zero exit status %s:\n%s' % (
+            e.returncode, e.stderr))
+        # Print the current status so that developers know what changes caused
+        # the patch failure, since git cherry-pick doesn't show that
+        # information.
+        self.Print(self._Capture(['status']))
+        try:
+          self._Capture(['cherry-pick', '--abort'])
+        except subprocess2.CalledProcessError:
+          pass
+        raise
 
-    except subprocess2.CalledProcessError as e:
-      self.Print('Failed to apply patch.')
-      self.Print('Patch ref is %r @ %r. Target ref for patch is %r. '
-                 'Current HEAD is %r. Current dir is %r' % (
-                     patch_repo, patch_ref, target_ref, base_rev,
-                     self.checkout_path))
-      self.Print('git returned non-zero exit status %s:\n%s' % (
-          e.returncode, e.stderr))
-      # Print the current status so that developers know what changes caused the
-      # patch failure, since git cherry-pick doesn't show that information.
-      self.Print(self._Capture(['status']))
-      try:
-        self._Capture(['cherry-pick', '--abort'])
-      except subprocess2.CalledProcessError:
-        pass
-      raise
+    if file_list is not None:
+      file_list.extend(self._GetDiffFilenames(base_rev))
 
     if options.reset_patch_ref:
       self._Capture(['reset', '--soft', base_rev])
