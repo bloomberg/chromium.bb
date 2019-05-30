@@ -862,19 +862,6 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   blur->SetMaskLayer(mask.get());
   CHECK_EQ(Layer::LayerMaskType::SINGLE_TEXTURE_MASK, mask->mask_type());
 
-  float percentage_pixels_large_error = 2.5f;  // 2.5%, ~250px / (100*100)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 100.0f;
-  int large_error_allowed = 256;
-  int small_error_allowed = 0;
-  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
-      true,  // discard_alpha
-      percentage_pixels_large_error,
-      percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels,
-      large_error_allowed,
-      small_error_allowed);
-
   base::FilePath image_name =
       (test_case_ == GPU || test_case_ == SKIA_GL)
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
