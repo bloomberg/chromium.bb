@@ -144,6 +144,15 @@ goog.provide('{{module.namespace}}.{{interface.name}}Request');
   }
 
   /**
+   * Closes all bindings bound to this target.
+   *
+   * @export
+   */
+  closeBindings() {
+    this.target_.closeBindings();
+  }
+
+  /**
    * Returns a proxy for this interface which sends messages to the browser.
    * The browser must have an interface request binder registered for this
    * interface and accessible to the calling document's frame.
