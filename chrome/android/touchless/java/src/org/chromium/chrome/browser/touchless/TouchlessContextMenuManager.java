@@ -66,7 +66,7 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
      */
     public void showTouchlessContextMenu(
             ModalDialogManager modalDialogManager, ContextMenuManager.Delegate delegate) {
-        ArrayList<PropertyModel> menuItems = new ArrayList();
+        ArrayList<PropertyModel> menuItems = new ArrayList<>();
         for (@ContextMenuItemId int itemId = 0; itemId < ContextMenuItemId.NUM_ENTRIES; itemId++) {
             if (!shouldShowItem(itemId, delegate)) continue;
 
