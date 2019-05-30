@@ -73,4 +73,8 @@ std::unique_ptr<views::InkDrop> TopShortcutButton::CreateInkDrop() {
   return TrayPopupUtils::CreateInkDrop(this);
 }
 
+const char* TopShortcutButton::GetClassName() const {
+  return "TopShortcutButton";
+}
+
 }  // namespace ash

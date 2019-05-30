@@ -85,4 +85,8 @@ void NotificationHiddenView::ButtonPressed(views::Button* sender,
           base::DoNothing(), IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_CHANGE_SETTING);
 }
 
+const char* NotificationHiddenView::GetClassName() const {
+  return "NotificationHiddenView";
+}
+
 }  // namespace ash

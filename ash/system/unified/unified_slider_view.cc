@@ -46,6 +46,10 @@ bool ReadOnlySlider::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
+const char* ReadOnlySlider::GetClassName() const {
+  return "ReadOnlySlider";
+}
+
 void ReadOnlySlider::OnGestureEvent(ui::GestureEvent* event) {}
 
 UnifiedSliderButton::UnifiedSliderButton(views::ButtonListener* listener,
@@ -64,6 +68,10 @@ UnifiedSliderButton::~UnifiedSliderButton() = default;
 gfx::Size UnifiedSliderButton::CalculatePreferredSize() const {
   return gfx::Size(kTrayItemSize + kUnifiedCircularButtonFocusPadding.width(),
                    kTrayItemSize + kUnifiedCircularButtonFocusPadding.height());
+}
+
+const char* UnifiedSliderButton::GetClassName() const {
+  return "UnifiedSliderButton";
 }
 
 void UnifiedSliderButton::SetVectorIcon(const gfx::VectorIcon& icon) {
@@ -145,6 +153,10 @@ void UnifiedSliderView::SetSliderValue(float value, bool by_user) {
   slider_->SetValue(value);
   if (by_user)
     slider_->set_enable_accessibility_events(true);
+}
+
+const char* UnifiedSliderView::GetClassName() const {
+  return "UnifiedSliderView";
 }
 
 UnifiedSliderView::~UnifiedSliderView() = default;

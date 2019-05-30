@@ -37,6 +37,7 @@ class FeaturePodIconButton : public views::ImageButton {
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  const char* GetClassName() const override;
 
   bool toggled() const { return toggled_; }
 
@@ -72,6 +73,7 @@ class FeaturePodLabelButton : public views::Button {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  const char* GetClassName() const override;
 
  private:
   // Layout |child| in horizontal center with its vertical origin set to |y|.
@@ -145,6 +147,7 @@ class ASH_EXPORT FeaturePodButton : public views::View,
   void SetVisible(bool visible) override;
   bool HasFocus() const override;
   void RequestFocus() override;
+  const char* GetClassName() const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

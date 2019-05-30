@@ -82,6 +82,10 @@ std::unique_ptr<views::InkDropMask> RoundedLabelButton::CreateInkDropMask()
                                                        kTrayItemSize / 2);
 }
 
+const char* RoundedLabelButton::GetClassName() const {
+  return "RoundedLabelButton";
+}
+
 SignOutButton::SignOutButton(views::ButtonListener* listener)
     : RoundedLabelButton(listener,
                          user::GetLocalizedSignOutStringForStatus(
@@ -92,5 +96,9 @@ SignOutButton::SignOutButton(views::ButtonListener* listener)
 }
 
 SignOutButton::~SignOutButton() = default;
+
+const char* SignOutButton::GetClassName() const {
+  return "SignOutButton";
+}
 
 }  // namespace ash

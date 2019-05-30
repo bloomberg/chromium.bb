@@ -42,6 +42,7 @@ class ContainerView : public views::View {
 
   // views::View:
   void Layout() override { unified_view_->SetBoundsRect(GetContentsBounds()); }
+  const char* GetClassName() const override { return "ContainerView"; }
 
   gfx::Size CalculatePreferredSize() const override {
     // If transform is used, always return the maximum expanded height.

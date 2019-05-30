@@ -32,6 +32,7 @@ class ASH_EXPORT PageIndicatorView : public views::View,
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
+  const char* GetClassName() const override;
 
  private:
   friend class PageIndicatorViewTest;

@@ -107,6 +107,10 @@ void FeaturePodsContainerView::Layout() {
   }
 }
 
+const char* FeaturePodsContainerView::GetClassName() const {
+  return "FeaturePodsContainerView";
+}
+
 void FeaturePodsContainerView::UpdateChildVisibility() {
   DCHECK(!changing_visibility_);
   changing_visibility_ = true;

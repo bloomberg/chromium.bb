@@ -61,6 +61,10 @@ void ImeModeView::OnSessionStateChanged(session_manager::SessionState state) {
   Update();
 }
 
+const char* ImeModeView::GetClassName() const {
+  return "ImeModeView";
+}
+
 void ImeModeView::Update() {
   // Hide the IME mode icon when the locale is shown, because showing locale and
   // IME together is confusing.

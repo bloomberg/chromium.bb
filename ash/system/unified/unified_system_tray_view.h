@@ -41,6 +41,7 @@ class UnifiedSlidersContainerView : public views::View {
   // views::View:
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  const char* GetClassName() const override;
 
  private:
   double expanded_amount_;

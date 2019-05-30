@@ -28,6 +28,7 @@ class TopShortcutButton : public views::ImageButton {
   // views::ImageButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  const char* GetClassName() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TopShortcutButton);

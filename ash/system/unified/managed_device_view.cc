@@ -41,6 +41,10 @@ void ManagedDeviceView::OnEnterpriseDomainChanged() {
   Update();
 }
 
+const char* ManagedDeviceView::GetClassName() const {
+  return "ManagedDeviceView";
+}
+
 void ManagedDeviceView::Update() {
   SessionControllerImpl* session = Shell::Get()->session_controller();
   if (session->IsUserPublicAccount()) {

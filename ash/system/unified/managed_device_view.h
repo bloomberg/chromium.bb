@@ -28,6 +28,9 @@ class ManagedDeviceView : public TrayItemView,
   // EnterpriseDomainObserver:
   void OnEnterpriseDomainChanged() override;
 
+  // views::TrayItemView:
+  const char* GetClassName() const override;
+
  private:
   void Update();
 

@@ -159,6 +159,10 @@ bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return true;
 }
 
+const char* OverflowBubbleView::GetClassName() const {
+  return "OverflowBubbleView";
+}
+
 void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
   if (shelf_->IsHorizontalAlignment())
     ScrollByXOffset(static_cast<int>(-event->x_offset()));

@@ -99,6 +99,8 @@ class SystemTrayContainer : public views::View {
     PreferredSizeChanged();
   }
 
+  const char* GetClassName() const override { return "SystemTrayContainer"; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemTrayContainer);
 };
@@ -118,6 +120,8 @@ class DetailedViewContainer : public views::View {
       child->SetBoundsRect(GetContentsBounds());
     views::View::Layout();
   }
+
+  const char* GetClassName() const override { return "DetailedViewContainer"; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DetailedViewContainer);
@@ -159,6 +163,10 @@ void UnifiedSlidersContainerView::Layout() {
 
 gfx::Size UnifiedSlidersContainerView::CalculatePreferredSize() const {
   return gfx::Size(kTrayMenuWidth, GetExpandedHeight() * expanded_amount_);
+}
+
+const char* UnifiedSlidersContainerView::GetClassName() const {
+  return "UnifiedSlidersContainerView";
 }
 
 void UnifiedSlidersContainerView::UpdateOpacity() {

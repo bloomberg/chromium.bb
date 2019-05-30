@@ -60,6 +60,9 @@ class DateView : public views::Button,
   explicit DateView(UnifiedSystemTrayController* controller);
   ~DateView() override;
 
+  // views::Button:
+  const char* GetClassName() const override { return "DateView"; }
+
  private:
   void Update();
 
@@ -144,6 +147,7 @@ class BatteryView : public views::View, public PowerStatus::Observer {
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
+  const char* GetClassName() const override { return "BatteryView"; }
 
   // PowerStatus::Observer:
   void OnPowerStatusChanged() override;
@@ -227,6 +231,9 @@ class ManagedStateView : public views::Button {
  public:
   ~ManagedStateView() override = default;
 
+  // views::Button:
+  const char* GetClassName() const override { return "ManagedStateView"; }
+
  protected:
   ManagedStateView(views::ButtonListener* listener,
                    int label_id,
@@ -280,6 +287,9 @@ class EnterpriseManagedView : public ManagedStateView,
 
   // SessionObserver:
   void OnLoginStatusChanged(LoginStatus status) override;
+
+  // views::Button:
+  const char* GetClassName() const override { return "EnterpriseManagedView"; }
 
  private:
   void Update();
@@ -345,6 +355,9 @@ class SupervisedUserView : public ManagedStateView {
   SupervisedUserView();
   ~SupervisedUserView() override = default;
 
+  // views::Button:
+  const char* GetClassName() const override { return "SupervisedUserView"; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserView);
 };
@@ -397,6 +410,10 @@ void UnifiedSystemInfoView::ChildVisibilityChanged(views::View* child) {
 
 void UnifiedSystemInfoView::ChildPreferredSizeChanged(views::View* child) {
   Layout();
+}
+
+const char* UnifiedSystemInfoView::GetClassName() const {
+  return "UnifiedSystemInfoView";
 }
 
 }  // namespace ash

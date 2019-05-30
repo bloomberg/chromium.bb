@@ -37,6 +37,10 @@ class UnifiedNotifierSettingsView
     settings_view_->SetQuietModeState(in_quiet_mode);
   }
 
+  const char* GetClassName() const override {
+    return "UnifiedNotifierSettingsView";
+  }
+
  private:
   NotifierSettingsView* const settings_view_;
 

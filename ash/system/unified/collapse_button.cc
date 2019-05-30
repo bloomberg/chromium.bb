@@ -92,6 +92,10 @@ std::unique_ptr<views::InkDropMask> CustomShapeButton::CreateInkDropMask()
   return std::make_unique<CustomShapeInkDropMask>(size(), this);
 }
 
+const char* CustomShapeButton::GetClassName() const {
+  return "CustomShapeButton";
+}
+
 void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
@@ -143,6 +147,10 @@ void CollapseButton::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->sk_canvas()->rotate(expanded_amount_ * 180.);
   gfx::ImageSkia image = GetImageToPaint();
   canvas->DrawImageInt(image, -image.width() / 2, -image.height() / 2);
+}
+
+const char* CollapseButton::GetClassName() const {
+  return "CollapseButton";
 }
 
 void CollapseButton::OnEnabledChanged() {

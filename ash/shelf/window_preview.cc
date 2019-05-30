@@ -128,6 +128,10 @@ bool WindowPreview::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
+const char* WindowPreview::GetClassName() const {
+  return "WindowPreview";
+}
+
 void WindowPreview::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   // The close button was pressed.

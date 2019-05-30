@@ -61,6 +61,9 @@ class UserChooserView : public views::View, public MediaCaptureObserver {
       const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states)
       override;
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   std::vector<UserItemButton*> user_item_buttons_;
 

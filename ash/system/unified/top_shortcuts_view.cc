@@ -138,6 +138,10 @@ gfx::Size TopShortcutButtonContainer::CalculatePreferredSize() const {
   return gfx::Size(width, height);
 }
 
+const char* TopShortcutButtonContainer::GetClassName() const {
+  return "TopShortcutButtonContainer";
+}
+
 void TopShortcutButtonContainer::AddUserAvatarButton(
     views::View* user_avatar_button) {
   AddChildView(user_avatar_button);

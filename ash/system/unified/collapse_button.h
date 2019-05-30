@@ -27,6 +27,7 @@ class CustomShapeButton : public views::ImageButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  const char* GetClassName() const override;
 
  protected:
   void PaintCustomShapePath(gfx::Canvas* canvas);
@@ -51,6 +52,7 @@ class CollapseButton : public CustomShapeButton {
   gfx::Size CalculatePreferredSize() const override;
   SkPath CreateCustomShapePath(const gfx::Rect& bounds) const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
 
  private:
   void OnEnabledChanged();

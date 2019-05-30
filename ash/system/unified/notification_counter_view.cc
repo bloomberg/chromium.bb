@@ -131,6 +131,10 @@ void NotificationCounterView::OnSessionStateChanged(
   Update();
 }
 
+const char* NotificationCounterView::GetClassName() const {
+  return "NotificationCounterView";
+}
+
 QuietModeView::QuietModeView(Shelf* shelf) : TrayItemView(shelf) {
   CreateImageView();
   image_view()->set_tooltip_text(
@@ -160,6 +164,10 @@ void QuietModeView::Update() {
 
 void QuietModeView::OnSessionStateChanged(session_manager::SessionState state) {
   Update();
+}
+
+const char* QuietModeView::GetClassName() const {
+  return "QuietModeView";
 }
 
 }  // namespace ash

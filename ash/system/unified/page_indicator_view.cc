@@ -71,6 +71,9 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
     return gfx::Size(kInkDropRadius * 2, kInkDropRadius * 2);
   }
 
+  // views::Button:
+  const char* GetClassName() const override { return "PageIndicatorView"; }
+
   void PaintButtonContents(gfx::Canvas* canvas) override {
     gfx::Rect rect(GetContentsBounds());
 
@@ -175,6 +178,10 @@ void PageIndicatorView::Layout() {
   gfx::Size buttons_container_size(buttons_container_->GetPreferredSize());
   rect.ClampToCenteredSize(buttons_container_size);
   buttons_container_->SetBoundsRect(rect);
+}
+
+const char* PageIndicatorView::GetClassName() const {
+  return "PageIndicatorView";
 }
 
 void PageIndicatorView::SetExpandedAmount(double expanded_amount) {

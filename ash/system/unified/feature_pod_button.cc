@@ -107,6 +107,10 @@ void FeaturePodIconButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                                       : ax::mojom::CheckedState::kFalse);
 }
 
+const char* FeaturePodIconButton::GetClassName() const {
+  return "FeaturePodIconButton";
+}
+
 FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
     : Button(listener),
       label_(new views::Label),
@@ -198,6 +202,10 @@ std::unique_ptr<views::InkDropMask> FeaturePodLabelButton::CreateInkDropMask()
     const {
   return std::make_unique<views::RoundRectInkDropMask>(
       size(), gfx::Insets(), kUnifiedFeaturePodHoverRadius);
+}
+
+const char* FeaturePodLabelButton::GetClassName() const {
+  return "FeaturePodLabelButton";
 }
 
 void FeaturePodLabelButton::SetLabel(const base::string16& label) {
@@ -322,6 +330,10 @@ bool FeaturePodButton::HasFocus() const {
 
 void FeaturePodButton::RequestFocus() {
   label_button_->RequestFocus();
+}
+
+const char* FeaturePodButton::GetClassName() const {
+  return "FeaturePodButton";
 }
 
 void FeaturePodButton::OnEnabledChanged() {

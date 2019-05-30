@@ -51,12 +51,13 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   // Returns the number of children that prefer to be visible.
   int GetVisibleCount() const;
 
-  // Overridden views::View:
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void ChildVisibilityChanged(View* child) override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
   void Layout() override;
+  const char* GetClassName() const override;
 
  private:
   friend class FeaturePodsContainerViewTest;

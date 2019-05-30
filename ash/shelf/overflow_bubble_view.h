@@ -50,6 +50,7 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble {
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
+  const char* GetClassName() const override;
 
   // ui::EventHandler:
   void OnScrollEvent(ui::ScrollEvent* event) override;

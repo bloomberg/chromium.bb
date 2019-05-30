@@ -340,4 +340,8 @@ void UserChooserView::OnMediaCaptureChanged(
   }
 }
 
+const char* UserChooserView::GetClassName() const {
+  return "UserChooserView";
+}
+
 }  // namespace ash

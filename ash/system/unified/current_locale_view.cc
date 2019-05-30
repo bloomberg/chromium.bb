@@ -50,4 +50,9 @@ void CurrentLocaleView::OnLocaleListSet() {
   }
   Layout();
 }
+
+const char* CurrentLocaleView::GetClassName() const {
+  return "CurrentLocaleView";
+}
+
 }  // namespace ash

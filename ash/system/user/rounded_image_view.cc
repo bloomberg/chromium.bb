@@ -67,5 +67,9 @@ void RoundedImageView::OnPaint(gfx::Canvas* canvas) {
                           path, flags);
 }
 
+const char* RoundedImageView::GetClassName() const {
+  return "RoundedImageView";
+}
+
 }  // namespace tray
 }  // namespace ash
