@@ -5,7 +5,6 @@
 #include "components/autofill/core/browser/ui/mobile_label_formatter.h"
 
 #include <algorithm>
-#include <list>
 
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
@@ -97,7 +96,9 @@ base::string16 MobileLabelFormatter::GetLabelForShowOneVariant(
   if (ShowLabelAddress(focused_group)) {
     return GetLabelAddress(
         /*use_street_address=*/HasStreetAddress(field_types_for_labels()),
-        profile, app_locale(), field_types_for_labels());
+        profile, app_locale(),
+        TypesWithoutFocusedField(field_types_for_labels(),
+                                 focused_field_type()));
   }
 
   // If an unfocused form field does not have the same data for all
@@ -178,7 +179,9 @@ base::string16 MobileLabelFormatter::GetDefaultLabel(
   if (ShowLabelAddress(focused_group)) {
     return GetLabelAddress(
         /*use_street_address=*/HasStreetAddress(field_types_for_labels()),
-        profile, app_locale(), field_types_for_labels());
+        profile, app_locale(),
+        TypesWithoutFocusedField(field_types_for_labels(),
+                                 focused_field_type()));
   }
 
   if (HasUnfocusedPhoneField(focused_group, groups())) {
@@ -199,11 +202,14 @@ bool MobileLabelFormatter::ShowLabelAddress(
     return true;
   }
 
-  // Non street address elements, e.g. Mountain View, CA, are shown in labels
-  // only when the form does not have a street address field.
-  return !HasStreetAddress(field_types_for_labels()) &&
-         HasUnfocusedNonStreetAddressField(focused_field_type(), focused_group,
-                                           field_types_for_labels());
+  // If a form lacks a street address field, then a non street address field may
+  // be shown. It is shown in two situations:
+  // 1. A form has an unfocused non street address field.
+  // 2. A form has only non street address fields.
+  return (!HasStreetAddress(field_types_for_labels()) &&
+          HasUnfocusedNonStreetAddressField(focused_field_type(), focused_group,
+                                            field_types_for_labels())) ||
+         FormHasOnlyNonStreetAddressFields(field_types_for_labels(), groups());
 }
 
 }  // namespace autofill

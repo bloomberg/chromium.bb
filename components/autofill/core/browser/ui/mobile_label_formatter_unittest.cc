@@ -127,6 +127,14 @@ TEST(MobileLabelFormatterTest, GetLabelsForUnfocusedAddress_ShowOne) {
               ElementsAre(base::ASCIIToUTF16("02113"),
                           base::ASCIIToUTF16("12224"), base::string16()));
 
+  // Like the previous test, but without name.
+  formatter = LabelFormatter::Create(
+      profiles, "en-US", EMAIL_ADDRESS,
+      {ADDRESS_HOME_CITY, ADDRESS_HOME_STATE, EMAIL_ADDRESS});
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("cityA, MA"),
+                          base::ASCIIToUTF16("cityB, NY"), base::string16()));
+
   // Tests that addresses are not shown when the form does not contain an
   // address field.
   formatter = LabelFormatter::Create(profiles, "en-US", NAME_FIRST,
@@ -156,10 +164,28 @@ TEST(MobileLabelFormatterTest,
 
   std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
       profiles, "en-US", ADDRESS_HOME_ZIP, GetAddressPlusContactFieldTypes());
-
   EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::ASCIIToUTF16("address1A, address2A"),
                           base::ASCIIToUTF16("address1B, address2B")));
+
+  // Tests that a non street address is shown when a form contains only
+  // non focused street address fields and a focused non street address.
+  formatter = LabelFormatter::Create(
+      profiles, "en-US", ADDRESS_HOME_ZIP,
+      {ADDRESS_HOME_CITY, ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP});
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("cityA, MA"),
+                          base::ASCIIToUTF16("cityB, NY")));
+
+  // Tests that a non street address is not shown when a form contains
+  // non focused street address fields and another kind of field and also has a
+  // focused non street address.
+  formatter = LabelFormatter::Create(
+      profiles, "en-US", ADDRESS_HOME_CITY,
+      {ADDRESS_HOME_CITY, ADDRESS_HOME_STATE, EMAIL_ADDRESS});
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("emailA@gmail.com"),
+                          base::ASCIIToUTF16("emailB@gmail.com")));
 
   // Tests that a phone number is shown when the address cannot be shown and
   // there are different phone numbers.
@@ -170,7 +196,6 @@ TEST(MobileLabelFormatterTest,
 
   formatter = LabelFormatter::Create(profiles, "en-US", ADDRESS_HOME_LINE1,
                                      GetAddressPlusContactFieldTypes());
-
   EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::ASCIIToUTF16("(617) 666-0000"),
                           base::ASCIIToUTF16("(518) 555-0000")));
@@ -184,7 +209,6 @@ TEST(MobileLabelFormatterTest,
 
   formatter = LabelFormatter::Create(profiles, "en-US", ADDRESS_HOME_LINE1,
                                      GetAddressPlusContactFieldTypes());
-
   EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::ASCIIToUTF16("emailA@gmail.com"),
                           base::ASCIIToUTF16("emailB@gmail.com")));
@@ -197,7 +221,6 @@ TEST(MobileLabelFormatterTest,
 
   formatter = LabelFormatter::Create(profiles, "en-US", ADDRESS_HOME_LINE1,
                                      GetAddressPlusContactFieldTypes());
-
   EXPECT_THAT(
       formatter->GetLabels(),
       ElementsAre(base::ASCIIToUTF16("firstA"), base::ASCIIToUTF16("firstB")));
@@ -209,7 +232,6 @@ TEST(MobileLabelFormatterTest,
   profiles = {&profileA, &profileB};
   formatter = LabelFormatter::Create(profiles, "en-US", ADDRESS_HOME_LINE1,
                                      GetAddressPlusContactFieldTypes());
-
   EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::ASCIIToUTF16("(617) 666-0000"),
                           base::ASCIIToUTF16("(617) 666-0000")));
@@ -221,7 +243,6 @@ TEST(MobileLabelFormatterTest,
   profiles = {&profileA, &profileB};
   formatter = LabelFormatter::Create(profiles, "en-US", ADDRESS_HOME_LINE1,
                                      GetAddressPlusEmailFieldTypes());
-
   EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::ASCIIToUTF16("emailA@gmail.com"),
                           base::ASCIIToUTF16("emailA@gmail.com")));
@@ -233,7 +254,6 @@ TEST(MobileLabelFormatterTest,
   profiles = {&profileA, &profileB};
   formatter = LabelFormatter::Create(profiles, "en-US", ADDRESS_HOME_LINE1,
                                      GetAddressOnlyFieldTypes());
-
   EXPECT_THAT(
       formatter->GetLabels(),
       ElementsAre(base::ASCIIToUTF16("firstA"), base::ASCIIToUTF16("firstA")));
@@ -403,6 +423,23 @@ TEST(MobileLabelFormatterTest, GetDefaultLabel_ShowAll) {
                              {NAME_FIRST, NAME_LAST, PHONE_HOME_WHOLE_NUMBER});
   EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::ASCIIToUTF16("firstA")));
+
+  // Tests that a non street address is shown when a form contains only
+  // non focused street address fields and a focused non street address.
+  formatter = LabelFormatter::Create(
+      profiles, "en-US", ADDRESS_HOME_ZIP,
+      {ADDRESS_HOME_CITY, ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP});
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("cityA, MA")));
+
+  // Tests that a non street address is not shown when a form contains
+  // non focused street address fields and another kind of field and also has a
+  // focused non street address.
+  formatter = LabelFormatter::Create(
+      profiles, "en-US", ADDRESS_HOME_CITY,
+      {ADDRESS_HOME_CITY, ADDRESS_HOME_STATE, EMAIL_ADDRESS});
+  EXPECT_THAT(formatter->GetLabels(),
+              ElementsAre(base::ASCIIToUTF16("emailA@gmail.com")));
 }
 
 }  // namespace

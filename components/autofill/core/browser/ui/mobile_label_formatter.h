@@ -28,7 +28,7 @@ namespace autofill {
 // 4. The relative usefulness of form field data that could be shown in labels
 //
 // The usefulness, from greatest to least, is as follows:
-// address > phone > email > first name
+// address > phone > email > name
 //
 // There are two address categories: street address and non street address.
 // Street address example: 44 Lakeview Ln

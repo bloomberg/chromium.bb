@@ -30,15 +30,19 @@ using data_util::bit_field_type_groups::kEmail;
 using data_util::bit_field_type_groups::kName;
 using data_util::bit_field_type_groups::kPhone;
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
 namespace {
 
-bool IsSupportedFormType(uint32_t groups) {
-  return ContainsName(groups) &&
-         (ContainsEmail(groups) || ContainsPhone(groups) ||
-          ContainsAddress(groups));
+// Returns true if a form has address fields or has least two supported
+// non-address fields.
+bool IsSupportedFormTypeOnMobile(uint32_t groups) {
+  return ContainsAddress(groups) ||
+         ContainsName(groups) + ContainsEmail(groups) + ContainsPhone(groups) >=
+             2;
 }
 
 }  // namespace
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 LabelFormatter::LabelFormatter(const std::vector<AutofillProfile*>& profiles,
                                const std::string& app_locale,
@@ -49,8 +53,6 @@ LabelFormatter::LabelFormatter(const std::vector<AutofillProfile*>& profiles,
       app_locale_(app_locale),
       focused_field_type_(focused_field_type),
       groups_(groups) {
-  DCHECK(IsSupportedFormType(groups));
-
   const FieldTypeGroup focused_group = GetFocusedNonBillingGroup();
   std::set<FieldTypeGroup> groups_for_labels{NAME, ADDRESS_HOME, EMAIL,
                                              PHONE_HOME};
@@ -102,9 +104,7 @@ std::unique_ptr<LabelFormatter> LabelFormatter::Create(
   const uint32_t groups = data_util::DetermineGroups(field_types);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  return ContainsName(groups) &&
-                 (ContainsEmail(groups) || ContainsPhone(groups) ||
-                  ContainsAddress(groups))
+  return IsSupportedFormTypeOnMobile(groups)
              ? std::make_unique<MobileLabelFormatter>(profiles, app_locale,
                                                       focused_field_type,
                                                       groups, field_types)

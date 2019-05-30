@@ -57,6 +57,11 @@ std::vector<ServerFieldType> ExtractSpecifiedAddressFieldTypes(
 std::vector<ServerFieldType> ExtractAddressFieldTypes(
     const std::vector<ServerFieldType>& types);
 
+// Returns a collection of the types in |types| without |field_type_to_remove|.
+std::vector<ServerFieldType> TypesWithoutFocusedField(
+    const std::vector<ServerFieldType>& types,
+    ServerFieldType field_type_to_remove);
+
 // Returns a pared down copy of |profile|. The copy has the same guid, origin,
 // country and language codes, and |field_types| as |profile|.
 AutofillProfile MakeTrimmedProfile(const AutofillProfile& profile,
@@ -178,6 +183,11 @@ bool HasUnfocusedStreetAddressField(ServerFieldType focused_field,
                                     FieldTypeGroup focused_group,
                                     const std::vector<ServerFieldType>& types);
 
+// Returns true if the form has only non-street-address-related fields, such as
+// city, state, and zip code.
+bool FormHasOnlyNonStreetAddressFields(
+    const std::vector<ServerFieldType>& types,
+    uint32_t form_groups);
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_LABEL_FORMATTER_UTILS_H_
