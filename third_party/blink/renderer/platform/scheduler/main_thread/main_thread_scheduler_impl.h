@@ -121,6 +121,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool use_resource_fetch_priority;
     bool use_resource_priorities_only_during_loading;
 
+    // Compositor priority experiment (crbug.com/966177).
+    bool compositor_very_high_priority_always;
+    bool compositor_very_high_priority_when_fast;
+
     // Contains a mapping from net::RequestPriority to TaskQueue::QueuePriority
     // when use_resource_fetch_priority is enabled.
     std::array<base::sequence_manager::TaskQueue::QueuePriority,

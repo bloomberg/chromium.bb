@@ -3620,6 +3620,83 @@ TEST_F(MainThreadSchedulerImplTest, MicrotaskCheckpointTiming) {
             observer.result().front().second);
 }
 
+class VeryHighPriorityForCompositingAlwaysExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingAlwaysExperimentTest()
+      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingAlways},
+                                    {}) {}
+};
+
+TEST_F(VeryHighPriorityForCompositingAlwaysExperimentTest,
+       TestCompositorPolicy) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("P1"), std::string("C1"),
+                                   std::string("C2"), std::string("D1"),
+                                   std::string("D2"), std::string("I1")));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+class VeryHighPriorityForCompositingWhenFastExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingWhenFastExperimentTest()
+      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingWhenFast},
+                                    {}) {}
+};
+
+TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
+       TestCompositorPolicy_FastCompositing) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("P1"), std::string("C1"),
+                                   std::string("C2"), std::string("D1"),
+                                   std::string("D2"), std::string("I1")));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
+       TestCompositorPolicy_SlowCompositing) {
+  RunSlowCompositorTask();
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("P1"), std::string("D1"),
+                                   std::string("C1"), std::string("D2"),
+                                   std::string("C2"), std::string("I1")));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
+       TestCompositorPolicy_CompositingStaysAtHighest) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 P1 C2");
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  EnableIdleTasks();
+  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
+                                 blink::WebInputEvent::kGestureScrollBegin);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("P1"),
+                                   std::string("C2"), std::string("L1"),
+                                   std::string("D1"), std::string("D2"),
+                                   std::string("I1")));
+  EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
+}
+
 }  // namespace main_thread_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

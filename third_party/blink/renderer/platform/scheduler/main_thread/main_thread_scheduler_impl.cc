@@ -563,6 +563,11 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
   use_resource_priorities_only_during_loading =
       base::FeatureList::IsEnabled(kUseResourceFetchPriorityOnlyWhenLoading);
 
+  compositor_very_high_priority_always =
+      base::FeatureList::IsEnabled(kVeryHighPriorityForCompositingAlways);
+  compositor_very_high_priority_when_fast =
+      base::FeatureList::IsEnabled(kVeryHighPriorityForCompositingWhenFast);
+
   if (use_resource_fetch_priority ||
       use_resource_priorities_only_during_loading) {
     base::FieldTrialParams params;
@@ -1488,6 +1493,21 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
     default:
       NOTREACHED();
+  }
+
+  if (scheduling_settings_.compositor_very_high_priority_always &&
+      new_policy.compositor_priority() !=
+          TaskQueue::QueuePriority::kHighestPriority) {
+    new_policy.compositor_priority() =
+        TaskQueue::QueuePriority::kVeryHighPriority;
+  }
+
+  if (scheduling_settings_.compositor_very_high_priority_when_fast &&
+      main_thread_compositing_is_fast &&
+      new_policy.compositor_priority() !=
+          TaskQueue::QueuePriority::kHighestPriority) {
+    new_policy.compositor_priority() =
+        TaskQueue::QueuePriority::kVeryHighPriority;
   }
 
   // TODO(skyostil): Add an idle state for foreground tabs too.
