@@ -184,10 +184,11 @@ XRViewport* XRWebGLLayer::GetViewportForEye(XRView::XREye eye) {
   if (viewports_dirty_)
     UpdateViewports();
 
-  if (eye == XRView::kEyeLeft)
-    return left_viewport_;
+  if (eye == XRView::kEyeRight)
+    return right_viewport_;
 
-  return right_viewport_;
+  // This code path also handles an eye of "none".
+  return left_viewport_;
 }
 
 double XRWebGLLayer::getNativeFramebufferScaleFactor(XRSession* session) {
