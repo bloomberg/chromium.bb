@@ -8,15 +8,38 @@
 
 namespace remoting {
 
-TEST(JidUtil, NormalizeJid) {
+TEST(JidUtilTest, NormalizeJid) {
   EXPECT_EQ(NormalizeJid("USER@DOMAIN.com"), "user@domain.com");
   EXPECT_EQ(NormalizeJid("user@domain.com"), "user@domain.com");
   EXPECT_EQ(NormalizeJid("USER@DOMAIN.com/RESOURCE"),
             "user@domain.com/RESOURCE");
   EXPECT_EQ(NormalizeJid("USER@DOMAIN.com/"), "user@domain.com/");
+
+  // Jabber ID normalization
+  EXPECT_EQ("user.mixed.case@googlemail.com/RESOURCE",
+            NormalizeJid("User.Mixed.Case@GOOGLEMAIL.com/RESOURCE"));
+
+  // FTL ID normalization
+  EXPECT_EQ("user@domain.com/chromoting_ftl_abc123",
+            NormalizeJid("USER@DOMAIN.com/chromoting_ftl_abc123"));
+  EXPECT_EQ("user@domain.com/chromoting_ftl_abc123",
+            NormalizeJid("  USER@DOMAIN.com/chromoting_ftl_abc123"));
+  EXPECT_EQ("usermixedcase@gmail.com/chromoting_ftl_abc123",
+            NormalizeJid("User.Mixed.Case@GMAIL.com/chromoting_ftl_abc123"));
+  EXPECT_EQ(
+      "usermixedcase@gmail.com/chromoting_ftl_abc123",
+      NormalizeJid("User.Mixed.Case@GOOGLEMAIL.com/chromoting_ftl_abc123"));
+  EXPECT_EQ("user.mixed.case@domain.com/chromoting_ftl_abc123",
+            NormalizeJid("User.Mixed.Case@DOMAIN.com/chromoting_ftl_abc123"));
+  EXPECT_EQ("invalid.user/chromoting_ftl_abc123",
+            NormalizeJid("  Invalid.User/chromoting_ftl_abc123"));
+  EXPECT_EQ("invalid.user@/chromoting_ftl_abc123",
+            NormalizeJid("  Invalid.User@/chromoting_ftl_abc123"));
+  EXPECT_EQ("@gmail.com/chromoting_ftl_abc123",
+            NormalizeJid("@googlemail.com/chromoting_ftl_abc123"));
 }
 
-TEST(JidUtil, SplitJidResource) {
+TEST(JidUtilTest, SplitJidResource) {
   std::string bare_jid;
   std::string resource_suffix;
 

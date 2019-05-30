@@ -9,9 +9,19 @@
 
 namespace remoting {
 
-// Normalizes the |jid| by converting case-insensitive parts (node and domain)
-// to lower-case.
+// Normalizes the |jid|. If |jid| is an FTL ID then the email part will be
+// canonicalized. Otherwise it will simply convert case-insensitive parts (node
+// and domain) to lower-case.
 std::string NormalizeJid(const std::string& jid);
+
+// Returns the canonical email for the given email. Note that this only works
+// for email address (bare JID) and does not work for full JID.
+//
+// Canonicalizes by:
+//   * changing to lowercase
+//   * removing all dots if this is a gmail.com or googlemail.com domain
+//   * normalize email domain googlemail.com to gmail.com
+std::string GetCanonicalEmail(std::string email);
 
 // Splits a JID into a bare JID and a resource suffix.  Either |full_jid|,
 // |resource|, or both may be null.  If |full_jid| is already

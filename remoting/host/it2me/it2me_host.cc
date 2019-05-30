@@ -228,7 +228,7 @@ void It2MeHost::OnAccessDenied(const std::string& jid) {
   ++failed_login_attempts_;
   if (failed_login_attempts_ == kMaxLoginAttempts) {
     DisconnectOnNetworkThread();
-  } else if (connecting_jid_ == jid) {
+  } else if (connecting_jid_ == NormalizeJid(jid)) {
     DCHECK_EQ(state_, kConnecting);
     connecting_jid_.clear();
     confirmation_dialog_proxy_.reset();
@@ -499,20 +499,22 @@ void It2MeHost::DisconnectOnNetworkThread() {
 }
 
 void It2MeHost::ValidateConnectionDetails(
-    const std::string& remote_jid,
+    const std::string& original_remote_jid,
     const ValidationResultCallback& result_callback) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   // First ensure the JID we received is valid.
   std::string client_username;
-  if (!SplitJidResource(remote_jid, &client_username, /*resource=*/nullptr)) {
-    LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
+  if (!SplitJidResource(original_remote_jid, &client_username,
+                        /*resource=*/nullptr)) {
+    LOG(ERROR) << "Rejecting incoming connection from " << original_remote_jid
                << ": Invalid JID.";
     result_callback.Run(
         protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
     DisconnectOnNetworkThread();
     return;
   }
+  std::string remote_jid = NormalizeJid(original_remote_jid);
 
   if (client_username.empty()) {
     LOG(ERROR) << "Invalid user name passed in: " << remote_jid;
