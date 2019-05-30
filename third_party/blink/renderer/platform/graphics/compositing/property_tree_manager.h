@@ -28,6 +28,7 @@ enum class RenderSurfaceReason : uint8_t;
 namespace blink {
 
 class ClipPaintPropertyNode;
+class FloatRoundedRect;
 class LayerListBuilder;
 class EffectPaintPropertyNode;
 class ScrollPaintPropertyNode;
@@ -150,6 +151,9 @@ class PropertyTreeManager {
     // decision logic into the cc compositor thread.
     kSyntheticFor2dAxisAlignment = 1 << 1
   };
+
+  static bool SupportsShaderBasedRoundedCorner(const FloatRoundedRect& rect,
+                                               CcEffectType type);
 
   struct EffectState {
     // The cc effect node that has the corresponding drawing state to the

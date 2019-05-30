@@ -803,8 +803,13 @@ void PropertyTreeManager::ForceRenderSurfaceIfSyntheticRoundedCornerClip(
   }
 }
 
-static bool SupportsShaderBasedRoundedCorner(const FloatRoundedRect& rect) {
+bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
+    const FloatRoundedRect& rect,
+    PropertyTreeManager::CcEffectType type) {
   if (!RuntimeEnabledFeatures::FastBorderRadiusEnabled())
+    return false;
+
+  if (type & CcEffectType::kSyntheticFor2dAxisAlignment)
     return false;
 
   auto WidthAndHeightAreTheSame = [](const FloatSize& size) {
@@ -915,7 +920,8 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     synthetic_effect.transform_id = EnsureCompositorTransformNode(transform);
     synthetic_effect.double_sided = !transform.IsBackfaceHidden();
     if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
-      if (SupportsShaderBasedRoundedCorner(pending_clip.clip->ClipRect())) {
+      if (SupportsShaderBasedRoundedCorner(pending_clip.clip->ClipRect(),
+                                           pending_clip.type)) {
         synthetic_effect.rounded_corner_bounds =
             gfx::RRectF(pending_clip.clip->ClipRect());
         synthetic_effect.is_fast_rounded_corner = true;
