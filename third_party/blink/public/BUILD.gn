@@ -159,7 +159,6 @@ source_set("blink_headers") {
     "platform/modules/service_worker/web_service_worker_provider.h",
     "platform/modules/service_worker/web_service_worker_provider_client.h",
     "platform/modules/service_worker/web_service_worker_registration_object_info.h",
-    "platform/modules/service_worker/web_service_worker_stream_handle.h",
     "platform/platform.h",
     "platform/pointer_properties.h",
     "platform/scheduler/web_rail_mode_observer.h",

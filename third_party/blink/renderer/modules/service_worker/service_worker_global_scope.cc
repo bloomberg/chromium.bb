@@ -38,7 +38,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_stream_handle.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -101,7 +100,6 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_script_cached_metadata_handler.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_timeout_timer.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_window_client.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -123,30 +121,6 @@ namespace {
 
 constexpr char kServiceWorkerGlobalScopeTraceScope[] =
     "ServiceWorkerGlobalScope";
-
-class StreamHandleListener : public WebServiceWorkerStreamHandle::Listener {
- public:
-  StreamHandleListener(
-      mojom::blink::ServiceWorkerStreamCallbackPtr callback_ptr,
-      std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token)
-      : callback_ptr_(std::move(callback_ptr)), token_(std::move(token)) {}
-
-  ~StreamHandleListener() override {}
-
-  void OnAborted() override {
-    callback_ptr_->OnAborted();
-    token_.reset();
-  }
-
-  void OnCompleted() override {
-    callback_ptr_->OnCompleted();
-    token_.reset();
-  }
-
- private:
-  mojom::blink::ServiceWorkerStreamCallbackPtr callback_ptr_;
-  std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token_;
-};
 
 void DidSkipWaiting(ScriptPromiseResolver* resolver, bool success) {
   if (!resolver->GetExecutionContext() ||
@@ -730,6 +704,11 @@ void ServiceWorkerGlobalScope::DispatchOrQueueFetchEvent(
                      std::move(callback));
 }
 
+std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken>
+ServiceWorkerGlobalScope::CreateStayAwakeToken() {
+  return timeout_timer_->CreateStayAwakeToken();
+}
+
 ServiceWorker* ServiceWorkerGlobalScope::GetOrCreateServiceWorker(
     WebServiceWorkerObjectInfo info) {
   if (info.version_id == mojom::blink::kInvalidServiceWorkerVersionId)
@@ -1018,7 +997,7 @@ void ServiceWorkerGlobalScope::RespondToFetchEvent(
 void ServiceWorkerGlobalScope::RespondToFetchEventWithResponseStream(
     int fetch_event_id,
     mojom::blink::FetchAPIResponsePtr response,
-    blink::WebServiceWorkerStreamHandle* web_body_as_stream,
+    mojom::blink::ServiceWorkerStreamHandlePtr body_as_stream,
     base::TimeTicks event_dispatch_time,
     base::TimeTicks respond_with_settled_time) {
   DCHECK(IsContextThread());
@@ -1031,14 +1010,6 @@ void ServiceWorkerGlobalScope::RespondToFetchEventWithResponseStream(
   DCHECK(fetch_response_callbacks_.Contains(fetch_event_id));
   mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback =
       fetch_response_callbacks_.Take(fetch_event_id);
-  auto body_as_stream = mojom::blink::ServiceWorkerStreamHandle::New();
-  mojom::blink::ServiceWorkerStreamCallbackPtr callback_ptr;
-  body_as_stream->callback_request = mojo::MakeRequest(&callback_ptr);
-  body_as_stream->stream = web_body_as_stream->DrainStreamDataPipe();
-  DCHECK(body_as_stream->stream.is_valid());
-
-  web_body_as_stream->SetListener(std::make_unique<StreamHandleListener>(
-      std::move(callback_ptr), timeout_timer_->CreateStayAwakeToken()));
 
   auto timing = mojom::blink::ServiceWorkerFetchEventTiming::New();
   timing->dispatch_event_time = event_dispatch_time;

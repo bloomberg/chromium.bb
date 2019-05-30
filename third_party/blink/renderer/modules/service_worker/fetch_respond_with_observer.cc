@@ -13,7 +13,6 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_stream_handle.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -121,75 +120,63 @@ bool IsClientRequest(network::mojom::RequestContextFrameType frame_type,
          request_context == mojom::RequestContextType::WORKER;
 }
 
-// Notifies the result of FetchDataLoader to |handle_|. |handle_| pass through
-// the result to its observer.
+// Notifies the result of FetchDataLoader to |callback_ptr_|, the other endpoint
+// for which is passed to the browser process via
+// blink.mojom.ServiceWorkerFetchResponseCallback.OnResponseStream().
 class FetchLoaderClient final
     : public GarbageCollectedFinalized<FetchLoaderClient>,
       public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(FetchLoaderClient);
 
  public:
-  FetchLoaderClient() {}
+  FetchLoaderClient(
+      std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token)
+      : token_(std::move(token)) {
+    // We need to make |callback_ptr_| callable in the first place because some
+    // DidFetchDataLoadXXX() accessing it may be called synchronously from
+    // StartLoading().
+    callback_request_ = mojo::MakeRequest(&callback_ptr_);
+  }
 
   void DidFetchDataStartedDataPipe(
       mojo::ScopedDataPipeConsumerHandle pipe) override {
-    DCHECK(!handle_);
-    handle_ = std::make_unique<WebServiceWorkerStreamHandle>(std::move(pipe));
+    DCHECK(!body_stream_.is_valid());
+    DCHECK(pipe.is_valid());
+    body_stream_ = std::move(pipe);
   }
   void DidFetchDataLoadedDataPipe() override {
-    DCHECK(handle_);
-    // If this method is called synchronously from StartLoading() then we need
-    // to delay notifying the handle until after
-    // RespondToFetchEventWithResponseStream() is called.
-    if (!started_) {
-      pending_complete_ = true;
-      return;
-    }
-    pending_complete_ = false;
-    handle_->Completed();
+    callback_ptr_->OnCompleted();
+    token_.reset();
   }
   void DidFetchDataLoadFailed() override {
-    // If this method is called synchronously from StartLoading() then we need
-    // to delay notifying the handle until after
-    // RespondToFetchEventWithResponseStream() is called.
-    if (!started_) {
-      pending_failure_ = true;
-      return;
-    }
-    pending_failure_ = false;
-    if (handle_)
-      handle_->Aborted();
+    callback_ptr_->OnAborted();
+    token_.reset();
   }
   void Abort() override {
     // A fetch() aborted via AbortSignal in the ServiceWorker will just look
     // like an ordinary failure to the page.
     // TODO(ricea): Should a fetch() on the page get an AbortError instead?
-    if (handle_)
-      handle_->Aborted();
+    callback_ptr_->OnAborted();
+    token_.reset();
   }
 
-  void SetStarted() {
-    DCHECK(!started_);
-    // Note that RespondToFetchEventWithResponseStream() has been called and
-    // flush any pending operation.
-    started_ = true;
-    if (pending_complete_)
-      DidFetchDataLoadedDataPipe();
-    else if (pending_failure_)
-      DidFetchDataLoadFailed();
+  mojom::blink::ServiceWorkerStreamHandlePtr CreateStreamHandle() {
+    if (!body_stream_.is_valid())
+      return nullptr;
+    return mojom::blink::ServiceWorkerStreamHandle::New(
+        std::move(body_stream_), std::move(callback_request_));
   }
-
-  WebServiceWorkerStreamHandle* Handle() const { return handle_.get(); }
 
   void Trace(blink::Visitor* visitor) override {
     FetchDataLoader::Client::Trace(visitor);
   }
 
  private:
-  std::unique_ptr<WebServiceWorkerStreamHandle> handle_;
-  bool started_ = false;
-  bool pending_complete_ = false;
-  bool pending_failure_ = false;
+  mojo::ScopedDataPipeConsumerHandle body_stream_;
+  mojom::blink::ServiceWorkerStreamCallbackRequest callback_request_;
+
+  mojom::blink::ServiceWorkerStreamCallbackPtr callback_ptr_;
+  std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchLoaderClient);
 };
@@ -316,6 +303,8 @@ void FetchRespondWithObserver::OnResponseFulfilled(
 
   mojom::blink::FetchAPIResponsePtr fetch_api_response =
       response->PopulateFetchAPIResponse();
+  ServiceWorkerGlobalScope* service_worker_global_scope =
+      To<ServiceWorkerGlobalScope>(GetExecutionContext());
 
   BodyStreamBuffer* buffer = response->InternalBodyBuffer();
   if (buffer) {
@@ -330,16 +319,17 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     if (blob_data_handle) {
       // Handle the blob response body.
       fetch_api_response->blob = blob_data_handle;
-      To<ServiceWorkerGlobalScope>(GetExecutionContext())
-          ->RespondToFetchEvent(event_id_, std::move(fetch_api_response),
-                                event_dispatch_time_, base::TimeTicks::Now());
+      service_worker_global_scope->RespondToFetchEvent(
+          event_id_, std::move(fetch_api_response), event_dispatch_time_,
+          base::TimeTicks::Now());
       return;
     }
 
-    // Load the Response as a mojo::DataPipe.  The resulting pipe consumer
+    // Load the Response as a Mojo DataPipe. The resulting pipe consumer
     // handle will be passed to the FetchLoaderClient on start.
     FetchLoaderClient* fetch_loader_client =
-        MakeGarbageCollected<FetchLoaderClient>();
+        MakeGarbageCollected<FetchLoaderClient>(
+            service_worker_global_scope->CreateStayAwakeToken());
     buffer->StartLoading(FetchDataLoader::CreateLoaderAsDataPipe(task_runner_),
                          fetch_loader_client, exception_state);
     if (exception_state.HadException()) {
@@ -347,25 +337,22 @@ void FetchRespondWithObserver::OnResponseFulfilled(
       return;
     }
 
-    // If we failed to create the WebServiceWorkerStreamHandle then we must
-    // have failed to allocate the mojo::DataPipe.
-    if (!fetch_loader_client->Handle()) {
+    mojom::blink::ServiceWorkerStreamHandlePtr stream_handle =
+        fetch_loader_client->CreateStreamHandle();
+    // We failed to allocate the Mojo DataPipe.
+    if (!stream_handle) {
       OnResponseRejected(ServiceWorkerResponseError::kDataPipeCreationFailed);
       return;
     }
 
-    To<ServiceWorkerGlobalScope>(GetExecutionContext())
-        ->RespondToFetchEventWithResponseStream(
-            event_id_, std::move(fetch_api_response),
-            fetch_loader_client->Handle(), event_dispatch_time_,
-            base::TimeTicks::Now());
-
-    fetch_loader_client->SetStarted();
+    service_worker_global_scope->RespondToFetchEventWithResponseStream(
+        event_id_, std::move(fetch_api_response), std::move(stream_handle),
+        event_dispatch_time_, base::TimeTicks::Now());
     return;
   }
-  To<ServiceWorkerGlobalScope>(GetExecutionContext())
-      ->RespondToFetchEvent(event_id_, std::move(fetch_api_response),
-                            event_dispatch_time_, base::TimeTicks::Now());
+  service_worker_global_scope->RespondToFetchEvent(
+      event_id_, std::move(fetch_api_response), event_dispatch_time_,
+      base::TimeTicks::Now());
 }
 
 void FetchRespondWithObserver::OnNoResponse() {

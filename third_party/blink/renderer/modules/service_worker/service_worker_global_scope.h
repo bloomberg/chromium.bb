@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_timeout_timer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -55,10 +56,8 @@ class ServiceWorker;
 class ServiceWorkerClients;
 class ServiceWorkerRegistration;
 class ServiceWorkerThread;
-class ServiceWorkerTimeoutTimer;
 class StringOrTrustedScriptURL;
 class WaitUntilObserver;
-class WebServiceWorkerStreamHandle;
 class WebURLResponse;
 class WorkerClassicScriptLoader;
 struct GlobalScopeCreationParams;
@@ -174,6 +173,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback);
 
+  // Creates a ServiceWorkerTimeoutTimer::StayAwakeToken to ensure that the idle
+  // timer won't be triggered while any of these are alive.
+  std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken>
+  CreateStayAwakeToken();
+
   // Returns the ServiceWorker object described by the given info. Creates a new
   // object if needed, or else returns the existing one.
   ::blink::ServiceWorker* GetOrCreateServiceWorker(WebServiceWorkerObjectInfo);
@@ -229,7 +233,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void RespondToFetchEventWithResponseStream(
       int fetch_event_id,
       mojom::blink::FetchAPIResponsePtr,
-      WebServiceWorkerStreamHandle*,
+      mojom::blink::ServiceWorkerStreamHandlePtr,
       base::TimeTicks event_dispatch_time,
       base::TimeTicks respond_with_settled_time);
 
