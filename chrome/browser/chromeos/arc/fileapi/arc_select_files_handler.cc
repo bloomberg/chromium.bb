@@ -143,7 +143,8 @@ void BuildFileTypeInfo(const mojom::SelectFilesRequestPtr& request,
   for (const std::string& mime_type : request->mime_types) {
     std::vector<base::FilePath::StringType> extensions;
     net::GetExtensionsForMimeType(mime_type, &extensions);
-    file_type_info->extensions.push_back(extensions);
+    if (!extensions.empty())
+      file_type_info->extensions.push_back(extensions);
   }
 }
 
