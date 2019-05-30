@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -242,6 +243,14 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   // This must be called before ProfileIOData::ShutdownOnUIThread but after
   // other profile-related destroy notifications are dispatched.
   ShutdownStoragePartitions();
+
+  // Store incognito lifetime histogram.
+  if (!IsGuestSession()) {
+    auto duration = base::Time::Now() - start_time_;
+    base::UmaHistogramCustomCounts(
+        "Profile.Incognito.Lifetime", duration.InMinutes(), 1,
+        base::TimeDelta::FromDays(28).InMinutes(), 100);
+  }
 }
 
 void OffTheRecordProfileImpl::InitIoData() {
