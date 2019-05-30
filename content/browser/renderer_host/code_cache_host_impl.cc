@@ -9,6 +9,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
