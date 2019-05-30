@@ -76,9 +76,9 @@ let testFunction = function(session, t, fakeDeviceController) {
   return session.end().then(() => {
     return sessionEndTest("inputsourceschange", ["inputsourceschange", "end"]);
   }).then(() => {
-    return sessionEndTest("selectstart", ["inputsourceschange", "selectstart", "end"]);
+    return sessionEndTest("selectstart", ["inputsourceschange", "selectstart", "selectend", "end"]);
   }).then(() => {
-    return sessionEndTest("select", ["inputsourceschange", "selectstart", "select", "end"]);
+    return sessionEndTest("select", ["inputsourceschange", "selectstart", "select", "selectend", "end"]);
   }).then(() => {
     return sessionEndTest("selectend", ["inputsourceschange", "selectstart", "select", "selectend", "end"]);
   });

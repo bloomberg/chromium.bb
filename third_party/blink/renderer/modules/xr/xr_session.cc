@@ -478,7 +478,9 @@ void XRSession::ForceEnd() {
   pending_frame_ = false;
 
   for (unsigned i = 0; i < input_sources_->length(); i++) {
-    (*input_sources_)[i]->SetGamepadConnected(false);
+    auto* input_source = (*input_sources_)[i];
+    UpdateSelectStateOnRemoval(input_source);
+    input_source->SetGamepadConnected(false);
   }
 
   input_sources_ = nullptr;
@@ -794,6 +796,7 @@ void XRSession::OnInputStateChange(
     auto* input_source = (*input_sources_)[i];
     if (input_source->activeFrameId() != frame_id) {
       inactive_sources.push_back(input_source->source_id());
+      UpdateSelectStateOnRemoval(input_source);
       input_source->SetGamepadConnected(false);
       removed.push_back(input_source);
     }
@@ -915,6 +918,25 @@ void XRSession::UpdateSelectState(
     // page stays in sync with the controller state but won't fire the
     // usual select event.
     OnSelectEnd(input_source);
+  }
+}
+
+void XRSession::UpdateSelectStateOnRemoval(XRInputSource* input_source) {
+  if (!input_source)
+    return;
+
+  if (input_source->primaryInputPressed()) {
+    input_source->setPrimaryInputPressed(false);
+
+    XRInputSourceEvent* event =
+        CreateInputSourceEvent(event_type_names::kSelectend, input_source);
+    DispatchEvent(*event);
+
+    if (event->defaultPrevented())
+      input_source->setSelectionCancelled(true);
+
+    // Ensure the frame cannot be used outside of the event handler.
+    event->frame()->Deactivate();
   }
 }
 

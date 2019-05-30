@@ -190,6 +190,7 @@ class XRSession final : public EventTargetWithInlineData,
 
   void UpdateSelectState(XRInputSource*,
                          const device::mojom::blink::XRInputSourceStatePtr&);
+  void UpdateSelectStateOnRemoval(XRInputSource*);
   XRInputSourceEvent* CreateInputSourceEvent(const AtomicString&,
                                              XRInputSource*);
 
