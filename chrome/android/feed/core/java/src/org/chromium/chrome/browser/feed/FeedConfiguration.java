@@ -71,6 +71,14 @@ public final class FeedConfiguration {
     /** Default value for whether to show article snippets. */
     public static final boolean SNIPPETS_ENABLED_DEFAULT = false;
 
+    private static final String SPINNER_DELAY_MS = "spinner_delay";
+    /** Default value for delay before showing a spinner. */
+    public static final long SPINNER_DELAY_MS_DEFAULT = 500;
+
+    private static final String SPINNER_MINIMUM_SHOW_TIME_MS = "spinner_minimum_show_time";
+    /** Default value for how long spinners must be shown for. */
+    public static final long SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT = 500;
+
     private static final String TRIGGER_IMMEDIATE_PAGINATION = "trigger_immediate_pagination";
     /** Default value for triggering immediate pagination. */
     public static final boolean TRIGGER_IMMEDIATE_PAGINATION_DEFAULT = false;
@@ -183,6 +191,30 @@ public final class FeedConfiguration {
                 (int) SESSION_LIFETIME_MS_DEFAULT);
     }
 
+    /** @return Whether the article snippets feature is enabled. */
+    @VisibleForTesting
+    static boolean getSnippetsEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, SNIPPETS_ENABLED,
+                SNIPPETS_ENABLED_DEFAULT);
+    }
+
+    /** @return Delay before a spinner should be shown after content is requested. */
+    @VisibleForTesting
+    static long getSpinnerDelayMs() {
+        return (long) ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, SPINNER_DELAY_MS,
+                (int) SPINNER_DELAY_MS_DEFAULT);
+    }
+
+    /** @return Minimum time before a spinner should show before disappearing. */
+    @VisibleForTesting
+    static long getSpinnerMinimumShowTimeMs() {
+        return (long) ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, SPINNER_MINIMUM_SHOW_TIME_MS,
+                (int) SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT);
+    }
+
     /**
      * @return Whether UI initially shows "More" button upon reaching the end of known content,
      *         when server could potentially have more content.
@@ -232,14 +264,6 @@ public final class FeedConfiguration {
                 VIEW_LOG_THRESHOLD_DEFAULT);
     }
 
-    /** @return Whether the article snippets feature is enabled. */
-    @VisibleForTesting
-    static boolean getSnippetsEnabled() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, SNIPPETS_ENABLED,
-                SNIPPETS_ENABLED_DEFAULT);
-    }
-
     /**
      * @return A fully built {@link Configuration}, ready to be given to the Feed.
      */
@@ -263,6 +287,9 @@ public final class FeedConfiguration {
                 .put(ConfigKey.NON_CACHED_PAGE_SIZE, FeedConfiguration.getNonCachedPageSize())
                 .put(ConfigKey.SESSION_LIFETIME_MS, FeedConfiguration.getSessionLifetimeMs())
                 .put(ConfigKey.SNIPPETS_ENABLED, FeedConfiguration.getSnippetsEnabled())
+                .put(ConfigKey.SPINNER_DELAY_MS, FeedConfiguration.getSpinnerDelayMs())
+                .put(ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS,
+                        FeedConfiguration.getSpinnerMinimumShowTimeMs())
                 .put(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION,
                         FeedConfiguration.getTriggerImmediatePagination())
                 .put(ConfigKey.UNDOABLE_ACTIONS_ENABLED,
