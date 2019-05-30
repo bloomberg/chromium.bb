@@ -1025,6 +1025,34 @@
       },
     },
   },
+  'network_service_out_of_process_chrome_public_test_apk': {
+    # Don't run on trybots; waterfall is enough.
+    'remove_from': [
+      'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-rel'
+    ],
+  },
+  'network_service_out_of_process_components_browsertests': {
+    # Don't run on trybots; waterfall is enough.
+    'remove_from': [
+      'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-rel'
+    ],
+  },
+  'network_service_out_of_process_content_browsertests': {
+    # Don't run on trybots; waterfall is enough.
+    'remove_from': [
+      'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-rel'
+    ],
+  },
+  'network_service_out_of_process_content_shell_test_apk': {
+    # Don't run on trybots; waterfall is enough.
+    'remove_from': [
+      'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-rel'
+    ],
+  },
   'network_service_webview_instrumentation_test_apk': {
     # Only run these on the phone testers for now due to capacity.
     'remove_from': [
