@@ -2355,7 +2355,7 @@ void AXNodeObject::AddChild(AXObject* child) {
 }
 
 void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
-  if (!child)
+  if (!child || !CanHaveChildren())
     return;
 
   // If the parent is asking for this child's children, then either it's the
