@@ -202,10 +202,15 @@ void WebTestContentBrowserClient::AppendExtraCommandLineSwitches(
   }
 }
 
-BrowserMainParts* WebTestContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<BrowserMainParts>
+WebTestContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
-  set_browser_main_parts(new WebTestBrowserMainParts(parameters));
-  return shell_browser_main_parts();
+  auto browser_main_parts =
+      std::make_unique<WebTestBrowserMainParts>(parameters);
+
+  set_browser_main_parts(browser_main_parts.get());
+
+  return browser_main_parts;
 }
 
 void WebTestContentBrowserClient::GetQuotaSettings(

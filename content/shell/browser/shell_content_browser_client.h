@@ -34,7 +34,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   ~ShellContentBrowserClient() override;
 
   // ContentBrowserClient overrides.
-  BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<BrowserMainParts> CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
   bool IsHandledURL(const GURL& url) override;
   void BindInterfaceRequestFromFrame(
@@ -153,6 +153,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>
       frame_interfaces_;
 
+  // Owned by content::BrowserMainLoop.
   ShellBrowserMainParts* shell_browser_main_parts_;
 };
 

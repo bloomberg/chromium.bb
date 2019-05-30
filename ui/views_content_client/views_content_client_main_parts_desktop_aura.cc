@@ -45,10 +45,11 @@ void ViewsContentClientMainPartsDesktopAura::PreMainMessageLoopRun() {
 }  // namespace
 
 // static
-ViewsContentClientMainParts* ViewsContentClientMainParts::Create(
+std::unique_ptr<ViewsContentClientMainParts>
+ViewsContentClientMainParts::Create(
     const content::MainFunctionParams& content_params,
     ViewsContentClient* views_content_client) {
-  return new ViewsContentClientMainPartsDesktopAura(
+  return std::make_unique<ViewsContentClientMainPartsDesktopAura>(
       content_params, views_content_client);
 }
 

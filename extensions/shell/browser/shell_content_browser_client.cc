@@ -94,11 +94,15 @@ content::BrowserContext* ShellContentBrowserClient::GetBrowserContext() {
   return browser_main_parts_->browser_context();
 }
 
-content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<content::BrowserMainParts>
+ShellContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  browser_main_parts_ =
+  auto browser_main_parts =
       CreateShellBrowserMainParts(parameters, browser_main_delegate_);
-  return browser_main_parts_;
+
+  browser_main_parts_ = browser_main_parts.get();
+
+  return browser_main_parts;
 }
 
 void ShellContentBrowserClient::RenderProcessWillLaunch(
@@ -338,10 +342,12 @@ std::string ShellContentBrowserClient::GetUserAgent() const {
   return content::BuildUserAgentFromProduct("Chrome/" PRODUCT_VERSION);
 }
 
-ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(
+std::unique_ptr<ShellBrowserMainParts>
+ShellContentBrowserClient::CreateShellBrowserMainParts(
     const content::MainFunctionParams& parameters,
     ShellBrowserMainDelegate* browser_main_delegate) {
-  return new ShellBrowserMainParts(parameters, browser_main_delegate);
+  return std::make_unique<ShellBrowserMainParts>(parameters,
+                                                 browser_main_delegate);
 }
 
 void ShellContentBrowserClient::AppendRendererSwitches(

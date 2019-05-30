@@ -43,15 +43,14 @@ const service_manager::Manifest& GetAshShellBrowserOverlayManifest() {
 
 }  // namespace
 
-ShellContentBrowserClient::ShellContentBrowserClient()
-    : shell_browser_main_parts_(nullptr) {}
+ShellContentBrowserClient::ShellContentBrowserClient() = default;
 
 ShellContentBrowserClient::~ShellContentBrowserClient() = default;
 
-content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<content::BrowserMainParts>
+ShellContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  shell_browser_main_parts_ = new ShellBrowserMainParts(parameters);
-  return shell_browser_main_parts_;
+  return std::make_unique<ShellBrowserMainParts>(parameters);
 }
 
 void ShellContentBrowserClient::GetQuotaSettings(

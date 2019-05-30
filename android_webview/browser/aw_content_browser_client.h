@@ -64,7 +64,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const base::FilePath& relative_partition_path) override;
   network::mojom::NetworkContextParamsPtr GetNetworkContextParams();
 
-  content::BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) override;

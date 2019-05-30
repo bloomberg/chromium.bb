@@ -415,17 +415,18 @@ std::vector<std::string> CastContentBrowserClient::GetStartupServices() {
   };
 }
 
-content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<content::BrowserMainParts>
+CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   DCHECK(!cast_browser_main_parts_);
+
   auto main_parts = CastBrowserMainParts::Create(
       parameters, url_request_context_factory_.get(), this);
+
   cast_browser_main_parts_ = main_parts.get();
   CastBrowserProcess::GetInstance()->SetCastContentBrowserClient(this);
 
-  // TODO(halliwell): would like to change CreateBrowserMainParts to return
-  // unique_ptr, then we don't have to release.
-  return main_parts.release();
+  return main_parts;
 }
 
 void CastContentBrowserClient::RenderProcessWillLaunch(

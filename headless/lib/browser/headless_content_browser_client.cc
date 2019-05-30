@@ -116,12 +116,15 @@ HeadlessContentBrowserClient::HeadlessContentBrowserClient(
 
 HeadlessContentBrowserClient::~HeadlessContentBrowserClient() = default;
 
-content::BrowserMainParts* HeadlessContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<content::BrowserMainParts>
+HeadlessContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams&) {
-  std::unique_ptr<HeadlessBrowserMainParts> browser_main_parts =
+  auto browser_main_parts =
       std::make_unique<HeadlessBrowserMainParts>(browser_);
+
   browser_->set_browser_main_parts(browser_main_parts.get());
-  return browser_main_parts.release();
+
+  return browser_main_parts;
 }
 
 void HeadlessContentBrowserClient::OverrideWebkitPrefs(

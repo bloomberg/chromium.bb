@@ -252,10 +252,14 @@ ShellContentBrowserClient::~ShellContentBrowserClient() {
   g_browser_client = nullptr;
 }
 
-BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<BrowserMainParts>
+ShellContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
-  shell_browser_main_parts_ = new ShellBrowserMainParts(parameters);
-  return shell_browser_main_parts_;
+  auto browser_main_parts = std::make_unique<ShellBrowserMainParts>(parameters);
+
+  shell_browser_main_parts_ = browser_main_parts.get();
+
+  return browser_main_parts;
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {

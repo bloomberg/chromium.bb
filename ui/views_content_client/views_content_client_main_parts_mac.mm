@@ -85,11 +85,12 @@ ViewsContentClientMainPartsMac::~ViewsContentClientMainPartsMac() {
 }  // namespace
 
 // static
-ViewsContentClientMainParts* ViewsContentClientMainParts::Create(
+std::unique_ptr<ViewsContentClientMainParts>
+ViewsContentClientMainParts::Create(
     const content::MainFunctionParams& content_params,
     ViewsContentClient* views_content_client) {
-  return
-      new ViewsContentClientMainPartsMac(content_params, views_content_client);
+  return std::make_unique<ViewsContentClientMainPartsMac>(content_params,
+                                                          views_content_client);
 }
 
 // static

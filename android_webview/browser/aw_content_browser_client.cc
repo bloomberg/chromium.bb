@@ -402,9 +402,10 @@ AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
   return browser_context_.get();
 }
 
-content::BrowserMainParts* AwContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<content::BrowserMainParts>
+AwContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  return new AwBrowserMainParts(this);
+  return std::make_unique<AwBrowserMainParts>(this);
 }
 
 content::WebContentsViewDelegate*

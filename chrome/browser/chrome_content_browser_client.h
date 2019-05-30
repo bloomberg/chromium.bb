@@ -101,7 +101,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   static void SetApplicationLocale(const std::string& locale);
 
   // content::ContentBrowserClient:
-  content::BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   void PostAfterStartupTask(const base::Location& from_here,
                             const scoped_refptr<base::TaskRunner>& task_runner,

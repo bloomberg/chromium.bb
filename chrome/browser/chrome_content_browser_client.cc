@@ -1226,26 +1226,33 @@ void ChromeContentBrowserClient::SetApplicationLocale(
       base::BindOnce(&SetApplicationLocaleOnIOThread, locale));
 }
 
-content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<content::BrowserMainParts>
+ChromeContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  ChromeBrowserMainParts* main_parts;
+  std::unique_ptr<ChromeBrowserMainParts> main_parts;
   // Construct the Main browser parts based on the OS type.
 #if defined(OS_WIN)
-  main_parts = new ChromeBrowserMainPartsWin(parameters, startup_data_);
-#elif defined(OS_MACOSX)
-  main_parts = new ChromeBrowserMainPartsMac(parameters, startup_data_);
-#elif defined(OS_CHROMEOS)
   main_parts =
-      new chromeos::ChromeBrowserMainPartsChromeos(parameters, startup_data_);
+      std::make_unique<ChromeBrowserMainPartsWin>(parameters, startup_data_);
+#elif defined(OS_MACOSX)
+  main_parts =
+      std::make_unique<ChromeBrowserMainPartsMac>(parameters, startup_data_);
+#elif defined(OS_CHROMEOS)
+  main_parts = std::make_unique<chromeos::ChromeBrowserMainPartsChromeos>(
+      parameters, startup_data_);
 #elif defined(OS_LINUX)
-  main_parts = new ChromeBrowserMainPartsLinux(parameters, startup_data_);
+  main_parts =
+      std::make_unique<ChromeBrowserMainPartsLinux>(parameters, startup_data_);
 #elif defined(OS_ANDROID)
-  main_parts = new ChromeBrowserMainPartsAndroid(parameters, startup_data_);
+  main_parts = std::make_unique<ChromeBrowserMainPartsAndroid>(parameters,
+                                                               startup_data_);
 #elif defined(OS_POSIX)
-  main_parts = new ChromeBrowserMainPartsPosix(parameters, startup_data_);
+  main_parts =
+      std::make_unique<ChromeBrowserMainPartsPosix>(parameters, startup_data_);
 #else
   NOTREACHED();
-  main_parts = new ChromeBrowserMainParts(parameters, startup_data_);
+  main_parts =
+      std::make_unique<ChromeBrowserMainParts>(parameters, startup_data_);
 #endif
 
   bool add_profiles_extra_parts = true;
@@ -1254,7 +1261,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
     add_profiles_extra_parts = false;
 #endif
   if (add_profiles_extra_parts)
-    chrome::AddProfilesExtraParts(main_parts);
+    chrome::AddProfilesExtraParts(main_parts.get());
 
     // Construct additional browser parts. Stages are called in the order in
     // which they are added.
@@ -1283,7 +1290,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 
   main_parts->AddParts(new ChromeBrowserMainExtraPartsProfiling);
 
-  chrome::AddMetricsExtraParts(main_parts);
+  chrome::AddMetricsExtraParts(main_parts.get());
 
   main_parts->AddParts(ChromeService::GetInstance()->CreateExtraParts());
 

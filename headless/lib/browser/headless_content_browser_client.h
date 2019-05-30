@@ -5,6 +5,8 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_CONTENT_BROWSER_CLIENT_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_CONTENT_BROWSER_CLIENT_H_
 
+#include <memory>
+
 #include "content/public/browser/content_browser_client.h"
 #include "headless/lib/browser/headless_resource_dispatcher_host_delegate.h"
 #include "headless/public/headless_browser.h"
@@ -19,7 +21,7 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   ~HeadlessContentBrowserClient() override;
 
   // content::ContentBrowserClient implementation:
-  content::BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams&) override;
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;

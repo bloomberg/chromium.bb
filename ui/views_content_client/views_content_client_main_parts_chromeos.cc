@@ -69,10 +69,11 @@ void ViewsContentClientMainPartsChromeOS::PostMainMessageLoopRun() {
 }  // namespace
 
 // static
-ViewsContentClientMainParts* ViewsContentClientMainParts::Create(
+std::unique_ptr<ViewsContentClientMainParts>
+ViewsContentClientMainParts::Create(
     const content::MainFunctionParams& content_params,
     ViewsContentClient* views_content_client) {
-  return new ViewsContentClientMainPartsChromeOS(
+  return std::make_unique<ViewsContentClientMainPartsChromeOS>(
       content_params, views_content_client);
 }
 

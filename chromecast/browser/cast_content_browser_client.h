@@ -135,7 +135,7 @@ class CastContentBrowserClient
 
   // content::ContentBrowserClient implementation:
   std::vector<std::string> GetStartupServices() override;
-  content::BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   void RenderProcessWillLaunch(
       content::RenderProcessHost* host,

@@ -562,8 +562,7 @@ void BrowserMainLoop::Init() {
     power_monitor_ = std::move(startup_data->power_monitor);
   }
 
-  parts_.reset(
-      GetContentClient()->browser()->CreateBrowserMainParts(parameters_));
+  parts_ = GetContentClient()->browser()->CreateBrowserMainParts(parameters_);
 }
 
 // BrowserMainLoop stages ==================================================

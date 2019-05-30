@@ -46,7 +46,7 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
                            WebPreferences* prefs) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
-  BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<BrowserMainParts> CreateBrowserMainParts(
       const MainFunctionParams& parameters) override;
   void GetQuotaSettings(
       content::BrowserContext* context,

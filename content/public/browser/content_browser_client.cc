@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -51,7 +52,7 @@ void OverrideOnBindInterface(const service_manager::BindSourceInfo& remote_info,
                                                          handle);
 }
 
-BrowserMainParts* ContentBrowserClient::CreateBrowserMainParts(
+std::unique_ptr<BrowserMainParts> ContentBrowserClient::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
   return nullptr;
 }

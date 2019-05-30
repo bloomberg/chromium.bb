@@ -5,6 +5,8 @@
 #ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_CONTENT_BROWSER_CLIENT_H_
 #define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_CONTENT_BROWSER_CLIENT_H_
 
+#include <memory>
+
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/zx/channel.h>
 
@@ -22,7 +24,7 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
   WebEngineBrowserMainParts* main_parts_for_test() const { return main_parts_; }
 
   // ContentBrowserClient overrides.
-  content::BrowserMainParts* CreateBrowserMainParts(
+  std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   std::string GetProduct() const override;
@@ -32,6 +34,8 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
 
  private:
   fidl::InterfaceRequest<fuchsia::web::Context> request_;
+
+  // Owned by content::BrowserMainLoop.
   WebEngineBrowserMainParts* main_parts_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineContentBrowserClient);

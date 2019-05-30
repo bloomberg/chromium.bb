@@ -215,7 +215,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to set any number of custom BrowserMainParts
   // implementations for the browser startup code. See comments in
   // browser_main_parts.h.
-  virtual BrowserMainParts* CreateBrowserMainParts(
+  virtual std::unique_ptr<BrowserMainParts> CreateBrowserMainParts(
       const MainFunctionParams& parameters);
 
   // Allows the embedder to change the default behavior of
