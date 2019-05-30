@@ -37,23 +37,29 @@ const char kLinkMenu[] = "LinkMenu";
 const char kOmniboxMenu[] = "OmniboxMenu";
 const char kTabMenu[] = "TabMenu";
 
-// Add a new entry to SendTabToSelfModel when user click "Share to your
+enum SendTabToSelfMenuType { kTab, kOmnibox, kContent, kLink };
+
+// Adds a new entry to SendTabToSelfModel when user click "Share to your
 // devices" option.
 void CreateNewEntry(content::WebContents* tab,
                     const std::string& target_device_name,
                     const std::string& target_device_guid,
                     const GURL& link_url = GURL());
 
-// Get the icon for send tab to self menu item.
+// Gets the icon for send tab to self menu item.
 gfx::ImageSkia* GetImageSkia();
 
-// Get the image for send tab to self notification.
+// Gets the image for send tab to self notification.
 const gfx::Image GetImageForNotification();
 
-// Record whether the user click to send a tab or link when send tab to self
+// Records whether the user click to send a tab or link when send tab to self
 // entry point is shown.
 void RecordSendTabToSelfClickResult(const std::string& entry_point,
                                     SendTabToSelfClickResult state);
+
+// Records the count of valid devices when the user see the device list.
+void RecordSendTabToSelfDeviceCount(const std::string& entry_point,
+                                    const int& device_count);
 
 }  // namespace send_tab_to_self
 

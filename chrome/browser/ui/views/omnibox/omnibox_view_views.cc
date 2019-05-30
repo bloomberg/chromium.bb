@@ -493,11 +493,6 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     case IDC_EDIT_SEARCH_ENGINES:
       location_bar_view_->command_updater()->ExecuteCommand(command_id);
       return;
-    case IDC_SEND_TAB_TO_SELF:
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kClickItem);
-      // TODO(crbug/945988): add histograms to count valid device number.
-      return;
 
     // These commands do invoke the popup.
     case IDS_APP_PASTE:
@@ -1742,7 +1737,8 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
       menu_contents->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
     send_tab_to_self_sub_menu_model_ =
         std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-            location_bar_view_->GetWebContents());
+            location_bar_view_->GetWebContents(),
+            send_tab_to_self::SendTabToSelfMenuType::kOmnibox);
     menu_contents->AddSubMenuWithStringIdAndIcon(
         IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
         send_tab_to_self_sub_menu_model_.get(),

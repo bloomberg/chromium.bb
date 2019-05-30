@@ -1250,7 +1250,7 @@ void RenderViewContextMenu::AppendLinkItems() {
       send_tab_to_self_sub_menu_model_ =
           std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
               browser->tab_strip_model()->GetActiveWebContents(),
-              params_.link_url);
+              send_tab_to_self::SendTabToSelfMenuType::kLink, params_.link_url);
       menu_model_.AddSubMenuWithStringIdAndIcon(
           IDC_CONTENT_LINK_SEND_TAB_TO_SELF, IDS_LINK_MENU_SEND_TAB_TO_SELF,
           send_tab_to_self_sub_menu_model_.get(),
@@ -1455,7 +1455,8 @@ void RenderViewContextMenu::AppendPageItems() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     send_tab_to_self_sub_menu_model_ =
         std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-            GetBrowser()->tab_strip_model()->GetActiveWebContents());
+            GetBrowser()->tab_strip_model()->GetActiveWebContents(),
+            send_tab_to_self::SendTabToSelfMenuType::kContent);
     menu_model_.AddSubMenuWithStringIdAndIcon(
         IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
         send_tab_to_self_sub_menu_model_.get(),
@@ -2134,18 +2135,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_SAVE_PAGE:
       embedder_web_contents_->OnSavePage();
-      break;
-
-    case IDC_SEND_TAB_TO_SELF:
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kClickItem);
-      // TODO(crbug/945988): add histograms to count valid device number.
-      break;
-
-    case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kClickItem);
-      // TODO(crbug/945988): add histograms to count valid device number.
       break;
 
     case IDC_RELOAD:

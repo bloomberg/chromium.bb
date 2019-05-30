@@ -49,7 +49,7 @@ bool IsShareLinkCommandId(int command_id) {
   return command_id >= kShareLinkCommandId && command_id < kMaxCommandId;
 }
 
-// Convert |command_id| of menu item to index in |valid_device_items_|.
+// Converts |command_id| of menu item to index in |valid_device_items_|.
 int CommandIdToVectorIndex(int command_id) {
   if (IsShareTabCommandId(command_id)) {
     return command_id - kShareTabCommandId;
@@ -57,6 +57,22 @@ int CommandIdToVectorIndex(int command_id) {
     return command_id - kShareLinkCommandId;
   }
   return -1;
+}
+
+// Converts menu type to string.
+const std::string MenuTypeToString(SendTabToSelfMenuType menu_type) {
+  switch (menu_type) {
+    case SendTabToSelfMenuType::kTab:
+      return kTabMenu;
+    case SendTabToSelfMenuType::kContent:
+      return kContentMenu;
+    case SendTabToSelfMenuType::kOmnibox:
+      return kOmniboxMenu;
+    case SendTabToSelfMenuType::kLink:
+      return kLinkMenu;
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace
@@ -69,13 +85,15 @@ struct SendTabToSelfSubMenuModel::ValidDeviceItem {
   std::string cache_guid;
 };
 
-SendTabToSelfSubMenuModel::SendTabToSelfSubMenuModel(content::WebContents* tab,
-                                                     const GURL& link_url)
-    : ui::SimpleMenuModel(this), tab_(tab), link_url_(link_url) {
+SendTabToSelfSubMenuModel::SendTabToSelfSubMenuModel(
+    content::WebContents* tab,
+    SendTabToSelfMenuType menu_type,
+    const GURL& link_url)
+    : ui::SimpleMenuModel(this),
+      tab_(tab),
+      menu_type_(menu_type),
+      link_url_(link_url) {
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  if (link_url_.is_valid()) {
-    source_type_ = kLink;
-  }
   Build(profile);
 }
 
@@ -93,16 +111,24 @@ void SendTabToSelfSubMenuModel::ExecuteCommand(int command_id,
     return;
   }
   const ValidDeviceItem& item = valid_device_items_[vector_index];
-
-  if (source_type_ == kTab) {
-    // Is sharing a tab.
-    CreateNewEntry(tab_, item.device_name, item.cache_guid);
-  } else {
-    // Is sharing a link.
+  if (menu_type_ == SendTabToSelfMenuType::kLink) {
+    // Is sharing a link from link menu.
     CreateNewEntry(tab_, item.device_name, item.cache_guid, link_url_);
+  } else {
+    // Is sharing a tab from tab menu, content menu or omnibox menu.
+    CreateNewEntry(tab_, item.device_name, item.cache_guid);
   }
 
+  RecordSendTabToSelfClickResult(MenuTypeToString(menu_type_),
+                                 SendTabToSelfClickResult::kClickItem);
   return;
+}
+
+void SendTabToSelfSubMenuModel::OnMenuWillShow(ui::SimpleMenuModel* source) {
+  RecordSendTabToSelfClickResult(MenuTypeToString(menu_type_),
+                                 SendTabToSelfClickResult::kShowDeviceList);
+  RecordSendTabToSelfDeviceCount(MenuTypeToString(menu_type_),
+                                 valid_device_items_.size());
 }
 
 void SendTabToSelfSubMenuModel::Build(Profile* profile) {
@@ -130,10 +156,12 @@ void SendTabToSelfSubMenuModel::BuildDeviceItem(const std::string& device_name,
                                                 int index) {
   ValidDeviceItem item(device_name, cache_guid);
   int command_id;
-  if (source_type_ == kTab) {
-    command_id = index + kShareTabCommandId;
-  } else {
+  if (menu_type_ == kLink) {
+    // Generates command ids for sharing a link.
     command_id = index + kShareLinkCommandId;
+  } else {
+    // Generates command ids for sharing a tab.
+    command_id = index + kShareTabCommandId;
   }
   InsertItemAt(index, command_id, base::UTF8ToUTF16(device_name));
   valid_device_items_.push_back(item);

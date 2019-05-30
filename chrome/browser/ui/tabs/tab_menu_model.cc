@@ -88,7 +88,8 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     send_tab_to_self_sub_menu_model_ =
         std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-            tab_strip->GetActiveWebContents());
+            tab_strip->GetActiveWebContents(),
+            send_tab_to_self::SendTabToSelfMenuType::kTab);
     AddSubMenuWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
                                   IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
                                   send_tab_to_self_sub_menu_model_.get(),

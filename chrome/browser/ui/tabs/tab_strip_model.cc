@@ -1195,13 +1195,6 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       break;
     }
 
-    case CommandSendTabToSelf: {
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kTabMenu, SendTabToSelfClickResult::kClickItem);
-      // TODO(crbug/945988): add histograms to count valid device number.
-      break;
-    }
-
     case CommandTogglePinned: {
       DCHECK(!reentrancy_guard_);
       base::AutoReset<bool> resetter(&reentrancy_guard_, true);

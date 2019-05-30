@@ -5,7 +5,6 @@
 
 #include <vector>
 
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -51,8 +50,7 @@ void SendTabToSelfBubbleController::ShowBubble() {
       browser->window()->ShowSendTabToSelfBubble(web_contents_, this, true);
   RecordSendTabToSelfClickResult(kOmniboxIcon,
                                  SendTabToSelfClickResult::kShowDeviceList);
-  UMA_HISTOGRAM_COUNTS_100("SendTabToSelf.OmniboxIcon.DeviceCount",
-                           GetValidDevices().size());
+  RecordSendTabToSelfDeviceCount(kOmniboxIcon, GetValidDevices().size());
 }
 
 SendTabToSelfBubbleView*
