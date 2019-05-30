@@ -177,6 +177,21 @@ static ResourceFetcher::ResourceFetcherSet& MainThreadFetchersSet() {
   return *fetchers;
 }
 
+static bool& PriorityObserverMapCreated() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(bool, priority_observer_map_created, (false));
+  return priority_observer_map_created;
+}
+
+// Calls to PriorityObservers() that don't need to explicitly interact with the
+// map should be guarded with a call to PriorityObserverMapCreated(), to avoid
+// unnecessarily creating a PriorityObserverMap.
+using PriorityObserverMap = HashMap<String, base::OnceCallback<void(int)>>;
+static ThreadSpecific<PriorityObserverMap>& PriorityObservers() {
+  PriorityObserverMapCreated() = true;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<PriorityObserverMap>, map, ());
+  return map;
+}
+
 ResourceLoadPriority AdjustPriorityWithPriorityHint(
     ResourceLoadPriority priority_so_far,
     ResourceType type,
@@ -385,6 +400,15 @@ mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
   }
   NOTREACHED();
   return mojom::RequestContextType::SUBRESOURCE;
+}
+
+// static
+void ResourceFetcher::AddPriorityObserverForTesting(
+    const KURL& resource_url,
+    base::OnceCallback<void(int)> callback) {
+  PriorityObservers()->Set(
+      MemoryCache::RemoveFragmentIdentifierIfNeeded(resource_url),
+      std::move(callback));
 }
 
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
@@ -1035,8 +1059,15 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   DCHECK(EqualIgnoringFragmentIdentifier(resource->Url(), params.Url()));
   RequestLoadStarted(identifier, resource, params, policy, is_static_data);
   if (!is_stale_revalidation) {
-    cached_resources_map_.Set(
-        MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()), resource);
+    String resource_url =
+        MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
+    cached_resources_map_.Set(resource_url, resource);
+    if (PriorityObserverMapCreated() &&
+        PriorityObservers()->Contains(resource_url)) {
+      // Resolve the promise.
+      std::move(PriorityObservers()->Take(resource_url))
+          .Run(static_cast<int>(resource->GetResourceRequest().Priority()));
+    }
   }
   document_resources_.insert(resource);
 

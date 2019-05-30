@@ -480,17 +480,22 @@ bool Internals::isLoadingFromMemoryCache(const String& url) {
   return resource && resource->GetStatus() == ResourceStatus::kCached;
 }
 
-int Internals::getResourcePriority(const String& url, Document* document) {
-  if (!document)
-    return static_cast<int>(ResourceLoadPriority::kUnresolved);
+ScriptPromise Internals::getResourcePriority(ScriptState* script_state,
+                                             const String& url,
+                                             Document* document) {
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+  KURL resource_url = url_test_helpers::ToKURL(url.Utf8().data());
+  DCHECK(document);
 
-  Resource* resource = document->Fetcher()->AllResources().at(
-      url_test_helpers::ToKURL(url.Utf8().data()));
+  auto callback = WTF::Bind(&Internals::ResolveResourcePriority,
+                            WTF::Passed(WrapPersistent(this)),
+                            WTF::Passed(WrapPersistent(resolver)));
+  ResourceFetcher::AddPriorityObserverForTesting(resource_url,
+                                                 std::move(callback));
 
-  if (!resource)
-    return static_cast<int>(ResourceLoadPriority::kUnresolved);
-
-  return static_cast<int>(resource->GetResourceRequest().Priority());
+  return promise;
 }
 
 bool Internals::doesWindowHaveUrlFragment(DOMWindow* window) {
@@ -3442,6 +3447,11 @@ void Internals::setDeviceEmulationScale(float scale,
   }
   page->GetChromeClient().GetWebView()->SetDeviceEmulationTransform(
       TransformationMatrix().Scale(scale));
+}
+
+void Internals::ResolveResourcePriority(ScriptPromiseResolver* resolver,
+                                        int resource_load_priority) {
+  resolver->Resolve(resource_load_priority);
 }
 
 }  // namespace blink

@@ -34,8 +34,13 @@
     boolean isPreloadedBy(DOMString url, Document document);
     boolean isLoading(DOMString url);
     boolean isLoadingFromMemoryCache(DOMString url);
-    unsigned long getResourcePriority (DOMString url, Document document);
-    DOMString getResourceHeader (DOMString url, DOMString header, Document document);
+
+    // Call this function with the URL of a resource that has not yet been
+    // fetched. It returns a promise that resolves with the priority of the
+    // request, once it has been made.
+    [CallWith=ScriptState] Promise<unsigned long> getResourcePriority(DOMString url, Document document);
+
+    DOMString getResourceHeader(DOMString url, DOMString header, Document document);
 
     bool doesWindowHaveUrlFragment(Window window);
 

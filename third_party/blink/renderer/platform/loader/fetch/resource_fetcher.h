@@ -150,6 +150,8 @@ class PLATFORM_EXPORT ResourceFetcher
   std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader();
 
   Resource* CachedResource(const KURL&) const;
+  static void AddPriorityObserverForTesting(const KURL&,
+                                            base::OnceCallback<void(int)>);
 
   using DocumentResourceMap = HeapHashMap<String, WeakMember<Resource>>;
   const DocumentResourceMap& AllResources() const {

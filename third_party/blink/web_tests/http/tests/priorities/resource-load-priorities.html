@@ -11,16 +11,20 @@ function openWindow(url) {
   return win;
 }
 
-function resource_load_priority_test(windowURL, expected_priority, description) {
+function resource_load_priority_test(windowURL, expected_priority,
+                                     description) {
   promise_test(async () => {
     openWindow('resources/' + windowURL);
+
     const priority_event =
       await new Promise(resolve => window.onmessage = resolve);
-    assert_not_equals(priority_event.data,
-                      'FAILED',
-                      'The resource failed to load for some reason.');
-
     assert_equals(priority_event.data, expected_priority);
+
+    const subresource_finished_loading_event =
+      await new Promise(resolve => window.onmessage = resolve);
+    assert_equals(subresource_finished_loading_event.data, 'LOADED',
+                  'The resource loaded successfully');
+
   }, description);
 }
 
