@@ -206,7 +206,7 @@ culprit CLs around there. In general, for a flaky test, you should either:
 For more advice on dealing with flaky tests, look at the "Test Failed" section
 below under "Diagnosing Build Failures".
 
-### Tree Status Page
+### <a name="tree"></a>Tree Status Page
 
 The [tree status page] tracks and lets you
 set the state of the Chromium tree. You'll need this page to reopen the tree,
@@ -254,7 +254,7 @@ If yes:
 * Start a new thread immediately in Slack - don't wait until you have started
   investigating or "have something to say" to do this!
 * Start figuring out what went wrong and working on fixing it
-* Once it's fixed, or you're pretty confident it's fixed, reopen the tree
+* Once it's fixed, or you're pretty confident it's fixed, reopen the tree via the [Tree Status Page](#tree)
 
 Do not wait for a slow builder to cycle green before reopening if you are
 reasonably confident you have landed a fix - "90% confidence" is an okay
@@ -393,7 +393,7 @@ and hopefully someone else will be able to help you figure it out.
 [old flakiness dashboard]: https://test-results.appspot.com/dashboards/flakiness_dashboard.html
 [sheriff-o-matic]: https://sheriff-o-matic.appspot.com/chromium
 [slack #halp]: https://chromium.slack.com/messages/CGGPN5GDT/
-[slack #ops]: https://chromium.slack.com/messages/CGM8DQ3ST/ 
+[slack #ops]: https://chromium.slack.com/messages/CGM8DQ3ST/
 [slack #sheriffing]: https://chromium.slack.com/messages/CGJ5WKRUH/
 [slack]: https://chromium.slack.com
 [tree status page]: https://chromium-status.appspot.com/
