@@ -36,11 +36,8 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
       performance_manager_(PerformanceManager::GetInstance()),
       weak_factory_(this) {
   page_node_ = performance_manager_->CreatePageNode(
-      WebContentsProxy(weak_factory_.GetWeakPtr()));
-
-  // Make sure to set the visibility property when we create
-  // |page_resource_coordinator_|.
-  UpdatePageNodeVisibility(web_contents->GetVisibility());
+      WebContentsProxy(weak_factory_.GetWeakPtr()),
+      web_contents->GetVisibility() == content::Visibility::VISIBLE);
 
   // Dispatch creation notifications for any pre-existing frames.
   std::vector<content::RenderFrameHost*> existing_frames =
@@ -210,7 +207,9 @@ void PerformanceManagerTabHelper::DidStopLoading() {
 
 void PerformanceManagerTabHelper::OnVisibilityChanged(
     content::Visibility visibility) {
-  UpdatePageNodeVisibility(visibility);
+  const bool is_visible = visibility == content::Visibility::VISIBLE;
+  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsVisible, page_node_.get(),
+              is_visible);
 }
 
 void PerformanceManagerTabHelper::DidFinishNavigation(
@@ -314,13 +313,6 @@ void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
 
   first_time_title_set_ = false;
   first_time_favicon_set_ = false;
-}
-
-void PerformanceManagerTabHelper::UpdatePageNodeVisibility(
-    content::Visibility visibility) {
-  const bool is_visible = visibility == content::Visibility::VISIBLE;
-  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsVisible, page_node_.get(),
-              is_visible);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PerformanceManagerTabHelper)

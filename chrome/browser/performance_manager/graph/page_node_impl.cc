@@ -46,10 +46,12 @@ PageNodeImplObserver::PageNodeImplObserver() = default;
 PageNodeImplObserver::~PageNodeImplObserver() = default;
 
 PageNodeImpl::PageNodeImpl(GraphImpl* graph,
-                           const WebContentsProxy& contents_proxy)
+                           const WebContentsProxy& contents_proxy,
+                           bool is_visible)
     : TypedNodeBase(graph),
       contents_proxy_(contents_proxy),
-      visibility_change_time_(PerformanceManagerClock::NowTicks()) {
+      visibility_change_time_(PerformanceManagerClock::NowTicks()),
+      is_visible_(is_visible) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

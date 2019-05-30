@@ -79,7 +79,8 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kPage; }
 
   explicit PageNodeImpl(GraphImpl* graph,
-                        const WebContentsProxy& contents_proxy);
+                        const WebContentsProxy& contents_proxy,
+                        bool is_visible);
   ~PageNodeImpl() override;
 
   // Returns the web contents associated with this page node. It is valid to
@@ -273,8 +274,9 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
                                           &Observer::OnPageAlmostIdleChanged>
       page_almost_idle_{false};
   // Whether or not the page is visible. Driven by browser instrumentation.
+  // Initialized on construction.
   ObservedProperty::NotifiesOnlyOnChanges<bool, &Observer::OnIsVisibleChanged>
-      is_visible_{false};
+      is_visible_;
   // The loading state. This is driven by instrumentation in the browser
   // process.
   ObservedProperty::NotifiesOnlyOnChanges<bool, &Observer::OnIsLoadingChanged>

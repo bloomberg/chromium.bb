@@ -79,7 +79,6 @@ class PerformanceManagerTabHelper
                    Args&&... args);
 
   void OnMainFrameNavigation(int64_t navigation_id);
-  void UpdatePageNodeVisibility(content::Visibility visibility);
 
   // The performance manager for this process, if any.
   PerformanceManager* const performance_manager_;

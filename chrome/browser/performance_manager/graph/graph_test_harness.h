@@ -91,8 +91,9 @@ template <>
 struct TestNodeWrapper<PageNodeImpl>::Factory {
   static std::unique_ptr<PageNodeImpl> Create(
       GraphImpl* graph,
-      const WebContentsProxy& wc_proxy = WebContentsProxy()) {
-    return std::make_unique<PageNodeImpl>(graph, wc_proxy);
+      const WebContentsProxy& wc_proxy = WebContentsProxy(),
+      bool is_visible = false) {
+    return std::make_unique<PageNodeImpl>(graph, wc_proxy, is_visible);
   }
 };
 

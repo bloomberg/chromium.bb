@@ -111,9 +111,10 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
 }
 
 std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(
-    const WebContentsProxy& contents_proxy) {
+    const WebContentsProxy& contents_proxy,
+    bool is_visible) {
   return CreateNodeImpl<PageNodeImpl>(base::OnceCallback<void(PageNodeImpl*)>(),
-                                      contents_proxy);
+                                      contents_proxy, is_visible);
 }
 
 std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {

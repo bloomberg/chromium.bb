@@ -86,7 +86,8 @@ class PerformanceManager {
       int32_t site_instance_id,
       FrameNodeCreationCallback creation_callback);
   std::unique_ptr<PageNodeImpl> CreatePageNode(
-      const WebContentsProxy& contents_proxy);
+      const WebContentsProxy& contents_proxy,
+      bool is_visible);
   std::unique_ptr<ProcessNodeImpl> CreateProcessNode();
 
   // Destroys a node returned from the creation functions above.
