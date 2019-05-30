@@ -69,6 +69,7 @@ static_library("chrome_blpwtk2") {
      "//components/mirroring/service:mirroring_service",
      "//components/services/pdf_compositor/public/cpp:factory",
      "//components/services/pdf_compositor/public/interfaces",
+     "//components/printing/renderer",
      "//content",
 
      # required by //chrome/common/chrome_content_client.cc
