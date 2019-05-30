@@ -5912,6 +5912,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Main frame"/>
 </enum>
 
+<enum name="BooleanMarkedForReload">
+  <int value="0" label="Not marked for reload"/>
+  <int value="1" label="Marked for reload"/>
+</enum>
+
 <enum name="BooleanMatched">
   <int value="0" label="Not matched"/>
   <int value="1" label="Matched"/>
@@ -24997,6 +25002,13 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Some frames have the same SiteInstance"/>
 </enum>
 
+<enum name="FrameVisibility">
+  <int value="0" label="Rendered but not in the current viewport"/>
+  <int value="1" label="Rendered in current viewport"/>
+  <int value="2"
+      label="Not visible, no layout object created (e.g., display: none)"/>
+</enum>
+
 <enum name="FtpDataConnectionError">
   <obsolete>
     Removed in Chrome 76.
@@ -39326,6 +39338,7 @@ Called by update_use_counter_css.py.-->
   <int value="0" label="kRequestedByClient"/>
   <int value="1" label="kRestoreSession"/>
   <int value="2" label="kCopyStateFrom"/>
+  <int value="3" label="kCrashedSubframe"/>
 </enum>
 
 <enum name="NavigationPredictorAccuracyActionTaken">

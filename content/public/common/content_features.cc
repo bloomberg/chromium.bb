@@ -370,6 +370,19 @@ const base::Feature kRasterInducingScroll{"RasterInducingScroll",
 const base::Feature kReducedReferrerGranularity{
     "ReducedReferrerGranularity", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Causes hidden tabs with crashed subframes to be marked for reload, meaning
+// that if a user later switches to that tab, the current page will be
+// reloaded.  This will hide crashed subframes from the user at the cost of
+// extra reloads.
+const base::Feature kReloadHiddenTabsWithCrashedSubframes {
+  "ReloadHiddenTabsWithCrashedSubframes",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 // RenderDocument:
 //
 // Currently, a RenderFrameHost represents neither a frame nor a document, but a

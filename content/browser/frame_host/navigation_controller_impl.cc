@@ -2399,8 +2399,12 @@ bool NavigationControllerImpl::NeedsReload() {
 }
 
 void NavigationControllerImpl::SetNeedsReload() {
+  SetNeedsReload(NeedsReloadType::kRequestedByClient);
+}
+
+void NavigationControllerImpl::SetNeedsReload(NeedsReloadType type) {
   needs_reload_ = true;
-  needs_reload_type_ = NeedsReloadType::kRequestedByClient;
+  needs_reload_type_ = type;
 
   if (last_committed_entry_index_ != -1) {
     entries_[last_committed_entry_index_]->SetTransitionType(

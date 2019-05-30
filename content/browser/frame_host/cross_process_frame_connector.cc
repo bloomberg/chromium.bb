@@ -176,6 +176,10 @@ void CrossProcessFrameConnector::RenderProcessGone() {
 
   frame_proxy_in_parent_renderer_->Send(new FrameMsg_ChildFrameProcessGone(
       frame_proxy_in_parent_renderer_->GetRoutingID()));
+
+  auto* parent_view = GetParentRenderWidgetHostView();
+  if (parent_view && parent_view->host()->delegate())
+    parent_view->host()->delegate()->SubframeCrashed(visibility_);
 }
 
 void CrossProcessFrameConnector::FirstSurfaceActivation(

@@ -13072,6 +13072,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        ChildFrameCrashMetrics_ScrolledIntoViewAfterTabIsShown) {
+  // Disable the feature to mark hidden tabs with sad frames for reload, since
+  // it makes the scenario for which this test collects metrics impossible.
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndDisableFeature(
+      features::kReloadHiddenTabsWithCrashedSubframes);
+
   // Start on a page that has a single iframe, which is positioned out of
   // view, and navigate that iframe cross-site.
   GURL main_url(
@@ -13140,6 +13146,125 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       CrossProcessFrameConnector::ShownAfterCrashingReason::
           kViewportIntersectionAfterTabWasShown,
       1);
+}
+
+// Verify the feature where hidden tabs with crashed subframes are marked for
+// reload.  This avoids showing crashed subframes if a hidden tab is eventually
+// shown.  See https://crbug.com/841572.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       ReloadHiddenTabWithCrashedSubframe) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(
+      features::kReloadHiddenTabsWithCrashedSubframes);
+
+  auto crash_process = [](FrameTreeNode* ftn) {
+    RenderProcessHost* process = ftn->current_frame_host()->GetProcess();
+    RenderProcessHostWatcher crash_observer(
+        process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    process->Shutdown(0);
+    crash_observer.Wait();
+    EXPECT_FALSE(ftn->current_frame_host()->IsRenderFrameLive());
+  };
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Hide the WebContents (UpdateWebContentsVisibility is called twice to avoid
+  // hitting the |!did_first_set_visible_| case).
+  web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  EXPECT_EQ(Visibility::HIDDEN, web_contents()->GetVisibility());
+
+  // Kill the b.com subframe's process.  This should mark the hidden
+  // WebContents for reload.
+  {
+    base::HistogramTester histograms;
+    crash_process(root->child_at(0));
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload", true, 1);
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload.Visibility",
+        blink::mojom::FrameVisibility::kRenderedInViewport, 1);
+
+    // Show the WebContents.  This should trigger a reload of the main frame.
+    web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+    EXPECT_TRUE(WaitForLoadStop(web_contents()));
+    histograms.ExpectUniqueSample(
+        "Navigation.LoadIfNecessaryType",
+        NavigationControllerImpl::NeedsReloadType::kCrashedSubframe, 1);
+  }
+
+  // Both frames should now have live renderer processes.
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
+
+  // Next, try the same with a crashed subframe that's scrolled out of view.
+  // This should also trigger a reload.
+  GURL out_of_view_url(
+      embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), out_of_view_url));
+  NavigateIframeToURL(web_contents(), "test_iframe",
+                      embedded_test_server()->GetURL("b.com", "/title1.html"));
+  web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  {
+    base::HistogramTester histograms;
+    crash_process(root->child_at(0));
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload", true, 1);
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload.Visibility",
+        blink::mojom::FrameVisibility::kRenderedOutOfViewport, 1);
+
+    web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+    EXPECT_TRUE(WaitForLoadStop(web_contents()));
+    histograms.ExpectUniqueSample(
+        "Navigation.LoadIfNecessaryType",
+        NavigationControllerImpl::NeedsReloadType::kCrashedSubframe, 1);
+  }
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
+
+  // Now, load a page with where an iframe is hidden with "display:none".
+  // Ensure that we do not mark the tab for reload in that case.
+  GURL hidden_iframe_url(
+      embedded_test_server()->GetURL("a.com", "/page_with_hidden_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), hidden_iframe_url));
+  NavigateIframeToURL(web_contents(), "test_iframe",
+                      embedded_test_server()->GetURL("b.com", "/title1.html"));
+  RenderFrameProxyHost* proxy_to_parent =
+      root->child_at(0)->render_manager()->GetProxyToParent();
+  EXPECT_TRUE(proxy_to_parent->cross_process_frame_connector()->IsHidden());
+
+  web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  {
+    base::HistogramTester histograms;
+    crash_process(root->child_at(0));
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload", false, 1);
+  }
+  web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_FALSE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
+
+  // Finally, ensure that the reload policy doesn't trigger for a visible tab,
+  // even if it becomes hidden and then visible again.
+  EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  {
+    base::HistogramTester histograms;
+    crash_process(root->child_at(0));
+    histograms.ExpectUniqueSample(
+        "Stability.ChildFrameCrash.TabMarkedForReload", false, 1);
+  }
+  EXPECT_EQ(Visibility::VISIBLE, web_contents()->GetVisibility());
+  web_contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  web_contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_FALSE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
 }
 
 // Check that when a frame changes a subframe's size twice and then sends a

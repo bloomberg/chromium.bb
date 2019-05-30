@@ -149,6 +149,21 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
     return delegate_;
   }
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class NeedsReloadType {
+    kRequestedByClient = 0,
+    kRestoreSession = 1,
+    kCopyStateFrom = 2,
+    kCrashedSubframe = 3,
+    kMaxValue = kCrashedSubframe
+  };
+
+  // Request a reload to happen when activated.  Same as the public
+  // SetNeedsReload(), but takes in a |type| which specifies why the reload is
+  // being requested.
+  void SetNeedsReload(NeedsReloadType type);
+
   // For use by WebContentsImpl ------------------------------------------------
 
   // Allow renderer-initiated navigations to create a pending entry when the
@@ -257,15 +272,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, SingleDuplicate);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ManyDuplicates);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ClockBackwardsJump);
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class NeedsReloadType {
-    kRequestedByClient = 0,
-    kRestoreSession = 1,
-    kCopyStateFrom = 2,
-    kMaxValue = kCopyStateFrom
-  };
 
   // Helper class to smooth out runs of duplicate timestamps while still
   // allowing time to jump backwards.
