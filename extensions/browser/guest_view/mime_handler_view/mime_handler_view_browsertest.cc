@@ -670,4 +670,21 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
   // The page is expected to embed only '1' GuestView. If there is GuestViews
   // embedded inside other frames we should be timing out here.
   guest_view_manager->WaitForAllGuestsDeleted();
+  // Sanity check: Ensure that the documents in a sandbox frame is empty.
+  auto sandbox1_document_has_contents =
+      content::EvalJs(GetEmbedderWebContents(),
+                      "!!(sandbox1.contentDocument.body && "
+                      "sandbox1.contentDocument.body.firstChild)")
+          .ExtractBool();
+  EXPECT_FALSE(sandbox1_document_has_contents);
+  // The document inside 'sandbox2' contains an <object> with fallback content.
+  // The expectation is that the <object> fails to load the MimeHandlerView and
+  // should show the fallback content instead, which means the width of the
+  // layout object is non-zero.
+  auto fallback_width =
+      content::EvalJs(GetEmbedderWebContents(),
+                      "sandbox2.contentDocument.getElementById('fallback')."
+                      "getBoundingClientRect().width")
+          .ExtractInt();
+  EXPECT_NE(0, fallback_width);
 }
