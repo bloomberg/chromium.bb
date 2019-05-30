@@ -126,7 +126,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
       int frame_tree_node_id,
-      WebContentsGetter web_contents_getter,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info);
 
   // Used for starting a service worker. Returns a provider host for the service
@@ -633,10 +632,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const int frame_tree_node_id_;
 
   // Only set when this object is pre-created for a navigation. It indicates the
-  // tab where the navigation occurs.
-  // TODO(hayato): Remove |web_contents_getter_| since we can create
-  // WebContentsGetter from |frame_tree_node_id_|.
-  WebContentsGetter web_contents_getter_;
+  // tab where the navigation occurs. Otherwise, a null callback.
+  const WebContentsGetter web_contents_getter_;
 
   // For service worker clients. See comments for the getter functions.
   GURL url_;

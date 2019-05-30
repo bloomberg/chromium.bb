@@ -458,8 +458,7 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          FrameTreeNode::kFrameTreeNodeInvalidId, base::NullCallback(),
-          &provider_info);
+          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindForWindow(std::move(provider_info));
   auto container = std::make_unique<MockServiceWorkerContainer>(
@@ -495,8 +494,7 @@ TEST_F(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          FrameTreeNode::kFrameTreeNodeInvalidId, base::NullCallback(),
-          &provider_info);
+          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindForWindow(std::move(provider_info));
   auto container = std::make_unique<MockServiceWorkerContainer>(
@@ -873,8 +871,7 @@ TEST_F(ServiceWorkerProviderHostTest,
     base::WeakPtr<ServiceWorkerProviderHost> host =
         ServiceWorkerProviderHost::PreCreateNavigationHost(
             helper_->context()->AsWeakPtr(), true,
-            FrameTreeNode::kFrameTreeNodeInvalidId,
-            base::RepeatingCallback<WebContents*(void)>(), &provider_info);
+            FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
     remote_endpoint.BindForWindow(std::move(provider_info));
     FinishNavigation(host.get());
@@ -894,8 +891,7 @@ TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true,
-          FrameTreeNode::kFrameTreeNodeInvalidId,
-          base::RepeatingCallback<WebContents*(void)>(), &provider_info);
+          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
   EXPECT_FALSE(host->is_response_committed());
   EXPECT_FALSE(host->is_execution_ready());
 

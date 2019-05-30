@@ -242,8 +242,7 @@ base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           context, is_parent_frame_secure,
-          FrameTreeNode::kFrameTreeNodeInvalidId, base::NullCallback(),
-          &provider_info);
+          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
   output_endpoint->BindForWindow(std::move(provider_info));
 
   // In production code this is called from NavigationRequest in the browser

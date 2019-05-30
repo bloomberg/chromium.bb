@@ -43,7 +43,6 @@ ServiceWorkerRequestHandler::CreateForNavigation(
     ResourceContext* resource_context,
     ServiceWorkerNavigationHandleCore* navigation_handle_core,
     const NavigationRequestInfo& request_info,
-    base::RepeatingCallback<WebContents*()> web_contents_getter,
     base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host) {
   DCHECK(navigation_handle_core);
 
@@ -65,8 +64,7 @@ ServiceWorkerRequestHandler::CreateForNavigation(
   // Initialize the SWProviderHost.
   *out_provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
       context->AsWeakPtr(), request_info.are_ancestors_secure,
-      request_info.frame_tree_node_id, std::move(web_contents_getter),
-      &provider_info);
+      request_info.frame_tree_node_id, &provider_info);
   navigation_handle_core->OnCreatedProviderHost(*out_provider_host,
                                                 std::move(provider_info));
 

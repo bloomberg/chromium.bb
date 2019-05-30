@@ -96,7 +96,6 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         ServiceWorkerRequestHandler::CreateForNavigation(
             GURL(url), nullptr /* resource_context */,
             navigation_handle_core.get(), request_info,
-            base::RepeatingCallback<WebContents*(void)>(),
             &service_worker_provider_host);
     EXPECT_EQ(expected_handler_created, !!interceptor.get());
   }

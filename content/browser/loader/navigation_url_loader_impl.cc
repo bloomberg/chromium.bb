@@ -640,7 +640,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           ServiceWorkerRequestHandler::CreateForNavigation(
               resource_request_->url, resource_context_,
               service_worker_navigation_handle_core, *request_info,
-              web_contents_getter_, &service_worker_provider_host_);
+              &service_worker_provider_host_);
       // The interceptor for service worker may not be created for some reasons
       // (e.g. the origin is not secure).
       if (service_worker_interceptor)

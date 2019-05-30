@@ -1856,8 +1856,7 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
   base::WeakPtr<ServiceWorkerProviderHost> reserved_client =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          FrameTreeNode::kFrameTreeNodeInvalidId, {} /* web_contents_getter */,
-          &provider_info);
+          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
   reserved_client->UpdateUrls(in_scope, in_scope);
 
   // Make an out-scope client.

@@ -1273,8 +1273,7 @@ TEST_F(ServiceWorkerVersionTest,
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* is_parent_frame_secure */,
-          FrameTreeNode::kFrameTreeNodeInvalidId, base::NullCallback(),
-          &provider_info);
+          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
   remote_endpoint.BindForWindow(std::move(provider_info));
   host->UpdateUrls(registration_->scope(), registration_->scope());
   host->SetControllerRegistration(registration_,

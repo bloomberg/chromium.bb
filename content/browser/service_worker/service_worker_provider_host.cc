@@ -163,7 +163,6 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
     int frame_tree_node_id,
-    WebContentsGetter web_contents_getter,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info) {
   DCHECK(context);
   blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
@@ -173,8 +172,6 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
       frame_tree_node_id,
       mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
       std::move(client_ptr_info), context));
-  host->web_contents_getter_ = std::move(web_contents_getter);
-
   auto weak_ptr = host->AsWeakPtr();
   RegisterToContextCore(context, std::move(host));
   return weak_ptr;
@@ -248,6 +245,11 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       frame_id_(MSG_ROUTING_NONE),
       is_parent_frame_secure_(is_parent_frame_secure),
       frame_tree_node_id_(frame_tree_node_id),
+      web_contents_getter_(
+          frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId
+              ? base::NullCallback()
+              : base::BindRepeating(&WebContents::FromFrameTreeNodeId,
+                                    frame_tree_node_id_)),
       context_(context),
       binding_(this),
       interface_provider_binding_(this) {
