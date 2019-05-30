@@ -26,6 +26,12 @@ class PaintWorkletLayerPainter;
 class ProxyImpl;
 class RenderFrameMetadataObserver;
 
+class CC_EXPORT Profiler {
+  public:
+    virtual void beginProfile(int routing_id) = 0;
+    virtual void endProfile(int routing_id) = 0;
+};
+
 // This class aggregates all interactions that the impl side of the compositor
 // needs to have with the main side.
 // The class is created and lives on the main thread.
@@ -33,6 +39,8 @@ class CC_EXPORT ProxyMain : public Proxy {
  public:
   ProxyMain(LayerTreeHost* layer_tree_host,
             TaskRunnerProvider* task_runner_provider);
+
+  static void SetProfiler(Profiler *profiler);
 
   ~ProxyMain() override;
 
