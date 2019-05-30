@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/numerics/ranges.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -618,7 +617,7 @@ std::unique_ptr<net::test_server::HttpResponse>
 TestDownloadResponseHandler::HandleTestDownloadRequest(
     const TestDownloadHttpResponse::OnResponseSentCallback& callback,
     const net::test_server::HttpRequest& request) {
-  server_task_runner_ = base::MessageLoopCurrent::Get()->task_runner();
+  server_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   if (request.headers.find(net::HttpRequestHeaders::kHost) ==
       request.headers.end()) {
