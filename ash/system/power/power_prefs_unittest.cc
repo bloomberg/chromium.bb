@@ -526,4 +526,10 @@ TEST_F(PowerPrefsTest, UsbPowerShare) {
   EXPECT_FALSE(power_manager_client()->policy().usb_power_share());
 }
 
+TEST_F(PowerPrefsTest, AlsLoggingEnabled) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kPowerAlsLoggingEnabled));
+}
+
 }  // namespace ash

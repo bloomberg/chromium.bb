@@ -110,6 +110,7 @@ ASH_PUBLIC_EXPORT extern const char
     kPowerForceNonzeroBrightnessForUserActivity[];
 ASH_PUBLIC_EXPORT extern const char kPowerFastSuspendWhenBacklightsForcedOff[];
 ASH_PUBLIC_EXPORT extern const char kPowerSmartDimEnabled[];
+ASH_PUBLIC_EXPORT extern const char kPowerAlsLoggingEnabled[];
 
 ASH_PUBLIC_EXPORT extern const char kShelfAlignment[];
 ASH_PUBLIC_EXPORT extern const char kShelfAlignmentLocal[];

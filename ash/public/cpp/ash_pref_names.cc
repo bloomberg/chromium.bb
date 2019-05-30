@@ -301,6 +301,9 @@ const char kPowerFastSuspendWhenBacklightsForcedOff[] =
 // Boolean controlling whether smart dim model is enabled.
 const char kPowerSmartDimEnabled[] = "power.smart_dim_enabled";
 
+// Boolean controlling whether ALS logging is enabled.
+const char kPowerAlsLoggingEnabled[] = "power.als_logging_enabled";
+
 // |kShelfAlignment| and |kShelfAutoHideBehavior| have a local variant. The
 // local variant is not synced and is used if set. If the local variant is not
 // set its value is set from the synced value (once prefs have been

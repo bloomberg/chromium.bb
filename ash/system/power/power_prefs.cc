@@ -123,6 +123,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
                                 true, PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(prefs::kPowerSmartDimEnabled, true,
                                 PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kPowerAlsLoggingEnabled, false,
+                                PrefRegistry::PUBLIC);
 
   if (for_test) {
     registry->RegisterBooleanPref(prefs::kAllowScreenLock, true,
@@ -445,6 +447,7 @@ void PowerPrefs::ObservePrefs(PrefService* prefs) {
   profile_registrar_->Add(prefs::kPowerSmartDimEnabled, update_callback);
   profile_registrar_->Add(prefs::kPowerFastSuspendWhenBacklightsForcedOff,
                           update_callback);
+  profile_registrar_->Add(prefs::kPowerAlsLoggingEnabled, update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }
