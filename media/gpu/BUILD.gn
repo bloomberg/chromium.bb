@@ -50,10 +50,6 @@ component("gpu") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
 
   sources = [
-    "command_buffer_helper.cc",
-    "command_buffer_helper.h",
-    "gles2_decoder_helper.cc",
-    "gles2_decoder_helper.h",
     "gpu_video_accelerator_util.cc",
     "gpu_video_accelerator_util.h",
     "gpu_video_decode_accelerator_factory.cc",
@@ -64,6 +60,7 @@ component("gpu") {
 
   public_deps = [
     ":buildflags",
+    ":command_buffer_helper",
     ":common",
     ":image_processor",
     ":video_frame_mapper",
@@ -74,9 +71,6 @@ component("gpu") {
     "//ui/gfx/geometry",
   ]
   deps = [
-    "//gpu/command_buffer/common:gles2_utils",
-    "//gpu/command_buffer/service:gles2",
-    "//gpu/ipc/service",
     "//third_party/libyuv",
     "//ui/base",
     "//ui/display/types",
@@ -282,6 +276,26 @@ source_set("common") {
     "//ui/gfx:buffer_types",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
+  ]
+}
+
+source_set("command_buffer_helper") {
+  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+  sources = [
+    "command_buffer_helper.cc",
+    "command_buffer_helper.h",
+    "gles2_decoder_helper.cc",
+    "gles2_decoder_helper.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//gpu/command_buffer/common",
+    "//gpu/command_buffer/common:gles2_utils",
+    "//gpu/command_buffer/service",
+    "//gpu/command_buffer/service:gles2",
+    "//gpu/ipc/service",
+    "//ui/gl",
   ]
 }
 
@@ -518,10 +532,8 @@ static_library("test_support") {
     "test/fake_command_buffer_helper.h",
   ]
   configs += [ "//media:media_config" ]
-  deps = [
-    ":gpu",
-  ]
   public_deps = [
+    ":gpu",
     "//base",
     "//media",
   ]
