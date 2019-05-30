@@ -90,8 +90,6 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
     return;
   if (!IsBackgroundImageContentful(*object, *image))
     return;
-  if (!object->HasNonZeroEffectiveOpacity())
-    return;
   detector.GetImagePaintTimingDetector()->RecordBackgroundImage(
       *object, image->Size(), *cached_image, current_paint_chunk_properties);
 }
@@ -120,8 +118,6 @@ void PaintTimingDetector::NotifyTextPaint(
     const PropertyTreeState& current_paint_chunk_properties) {
   LocalFrameView* frame_view = object.GetFrameView();
   if (!frame_view)
-    return;
-  if (!object.HasNonZeroEffectiveOpacity())
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   if (!detector.GetTextPaintTimingDetector())
