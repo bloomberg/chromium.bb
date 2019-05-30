@@ -347,6 +347,14 @@ TEST_F(InfobarContainerCoordinatorTest, TestInfobarChildCoordinatorCount) {
             infobar_container_coordinator_.childCoordinators.count);
   ASSERT_TRUE([infobar_container_coordinator_ isPresentingInfobarBanner]);
 
+  // Dismiss the Banner before closing the Webstate to avoid bug 966057.
+  [infobar_container_coordinator_ dismissInfobarBannerAnimated:NO
+                                                    completion:nil];
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return ![infobar_container_coordinator_ isPresentingInfobarBanner];
+      }));
+
   web_state_list_->CloseWebStateAt(0, 0);
 
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
