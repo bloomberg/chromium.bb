@@ -413,6 +413,15 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
 content::NavigationThrottle::ThrottleCheckResult
 AppsNavigationThrottle::HandleRequest() {
   content::NavigationHandle* handle = navigation_handle();
+  // If the navigation is from an iframe then no intent picker check is
+  // required. If the navigation happened without changing document or the
+  // navigation resulted in an error page, don't check intent for the
+  // navigation.
+  if (!handle->IsInMainFrame() || handle->IsSameDocument() ||
+      handle->IsErrorPage()) {
+    return content::NavigationThrottle::PROCEED;
+  }
+
   DCHECK(!ui_displayed_);
 
   navigate_from_link_ = false;
