@@ -2024,9 +2024,6 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",
   ]
-  data_deps = [
-    "//testing/buildbot/filters:chrome_public_test_apk_filters",
-  ]
 
   additional_apks = [
     "//chrome/android/webapk/libs/runtime_library/javatests/apk_with_webapk_service:apk_with_webapk_service",

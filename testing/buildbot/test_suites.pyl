@@ -3854,79 +3854,44 @@
       'monochrome_apk_checker': {},
     },
 
-    'network_service_android_fyi_gtests': {
-      'network_service_content_browsertests': {
-        'args': [
-          '--enable-features=NetworkService',
-        ],
-        'swarming': {
-          'shards': 5,
-        },
-        'test': 'content_browsertests',
-      },
-      'network_service_components_browsertests': {
-        'args': [
-          '--enable-features=NetworkService',
-        ],
-        'test': 'components_browsertests',
-      },
-      'network_service_in_process_content_browsertests': {
-        'args': [
-          '--enable-features=NetworkService,NetworkServiceInProcess',
-        ],
-        'swarming': {
-          'shards': 5,
-        },
-        'test': 'content_browsertests',
-      },
-      'network_service_in_process_components_browsertests': {
-        'args': [
-          '--enable-features=NetworkService,NetworkServiceInProcess',
-        ],
-        'test': 'components_browsertests',
-      },
-      'network_service_in_process_chrome_public_test_apk': {
-        'swarming': {
-          'shards': 20,
-        },
-        'args': [
-          '--enable-features=NetworkService,NetworkServiceInProcess',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_chrome_public_test_apk.filter',
-        ],
-        'test': 'chrome_public_test_apk',
-      },
-      'network_service_in_process_content_shell_test_apk': {
-        'swarming': {
-          'shards': 5,
-        },
-        'args': [
-          '--enable-features=NetworkService,NetworkServiceInProcess',
-        ],
-        'test': 'content_shell_test_apk',
-      },
-    },
-
-    # These tests will be run on the main waterfall in addition to the Mojo
-    # Android bot.
+    # These tests will be run on the main waterfall.
     'network_service_android_gtests': {
-      'network_service_chrome_public_test_apk': {
+      'network_service_out_of_process_chrome_public_test_apk': {
         'swarming': {
           'shards': 20,
         },
         'args': [
-          '--enable-features=NetworkService',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_chrome_public_test_apk.filter',
+          '--disable-features=NetworkServiceInProcess',
+          # The testFeaturesSetExistingFlags test will fail if *any* feature is
+          # explicitly enabled or disabled via a command-line argument. Disable
+          # this one test as we are doing this (above).
+          '--gtest_filter=-org.chromium.chrome.browser.FeaturesAnnotationsTest#testFeaturesSetExistingFlags',
         ],
         'test': 'chrome_public_test_apk',
       },
-      'network_service_content_shell_test_apk': {
+      'network_service_out_of_process_content_shell_test_apk': {
         'swarming': {
           'shards': 5,
         },
         'args': [
-          '--enable-features=NetworkService',
+          '--disable-features=NetworkServiceInProcess',
         ],
         'test': 'content_shell_test_apk',
+      },
+      'network_service_out_of_process_content_browsertests': {
+        'args': [
+          '--disable-features=NetworkServiceInProcess',
+        ],
+        'swarming': {
+          'shards': 5,
+        },
+        'test': 'content_browsertests',
+      },
+      'network_service_out_of_process_components_browsertests': {
+        'args': [
+          '--disable-features=NetworkServiceInProcess',
+        ],
+        'test': 'components_browsertests',
       },
       'network_service_webview_instrumentation_test_apk': {
         'swarming': {
@@ -5243,7 +5208,6 @@
     ],
 
     'mojo_android_gtests': [
-      'network_service_android_fyi_gtests',
       'network_service_android_gtests',
     ],
 

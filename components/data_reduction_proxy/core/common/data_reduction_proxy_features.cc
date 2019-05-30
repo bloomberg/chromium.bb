@@ -39,8 +39,13 @@ const base::Feature kDataReductionProxyHoldback{
 
 // Enables data reduction proxy when network service is enabled.
 const base::Feature kDataReductionProxyEnabledWithNetworkService{
-    "DataReductionProxyEnabledWithNetworkService",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "DataReductionProxyEnabledWithNetworkService",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables block action of all proxies when 502 is received with no
 // Chrome-Proxy header. The block duration is configurable via field trial with

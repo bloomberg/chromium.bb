@@ -268,8 +268,14 @@ const base::Feature kMojoVideoCaptureSecondary{
     "MojoVideoCaptureSecondary", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If the network service is enabled, runs it in process.
-const base::Feature kNetworkServiceInProcess{"NetworkServiceInProcess",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNetworkServiceInProcess {
+  "NetworkServiceInProcess",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Kill switch for Web Notification content images.
 const base::Feature kNotificationContentImage{"NotificationContentImage",
