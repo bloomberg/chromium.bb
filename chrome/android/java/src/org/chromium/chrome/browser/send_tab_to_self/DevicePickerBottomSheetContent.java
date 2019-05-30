@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.send_tab_to_self;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +16,11 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.ui.widget.Toast;
 
 /**
  * Bottom sheet content to display a list of devices a user can send a tab to after they have
@@ -28,13 +32,18 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     ViewGroup mToolbarView;
     ViewGroup mContentView;
     DevicePickerBottomSheetAdapter mAdapter;
+    NavigationEntry mEntry;
 
-    public DevicePickerBottomSheetContent(Context context, ChromeActivity activity) {
+    public DevicePickerBottomSheetContent(
+            Context context, ChromeActivity activity, NavigationEntry entry) {
         mContext = context;
         mActivity = activity;
-        mAdapter = new DevicePickerBottomSheetAdapter();
+        mAdapter = new DevicePickerBottomSheetAdapter(
+                activity.getActivityTabProvider().get().getProfile());
+        mEntry = entry;
 
         createToolbarView();
+        createContentView();
     }
 
     private void createToolbarView() {
@@ -49,10 +58,6 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
                 R.layout.send_tab_to_self_device_picker_list, null);
         ListView listView = mContentView.findViewById(R.id.device_picker_list);
 
-        // Set the padding so that the toolbar is aligned with the list.
-        // TODO(tgupta): Figure out whether this can be incorporated directly in the definition of
-        // the list view rather than set programatically.
-        // listView.setPadding(0, convertDpToPx(80), 0, 0);
         listView.setAdapter(mAdapter);
         listView.setOnItemClickListener(this);
     }
@@ -60,11 +65,6 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     @Override
     public View getContentView() {
         return mContentView;
-    }
-
-    private int convertDpToPx(int inDp) {
-        float scale = mContext.getResources().getDisplayMetrics().density;
-        return (int) (inDp * scale + 0.5f);
     }
 
     @Override
@@ -83,6 +83,13 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     @Override
     public int getPriority() {
         return BottomSheet.ContentPriority.HIGH;
+    }
+
+    @Override
+    public boolean wrapContentEnabled() {
+        // Return true to have the bottom sheet only open as far as it needs to display the
+        // list of devices and nothing beyond that.
+        return true;
     }
 
     @Override
@@ -120,6 +127,17 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // TODO(crbug.com/949223): Add logic to support tapping on a device.
+        TargetDeviceInfo targetDeviceInfo = mAdapter.getItem(position);
+
+        Tab tab = mActivity.getActivityTabProvider().get();
+        SendTabToSelfAndroidBridge.addEntry(tab.getProfile(), mEntry.getUrl(), mEntry.getTitle(),
+                mEntry.getTimestamp(), targetDeviceInfo.cacheGuid);
+
+        Resources res = mContext.getResources();
+        String toastMessage =
+                res.getString(R.string.send_tab_to_self_toast, targetDeviceInfo.deviceName);
+        Toast.makeText(mActivity, toastMessage, Toast.LENGTH_SHORT).show();
+
+        mActivity.getBottomSheetController().hideContent(this, true);
     }
 }

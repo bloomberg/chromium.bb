@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.send_tab_to_self;
 
-import org.chromium.chrome.R;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.share.ShareActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.content_public.browser.NavigationEntry;
-import org.chromium.ui.widget.Toast;
 
 /**
  * A simple activity that allows Chrome to expose send tab to self as an option in the share menu.
@@ -21,15 +21,20 @@ public class SendTabToSelfShareActivity extends ShareActivity {
         if (tab == null) return;
 
         NavigationEntry entry = tab.getWebContents().getNavigationController().getVisibleEntry();
-        if (entry == null) return;
+        if (entry == null || triggeringActivity.getBottomSheetController() == null) {
+            return;
+        }
 
-        // TODO(crbug/946808) Add actual target device cache GUID.
-        String targetDeviceSyncCacheGuid = "";
-        SendTabToSelfAndroidBridge.addEntry(tab.getProfile(), entry.getUrl(), entry.getTitle(),
-                entry.getTimestamp(), targetDeviceSyncCacheGuid);
+        triggeringActivity.getBottomSheetController().requestShowContent(
+                createBottomSheetContent(triggeringActivity, entry), true);
+        // TODO(crbug.com/968246): Remove the need to call this explicitly and instead have it
+        // automatically show since PeekStateEnabled is set to false.
+        triggeringActivity.getBottomSheetController().expandSheet();
+    }
 
-        Toast.makeText(triggeringActivity, R.string.send_tab_to_self_toast, Toast.LENGTH_SHORT)
-                .show();
+    @VisibleForTesting
+    BottomSheetContent createBottomSheetContent(ChromeActivity activity, NavigationEntry entry) {
+        return new DevicePickerBottomSheetContent(getApplicationContext(), activity, entry);
     }
 
     public static boolean featureIsAvailable(Tab currentTab) {

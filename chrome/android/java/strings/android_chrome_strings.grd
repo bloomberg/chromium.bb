@@ -3942,8 +3942,8 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
 
       <!-- SendTabToSelf -->
-      <message name="IDS_SEND_TAB_TO_SELF_TOAST" desc="Text for a toast indicating that the tab was shared successfully on the user's other synced devices.">
-        Tab sent to your devices
+      <message name="IDS_SEND_TAB_TO_SELF_TOAST" desc="Text for a toast indicating that the tab is being shared on the user's other synced devices.">
+        Sending to <ph name="device_name">%1$s<ex>Tanya's Pixel 2</ex></ph>...
       </message>
       <message name="IDS_SEND_TAB_TO_SELF_NOTIFICATION_CONTEXT_TEXT" desc="Text displayed as the second line of a notification indicating the domain and the device the tab is shared from.">
         <ph name="DOMAIN">%1$s<ex>www.google.com</ex></ph> - Sent from <ph name="DEVICE_NAME">%2$s<ex>Tanya's Pixel 2XL</ex></ph>
@@ -3968,6 +3968,15 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
       <message name="IDS_SEND_TAB_TO_SELF_SHEET_TOOLBAR" desc="Header for device picker sheet where users can pick a device to send a tab to.">
         Send to
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_DEVICE_LAST_ACTIVE_MORE_THAN_ONE_DAY" desc="String displayed in the device picker indicating the last time the device was synced to the user's account.">
+        Active <ph name="last_updated">%1$d<ex>5</ex></ph> days ago
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_DEVICE_LAST_ACTIVE_ONE_DAY_AGO" desc="String displayed in the device picker indicating the last time the device was synced to the user's account one day ago.">
+        Active 1 day ago
+      </message>
+      <message name="IDS_SEND_TAB_TO_SELF_DEVICE_LAST_ACTIVE_TODAY" desc="String displayed in the device picker indicating the last time the device was synced to the user's account today.">
+        Active today
       </message>
 
       <!-- Chrome Duet -->

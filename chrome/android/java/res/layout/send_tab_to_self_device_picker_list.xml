@@ -7,14 +7,17 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:minHeight="56dp"
+    android:minHeight="@dimen/min_touch_target_size"
     android:gravity="center_vertical"
     android:orientation="vertical"
     android:paddingStart="19dp"
     android:paddingEnd="24dp">
-       <ListView
+    <ListView
         android:id="@+id/device_picker_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:paddingTop="@dimen/min_touch_target_size"
+        android:divider="@null"
+        android:dividerHeight="0dp" />
 </LinearLayout>

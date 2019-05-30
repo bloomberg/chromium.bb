@@ -112,6 +112,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.SearchEngineChoiceNotification;
+import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfAndroidBridge;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
@@ -745,7 +746,7 @@ public class ChromeTabbedActivity
             };
             OnClickListener bookmarkClickHandler = v -> addOrEditBookmark(getActivityTab());
 
-            if (shouldInitializeBottomSheet() && FeatureUtilities.isTabGroupsAndroidEnabled()) {
+            if (shouldInitializeBottomSheet()) {
                 initializeBottomSheet(false);
             }
 
@@ -2519,7 +2520,8 @@ public class ChromeTabbedActivity
 
     @Override
     protected boolean shouldInitializeBottomSheet() {
-        return FeatureUtilities.isTabGroupsAndroidEnabled();
+        return FeatureUtilities.isTabGroupsAndroidEnabled()
+                || SendTabToSelfAndroidBridge.isSendingEnabled();
     }
 
     @Override
