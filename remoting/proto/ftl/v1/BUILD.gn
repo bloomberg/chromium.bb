@@ -5,18 +5,18 @@
 import("//third_party/grpc/grpc_library.gni")
 import("//third_party/protobuf/proto_library.gni")
 
-proto_library("chromoting_message") {
+proto_library("ftl_messages") {
   sources = [
     "chromoting_message.proto",
+    "ftl_messages.proto",
   ]
 }
 
 cc_grpc_library("ftl_grpc_library") {
   sources = [
-    "ftl_messages.proto",
     "ftl_services.proto",
   ]
   deps = [
-    ":chromoting_message",
+    ":ftl_messages",
   ]
 }

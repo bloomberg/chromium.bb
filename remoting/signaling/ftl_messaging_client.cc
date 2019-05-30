@@ -216,8 +216,9 @@ void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
   }
   message_tracker_.TrackId(message.message_id());
 
-  if (message.sender_registration_id().empty()) {
-    LOG(WARNING) << "Ignored incoming message with no sender registration ID.";
+  if (message.sender_id().type() != ftl::IdType_Type_SYSTEM &&
+      message.sender_registration_id().empty()) {
+    LOG(WARNING) << "Ignored peer message with no sender registration ID.";
     return;
   }
 
@@ -231,8 +232,8 @@ void FtlMessagingClient::RunMessageCallbacks(const ftl::InboxMessage& message) {
 
   ftl::ChromotingMessage chromoting_message;
   chromoting_message.ParseFromString(message.message());
-  callback_list_.Notify(message.sender_id().id(),
-                        message.sender_registration_id(), chromoting_message);
+  callback_list_.Notify(message.sender_id(), message.sender_registration_id(),
+                        chromoting_message);
 }
 
 void FtlMessagingClient::OnMessageReceived(const ftl::InboxMessage& message) {

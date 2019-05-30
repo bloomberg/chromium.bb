@@ -39,6 +39,7 @@ message Platform {
 message IdType {
   enum Type {
     UNKNOWN = 0;
+    SYSTEM = 7;
     EMAIL = 16;
   }
 }

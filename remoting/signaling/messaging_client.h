@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "remoting/proto/ftl/v1/chromoting_message.pb.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 
 namespace grpc {
 class Status;
@@ -22,13 +23,11 @@ namespace remoting {
 class MessagingClient {
  public:
   using MessageCallback =
-      base::RepeatingCallback<void(const std::string& sender_id,
+      base::RepeatingCallback<void(const ftl::Id& sender_id,
                                    const std::string& sender_registration_id,
                                    const ftl::ChromotingMessage& message)>;
-  using MessageCallbackList =
-      base::CallbackList<void(const std::string&,
-                              const std::string&,
-                              const ftl::ChromotingMessage&)>;
+  using MessageCallbackList = base::CallbackList<
+      void(const ftl::Id&, const std::string&, const ftl::ChromotingMessage&)>;
   using MessageCallbackSubscription = MessageCallbackList::Subscription;
   using DoneCallback = base::OnceCallback<void(const grpc::Status& status)>;
 

@@ -38,6 +38,7 @@ static_library("signaling") {
     "remoting_log_to_server.h",
     "server_log_entry.cc",
     "server_log_entry.h",
+    "signal_strategy.cc",
     "signal_strategy.h",
     "signaling_address.cc",
     "signaling_address.h",

@@ -59,6 +59,7 @@
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/dns_blackhole_checker.h"
+#include "remoting/host/ftl_host_change_notification_listener.h"
 #include "remoting/host/ftl_signaling_connector.h"
 #include "remoting/host/gcd_rest_client.h"
 #include "remoting/host/gcd_state_updater.h"
@@ -215,6 +216,7 @@ const char kHostOfflineReasonPolicyChangeRequiresRestart[] =
 namespace remoting {
 
 class HostProcess : public ConfigWatcher::Delegate,
+                    public FtlHostChangeNotificationListener::Listener,
                     public HostChangeNotificationListener::Listener,
                     public IPC::Listener,
                     public base::RefCountedThreadSafe<HostProcess> {
@@ -433,12 +435,13 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Signal strategies must outlive |signaling_connector_|, |gcd_subscriber_|,
   // and |xmpp_heartbeat_sender_|.
   std::unique_ptr<SignalStrategy> signal_strategy_;
-  XmppSignalStrategy* xmpp_signal_strategy_;
 
   std::unique_ptr<SignalingConnector> xmpp_signaling_connector_;
   std::unique_ptr<FtlSignalingConnector> ftl_signaling_connector_;
   std::unique_ptr<XmppHeartbeatSender> xmpp_heartbeat_sender_;
   std::unique_ptr<HeartbeatSender> heartbeat_sender_;
+  std::unique_ptr<FtlHostChangeNotificationListener>
+      ftl_host_change_notification_listener_;
 #if defined(USE_GCD)
   std::unique_ptr<GcdStateUpdater> gcd_state_updater_;
   std::unique_ptr<PushNotificationSubscriber> gcd_subscriber_;
@@ -1467,7 +1470,7 @@ void HostProcess::InitializeSignaling() {
   auto xmpp_signal_strategy = std::make_unique<XmppSignalStrategy>(
       net::ClientSocketFactory::GetDefaultFactory(),
       context_->url_request_context_getter(), xmpp_server_config_);
-  xmpp_signal_strategy_ = xmpp_signal_strategy.get();
+  auto* unowned_xmpp_signal_strategy = xmpp_signal_strategy.get();
 
   // Create SignalingConnector.
   auto dns_blackhole_checker = std::make_unique<DnsBlackholeChecker>(
@@ -1484,7 +1487,7 @@ void HostProcess::InitializeSignaling() {
                           base::Unretained(this)),
       context_->url_loader_factory(), false);
   xmpp_signaling_connector_ = std::make_unique<SignalingConnector>(
-      xmpp_signal_strategy_, std::move(dns_blackhole_checker),
+      unowned_xmpp_signal_strategy, std::move(dns_blackhole_checker),
       oauth_token_getter_.get(),
       base::BindRepeating(&HostProcess::OnAuthFailed, base::Unretained(this)));
 
@@ -1509,6 +1512,9 @@ void HostProcess::InitializeSignaling() {
                        base::Unretained(this)),
         host_id_, muxing_signal_strategy.get(), key_pair_,
         oauth_token_getter_.get(), log_to_server_.get());
+    ftl_host_change_notification_listener_ =
+        std::make_unique<FtlHostChangeNotificationListener>(
+            this, muxing_signal_strategy->ftl_signal_strategy());
     signal_strategy_ = std::move(muxing_signal_strategy);
   } else {
     xmpp_heartbeat_sender_.reset(new XmppHeartbeatSender(
@@ -1516,10 +1522,12 @@ void HostProcess::InitializeSignaling() {
                             base::Unretained(this)),
         base::BindRepeating(&HostProcess::OnUnknownHostIdError,
                             base::Unretained(this)),
-        host_id_, xmpp_signal_strategy_, key_pair_, directory_bot_jid_));
+        host_id_, unowned_xmpp_signal_strategy, key_pair_, directory_bot_jid_));
     signal_strategy_ = std::move(xmpp_signal_strategy);
     log_to_server_ = std::make_unique<XmppLogToServer>(
         ServerLogEntry::ME2ME, signal_strategy_.get(), directory_bot_jid_);
+    host_change_notification_listener_.reset(new HostChangeNotificationListener(
+        this, host_id_, unowned_xmpp_signal_strategy, directory_bot_jid_));
   }
 
 #if defined(USE_GCD)
@@ -1531,13 +1539,13 @@ void HostProcess::InitializeSignaling() {
   gcd_state_updater_.reset(new GcdStateUpdater(
       base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
       base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
-      xmpp_signal_strategy_, std::move(gcd_rest_client)));
+      unowned_xmpp_signal_strategy, std::move(gcd_rest_client)));
   PushNotificationSubscriber::Subscription sub;
   sub.channel = "cloud_devices";
   PushNotificationSubscriber::SubscriptionList subs;
   subs.push_back(sub);
   gcd_subscriber_.reset(
-      new PushNotificationSubscriber(xmpp_signal_strategy_, subs));
+      new PushNotificationSubscriber(unowned_xmpp_signal_strategy, subs));
 #endif  // defined(USE_GCD)
 }
 
@@ -1625,9 +1633,6 @@ void HostProcess::StartHost() {
   host_->SetMaximumSessionDuration(base::TimeDelta::FromHours(20));
 #endif
 
-  host_change_notification_listener_.reset(new HostChangeNotificationListener(
-      this, host_id_, xmpp_signal_strategy_, directory_bot_jid_));
-
   host_status_logger_ = std::make_unique<HostStatusLogger>(
       host_->status_monitor(), log_to_server_.get());
 
@@ -1711,6 +1716,7 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
   host_event_logger_.reset();
   host_status_logger_.reset();
   power_save_blocker_.reset();
+  ftl_host_change_notification_listener_.reset();
   host_change_notification_listener_.reset();
 
   // Before shutting down HostSignalingManager, send the |host_offline_reason|
@@ -1754,13 +1760,13 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   DCHECK(!host_);  // Assert that the host is really offline at this point.
 
   HOST_LOG << "SendHostOfflineReason " << (success ? "succeeded." : "failed.");
+  log_to_server_.reset();
   xmpp_heartbeat_sender_.reset();
   heartbeat_sender_.reset();
   oauth_token_getter_.reset();
   ftl_signaling_connector_.reset();
   xmpp_signaling_connector_.reset();
   signal_strategy_.reset();
-  xmpp_signal_strategy_ = nullptr;
 #if defined(USE_GCD)
   gcd_state_updater_.reset();
   gcd_subscriber_.reset();

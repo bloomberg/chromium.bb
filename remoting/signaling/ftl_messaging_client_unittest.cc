@@ -52,6 +52,10 @@ constexpr char kMessage2Id[] = "msg_2";
 constexpr char kMessage1Text[] = "Message 1";
 constexpr char kMessage2Text[] = "Message 2";
 
+MATCHER(IsFakeSenderId, "") {
+  return arg.id() == kFakeSenderId;
+}
+
 ftl::ChromotingMessage CreateXmppMessage(const std::string& message_text) {
   ftl::ChromotingMessage crd_message;
   crd_message.mutable_xmpp()->set_stanza(message_text);
@@ -76,8 +80,7 @@ ftl::InboxMessage CreateInboxMessage(const std::string& message_id,
 
 FtlMessagingClient::MessageCallback CreateNotReachedMessageCallback() {
   return base::BindRepeating(
-      [](const std::string& sender_id,
-         const std::string& sender_registration_id,
+      [](const ftl::Id& sender_id, const std::string& sender_registration_id,
          const ftl::ChromotingMessage& message) { NOTREACHED(); });
 }
 
@@ -319,10 +322,10 @@ TEST_F(FtlMessagingClientTest, TestPullMessages_ReturnsAndAcksTwoMessages) {
 
   base::MockCallback<FtlMessagingClient::MessageCallback> mock_on_incoming_msg;
 
-  EXPECT_CALL(mock_on_incoming_msg, Run(kFakeSenderId, kFakeSenderRegId,
+  EXPECT_CALL(mock_on_incoming_msg, Run(IsFakeSenderId(), kFakeSenderRegId,
                                         StanzaTextMatches(kMessage1Text)))
       .WillOnce(Return());
-  EXPECT_CALL(mock_on_incoming_msg, Run(kFakeSenderId, kFakeSenderRegId,
+  EXPECT_CALL(mock_on_incoming_msg, Run(IsFakeSenderId(), kFakeSenderRegId,
                                         StanzaTextMatches(kMessage2Text)))
       .WillOnce(Return());
 
@@ -514,7 +517,7 @@ TEST_F(FtlMessagingClientTest, ReceivedDuplicatedMessage_AckAndDrop) {
   base::RunLoop run_loop;
 
   base::MockCallback<FtlMessagingClient::MessageCallback> mock_on_incoming_msg;
-  EXPECT_CALL(mock_on_incoming_msg, Run(kFakeSenderId, kFakeSenderRegId,
+  EXPECT_CALL(mock_on_incoming_msg, Run(IsFakeSenderId(), kFakeSenderRegId,
                                         StanzaTextMatches(kMessage1Text)))
       .WillOnce(Return());
 

@@ -73,7 +73,7 @@ class FtlSignalStrategy::Core {
   void StartReceivingMessages();
   void OnReceiveMessagesStreamStarted();
   void OnReceiveMessagesStreamClosed(const grpc::Status& status);
-  void OnMessageReceived(const std::string& sender_id,
+  void OnMessageReceived(const ftl::Id& sender_id,
                          const std::string& sender_registration_id,
                          const ftl::ChromotingMessage& message);
 
@@ -331,11 +331,24 @@ void FtlSignalStrategy::Core::OnReceiveMessagesStreamClosed(
 }
 
 void FtlSignalStrategy::Core::OnMessageReceived(
-    const std::string& sender_id,
+    const ftl::Id& sender_id,
     const std::string& sender_registration_id,
     const ftl::ChromotingMessage& message) {
+  for (auto& listener : listeners_) {
+    if (listener.OnSignalStrategyIncomingMessage(
+            sender_id, sender_registration_id, message)) {
+      return;
+    }
+  }
+
+  if (!message.has_xmpp()) {
+    LOG(WARNING) << "Ignoring message that doesn't have XMPP field.";
+    return;
+  }
+
   auto sender_address = SignalingAddress::CreateFtlSignalingAddress(
-      sender_id, sender_registration_id);
+      sender_id.id(), sender_registration_id);
+  DCHECK(message.xmpp().has_stanza());
   auto stanza = base::WrapUnique<jingle_xmpp::XmlElement>(
       jingle_xmpp::XmlElement::ForStr(message.xmpp().stanza()));
   OnStanza(sender_address, std::move(stanza));

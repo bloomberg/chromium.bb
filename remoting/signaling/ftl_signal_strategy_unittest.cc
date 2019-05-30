@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "remoting/base/oauth_token_getter.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "remoting/signaling/messaging_client.h"
 #include "remoting/signaling/registration_manager.h"
 #include "remoting/signaling/signaling_address.h"
@@ -110,7 +111,7 @@ class FakeMessagingClient : public MessagingClient {
                     const ftl::ChromotingMessage&,
                     DoneCallback));
 
-  void OnMessage(const std::string& sender_id,
+  void OnMessage(const ftl::Id& sender_id,
                  const std::string& sender_registration_id,
                  const ftl::ChromotingMessage& message) {
     callback_list_.Notify(sender_id, sender_registration_id, message);
@@ -200,6 +201,11 @@ class FtlSignalStrategyTest : public testing::Test,
         std::move(token_getter), std::move(registration_manager),
         std::move(messaging_client)));
     signal_strategy_->AddListener(this);
+
+    // By default, messages will be delievered through
+    // OnSignalStrategyIncomingStanza().
+    ON_CALL(*this, OnSignalStrategyIncomingMessage(_, _, _))
+        .WillByDefault(Return(false));
   }
 
   ~FtlSignalStrategyTest() override {
@@ -224,6 +230,11 @@ class FtlSignalStrategyTest : public testing::Test,
                    kFakeOAuthToken);
         });
   }
+
+  MOCK_METHOD3(OnSignalStrategyIncomingMessage,
+               bool(const ftl::Id&,
+                    const std::string&,
+                    const ftl::ChromotingMessage&));
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
@@ -446,11 +457,48 @@ TEST_F(FtlSignalStrategyTest, ReceiveStanza_Success) {
   std::string stanza_string = stanza->Str();
   ftl::ChromotingMessage message;
   message.mutable_xmpp()->set_stanza(stanza_string);
-  messaging_client_->OnMessage(kFakeRemoteUsername, kFakeRemoteRegistrationId,
+  ftl::Id remote_user_id;
+  remote_user_id.set_type(ftl::IdType_Type_EMAIL);
+  remote_user_id.set_id(kFakeRemoteUsername);
+  messaging_client_->OnMessage(remote_user_id, kFakeRemoteRegistrationId,
                                message);
 
   ASSERT_EQ(1u, received_messages_.size());
   ASSERT_EQ(stanza_string, received_messages_[0]->Str());
+}
+
+TEST_F(FtlSignalStrategyTest, ReceiveMessage_DelieverMessageAndDropStanza) {
+  ftl::Id remote_user_id;
+  remote_user_id.set_type(ftl::IdType_Type_EMAIL);
+  remote_user_id.set_id(kFakeRemoteUsername);
+
+  auto stanza =
+      CreateXmlStanza(Direction::INCOMING, signal_strategy_->GetNextId());
+  std::string stanza_string = stanza->Str();
+  ftl::ChromotingMessage message;
+  message.mutable_xmpp()->set_stanza(stanza_string);
+
+  EXPECT_CALL(*this,
+              OnSignalStrategyIncomingMessage(_, kFakeRemoteRegistrationId, _))
+      .WillOnce([&](const ftl::Id& sender_id,
+                    const std::string& sender_registration_id_unused,
+                    const ftl::ChromotingMessage& message) {
+        EXPECT_EQ(ftl::IdType_Type_EMAIL, sender_id.type());
+        EXPECT_EQ(remote_user_id.id(), sender_id.id());
+        EXPECT_EQ(stanza_string, message.xmpp().stanza());
+        return true;
+      });
+
+  ExpectGetOAuthTokenSucceedsWithFakeCreds();
+  registration_manager_->ExpectSignInGaiaSucceeds();
+  signal_strategy_->Connect();
+  messaging_client_->AcceptReceivingMessages();
+
+  messaging_client_->OnMessage(remote_user_id, kFakeRemoteRegistrationId,
+                               message);
+
+  // Message has already been consumed in OnSignalStrategyIncomingMessage().
+  ASSERT_EQ(0u, received_messages_.size());
 }
 
 }  // namespace remoting

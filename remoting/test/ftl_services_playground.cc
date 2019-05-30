@@ -289,7 +289,7 @@ void FtlServicesPlayground::StopReceivingMessages(base::OnceClosure on_done) {
 }
 
 void FtlServicesPlayground::OnMessageReceived(
-    const std::string& sender_id,
+    const ftl::Id& sender_id,
     const std::string& sender_registration_id,
     const ftl::ChromotingMessage& message) {
   std::string message_text = message.xmpp().stanza();
@@ -298,7 +298,8 @@ void FtlServicesPlayground::OnMessageReceived(
       "  Sender ID=%s\n"
       "  Sender Registration ID=%s\n"
       "  Message=%s\n",
-      sender_id.c_str(), sender_registration_id.c_str(), message_text.c_str());
+      sender_id.id().c_str(), sender_registration_id.c_str(),
+      message_text.c_str());
 }
 
 void FtlServicesPlayground::OnReceiveMessagesStreamReady() {
