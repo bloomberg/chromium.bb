@@ -318,7 +318,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mActionModeController = new ActionModeController(mActivity, mActionBarDelegate);
         mActionModeController.setCustomSelectionActionModeCallback(mToolbarActionModeCallback);
 
-        mIdentityDiscController = new IdentityDiscController(activity, this);
+        mIdentityDiscController =
+                new IdentityDiscController(activity, this, activity.getLifecycleDispatcher());
 
         mToolbar.setPaintInvalidator(invalidator);
         mActionModeController.setTabStripHeight(mToolbar.getTabStripHeight());
