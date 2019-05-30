@@ -231,7 +231,7 @@ int StartHostMain(int argc, char** argv) {
 
   // Start the host.
   std::unique_ptr<HostStarter> host_starter(HostStarter::Create(
-      remoting::ServiceUrls::GetInstance()->directory_hosts_url(),
+      remoting::ServiceUrls::GetInstance()->remoting_server_endpoint(),
       url_loader_factory_owner.GetURLLoaderFactory()));
   host_starter->StartHost(host_name, host_pin,
                           /*consent_to_data_collection=*/true, auth_code,
