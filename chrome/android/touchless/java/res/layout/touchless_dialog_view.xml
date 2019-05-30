@@ -49,6 +49,7 @@
         android:padding="8dp"
         android:divider="@android:color/transparent"
         android:dividerHeight="8dp"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:scrollbars="none" />
 
 </LinearLayout>
