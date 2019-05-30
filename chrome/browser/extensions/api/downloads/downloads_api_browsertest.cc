@@ -14,13 +14,13 @@
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -1814,7 +1814,7 @@ class CustomResponse : public net::test_server::HttpResponse {
 
     if (first_request_) {
       *callback_ = std::move(done);
-      *task_runner_ = base::MessageLoopCurrent::Get()->task_runner().get();
+      *task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
       send.Run(response, base::BindRepeating([]() {}));
     } else {
       send.Run(response, std::move(done));
