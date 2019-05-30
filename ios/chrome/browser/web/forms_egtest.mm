@@ -206,6 +206,11 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 
 // Tests that a POST followed by reloading the destination page resends data.
 - (void)testRepostFormAfterReload {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // TODO(crbug.com/968296): Re-enable this test.
+    EARL_GREY_TEST_DISABLED(@"Test disabled with Slim Navigation.");
+  }
+
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
