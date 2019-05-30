@@ -591,6 +591,7 @@ ManifestParser::ParseShareTarget(const JSONObject* object) {
         "GET and POST.");
     return base::nullopt;
   }
+  share_target->method = method.value();
 
   if (!enctype.has_value()) {
     AddErrorInfo(
@@ -598,20 +599,7 @@ ManifestParser::ParseShareTarget(const JSONObject* object) {
         "application/x-www-form-urlencoded and multipart/form-data.");
     return base::nullopt;
   }
-
-  if (*method == mojom::blink::ManifestShareTarget::Method::kGet) {
-    share_target->method = mojom::blink::ManifestShareTarget::Method::kGet;
-  } else {
-    share_target->method = mojom::blink::ManifestShareTarget::Method::kPost;
-  }
-
-  if (*enctype == mojom::blink::ManifestShareTarget::Enctype::kMultipart) {
-    share_target->enctype =
-        mojom::blink::ManifestShareTarget::Enctype::kMultipart;
-  } else {
-    share_target->enctype =
-        mojom::blink::ManifestShareTarget::Enctype::kApplication;
-  }
+  share_target->enctype = enctype.value();
 
   if (share_target->method == mojom::blink::ManifestShareTarget::Method::kGet) {
     if (share_target->enctype ==
