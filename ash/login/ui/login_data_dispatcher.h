@@ -151,13 +151,13 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   // LoginScreenModel is complete, separate out the methods that aren't
   // overrides.
   void SetUserList(const std::vector<LoginUserInfo>& users) override;
-  void SetPinEnabledForUser(const AccountId& user, bool enabled);
+  void SetPinEnabledForUser(const AccountId& user, bool enabled) override;
   void SetFingerprintState(const AccountId& account_id,
                            FingerprintState state) override;
   void SetAvatarForUser(const AccountId& account_id,
                         const UserAvatar& avatar) override;
   void NotifyFingerprintAuthResult(const AccountId& account_id,
-                                   bool successful);
+                                   bool successful) override;
   void EnableAuthForUser(const AccountId& account_id);
   void DisableAuthForUser(const AccountId& account_id,
                           ash::mojom::AuthDisabledDataPtr auth_disabled_data);
@@ -170,7 +170,7 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   void SetSystemInfo(bool show_if_hidden,
                      const std::string& os_version_label_text,
                      const std::string& enterprise_info_text,
-                     const std::string& bluetooth_name);
+                     const std::string& bluetooth_name) override;
   void SetPublicSessionDisplayName(const AccountId& account_id,
                                    const std::string& display_name) override;
   void SetPublicSessionLocales(const AccountId& account_id,

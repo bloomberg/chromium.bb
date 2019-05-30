@@ -307,8 +307,8 @@ void LoginDisplayMojo::OnLoginScreenShown(bool users_empty, bool did_show) {
 
 void LoginDisplayMojo::OnPinCanAuthenticate(const AccountId& account_id,
                                             bool can_authenticate) {
-  LoginScreenClient::Get()->login_screen()->SetPinEnabledForUser(
-      account_id, can_authenticate);
+  ash::LoginScreen::Get()->GetModel()->SetPinEnabledForUser(account_id,
+                                                            can_authenticate);
 }
 
 }  // namespace chromeos

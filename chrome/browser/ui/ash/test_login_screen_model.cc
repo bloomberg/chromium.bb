@@ -9,15 +9,25 @@ TestLoginScreenModel::~TestLoginScreenModel() = default;
 
 void TestLoginScreenModel::SetUserList(
     const std::vector<ash::LoginUserInfo>& users) {}
+void TestLoginScreenModel::SetPinEnabledForUser(const AccountId& account_id,
+                                                bool is_enabled) {}
+void TestLoginScreenModel::SetFingerprintState(const AccountId& account_id,
+                                               ash::FingerprintState state) {}
 void TestLoginScreenModel::SetAvatarForUser(const AccountId& account_id,
                                             const ash::UserAvatar& avatar) {}
+void TestLoginScreenModel::NotifyFingerprintAuthResult(
+    const AccountId& account_id,
+    bool successful) {}
 void TestLoginScreenModel::ShowEasyUnlockIcon(
     const AccountId& account_id,
     const ash::EasyUnlockIconOptions& icon) {}
 void TestLoginScreenModel::UpdateWarningMessage(const base::string16& message) {
 }
-void TestLoginScreenModel::SetFingerprintState(const AccountId& account_id,
-                                               ash::FingerprintState state) {}
+void TestLoginScreenModel::SetSystemInfo(
+    bool show_if_hidden,
+    const std::string& os_version_label_text,
+    const std::string& enterprise_info_text,
+    const std::string& bluetooth_name) {}
 void TestLoginScreenModel::SetPublicSessionDisplayName(
     const AccountId& account_id,
     const std::string& display_name) {}

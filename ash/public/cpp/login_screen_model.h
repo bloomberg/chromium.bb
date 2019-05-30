@@ -26,6 +26,15 @@ struct UserAvatar;
 // ash::LoginDataDispatcher.
 class ASH_PUBLIC_EXPORT LoginScreenModel {
  public:
+  // Set the users who are displayed on the login UI. |users| is filtered
+  // and does not correspond to every user on the device.
+  virtual void SetUserList(const std::vector<LoginUserInfo>& users) = 0;
+
+  // Notification if pin is enabled or disabled for the given user.
+  // |account_id|:   The account id of the user in the user pod.
+  // |is_enabled|:   True if pin unlock is enabled.
+  virtual void SetPinEnabledForUser(const AccountId& user, bool enabled) = 0;
+
   // Requests to show the custom icon in the user pod.
   // |account_id|:  The account id of the user in the user pod.
   // |icon|:        Information regarding the icon.
@@ -38,17 +47,33 @@ class ASH_PUBLIC_EXPORT LoginScreenModel {
   // on login.) If |message| is empty, the banner will be hidden.
   virtual void UpdateWarningMessage(const base::string16& message) = 0;
 
-  // Set the users who are displayed on the login UI. |users| is filtered
-  // and does not correspond to every user on the device.
-  virtual void SetUserList(const std::vector<LoginUserInfo>& users) = 0;
-
   // Update the status of fingerprint for |account_id|.
   virtual void SetFingerprintState(const AccountId& account_id,
                                    FingerprintState state) = 0;
 
+  // Called after a fingerprint authentication attempt has been made. If
+  // |successful| is true, then the fingerprint authentication attempt was
+  // successful and the device should be unlocked. If false, an error message
+  // should be shown to the user.
+  virtual void NotifyFingerprintAuthResult(const AccountId& account_id,
+                                           bool successful) = 0;
+
   // Called when |avatar| for |account_id| has changed.
   virtual void SetAvatarForUser(const AccountId& account_id,
                                 const UserAvatar& avatar) = 0;
+
+  // Called when new system information is available.
+  // |show_if_hidden|: If true, the system information should be displayed to
+  //                   the user if it is currently hidden. If false, the system
+  //                   information should remain hidden if not already shown.
+  //                   Hidden system information can be shown by pressing alt-v.
+  // |os_version_label_text|: The OS version.
+  // |enterprise_info_text|:  The enterprise info.
+  // |bluetooth_name|:        The name of the bluetooth adapter.
+  virtual void SetSystemInfo(bool show_if_hidden,
+                             const std::string& os_version_label_text,
+                             const std::string& enterprise_info_text,
+                             const std::string& bluetooth_name) = 0;
 
   // Set the public session display name for user with |account_id|.
   virtual void SetPublicSessionDisplayName(const AccountId& account_id,

@@ -52,22 +52,11 @@ void TestLoginScreen::SetAuthType(const AccountId& account_id,
                                   ::proximity_auth::mojom::AuthType auth_type,
                                   const base::string16& initial_value) {}
 
-void TestLoginScreen::SetPinEnabledForUser(const AccountId& account_id,
-                                           bool is_enabled) {}
-
-void TestLoginScreen::NotifyFingerprintAuthResult(const AccountId& account_id,
-                                                  bool successful) {}
-
 void TestLoginScreen::EnableAuthForUser(const AccountId& account_id) {}
 
 void TestLoginScreen::DisableAuthForUser(
     const AccountId& account_id,
     ash::mojom::AuthDisabledDataPtr auth_disabled_data) {}
-
-void TestLoginScreen::SetSystemInfo(bool show_if_hidden,
-                                    const std::string& os_version_label_text,
-                                    const std::string& enterprise_info_text,
-                                    const std::string& bluetooth_name) {}
 
 void TestLoginScreen::IsReadyForPassword(IsReadyForPasswordCallback callback) {
   std::move(callback).Run(true);

@@ -74,17 +74,6 @@ interface LoginScreen {
               proximity_auth.mojom.AuthType auth_type,
               mojo_base.mojom.String16 initial_value);
 
-  // Notification if pin is enabled or disabled for the given user.
-  // |account_id|:   The account id of the user in the user pod.
-  // |is_enabled|:   True if pin unlock is enabled.
-  SetPinEnabledForUser(signin.mojom.AccountId account_id, bool is_enabled);
-
-  // Called after a fingerprint authentication attempt has been made. If
-  // |successful| is true, then the fingerprint authentication attempt was
-  // successful and the device should be unlocked. If false, an error message
-  // should be shown to the user.
-  NotifyFingerprintAuthResult(signin.mojom.AccountId account_id,
-                              bool successful);
 
   // Called when auth should be enabled for the given user. When auth is
   // disabled, the user cannot unlock the device. Auth is enabled by default.
@@ -97,19 +86,6 @@ interface LoginScreen {
   // |auth_disabled_data|:    The data needed to customize the lock screen UI.
   DisableAuthForUser(signin.mojom.AccountId account_id,
                       AuthDisabledData auth_disabled_data);
-
-  // Called when new system information is available.
-  // |show_if_hidden|: If true, the system information should be displayed to
-  //                   the user if it is currently hidden. If false, the system
-  //                   information should remain hidden if not already shown.
-  //                   Hidden system information can be shown by pressing alt-v.
-  // |os_version_label_text|: The OS version.
-  // |enterprise_info_text|:  The enterprise info.
-  // |bluetooth_name|:        The name of the bluetooth adapter.
-  SetSystemInfo(bool show_if_hidden,
-                string os_version_label_text,
-                string enterprise_info_text,
-                string bluetooth_name);
 
   // Check if the login/lock screen is ready for a password.
   IsReadyForPassword() => (bool is_ready);

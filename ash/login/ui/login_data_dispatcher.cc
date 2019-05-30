@@ -106,6 +106,8 @@ void LoginDataDispatcher::SetUserList(const std::vector<LoginUserInfo>& users) {
 
 void LoginDataDispatcher::SetPinEnabledForUser(const AccountId& user,
                                                bool enabled) {
+  // Chrome will update pin pod state every time user tries to authenticate.
+  // LockScreen is destroyed in the case of authentication success.
   for (auto& observer : observers_)
     observer.OnPinEnabledForUserChanged(user, enabled);
 }

@@ -736,8 +736,8 @@ void ScreenLocker::OnAuthScanDone(
     OnFingerprintAuthFailure(*active_user);
     return;
   }
-  delegate_->NotifyFingerprintAuthResult(active_user->GetAccountId(),
-                                         true /*success*/);
+  ash::LoginScreen::Get()->GetModel()->NotifyFingerprintAuthResult(
+      active_user->GetAccountId(), true /*success*/);
   VLOG(1) << "Fingerprint unlock is successful.";
   LoginScreenClient::Get()->auth_recorder()->RecordFingerprintAuthSuccess(
       true /*success*/,
@@ -754,8 +754,8 @@ void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
                             unlock_attempt_type_, UnlockType::AUTH_COUNT);
   LoginScreenClient::Get()->auth_recorder()->RecordFingerprintAuthSuccess(
       false /*success*/, base::nullopt /*num_attempts*/);
-  delegate_->NotifyFingerprintAuthResult(user.GetAccountId(),
-                                         false /*success*/);
+  ash::LoginScreen::Get()->GetModel()->NotifyFingerprintAuthResult(
+      user.GetAccountId(), false /*success*/);
 
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForUser(&user);
@@ -821,8 +821,8 @@ void ScreenLocker::MaybeDisablePinAndFingerprintFromTimeout(
 
 void ScreenLocker::OnPinCanAuthenticate(const AccountId& account_id,
                                         bool can_authenticate) {
-  LoginScreenClient::Get()->login_screen()->SetPinEnabledForUser(
-      account_id, can_authenticate);
+  ash::LoginScreen::Get()->GetModel()->SetPinEnabledForUser(account_id,
+                                                            can_authenticate);
 }
 
 }  // namespace chromeos

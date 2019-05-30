@@ -39,19 +39,10 @@ class TestLoginScreen : public ash::mojom::LoginScreen,
   void SetAuthType(const AccountId& account_id,
                    ::proximity_auth::mojom::AuthType auth_type,
                    const base::string16& initial_value) override;
-
-  void SetPinEnabledForUser(const AccountId& account_id,
-                            bool is_enabled) override;
-  void NotifyFingerprintAuthResult(const AccountId& account_id,
-                                   bool successful) override;
   void EnableAuthForUser(const AccountId& account_id) override;
   void DisableAuthForUser(
       const AccountId& account_id,
       ash::mojom::AuthDisabledDataPtr auth_disabled_data) override;
-  void SetSystemInfo(bool show_if_hidden,
-                     const std::string& os_version_label_text,
-                     const std::string& enterprise_info_text,
-                     const std::string& bluetooth_name) override;
   void IsReadyForPassword(IsReadyForPasswordCallback callback) override;
   void ShowKioskAppError(const std::string& message) override;
   void SetAddUserButtonEnabled(bool enable) override;

@@ -57,9 +57,6 @@ class ScreenLocker : public AuthStatusConsumer,
     // Called by ScreenLocker to notify that ash lock animation finishes.
     virtual void OnAshLockAnimationFinished() = 0;
 
-    // Called after a fingerprint authentication attempt.
-    virtual void NotifyFingerprintAuthResult(const AccountId& account_id,
-                                             bool success) = 0;
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };

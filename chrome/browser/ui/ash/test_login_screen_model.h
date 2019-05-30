@@ -15,13 +15,21 @@ class TestLoginScreenModel : public ash::LoginScreenModel {
 
   // ash::LoginScreenModel:
   void SetUserList(const std::vector<ash::LoginUserInfo>& users) override;
-  void SetAvatarForUser(const AccountId& account_id,
-                        const ash::UserAvatar& avatar) override;
+  void SetPinEnabledForUser(const AccountId& account_id,
+                            bool is_enabled) override;
   void SetFingerprintState(const AccountId& account_id,
                            ash::FingerprintState state) override;
+  void SetAvatarForUser(const AccountId& account_id,
+                        const ash::UserAvatar& avatar) override;
+  void NotifyFingerprintAuthResult(const AccountId& account_id,
+                                   bool successful) override;
   void ShowEasyUnlockIcon(const AccountId& user,
                           const ash::EasyUnlockIconOptions& icon) override;
   void UpdateWarningMessage(const base::string16& message) override;
+  void SetSystemInfo(bool show_if_hidden,
+                     const std::string& os_version_label_text,
+                     const std::string& enterprise_info_text,
+                     const std::string& bluetooth_name) override;
   void SetPublicSessionLocales(const AccountId& account_id,
                                const std::vector<ash::LocaleItem>& locales,
                                const std::string& default_locale,

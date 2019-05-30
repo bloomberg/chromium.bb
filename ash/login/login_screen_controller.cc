@@ -352,19 +352,6 @@ void LoginScreenController::SetAuthType(
   }
 }
 
-void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
-                                                 bool is_enabled) {
-  // Chrome will update pin pod state every time user tries to authenticate.
-  // LockScreen is destroyed in the case of authentication success.
-  login_data_dispatcher_.SetPinEnabledForUser(account_id, is_enabled);
-}
-
-void LoginScreenController::NotifyFingerprintAuthResult(
-    const AccountId& account_id,
-    bool successful) {
-  login_data_dispatcher_.NotifyFingerprintAuthResult(account_id, successful);
-}
-
 void LoginScreenController::EnableAuthForUser(const AccountId& account_id) {
   login_data_dispatcher_.EnableAuthForUser(account_id);
 }
@@ -374,15 +361,6 @@ void LoginScreenController::DisableAuthForUser(
     ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
   login_data_dispatcher_.DisableAuthForUser(account_id,
                                             std::move(auth_disabled_data));
-}
-
-void LoginScreenController::SetSystemInfo(
-    bool show_if_hidden,
-    const std::string& os_version_label_text,
-    const std::string& enterprise_info_text,
-    const std::string& bluetooth_name) {
-  login_data_dispatcher_.SetSystemInfo(show_if_hidden, os_version_label_text,
-                                       enterprise_info_text, bluetooth_name);
 }
 
 void LoginScreenController::IsReadyForPassword(

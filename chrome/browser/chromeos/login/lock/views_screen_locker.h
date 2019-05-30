@@ -43,8 +43,6 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
                         HelpAppLauncher::HelpTopic help_topic_id) override;
   void ClearErrors() override;
   void OnAshLockAnimationFinished() override;
-  void NotifyFingerprintAuthResult(const AccountId& account_id,
-                                   bool success) override;
 
   // LoginScreenClient::Delegate
   void HandleAuthenticateUserWithPasswordOrPin(

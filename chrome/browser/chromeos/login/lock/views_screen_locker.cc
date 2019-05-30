@@ -155,12 +155,6 @@ void ViewsScreenLocker::OnAshLockAnimationFinished() {
   SessionControllerClientImpl::Get()->NotifyChromeLockAnimationsComplete();
 }
 
-void ViewsScreenLocker::NotifyFingerprintAuthResult(const AccountId& account_id,
-                                                    bool success) {
-  LoginScreenClient::Get()->login_screen()->NotifyFingerprintAuthResult(
-      account_id, success);
-}
-
 void ViewsScreenLocker::HandleAuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
@@ -343,8 +337,8 @@ void ViewsScreenLocker::OnAllowedInputMethodsChanged() {
 
 void ViewsScreenLocker::OnPinCanAuthenticate(const AccountId& account_id,
                                              bool can_authenticate) {
-  LoginScreenClient::Get()->login_screen()->SetPinEnabledForUser(
-      account_id, can_authenticate);
+  ash::LoginScreen::Get()->GetModel()->SetPinEnabledForUser(account_id,
+                                                            can_authenticate);
 }
 
 void ViewsScreenLocker::OnExternalBinaryAuthTimeout() {
