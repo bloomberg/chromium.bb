@@ -66,5 +66,10 @@ extern const base::Feature kForceUseAPDownloadProtection;
 
 base::ListValue GetFeatureStatusList();
 
+// Returns whether or not to stop filling in the SyncAccountType and
+// ReusedPasswordType enums. This is used in the
+// kPasswordProtectionForSignedInUsers experiment.
+bool GetShouldFillOldPhishGuardProto();
+
 }  // namespace safe_browsing
 #endif  // COMPONENTS_SAFE_BROWSING_FEATURES_H_

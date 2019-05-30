@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -61,6 +62,9 @@ const base::Feature kUseAPDownloadProtection{"UseAPDownloadProtection",
 const base::Feature kForceUseAPDownloadProtection{
     "ForceUseAPDownloadProtection", base::FEATURE_DISABLED_BY_DEFAULT};
 
+constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
+    &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
+
 namespace {
 // List of experimental features. Boolean value for each list member should be
 // set to true if the experiment is currently running at a probability other
@@ -104,6 +108,10 @@ base::ListValue GetFeatureStatusList() {
       AddFeatureAndAvailability(feature_status.feature, &param_list);
   }
   return param_list;
+}
+
+bool GetShouldFillOldPhishGuardProto() {
+  return kShouldFillOldPhishGuardProto.Get();
 }
 
 }  // namespace safe_browsing
