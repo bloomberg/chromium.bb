@@ -221,6 +221,14 @@ FeatureInfo::FeatureInfo(
       gpu_feature_info
           .status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
       gpu::kGpuFeatureStatusEnabled;
+
+#if defined(OS_CHROMEOS)
+  feature_flags_.chromium_image_ycbcr_420v = base::ContainsValue(
+      gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
+      gfx::BufferFormat::YUV_420_BIPLANAR);
+#elif defined(OS_MACOSX)
+  feature_flags_.chromium_image_ycbcr_420v = true;
+#endif
 }
 
 void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
@@ -1095,13 +1103,8 @@ void FeatureInfo::InitializeFeatures() {
     validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_RECTANGLE_ARB);
   }
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  // TODO(dcastagna): Determine ycbcr_420v_image on CrOS at runtime
-  // querying minigbm. https://crbug.com/646148
-  AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
-  feature_flags_.chromium_image_ycbcr_420v = true;
-#endif
   if (feature_flags_.chromium_image_ycbcr_420v) {
+    AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
     feature_flags_.gpu_memory_buffer_formats.Add(
         gfx::BufferFormat::YUV_420_BIPLANAR);
   }
