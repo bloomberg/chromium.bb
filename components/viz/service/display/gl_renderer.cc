@@ -929,7 +929,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   SkIRect subset;
   sk_sp<SkImage> filtered_image = SkiaHelper::ApplyImageFilter(
       use_gr_context->context(), src_image, src_image_rect, src_image_rect,
-      gfx::Vector2dF(1, 1), std::move(filter), &offset, &subset,
+      quad->filters_scale, std::move(filter), &offset, &subset,
       quad->filters_origin, true);
 
   // Clip the filtered image to the (rounded) bounding box of the element.
