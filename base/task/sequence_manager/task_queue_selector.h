@@ -93,11 +93,11 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
 
   // Maximum score to accumulate before very high priority tasks are run even in
   // the presence of highest priority tasks.
-  static const size_t kMaxHighPriorityStarvationScore = 3;
+  static const size_t kMaxVeryHighPriorityStarvationScore = 3;
 
   // Maximum score to accumulate before high priority tasks are run even in the
   // presence of very high priority tasks.
-  static const size_t kMaxVeryHighPriorityStarvationScore = 5;
+  static const size_t kMaxHighPriorityStarvationScore = 5;
 
   // Maximum score to accumulate before normal priority tasks are run even in
   // the presence of higher priority tasks i.e. highest and high priority tasks.
