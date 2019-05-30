@@ -543,11 +543,11 @@ TEST_F(FindInPageJsTest, HiddenMatch) {
   EXPECT_GT(visible_match.location, hidden_match.location);
 }
 
-// Tests that FindInPage is responds with an updated match count when a once
+// Tests that FindInPage responds with an updated match count when a once
 // hidden match becomes visible after a search finishes.
 TEST_F(FindInPageJsTest, HiddenMatchBecomesVisible) {
-  ASSERT_TRUE(
-      LoadHtml("<span id=\"hidden_match\" style='display:none'>foo</span>"));
+  ASSERT_TRUE(LoadHtml("<span>foo</span><span id=\"hidden_match\" "
+                       "style='display:none'>foo</span>"));
   const base::TimeDelta kCallJavascriptFunctionTimeout =
       base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
@@ -562,7 +562,7 @@ TEST_F(FindInPageJsTest, HiddenMatchBecomesVisible) {
         ASSERT_TRUE(result);
         ASSERT_TRUE(result->is_double());
         double count = result->GetDouble();
-        ASSERT_EQ(0.0, count);
+        ASSERT_EQ(1.0, count);
         message_received = true;
       }),
       kCallJavascriptFunctionTimeout);
@@ -583,7 +583,7 @@ TEST_F(FindInPageJsTest, HiddenMatchBecomesVisible) {
         const base::Value* count =
             result->FindKey(kSelectAndScrollResultMatches);
         ASSERT_TRUE(count->is_double());
-        ASSERT_EQ(1.0, count->GetDouble());
+        ASSERT_EQ(2.0, count->GetDouble());
         const base::Value* index = result->FindKey(kSelectAndScrollResultIndex);
         ASSERT_TRUE(index->is_double());
         ASSERT_EQ(0.0, index->GetDouble());
@@ -593,6 +593,79 @@ TEST_F(FindInPageJsTest, HiddenMatchBecomesVisible) {
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     base::RunLoop().RunUntilIdle();
     return message_received;
+  }));
+}
+
+// Tests that FindInPage highlights the next visible match when attempting to
+// select a match that was once visible but is no longer.
+TEST_F(FindInPageJsTest, MatchBecomesInvisible) {
+  ASSERT_TRUE(LoadHtml(
+      "<span>foo foo </span> <span id=\"matches_to_hide\">foo foo</span>"));
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return frames_manager()->GetAllWebFrames().size() == 1;
+  }));
+  __block bool message_received = false;
+  std::vector<base::Value> params;
+  params.push_back(base::Value(kFindStringFoo));
+  params.push_back(base::Value(kPumpSearchTimeout));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* result) {
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(result->is_double());
+        double count = result->GetDouble();
+        EXPECT_EQ(4.0, count);
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return message_received;
+  }));
+
+  __block bool select_last_match_message_received = false;
+  std::vector<base::Value> select_params;
+  select_params.push_back(base::Value(3));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSelectAndScrollToMatch, select_params,
+      base::BindOnce(^(const base::Value* result) {
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(result->is_dict());
+        const base::Value* index = result->FindKey(kSelectAndScrollResultIndex);
+        ASSERT_TRUE(index->is_double());
+        EXPECT_EQ(3.0, index->GetDouble());
+        select_last_match_message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return select_last_match_message_received;
+  }));
+
+  ExecuteJavaScript(
+      @"document.getElementById('matches_to_hide').style.display = \"none\";");
+
+  __block bool select_third_match_message_received = false;
+  std::vector<base::Value> select_third_match_params;
+  select_third_match_params.push_back(base::Value(2));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSelectAndScrollToMatch, select_third_match_params,
+      base::BindOnce(^(const base::Value* result) {
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(result->is_dict());
+        const base::Value* index = result->FindKey(kSelectAndScrollResultIndex);
+        ASSERT_TRUE(index->is_double());
+        // Since there are only two visible matches now and this
+        // kFindInPageSelectAndScrollToMatch call is asking Find in Page to
+        // traverse to a previous match, Find in Page should look for the next
+        // previous visible match. This happens to be the 2nd match.
+        EXPECT_EQ(1.0, index->GetDouble());
+        select_third_match_message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return select_third_match_message_received;
   }));
 }
 
