@@ -8,7 +8,6 @@ import android.content.Context;
 import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -19,10 +18,8 @@ import org.chromium.chrome.touchless.R;
  * eTLD+1.
  */
 public class ProgressBarView extends RelativeLayout {
-    private static final int MAX_PROGRESS = 100;
-
     private TextView mUrlTextView;
-    private ProgressBar mProgressBar;
+    private PillProgressBarView mProgressBar;
 
     public ProgressBarView(Context context) {
         super(context);
@@ -50,13 +47,12 @@ public class ProgressBarView extends RelativeLayout {
         mProgressBar = findViewById(R.id.notouch_progress_bar_view);
         mUrlTextView = findViewById(R.id.notouch_url_text_view);
 
-        mProgressBar.setMax(MAX_PROGRESS);
         setVisibility(false);
     }
 
     void setProgress(float progressFraction) {
         assert progressFraction >= 0f && progressFraction <= 1f;
-        mProgressBar.setProgress((int) (progressFraction * MAX_PROGRESS));
+        mProgressBar.setProgress((int) (progressFraction * mProgressBar.getMax()));
     }
 
     void setUrlText(String text) {

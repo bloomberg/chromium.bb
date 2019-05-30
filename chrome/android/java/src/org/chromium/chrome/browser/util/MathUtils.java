@@ -185,4 +185,20 @@ public class MathUtils {
         float yDist = y2 - y1;
         return (float) Math.sqrt(xDist * xDist + yDist * yDist);
     }
+
+    /**
+     * Maps {@code value} in [{@code fromStart}, {@code fromStop}] to
+     * [{@code toStart}, {@code toStop}].
+     *
+     * @param value A number in [{@code fromStart}, {@code fromStop}].
+     * @param fromStart Lower range of {@code value}.
+     * @param fromStop Upper range of {@code value}.
+     * @param toStart Lower range of mapped value.
+     * @param toStop Upper range of mapped value.
+     * @return mapped value.
+     */
+    public static float map(
+            float value, float fromStart, float fromStop, float toStart, float toStop) {
+        return toStart + (toStop - toStart) * ((value - fromStart) / (fromStop - fromStart));
+    }
 }

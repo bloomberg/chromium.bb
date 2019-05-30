@@ -6,16 +6,21 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@android:id/background">
         <shape>
-            <corners android:radius="16dp" />
-            <solid android:color="@android:color/transparent" />
+            <corners android:radius="@dimen/notouch_progressbar_radius"/>
+            <solid android:color="@color/notouch_progress_bar_background"/>
         </shape>
     </item>
 
-    <item android:id="@android:id/progress">
+    <!-- Without the 1dp padding, the edges of this layer will be partially visible when a
+    foreground layer is added on top. -->
+    <item android:id="@android:id/progress"
+          android:left="1dp"
+          android:right="1dp"
+          android:top="1dp">
         <clip>
             <shape>
-                <corners android:radius="16dp" />
-                <solid android:color="@color/notouch_progress_bar_foreground" />
+                <corners android:radius="@dimen/notouch_progressbar_radius"/>
+                <solid android:color="@color/notouch_progress_bar_fill"/>
             </shape>
         </clip>
     </item>
