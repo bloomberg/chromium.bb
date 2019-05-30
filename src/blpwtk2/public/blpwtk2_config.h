@@ -56,6 +56,7 @@
 // feature 10
 // feature 11
 // feature 12
+#define BLPWTK2_FEATURE_CUSTOMFONTS
 // feature 13
 // feature 14
 // feature 15
