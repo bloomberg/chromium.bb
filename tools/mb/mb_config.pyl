@@ -38,8 +38,8 @@
 
     'chromium.android': {
       'Android ASAN (dbg)': 'android_clang_asan_debug_bot',
-      'Android arm Builder (dbg)': 'android_debug_static_bot',
-      'Android arm64 Builder (dbg)': 'android_debug_static_bot_arm64',
+      'Android arm Builder (dbg)': 'android_webview_google_debug_static_bot',
+      'Android arm64 Builder (dbg)': 'android_webview_google_debug_static_bot_arm64',
       'Android x64 Builder (dbg)': 'android_debug_static_bot_x64',
       'Android x86 Builder (dbg)': 'android_debug_static_bot_x86',
       'Cast Android (dbg)': 'android_cast_debug_static_bot',
@@ -1081,6 +1081,14 @@
 
     'android_shared_release_bot_x64': [
       'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
+    ],
+
+    'android_webview_google_debug_static_bot': [
+      'android', 'debug_static_bot', 'webview_google',
+    ],
+
+    'android_webview_google_debug_static_bot_arm64': [
+      'android', 'debug_static_bot', 'arm64', 'webview_google',
     ],
 
     'android_without_codecs_debug_bot': [
@@ -2404,6 +2412,10 @@
 
     'vulkan': {
       'gn_args': 'android32_ndk_api_level=26 android64_ndk_api_level=26',
+    },
+
+    'webview_google': {
+      'gn_args': 'system_webview_package_name="com.google.android.webview"',
     },
 
     'win_cross': {

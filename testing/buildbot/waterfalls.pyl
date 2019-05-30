@@ -96,7 +96,9 @@
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'LMY47I',
+              'device_os': 'LMY48I',
+              'device_os_flavor': 'google',
+              'device_os_type': 'userdebug',
               'device_type': 'hammerhead',
               'os': 'Android',
             },
@@ -112,9 +114,10 @@
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'MRA58Z',
-              'device_os_flavor': 'aosp',
-              'device_type': 'hammerhead',
+              'device_os': 'MMB29Q',
+              'device_os_flavor': 'google',
+              'device_os_type': 'userdebug',
+              'device_type': 'bullhead',
               'os': 'Android',
             },
           ],
@@ -129,8 +132,9 @@
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'NMF27E',
-              'device_os_flavor': 'aosp',
+              'device_os': 'NRD90M',
+              'device_os_flavor': 'google',
+              'device_os_type': 'userdebug',
               'device_type': 'bullhead',
               'os': 'Android',
             },
@@ -146,8 +150,10 @@
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'OPD3.170816.023',
-              'device_type': 'walleye',
+              'device_os': 'OPR3.170623.008',
+              'device_os_flavor': 'google',
+              'device_os_type': 'userdebug',
+              'device_type': 'marlin',
               'os': 'Android',
             },
           ],
@@ -547,8 +553,9 @@
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'OPD3.170816.023',
-              'device_type': 'walleye',
+              'device_os': 'OPR3.170623.008',
+              'device_os_flavor': 'google',
+              'device_type': 'marlin',
               'os': 'Android',
             },
           ],
