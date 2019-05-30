@@ -423,6 +423,7 @@ void MockHostResolverBase::TriggerMdnsListeners(
 MockHostResolverBase::MockHostResolverBase(bool use_caching,
                                            int cache_invalidation_num)
     : last_request_priority_(DEFAULT_PRIORITY),
+      last_secure_dns_mode_override_(base::nullopt),
       synchronous_mode_(false),
       ondemand_mode_(false),
       initial_cache_invalidation_num_(cache_invalidation_num),
@@ -447,6 +448,8 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   last_request_priority_ = request->parameters().initial_priority;
+  last_secure_dns_mode_override_ =
+      request->parameters().secure_dns_mode_override;
   num_resolve_++;
   AddressList addresses;
   base::Optional<HostCache::EntryStaleness> stale_info;

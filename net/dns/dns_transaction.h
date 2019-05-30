@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "net/base/request_priority.h"
-#include "net/dns/dns_util.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/record_rdata.h"
 #include "url/gurl.h"
 
@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
       uint16_t qtype,
       CallbackType callback,
       const NetLogWithSource& net_log,
-      SecureDnsMode secure_dns_mode,
+      DnsConfig::SecureDnsMode secure_dns_mode,
       URLRequestContext* url_request_context) WARN_UNUSED_RESULT = 0;
 
   // The given EDNS0 option will be included in all DNS queries performed by

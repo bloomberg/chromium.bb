@@ -144,6 +144,7 @@ source_set("host_resolver") {
   # restriction.
   visibility = [
     ":dns",
+    ":dns_client",
     ":host_resolver_manager",
     ":mdns_client",
     "//net",
@@ -296,13 +297,13 @@ source_set("dns_client") {
       "dns_client.h",
       "dns_response.h",
       "dns_transaction.h",
-      "dns_util.h",
       "record_parsed.h",
       "record_rdata.h",
     ]
   }
 
   deps = [
+    ":host_resolver",
     "//net:net_deps",
   ]
   public_deps = [

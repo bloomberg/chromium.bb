@@ -186,7 +186,7 @@ class MockTransaction : public DnsTransaction,
   MockTransaction(const MockDnsClientRuleList& rules,
                   const std::string& hostname,
                   uint16_t qtype,
-                  SecureDnsMode secure_dns_mode,
+                  DnsConfig::SecureDnsMode secure_dns_mode,
                   URLRequestContext* url_request_context,
                   DnsTransactionFactory::CallbackType callback)
       : result_(MockDnsClientRule::FAIL),
@@ -449,7 +449,7 @@ MockDnsClientRule::Result MockDnsClientRule::CreateSecureResult(
 
 MockDnsClientRule::MockDnsClientRule(const std::string& prefix,
                                      uint16_t qtype,
-                                     SecureDnsMode secure_dns_mode,
+                                     DnsConfig::SecureDnsMode secure_dns_mode,
                                      Result result,
                                      bool delay,
                                      URLRequestContext* context)
@@ -475,7 +475,7 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
       uint16_t qtype,
       DnsTransactionFactory::CallbackType callback,
       const NetLogWithSource&,
-      SecureDnsMode secure_dns_mode,
+      DnsConfig::SecureDnsMode secure_dns_mode,
       URLRequestContext* url_request_context) override {
     std::unique_ptr<MockTransaction> transaction =
         std::make_unique<MockTransaction>(rules_, hostname, qtype,

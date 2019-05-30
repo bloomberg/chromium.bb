@@ -20,7 +20,8 @@ DnsConfig::DnsConfig()
       timeout(kDnsDefaultTimeout),
       attempts(2),
       rotate(false),
-      use_local_ipv6(false) {}
+      use_local_ipv6(false),
+      secure_dns_mode(SecureDnsMode::OFF) {}
 
 DnsConfig::DnsConfig(const DnsConfig& other) = default;
 
@@ -43,7 +44,8 @@ bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
          (ndots == d.ndots) && (timeout == d.timeout) &&
          (attempts == d.attempts) && (rotate == d.rotate) &&
          (use_local_ipv6 == d.use_local_ipv6) &&
-         (dns_over_https_servers == d.dns_over_https_servers);
+         (dns_over_https_servers == d.dns_over_https_servers) &&
+         (secure_dns_mode == d.secure_dns_mode);
 }
 
 void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
@@ -57,6 +59,7 @@ void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   rotate = d.rotate;
   use_local_ipv6 = d.use_local_ipv6;
   dns_over_https_servers = d.dns_over_https_servers;
+  secure_dns_mode = d.secure_dns_mode;
 }
 
 std::unique_ptr<base::Value> DnsConfig::ToValue() const {
@@ -90,6 +93,7 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
     list->GetList().push_back(std::move(val));
   }
   dict->Set("doh_servers", std::move(list));
+  dict->SetInteger("secure_dns_mode", static_cast<int>(secure_dns_mode));
 
   return std::move(dict);
 }

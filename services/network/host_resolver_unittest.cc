@@ -626,6 +626,33 @@ TEST_F(HostResolverTest, LoopbackOnly) {
               testing::ElementsAre(CreateExpectedEndPoint("127.0.12.24", 80)));
 }
 
+TEST_F(HostResolverTest, SecureDnsModeOverride) {
+  auto inner_resolver = std::make_unique<net::MockHostResolver>();
+  net::NetLog net_log;
+
+  HostResolver resolver(inner_resolver.get(), &net_log);
+
+  mojom::ResolveHostParametersPtr optional_parameters =
+      mojom::ResolveHostParameters::New();
+  optional_parameters->secure_dns_mode_override =
+      network::mojom::OptionalSecureDnsMode::SECURE;
+
+  base::RunLoop run_loop;
+  mojom::ResolveHostClientPtr response_client_ptr;
+  TestResolveHostClient response_client(&response_client_ptr, &run_loop);
+
+  resolver.ResolveHost(net::HostPortPair("localhost", 80),
+                       std::move(optional_parameters),
+                       std::move(response_client_ptr));
+  run_loop.Run();
+
+  EXPECT_EQ(net::OK, response_client.result_error());
+  EXPECT_THAT(response_client.result_addresses().value().endpoints(),
+              testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 80)));
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::SECURE,
+            inner_resolver->last_secure_dns_mode_override().value());
+}
+
 TEST_F(HostResolverTest, Failure_Sync) {
   auto inner_resolver = std::make_unique<net::MockHostResolver>();
   inner_resolver->rules()->AddSimulatedFailure("example.com");
@@ -1137,7 +1164,8 @@ TEST_F(HostResolverTest, TextResults) {
   static const char* kTextRecords[] = {"foo", "bar", "more text"};
   net::MockDnsClientRuleList rules;
   rules.emplace_back(
-      "example.com", net::dns_protocol::kTypeTXT, net::SecureDnsMode::AUTOMATIC,
+      "example.com", net::dns_protocol::kTypeTXT,
+      net::DnsConfig::SecureDnsMode::AUTOMATIC,
       net::MockDnsClientRule::Result(net::BuildTestDnsTextResponse(
           "example.com", {std::vector<std::string>(std::begin(kTextRecords),
                                                    std::end(kTextRecords))})),
@@ -1177,7 +1205,8 @@ TEST_F(HostResolverTest, TextResults) {
 TEST_F(HostResolverTest, HostResults) {
   net::MockDnsClientRuleList rules;
   rules.emplace_back(
-      "example.com", net::dns_protocol::kTypePTR, net::SecureDnsMode::AUTOMATIC,
+      "example.com", net::dns_protocol::kTypePTR,
+      net::DnsConfig::SecureDnsMode::AUTOMATIC,
       net::MockDnsClientRule::Result(net::BuildTestDnsPointerResponse(
           "example.com", {"google.com", "chromium.org"})),
       false /* delay */);

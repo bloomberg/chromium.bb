@@ -3501,7 +3501,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
                          uint16_t qtype,
                          MockDnsClientRule::ResultType result_type,
                          bool delay) {
-    rules->emplace_back(prefix, qtype, SecureDnsMode::AUTOMATIC,
+    rules->emplace_back(prefix, qtype, DnsConfig::SecureDnsMode::AUTOMATIC,
                         MockDnsClientRule::Result(result_type), delay);
   }
 
@@ -3510,7 +3510,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
                          uint16_t qtype,
                          const IPAddress& result_ip,
                          bool delay) {
-    rules->emplace_back(prefix, qtype, SecureDnsMode::AUTOMATIC,
+    rules->emplace_back(prefix, qtype, DnsConfig::SecureDnsMode::AUTOMATIC,
                         MockDnsClientRule::Result(
                             BuildTestDnsResponse(prefix, std::move(result_ip))),
                         delay);
@@ -3523,7 +3523,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
                          std::string cannonname,
                          bool delay) {
     rules->emplace_back(
-        prefix, qtype, SecureDnsMode::AUTOMATIC,
+        prefix, qtype, DnsConfig::SecureDnsMode::AUTOMATIC,
         MockDnsClientRule::Result(BuildTestDnsResponseWithCname(
             prefix, std::move(result_ip), std::move(cannonname))),
         delay);
@@ -3536,7 +3536,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
                                bool delay) {
     MockDnsClientRule::Result result(result_type);
     result.secure = true;
-    rules->emplace_back(prefix, qtype, SecureDnsMode::AUTOMATIC,
+    rules->emplace_back(prefix, qtype, DnsConfig::SecureDnsMode::AUTOMATIC,
                         std::move(result), delay);
   }
 
@@ -4127,9 +4127,10 @@ TEST_F(HostResolverManagerDnsTest, BypassDnsTask) {
 TEST_F(HostResolverManagerDnsTest, BypassDnsToMdnsWithNonAddress) {
   // Ensure DNS task and system (proc) requests will fail.
   MockDnsClientRuleList rules;
-  rules.emplace_back(
-      "myhello.local", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
-      MockDnsClientRule::Result(MockDnsClientRule::FAIL), false /* delay */);
+  rules.emplace_back("myhello.local", dns_protocol::kTypeTXT,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
+                     MockDnsClientRule::Result(MockDnsClientRule::FAIL),
+                     false /* delay */);
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
   proc_->AddRuleForAllFamilies(std::string(), std::string());
@@ -5367,11 +5368,12 @@ TEST_F(HostResolverManagerTest, ResolveLocalHostname) {
 TEST_F(HostResolverManagerDnsTest, ResolveDnsOverHttpsServerName) {
   MockDnsClientRuleList rules;
   rules.emplace_back(
-      "dns.example2.com", dns_protocol::kTypeA, SecureDnsMode::OFF,
+      "dns.example2.com", dns_protocol::kTypeA, DnsConfig::SecureDnsMode::OFF,
       MockDnsClientRule::Result(MockDnsClientRule::OK), false /* delay */);
-  rules.emplace_back(
-      "dns.example2.com", dns_protocol::kTypeAAAA, SecureDnsMode::OFF,
-      MockDnsClientRule::Result(MockDnsClientRule::OK), false /* delay */);
+  rules.emplace_back("dns.example2.com", dns_protocol::kTypeAAAA,
+                     DnsConfig::SecureDnsMode::OFF,
+                     MockDnsClientRule::Result(MockDnsClientRule::OK),
+                     false /* delay */);
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
 
@@ -5580,6 +5582,9 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
       dns_over_https_servers = {
           DnsConfig::DnsOverHttpsServerConfig("dns.example.com", true)};
   overrides.dns_over_https_servers = dns_over_https_servers;
+  const DnsConfig::SecureDnsMode secure_dns_mode =
+      DnsConfig::SecureDnsMode::SECURE;
+  overrides.secure_dns_mode = secure_dns_mode;
 
   // This test is expected to test overriding all fields.
   EXPECT_TRUE(overrides.OverridesEverything());
@@ -5598,6 +5603,7 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   EXPECT_TRUE(overridden_config->rotate);
   EXPECT_TRUE(overridden_config->use_local_ipv6);
   EXPECT_EQ(dns_over_https_servers, overridden_config->dns_over_https_servers);
+  EXPECT_EQ(secure_dns_mode, overridden_config->secure_dns_mode);
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -5654,6 +5660,8 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_PartialOverride) {
   EXPECT_FALSE(overridden_config->use_local_ipv6);
   EXPECT_EQ(original_config.dns_over_https_servers,
             overridden_config->dns_over_https_servers);
+  EXPECT_EQ(original_config.secure_dns_mode,
+            overridden_config->secure_dns_mode);
 }
 
 // Test that overridden configs are reapplied over a changed underlying system
@@ -5900,7 +5908,8 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery) {
                                                         bar_records};
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsTextResponse(
                          "host", std::move(text_records))),
                      false /* delay */);
@@ -5938,7 +5947,8 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_NonexistentDomain) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(MockDnsClientRule::NODOMAIN),
                      false /* delay */);
 
@@ -5964,9 +5974,9 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_Failure) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(MockDnsClientRule::FAIL),
-                     false /* delay */);
+  rules.emplace_back(
+      "host", dns_protocol::kTypeTXT, DnsConfig::SecureDnsMode::AUTOMATIC,
+      MockDnsClientRule::Result(MockDnsClientRule::FAIL), false /* delay */);
 
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
@@ -5990,9 +6000,9 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_Timeout) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(MockDnsClientRule::TIMEOUT),
-                     false /* delay */);
+  rules.emplace_back(
+      "host", dns_protocol::kTypeTXT, DnsConfig::SecureDnsMode::AUTOMATIC,
+      MockDnsClientRule::Result(MockDnsClientRule::TIMEOUT), false /* delay */);
 
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
@@ -6016,9 +6026,9 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_Empty) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
-                     false /* delay */);
+  rules.emplace_back(
+      "host", dns_protocol::kTypeTXT, DnsConfig::SecureDnsMode::AUTOMATIC,
+      MockDnsClientRule::Result(MockDnsClientRule::EMPTY), false /* delay */);
 
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
@@ -6042,7 +6052,8 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_Malformed) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(MockDnsClientRule::MALFORMED),
                      false /* delay */);
 
@@ -6064,7 +6075,8 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_Malformed) {
 TEST_F(HostResolverManagerDnsTest, TxtQuery_MismatchedName) {
   std::vector<std::vector<std::string>> text_records = {{"text"}};
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsTextResponse(
                          "host", std::move(text_records), "not.host")),
                      false /* delay */);
@@ -6087,7 +6099,8 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_MismatchedName) {
 TEST_F(HostResolverManagerDnsTest, TxtQuery_WrongType) {
   // Respond to a TXT query with an A response.
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(
                          BuildTestDnsResponse("host", IPAddress(1, 2, 3, 4))),
                      false /* delay */);
@@ -6120,7 +6133,8 @@ TEST_F(HostResolverManagerDnsTest, TxtDnsQuery) {
                                                         bar_records};
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsTextResponse(
                          "host", std::move(text_records))),
                      false /* delay */);
@@ -6154,7 +6168,8 @@ TEST_F(HostResolverManagerDnsTest, TxtDnsQuery) {
 
 TEST_F(HostResolverManagerDnsTest, PtrQuery) {
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypePTR, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypePTR,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsPointerResponse(
                          "host", {"foo.com", "bar.com"})),
                      false /* delay */);
@@ -6181,7 +6196,7 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery) {
 TEST_F(HostResolverManagerDnsTest, PtrQuery_Ip) {
   MockDnsClientRuleList rules;
   rules.emplace_back("8.8.8.8", dns_protocol::kTypePTR,
-                     SecureDnsMode::AUTOMATIC,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsPointerResponse(
                          "8.8.8.8", {"foo.com", "bar.com"})),
                      false /* delay */);
@@ -6212,7 +6227,8 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_NonexistentDomain) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypePTR, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypePTR,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(MockDnsClientRule::NODOMAIN),
                      false /* delay */);
 
@@ -6238,9 +6254,9 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_Failure) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypePTR, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(MockDnsClientRule::FAIL),
-                     false /* delay */);
+  rules.emplace_back(
+      "host", dns_protocol::kTypePTR, DnsConfig::SecureDnsMode::AUTOMATIC,
+      MockDnsClientRule::Result(MockDnsClientRule::FAIL), false /* delay */);
 
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
@@ -6264,9 +6280,9 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_Timeout) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypePTR, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(MockDnsClientRule::TIMEOUT),
-                     false /* delay */);
+  rules.emplace_back(
+      "host", dns_protocol::kTypePTR, DnsConfig::SecureDnsMode::AUTOMATIC,
+      MockDnsClientRule::Result(MockDnsClientRule::TIMEOUT), false /* delay */);
 
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
@@ -6290,9 +6306,9 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_Empty) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypePTR, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
-                     false /* delay */);
+  rules.emplace_back(
+      "host", dns_protocol::kTypePTR, DnsConfig::SecureDnsMode::AUTOMATIC,
+      MockDnsClientRule::Result(MockDnsClientRule::EMPTY), false /* delay */);
 
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
@@ -6316,7 +6332,8 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_Malformed) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypePTR, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypePTR,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(MockDnsClientRule::MALFORMED),
                      false /* delay */);
 
@@ -6338,7 +6355,8 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_Malformed) {
 TEST_F(HostResolverManagerDnsTest, PtrQuery_MismatchedName) {
   std::vector<std::string> ptr_records = {{"foo.com"}};
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypePTR, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypePTR,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsPointerResponse(
                          "host", std::move(ptr_records), "not.host")),
                      false /* delay */);
@@ -6361,7 +6379,8 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_MismatchedName) {
 TEST_F(HostResolverManagerDnsTest, PtrQuery_WrongType) {
   // Respond to a TXT query with an A response.
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypePTR, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypePTR,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(
                          BuildTestDnsResponse("host", IPAddress(1, 2, 3, 4))),
                      false /* delay */);
@@ -6388,7 +6407,8 @@ TEST_F(HostResolverManagerDnsTest, PtrQuery_WrongType) {
 // involved.
 TEST_F(HostResolverManagerDnsTest, PtrDnsQuery) {
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypePTR, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypePTR,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsPointerResponse(
                          "host", {"foo.com", "bar.com"})),
                      false /* delay */);
@@ -6419,7 +6439,8 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery) {
   const TestServiceRecord kRecord3 = {5, 1, 5, "google.com"};
   const TestServiceRecord kRecord4 = {2, 100, 12345, "chromium.org"};
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeSRV,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsServiceResponse(
                          "host", {kRecord1, kRecord2, kRecord3, kRecord4})),
                      false /* delay */);
@@ -6463,7 +6484,8 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_ZeroWeight) {
   const TestServiceRecord kRecord1 = {5, 0, 80, "bar.com"};
   const TestServiceRecord kRecord2 = {5, 0, 5, "google.com"};
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeSRV,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsServiceResponse(
                          "host", {kRecord1, kRecord2})),
                      false /* delay */);
@@ -6494,7 +6516,8 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_NonexistentDomain) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeSRV,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(MockDnsClientRule::NODOMAIN),
                      false /* delay */);
 
@@ -6520,9 +6543,9 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_Failure) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(MockDnsClientRule::FAIL),
-                     false /* delay */);
+  rules.emplace_back(
+      "host", dns_protocol::kTypeSRV, DnsConfig::SecureDnsMode::AUTOMATIC,
+      MockDnsClientRule::Result(MockDnsClientRule::FAIL), false /* delay */);
 
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
@@ -6546,9 +6569,9 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_Timeout) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(MockDnsClientRule::TIMEOUT),
-                     false /* delay */);
+  rules.emplace_back(
+      "host", dns_protocol::kTypeSRV, DnsConfig::SecureDnsMode::AUTOMATIC,
+      MockDnsClientRule::Result(MockDnsClientRule::TIMEOUT), false /* delay */);
 
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
@@ -6572,9 +6595,9 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_Empty) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
-                     false /* delay */);
+  rules.emplace_back(
+      "host", dns_protocol::kTypeSRV, DnsConfig::SecureDnsMode::AUTOMATIC,
+      MockDnsClientRule::Result(MockDnsClientRule::EMPTY), false /* delay */);
 
   CreateResolver();
   UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
@@ -6598,7 +6621,8 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_Malformed) {
   proc_->SignalMultiple(1u);
 
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeSRV,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(MockDnsClientRule::MALFORMED),
                      false /* delay */);
 
@@ -6620,7 +6644,8 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_Malformed) {
 TEST_F(HostResolverManagerDnsTest, SrvQuery_MismatchedName) {
   std::vector<TestServiceRecord> srv_records = {{1, 2, 3, "foo.com"}};
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeSRV,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsServiceResponse(
                          "host", std::move(srv_records), "not.host")),
                      false /* delay */);
@@ -6643,7 +6668,8 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_MismatchedName) {
 TEST_F(HostResolverManagerDnsTest, SrvQuery_WrongType) {
   // Respond to a SRV query with an A response.
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeSRV,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(
                          BuildTestDnsResponse("host", IPAddress(1, 2, 3, 4))),
                      false /* delay */);
@@ -6674,7 +6700,8 @@ TEST_F(HostResolverManagerDnsTest, SrvDnsQuery) {
   const TestServiceRecord kRecord3 = {5, 1, 5, "google.com"};
   const TestServiceRecord kRecord4 = {2, 100, 12345, "chromium.org"};
   MockDnsClientRuleList rules;
-  rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
+  rules.emplace_back("host", dns_protocol::kTypeSRV,
+                     DnsConfig::SecureDnsMode::AUTOMATIC,
                      MockDnsClientRule::Result(BuildTestDnsServiceResponse(
                          "host", {kRecord1, kRecord2, kRecord3, kRecord4})),
                      false /* delay */);

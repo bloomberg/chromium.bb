@@ -3184,13 +3184,13 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   CHECK(result.AssignFromIPLiteral(kResult));
   net::MockDnsClientRuleList rules;
   rules.emplace_back(kQueryHostname, net::dns_protocol::kTypeA,
-                     net::SecureDnsMode::AUTOMATIC,
+                     net::DnsConfig::SecureDnsMode::AUTOMATIC,
                      net::MockDnsClientRule::Result(
                          net::BuildTestDnsResponse(kQueryHostname, result)),
                      false /* delay */);
   rules.emplace_back(
       kQueryHostname, net::dns_protocol::kTypeAAAA,
-      net::SecureDnsMode::AUTOMATIC,
+      net::DnsConfig::SecureDnsMode::AUTOMATIC,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::ResultType::EMPTY),
       false /* delay */);
   auto mock_dns_client =

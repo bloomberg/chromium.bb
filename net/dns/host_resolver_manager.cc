@@ -1064,7 +1064,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       DnsQueryType dns_query_type) {
     DCHECK(client_);
     DCHECK_NE(DnsQueryType::UNSPECIFIED, dns_query_type);
-    SecureDnsMode secure_dns_mode = SecureDnsMode::AUTOMATIC;
+    DnsConfig::SecureDnsMode secure_dns_mode =
+        DnsConfig::SecureDnsMode::AUTOMATIC;
     // Downgrade to OFF mode if the query name for this attempt matches one of
     // the DoH server names. This is needed to prevent infinite recursion.
     DCHECK(client_->GetConfig());
@@ -1072,7 +1073,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       if (hostname_.compare(GURL(GetURLFromTemplateWithoutParameters(
                                      doh_server.server_template))
                                 .host()) == 0) {
-        secure_dns_mode = SecureDnsMode::OFF;
+        secure_dns_mode = DnsConfig::SecureDnsMode::OFF;
       }
     }
     std::unique_ptr<DnsTransaction> trans =

@@ -39,6 +39,11 @@ std::unique_ptr<HostResolver> HostResolver::Factory::CreateStandaloneResolver(
       net_log, options, host_mapping_rules, enable_caching);
 }
 
+HostResolver::ResolveHostParameters::ResolveHostParameters() = default;
+
+HostResolver::ResolveHostParameters::ResolveHostParameters(
+    const ResolveHostParameters& other) = default;
+
 HostResolver::~HostResolver() = default;
 
 std::unique_ptr<HostResolver::MdnsListener> HostResolver::CreateMdnsListener(

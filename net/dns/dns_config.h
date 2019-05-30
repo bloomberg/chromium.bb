@@ -54,6 +54,19 @@ struct NET_EXPORT DnsConfig {
     bool use_post;
   };
 
+  // The SecureDnsMode specifies what types of lookups (secure/insecure) should
+  // be performed and in what order when resolving a specific query. The int
+  // values should not be changed as they are logged.
+  enum class SecureDnsMode : int {
+    // In OFF mode, no DoH lookups should be performed.
+    OFF = 0,
+    // In AUTOMATIC mode, DoH lookups should be performed first if DoH is
+    // available, and insecure DNS lookups should be performed as a fallback.
+    AUTOMATIC = 1,
+    // In SECURE mode, only DoH lookups should be performed.
+    SECURE = 2,
+  };
+
   // List of name server addresses.
   std::vector<IPEndPoint> nameservers;
   // Suffix search list; used on first lookup when number of dots in given name
@@ -93,6 +106,12 @@ struct NET_EXPORT DnsConfig {
   // List of servers to query over HTTPS, queried in order
   // (https://tools.ietf.org/id/draft-ietf-doh-dns-over-https-12.txt).
   std::vector<DnsOverHttpsServerConfig> dns_over_https_servers;
+
+  // The default SecureDnsMode to use when resolving queries. It can be
+  // overridden for individual requests (such as requests to resolve a DoH
+  // server hostname) using |HostResolver::ResolveHostParameters::
+  // secure_dns_mode_override|.
+  SecureDnsMode secure_dns_mode;
 };
 
 }  // namespace net

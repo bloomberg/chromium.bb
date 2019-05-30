@@ -20,6 +20,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/completion_once_callback.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/host_resolver_source.h"
@@ -181,6 +182,13 @@ class MockHostResolverBase
     return last_request_priority_;
   }
 
+  // Returns the SecureDnsMode override of the last call to Resolve() (or
+  // base::nullopt if Resolve() hasn't been called yet).
+  base::Optional<DnsConfig::SecureDnsMode> last_secure_dns_mode_override()
+      const {
+    return last_secure_dns_mode_override_;
+  }
+
   void TriggerMdnsListeners(const HostPortPair& host,
                             DnsQueryType query_type,
                             MdnsListener::Delegate::UpdateType update_type,
@@ -238,6 +246,7 @@ class MockHostResolverBase
   void RemoveCancelledListener(MdnsListenerImpl* listener);
 
   RequestPriority last_request_priority_;
+  base::Optional<DnsConfig::SecureDnsMode> last_secure_dns_mode_override_;
   bool synchronous_mode_;
   bool ondemand_mode_;
   std::map<HostResolverSource, scoped_refptr<RuleBasedHostResolverProc>>

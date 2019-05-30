@@ -169,7 +169,10 @@ class NET_EXPORT HostResolver {
   // Parameter-grouping struct for additional optional parameters for
   // CreateRequest() calls. All fields are optional and have a reasonable
   // default.
-  struct ResolveHostParameters {
+  struct NET_EXPORT ResolveHostParameters {
+    ResolveHostParameters();
+    ResolveHostParameters(const ResolveHostParameters& other);
+
     // Requested DNS query type. If UNSPECIFIED, resolver will pick A or AAAA
     // (or both) based on IPv4/IPv6 settings.
     DnsQueryType dns_query_type = DnsQueryType::UNSPECIFIED;
@@ -212,6 +215,10 @@ class NET_EXPORT HostResolver {
     // will receive special logging/observer treatment, and the result addresses
     // will always be |base::nullopt|.
     bool is_speculative = false;
+
+    // Set to override the resolver's default secure dns mode for this request.
+    base::Optional<DnsConfig::SecureDnsMode> secure_dns_mode_override =
+        base::nullopt;
   };
 
   // Handler for an ongoing MDNS listening operation. Created by

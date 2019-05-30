@@ -55,6 +55,7 @@ struct NET_EXPORT DnsConfigOverrides {
   base::Optional<bool> use_local_ipv6;
   base::Optional<std::vector<DnsConfig::DnsOverHttpsServerConfig>>
       dns_over_https_servers;
+  base::Optional<DnsConfig::SecureDnsMode> secure_dns_mode;
 
   // Note no overriding value for |unhandled_options|. It is meta-configuration,
   // and there should be no reason to override it.
