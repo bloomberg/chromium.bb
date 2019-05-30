@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -44,6 +45,14 @@ class ApkWebAppService : public KeyedService,
 
   void SetArcAppListPrefsForTesting(ArcAppListPrefs* prefs);
 
+  using WebAppCallbackForTesting =
+      base::OnceCallback<void(const std::string& package_name,
+                              const web_app::AppId& web_app_id)>;
+  void SetWebAppInstalledCallbackForTesting(
+      WebAppCallbackForTesting web_app_installed_callback);
+  void SetWebAppUninstalledCallbackForTesting(
+      WebAppCallbackForTesting web_app_uninstalled_callback);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ApkWebAppInstallerDelayedArcStartBrowserTest,
                            DelayedUninstall);
@@ -73,6 +82,9 @@ class ApkWebAppService : public KeyedService,
   void OnDidFinishInstall(const std::string& package_name,
                           const web_app::AppId& web_app_id,
                           web_app::InstallResultCode code);
+
+  WebAppCallbackForTesting web_app_installed_callback_;
+  WebAppCallbackForTesting web_app_uninstalled_callback_;
 
   Profile* profile_;
   ArcAppListPrefs* arc_app_list_prefs_;
