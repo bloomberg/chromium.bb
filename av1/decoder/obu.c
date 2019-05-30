@@ -533,10 +533,14 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
   return tile_list_payload_size;
 }
 
+// Reads the country code as specified in Recommendation ITU-T T.35. On
+// success, returns the number of bytes read from 'data'. On failure, calls
+// aom_internal_error() and does not return.
+//
 // Note: This function does not read itu_t_t35_payload_bytes because the exact
 // syntax of itu_t_t35_payload_bytes is not defined in the spec.
-static void read_metadata_itut_t35(AV1_COMMON *const cm, const uint8_t *data,
-                                   size_t sz) {
+static size_t read_metadata_itut_t35(AV1_COMMON *const cm, const uint8_t *data,
+                                     size_t sz) {
   size_t i = 0;
   // itu_t_t35_country_code f(8)
   if (i >= sz) {
@@ -554,6 +558,7 @@ static void read_metadata_itut_t35(AV1_COMMON *const cm, const uint8_t *data,
     ++i;
   }
   // itu_t_t35_payload_bytes
+  return i;
 }
 
 static void read_metadata_hdr_cll(struct aom_read_bit_buffer *rb) {
@@ -679,7 +684,7 @@ static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
   const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)type_value;
   if (metadata_type == 0 || metadata_type >= 6) {
     // If metadata_type is reserved for future use or a user private value,
-    // ignore the entire OBU.
+    // ignore the entire OBU and just check trailing bits.
     if (get_last_nonzero_byte(data + type_length, sz - type_length) == 0) {
       pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return 0;
@@ -687,9 +692,19 @@ static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
     return sz;
   }
   if (metadata_type == OBU_METADATA_TYPE_ITUT_T35) {
-    read_metadata_itut_t35(cm, data + type_length, sz - type_length);
-    // Ignore itu_t_t35_payload_bytes.
-    // TODO(wtc): Check trailing bits.
+    size_t bytes_read =
+        type_length +
+        read_metadata_itut_t35(cm, data + type_length, sz - type_length);
+    // Ignore itu_t_t35_payload_bytes and check trailing bits. Section 6.7.2
+    // of the spec says:
+    //   itu_t_t35_payload_bytes shall be bytes containing data registered as
+    //   specified in Recommendation ITU-T T.35.
+    // Therefore itu_t_t35_payload_bytes is byte aligned and the first
+    // trailing byte should be 0x80.
+    if (get_last_nonzero_byte(data + bytes_read, sz - bytes_read) != 0x80) {
+      pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return 0;
+    }
     return sz;
   }
   struct aom_read_bit_buffer rb;
@@ -700,11 +715,6 @@ static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
     read_metadata_hdr_mdcv(&rb);
   } else if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
     read_metadata_scalability(&rb);
-    // TODO(wtc): Temporarily allow the scalability metadata type to have no
-    // trailing bits because some test vectors have this error. See
-    // https://crbug.com/aomedia/2389.
-    assert((rb.bit_offset & 7) == 0);
-    if (type_length + (rb.bit_offset >> 3) == sz) return sz;
   } else {
     assert(metadata_type == OBU_METADATA_TYPE_TIMECODE);
     read_metadata_timecode(&rb);
