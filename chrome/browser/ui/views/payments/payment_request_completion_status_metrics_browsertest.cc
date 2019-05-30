@@ -451,8 +451,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestInitiatedCompletionStatusMetricsTest,
   // Navigate away.
   NavigateTo("/payment_request_email_test.html");
 
-  // No abort reason should be logged.
-  histogram_tester.ExpectTotalCount("PaymentRequest.CheckoutFunnel.Aborted", 0);
+  // Make sure the metrics are logged correctly.
+  histogram_tester.ExpectUniqueSample(
+      "PaymentRequest.CheckoutFunnel.Aborted",
+      JourneyLogger::ABORT_REASON_USER_NAVIGATION, 1);
 
   // There is one sample, because the request was initiated.
   std::vector<base::Bucket> buckets =

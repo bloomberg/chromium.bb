@@ -7,7 +7,11 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -75,8 +79,16 @@ JourneyLogger::JourneyLogger(bool is_incognito, ukm::SourceId source_id)
       source_id_(source_id) {}
 
 JourneyLogger::~JourneyLogger() {
-  if (WasPaymentRequestTriggered())
-    DCHECK(has_recorded_);
+  UMA_HISTOGRAM_BOOLEAN("PaymentRequest.JourneyLoggerHasRecorded",
+                        has_recorded_);
+  if (!has_recorded_) {
+    static base::debug::CrashKeyString* journey_logger_no_record =
+        base::debug::AllocateCrashKeyString("journey_logger_no_record",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(journey_logger_no_record,
+                                   base::StringPrintf("%d", events_));
+    base::debug::DumpWithoutCrashing();
+  }
 }
 
 void JourneyLogger::IncrementSelectionAdds(Section section) {
@@ -162,11 +174,10 @@ void JourneyLogger::SetCompleted() {
 }
 
 void JourneyLogger::SetAborted(AbortReason reason) {
-  // Don't log abort reasons if the Payment Request was not triggered.
-  if (WasPaymentRequestTriggered()) {
-    base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.Aborted",
-                                  reason, ABORT_REASON_MAX);
-  }
+  // Always record the first abort reason regardless of whether the
+  // PaymentRequest.show() was triggered or not.
+  base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.Aborted", reason,
+                                ABORT_REASON_MAX);
 
   if (reason == ABORT_REASON_ABORTED_BY_USER ||
       reason == ABORT_REASON_USER_NAVIGATION)
@@ -184,7 +195,16 @@ void JourneyLogger::SetNotShown(NotShownReason reason) {
 
 void JourneyLogger::RecordJourneyStatsHistograms(
     CompletionStatus completion_status) {
-  DCHECK(!has_recorded_);
+  if (has_recorded_) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "PaymentRequest.JourneyLoggerHasRecordedMultipleTimes", true);
+    static base::debug::CrashKeyString* journey_logger_multiple_record =
+        base::debug::AllocateCrashKeyString("journey_logger_multiple_record",
+                                            base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(journey_logger_multiple_record,
+                                   base::StringPrintf("%d", events_));
+    base::debug::DumpWithoutCrashing();
+  }
   has_recorded_ = true;
 
   RecordEventsMetric(completion_status);

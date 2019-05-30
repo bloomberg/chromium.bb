@@ -739,9 +739,10 @@ using payments::JourneyLogger;
     GREYFail(error);
   };
 
-  // Abort should not be logged.
-  histogramTester.ExpectTotalCount("PaymentRequest.CheckoutFunnel.Aborted", 0,
-                                   failureBlock);
+  // Abort should be logged.
+  histogramTester.ExpectBucketCount("PaymentRequest.CheckoutFunnel.Aborted",
+                                    JourneyLogger::ABORT_REASON_USER_NAVIGATION,
+                                    1, failureBlock);
 
   // Some events should be logged.
   std::vector<chrome_test_util::Bucket> buckets =
