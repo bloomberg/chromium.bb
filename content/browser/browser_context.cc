@@ -25,6 +25,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/supports_user_data.h"
@@ -56,6 +57,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "media/base/media_switches.h"
+#include "media/capabilities/in_memory_video_decode_stats_db_impl.h"
 #include "media/capabilities/video_decode_stats_db_impl.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -785,9 +788,21 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
   // occurs later upon first VideoDecodePerfHistory API request that requires DB
   // access. DB operations will not block the UI thread.
   if (!decode_history) {
-    std::unique_ptr<media::VideoDecodeStatsDBImpl> stats_db =
-        media::VideoDecodeStatsDBImpl::Create(
-            GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")));
+    const char kUseInMemoryDBParamName[] = "db_in_memory";
+    const bool kUseInMemoryDBDefault = false;
+    bool use_in_memory_db = base::GetFieldTrialParamByFeatureAsBool(
+        media::kMediaCapabilitiesWithParameters, kUseInMemoryDBParamName,
+        kUseInMemoryDBDefault);
+
+    std::unique_ptr<media::VideoDecodeStatsDB> stats_db;
+    if (use_in_memory_db) {
+      stats_db =
+          std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(nullptr);
+    } else {
+      stats_db = media::VideoDecodeStatsDBImpl::Create(
+          GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")));
+    }
+
     auto new_decode_history = std::make_unique<media::VideoDecodePerfHistory>(
         std::move(stats_db), BrowserFeatureProvider::GetFactoryCB());
     decode_history = new_decode_history.get();
