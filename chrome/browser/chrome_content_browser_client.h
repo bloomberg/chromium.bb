@@ -167,10 +167,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                     const GURL& url) override;
   bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
                           const GURL& url) override;
-  void OverrideNavigationParams(content::SiteInstance* site_instance,
-                                ui::PageTransition* transition,
-                                bool* is_renderer_initiated,
-                                content::Referrer* referrer) override;
+  void OverrideNavigationParams(
+      content::SiteInstance* site_instance,
+      ui::PageTransition* transition,
+      bool* is_renderer_initiated,
+      content::Referrer* referrer,
+      base::Optional<url::Origin>* initiator_origin) override;
   bool ShouldStayInParentProcessForNTP(
       const GURL& url,
       content::SiteInstance* parent_site_instance) override;

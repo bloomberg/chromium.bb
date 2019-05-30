@@ -464,7 +464,7 @@ void NavigatorImpl::RequestOpenURL(
 
   GetContentClient()->browser()->OverrideNavigationParams(
       current_site_instance, &params.transition, &params.is_renderer_initiated,
-      &params.referrer);
+      &params.referrer, &params.initiator_origin);
 
   if (delegate_)
     delegate_->OpenURL(params);
@@ -523,12 +523,13 @@ void NavigatorImpl::NavigateFromFrameProxy(
     is_renderer_initiated = false;
   }
 
+  base::Optional<url::Origin> final_initiator_origin = initiator_origin;
   GetContentClient()->browser()->OverrideNavigationParams(
       current_site_instance, &page_transition, &is_renderer_initiated,
-      &referrer_to_use);
+      &referrer_to_use, &final_initiator_origin);
 
   controller_->NavigateFromFrameProxy(
-      render_frame_host, url, initiator_origin, is_renderer_initiated,
+      render_frame_host, url, final_initiator_origin, is_renderer_initiated,
       source_site_instance, referrer_to_use, page_transition,
       should_replace_current_entry, download_policy, method, post_body,
       extra_headers, std::move(blob_url_loader_factory));

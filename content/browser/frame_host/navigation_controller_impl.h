@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/back_forward_cache.h"
@@ -113,7 +114,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void NavigateFromFrameProxy(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
-      const url::Origin& initiator_origin,
+      const base::Optional<url::Origin>& initiator_origin,
       bool is_renderer_initiated,
       SiteInstance* source_site_instance,
       const Referrer& referrer,

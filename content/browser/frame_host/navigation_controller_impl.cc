@@ -2197,7 +2197,7 @@ void NavigationControllerImpl::GoToOffsetInSandboxedFrame(
 void NavigationControllerImpl::NavigateFromFrameProxy(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
-    const url::Origin& initiator_origin,
+    const base::Optional<url::Origin>& initiator_origin,
     bool is_renderer_initiated,
     SiteInstance* source_site_instance,
     const Referrer& referrer,
@@ -2208,6 +2208,9 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+  if (is_renderer_initiated)
+    DCHECK(initiator_origin.has_value());
+
   FrameTreeNode* node = render_frame_host->frame_tree_node();
 
   // Create a NavigationEntry for the transfer, without making it the pending

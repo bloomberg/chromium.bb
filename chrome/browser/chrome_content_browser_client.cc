@@ -1741,7 +1741,8 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
     SiteInstance* site_instance,
     ui::PageTransition* transition,
     bool* is_renderer_initiated,
-    content::Referrer* referrer) {
+    content::Referrer* referrer,
+    base::Optional<url::Origin>* initiator_origin) {
   DCHECK(transition);
   DCHECK(is_renderer_initiated);
   DCHECK(referrer);
@@ -1749,16 +1750,21 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
   // to a shared library.
   if (IsNTPSiteInstance(site_instance) &&
       ui::PageTransitionCoreTypeIs(*transition, ui::PAGE_TRANSITION_LINK)) {
-    // Use AUTO_BOOKMARK for clicks on tiles of the new tab page, consistently
-    // with native implementations like Android's.
+    // Clicks on tiles of the new tab page should be treated as if a user
+    // clicked on a bookmark.  This is consistent with native implementations
+    // like Android's.  This also helps ensure that security features (like
+    // Sec-Fetch-Site and SameSite-cookies) will treat the navigation as
+    // browser-initiated.
     *transition = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
     *is_renderer_initiated = false;
     *referrer = content::Referrer();
+    *initiator_origin = base::nullopt;
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeContentBrowserClientExtensionsPart::OverrideNavigationParams(
-      site_instance, transition, is_renderer_initiated, referrer);
+      site_instance, transition, is_renderer_initiated, referrer,
+      initiator_origin);
 #endif
 }
 

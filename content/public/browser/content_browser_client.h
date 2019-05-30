@@ -408,10 +408,12 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to override parameters when navigating. Called for both
   // opening new URLs and when transferring URLs across processes.
-  virtual void OverrideNavigationParams(SiteInstance* site_instance,
-                                        ui::PageTransition* transition,
-                                        bool* is_renderer_initiated,
-                                        content::Referrer* referrer) {}
+  virtual void OverrideNavigationParams(
+      SiteInstance* site_instance,
+      ui::PageTransition* transition,
+      bool* is_renderer_initiated,
+      content::Referrer* referrer,
+      base::Optional<url::Origin>* initiator_origin) {}
 
   // Temporary hack to determine whether to skip OOPIFs on the new tab page.
   // TODO(creis): Remove when https://crbug.com/566091 is fixed.

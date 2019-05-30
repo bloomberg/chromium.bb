@@ -50,6 +50,9 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
+#include "net/test/embedded_test_server/default_handlers.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/native_theme/test_native_theme.h"
@@ -895,5 +898,54 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSearchShortcutTest, SearchShortcutShown) {
   EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
 }
 #endif
+
+// This is a regression test for https://crbug.com/946489 and
+// https://crbug.com/963544 which say that clicking a most-visited link from an
+// NTP should 1) have `Sec-Fetch-Site: none` header and 2) have SameSite
+// cookies.  In other words - NTP navigations should be treated as if they were
+// browser-initiated (like following a bookmark through trusted Chrome UI).
+IN_PROC_BROWSER_TEST_F(LocalNTPTest,
+                       NtpNavigationsAreTreatedAsBrowserInitiated) {
+  // Set up a test server for inspecting cookies and headers.
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::test_server::RegisterDefaultHandlers(&test_server);
+  ASSERT_TRUE(test_server.Start());
+
+  // Have the server set a SameSite cookie.
+  GURL cookie_url(test_server.GetURL(
+      "/set-cookie?same-site-cookie=1;SameSite=Strict;httponly"));
+  ui_test_utils::NavigateToURL(browser(), cookie_url);
+
+  // Open an NTP.
+  content::WebContents* ntp_tab = local_ntp_test_utils::OpenNewTab(
+      browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Inject and click a link to foo.com/echoall and wait for the navigation to
+  // succeed.
+  GURL echo_all_url(test_server.GetURL("/echoall"));
+  const char* kNavScriptTemplate = R"(
+      var a = document.createElement('a');
+      a.href = $1;
+      a.innerText = 'Simulated most-visited link';
+      document.body.appendChild(a);
+      a.click();
+  )";
+  content::TestNavigationObserver nav_observer(ntp_tab);
+  ASSERT_TRUE(content::ExecuteScript(
+      ntp_tab, content::JsReplace(kNavScriptTemplate, echo_all_url)));
+  nav_observer.Wait();
+  ASSERT_TRUE(nav_observer.last_navigation_succeeded());
+  ASSERT_FALSE(search::IsInstantNTP(ntp_tab));
+
+  // Extract request headers reported via /echoall test page.
+  const char* kHeadersExtractionScript =
+      "document.getElementsByTagName('pre')[1].innerText;";
+  std::string request_headers =
+      content::EvalJs(ntp_tab, kHeadersExtractionScript).ExtractString();
+
+  // Verify request headers.
+  EXPECT_THAT(request_headers, ::testing::HasSubstr("Sec-Fetch-Site: none"));
+  EXPECT_THAT(request_headers, ::testing::HasSubstr("same-site-cookie=1"));
+}
 
 }  // namespace

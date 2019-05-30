@@ -257,7 +257,7 @@ void OpenWindowOnUI(
 
   GetContentClient()->browser()->OverrideNavigationParams(
       site_instance, &params.transition, &params.is_renderer_initiated,
-      &params.referrer);
+      &params.referrer, &params.initiator_origin);
 
   // End of RequestOpenURL copy.
 
