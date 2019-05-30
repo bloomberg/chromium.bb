@@ -103,16 +103,15 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
 // AXObjCache handles programmatic actions.
 class ScopedActionAnnotator {
  public:
-  explicit ScopedActionAnnotator(AXObject* obj) : obj_(obj) {
-    obj_->AXObjectCache().set_is_handling_action(true);
+  explicit ScopedActionAnnotator(AXObject* obj)
+      : cache_(&(obj->AXObjectCache())) {
+    cache_->set_is_handling_action(true);
   }
 
-  ~ScopedActionAnnotator() {
-    obj_->AXObjectCache().set_is_handling_action(false);
-  }
+  ~ScopedActionAnnotator() { cache_->set_is_handling_action(false); }
 
  private:
-  Persistent<AXObject> obj_;
+  Persistent<AXObjectCacheImpl> cache_;
 };
 
 static bool IsLayoutClean(Document* document) {
