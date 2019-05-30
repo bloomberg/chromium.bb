@@ -153,12 +153,15 @@ public class GridTabSwitcherLayoutPerfTest {
     private void reportTabToGridPerf(String fromUrl, String description)
             throws InterruptedException {
         List<Float> frameRates = new LinkedList<>();
+        List<Float> frameInterval = new LinkedList<>();
         List<Float> dirtySpans = new LinkedList<>();
-        GridTabSwitcherLayout.PerfListener collector = (frameRendered, elapsedMs, dirtySpan) -> {
+        GridTabSwitcherLayout.PerfListener collector =
+                (frameRendered, elapsedMs, maxFrameInterval, dirtySpan) -> {
             assertTrue(elapsedMs
                     >= GridTabSwitcherLayout.ZOOMING_DURATION * CompositorAnimator.sDurationScale);
             float fps = 1000.f * frameRendered / elapsedMs;
             frameRates.add(fps);
+            frameInterval.add((float) maxFrameInterval);
             dirtySpans.add((float) dirtySpan);
         };
 
@@ -189,8 +192,8 @@ public class GridTabSwitcherLayoutPerfTest {
                     DEFAULT_POLLING_INTERVAL);
         }
         assertEquals(mRepeat, frameRates.size());
-        Log.i(TAG, "%s: fps = %.2f, dirtySpan = %.0f", description, median(frameRates),
-                median(dirtySpans));
+        Log.i(TAG, "%s: fps = %.2f, maxFrameInterval = %.0f, dirtySpan = %.0f", description,
+                median(frameRates), median(frameInterval), median(dirtySpans));
     }
 
     private float median(List<Float> list) {

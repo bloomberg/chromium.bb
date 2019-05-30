@@ -62,10 +62,13 @@ public class GridTabSwitcherLayout
 
     private int mFrameCount;
     private long mStartTime;
+    private long mLastFrameTime;
+    private long mMaxFrameInterval;
     private int mStartFrame;
 
     interface PerfListener {
-        void onAnimationDone(int frameRendered, long elapsedMs, int dirtySpan);
+        void onAnimationDone(
+                int frameRendered, long elapsedMs, long maxFrameInterval, int dirtySpan);
     }
 
     private PerfListener mPerfListenerForTesting;
@@ -231,6 +234,8 @@ public class GridTabSwitcherLayout
         });
         mStartFrame = mFrameCount;
         mStartTime = SystemClock.elapsedRealtime();
+        mLastFrameTime = SystemClock.elapsedRealtime();
+        mMaxFrameInterval = 0;
         mTabToSwitcherAnimation.start();
     }
 
@@ -296,8 +301,9 @@ public class GridTabSwitcherLayout
         long lastDirty = mGridTabSwitcher.getLastDirtyTimeForTesting();
         int dirtySpan = (int) (lastDirty - mStartTime);
         float fps = 1000.f * frameRendered / elapsedMs;
-        String message = String.format(Locale.US, "fps = %.2f (%d / %dms), dirtySpan = %d", fps,
-                frameRendered, elapsedMs, dirtySpan);
+        String message = String.format(Locale.US,
+                "fps = %.2f (%d / %dms), maxFrameInterval = %d, dirtySpan = %d", fps, frameRendered,
+                elapsedMs, mMaxFrameInterval, dirtySpan);
 
         // TODO(crbug.com/964406): stop reporting on Canary before enabling in Finch.
         if (ChromeVersionInfo.isLocalBuild() || ChromeVersionInfo.isCanaryBuild()) {
@@ -307,7 +313,8 @@ public class GridTabSwitcherLayout
         }
 
         if (mPerfListenerForTesting != null) {
-            mPerfListenerForTesting.onAnimationDone(frameRendered, elapsedMs, dirtySpan);
+            mPerfListenerForTesting.onAnimationDone(
+                    frameRendered, elapsedMs, mMaxFrameInterval, dirtySpan);
         }
     }
 
@@ -325,5 +332,10 @@ public class GridTabSwitcherLayout
                         ? mGridTabSwitcher.getResourceId()
                         : 0);
         mFrameCount++;
+        if (mLastFrameTime != 0) {
+            long elapsed = SystemClock.elapsedRealtime() - mLastFrameTime;
+            mMaxFrameInterval = Math.max(mMaxFrameInterval, elapsed);
+        }
+        mLastFrameTime = SystemClock.elapsedRealtime();
     }
 }
