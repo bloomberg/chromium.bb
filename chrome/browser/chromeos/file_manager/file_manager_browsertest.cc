@@ -345,7 +345,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 // NaCl fails to compile zip plugin.pexe too often on ASAN, crbug.com/867738
 // The tests are flaky on the debug bot and always time out first and then pass
 // on retry. Disabled for debug as per crbug.com/936429.
-#if defined(ADDRESS_SANITIZER) || defined(DEBUG)
+#if defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
 #define MAYBE_ZipFiles DISABLED_ZipFiles
 #else
 #define MAYBE_ZipFiles ZipFiles
@@ -358,11 +358,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       ZipCase("zipFileOpenDownloadsShiftJIS"),
                       ZipCase("zipFileOpenDownloadsMacOs"),
                       ZipCase("zipFileOpenDownloadsWithAbsolutePaths"),
-// Disable the test in debug mode. In debug mode, the test run time is very
-// close to, and often exceeds the 45 second test timeout.
-#if defined(NDEBUG)
                       ZipCase("zipFileOpenDownloadsEncryptedCancelPassphrase"),
-#endif
                       ZipCase("zipFileOpenDrive").DisableDriveFs(),
                       ZipCase("zipFileOpenDrive").EnableDriveFs(),
                       ZipCase("zipFileOpenUsb"),
