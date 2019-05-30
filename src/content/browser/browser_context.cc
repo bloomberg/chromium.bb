@@ -825,4 +825,8 @@ BrowserContext::GetSharedCorsOriginAccessList() const {
   return empty_list->get();
 }
 
+FontCollection* BrowserContext::GetFontCollection() {
+    return nullptr;
+}
+
 }  // namespace content
