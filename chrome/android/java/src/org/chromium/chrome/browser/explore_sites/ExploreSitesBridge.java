@@ -53,12 +53,26 @@ public class ExploreSitesBridge {
         nativeGetIcon(profile, siteID, callback);
     }
 
+    /**
+     * Returns a Bitmap representing a summary of the sites available in the catalog for a specific
+     * category.
+     */
     public static void getCategoryImage(
             Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback) {
         if (sCatalogForTesting != null) {
             callback.onResult(null);
         }
         nativeGetCategoryImage(profile, categoryID, pixelSize, callback);
+    }
+
+    /**
+     * Returns a Bitmap representing a summary of the sites available in the catalog.
+     */
+    public static void getSummaryImage(Profile profile, int pixelSize, Callback<Bitmap> callback) {
+        if (sCatalogForTesting != null) {
+            callback.onResult(null);
+        }
+        nativeGetSummaryImage(profile, pixelSize, callback);
     }
 
     /**
@@ -151,6 +165,9 @@ public class ExploreSitesBridge {
 
     private static native void nativeGetCategoryImage(
             Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback);
+
+    private static native void nativeGetSummaryImage(
+            Profile profile, int pixelSize, Callback<Bitmap> callback);
 
     private static native void nativeBlacklistSite(Profile profile, String url);
 
