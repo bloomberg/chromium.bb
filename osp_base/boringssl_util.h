@@ -9,6 +9,11 @@ namespace openscreen {
 
 void LogAndClearBoringSslErrors();
 
+// Multiple sequential calls to InitOpenSSL or CleanupOpenSSL are ignored
+// by OpenSSL itself.
+void InitOpenSSL();
+void CleanupOpenSSL();
+
 }  // namespace openscreen
 
 #endif  // OSP_BASE_BORINGSSL_UTIL_H_

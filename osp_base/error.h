@@ -77,6 +77,9 @@ class Error {
 
     kJsonParseError,
     kJsonWriteError,
+
+    // OpenSSL errors
+    kFileLoadFailure,
   };
 
   Error();
@@ -133,7 +136,7 @@ class ErrorOr {
     return error;
   }
 
-  ErrorOr(ErrorOr&& error_or) = default;
+  ErrorOr(ErrorOr&& other) = default;
   ErrorOr(const Value& value) : value_(value) {}
   ErrorOr(Value&& value) noexcept : value_(std::move(value)) {}
   ErrorOr(Error error) : error_(std::move(error)) {}
@@ -162,8 +165,6 @@ class ErrorOr {
  private:
   Error error_;
   Value value_;
-
-  OSP_DISALLOW_COPY_AND_ASSIGN(ErrorOr);
 };
 
 }  // namespace openscreen

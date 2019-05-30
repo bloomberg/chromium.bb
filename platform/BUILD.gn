@@ -21,12 +21,15 @@ source_set("platform") {
     "api/tls_socket_creds.h",
     "api/udp_socket.h",
     "api/upd_callbacks.h",
+    "base/ssl_context.cc",
+    "base/ssl_context.h",
     "base/time.cc",
   ]
 
   public_deps = [
     "../osp_base",
     "../third_party/abseil",
+    "../third_party/boringssl",
   ]
 
   allow_circular_includes_from = [ "../osp_base" ]
@@ -102,6 +105,7 @@ source_set("platform_unittests") {
 
   sources = [
     "api/time_unittest.cc",
+    "base/ssl_context_unittest.cc",
   ]
 
   # The unit tests in base/ assume the standalone implementation is being used.
