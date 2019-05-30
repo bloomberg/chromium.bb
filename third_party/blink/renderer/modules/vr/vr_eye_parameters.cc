@@ -24,6 +24,10 @@ VREyeParameters::VREyeParameters(
   render_height_ = eye_parameters->renderHeight * render_scale;
 }
 
+DOMFloat32Array* VREyeParameters::offset() const {
+  return DOMFloat32Array::Create(offset_->Data(), 3);
+}
+
 void VREyeParameters::Trace(blink::Visitor* visitor) {
   visitor->Trace(offset_);
   visitor->Trace(field_of_view_);

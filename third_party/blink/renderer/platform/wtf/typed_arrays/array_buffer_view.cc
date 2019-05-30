@@ -50,6 +50,7 @@ ArrayBufferView::~ArrayBufferView() {
 
 void ArrayBufferView::Neuter() {
   buffer_ = nullptr;
+  base_address_ = nullptr;
   byte_offset_ = 0;
 }
 
