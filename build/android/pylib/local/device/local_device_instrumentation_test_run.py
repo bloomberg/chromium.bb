@@ -13,6 +13,7 @@ import re
 import sys
 import time
 
+from devil import base_error
 from devil.android import crash_handler
 from devil.android import device_errors
 from devil.android import device_temp_file
@@ -577,11 +578,15 @@ class LocalDeviceInstrumentationTestRun(
 
       def handle_coverage_data():
         if self._test_instance.coverage_directory:
-          device.PullFile(coverage_directory,
-              self._test_instance.coverage_directory)
-          device.RunShellCommand(
-              'rm -f %s' % posixpath.join(coverage_directory, '*'),
-              check_return=True, shell=True)
+          try:
+            device.PullFile(coverage_directory,
+                            self._test_instance.coverage_directory)
+            device.RunShellCommand(
+                'rm -f %s' % posixpath.join(coverage_directory, '*'),
+                check_return=True,
+                shell=True)
+          except base_error.BaseError as e:
+            logging.warning('Failed to handle coverage data after tests: %s', e)
 
       def handle_render_test_data():
         if _IsRenderTest(test):
