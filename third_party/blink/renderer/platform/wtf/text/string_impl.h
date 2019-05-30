@@ -288,8 +288,18 @@ class WTF_EXPORT StringImpl {
     DCHECK(IsStatic() || verifier_.OnDeref(ref_count_))
         << AsciiForDebugging() << " " << CurrentThread();
 #endif
-    if (!IsStatic())
+
+    if (!IsStatic()) {
+#if DCHECK_IS_ON()
+      // In non-DCHECK builds, we can save a bit of time in micro-benchmarks by
+      // not checking the arithmetic. We hope that checking in DCHECK builds is
+      // enough to catch implementation bugs, and that implementation bugs are
+      // the only way we'd experience underflow.
       ref_count_ = base::CheckSub(ref_count_, 1).ValueOrDie();
+#else
+      --ref_count_;
+#endif
+    }
     if (ref_count_ == 0)
       DestroyIfNotStatic();
   }
