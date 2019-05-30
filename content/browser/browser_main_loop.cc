@@ -566,6 +566,7 @@ void BrowserMainLoop::Init() {
     // resets it).
     io_thread_ = std::move(startup_data->thread);
     service_manager_context_ = startup_data->service_manager_context;
+    power_monitor_ = std::move(startup_data->power_monitor);
   }
 
   parts_.reset(
@@ -691,10 +692,10 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PowerMonitor");
-    std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
-        new base::PowerMonitorDeviceSource());
-    power_monitor_.reset(
-        new base::PowerMonitor(std::move(power_monitor_source)));
+    if (!power_monitor_) {
+      power_monitor_ = std::make_unique<base::PowerMonitor>(
+          std::make_unique<base::PowerMonitorDeviceSource>());
+    }
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:HighResTimerManager");
