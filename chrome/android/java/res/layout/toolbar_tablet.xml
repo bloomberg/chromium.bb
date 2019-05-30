@@ -62,6 +62,14 @@
             android:paddingEnd="@dimen/location_bar_lateral_padding"
             android:paddingStart="2dp" />
 
+        <ViewStub
+            android:id="@+id/experimental_button_stub"
+            android:inflatedId="@+id/experimental_toolbar_button"
+            android:layout="@layout/experimental_toolbar_button"
+            style="@style/ToolbarButton"
+            android:paddingStart="8dp"
+            android:visibility="gone" />
+
         <org.chromium.chrome.browser.toolbar.top.ToggleTabStackButton
             android:id="@+id/tab_switcher_button"
             style="@style/ToolbarButton"

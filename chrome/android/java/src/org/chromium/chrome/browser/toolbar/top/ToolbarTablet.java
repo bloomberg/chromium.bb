@@ -14,11 +14,13 @@ import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LevelListDrawable;
+import android.support.annotation.StringRes;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewStub;
 import android.widget.ImageButton;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -69,6 +71,7 @@ public class ToolbarTablet extends ToolbarLayout
     private boolean mShowTabStack;
     private boolean mToolbarButtonsVisible;
     private ImageButton[] mToolbarButtons;
+    private ImageButton mExperimentalButton;
 
     private NavigationPopup mNavigationPopup;
 
@@ -555,6 +558,35 @@ public class ToolbarTablet extends ToolbarLayout
                 >= DeviceFormFactor.getNonMultiDisplayMinimumTabletWidthPx(getContext()));
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    @Override
+    void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
+            @StringRes int contentDescriptionResId) {
+        if (mExperimentalButton == null) {
+            ViewStub viewStub = findViewById(R.id.experimental_button_stub);
+            mExperimentalButton = (ImageButton) viewStub.inflate();
+        }
+        mExperimentalButton.setOnClickListener(onClickListener);
+        mExperimentalButton.setImageDrawable(image);
+        mExperimentalButton.setContentDescription(
+                getContext().getResources().getString(contentDescriptionResId));
+        mExperimentalButton.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    void updateExperimentalButtonImage(Drawable image) {
+        assert mExperimentalButton != null;
+        mExperimentalButton.setImageDrawable(image);
+    }
+
+    @Override
+    void disableExperimentalButton() {
+        if (mExperimentalButton == null || mExperimentalButton.getVisibility() == View.GONE) {
+            return;
+        }
+
+        mExperimentalButton.setVisibility(View.GONE);
     }
 
     private void setToolbarButtonsVisible(boolean visible) {
