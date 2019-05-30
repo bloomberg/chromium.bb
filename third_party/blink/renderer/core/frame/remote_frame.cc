@@ -111,8 +111,8 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
         frame->GetSecurityContext() &&
         frame->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kDownloads);
     initiator_frame_is_ad = frame->IsAdSubframe();
-    if (passed_request.ClientRedirect() ==
-        ClientRedirectPolicy::kClientRedirect) {
+    if (passed_request.ClientRedirectReason() !=
+        ClientNavigationReason::kNone) {
       probe::FrameRequestedNavigation(frame, this, url,
                                       passed_request.ClientRedirectReason());
     }

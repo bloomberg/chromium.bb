@@ -74,15 +74,15 @@ struct CORE_EXPORT FrameLoadRequest {
     frame_name_ = frame_name;
   }
 
-  ClientRedirectPolicy ClientRedirect() const { return client_redirect_; }
+  // TODO(japhet): This is only used from frame_loader.cc, and can probably be
+  // an implementation detail there.
+  ClientRedirectPolicy ClientRedirect() const;
 
   void SetClientRedirectReason(ClientNavigationReason reason) {
-    client_redirect_ = ClientRedirectPolicy::kClientRedirect;
     client_navigation_reason_ = reason;
   }
 
   ClientNavigationReason ClientRedirectReason() const {
-    DCHECK_EQ(ClientRedirectPolicy::kClientRedirect, client_redirect_);
     return client_navigation_reason_;
   }
 
@@ -165,11 +165,8 @@ struct CORE_EXPORT FrameLoadRequest {
   ResourceRequest resource_request_;
   AtomicString frame_name_;
   AtomicString href_translate_;
-  // TODO(caseq): merge ClientRedirectPolicy and ClientNavigationReason.
-  // Currently, client_navigation_reason_ is set iff ClientRedirectPolicy
-  // is set to kClientRedirect.
-  ClientRedirectPolicy client_redirect_;
-  ClientNavigationReason client_navigation_reason_;
+  ClientNavigationReason client_navigation_reason_ =
+      ClientNavigationReason::kNone;
   NavigationPolicy navigation_policy_ = kNavigationPolicyCurrentTab;
   WebTriggeringEventInfo triggering_event_info_ =
       WebTriggeringEventInfo::kNotFromEvent;

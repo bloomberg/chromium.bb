@@ -79,6 +79,7 @@ enum class ClientNavigationReason {
   kMetaTagRefresh,
   kPageBlock,
   kReload,
+  kNone
 };
 }  // namespace blink
 
