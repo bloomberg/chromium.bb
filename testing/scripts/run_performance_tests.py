@@ -213,11 +213,15 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
   try:
     command = command_generator.generate()
     if use_xvfb:
+      # When running with xvfb, we currently output both to stdout and to the
+      # file. It would be better to only output to the file to keep the logs
+      # clean.
       return_code = xvfb.run_executable(
           command, env, stdoutfile=output_paths.logs)
     else:
-      return_code = test_env.run_command_with_output(
-          command, env=env, stdoutfile=output_paths.logs)
+      with open(output_paths.logs, 'w') as handle:
+        return_code = test_env.run_command_output_to_handle(
+            command, handle, env=env)
     # Get the correct json format from the stdout to write to the perf
     # results file.
     results_processor = generate_legacy_perf_dashboard_json.\
@@ -336,11 +340,15 @@ def execute_telemetry_benchmark(
   try:
     command = command_generator.generate(temp_dir)
     if use_xvfb:
+      # When running with xvfb, we currently output both to stdout and to the
+      # file. It would be better to only output to the file to keep the logs
+      # clean.
       return_code = xvfb.run_executable(
           command, env=env, stdoutfile=output_paths.logs)
     else:
-      return_code = test_env.run_command_with_output(
-          command, env=env, stdoutfile=output_paths.logs)
+      with open(output_paths.logs, 'w') as handle:
+        return_code = test_env.run_command_output_to_handle(
+            command, handle, env=env)
     expected_results_filename = os.path.join(temp_dir, 'test-results.json')
     if os.path.exists(expected_results_filename):
       shutil.move(expected_results_filename, output_paths.test_results)
@@ -431,6 +439,11 @@ def main(sys_args):
   # with standard build results may not work properly.
   test_results_files = []
 
+  print('Running a series of performance test subprocesses. Logs, performance\n'
+        'results, and test results JSON will be saved in a subfolder of the\n'
+        'isolated output directory. Inside the hash marks in the following\n'
+        'lines is the name of the subfolder to find results in.\n')
+
   if options.non_telemetry:
     command_generator = GtestCommandGenerator(options)
     benchmark_name = options.gtest_benchmark_name
@@ -441,6 +454,7 @@ def main(sys_args):
     if not benchmark_name:
       benchmark_name = options.executable
     output_paths = OutputFilePaths(isolated_out_dir, benchmark_name).SetUp()
+    print('\n### {folder} ###'.format(folder=benchmark_name))
     overall_return_code = execute_gtest_perf_test(
         command_generator, output_paths, options.xvfb)
     test_results_files.append(output_paths.test_results)
@@ -453,6 +467,7 @@ def main(sys_args):
         output_paths = OutputFilePaths(isolated_out_dir, benchmark).SetUp()
         command_generator = TelemetryCommandGenerator(
             benchmark, options)
+        print('\n### {folder} ###'.format(folder=benchmark))
         return_code = execute_telemetry_benchmark(
             command_generator, output_paths, options.xvfb)
         overall_return_code = return_code or overall_return_code
@@ -493,6 +508,7 @@ def main(sys_args):
         output_paths = OutputFilePaths(isolated_out_dir, benchmark).SetUp()
         command_generator = TelemetryCommandGenerator(
             benchmark, options, stories=stories)
+        print('\n### {folder} ###'.format(folder=benchmark))
         return_code = execute_telemetry_benchmark(
             command_generator, output_paths, options.xvfb)
         overall_return_code = return_code or overall_return_code
@@ -504,6 +520,8 @@ def main(sys_args):
           reference_command_generator = TelemetryCommandGenerator(
               benchmark, options,
               stories=stories, is_reference=True)
+          print('\n### {folder} ###'.format(
+              folder=reference_benchmark_foldername))
           # We intentionally ignore the return code and test results of the
           # reference build.
           execute_telemetry_benchmark(
