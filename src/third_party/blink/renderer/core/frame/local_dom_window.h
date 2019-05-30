@@ -104,7 +104,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     return MakeGarbageCollected<LocalDOMWindow>(frame);
   }
   static LocalDOMWindow* Create() {
-    return new LocalDOMWindow();
+    return MakeGarbageCollected<LocalDOMWindow>();
   }
 
   static LocalDOMWindow* From(const ScriptState*);
