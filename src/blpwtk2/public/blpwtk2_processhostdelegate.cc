@@ -24,7 +24,7 @@
 
 
 namespace blpwtk2 {
-
+ProcessHostDelegate::ProcessHostDelegate() = default;
 ProcessHostDelegate::~ProcessHostDelegate() {};
 
 } // Close namespace blpwtk2

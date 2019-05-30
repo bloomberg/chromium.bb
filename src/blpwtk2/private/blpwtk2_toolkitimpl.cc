@@ -607,7 +607,6 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         gin::V8Initializer::LoadV8Natives();
 #endif
         gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
-                                       gin::IsolateHolder::kStableV8Extras,
                                        gin::ArrayBufferAllocator::SharedInstance());
 
         auto taskRunner = content::BrowserThreadImpl::GetTaskRunnerForThread(
