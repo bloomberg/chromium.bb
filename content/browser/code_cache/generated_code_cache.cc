@@ -336,7 +336,6 @@ void GeneratedCodeCache::DidCreateBackend(
 }
 
 void GeneratedCodeCache::IssuePendingOperations() {
-  DCHECK_EQ(backend_state_, kInitialized);
   // Issue all the pending operations that were received when creating
   // the backend.
   for (auto const& op : pending_ops_) {

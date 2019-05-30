@@ -367,4 +367,20 @@ TEST_F(GeneratedCodeCacheTest, WasmCache) {
   ASSERT_TRUE(received_);
   EXPECT_EQ(kInitialData, received_data_);
 }
+
+TEST_F(GeneratedCodeCacheTest, TestFailedBackendOpening) {
+  GURL url(kInitialUrl);
+  GURL origin_lock = GURL(kInitialOrigin);
+
+  // Clear cache_path_ so the backend initialization fails.
+  cache_path_.clear();
+  InitializeCacheAndReOpen(GeneratedCodeCache::CodeCacheType::kJavaScript);
+  FetchFromCache(url, origin_lock);
+  scoped_task_environment_.RunUntilIdle();
+
+  // We should still receive a callback.
+  ASSERT_TRUE(received_);
+  // We shouldn't receive any data.
+  ASSERT_TRUE(received_null_);
+}
 }  // namespace content
