@@ -25,8 +25,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorAndroid
   OverlayCandidateValidatorAndroid();
   ~OverlayCandidateValidatorAndroid() override;
 
-  // OverlayCandidateValidator implementation.
-  void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
+  void InitializeStrategies() override;
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
   bool AllowCALayerOverlays() const override;
   bool AllowDCLayerOverlays() const override;

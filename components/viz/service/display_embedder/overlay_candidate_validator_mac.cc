@@ -14,9 +14,6 @@ OverlayCandidateValidatorMac::OverlayCandidateValidatorMac(
 
 OverlayCandidateValidatorMac::~OverlayCandidateValidatorMac() = default;
 
-void OverlayCandidateValidatorMac::GetStrategies(
-    OverlayProcessor::StrategyList* strategies) {}
-
 bool OverlayCandidateValidatorMac::AllowCALayerOverlays() const {
   return !ca_layer_disabled_;
 }

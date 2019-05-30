@@ -110,13 +110,13 @@ DirectRenderer::DirectRenderer(const RendererSettings* settings,
       output_surface_(output_surface),
       resource_provider_(resource_provider),
       overlay_processor_(std::make_unique<OverlayProcessor>(
-          output_surface->TakeOverlayCandidateValidator(),
           output_surface->context_provider())) {}
 
 DirectRenderer::~DirectRenderer() = default;
 
 void DirectRenderer::Initialize() {
-  overlay_processor_->Initialize();
+  overlay_processor_->SetOverlayCandidateValidator(
+      output_surface_->TakeOverlayCandidateValidator());
 
   auto* context_provider = output_surface_->context_provider();
 

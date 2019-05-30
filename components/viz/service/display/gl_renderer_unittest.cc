@@ -2155,7 +2155,9 @@ class TestOverlayProcessor : public OverlayProcessor {
 
   class Validator : public OverlayCandidateValidator {
    public:
-    void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
+    void InitializeStrategies() override {
+      strategies_.push_back(std::make_unique<Strategy>());
+    }
 
     // Returns true if draw quads can be represented as CALayers (Mac only).
     MOCK_CONST_METHOD0(AllowCALayerOverlays, bool());
@@ -2169,23 +2171,24 @@ class TestOverlayProcessor : public OverlayProcessor {
     // true must also have their |display_rect| converted to integer
     // coordinates if necessary.
     void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
+
+    Strategy& strategy() {
+      auto* strategy = strategies_.back().get();
+      return *(static_cast<Strategy*>(strategy));
+    }
   };
 
-  TestOverlayProcessor(
-      std::unique_ptr<OverlayCandidateValidator> overlay_validator,
-      ContextProvider* context_provider)
-      : OverlayProcessor(std::move(overlay_validator), context_provider) {}
+  explicit TestOverlayProcessor(ContextProvider* context_provider)
+      : OverlayProcessor(context_provider) {}
   ~TestOverlayProcessor() override = default;
-
-  void Initialize() override {
-    strategies_.push_back(std::make_unique<Strategy>());
-  }
 
   const Validator* GetTestValidator() const {
     return static_cast<const Validator*>(GetOverlayCandidateValidator());
   }
 
-  Strategy& strategy() { return static_cast<Strategy&>(*strategies_.back()); }
+  Strategy& strategy() {
+    return const_cast<Validator*>(GetTestValidator())->strategy();
+  }
 };
 
 void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {}
@@ -2245,9 +2248,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   renderer.SetVisible(true);
 
   TestOverlayProcessor* processor = new TestOverlayProcessor(
-      std::make_unique<TestOverlayProcessor::Validator>(),
       output_surface->context_provider());
-  processor->Initialize();
+  processor->SetOverlayCandidateValidator(
+      std::make_unique<TestOverlayProcessor::Validator>());
   renderer.SetOverlayProcessor(processor);
   const TestOverlayProcessor::Validator* validator =
       processor->GetTestValidator();
@@ -2342,9 +2345,9 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
  public:
   class SingleOverlayValidator : public OverlayCandidateValidator {
    public:
-    void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-      strategies->push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
-      strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(this));
+    void InitializeStrategies() override {
+      strategies_.push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
+      strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(this));
     }
 
     bool AllowCALayerOverlays() const override { return false; }
@@ -2367,8 +2370,9 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
   };
 
   explicit SingleOverlayOnTopProcessor(ContextProvider* context_provider)
-      : OverlayProcessor(std::make_unique<SingleOverlayValidator>(),
-                         context_provider) {}
+      : OverlayProcessor(context_provider) {
+    SetOverlayCandidateValidator(std::make_unique<SingleOverlayValidator>());
+  }
 
   void AllowMultipleCandidates() {
     // Cast away const from the validator pointer to set on it.
@@ -2459,7 +2463,6 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
   SingleOverlayOnTopProcessor* processor = new SingleOverlayOnTopProcessor(
       output_surface->context_provider());
-  processor->Initialize();
   renderer.SetOverlayProcessor(processor);
 
   gfx::Size viewport_size(1, 1);
@@ -2780,7 +2783,6 @@ TEST_F(GLRendererPartialSwapTest, SetDrawRectangle_NoPartialSwap) {
 
 class DCLayerValidator : public OverlayCandidateValidator {
  public:
-  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
   bool AllowCALayerOverlays() const override { return false; }
   bool AllowDCLayerOverlays() const override { return true; }
   bool NeedsSurfaceOccludingDamageRect() const override { return true; }
@@ -2840,14 +2842,13 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
-  std::unique_ptr<DCLayerValidator> validator(new DCLayerValidator);
   FakeRendererGL renderer(&settings, output_surface.get(),
                           parent_resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
-  TestOverlayProcessor* processor = new TestOverlayProcessor(
-      std::move(validator), output_surface->context_provider());
-  processor->Initialize();
+  TestOverlayProcessor* processor =
+      new TestOverlayProcessor(output_surface->context_provider());
+  processor->SetOverlayCandidateValidator(std::make_unique<DCLayerValidator>());
   processor->SetDCHasHwOverlaySupportForTesting();
   renderer.SetOverlayProcessor(processor);
 
@@ -2980,20 +2981,45 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
     const std::vector<gfx::Rect> content_bounds_;
   };
 
+  class Validator : public OverlayCandidateValidator {
+   public:
+    explicit Validator(const std::vector<gfx::Rect>& content_bounds)
+        : content_bounds_(content_bounds) {}
+    void InitializeStrategies() override {
+      strategies_.push_back(
+          std::make_unique<Strategy>(std::move(content_bounds_)));
+    }
+
+    // Returns true if draw quads can be represented as CALayers (Mac only).
+    MOCK_CONST_METHOD0(AllowCALayerOverlays, bool());
+    MOCK_CONST_METHOD0(AllowDCLayerOverlays, bool());
+    MOCK_CONST_METHOD0(NeedsSurfaceOccludingDamageRect, bool());
+
+    // A list of possible overlay candidates is presented to this function.
+    // The expected result is that those candidates that can be in a separate
+    // plane are marked with |overlay_handled| set to true, otherwise they are
+    // to be traditionally composited. Candidates with |overlay_handled| set to
+    // true must also have their |display_rect| converted to integer
+    // coordinates if necessary.
+    void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
+
+    Strategy& strategy() { return static_cast<Strategy&>(*strategies_.back()); }
+
+   private:
+    std::vector<gfx::Rect> content_bounds_;
+  };
+
   ContentBoundsOverlayProcessor(OutputSurface* surface,
                                 const std::vector<gfx::Rect>& content_bounds)
-      : OverlayProcessor(nullptr, surface->context_provider()),
-        content_bounds_(content_bounds) {}
-
-  void Initialize() override {
-    strategies_.push_back(
-        std::make_unique<Strategy>(std::move(content_bounds_)));
+      : OverlayProcessor(surface->context_provider()) {
+    SetOverlayCandidateValidator(std::make_unique<Validator>(content_bounds));
   }
 
-  Strategy& strategy() { return static_cast<Strategy&>(*strategies_.back()); }
-
- private:
-  std::vector<gfx::Rect> content_bounds_;
+  Strategy& strategy() {
+    DCHECK(overlay_validator_);
+    auto* validator = overlay_validator_.get();
+    return static_cast<Validator*>(validator)->strategy();
+  }
 };
 
 class GLRendererSwapWithBoundsTest : public GLRendererTest {
@@ -3024,7 +3050,6 @@ class GLRendererSwapWithBoundsTest : public GLRendererTest {
 
     OverlayProcessor* processor =
         new ContentBoundsOverlayProcessor(output_surface.get(), content_bounds);
-    processor->Initialize();
     renderer.SetOverlayProcessor(processor);
 
     gfx::Size viewport_size(100, 100);
@@ -3061,7 +3086,6 @@ TEST_F(GLRendererSwapWithBoundsTest, NonEmpty) {
 
 class CALayerValidator : public OverlayCandidateValidator {
  public:
-  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
   bool AllowCALayerOverlays() const override { return true; }
   bool AllowDCLayerOverlays() const override { return false; }
   bool NeedsSurfaceOccludingDamageRect() const override { return false; }
@@ -3124,11 +3148,10 @@ class CALayerGLRendererTest : public GLRendererTest {
     // This validator allows the renderer to make CALayer overlays. If all
     // quads can be turned into CALayer overlays, then all damage is removed and
     // we can skip the root RenderPass, swapping empty.
-    std::unique_ptr<CALayerValidator> validator =
-        std::make_unique<CALayerValidator>();
-    TestOverlayProcessor* processor = new TestOverlayProcessor(
-        std::move(validator), output_surface_->context_provider());
-    processor->Initialize();
+    TestOverlayProcessor* processor =
+        new TestOverlayProcessor(output_surface_->context_provider());
+    processor->SetOverlayCandidateValidator(
+        std::make_unique<CALayerValidator>());
     renderer_->SetOverlayProcessor(processor);
   }
 
@@ -4070,7 +4093,6 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
     auto* processor = new SingleOverlayOnTopProcessor(
         output_surface_->context_provider());
     processor->AllowMultipleCandidates();
-    processor->Initialize();
     renderer_->SetOverlayProcessor(processor);
 
     test_context_support_->SetScheduleOverlayPlaneCallback(base::BindRepeating(

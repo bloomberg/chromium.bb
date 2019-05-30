@@ -12,9 +12,6 @@ OverlayCandidateValidatorWin::OverlayCandidateValidatorWin() = default;
 
 OverlayCandidateValidatorWin::~OverlayCandidateValidatorWin() = default;
 
-void OverlayCandidateValidatorWin::GetStrategies(
-    OverlayProcessor::StrategyList* strategies) {}
-
 void OverlayCandidateValidatorWin::CheckOverlaySupport(
     OverlayCandidateList* candidates) {
   NOTIMPLEMENTED();

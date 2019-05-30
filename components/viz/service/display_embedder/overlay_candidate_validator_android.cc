@@ -16,8 +16,8 @@ OverlayCandidateValidatorAndroid::OverlayCandidateValidatorAndroid() {}
 
 OverlayCandidateValidatorAndroid::~OverlayCandidateValidatorAndroid() {}
 
-void OverlayCandidateValidatorAndroid::GetStrategies(
-    OverlayProcessor::StrategyList* strategies) {
+void OverlayCandidateValidatorAndroid::InitializeStrategies() {
+  DCHECK(strategies_.empty());
   // For Android, we do not have the ability to skip an overlay, since the
   // texture is already in a SurfaceView.  Ideally, we would honor a 'force
   // overlay' flag that FromDrawQuad would also check.
@@ -25,7 +25,7 @@ void OverlayCandidateValidatorAndroid::GetStrategies(
   // the underlying overlay is opaque anyway; the candidate is referring to
   // a dummy resource that has no relation to what the overlay contains.
   // https://crbug.com/842931 .
-  strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(
+  strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(
       this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
 }
 

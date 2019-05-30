@@ -25,11 +25,11 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorOzone
  public:
   OverlayCandidateValidatorOzone(
       std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
-      std::vector<OverlayStrategy> strategies);
+      std::vector<OverlayStrategy> available_strategies);
   ~OverlayCandidateValidatorOzone() override;
 
   // OverlayCandidateValidator implementation.
-  void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
+  void InitializeStrategies() override;
   bool AllowCALayerOverlays() const override;
   bool AllowDCLayerOverlays() const override;
   bool NeedsSurfaceOccludingDamageRect() const override;
@@ -38,7 +38,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorOzone
 
  private:
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates_;
-  const std::vector<OverlayStrategy> strategies_;
+  const std::vector<OverlayStrategy> available_strategies_;
   bool software_mirror_active_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayCandidateValidatorOzone);

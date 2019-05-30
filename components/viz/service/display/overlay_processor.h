@@ -54,11 +54,11 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   };
   using StrategyList = std::vector<std::unique_ptr<Strategy>>;
 
-  OverlayProcessor(std::unique_ptr<OverlayCandidateValidator> overlay_validator,
-                   const ContextProvider* context_provider);
+  explicit OverlayProcessor(const ContextProvider* context_provider);
   virtual ~OverlayProcessor();
-  // Virtual to allow testing different strategies.
-  virtual void Initialize();
+
+  void SetOverlayCandidateValidator(
+      std::unique_ptr<OverlayCandidateValidator> overlay_validator);
 
   gfx::Rect GetAndResetOverlayDamage();
 

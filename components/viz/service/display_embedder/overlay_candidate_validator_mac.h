@@ -20,7 +20,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorMac
   ~OverlayCandidateValidatorMac() override;
 
   // OverlayCandidateValidator implementation.
-  void GetStrategies(OverlayProcessor::StrategyList* strategies) override;
   bool AllowCALayerOverlays() const override;
   bool AllowDCLayerOverlays() const override;
   bool NeedsSurfaceOccludingDamageRect() const override;

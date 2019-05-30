@@ -13,6 +13,7 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -97,16 +98,15 @@ OverlayStrategy OverlayProcessor::Strategy::GetUMAEnum() const {
   return OverlayStrategy::kUnknown;
 }
 
-OverlayProcessor::OverlayProcessor(
-    std::unique_ptr<OverlayCandidateValidator> overlay_validator,
-    const ContextProvider* context_provider)
-    : overlay_validator_(std::move(overlay_validator)),
-      dc_processor_(
+OverlayProcessor::OverlayProcessor(const ContextProvider* context_provider)
+    : dc_processor_(
           std::make_unique<DCLayerOverlayProcessor>(context_provider)) {}
 
-void OverlayProcessor::Initialize() {
+void OverlayProcessor::SetOverlayCandidateValidator(
+    std::unique_ptr<OverlayCandidateValidator> overlay_validator) {
+  overlay_validator_.swap(overlay_validator);
   if (overlay_validator_)
-    overlay_validator_->GetStrategies(&strategies_);
+    overlay_validator_->InitializeStrategies();
 }
 
 OverlayProcessor::~OverlayProcessor() {}
@@ -218,21 +218,18 @@ void OverlayProcessor::ProcessForOverlays(
   }
 
   // Only if that fails, attempt hardware overlay strategies.
-  Strategy* successful_strategy = nullptr;
-  for (const auto& strategy : strategies_) {
-    if (strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
-                          resource_provider, render_passes, candidates,
-                          content_bounds)) {
-      successful_strategy = strategy.get();
-
-      UpdateDamageRect(candidates, previous_frame_underlay_rect,
-                       previous_frame_underlay_was_unoccluded,
-                       &render_pass->quad_list, damage_rect);
-      break;
-    }
+  bool success = false;
+  if (overlay_validator_) {
+    success = overlay_validator_->AttemptWithStrategies(
+        output_color_matrix, render_pass_backdrop_filters, resource_provider,
+        render_passes, candidates, content_bounds);
   }
 
-  if (!successful_strategy) {
+  if (success) {
+    UpdateDamageRect(candidates, previous_frame_underlay_rect,
+                     previous_frame_underlay_was_unoccluded,
+                     &render_pass->quad_list, damage_rect);
+  } else {
     if (!previous_frame_underlay_rect.IsEmpty())
       damage_rect->Union(previous_frame_underlay_rect);
 
@@ -247,11 +244,6 @@ void OverlayProcessor::ProcessForOverlays(
       DCHECK_EQ(candidates->size(), 1u);
     }
   }
-
-  UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy",
-                            successful_strategy
-                                ? successful_strategy->GetUMAEnum()
-                                : OverlayStrategy::kNoStrategyUsed);
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"),
                  "Scheduled overlay planes", candidates->size());

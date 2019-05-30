@@ -18,33 +18,32 @@ namespace viz {
 
 // |overlay_candidates| is an object used to answer questions about possible
 // overlays configurations.
-// |strategies_string| is a list of overlay strategies that should be returned
-// by GetStrategies.
+// |available_strategies| is a list of overlay strategies that should be
+// initialized by InitializeStrategies.
 OverlayCandidateValidatorOzone::OverlayCandidateValidatorOzone(
     std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
-    std::vector<OverlayStrategy> strategies)
+    std::vector<OverlayStrategy> available_strategies)
     : overlay_candidates_(std::move(overlay_candidates)),
-      strategies_(std::move(strategies)) {}
+      available_strategies_(std::move(available_strategies)) {}
 
 OverlayCandidateValidatorOzone::~OverlayCandidateValidatorOzone() {}
 
-void OverlayCandidateValidatorOzone::GetStrategies(
-    OverlayProcessor::StrategyList* strategies) {
-  for (OverlayStrategy strategy : strategies_) {
+void OverlayCandidateValidatorOzone::InitializeStrategies() {
+  for (OverlayStrategy strategy : available_strategies_) {
     switch (strategy) {
       case OverlayStrategy::kFullscreen:
-        strategies->push_back(
+        strategies_.push_back(
             std::make_unique<OverlayStrategyFullscreen>(this));
         break;
       case OverlayStrategy::kSingleOnTop:
-        strategies->push_back(
+        strategies_.push_back(
             std::make_unique<OverlayStrategySingleOnTop>(this));
         break;
       case OverlayStrategy::kUnderlay:
-        strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(this));
+        strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(this));
         break;
       case OverlayStrategy::kUnderlayCast:
-        strategies->push_back(
+        strategies_.push_back(
             std::make_unique<OverlayStrategyUnderlayCast>(this));
         break;
       default:

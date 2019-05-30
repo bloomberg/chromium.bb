@@ -17,8 +17,12 @@ namespace viz {
 // configurations for a particular output device.
 class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
  public:
-  // Populates a list of strategies that may work with this validator.
-  virtual void GetStrategies(OverlayProcessor::StrategyList* strategies) = 0;
+  OverlayCandidateValidator();
+  virtual ~OverlayCandidateValidator();
+
+  // Populates a list of strategies that may work with this validator. Should be
+  // called at most once.
+  virtual void InitializeStrategies() {}
 
   // Returns true if draw quads can be represented as CALayers (Mac only).
   virtual bool AllowCALayerOverlays() const = 0;
@@ -53,7 +57,19 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   // implemented for Chrome OS.
   virtual void SetSoftwareMirrorMode(bool enabled) {}
 
-  virtual ~OverlayCandidateValidator() {}
+  // Iterate through a list of strategies and attempt to overlay with each.
+  // Returns true if one of the attempts is successful. Has to be called after
+  // InitializeStrategies().
+  bool AttemptWithStrategies(
+      const SkMatrix44& output_color_matrix,
+      const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
+      DisplayResourceProvider* resource_provider,
+      RenderPassList* render_pass_list,
+      OverlayCandidateList* candidates,
+      std::vector<gfx::Rect>* content_bounds) const;
+
+ protected:
+  OverlayProcessor::StrategyList strategies_;
 };
 
 }  // namespace viz
