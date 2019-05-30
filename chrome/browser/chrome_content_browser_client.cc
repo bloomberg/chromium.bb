@@ -5011,10 +5011,9 @@ void ChromeContentBrowserClient::OnNetworkServiceCreated(
   if (!data_use_measurement::ChromeDataUseMeasurement::GetInstance())
     data_use_measurement::ChromeDataUseMeasurement::CreateInstance(local_state);
 
-  if (!SystemNetworkContextManager::GetInstance()) {
-    DCHECK(!g_browser_process);
+  if (!SystemNetworkContextManager::GetInstance())
     SystemNetworkContextManager::CreateInstance(local_state);
-  }
+
   // Need to set up global NetworkService state before anything else uses it.
   SystemNetworkContextManager::GetInstance()->OnNetworkServiceCreated(
       network_service);

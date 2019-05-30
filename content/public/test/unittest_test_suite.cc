@@ -55,7 +55,8 @@ class ResetNetworkServiceBetweenTests : public testing::EmptyTestEventListener {
 
 }  // namespace
 
-UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
+UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite,
+                                     const std::string& disabled_features)
     : test_suite_(test_suite) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string enabled =
@@ -69,10 +70,10 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new ResetNetworkServiceBetweenTests);
 
-  // Unit tests don't currently work with the Network Service enabled.
   // base::TestSuite will reset the FeatureList, so modify the underlying
   // CommandLine object to disable the network service when it's parsed again.
-  disabled += ",NetworkService";
+  if (!disabled_features.empty())
+    disabled += "," + disabled_features;
   base::CommandLine new_command_line(command_line->GetProgram());
   base::CommandLine::SwitchMap switches = command_line->GetSwitches();
   switches.erase(switches::kDisableFeatures);
