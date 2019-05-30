@@ -9,11 +9,14 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -142,6 +145,20 @@ void TabletModeClient::SetMobileLikeBehaviorEnabled(bool enabled) {
         DCHECK(web_contents);
 
         web_contents->NotifyPreferencesChanged();
+
+        // For a tab that is requesting its mobile version site (via
+        // chrome::ToggleRequestTabletSite()), and is not originated from ARC
+        // context, return to its normal version site when exiting tablet mode.
+        content::NavigationController& controller =
+            web_contents->GetController();
+        content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+        if (entry && entry->GetIsOverridingUserAgent() &&
+            !web_contents->GetUserData(
+                arc::ArcWebContentsData::ArcWebContentsData::
+                    kArcTransitionFlag)) {
+          entry->SetIsOverridingUserAgent(false);
+          controller.Reload(content::ReloadType::ORIGINAL_REQUEST_URL, true);
+        }
       }
     }
     tab_strip_tracker_ = nullptr;
