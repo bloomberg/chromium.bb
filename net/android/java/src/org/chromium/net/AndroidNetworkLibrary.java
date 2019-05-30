@@ -23,7 +23,6 @@ import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
 import android.security.NetworkSecurityPolicy;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -195,11 +194,7 @@ class AndroidNetworkLibrary {
      */
     @CalledByNative
     private static String getNetworkCountryIso() {
-        TelephonyManager telephonyManager =
-                (TelephonyManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.TELEPHONY_SERVICE);
-        if (telephonyManager == null) return "";
-        return telephonyManager.getNetworkCountryIso();
+        return AndroidTelephonyManagerBridge.getInstance().getNetworkCountryIso();
     }
 
     /**
@@ -208,11 +203,7 @@ class AndroidNetworkLibrary {
      */
     @CalledByNative
     private static String getNetworkOperator() {
-        TelephonyManager telephonyManager =
-                (TelephonyManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.TELEPHONY_SERVICE);
-        if (telephonyManager == null) return "";
-        return telephonyManager.getNetworkOperator();
+        return AndroidTelephonyManagerBridge.getInstance().getNetworkOperator();
     }
 
     /**
@@ -221,11 +212,7 @@ class AndroidNetworkLibrary {
      */
     @CalledByNative
     private static String getSimOperator() {
-        TelephonyManager telephonyManager =
-                (TelephonyManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.TELEPHONY_SERVICE);
-        if (telephonyManager == null) return "";
-        return telephonyManager.getSimOperator();
+        return AndroidTelephonyManagerBridge.getInstance().getSimOperator();
     }
 
     /**
