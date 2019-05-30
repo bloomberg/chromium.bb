@@ -580,6 +580,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   void SendBytesReceivedUpdate();
 
+  // Notifies |mb_data_source_| of playback and rate changes which may increase
+  // the amount of data the DataSource buffers. Does nothing prior to reaching
+  // kReadyStateHaveEnoughData for the first time.
+  void MaybeUpdateBufferSizesForPlayback();
+
   blink::WebLocalFrame* const frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate

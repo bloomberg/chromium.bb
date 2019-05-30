@@ -581,6 +581,10 @@ class WebMediaPlayerImplTest : public testing::Test {
     return wmpi_->mb_data_source_->cancel_on_defer_for_testing();
   }
 
+  bool IsDataSourceMarkedAsPlaying() const {
+    return wmpi_->mb_data_source_->media_has_played();
+  }
+
   enum class LoadType { kFullyBuffered, kStreaming };
   void Load(std::string data_file,
             LoadType load_type = LoadType::kFullyBuffered) {
@@ -855,6 +859,32 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   const int64_t data_source_size = GetDataSourceMemoryUsage();
   EXPECT_GT(data_source_size, 0);
   EXPECT_EQ(reported_memory_ - data_source_size, 0);
+}
+
+// Verify that Play() before kReadyStateHaveEnough doesn't increase buffer size.
+TEST_F(WebMediaPlayerImplTest, NoBufferSizeIncreaseUntilHaveEnough) {
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(true));
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
+  LoadAndWaitForReadyState(kAudioOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveMetadata);
+  testing::Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
+  wmpi_->Play();
+  EXPECT_FALSE(IsDataSourceMarkedAsPlaying());
+
+  while (wmpi_->GetReadyState() <
+         blink::WebMediaPlayer::kReadyStateHaveEnoughData) {
+    // Clear the mock so it doesn't have a stale QuitClosure.
+    testing::Mock::VerifyAndClearExpectations(&client_);
+
+    base::RunLoop loop;
+    EXPECT_CALL(client_, ReadyStateChanged())
+        .WillRepeatedly(RunClosure(loop.QuitClosure()));
+    loop.Run();
+  }
+
+  EXPECT_TRUE(IsDataSourceMarkedAsPlaying());
 }
 
 // Verify that preload=metadata suspend works properly for streaming sources.

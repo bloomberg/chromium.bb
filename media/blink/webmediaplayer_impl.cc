@@ -478,7 +478,6 @@ WebMediaPlayer::LoadTiming WebMediaPlayerImpl::Load(
     LoadType load_type,
     const blink::WebMediaPlayerSource& source,
     CorsMode cors_mode) {
-  DVLOG(1) << __func__;
   // Only URL or MSE blob URL is supported.
   DCHECK(source.IsURL());
   blink::WebURL url = source.GetAsURL();
@@ -759,9 +758,6 @@ void WebMediaPlayerImpl::Play() {
   pipeline_controller_->SetPlaybackRate(playback_rate_);
   background_pause_timer_.Stop();
 
-  if (mb_data_source_)
-    mb_data_source_->MediaIsPlaying();
-
   if (observer_)
     observer_->OnPlaying();
 
@@ -779,6 +775,8 @@ void WebMediaPlayerImpl::Play() {
     video_decode_stats_reporter_->OnPlaying();
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
+
+  MaybeUpdateBufferSizesForPlayback();
   UpdatePlayState();
 }
 
@@ -894,11 +892,10 @@ void WebMediaPlayerImpl::SetRate(double rate) {
   }
 
   playback_rate_ = rate;
-  if (!paused_) {
+  if (!paused_)
     pipeline_controller_->SetPlaybackRate(rate);
-    if (mb_data_source_)
-      mb_data_source_->MediaPlaybackRateChanged(rate);
-  }
+
+  MaybeUpdateBufferSizesForPlayback();
 }
 
 void WebMediaPlayerImpl::SetVolume(double volume) {
@@ -2037,8 +2034,11 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
     SetReadyState(CanPlayThrough() ? WebMediaPlayer::kReadyStateHaveEnoughData
                                    : WebMediaPlayer::kReadyStateHaveFutureData);
 
-    // Let the DataSource know we have enough data. It may use this information
-    // to release unused network connections.
+    // Let the DataSource know we have enough data -- this is the only function
+    // during which we advance to (or past) the kReadyStateHaveEnoughData state.
+    // It may use this information to update buffer sizes or release unused
+    // network connections.
+    MaybeUpdateBufferSizesForPlayback();
     if (mb_data_source_ && !client_->CouldPlayIfEnoughData()) {
       // For LazyLoad this will be handled during OnPipelineSuspended().
       if (for_suspended_start && did_lazy_load_)
@@ -3557,6 +3557,18 @@ void WebMediaPlayerImpl::MaybeSetContainerName() {
   media_metrics_provider_->SetContainerName(
       static_cast<FFmpegDemuxer*>(demuxer_.get())->container());
 #endif
+}
+
+void WebMediaPlayerImpl::MaybeUpdateBufferSizesForPlayback() {
+  // Don't increase the MultiBufferDataSource buffer size until we've reached
+  // kReadyStateHaveEnoughData. Otherwise we will unnecessarily slow down
+  // playback startup -- it can instead be done for free after playback starts.
+  if (!mb_data_source_ || highest_ready_state_ < kReadyStateHaveEnoughData)
+    return;
+
+  mb_data_source_->MediaPlaybackRateChanged(playback_rate_);
+  if (!paused_)
+    mb_data_source_->MediaIsPlaying();
 }
 
 }  // namespace media
