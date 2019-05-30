@@ -4,6 +4,7 @@
 
 #include "ash/system/status_area_widget.h"
 
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -37,6 +38,7 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
   Init(params);
   set_focus_on_creation(false);
   SetContentsView(status_area_widget_delegate_);
+  Shell::Get()->kiosk_next_shell_controller()->AddObserver(this);
 }
 
 void StatusAreaWidget::Initialize() {
@@ -96,6 +98,8 @@ StatusAreaWidget::~StatusAreaWidget() {
   palette_tray_.reset();
   logout_button_tray_.reset();
   overview_button_tray_.reset();
+
+  Shell::Get()->kiosk_next_shell_controller()->RemoveObserver(this);
 
   // All child tray views have been removed.
   DCHECK(GetContentsView()->children().empty());
@@ -188,6 +192,14 @@ bool StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
   if (active)
     status_area_widget_delegate_->SetPaneFocusAndFocusDefault();
   return true;
+}
+
+void StatusAreaWidget::OnKioskNextEnabled() {
+  ime_menu_tray_->UpdateIconVisibility();
+  overview_button_tray_->UpdateIconVisibility();
+  palette_tray_->UpdateIconVisibility();
+  virtual_keyboard_tray_->UpdateIconVisibility();
+  logout_button_tray_->UpdateVisibility();
 }
 
 void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {

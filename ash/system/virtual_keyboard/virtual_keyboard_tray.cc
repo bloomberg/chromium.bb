@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -91,9 +92,7 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
 }
 
 void VirtualKeyboardTray::OnAccessibilityStatusChanged() {
-  bool new_enabled =
-      Shell::Get()->accessibility_controller()->virtual_keyboard_enabled();
-  SetVisible(new_enabled);
+  UpdateIconVisibility();
 }
 
 void VirtualKeyboardTray::OnKeyboardVisibilityStateChanged(
@@ -122,6 +121,13 @@ void VirtualKeyboardTray::UpdateIcon() {
   const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
   icon_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
+}
+
+void VirtualKeyboardTray::UpdateIconVisibility() {
+  bool visible =
+      Shell::Get()->accessibility_controller()->virtual_keyboard_enabled() &&
+      !Shell::Get()->kiosk_next_shell_controller()->IsEnabled();
+  SetVisible(visible);
 }
 
 }  // namespace ash

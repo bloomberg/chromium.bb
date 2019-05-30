@@ -46,6 +46,8 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   // views::View:
   const char* GetClassName() const override;
 
+  void UpdateIconVisibility();
+
  private:
   // Updates the icon UI.
   void UpdateIcon();

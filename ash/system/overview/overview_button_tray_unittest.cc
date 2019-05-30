@@ -4,8 +4,13 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
+#include <memory>
+
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
+#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
@@ -24,6 +29,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/client/aura_constants.h"
@@ -383,6 +389,35 @@ TEST_F(OverviewButtonTrayTest, LeaveTabletModeBecauseExternalMouse) {
   TabletModeControllerTestApi().AttachExternalMouse();
   EXPECT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
   EXPECT_TRUE(GetTray()->GetVisible());
+}
+
+class KioskNextOverviewTest : public OverviewButtonTrayTest {
+ public:
+  KioskNextOverviewTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
+  }
+
+  void SetUp() override {
+    set_start_session(false);
+    OverviewButtonTrayTest::SetUp();
+    client_ = BindMockKioskNextShellClient();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<MockKioskNextShellClient> client_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskNextOverviewTest);
+};
+
+TEST_F(KioskNextOverviewTest, OverViewButtonHidden) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  CreateUserSessions(1);
+  EXPECT_TRUE(GetTray()->GetVisible());
+  ClearLogin();
+
+  LogInKioskNextUser(GetSessionControllerClient());
+  EXPECT_FALSE(GetTray()->GetVisible());
 }
 
 }  // namespace ash

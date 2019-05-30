@@ -9,6 +9,7 @@
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -337,6 +338,7 @@ ImeMenuTray::ImeMenuTray(Shelf* shelf)
       is_emoji_enabled_(false),
       is_handwriting_enabled_(false),
       is_voice_enabled_(false),
+      is_enabled_(false),
       weak_ptr_factory_(this) {
   DCHECK(ime_controller_);
   SetInkDropMode(InkDropMode::ON);
@@ -433,6 +435,12 @@ bool ImeMenuTray::ShouldShowKeyboardToggle() const {
          !Shell::Get()->accessibility_controller()->virtual_keyboard_enabled();
 }
 
+void ImeMenuTray::UpdateIconVisibility() {
+  bool visible =
+      is_enabled_ && !Shell::Get()->kiosk_next_shell_controller()->IsEnabled();
+  SetVisible(visible);
+}
+
 base::string16 ImeMenuTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_IME_MENU_ACCESSIBLE_NAME);
 }
@@ -494,7 +502,8 @@ void ImeMenuTray::OnIMERefresh() {
 }
 
 void ImeMenuTray::OnIMEMenuActivationChanged(bool is_activated) {
-  SetVisible(is_activated);
+  is_enabled_ = is_activated;
+  UpdateIconVisibility();
   if (is_activated)
     UpdateTrayLabel();
   else
