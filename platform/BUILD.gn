@@ -71,6 +71,8 @@ source_set("test") {
     "test/fake_clock.h",
   ]
 
+  configs += [ "../build:allow_build_from_embedder" ]
+
   deps = [
     ":platform",
   ]
