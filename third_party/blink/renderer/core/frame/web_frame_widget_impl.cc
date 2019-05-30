@@ -664,7 +664,7 @@ void WebFrameWidgetImpl::UpdateRenderThrottlingStatus(bool is_throttled,
   DCHECK(LocalRootImpl()->Parent());
   DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());
   LocalRootImpl()->GetFrameView()->UpdateRenderThrottlingStatus(
-      is_throttled, subtree_throttled);
+      is_throttled, subtree_throttled, true);
 }
 
 WebURL WebFrameWidgetImpl::GetURLForDebugTrace() {
