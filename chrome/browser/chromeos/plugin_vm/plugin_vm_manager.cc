@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 
 #include "base/bind_helpers.h"
+#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -73,6 +75,10 @@ void PluginVmManager::LaunchPluginVm() {
   // 2) Call ListVms to get the state of the VM
   // 3) Start the VM if necessary
   // 4) Show the UI.
+  // 5) Call Concierge::GetVmInfo to get seneschal server handle.
+  //    This happens in parallel with step 4.
+  // 6) Ensure default shared path exists.
+  // 7) Share paths with PluginVm
   chromeos::DBusThreadManager::Get()
       ->GetDebugDaemonClient()
       ->StartPluginVmDispatcher(
@@ -87,6 +93,9 @@ void PluginVmManager::StopPluginVm() {
 
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->StopVm(
       std::move(request), base::DoNothing());
+
+  // Reset seneschal handle to indicate that it is no longer valid.
+  seneschal_server_handle_ = 0;
 }
 
 void PluginVmManager::OnStartPluginVmDispatcher(bool success) {
@@ -166,6 +175,15 @@ void PluginVmManager::ShowVm() {
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->ShowVm(
       std::move(request), base::BindOnce(&PluginVmManager::OnShowVm,
                                          weak_ptr_factory_.GetWeakPtr()));
+
+  vm_tools::concierge::GetVmInfoRequest concierge_request;
+  concierge_request.set_owner_id(owner_id_);
+  concierge_request.set_name(kPluginVmName);
+
+  chromeos::DBusThreadManager::Get()->GetConciergeClient()->GetVmInfo(
+      std::move(concierge_request),
+      base::BindOnce(&PluginVmManager::OnGetVmInfo,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmManager::OnShowVm(
@@ -180,4 +198,38 @@ void PluginVmManager::OnShowVm(
   RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kSuccess);
 }
 
+void PluginVmManager::OnGetVmInfo(
+    base::Optional<vm_tools::concierge::GetVmInfoResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to get concierge VM info.";
+    return;
+  }
+  if (!reply->success()) {
+    LOG(ERROR) << "VM not started, cannot share paths";
+    return;
+  }
+  seneschal_server_handle_ = reply->vm_info().seneschal_server_handle();
+
+  // Create and share default folder, and other persisted shares.
+  EnsureDefaultSharedDirExists(
+      profile_, base::BindOnce(&PluginVmManager::OnDefaultSharedDirExists,
+                               weak_ptr_factory_.GetWeakPtr()));
+  crostini::CrostiniSharePath::GetForProfile(profile_)->SharePersistedPaths(
+      kPluginVmName, base::DoNothing());
+}
+
+void PluginVmManager::OnDefaultSharedDirExists(const base::FilePath& dir,
+                                               bool exists) {
+  if (exists) {
+    crostini::CrostiniSharePath::GetForProfile(profile_)->SharePath(
+        kPluginVmName, dir, false,
+        base::BindOnce([](const base::FilePath& dir, bool success,
+                          std::string failure_reason) {
+          if (!success) {
+            LOG(ERROR) << "Error sharing PluginVm default dir " << dir.value()
+                       << ": " << failure_reason;
+          }
+        }));
+  }
+}
 }  // namespace plugin_vm

@@ -327,6 +327,19 @@ TEST_F(CrostiniSharePathTest, SuccessPersist) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniSharePathTest, SuccessPluginVm) {
+  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
+  SetUpVolume();
+  crostini_share_path_->SharePath(
+      "PvmDefault", share_path_, PERSIST_NO,
+      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+                     base::Unretained(this), "PvmDefault", Persist::NO,
+                     SeneschalClientCalled::YES,
+                     &vm_tools::seneschal::SharePathRequest::MY_FILES,
+                     "path-to-share", Success::YES, ""));
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDrive) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();

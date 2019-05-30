@@ -4,12 +4,16 @@
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 
+#include "base/files/file_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_concierge_client.h"
+#include "chromeos/dbus/fake_seneschal_client.h"
 #include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,6 +34,14 @@ class PluginVmManagerTest : public testing::Test {
     return *static_cast<chromeos::FakeVmPluginDispatcherClient*>(
         chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient());
   }
+  chromeos::FakeConciergeClient& ConciergeClient() {
+    return *static_cast<chromeos::FakeConciergeClient*>(
+        chromeos::DBusThreadManager::Get()->GetConciergeClient());
+  }
+  chromeos::FakeSeneschalClient& SeneschalClient() {
+    return *static_cast<chromeos::FakeSeneschalClient*>(
+        chromeos::DBusThreadManager::Get()->GetSeneschalClient());
+  }
 
   void SetUp() override {
     histogram_tester_ = std::make_unique<base::HistogramTester>();
@@ -48,10 +60,13 @@ class PluginVmManagerTest : public testing::Test {
 TEST_F(PluginVmManagerTest, LaunchPluginVmRequiresPluginVmAllowed) {
   EXPECT_FALSE(IsPluginVmAllowedForProfile(&testing_profile_));
   plugin_vm_manager_.LaunchPluginVm();
-  base::RunLoop().RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_FALSE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_FALSE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_FALSE(VmPluginDispatcherClient().show_vm_called());
+  EXPECT_FALSE(ConciergeClient().get_vm_info_called());
+  EXPECT_FALSE(SeneschalClient().share_path_called());
+  EXPECT_EQ(plugin_vm_manager_.seneschal_server_handle(), 0ul);
 
   histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
                                         PluginVmLaunchResult::kError, 1);
@@ -68,16 +83,21 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmStartAndShow) {
   VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
 
   plugin_vm_manager_.LaunchPluginVm();
-  base::RunLoop().RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_TRUE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
+  EXPECT_TRUE(ConciergeClient().get_vm_info_called());
+  EXPECT_TRUE(base::DirectoryExists(
+      file_manager::util::GetMyFilesFolderForProfile(&testing_profile_)));
+  EXPECT_TRUE(SeneschalClient().share_path_called());
+  EXPECT_EQ(plugin_vm_manager_.seneschal_server_handle(), 1ul);
 
   histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
                                         PluginVmLaunchResult::kSuccess, 1);
 }
 
-TEST_F(PluginVmManagerTest, LaunchPluginVmShow) {
+TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
   test_helper_.AllowPluginVm();
   EXPECT_TRUE(IsPluginVmAllowedForProfile(&testing_profile_));
 
@@ -88,10 +108,21 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShow) {
   VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
 
   plugin_vm_manager_.LaunchPluginVm();
-  base::RunLoop().RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_FALSE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
+  EXPECT_FALSE(VmPluginDispatcherClient().stop_vm_called());
+  EXPECT_TRUE(ConciergeClient().get_vm_info_called());
+  EXPECT_TRUE(base::DirectoryExists(
+      file_manager::util::GetMyFilesFolderForProfile(&testing_profile_)));
+  EXPECT_TRUE(SeneschalClient().share_path_called());
+  EXPECT_EQ(plugin_vm_manager_.seneschal_server_handle(), 1ul);
+
+  plugin_vm_manager_.StopPluginVm();
+  thread_bundle_.RunUntilIdle();
+  EXPECT_TRUE(VmPluginDispatcherClient().stop_vm_called());
+  EXPECT_EQ(plugin_vm_manager_.seneschal_server_handle(), 0ul);
 
   histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
                                         PluginVmLaunchResult::kSuccess, 1);
