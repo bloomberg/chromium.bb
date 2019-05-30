@@ -150,13 +150,6 @@ ChromeCleanerRunner::ChromeCleanerRunner(
     cleaner_command_line_.AppendSwitchASCII(
         chrome_cleaner::kSRTPromptFieldTrialGroupNameSwitch, group_name);
   }
-
-  std::string reboot_prompt_type = base::NumberToString(GetRebootPromptType());
-  cleaner_command_line_.AppendSwitchASCII(
-      chrome_cleaner::kRebootPromptMethodSwitch, reboot_prompt_type);
-  // TODO(veranika): enable Quarantine unconditionally in the cleaner and remove
-  // the command-line argument.
-  cleaner_command_line_.AppendSwitch(chrome_cleaner::kQuarantineSwitch);
 }
 
 ChromeCleanerRunner::ProcessStatus

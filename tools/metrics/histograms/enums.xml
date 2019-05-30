@@ -52894,6 +52894,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SoftwareReporterRebootPromptType">
+  <obsolete>
+    Deprecated on 2019-05-29.
+  </obsolete>
   <int value="1" label="SettingsPageOpened"/>
   <int value="2" label="ModalDialogShown"/>
   <int value="3" label="NonModalDialogShown"/>
