@@ -145,7 +145,9 @@ std::string ComputeServerDefinedUniqueTagForDebugging(
 
 BookmarkModelTypeProcessor::BookmarkModelTypeProcessor(
     BookmarkUndoService* bookmark_undo_service)
-    : bookmark_undo_service_(bookmark_undo_service), weak_ptr_factory_(this) {}
+    : bookmark_undo_service_(bookmark_undo_service),
+      weak_ptr_factory_for_controller_(this),
+      weak_ptr_factory_for_worker_(this) {}
 
 BookmarkModelTypeProcessor::~BookmarkModelTypeProcessor() {
   if (bookmark_model_ && bookmark_model_observer_) {
@@ -170,6 +172,7 @@ void BookmarkModelTypeProcessor::ConnectSync(
 void BookmarkModelTypeProcessor::DisconnectSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
   if (!worker_) {
     return;
   }
@@ -370,7 +373,7 @@ size_t BookmarkModelTypeProcessor::EstimateMemoryUsage() const {
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 BookmarkModelTypeProcessor::GetWeakPtr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return weak_ptr_factory_.GetWeakPtr();
+  return weak_ptr_factory_for_controller_.GetWeakPtr();
 }
 
 void BookmarkModelTypeProcessor::OnSyncStarting(
@@ -427,7 +430,7 @@ void BookmarkModelTypeProcessor::ConnectIfReady() {
   }
   activation_context->type_processor =
       std::make_unique<syncer::ModelTypeProcessorProxy>(
-          weak_ptr_factory_.GetWeakPtr(),
+          weak_ptr_factory_for_worker_.GetWeakPtr(),
           base::SequencedTaskRunnerHandle::Get());
   std::move(start_callback_).Run(std::move(activation_context));
 }
@@ -464,7 +467,8 @@ void BookmarkModelTypeProcessor::OnSyncStopping(
   }
 
   // Do not let any delayed callbacks to be called.
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  weak_ptr_factory_for_controller_.InvalidateWeakPtrs();
+  weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
 }
 
 void BookmarkModelTypeProcessor::NudgeForCommitIfNeeded() {
