@@ -267,23 +267,24 @@ FloatRect PaintTimingDetector::CalculateVisualRect(
 ScopedPaintTimingDetectorBlockPaintHook::
     ScopedPaintTimingDetectorBlockPaintHook(
         const LayoutBoxModelObject& text_aggregating_block)
-    : text_aggregating_block_(text_aggregating_block) {
-  frame_view_ = text_aggregating_block.GetFrameView();
+    : text_aggregating_block_(text_aggregating_block),
+      frame_view_(text_aggregating_block_.GetFrameView()) {
   DCHECK(frame_view_);
-  PaintTimingDetector& detector = frame_view_->GetPaintTimingDetector();
-  if (detector.GetTextPaintTimingDetector()) {
-    detector.GetTextPaintTimingDetector()->WillWalkTextAggregatingNode();
-  }
+  TextPaintTimingDetector* detector =
+      frame_view_->GetPaintTimingDetector().GetTextPaintTimingDetector();
+  if (!detector)
+    return;
+  detector->WillWalkTextAggregatingNode();
 }
 
 ScopedPaintTimingDetectorBlockPaintHook::
     ~ScopedPaintTimingDetectorBlockPaintHook() {
   DCHECK(frame_view_);
-  PaintTimingDetector& detector = frame_view_->GetPaintTimingDetector();
-  if (detector.GetTextPaintTimingDetector()) {
-    detector.GetTextPaintTimingDetector()->DidWalkTextAggregatingNode(
-        text_aggregating_block_);
-  }
+  TextPaintTimingDetector* detector =
+      frame_view_->GetPaintTimingDetector().GetTextPaintTimingDetector();
+  if (!detector)
+    return;
+  detector->DidWalkTextAggregatingNode(text_aggregating_block_);
 }
 
 void PaintTimingDetector::Trace(Visitor* visitor) {

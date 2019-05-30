@@ -20,14 +20,6 @@
 namespace blink {
 
 void InlinePainter::Paint(const PaintInfo& paint_info) {
-  base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
-      scoped_paint_timing_detector_block_paint_hook;
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-      RuntimeEnabledFeatures::ElementTimingEnabled(
-          &layout_inline_.GetDocument())) {
-    scoped_paint_timing_detector_block_paint_hook.emplace(layout_inline_);
-  }
-
   ScopedPaintState paint_state(layout_inline_, paint_info);
   auto paint_offset = paint_state.PaintOffset();
   const auto& local_paint_info = paint_state.GetPaintInfo();
@@ -36,6 +28,15 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
       local_paint_info.IsPrinting()) {
     ObjectPainter(layout_inline_)
         .AddPDFURLRectIfNeeded(local_paint_info, paint_offset);
+  }
+
+  base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
+      scoped_paint_timing_detector_block_paint_hook;
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+      RuntimeEnabledFeatures::ElementTimingEnabled(
+          &layout_inline_.GetDocument())) {
+    if (paint_info.phase == PaintPhase::kForeground)
+      scoped_paint_timing_detector_block_paint_hook.emplace(layout_inline_);
   }
 
   if (layout_inline_.IsInLayoutNGInlineFormattingContext()) {

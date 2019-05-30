@@ -82,7 +82,8 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
 
   if ((RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
        RuntimeEnabledFeatures::ElementTimingEnabled(&node->GetDocument()))) {
-    if (!font.ShouldSkipDrawing()) {
+    if (!font.ShouldSkipDrawing() &&
+        paint_info.phase == PaintPhase::kForeground) {
       PaintTimingDetector::NotifyTextPaint(
           *node->GetLayoutObject(), paint_info.context.GetPaintController()
                                         .CurrentPaintChunkProperties());

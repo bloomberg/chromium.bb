@@ -81,6 +81,9 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
     if ((RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
          RuntimeEnabledFeatures::ElementTimingEnabled(
              &layout_file_upload_control_.GetDocument()))) {
+      base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
+          scoped_paint_timing_detector_block_paint_hook(
+              layout_file_upload_control_);
       if (!font.ShouldSkipDrawing()) {
         PaintTimingDetector::NotifyTextPaint(
             layout_file_upload_control_, paint_info.context.GetPaintController()

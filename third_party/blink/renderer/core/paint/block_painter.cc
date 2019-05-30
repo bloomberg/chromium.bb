@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -31,14 +30,6 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
   ScopedPaintState paint_state(layout_block_, paint_info);
   if (!ShouldPaint(paint_state))
     return;
-
-  base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
-      scoped_paint_timing_detector_block_paint_hook;
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-      RuntimeEnabledFeatures::ElementTimingEnabled(
-          &layout_block_.GetDocument())) {
-    scoped_paint_timing_detector_block_paint_hook.emplace(layout_block_);
-  }
 
   auto paint_offset = paint_state.PaintOffset();
   auto& local_paint_info = paint_state.MutablePaintInfo();

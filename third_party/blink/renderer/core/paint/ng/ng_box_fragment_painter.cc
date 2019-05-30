@@ -340,13 +340,6 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   DCHECK(layout_object->IsLayoutBlockFlow());
   const auto& layout_block = To<LayoutBlock>(*layout_object);
   DCHECK(layout_block.ChildrenInline());
-  base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
-      scoped_paint_timing_detector_block_paint_hook;
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
-      RuntimeEnabledFeatures::ElementTimingEnabled(
-          &layout_block.GetDocument())) {
-    scoped_paint_timing_detector_block_paint_hook.emplace(layout_block);
-  }
   if (ShouldPaintDescendantOutlines(paint_info.phase)) {
     ObjectPainter(layout_block).PaintInlineChildrenOutlines(paint_info);
   } else {
@@ -724,6 +717,15 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
   // If we have no lines then we have no work to do.
   if (line_boxes.IsEmpty())
     return;
+
+  base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
+      scoped_paint_timing_detector_block_paint_hook;
+  const auto& layout_block = To<LayoutBlock>(*layout_object);
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+      RuntimeEnabledFeatures::ElementTimingEnabled(
+          &layout_block.GetDocument())) {
+    scoped_paint_timing_detector_block_paint_hook.emplace(layout_block);
+  }
 
   const bool is_horizontal = box_fragment_.Style().IsHorizontalWritingMode();
 

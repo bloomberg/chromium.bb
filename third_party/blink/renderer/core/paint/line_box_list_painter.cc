@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 namespace blink {
@@ -60,6 +61,15 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
           LineLayoutBoxModel(const_cast<LayoutBoxModelObject*>(&layout_object)),
           paint_info.GetCullRect(), paint_offset))
     return;
+
+  base::Optional<ScopedPaintTimingDetectorBlockPaintHook>
+      scoped_paint_timing_detector_block_paint_hook;
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+      RuntimeEnabledFeatures::ElementTimingEnabled(
+          &layout_object.GetDocument())) {
+    if (paint_info.phase == PaintPhase::kForeground)
+      scoped_paint_timing_detector_block_paint_hook.emplace(layout_object);
+  }
 
   // See if our root lines intersect with the dirty rect. If so, then we paint
   // them. Note that boxes can easily overlap, so we can't make any assumptions

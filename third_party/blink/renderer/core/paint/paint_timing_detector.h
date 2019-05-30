@@ -108,17 +108,16 @@ class CORE_EXPORT PaintTimingDetector
 // subtree of an container node, so that the constructor and the destructor can
 // tell the start and end of the visit.
 class ScopedPaintTimingDetectorBlockPaintHook {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
-  ScopedPaintTimingDetectorBlockPaintHook(
-      const LayoutBoxModelObject& text_aggregating_block_);
+  ScopedPaintTimingDetectorBlockPaintHook(const LayoutBoxModelObject&);
 
   ~ScopedPaintTimingDetectorBlockPaintHook();
 
  private:
-  Persistent<LocalFrameView> frame_view_;
   const LayoutBoxModelObject& text_aggregating_block_;
+  Member<LocalFrameView> frame_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPaintTimingDetectorBlockPaintHook);
 };
