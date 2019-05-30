@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
@@ -42,6 +43,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -51,6 +53,7 @@ import java.util.List;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class GridTabSwitcherLayoutPerfTest {
     private static final String TAG = "GTSLayoutTest";
 
