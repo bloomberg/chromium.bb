@@ -17,7 +17,7 @@ LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     const blink::MediaStreamDevice& device,
     const int* requested_buffer_size,
     bool disable_local_echo,
-    ConstraintsOnceCallback started_callback,
+    ConstraintsRepeatingCallback started_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : blink::MediaStreamAudioSource(std::move(task_runner),
                                     true /* is_local_source */,
@@ -105,7 +105,7 @@ void LocalMediaStreamAudioSource::EnsureSourceIsStopped() {
 }
 
 void LocalMediaStreamAudioSource::OnCaptureStarted() {
-  std::move(started_callback_).Run(this, blink::MEDIA_DEVICE_OK, "");
+  started_callback_.Run(this, blink::MEDIA_DEVICE_OK, "");
 }
 
 void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,

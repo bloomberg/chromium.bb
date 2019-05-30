@@ -828,8 +828,9 @@ void UserMediaProcessor::OnAudioSourceStartedOnAudioThread(
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&UserMediaProcessor::OnAudioSourceStarted,
-                                weak_ptr, source, result, result_name));
+      FROM_HERE,
+      base::BindOnce(&UserMediaProcessor::OnAudioSourceStarted,
+                     std::move(weak_ptr), source, result, result_name));
 }
 
 void UserMediaProcessor::OnAudioSourceStarted(
@@ -975,9 +976,10 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
   // See OnAudioSourceStarted for more details.
   pending_local_sources_.push_back(source);
 
-  blink::WebPlatformMediaStreamSource::ConstraintsOnceCallback source_ready =
-      base::BindOnce(&UserMediaProcessor::OnAudioSourceStartedOnAudioThread,
-                     task_runner_, weak_factory_.GetWeakPtr());
+  blink::WebPlatformMediaStreamSource::ConstraintsRepeatingCallback
+      source_ready = base::BindRepeating(
+          &UserMediaProcessor::OnAudioSourceStartedOnAudioThread, task_runner_,
+          weak_factory_.GetWeakPtr());
 
   std::unique_ptr<blink::MediaStreamAudioSource> audio_source =
       CreateAudioSource(device, std::move(source_ready));
@@ -1031,7 +1033,8 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
 std::unique_ptr<blink::MediaStreamAudioSource>
 UserMediaProcessor::CreateAudioSource(
     const MediaStreamDevice& device,
-    blink::WebPlatformMediaStreamSource::ConstraintsOnceCallback source_ready) {
+    blink::WebPlatformMediaStreamSource::ConstraintsRepeatingCallback
+        source_ready) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
 

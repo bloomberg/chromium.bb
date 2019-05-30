@@ -358,8 +358,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
   std::unique_ptr<blink::MediaStreamAudioSource> CreateAudioSource(
       const blink::MediaStreamDevice& device,
-      blink::WebPlatformMediaStreamSource::ConstraintsOnceCallback source_ready)
-      override {
+      blink::WebPlatformMediaStreamSource::ConstraintsRepeatingCallback
+          source_ready) override {
     std::unique_ptr<blink::MediaStreamAudioSource> source;
     if (create_source_that_fails_) {
       class FailedAtLifeAudioSource : public blink::MediaStreamAudioSource {
