@@ -664,9 +664,11 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
     av1_disable_segmentation(seg);
     av1_clearall_segfeatures(seg);
 
+#if !CONFIG_REALTIME_ONLY
     // Scan frames from current to arf frame.
     // This function re-enables segmentation if appropriate.
     av1_update_mbgraph_stats(cpi);
+#endif
 
     // If segmentation was enabled set those features needed for the
     // arf itself.

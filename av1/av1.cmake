@@ -363,7 +363,9 @@ endif()
 if(CONFIG_REALTIME_ONLY)
   list(REMOVE_ITEM AOM_AV1_ENCODER_SOURCES "${AOM_ROOT}/av1/encoder/firstpass.c"
                    "${AOM_ROOT}/av1/encoder/firstpass.h"
-                   "${AOM_ROOT}/av1/encoder/pass2_strategy.c")
+                   "${AOM_ROOT}/av1/encoder/pass2_strategy.c"
+                   "${AOM_ROOT}/av1/encoder/mbgraph.c"
+                   "${AOM_ROOT}/av1/encoder/mbgraph.h")
 endif()
 
 # Setup AV1 common/decoder/encoder targets. The libaom target must exist before
