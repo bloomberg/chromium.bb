@@ -2413,7 +2413,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Autofill_ParsedProfileForm">
+<action name="Autofill_ParsedProfileForm" not_user_triggered="true">
   <owner>sebsg@chromium.org</owner>
   <description>
     This user action is logged when a profile form is parsed.
@@ -4786,12 +4786,12 @@ should be able to be added at any place in this file.
   <description>User hit &quot;read it later&quot; menu item.</description>
 </action>
 
-<action name="CustomTabsRemoteViewsShown">
+<action name="CustomTabsRemoteViewsShown" not_user_triggered="true">
   <owner>ianwen@chromium.org</owner>
   <description>A RemoteViews based bottom bar was shown.</description>
 </action>
 
-<action name="CustomTabsRemoteViewsUpdated">
+<action name="CustomTabsRemoteViewsUpdated" not_user_triggered="true">
   <owner>ianwen@chromium.org</owner>
   <description>
     A RemoteViews based bottom bar was updated through service API.
