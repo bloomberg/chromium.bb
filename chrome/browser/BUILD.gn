@@ -2379,6 +2379,8 @@ jumbo_split_static_library("browser") {
       "android/explore_sites/import_catalog_task.h",
       "android/explore_sites/increment_shown_count_task.cc",
       "android/explore_sites/increment_shown_count_task.h",
+      "android/explore_sites/most_visited_client.cc",
+      "android/explore_sites/most_visited_client.h",
       "android/explore_sites/ntp_json_fetcher.cc",
       "android/explore_sites/ntp_json_fetcher.h",
       "android/explore_sites/record_site_click_task.cc",

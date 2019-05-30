@@ -5100,6 +5100,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Shortcuts are curated by you
       </message>
 
+      <if expr="is_android">
+        <message name="IDS_NTP_EXPLORE_SITES_TILE_TITLE" desc="A label for a button that when clicked takes the user to a tab that contains categorized links to websites that are popular in their country. [CHAR_LIMIT=12]">
+          Top sites
+        </message>
+      </if>
+
       <!--Tooltip strings-->
       <message name="IDS_TOOLTIP_BACK" desc="The tooltip for back button">
         Click to go back, hold to see history

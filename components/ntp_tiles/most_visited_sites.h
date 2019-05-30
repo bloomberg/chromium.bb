@@ -113,6 +113,13 @@ class MostVisitedSites : public history::TopSitesObserver,
     virtual void QueryHomepageTitle(TitleCallback title_callback) = 0;
   };
 
+  class ExploreSitesClient {
+   public:
+    virtual ~ExploreSitesClient() = default;
+    virtual GURL GetExploreSitesUrl() const = 0;
+    virtual base::string16 GetExploreSitesTitle() const = 0;
+  };
+
   // Construct a MostVisitedSites instance.
   //
   // |prefs| and |suggestions| are required and may not be null. |top_sites|,
@@ -151,6 +158,10 @@ class MostVisitedSites : public history::TopSitesObserver,
   // used during the construction of a new tile set.
   // |client| must not be null and outlive this object.
   void SetHomepageClient(std::unique_ptr<HomepageClient> client);
+
+  // Sets the client that provides the Explore Sites tile. Can be null if no
+  // such tile is desirable.
+  void SetExploreSitesClient(std::unique_ptr<ExploreSitesClient> client);
 
   // Requests an asynchronous refresh of the suggestions. Notifies the observer
   // if the request resulted in the set of tiles changing.
@@ -214,7 +225,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   // public method for ease of testing.
   static NTPTilesVector MergeTiles(NTPTilesVector personal_tiles,
                                    NTPTilesVector whitelist_tiles,
-                                   NTPTilesVector popular_tiles);
+                                   NTPTilesVector popular_tiles,
+                                   base::Optional<NTPTile> explore_tile);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesTest,
@@ -310,6 +322,10 @@ class MostVisitedSites : public history::TopSitesObserver,
   NTPTilesVector InsertHomeTile(NTPTilesVector tiles,
                                 const base::string16& title) const;
 
+  // Creates a tile for the Explore Sites page, if enabled. The tile is added to
+  // the front of the list.
+  base::Optional<NTPTile> CreateExploreSitesTile();
+
   void OnHomepageTitleDetermined(NTPTilesVector tiles,
                                  const base::Optional<base::string16>& title);
 
@@ -329,6 +345,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   std::unique_ptr<IconCacher> const icon_cacher_;
   std::unique_ptr<MostVisitedSitesSupervisor> supervisor_;
   std::unique_ptr<HomepageClient> homepage_client_;
+  std::unique_ptr<ExploreSitesClient> explore_sites_client_;
 
   Observer* observer_;
 

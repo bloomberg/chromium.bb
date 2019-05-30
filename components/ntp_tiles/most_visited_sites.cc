@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -181,11 +182,7 @@ bool MostVisitedSites::DoesSourceExist(TileSource source) const {
     case TileSource::CUSTOM_LINKS:
       return custom_links_ != nullptr;
     case TileSource::EXPLORE:
-#if defined(OS_ANDROID)
-      return true;
-#else
-      return false;
-#endif
+      return explore_sites_client_ != nullptr;
   }
   NOTREACHED();
   return false;
@@ -195,6 +192,11 @@ void MostVisitedSites::SetHomepageClient(
     std::unique_ptr<HomepageClient> client) {
   DCHECK(client);
   homepage_client_ = std::move(client);
+}
+
+void MostVisitedSites::SetExploreSitesClient(
+    std::unique_ptr<ExploreSitesClient> client) {
+  explore_sites_client_ = std::move(client);
 }
 
 void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
@@ -718,6 +720,19 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
   return new_tiles;
 }
 
+base::Optional<NTPTile> MostVisitedSites::CreateExploreSitesTile() {
+  if (!explore_sites_client_)
+    return base::nullopt;
+
+  NTPTile explore_sites_tile;
+  explore_sites_tile.url = explore_sites_client_->GetExploreSitesUrl();
+  explore_sites_tile.title = explore_sites_client_->GetExploreSitesTitle();
+  explore_sites_tile.source = TileSource::EXPLORE;
+  explore_sites_tile.title_source = TileTitleSource::UNKNOWN;
+
+  return explore_sites_tile;
+}
+
 void MostVisitedSites::OnCustomLinksChanged() {
   DCHECK(custom_links_);
   if (!custom_links_enabled_)
@@ -778,7 +793,15 @@ void MostVisitedSites::InitiateNotificationForNewTiles(
 
 void MostVisitedSites::MergeMostVisitedTiles(NTPTilesVector personal_tiles) {
   std::set<std::string> used_hosts;
-  size_t num_actual_tiles = 0u;
+
+  base::Optional<NTPTile> explore_tile = CreateExploreSitesTile();
+  size_t num_actual_tiles = explore_tile ? 1 : 0;
+
+  // The explore sites tile may have taken a space that was utilized by the
+  // personal tiles.
+  if (personal_tiles.size() + num_actual_tiles > max_num_sites_) {
+    personal_tiles.pop_back();
+  }
   AddToHostsAndTotalCount(personal_tiles, &used_hosts, &num_actual_tiles);
 
   NTPTilesVector whitelist_tiles =
@@ -792,7 +815,7 @@ void MostVisitedSites::MergeMostVisitedTiles(NTPTilesVector personal_tiles) {
 
   NTPTilesVector new_tiles =
       MergeTiles(std::move(personal_tiles), std::move(whitelist_tiles),
-                 std::move(sections[SectionType::PERSONALIZED]));
+                 std::move(sections[SectionType::PERSONALIZED]), explore_tile);
 
   SaveTilesAndNotify(std::move(new_tiles), std::move(sections));
 }
@@ -819,9 +842,11 @@ void MostVisitedSites::SaveTilesAndNotify(
 }
 
 // static
-NTPTilesVector MostVisitedSites::MergeTiles(NTPTilesVector personal_tiles,
-                                            NTPTilesVector whitelist_tiles,
-                                            NTPTilesVector popular_tiles) {
+NTPTilesVector MostVisitedSites::MergeTiles(
+    NTPTilesVector personal_tiles,
+    NTPTilesVector whitelist_tiles,
+    NTPTilesVector popular_tiles,
+    base::Optional<NTPTile> explore_tile) {
   NTPTilesVector merged_tiles;
   std::move(personal_tiles.begin(), personal_tiles.end(),
             std::back_inserter(merged_tiles));
@@ -829,6 +854,9 @@ NTPTilesVector MostVisitedSites::MergeTiles(NTPTilesVector personal_tiles,
             std::back_inserter(merged_tiles));
   std::move(popular_tiles.begin(), popular_tiles.end(),
             std::back_inserter(merged_tiles));
+  if (explore_tile)
+    merged_tiles.push_back(*explore_tile);
+
   return merged_tiles;
 }
 
