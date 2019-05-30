@@ -82,7 +82,7 @@ message GetEndorsementInfoReply {
 }
 
 message GetAttestationKeyInfoRequest {
-  optional KeyType key_type = 1;
+  reserved 1;
   // What kind of ACA to use.
   optional ACAType aca_type = 2;
 }
