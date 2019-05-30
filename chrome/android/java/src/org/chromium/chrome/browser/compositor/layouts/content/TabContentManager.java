@@ -21,7 +21,9 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.native_page.NativePage;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.usage_stats.SuspendedTab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.display.DisplayAndroid;
@@ -186,24 +188,29 @@ public class TabContentManager {
         mListeners.remove(listener);
     }
 
-    private Bitmap readbackNativePage(final Tab tab, float scale) {
-        Bitmap bitmap = null;
-        NativePage page = tab.getNativePage();
-        if (page == null) {
-            return bitmap;
+    private Bitmap readbackNativeBitmap(final Tab tab, float scale) {
+        NativePage nativePage = tab.getNativePage();
+        boolean isNativeViewShowing = isNativeViewShowing(tab);
+        if (nativePage == null && !isNativeViewShowing) {
+            return null;
         }
 
-        View viewToDraw = page.getView();
+        View viewToDraw = isNativeViewShowing ? tab.getContentView() : nativePage.getView();
         if (viewToDraw == null || viewToDraw.getWidth() == 0 || viewToDraw.getHeight() == 0) {
-            return bitmap;
+            return null;
         }
 
-        if (page instanceof InvalidationAwareThumbnailProvider) {
-            if (!((InvalidationAwareThumbnailProvider) page).shouldCaptureThumbnail()) {
+        if (nativePage != null && nativePage instanceof InvalidationAwareThumbnailProvider) {
+            if (!((InvalidationAwareThumbnailProvider) nativePage).shouldCaptureThumbnail()) {
                 return null;
             }
         }
 
+        return readbackNativeView(viewToDraw, scale, nativePage);
+    }
+
+    private Bitmap readbackNativeView(View viewToDraw, float scale, NativePage nativePage) {
+        Bitmap bitmap = null;
         float overlayTranslateY = mContentOffsetProvider.getOverlayTranslateY();
 
         float leftMargin = 0.f;
@@ -216,8 +223,8 @@ public class TabContentManager {
 
         try {
             bitmap = Bitmap.createBitmap(
-                    (int) ((viewToDraw.getWidth() + leftMargin) * mThumbnailScale),
-                    (int) ((viewToDraw.getHeight() + topMargin - overlayTranslateY)
+                    (int) ((viewToDraw.getMeasuredWidth() + leftMargin) * mThumbnailScale),
+                    (int) ((viewToDraw.getMeasuredHeight() + topMargin - overlayTranslateY)
                             * mThumbnailScale),
                     Bitmap.Config.ARGB_8888);
         } catch (OutOfMemoryError ex) {
@@ -227,8 +234,8 @@ public class TabContentManager {
         Canvas c = new Canvas(bitmap);
         c.scale(scale, scale);
         c.translate(leftMargin, -overlayTranslateY + topMargin);
-        if (page instanceof InvalidationAwareThumbnailProvider) {
-            ((InvalidationAwareThumbnailProvider) page).captureThumbnail(c);
+        if (nativePage != null && nativePage instanceof InvalidationAwareThumbnailProvider) {
+            ((InvalidationAwareThumbnailProvider) nativePage).captureThumbnail(c);
         } else {
             viewToDraw.draw(c);
         }
@@ -299,27 +306,26 @@ public class TabContentManager {
      */
     public void cacheTabThumbnail(final Tab tab, @Nullable Callback<Bitmap> callback) {
         if (mNativeTabContentManager != 0 && mSnapshotsEnabled) {
-            if (tab.getNativePage() != null) {
-                Bitmap nativePageBitmap = readbackNativePage(tab, mThumbnailScale);
-                if (nativePageBitmap == null) {
+            if (tab.getNativePage() != null || isNativeViewShowing(tab)) {
+                Bitmap nativeBitmap = readbackNativeBitmap(tab, mThumbnailScale);
+                if (nativeBitmap == null) {
                     if (callback != null) callback.onResult(null);
                     return;
                 }
-                nativeCacheTabWithBitmap(mNativeTabContentManager, tab, nativePageBitmap,
-                        mThumbnailScale);
+                nativeCacheTabWithBitmap(
+                        mNativeTabContentManager, tab, nativeBitmap, mThumbnailScale);
                 if (callback != null) {
                     // In portrait mode, we want to show thumbnails in squares.
                     // Therefore, the thumbnail saved in portrait mode needs to be cropped to
                     // a square, or it would become too tall and break the layout.
                     Matrix matrix = new Matrix();
                     matrix.setScale(0.5f, 0.5f);
-                    Bitmap resized =
-                            Bitmap.createBitmap(nativePageBitmap, 0, 0, nativePageBitmap.getWidth(),
-                                    min(nativePageBitmap.getWidth(), nativePageBitmap.getHeight()),
-                                    matrix, true);
+                    Bitmap resized = Bitmap.createBitmap(nativeBitmap, 0, 0,
+                            nativeBitmap.getWidth(),
+                            min(nativeBitmap.getWidth(), nativeBitmap.getHeight()), matrix, true);
                     callback.onResult(resized);
                 }
-                nativePageBitmap.recycle();
+                nativeBitmap.recycle();
             } else {
                 if (tab.getWebContents() == null) return;
                 nativeCacheTab(mNativeTabContentManager, tab, mThumbnailScale, callback);
@@ -383,6 +389,10 @@ public class TabContentManager {
         for (ThumbnailChangeListener listener : mListeners) {
             listener.onThumbnailChange(tabId);
         }
+    }
+
+    private boolean isNativeViewShowing(Tab tab) {
+        return tab != null && (SadTab.isShowing(tab) || SuspendedTab.from(tab).isShowing());
     }
 
     // Class Object Methods

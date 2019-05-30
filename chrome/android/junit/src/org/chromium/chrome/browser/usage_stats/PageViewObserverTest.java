@@ -32,6 +32,7 @@ import org.chromium.base.Promise;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -72,6 +73,8 @@ public final class PageViewObserverTest {
     private SuspensionTracker mSuspensionTracker;
     @Mock
     private WebContents mWebContents;
+    @Mock
+    private ChromeActivity mChromeActivity;
     @Captor
     private ArgumentCaptor<TabObserver> mTabObserverCaptor;
     @Captor
@@ -90,11 +93,13 @@ public final class PageViewObserverTest {
 
         doReturn(false).when(mTab).isIncognito();
         doReturn(null).when(mTab).getUrl();
+        doReturn(mChromeActivity).when(mTab).getActivity();
         doReturn(mWebContents).when(mTab).getWebContents();
         doReturn(Arrays.asList(mTabModel)).when(mTabModelSelector).getModels();
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
         doReturn(mUserDataHost).when(mTab).getUserDataHost();
         doReturn(mUserDataHostTab2).when(mTab2).getUserDataHost();
+        doReturn(mChromeActivity).when(mTab2).getActivity();
         doReturn(Promise.fulfilled("1")).when(mTokenTracker).getTokenForFqdn(anyString());
     }
 
