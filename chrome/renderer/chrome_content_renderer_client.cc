@@ -131,6 +131,7 @@
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_origin_trials.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_security_policy.h"
@@ -801,14 +802,11 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         const bool is_pnacl_mime_type =
             actual_mime_type == nacl::kPnaclPluginMimeType;
         if (is_nacl_plugin || is_nacl_mime_type || is_pnacl_mime_type) {
-          bool is_nacl_unrestricted = false;
-          if (is_nacl_mime_type) {
-            is_nacl_unrestricted =
-                base::CommandLine::ForCurrentProcess()->HasSwitch(
-                    switches::kEnableNaCl);
-          } else if (is_pnacl_mime_type) {
-            is_nacl_unrestricted = true;
-          }
+          bool has_enable_nacl_switch =
+              base::CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kEnableNaCl);
+          bool is_nacl_unrestricted =
+              has_enable_nacl_switch || is_pnacl_mime_type;
           GURL manifest_url;
           GURL app_url;
           if (is_nacl_mime_type || is_pnacl_mime_type) {
@@ -821,16 +819,31 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             manifest_url = GetNaClContentHandlerURL(actual_mime_type, info);
             app_url = manifest_url;
           }
+          bool is_module_allowed = false;
           const Extension* extension =
               extensions::RendererExtensionRegistry::Get()
                   ->GetExtensionOrAppByURL(manifest_url);
-          if (!IsNativeNaClAllowed(app_url, is_nacl_unrestricted, extension)) {
+          if (extension) {
+            is_module_allowed =
+                IsNativeNaClAllowed(app_url, is_nacl_unrestricted, extension);
+          } else {
+            WebDocument document = frame->GetDocument();
+            is_module_allowed =
+                has_enable_nacl_switch ||
+                (is_pnacl_mime_type &&
+                 blink::WebOriginTrials::isTrialEnabled(&document, "PNaCl"));
+          }
+          if (!is_module_allowed) {
             WebString error_message;
             if (is_nacl_mime_type) {
               error_message =
                   "Only unpacked extensions and apps installed from the Chrome "
                   "Web Store can load NaCl modules without enabling Native "
                   "Client in about:flags.";
+            } else if (is_pnacl_mime_type) {
+              error_message =
+                  "PNaCl modules can only be used on the open web (non-app/"
+                  "extension) when the PNaCl Origin Trial is enabled";
             }
             frame->AddMessageToConsole(WebConsoleMessage(
                 blink::mojom::ConsoleMessageLevel::kError, error_message));

@@ -1174,6 +1174,12 @@
       depends_on: ["PictureInPictureAPI"],
       settable_from_internals: true,
     },
+    // This is a reverse OT used for a phased deprecation.
+    // https://crbug.com/918374
+    {
+      name: "PNaCl",
+      origin_trial_feature_name: "PNaCl",
+    },
     {
       name: "PointerRawUpdate",
       status: "experimental",
