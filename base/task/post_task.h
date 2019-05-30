@@ -21,6 +21,7 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
+#include "base/updateable_sequenced_task_runner.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -177,6 +178,20 @@ BASE_EXPORT scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
 // tasks using |traits|. Tasks run one at a time in posting order.
 BASE_EXPORT scoped_refptr<SequencedTaskRunner>
 CreateSequencedTaskRunnerWithTraits(const TaskTraits& traits);
+
+// Returns a task runner whose PostTask invocations result in scheduling tasks
+// using |traits|. The priority in |traits| can be updated at any time via
+// UpdateableSequencedTaskRunner::UpdatePriority(). An update affects all tasks
+// posted to the task runner that aren't running yet. Tasks run one at a time in
+// posting order.
+//
+// |traits| requirements:
+// - base::ThreadPool() must be specified.
+// - Extension traits (e.g. BrowserThread) cannot be specified.
+// - base::ThreadPolicy must be specified if the priority of the task runner
+//   will ever be increased from BEST_EFFORT.
+BASE_EXPORT scoped_refptr<UpdateableSequencedTaskRunner>
+CreateUpdateableSequencedTaskRunnerWithTraits(const TaskTraits& traits);
 
 // Returns a SingleThreadTaskRunner whose PostTask invocations result in
 // scheduling tasks using |traits| on a thread determined by |thread_mode|. See

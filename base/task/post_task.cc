@@ -110,6 +110,24 @@ scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
       ->CreateSequencedTaskRunnerWithTraits(adjusted_traits);
 }
 
+scoped_refptr<UpdateableSequencedTaskRunner>
+CreateUpdateableSequencedTaskRunnerWithTraits(const TaskTraits& traits) {
+  DCHECK(ThreadPoolInstance::Get())
+      << "Ref. Prerequisite section of post_task.h.\n\n"
+         "Hint: if this is in a unit test, you're likely merely missing a "
+         "base::test::ScopedTaskEnvironment member in your fixture.\n";
+  DCHECK(traits.use_thread_pool())
+      << "The base::UseThreadPool() trait is mandatory with "
+         "CreateUpdateableSequencedTaskRunnerWithTraits().";
+  CHECK_EQ(traits.extension_id(),
+           TaskTraitsExtensionStorage::kInvalidExtensionId)
+      << "Extension traits cannot be used with "
+         "CreateUpdateableSequencedTaskRunnerWithTraits().";
+  const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
+  return static_cast<internal::ThreadPoolImpl*>(ThreadPoolInstance::Get())
+      ->CreateUpdateableSequencedTaskRunnerWithTraits(adjusted_traits);
+}
+
 scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {

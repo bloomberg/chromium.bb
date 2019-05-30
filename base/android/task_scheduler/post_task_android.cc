@@ -52,10 +52,8 @@ TaskTraits PostTaskAndroid::CreateTaskTraits(
     jbyte extension_id,
     const base::android::JavaParamRef<jbyteArray>& extension_data) {
   return TaskTraits(priority_set_explicitly,
-                    static_cast<TaskPriority>(priority),
-                    /* shutdown_behavior_set_explicitly */ false,
-                    TaskShutdownBehavior::SKIP_ON_SHUTDOWN, may_block,
-                    /* with_base_sync_primitives */ false, use_thread_pool,
+                    static_cast<TaskPriority>(priority), may_block,
+                    use_thread_pool,
                     TaskTraitsExtensionStorage(
                         extension_id, GetExtensionData(env, extension_data)));
 }

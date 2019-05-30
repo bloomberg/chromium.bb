@@ -99,8 +99,7 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
       SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
   scoped_refptr<UpdateableSequencedTaskRunner>
-  CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
-      const TaskTraits& traits);
+  CreateUpdateableSequencedTaskRunnerWithTraits(const TaskTraits& traits);
 
  private:
   // Invoked after |has_fence_| or |has_best_effort_fence_| is updated. Sets the

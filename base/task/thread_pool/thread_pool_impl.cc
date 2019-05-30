@@ -256,7 +256,7 @@ ThreadPoolImpl::CreateCOMSTATaskRunnerWithTraits(
 #endif  // defined(OS_WIN)
 
 scoped_refptr<UpdateableSequencedTaskRunner>
-ThreadPoolImpl::CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
+ThreadPoolImpl::CreateUpdateableSequencedTaskRunnerWithTraits(
     const TaskTraits& traits) {
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
   return MakeRefCounted<PooledSequencedTaskRunner>(new_traits, this);
@@ -382,6 +382,16 @@ bool ThreadPoolImpl::IsRunningPoolWithTraits(const TaskTraits& traits) const {
 void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,
                                     TaskPriority priority) {
   auto transaction = task_source->BeginTransaction();
+
+  if (transaction.traits().priority() == priority)
+    return;
+
+  if (transaction.traits().priority() == TaskPriority::BEST_EFFORT) {
+    DCHECK(transaction.traits().thread_policy_set_explicitly())
+        << "A ThreadPolicy must be specified in the TaskTraits of an "
+           "UpdateableSequencedTaskRunner whose priority is increased from "
+           "BEST_EFFORT. See ThreadPolicy documentation.";
+  }
 
   ThreadGroup* const current_thread_group =
       GetThreadGroupForTraits(transaction.traits());

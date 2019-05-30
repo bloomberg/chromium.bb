@@ -246,7 +246,7 @@ std::vector<TraitsExecutionModePair> GetTraitsExecutionModePair() {
 }
 
 class ThreadPoolImplTestBase : public testing::Test {
- protected:
+ public:
   ThreadPoolImplTestBase() : thread_pool_("Test") {}
 
   void EnableAllTasksUserBlocking() {
@@ -1100,82 +1100,108 @@ struct TaskRunnerAndEvents {
       : task_runner(std::move(task_runner)),
         updated_priority(updated_priority),
         expected_previous_event(expected_previous_event) {}
+
+  // The UpdateableSequencedTaskRunner.
   scoped_refptr<UpdateableSequencedTaskRunner> task_runner;
+
+  // The priority to use in UpdatePriority().
   const TaskPriority updated_priority;
+
+  // Signaled when a task blocking |task_runner| is scheduled.
   WaitableEvent scheduled;
+
+  // Signaled to release the task blocking |task_runner|.
   WaitableEvent blocked;
+
+  // Signaled in the task that runs following the priority update.
   WaitableEvent task_ran;
+
+  // An event that should be signaled before the task following the priority
+  // update runs.
   WaitableEvent* expected_previous_event;
 };
 
 // Create a series of sample task runners that will post tasks at various
 // initial priorities, then update priority.
 std::vector<std::unique_ptr<TaskRunnerAndEvents>> CreateTaskRunnersAndEvents(
-    ThreadPoolImpl* thread_pool) {
+    ThreadPoolImpl* thread_pool,
+    ThreadPolicy thread_policy) {
   std::vector<std::unique_ptr<TaskRunnerAndEvents>> task_runners_and_events;
+
+  // -----
   // Task runner that will start as USER_VISIBLE and update to USER_BLOCKING.
   // Its task is expected to run first.
   task_runners_and_events.push_back(std::make_unique<TaskRunnerAndEvents>(
-      thread_pool->CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
-          TaskTraits({TaskPriority::USER_VISIBLE})),
+      thread_pool->CreateUpdateableSequencedTaskRunnerWithTraits(
+          TaskTraits({TaskPriority::USER_VISIBLE, thread_policy})),
       TaskPriority::USER_BLOCKING, nullptr));
 
+  // -----
   // Task runner that will start as BEST_EFFORT and update to USER_VISIBLE.
   // Its task is expected to run after the USER_BLOCKING task runner's task.
   task_runners_and_events.push_back(std::make_unique<TaskRunnerAndEvents>(
-      thread_pool->CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
-          TaskTraits({TaskPriority::BEST_EFFORT})),
+      thread_pool->CreateUpdateableSequencedTaskRunnerWithTraits(
+          TaskTraits({TaskPriority::BEST_EFFORT, thread_policy})),
       TaskPriority::USER_VISIBLE, &task_runners_and_events.back()->task_ran));
 
-  // Task runner that will start as USER_BLOCKING and update to BEST_EFFORT.
-  // Its task is expected to run asynchronously with the other two task task
-  // runners' tasks if background thread groups exist, or after the
-  // USER_VISIBLE task runner's task if not.
-  task_runners_and_events.push_back(std::make_unique<TaskRunnerAndEvents>(
-      thread_pool->CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
-          TaskTraits({TaskPriority::USER_BLOCKING})),
-      TaskPriority::BEST_EFFORT,
+  // -----
+  // Task runner that will start as USER_BLOCKING and update to BEST_EFFORT. Its
+  // task is expected to run asynchronously with the other two task runners'
+  // tasks if background thread groups exist, or after the USER_VISIBLE task
+  // runner's task if not.
+  //
+  // If the task following the priority update is expected to run in the
+  // foreground group, it should be after the task posted to the TaskRunner
+  // whose priority is updated to USER_VISIBLE.
+  WaitableEvent* expected_previous_event =
       CanUseBackgroundPriorityForWorkerThread()
           ? nullptr
-          : &task_runners_and_events.back()->task_ran));
+          : &task_runners_and_events.back()->task_ran;
+
+  task_runners_and_events.push_back(std::make_unique<TaskRunnerAndEvents>(
+      thread_pool->CreateUpdateableSequencedTaskRunnerWithTraits(
+          TaskTraits({TaskPriority::USER_BLOCKING, thread_policy})),
+      TaskPriority::BEST_EFFORT, expected_previous_event));
 
   return task_runners_and_events;
 }
 
-}  // namespace
-
 // Update the priority of a sequence when it is not scheduled.
-TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceNotScheduled) {
+void TestUpdatePrioritySequenceNotScheduled(ThreadPoolImplTest* test,
+                                            ThreadPolicy thread_policy) {
   // This test verifies that tasks run in priority order. With more than 1
   // thread per pool, it is possible that tasks don't run in order even if
   // threads got tasks from the PriorityQueue in order. Therefore, enforce a
   // maximum of 1 thread per pool.
   constexpr int kLocalMaxNumForegroundThreads = 1;
 
-  StartThreadPool(kLocalMaxNumForegroundThreads);
-  auto task_runners_and_events = CreateTaskRunnersAndEvents(&thread_pool_);
+  test->StartThreadPool(kLocalMaxNumForegroundThreads);
+  auto task_runners_and_events =
+      CreateTaskRunnersAndEvents(&test->thread_pool_, thread_policy);
 
   // Prevent tasks from running.
-  thread_pool_.SetHasFence(true);
+  test->thread_pool_.SetHasFence(true);
 
   // Post tasks to multiple task runners while they are at initial priority.
   // They won't run immediately because of the call to SetHasFence(true) above.
   for (auto& task_runner_and_events : task_runners_and_events) {
     task_runner_and_events->task_runner->PostTask(
         FROM_HERE,
-        BindOnce(&VerifyOrderAndTaskEnvironmentAndSignalEvent,
-                 task_runner_and_events->updated_priority, GetPoolType(),
-                 // Native pools ignore the maximum number of threads per pool
-                 // and therefore don't guarantee that tasks run in priority
-                 // order (see comment at beginning of test).
-                 Unretained(
+        BindOnce(
+            &VerifyOrderAndTaskEnvironmentAndSignalEvent,
+            TaskTraits(task_runner_and_events->updated_priority, thread_policy),
+            test->GetPoolType(),
+            // Native pools ignore the maximum number of threads per pool
+            // and therefore don't guarantee that tasks run in priority
+            // order (see comment at beginning of test).
+            Unretained(
 #if HAS_NATIVE_THREAD_POOL()
-                     GetPoolType() == test::PoolType::NATIVE
-                         ? nullptr
-                         :
+                test->GetPoolType() == test::PoolType::NATIVE
+                    ? nullptr
+                    :
 #endif
-                         task_runner_and_events->expected_previous_event),
-                 Unretained(&task_runner_and_events->task_ran)));
+                    task_runner_and_events->expected_previous_event),
+            Unretained(&task_runner_and_events->task_ran)));
   }
 
   // Update the priorities of the task runners that posted the tasks.
@@ -1185,7 +1211,7 @@ TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceNotScheduled) {
   }
 
   // Allow tasks to run.
-  thread_pool_.SetHasFence(false);
+  test->thread_pool_.SetHasFence(false);
 
   for (auto& task_runner_and_events : task_runners_and_events)
     test::WaitWithoutBlockingObserver(&task_runner_and_events->task_ran);
@@ -1193,9 +1219,11 @@ TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceNotScheduled) {
 
 // Update the priority of a sequence when it is scheduled, i.e. not currently
 // in a priority queue.
-TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceScheduled) {
-  StartThreadPool();
-  auto task_runners_and_events = CreateTaskRunnersAndEvents(&thread_pool_);
+void TestUpdatePrioritySequenceScheduled(ThreadPoolImplTest* test,
+                                         ThreadPolicy thread_policy) {
+  test->StartThreadPool();
+  auto task_runners_and_events =
+      CreateTaskRunnersAndEvents(&test->thread_pool_, thread_policy);
 
   // Post blocking tasks to all task runners to prevent tasks from being
   // scheduled later in the test.
@@ -1222,11 +1250,12 @@ TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceScheduled) {
   for (auto& task_runner_and_events : task_runners_and_events) {
     task_runner_and_events->task_runner->PostTask(
         FROM_HERE,
-        BindOnce(&VerifyOrderAndTaskEnvironmentAndSignalEvent,
-                 TaskTraits(task_runner_and_events->updated_priority),
-                 GetPoolType(),
-                 Unretained(task_runner_and_events->expected_previous_event),
-                 Unretained(&task_runner_and_events->task_ran)));
+        BindOnce(
+            &VerifyOrderAndTaskEnvironmentAndSignalEvent,
+            TaskTraits(task_runner_and_events->updated_priority, thread_policy),
+            test->GetPoolType(),
+            Unretained(task_runner_and_events->expected_previous_event),
+            Unretained(&task_runner_and_events->task_ran)));
   }
 
   // Unblock the task blocking each task runner, allowing the additional posted
@@ -1235,6 +1264,47 @@ TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceScheduled) {
   for (auto& task_runner_and_events : task_runners_and_events) {
     task_runner_and_events->blocked.Signal();
     test::WaitWithoutBlockingObserver(&task_runner_and_events->task_ran);
+  }
+}
+
+}  // namespace
+
+TEST_P(ThreadPoolImplTest,
+       UpdatePrioritySequenceNotScheduled_PreferBackground) {
+  TestUpdatePrioritySequenceNotScheduled(this, ThreadPolicy::PREFER_BACKGROUND);
+}
+
+TEST_P(ThreadPoolImplTest,
+       UpdatePrioritySequenceNotScheduled_MustUseForeground) {
+  TestUpdatePrioritySequenceNotScheduled(this,
+                                         ThreadPolicy::MUST_USE_FOREGROUND);
+}
+
+TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceScheduled_PreferBackground) {
+  TestUpdatePrioritySequenceScheduled(this, ThreadPolicy::PREFER_BACKGROUND);
+}
+
+TEST_P(ThreadPoolImplTest, UpdatePrioritySequenceScheduled_MustUseForeground) {
+  TestUpdatePrioritySequenceScheduled(this, ThreadPolicy::MUST_USE_FOREGROUND);
+}
+
+// Verify that a ThreadPolicy has to be specified in TaskTraits to increase
+// TaskPriority from BEST_EFFORT.
+TEST_P(ThreadPoolImplTest, UpdatePriorityFromBestEffortNoThreadPolicy) {
+  StartThreadPool();
+  {
+    auto task_runner =
+        thread_pool_.CreateUpdateableSequencedTaskRunnerWithTraits(
+            {TaskPriority::BEST_EFFORT});
+    EXPECT_DCHECK_DEATH(
+        { task_runner->UpdatePriority(TaskPriority::USER_VISIBLE); });
+  }
+  {
+    auto task_runner =
+        thread_pool_.CreateUpdateableSequencedTaskRunnerWithTraits(
+            {TaskPriority::BEST_EFFORT});
+    EXPECT_DCHECK_DEATH(
+        { task_runner->UpdatePriority(TaskPriority::USER_BLOCKING); });
   }
 }
 
