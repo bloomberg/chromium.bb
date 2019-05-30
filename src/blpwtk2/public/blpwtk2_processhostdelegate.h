@@ -32,6 +32,7 @@ namespace blpwtk2 {
 class BLPWTK2_EXPORT ProcessHostDelegate {
 
 public:
+    ProcessHostDelegate();
     virtual ~ProcessHostDelegate();
 
     virtual void onBrowserReceivedAsync(int              pid,
