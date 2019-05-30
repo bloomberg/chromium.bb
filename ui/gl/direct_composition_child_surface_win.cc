@@ -38,7 +38,7 @@ namespace {
 // Only one DirectComposition surface can be rendered into at a time. Track
 // here which IDCompositionSurface is being rendered into. If another context
 // is made current, then this surface will be suspended.
-IDCompositionSurface* g_current_surface;
+IDCompositionSurface* g_current_surface = nullptr;
 
 // Returns true if swap chain tearing is supported.
 bool IsSwapChainTearingSupported() {

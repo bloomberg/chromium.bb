@@ -115,6 +115,7 @@ class DirectCompositionSurfaceTest : public testing::Test {
     surface_ = CreateDirectCompositionSurfaceWin();
     context_ = CreateGLContext(surface_);
     surface_->SetEnableDCLayers(true);
+    DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(false);
   }
 
   void TearDown() override {
@@ -376,7 +377,7 @@ TEST_F(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
 
   // HW supports scaled overlays
   // The input texture size is maller than the window size.
-  surface_->SetScaledOverlaysSupportedForTesting(true);
+  DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
 
   ui::DCRendererLayerParams params;
   params.y_image = image_dxgi;
@@ -434,10 +435,6 @@ TEST_F(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
   scoped_refptr<GLImageDXGI> image_dxgi(new GLImageDXGI(texture_size, nullptr));
   image_dxgi->SetTexture(texture, 0);
   image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
-
-  // HW doesn't support scaled overlays
-  // The input texture size is bigger than the window size.
-  surface_->SetScaledOverlaysSupportedForTesting(false);
 
   ui::DCRendererLayerParams params;
   params.y_image = image_dxgi;
@@ -913,6 +910,9 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
 TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
   if (!surface_)
     return;
+  // Swap chain size is overridden to content rect size only if scaled overlays
+  // are supported.
+  DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
 
   gfx::Size window_size(100, 100);
   gfx::Size texture_size(50, 50);
@@ -981,6 +981,9 @@ TEST_F(DirectCompositionPixelTest, NonZeroBoundsOffset) {
 TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
   if (!surface_)
     return;
+  // Swap chain size is overridden to content rect size only if scaled overlays
+  // are supported.
+  DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
 
   gfx::Size window_size(100, 100);
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,

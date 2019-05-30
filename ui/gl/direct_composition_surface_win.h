@@ -76,8 +76,6 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
 
   static void SetPreferYUY2OverlaysForTesting();
 
-  bool InitializeNativeWindow();
-
   // GLSurfaceEGL implementation.
   bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;

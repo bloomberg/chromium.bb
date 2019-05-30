@@ -289,6 +289,7 @@ DXGI_FORMAT DirectCompositionSurfaceWin::GetOverlayFormatUsed() {
 // static
 void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
     bool supported) {
+  InitializeHardwareOverlaySupport();
   if (supported) {
     g_nv12_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
     g_yuy2_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
@@ -296,11 +297,14 @@ void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
     g_nv12_overlay_support_flags &= ~DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
     g_yuy2_overlay_support_flags &= ~DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
   }
+  DCHECK_EQ(supported, AreScaledOverlaysSupported());
 }
 
 // static
 void DirectCompositionSurfaceWin::SetPreferYUY2OverlaysForTesting() {
+  InitializeHardwareOverlaySupport();
   g_overlay_format_used = DXGI_FORMAT_YUY2;
+  DCHECK_EQ(DXGI_FORMAT_YUY2, GetOverlayFormatUsed());
 }
 
 // static
