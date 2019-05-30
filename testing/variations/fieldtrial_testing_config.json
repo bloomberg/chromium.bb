@@ -1879,6 +1879,21 @@
             ]
         }
     ],
+    "DownloadRename": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DownloadRename"
+                    ]
+                }
+            ]
+        }
+    ],
     "DownloadsLocationChange": [
         {
             "platforms": [
