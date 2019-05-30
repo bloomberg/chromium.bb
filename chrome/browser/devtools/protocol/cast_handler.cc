@@ -17,9 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 
-using media_router::MediaRoute;
 using protocol::Response;
-using protocol::Cast::Sink;
 
 namespace {
 
@@ -33,44 +31,42 @@ media_router::MediaRouter* GetMediaRouter(content::WebContents* web_contents) {
 class CastHandler::MediaRoutesObserver
     : public media_router::MediaRoutesObserver {
  public:
-  MediaRoutesObserver(media_router::MediaRouter* router,
-                      base::RepeatingClosure update_callback)
-      : media_router::MediaRoutesObserver(router),
-        update_callback_(std::move(update_callback)) {}
+  explicit MediaRoutesObserver(media_router::MediaRouter* router)
+      : media_router::MediaRoutesObserver(router) {}
   ~MediaRoutesObserver() override = default;
 
-  const std::vector<MediaRoute>& routes() const { return routes_; }
-
- private:
-  void OnRoutesUpdated(
-      const std::vector<MediaRoute>& routes,
-      const std::vector<MediaRoute::Id>& joinable_route_ids) override {
+  void OnRoutesUpdated(const std::vector<media_router::MediaRoute>& routes,
+                       const std::vector<media_router::MediaRoute::Id>&
+                           joinable_route_ids) override {
     routes_ = routes;
-    update_callback_.Run();
   }
 
-  std::vector<MediaRoute> routes_;
-  base::RepeatingClosure update_callback_;
+  const std::vector<media_router::MediaRoute>& routes() const {
+    return routes_;
+  }
+
+ private:
+  std::vector<media_router::MediaRoute> routes_;
 };
 
 class CastHandler::IssuesObserver : public media_router::IssuesObserver {
  public:
-  IssuesObserver(
+  explicit IssuesObserver(
       media_router::MediaRouter* router,
-      base::RepeatingCallback<void(const std::string& issue)> update_callback)
+      base::RepeatingCallback<void(const std::string& issue)> callback)
       : media_router::IssuesObserver(router->GetIssueManager()),
-        update_callback_(std::move(update_callback)) {
+        callback_(std::move(callback)) {
     Init();
   }
   ~IssuesObserver() override = default;
 
   void OnIssue(const media_router::Issue& issue) override {
-    update_callback_.Run(issue.info().title);
+    callback_.Run(issue.info().title);
   }
-  void OnIssuesCleared() override { update_callback_.Run(std::string()); }
+  void OnIssuesCleared() override { callback_.Run(std::string()); }
 
  private:
-  base::RepeatingCallback<void(const std::string& issue)> update_callback_;
+  base::RepeatingCallback<void(const std::string& issue)> callback_;
 };
 
 CastHandler::CastHandler(content::WebContents* web_contents,
@@ -120,7 +116,7 @@ Response CastHandler::StopCasting(const std::string& in_sink_name) {
   const media_router::MediaSink::Id& sink_id = GetSinkIdByName(in_sink_name);
   if (sink_id.empty())
     return Response::Error("Sink not found");
-  const MediaRoute::Id& route_id = GetRouteIdForSink(sink_id);
+  const media_router::MediaRoute::Id& route_id = GetRouteIdForSink(sink_id);
   if (route_id.empty())
     return Response::Error("Route not found");
   router_->TerminateRoute(route_id);
@@ -131,6 +127,7 @@ Response CastHandler::StopCasting(const std::string& in_sink_name) {
 Response CastHandler::Enable(protocol::Maybe<std::string> in_presentation_url) {
   EnsureInitialized();
   StartObservingForSinks(std::move(in_presentation_url));
+  StartObservingForIssues();
   return Response::OK();
 }
 
@@ -138,15 +135,21 @@ Response CastHandler::Disable() {
   query_result_manager_.reset();
   routes_observer_.reset();
   issues_observer_.reset();
-  for (const MediaRoute::Id& route_id : initiated_routes_)
+  for (const media_router::MediaRoute::Id& route_id : initiated_routes_)
     router_->TerminateRoute(route_id);
   return Response::OK();
 }
 
 void CastHandler::OnResultsUpdated(
     const std::vector<media_router::MediaSinkWithCastModes>& sinks) {
+  std::unique_ptr<protocol::Array<std::string>> sink_names =
+      protocol::Array<std::string>::create();
+  for (const media_router::MediaSinkWithCastModes& sink_with_modes : sinks)
+    sink_names->addItem(sink_with_modes.sink.name());
+
+  if (frontend_)
+    frontend_->SinksUpdated(std::move(sink_names));
   sinks_ = sinks;
-  SendSinkUpdate();
 }
 
 CastHandler::CastHandler(content::WebContents* web_contents)
@@ -155,18 +158,14 @@ CastHandler::CastHandler(content::WebContents* web_contents)
       weak_factory_(this) {}
 
 void CastHandler::EnsureInitialized() {
-  if (query_result_manager_)
+  if (initialized_)
     return;
 
   query_result_manager_ =
       std::make_unique<media_router::QueryResultManager>(router_);
   query_result_manager_->AddObserver(this);
-  routes_observer_ = std::make_unique<MediaRoutesObserver>(
-      router_, base::BindRepeating(&CastHandler::SendSinkUpdate,
-                                   base::Unretained(this)));
-  issues_observer_ = std::make_unique<IssuesObserver>(
-      router_,
-      base::BindRepeating(&CastHandler::OnIssue, base::Unretained(this)));
+  routes_observer_ = std::make_unique<MediaRoutesObserver>(router_);
+  initialized_ = true;
 }
 
 void CastHandler::StartPresentation(
@@ -203,17 +202,18 @@ media_router::MediaSink::Id CastHandler::GetSinkIdByName(
       [&sink_name](const media_router::MediaSinkWithCastModes& sink) {
         return sink.sink.name() == sink_name;
       });
-  return it == sinks_.end() ? media_router::MediaSink::Id() : it->sink.id();
+  return it == sinks_.end() ? media_router::MediaSink::Id() : (*it).sink.id();
 }
 
-MediaRoute::Id CastHandler::GetRouteIdForSink(
+media_router::MediaRoute::Id CastHandler::GetRouteIdForSink(
     const media_router::MediaSink::Id& sink_id) const {
   const auto& routes = routes_observer_->routes();
   auto it = std::find_if(routes.begin(), routes.end(),
-                         [&sink_id](const MediaRoute& route) {
+                         [&sink_id](const media_router::MediaRoute& route) {
                            return route.media_sink_id() == sink_id;
                          });
-  return it == routes.end() ? MediaRoute::Id() : it->media_route_id();
+  return it == routes.end() ? media_router::MediaRoute::Id()
+                            : (*it).media_route_id();
 }
 
 void CastHandler::StartObservingForSinks(
@@ -234,31 +234,10 @@ void CastHandler::StartObservingForSinks(
   }
 }
 
-void CastHandler::SendSinkUpdate() {
-  if (!frontend_)
-    return;
-
-  std::unique_ptr<protocol::Array<Sink>> protocol_sinks =
-      protocol::Array<Sink>::create();
-  for (const media_router::MediaSinkWithCastModes& sink_with_modes : sinks_) {
-    auto route_it = std::find_if(
-        routes_observer_->routes().begin(), routes_observer_->routes().end(),
-        [&sink_with_modes](const MediaRoute& route) {
-          return route.media_sink_id() == sink_with_modes.sink.id();
-        });
-    std::string session = route_it == routes_observer_->routes().end()
-                              ? ""
-                              : route_it->description();
-    std::unique_ptr<Sink> sink = Sink::Create()
-                                     .SetName(sink_with_modes.sink.name())
-                                     .SetId(sink_with_modes.sink.id())
-                                     .Build();
-    if (!session.empty())
-      sink->SetSession(session);
-
-    protocol_sinks->addItem(std::move(sink));
-  }
-  frontend_->SinksUpdated(std::move(protocol_sinks));
+void CastHandler::StartObservingForIssues() {
+  issues_observer_ = std::make_unique<IssuesObserver>(
+      router_,
+      base::BindRepeating(&CastHandler::OnIssue, base::Unretained(this)));
 }
 
 void CastHandler::OnTabMirroringStarted(

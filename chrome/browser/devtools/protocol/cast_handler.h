@@ -69,10 +69,7 @@ class CastHandler : public protocol::Cast::Backend,
       const media_router::MediaSink::Id& sink_id) const;
 
   void StartObservingForSinks(protocol::Maybe<std::string> presentation_url);
-
-  // Sends a notification that sinks (or their associated routes) have been
-  // updated.
-  void SendSinkUpdate();
+  void StartObservingForIssues();
 
   void OnTabMirroringStarted(
       std::unique_ptr<StartTabMirroringCallback> callback,
@@ -98,6 +95,8 @@ class CastHandler : public protocol::Cast::Backend,
   base::flat_set<media_router::MediaRoute::Id> initiated_routes_;
 
   std::unique_ptr<protocol::Cast::Frontend> frontend_;
+
+  bool initialized_ = false;
 
   base::WeakPtrFactory<CastHandler> weak_factory_;
 
