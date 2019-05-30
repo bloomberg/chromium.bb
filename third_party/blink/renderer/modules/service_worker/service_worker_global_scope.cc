@@ -1379,7 +1379,7 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
 
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
       ->BindServiceWorkerHost(std::move(service_worker_host),
-                              GetTaskRunner(TaskType::kInternalIPC));
+                              GetTaskRunner(TaskType::kInternalDefault));
 
   // Set ServiceWorkerGlobalScope#registration.
   DCHECK_NE(registration_info->registration_id,
