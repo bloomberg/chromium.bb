@@ -199,6 +199,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private final boolean mIsOpenedByWebApk;
     private final boolean mIsTrustedWebActivity;
     @Nullable
+    private final Integer mNavigationBarColor;
+    @Nullable
     private final ComponentName mModuleComponentName;
     @Nullable
     private final Pattern mModuleManagedUrlsPattern;
@@ -254,15 +256,6 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     }
 
     /**
-     * Deprecated: use the constructor below.
-     * TODO(pshmakov): remove once no longer used downstream.
-     */
-    @Deprecated
-    public CustomTabIntentDataProvider(Intent intent, Context context) {
-        this(intent, context, COLOR_SCHEME_LIGHT);
-    }
-
-    /**
      * Constructs a {@link CustomTabIntentDataProvider}.
      *
      * The colorScheme parameter specifies which color scheme the Custom Tab should use.
@@ -290,6 +283,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         retrieveCustomButtons(intent, context);
         retrieveToolbarColor(params, context);
         retrieveBottomBarColor(params);
+        mNavigationBarColor = params.navigationBarColor == null ? null
+                : removeTransparencyFromColor(params.navigationBarColor);
         mInitialBackgroundColor = retrieveInitialBackgroundColor(intent);
 
         mEnableUrlBarHiding = IntentUtils.safeGetBooleanExtra(
@@ -567,6 +562,14 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      */
     public int getToolbarColor() {
         return mToolbarColor;
+    }
+
+    /**
+     * @return The navigation bar color specified in the intent, or null if not specified.
+     */
+    @Nullable
+    public Integer getNavigationBarColor() {
+        return mNavigationBarColor;
     }
 
     /**

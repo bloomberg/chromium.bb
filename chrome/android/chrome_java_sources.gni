@@ -429,6 +429,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/ModuleLoader.java",
   "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/ModuleMetrics.java",
   "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/ObjectWrapper.java",
+  "java/src/org/chromium/chrome/browser/customtabs/features/CustomTabNavigationBarController.java",
   "java/src/org/chromium/chrome/browser/database/SQLiteCursor.java",
   "java/src/org/chromium/chrome/browser/datareduction/DataReductionMainMenuItem.java",
   "java/src/org/chromium/chrome/browser/datareduction/DataReductionPromoScreen.java",

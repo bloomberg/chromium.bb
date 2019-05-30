@@ -30,10 +30,12 @@ public class CustomTabIntentDataProviderTest {
         CustomTabColorSchemeParams lightParams = new CustomTabColorSchemeParams.Builder()
                 .setToolbarColor(0xff0000ff)
                 .setSecondaryToolbarColor(0xff00aaff)
+                .setNavigationBarColor(0xff112233)
                 .build();
         CustomTabColorSchemeParams darkParams = new CustomTabColorSchemeParams.Builder()
                 .setToolbarColor(0xffff0000)
                 .setSecondaryToolbarColor(0xffff8800)
+                .setNavigationBarColor(0xff332211)
                 .build();
         Intent intent = new CustomTabsIntent.Builder()
                 .setColorSchemeParams(COLOR_SCHEME_LIGHT, lightParams)
@@ -51,6 +53,9 @@ public class CustomTabIntentDataProviderTest {
 
         assertEquals((int) lightParams.secondaryToolbarColor, lightProvider.getBottomBarColor());
         assertEquals((int) darkParams.secondaryToolbarColor, darkProvider.getBottomBarColor());
+
+        assertEquals(lightParams.navigationBarColor, lightProvider.getNavigationBarColor());
+        assertEquals(darkParams.navigationBarColor, darkProvider.getNavigationBarColor());
     }
 }
 

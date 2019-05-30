@@ -64,6 +64,7 @@ import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
+import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.gsa.GSAState;
@@ -231,6 +232,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         }
 
         initalizePreviewsObserver();
+        CustomTabNavigationBarController.updateNavigationBarColor(this, mIntentDataProvider);
     }
 
     private int getColorScheme() {
