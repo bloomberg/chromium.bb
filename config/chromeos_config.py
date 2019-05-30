@@ -3909,14 +3909,6 @@ def ApplyCustomOverrides(site_config):
           'useflags': config_lib.append_useflags(['-chrome_internal']),
       },
 
-      'peach_pit-release': {
-          'useflags': config_lib.append_useflags(['cfi']),
-      },
-
-      'kevin-release': {
-          'useflags': config_lib.append_useflags(['cfi']),
-      },
-
       'chell-chrome-pfq': {
           'afdo_generate': True,
           'archive_build_debug': True,
