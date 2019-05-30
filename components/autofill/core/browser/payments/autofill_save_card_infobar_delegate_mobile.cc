@@ -161,7 +161,7 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
   return options_.should_request_name_from_user ||
                  options_.should_request_expiration_date_from_user
              ? l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_CONTINUE)
-             : l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+             : l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_INFOBAR_ACCEPT);
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::Accept() {

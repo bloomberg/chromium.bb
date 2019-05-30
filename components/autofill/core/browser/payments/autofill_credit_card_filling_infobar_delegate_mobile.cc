@@ -82,7 +82,7 @@ base::string16 AutofillCreditCardFillingInfoBarDelegateMobile::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16(
       button == BUTTON_OK ? IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_ACCEPT
-                          : IDS_NO_THANKS);
+                          : IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_NO_THANKS);
 }
 
 void AutofillCreditCardFillingInfoBarDelegateMobile::LogUserAction(

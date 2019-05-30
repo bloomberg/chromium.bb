@@ -68,10 +68,6 @@
   </if>
 
   <!-- Autofill save credit card bubble or infobar prompt -->
-  <!--TODO(crbug.com/961082): Remove this once the separate label is in use. -->
-  <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT" desc="Text to show for the Autofill save credit card prompt accept button. The prompt can be either a bubble or an infobar.">
-    Save
-  </message>
   <if expr="is_android or is_ios">
     <then>
       <message name="IDS_AUTOFILL_SAVE_CARD_INFOBAR_ACCEPT" desc="Text to show for the Autofill save credit card infobar accept button.">

@@ -88,10 +88,9 @@ int LocalCardMigrationBubbleViews::GetDialogButtons() const {
 
 base::string16 LocalCardMigrationBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
+  DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
   return l10n_util::GetStringUTF16(
-      button == ui::DIALOG_BUTTON_OK
-          ? IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL
-          : IDS_NO_THANKS);
+      IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL);
 }
 
 gfx::Size LocalCardMigrationBubbleViews::CalculatePreferredSize() const {

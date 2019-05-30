@@ -330,11 +330,13 @@ base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
 base::string16 SaveCardBubbleControllerImpl::GetAcceptButtonText() const {
   switch (current_bubble_type_) {
     case BubbleType::LOCAL_SAVE:
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_BUBBLE_LOCAL_SAVE_ACCEPT);
     case BubbleType::UPLOAD_SAVE: {
       if (!base::FeatureList::IsEnabled(
               features::kAutofillSaveCardImprovedUserConsent)) {
-        return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_SAVE_CARD_BUBBLE_UPLOAD_SAVE_ACCEPT);
       }
       std::string param = base::GetFieldTrialParamValueByFeature(
           features::kAutofillSaveCreditCardUsesImprovedMessaging,
@@ -360,7 +362,8 @@ base::string16 SaveCardBubbleControllerImpl::GetAcceptButtonText() const {
         return l10n_util::GetStringUTF16(
             IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT_COPY_TEST_CONFIRM_AND_SAVE);
       }
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_BUBBLE_UPLOAD_SAVE_ACCEPT);
     }
     case BubbleType::MANAGE_CARDS:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DONE);
@@ -375,7 +378,8 @@ base::string16 SaveCardBubbleControllerImpl::GetAcceptButtonText() const {
 base::string16 SaveCardBubbleControllerImpl::GetDeclineButtonText() const {
   switch (current_bubble_type_) {
     case BubbleType::LOCAL_SAVE:
-      return l10n_util::GetStringUTF16(IDS_NO_THANKS);
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_NO_THANKS_DESKTOP_LOCAL_SAVE);
     case BubbleType::UPLOAD_SAVE: {
       // There is no decline button when experiment is off.
       DCHECK(base::FeatureList::IsEnabled(
@@ -398,7 +402,8 @@ base::string16 SaveCardBubbleControllerImpl::GetDeclineButtonText() const {
         return l10n_util::GetStringUTF16(
             IDS_AUTOFILL_SAVE_CARD_PROMPT_DECLINE_COPY_TEST_ADD);
       }
-      return l10n_util::GetStringUTF16(IDS_NO_THANKS);
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_NO_THANKS_DESKTOP_UPLOAD_SAVE);
     }
     case BubbleType::MANAGE_CARDS:
     case BubbleType::SIGN_IN_PROMO:

@@ -78,7 +78,7 @@ id<GREYMatcher> closeButtonMatcher() {
 
 id<GREYMatcher> saveButtonMatcher() {
   return chrome_test_util::ButtonWithAccessibilityLabelId(
-      IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+      IDS_AUTOFILL_SAVE_CARD_INFOBAR_ACCEPT);
 }
 
 }  // namepsace
