@@ -5,12 +5,15 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 
 #include "third_party/blink/public/common/push_messaging/web_push_subscription_options.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 namespace blink {
 namespace {
@@ -18,10 +21,12 @@ namespace {
 const int kMaxApplicationServerKeyLength = 255;
 
 std::string BufferSourceToString(
-    const ArrayBufferOrArrayBufferView& application_server_key,
+    const ArrayBufferOrArrayBufferViewOrString& application_server_key,
     ExceptionState& exception_state) {
   char* input;
   int length;
+  Vector<char> decoded_application_server_key;
+
   // Convert the input array into a string of bytes.
   if (application_server_key.IsArrayBuffer()) {
     input =
@@ -34,6 +39,17 @@ std::string BufferSourceToString(
                  .View()
                  ->buffer()
                  ->ByteLength();
+  } else if (application_server_key.IsString()) {
+    if (!Base64UnpaddedURLDecode(application_server_key.GetAsString(),
+                                 decoded_application_server_key)) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidCharacterError,
+          "The provided applicationServerKey is not encoded as base64url "
+          "without padding.");
+      return std::string();
+    }
+    input = reinterpret_cast<char*>(decoded_application_server_key.data());
+    length = decoded_application_server_key.size();
   } else {
     NOTREACHED();
     return std::string();
