@@ -5,8 +5,8 @@
 #include "services/preferences/public/cpp/pref_store_client.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -66,7 +66,7 @@ class PrefStoreClientTest : public testing::Test {
   scoped_refptr<PrefStoreClient> store_;
 
   // Required by mojo binding code within PrefStoreClient.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefStoreClientTest);
 };

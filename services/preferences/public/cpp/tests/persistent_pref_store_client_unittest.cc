@@ -9,8 +9,8 @@
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "components/prefs/pref_notifier_impl.h"
@@ -102,7 +102,7 @@ class PersistentPrefStoreClientTest : public testing::Test,
   void ClearMutableValues() override {}
   void OnStoreDeletionFromDisk() override {}
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<PrefService> pref_service_;
 
