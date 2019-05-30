@@ -269,7 +269,7 @@ int GetNumOldestTabsToLogWithTabRanker() {
 
 bool DisableBackgroundLogWithTabRanker() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      features::kTabRanker, "disable_background_log_with_TabRanker", false);
+      features::kTabRanker, "disable_background_log_with_TabRanker", true);
 }
 
 float GetDiscardCountPenaltyTabRanker() {

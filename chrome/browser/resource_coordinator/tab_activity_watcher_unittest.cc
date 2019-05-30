@@ -75,8 +75,10 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
  public:
   TabActivityWatcherTest() {
     // Use MRUScorer for TabRanker to bypass ML model.
-    feature_list_.InitAndEnableFeatureWithParameters(features::kTabRanker,
-                                                     {{"scorer_type", "0"}});
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kTabRanker,
+        {{"scorer_type", "0"},
+         {"disable_background_log_with_TabRanker", "false"}});
     TabActivityWatcher::GetInstance()->ResetForTesting();
   }
 

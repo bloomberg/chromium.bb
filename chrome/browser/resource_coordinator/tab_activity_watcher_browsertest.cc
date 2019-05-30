@@ -127,6 +127,9 @@ class TabActivityWatcherUkmTest : public TabActivityWatcherTest {
   }
 
   void SetUpOnMainThread() override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kTabRanker,
+        {{"disable_background_log_with_TabRanker", "false"}});
     // Browser created in BrowserMain() shouldn't result in a background tab
     // being logged.
     EXPECT_EQ(0u, ukm_entry_checker_->NumEntries(kEntryName));
@@ -200,6 +203,7 @@ class TabActivityWatcherUkmTest : public TabActivityWatcherTest {
     return *(test_ukm_recorder_->GetEntryMetric(entries.back(), metric_name));
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<UkmEntryChecker> ukm_entry_checker_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
@@ -382,10 +386,11 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, TabDrag) {
 // Tests discarded tab is recorded correctly.
 IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
                        DiscardedTabGetsPreviousSourceId) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
+  base::test::ScopedFeatureList scoped_feature_list_overrides;
+  scoped_feature_list_overrides.InitAndEnableFeatureWithParameters(
       features::kTabRanker,
-      {{"number_of_oldest_tabs_to_log_with_TabRanker", "1"}});
+      {{"number_of_oldest_tabs_to_log_with_TabRanker", "1"},
+       {"disable_background_log_with_TabRanker", "false"}});
 
   ukm::SourceId ukm_source_id_for_tab_0 = 0;
   ukm::SourceId ukm_source_id_for_tab_1 = 0;
@@ -503,8 +508,8 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, LogOldestNTabFeatures) {
   // corresponding labels should be logged.
   // (2) number of oldest tabs to log is set to 1, so that only 1 tab should be
   // logged.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
+  base::test::ScopedFeatureList scoped_feature_list_overrides;
+  scoped_feature_list_overrides.InitAndEnableFeatureWithParameters(
       features::kTabRanker,
       {{"number_of_oldest_tabs_to_log_with_TabRanker", "1"},
        {"disable_background_log_with_TabRanker", "true"}});
@@ -525,17 +530,6 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, LogOldestNTabFeatures) {
   browser()->tab_strip_model()->ActivateTabAt(
       0, {TabStripModel::GestureType::kOther});
   test_clock.Advance(base::TimeDelta::FromMinutes(1));
-
-  // Foregrounded event should be logged for tab@0
-  EXPECT_EQ(1, ukm_entry_checker_->NumNewEntriesRecorded(kFOCEntryName));
-  {
-    SCOPED_TRACE("");
-    ukm_entry_checker_->ExpectNewEntry(
-        kFOCEntryName, test_urls_[0],
-        {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 1},
-         {TabManager_Background_ForegroundedOrClosed::kLabelIdName, 0},
-         {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 0}});
-  }
 
   // No tab metrics should be logged till now.
   EXPECT_EQ(0, ukm_entry_checker_->NumNewEntriesRecorded(kEntryName));
@@ -607,22 +601,14 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest, LogOldestNTabFeatures) {
          {TabManager_Background_ForegroundedOrClosed::kLabelIdName,
           4 * kIdShift},
          {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 0}});
-
-    // Close Browser should log a ForegroundedOrClosed event for tab@0 with
-    // label_id == 0 because  when we score it, it was not in the oldest N list.
-    ukm_entry_checker_->ExpectNewEntry(
-        kFOCEntryName, test_urls_[0],
-        {{TabManager_Background_ForegroundedOrClosed::kIsForegroundedName, 0},
-         {TabManager_Background_ForegroundedOrClosed::kLabelIdName, 0},
-         {TabManager_Background_ForegroundedOrClosed::kIsDiscardedName, 0}});
   }
 }
 
 // Tests label id is recorded correctly for discarded tabs.
 IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
                        DiscardedTabGetsCorrectLabelId) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
+  base::test::ScopedFeatureList scoped_feature_list_overrides;
+  scoped_feature_list_overrides.InitAndEnableFeatureWithParameters(
       features::kTabRanker,
       {{"number_of_oldest_tabs_to_log_with_TabRanker", "1"},
        {"disable_background_log_with_TabRanker", "true"}});
@@ -704,8 +690,8 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
 // times without logging the label first.
 IN_PROC_BROWSER_TEST_F(TabActivityWatcherUkmTest,
                        TabsAlreadyHaveLabelIdGetIncrementalLabelIds) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
+  base::test::ScopedFeatureList scoped_feature_list_overrides;
+  scoped_feature_list_overrides.InitAndEnableFeatureWithParameters(
       features::kTabRanker,
       {{"number_of_oldest_tabs_to_log_with_TabRanker", "1"},
        {"disable_background_log_with_TabRanker", "true"}});
