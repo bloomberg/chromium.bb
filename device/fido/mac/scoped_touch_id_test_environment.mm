@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/fake_keychain.h"
 #include "device/fido/mac/fake_touch_id_context.h"
 
@@ -51,15 +52,17 @@ std::unique_ptr<TouchIdContext> ScopedTouchIdTestEnvironment::ForwardCreate() {
 }
 
 // static
-bool ScopedTouchIdTestEnvironment::ForwardTouchIdAvailable() {
-  return g_current_environment->TouchIdAvailable();
+bool ScopedTouchIdTestEnvironment::ForwardTouchIdAvailable(
+    const AuthenticatorConfig& config) {
+  return g_current_environment->TouchIdAvailable(config);
 }
 
 bool ScopedTouchIdTestEnvironment::SetTouchIdAvailable(bool available) {
   return touch_id_available_ = available;
 }
 
-bool ScopedTouchIdTestEnvironment::TouchIdAvailable() {
+bool ScopedTouchIdTestEnvironment::TouchIdAvailable(
+    const AuthenticatorConfig& config) {
   return touch_id_available_;
 }
 

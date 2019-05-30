@@ -131,7 +131,7 @@ class BrowsingDataDeletionTest : public testing::Test {
   std::unique_ptr<TouchIdAuthenticator> MakeAuthenticator(
       std::string profile_metadata_secret) {
     return TouchIdAuthenticator::CreateForTesting(
-        kKeychainAccessGroup, std::move(profile_metadata_secret));
+        {kKeychainAccessGroup, std::move(profile_metadata_secret)});
   }
 
   bool MakeCredential() { return MakeCredential(authenticator_.get()); }

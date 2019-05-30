@@ -59,6 +59,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/scoped_touch_id_test_environment.h"
 #endif
 
@@ -1523,14 +1524,6 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
         individual_attestation, attestation_consent, is_focused);
   }
 
-#if defined(OS_MACOSX)
-  bool IsWebAuthenticationTouchIdAuthenticatorSupported() override {
-    return supports_touch_id;
-  }
-
-  bool supports_touch_id = true;
-#endif
-
   // If set, this closure will be called when the subsequently constructed
   // delegate is informed that the request has started.
   base::OnceClosure action_callbacks_registered_callback;
@@ -2169,42 +2162,6 @@ TEST_F(AuthenticatorContentBrowserClientTest,
     EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, cb.status());
   }
 }
-
-#if defined(OS_MACOSX)
-TEST_F(AuthenticatorContentBrowserClientTest,
-       IsUVPAAFalseIfEmbedderDoesNotSupportTouchId) {
-  if (__builtin_available(macOS 10.12.2, *)) {
-    // Touch ID is hardware-supported, but not enabled by the embedder.
-    device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
-    touch_id_test_environment.SetTouchIdAvailable(true);
-    test_client_.supports_touch_id = false;
-
-    NavigateAndCommit(GURL(kTestOrigin1));
-    AuthenticatorPtr authenticator = ConnectToAuthenticator();
-
-    TestIsUvpaaCallback cb;
-    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
-    cb.WaitForCallback();
-    EXPECT_FALSE(cb.value());
-  }
-}
-
-TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAATrueIfTouchIdAvailable) {
-  if (__builtin_available(macOS 10.12.2, *)) {
-    device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment;
-    touch_id_test_environment.SetTouchIdAvailable(true);
-    test_client_.supports_touch_id = true;
-
-    NavigateAndCommit(GURL(kTestOrigin1));
-    AuthenticatorPtr authenticator = ConnectToAuthenticator();
-
-    TestIsUvpaaCallback cb;
-    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
-    cb.WaitForCallback();
-    EXPECT_TRUE(cb.value());
-  }
-}
-#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 TEST_F(AuthenticatorContentBrowserClientTest, WinIsUVPAA) {
@@ -4027,5 +3984,98 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
   }
 }
+
+#if defined(OS_MACOSX)
+class TouchIdAuthenticatorRequestDelegate
+    : public AuthenticatorRequestClientDelegate {
+ public:
+  using TouchIdAuthenticatorConfig = ::device::fido::mac::AuthenticatorConfig;
+
+  explicit TouchIdAuthenticatorRequestDelegate(
+      TouchIdAuthenticatorConfig config)
+      : config_(std::move(config)) {}
+
+  base::Optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig()
+      const override {
+    return config_;
+  }
+
+ private:
+  TouchIdAuthenticatorConfig config_;
+  DISALLOW_COPY_AND_ASSIGN(TouchIdAuthenticatorRequestDelegate);
+};
+
+class TouchIdAuthenticatorContentBrowserClient : public ContentBrowserClient {
+ public:
+  using TouchIdAuthenticatorConfig = ::device::fido::mac::AuthenticatorConfig;
+
+  std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      RenderFrameHost* render_frame_host,
+      const std::string& relying_party_id) override {
+    return std::make_unique<TouchIdAuthenticatorRequestDelegate>(
+        touch_id_config);
+  }
+
+  bool IsWebAuthenticationTouchIdAuthenticatorSupported() override {
+    return supports_touch_id;
+  }
+
+  bool supports_touch_id = true;
+
+  TouchIdAuthenticatorConfig touch_id_config;
+};
+
+class TouchIdAuthenticatorContentBrowserClientTest
+    : public AuthenticatorContentBrowserClientTest {
+ protected:
+  TouchIdAuthenticatorContentBrowserClientTest() = default;
+
+  void SetUp() override {
+    AuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+    NavigateAndCommit(GURL(kTestOrigin1));
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+  TouchIdAuthenticatorContentBrowserClient test_client_;
+
+  API_AVAILABLE(macos(10.12.2))
+  device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment_;
+
+ private:
+  ContentBrowserClient* old_client_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchIdAuthenticatorContentBrowserClientTest);
+};
+
+TEST_F(TouchIdAuthenticatorContentBrowserClientTest, IsUVPAA) {
+  if (__builtin_available(macOS 10.12.2, *)) {
+    for (const bool touch_id_enabled_in_browser_client : {false, true}) {
+      SCOPED_TRACE(::testing::Message() << "touch_id_enabled_in_browser_client="
+                                        << touch_id_enabled_in_browser_client);
+      for (const bool touch_id_available : {false, true}) {
+        SCOPED_TRACE(::testing::Message()
+                     << "touch_id_available=" << touch_id_available);
+        touch_id_test_environment_.SetTouchIdAvailable(touch_id_available);
+        test_client_.supports_touch_id = touch_id_enabled_in_browser_client;
+
+        AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+        TestIsUvpaaCallback cb;
+        authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
+            cb.callback());
+        cb.WaitForCallback();
+        EXPECT_EQ(cb.value(),
+                  touch_id_enabled_in_browser_client && touch_id_available);
+      }
+    }
+  }
+}
+#endif  // defined(OS_MACOSX)
 
 }  // namespace content

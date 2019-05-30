@@ -21,6 +21,7 @@
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/get_assertion_operation.h"
 #include "device/fido/mac/make_credential_operation.h"
 #include "device/fido/mac/util.h"
@@ -30,30 +31,28 @@ namespace fido {
 namespace mac {
 
 // static
-bool TouchIdAuthenticator::IsAvailable() {
+bool TouchIdAuthenticator::IsAvailable(const AuthenticatorConfig& config) {
   if (__builtin_available(macOS 10.12.2, *)) {
-    return TouchIdContext::TouchIdAvailable();
+    return TouchIdContext::TouchIdAvailable(config);
   }
   return false;
 }
 
 // static
 std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateIfAvailable(
-    std::string keychain_access_group,
-    std::string metadata_secret) {
-  // N.B. IsAvailable also checks for the feature flag being set.
-  return IsAvailable() ? base::WrapUnique(new TouchIdAuthenticator(
-                             std::move(keychain_access_group),
-                             std::move(metadata_secret)))
-                       : nullptr;
+    AuthenticatorConfig config) {
+  return IsAvailable(config) ? base::WrapUnique(new TouchIdAuthenticator(
+                                   std::move(config.keychain_access_group),
+                                   std::move(config.metadata_secret)))
+                             : nullptr;
 }
 
 // static
 std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateForTesting(
-    std::string keychain_access_group,
-    std::string metadata_secret) {
-  return base::WrapUnique(new TouchIdAuthenticator(
-      std::move(keychain_access_group), std::move(metadata_secret)));
+    AuthenticatorConfig config) {
+  return base::WrapUnique(
+      new TouchIdAuthenticator(std::move(config.keychain_access_group),
+                               std::move(config.metadata_secret)));
 }
 
 TouchIdAuthenticator::~TouchIdAuthenticator() = default;

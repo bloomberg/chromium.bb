@@ -975,7 +975,9 @@ bool AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailableImpl(
            ->IsWebAuthenticationTouchIdAuthenticatorSupported())
     return false;
 
-  return device::fido::mac::TouchIdAuthenticator::IsAvailable();
+  auto opt_config = request_delegate->GetTouchIdAuthenticatorConfig();
+  return opt_config &&
+         device::fido::mac::TouchIdAuthenticator::IsAvailable(*opt_config);
 #elif defined(OS_WIN)
   return base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
          device::WinWebAuthnApiAuthenticator::
@@ -1447,8 +1449,7 @@ CreateTouchIdAuthenticatorIfAvailable(
     return nullptr;
   }
   return device::fido::mac::TouchIdAuthenticator::CreateIfAvailable(
-      std::move(opt_authenticator_config->keychain_access_group),
-      std::move(opt_authenticator_config->metadata_secret));
+      std::move(*opt_authenticator_config));
 }
 }  // namespace
 #endif
