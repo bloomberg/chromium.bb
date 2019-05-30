@@ -224,8 +224,10 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
     image_context = std::make_unique<ImageContext>(metadata);
     SkColorType color_type = ResourceFormatToClosestSkColorType(
         true /* gpu_compositing */, metadata.resource_format);
+
     GrBackendFormat backend_format = GetGrBackendFormatForTexture(
-        metadata.resource_format, metadata.mailbox_holder.texture_target);
+        metadata.resource_format, metadata.mailbox_holder.texture_target,
+        metadata.ycbcr_info);
     image_context->image = recorder_->makePromiseTexture(
         backend_format, metadata.size.width(), metadata.size.height(),
         GrMipMapped::kNo, metadata.origin, color_type, metadata.alpha_type,
@@ -594,8 +596,10 @@ void SkiaOutputSurfaceImpl::ScheduleGpuTask(
 
 GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     ResourceFormat resource_format,
-    uint32_t gl_texture_target) {
+    uint32_t gl_texture_target,
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info) {
   if (!is_using_vulkan_) {
+    DCHECK(!ycbcr_info);
     // Convert internal format from GLES2 to platform GL.
     const auto* version_info = impl_on_gpu_->gl_version_info();
     unsigned int texture_storage_format = TextureStorageFormat(resource_format);
@@ -607,7 +611,20 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
         gl_texture_target);
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    return GrBackendFormat::MakeVk(ToVkFormat(resource_format));
+    if (!ycbcr_info)
+      return GrBackendFormat::MakeVk(ToVkFormat(resource_format));
+
+    GrVkYcbcrConversionInfo fYcbcrConversionInfo(
+        static_cast<VkSamplerYcbcrModelConversion>(
+            ycbcr_info->suggested_ycbcr_model),
+        static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range),
+        static_cast<VkChromaLocation>(ycbcr_info->suggested_xchroma_offset),
+        static_cast<VkChromaLocation>(ycbcr_info->suggested_ychroma_offset),
+        VK_FILTER_LINEAR,  // VkFilter
+        0,                 // VkBool32 forceExplicitReconstruction,
+        ycbcr_info->external_format,
+        static_cast<VkFormatFeatureFlags>(ycbcr_info->format_features));
+    return GrBackendFormat::MakeVk(fYcbcrConversionInfo);
 #else
     NOTREACHED();
     return GrBackendFormat();

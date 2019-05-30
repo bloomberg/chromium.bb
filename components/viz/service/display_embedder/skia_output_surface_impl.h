@@ -16,6 +16,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
 #include "third_party/skia/include/core/SkOverdrawCanvas.h"
@@ -107,8 +108,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurfaceBase {
   void BufferPresented(const gfx::PresentationFeedback& feedback);
   void ScheduleGpuTask(base::OnceClosure callback,
                        std::vector<gpu::SyncToken> sync_tokens);
-  GrBackendFormat GetGrBackendFormatForTexture(ResourceFormat resource_format,
-                                               uint32_t gl_texture_target);
+  GrBackendFormat GetGrBackendFormatForTexture(
+      ResourceFormat resource_format,
+      uint32_t gl_texture_target,
+      base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info = base::nullopt);
 
   uint64_t sync_fence_release_ = 0;
   GpuServiceImpl* const gpu_service_;

@@ -284,6 +284,7 @@ void VideoFrameFactoryImpl::OnImageReady(
       pixel_format, mailbox_holders, VideoFrame::ReleaseMailboxCB(), coded_size,
       visible_rect, natural_size, timestamp);
 
+  frame->set_ycbcr_info(record.ycbcr_info);
   // If, for some reason, we failed to create a frame, then fail.  Note that we
   // don't need to call |release_cb|; dropping it is okay since the api says so.
   if (!frame) {
@@ -432,6 +433,7 @@ void GpuSharedImageVideoFactory::CreateImage(
   SharedImageVideoProvider::ImageRecord record;
   record.mailbox = mailbox;
   record.release_cb = std::move(release_cb);
+  record.ycbcr_info = ycbcr_info_;
 
   std::move(image_ready_cb).Run(std::move(record), std::move(codec_image));
 }
@@ -499,7 +501,10 @@ bool GpuSharedImageVideoFactory::CreateImageInternal(
       std::move(texture), std::move(shared_context),
       false /* is_thread_safe */);
 
-  // Register it with shared image mailbox as well as legacy mailbox.  This
+  if (!ycbcr_info_)
+    ycbcr_info_ = shared_image->GetYcbcrInfo();
+
+  // Register it with shared image mailbox as well as legacy mailbox. This
   // keeps |shared_image| around until its destruction cb is called.
   // NOTE: Currently none of the video mailbox consumer uses shared image
   // mailbox.

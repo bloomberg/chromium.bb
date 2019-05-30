@@ -198,6 +198,7 @@ viz_component("service") {
     # Note that dependency on //gpu/ipc/client is for GpuMemoryBufferImpl. This
     # dependency should not be in public_deps.
     "//gpu/ipc/client",
+    "//gpu/ipc/common:common",
     "//gpu/ipc/common:surface_handle_type",
     "//gpu/ipc/service",
     "//gpu/skia_bindings:skia_bindings",

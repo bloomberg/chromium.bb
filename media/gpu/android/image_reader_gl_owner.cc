@@ -69,8 +69,10 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
   }
 
   void SetReadFence(base::ScopedFD fence_fd, bool has_context) final {
-    DCHECK(!read_fence_.is_valid());
-    read_fence_ = std::move(fence_fd);
+    // Client can call this method multiple times for a hardware buffer. Hence
+    // all the client provided sync_fd should be merged. Eg: BeginReadAccess()
+    // can be called multiple times for a SharedImageVideo representation.
+    read_fence_ = gl::MergeFDs(std::move(read_fence_), std::move(fence_fd));
   }
 
  private:

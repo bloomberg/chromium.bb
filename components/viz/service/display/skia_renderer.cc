@@ -451,6 +451,11 @@ class SkiaRenderer::ScopedSkImageBuilder {
                        ResourceId resource_id,
                        SkAlphaType alpha_type = kPremul_SkAlphaType,
                        GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin);
+  ScopedSkImageBuilder(SkiaRenderer* skia_renderer,
+                       ResourceId resource_id,
+                       base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info,
+                       SkAlphaType alpha_type = kPremul_SkAlphaType,
+                       GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin);
   ~ScopedSkImageBuilder() = default;
 
   const SkImage* sk_image() const { return sk_image_; }
@@ -465,6 +470,18 @@ class SkiaRenderer::ScopedSkImageBuilder {
 SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     SkiaRenderer* skia_renderer,
     ResourceId resource_id,
+    SkAlphaType alpha_type,
+    GrSurfaceOrigin origin)
+    : SkiaRenderer::ScopedSkImageBuilder(skia_renderer,
+                                         resource_id,
+                                         base::nullopt,
+                                         alpha_type,
+                                         origin) {}
+
+SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
+    SkiaRenderer* skia_renderer,
+    ResourceId resource_id,
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info,
     SkAlphaType alpha_type,
     GrSurfaceOrigin origin) {
   if (!resource_id)
@@ -486,6 +503,7 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
           skia_renderer->lock_set_for_external_use_->LockResource(resource_id);
       metadata.alpha_type = alpha_type;
       metadata.origin = origin;
+      metadata.ycbcr_info = ycbcr_info;
       image = skia_renderer->skia_output_surface_->MakePromiseSkImage(metadata);
       LOG_IF(ERROR, !image) << "Failed to create the promise sk image.";
     }
@@ -1267,7 +1285,8 @@ void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                                        DrawQuadParams* params) {
   DCHECK(!MustFlushBatchedQuads(quad, *params));
-  ScopedSkImageBuilder builder(this, quad->resource_id(),
+
+  ScopedSkImageBuilder builder(this, quad->resource_id(), quad->ycbcr_info,
                                kUnpremul_SkAlphaType);
   const SkImage* image = builder.sk_image();
   if (!image)

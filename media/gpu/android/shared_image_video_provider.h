@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "media/gpu/android/codec_image_group.h"
 #include "media/gpu/android/promotion_hint_aggregator.h"
 #include "media/gpu/media_gpu_export.h"
@@ -49,6 +50,9 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
 
     // Mailbox to which this shared image is bound.
     gpu::Mailbox mailbox;
+
+    // Sampler conversion information which is used in vulkan context.
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
 
     // Release callback.  When this is called (or dropped), the image will be
     // considered unused.

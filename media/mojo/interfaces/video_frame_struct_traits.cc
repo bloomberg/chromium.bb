@@ -53,7 +53,8 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
     for (size_t i = 0; i < num_planes; i++)
       mailbox_holder[i] = input->mailbox_holder(i);
     return media::mojom::VideoFrameData::NewMailboxData(
-        media::mojom::MailboxVideoFrameData::New(std::move(mailbox_holder)));
+        media::mojom::MailboxVideoFrameData::New(
+            std::move(mailbox_holder), std::move(input->ycbcr_info())));
   }
 
   NOTREACHED() << "Unsupported VideoFrame conversion";
@@ -133,9 +134,14 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; i++)
       mailbox_holder_array[i] = mailbox_holder[i];
 
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
+    if (!mailbox_data.ReadYcbcrData(&ycbcr_info))
+      return false;
+
     frame = media::VideoFrame::WrapNativeTextures(
         format, mailbox_holder_array, media::VideoFrame::ReleaseMailboxCB(),
         coded_size, visible_rect, natural_size, timestamp);
+    frame->set_ycbcr_info(ycbcr_info);
   } else {
     // TODO(sandersd): Switch on the union tag to avoid this ugliness?
     NOTREACHED();

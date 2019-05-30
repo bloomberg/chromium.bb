@@ -5,6 +5,7 @@
 module media.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
+import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -298,6 +299,7 @@ struct SharedBufferVideoFrameData {
 struct MailboxVideoFrameData {
   // Size must be kept in sync with media::VideoFrame::kMaxPlanes.
   array<gpu.mojom.MailboxHolder, 4> mailbox_holder;
+  gpu.mojom.VulkanYCbCrInfo? ycbcr_data;
 };
 
 struct PipelineStatistics {

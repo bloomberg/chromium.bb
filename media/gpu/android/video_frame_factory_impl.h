@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/android/codec_image.h"
@@ -36,7 +37,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
  public:
   // Callback used to return a mailbox and release callback for an image. The
   // release callback may be dropped without being run, and the image will be
-  // cleaned up properly.  The releae callback may be called from any thread.
+  // cleaned up properly. The release callback may be called from any thread.
   using ImageReadyCB =
       base::OnceCallback<void(gpu::Mailbox mailbox,
                               VideoFrame::ReleaseMailboxCB release_cb)>;
@@ -163,6 +164,10 @@ class GpuSharedImageVideoFactory
   // Current image group to which new images (frames) will be added.  We'll
   // replace this when SetImageGroup() is called.
   scoped_refptr<CodecImageGroup> image_group_;
+
+  // Sampler conversion information which is used in vulkan context. This is
+  // constant for all the frames in a video and hence we cache it.
+  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<GpuSharedImageVideoFactory> weak_factory_;

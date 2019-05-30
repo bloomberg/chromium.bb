@@ -639,7 +639,7 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       stream_video_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                                 needs_blending, frame_resources_[0].id,
                                 frame_resources_[0].size_in_pixels, uv_top_left,
-                                uv_bottom_right);
+                                uv_bottom_right, frame->ycbcr_info());
       for (viz::ResourceId resource_id : stream_video_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
       }

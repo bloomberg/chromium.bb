@@ -311,6 +311,7 @@ jumbo_source_set("base") {
   deps = [
     "//base/allocator:buildflags",
     "//gpu/command_buffer/common",
+    "//gpu/ipc/common:common",
     "//skia",
     "//third_party/libyuv",
     "//third_party/widevine/cdm:headers",
@@ -319,6 +320,7 @@ jumbo_source_set("base") {
     "//ui/events:events_base",
     "//url:url",
   ]
+
   libs = []
   configs += [
     "//build/config:precompiled_headers",

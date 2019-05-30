@@ -6,8 +6,10 @@
 #define MEDIA_MOJO_INTERFACES_VIDEO_FRAME_STRUCT_TRAITS_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "gpu/ipc/common/mailbox_holder_struct_traits.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info_mojom_traits.h"
 #include "media/base/ipc/media_param_traits_macros.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
@@ -58,6 +60,11 @@ struct StructTraits<media::mojom::VideoFrameDataView,
   static gfx::ColorSpace color_space(
       const scoped_refptr<media::VideoFrame>& input) {
     return input->ColorSpace();
+  }
+
+  static const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info(
+      const scoped_refptr<media::VideoFrame>& input) {
+    return input->ycbcr_info();
   }
 
   static media::mojom::VideoFrameDataPtr data(

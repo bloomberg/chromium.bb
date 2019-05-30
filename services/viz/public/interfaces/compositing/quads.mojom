@@ -4,6 +4,7 @@
 
 module viz.mojom;
 
+import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/viz/public/interfaces/compositing/surface_range.mojom";
 import "services/viz/public/interfaces/compositing/shared_quad_state.mojom";
@@ -61,6 +62,7 @@ struct StreamVideoQuadState {
   gfx.mojom.Size resource_size_in_pixels;
   gfx.mojom.PointF uv_top_left;
   gfx.mojom.PointF uv_bottom_right;
+  gpu.mojom.VulkanYCbCrInfo? ycbcr_info;
 };
 
 struct SurfaceQuadState {

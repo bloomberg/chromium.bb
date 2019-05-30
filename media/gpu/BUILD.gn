@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//gpu/vulkan/features.gni")
 import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
@@ -148,6 +149,9 @@ component("gpu") {
       "//services/service_manager/public/cpp:cpp",
       "//ui/gl:gl_jni_headers",
     ]
+    if (enable_vulkan) {
+      deps += [ "//gpu/vulkan:vulkan" ]
+    }
 
     # TODO(crbug.com/789435): This is needed for AVDA to access the CDM
     # directly.  Remove this dependency after VDAs are also running as part of
