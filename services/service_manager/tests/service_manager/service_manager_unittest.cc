@@ -14,13 +14,13 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/token.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -315,7 +315,7 @@ class ServiceManagerTest : public testing::Test,
     connector()->WarmService(filter);
     if (!expect_service_started) {
       // Wait briefly and test no new service was created.
-      base::MessageLoopCurrent::Get()->task_runner()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, loop.QuitClosure(), base::TimeDelta::FromSeconds(1));
     }
 
