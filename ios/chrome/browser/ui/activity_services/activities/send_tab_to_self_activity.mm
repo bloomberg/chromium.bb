@@ -87,17 +87,15 @@ NSString* const kSendTabToSelfActivityType =
 - (void)performActivity {
   NSMutableArray<ContextMenuItem*>* targetActions =
       [NSMutableArray arrayWithCapacity:[_sendTabToSelfTargets count]];
-  __weak SendTabToSelfActivity* weakSelf = self;
 
   for (NSString* key in _sendTabToSelfTargets) {
     NSString* deviceId = _sendTabToSelfTargets[key];
+    // Retain |self| here since a |weakSelf| would be deallocated when
+    // displaying the target device sheet, as the ActivitySheet will be gone.
     ProceduralBlock action = ^{
-      SendTabToSelfActivity* strongSelf = weakSelf;
-      if (!strongSelf)
-        return;
       SendTabToSelfCommand* command =
           [[SendTabToSelfCommand alloc] initWithTargetDeviceId:deviceId];
-      [strongSelf->_dispatcher sendTabToSelf:command];
+      [self.dispatcher sendTabToSelf:command];
     };
     [targetActions addObject:[[ContextMenuItem alloc] initWithTitle:key
                                                              action:action]];
