@@ -262,14 +262,17 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
 #endif
   }
 
+  // Fragment geometry scrollbars are potentially size constrained, and cannot
+  // be used for comparison with their after layout size.
+  NGBoxStrut before_layout_scrollbars =
+      ComputeScrollbars(constraint_space, *this);
+
   if (!layout_result)
     layout_result = LayoutWithAlgorithm(params);
 
   FinishLayout(block_flow, constraint_space, break_token, layout_result);
 
-  NGBoxStrut after_layout_scrollbars =
-      ComputeScrollbars(constraint_space, *this);
-  if (fragment_geometry->scrollbar != after_layout_scrollbars) {
+  if (before_layout_scrollbars != ComputeScrollbars(constraint_space, *this)) {
     // If our scrollbars have changed, we need to relayout because either:
     // - Our size has changed (if shrinking to fit), or
     // - Space available to our children has changed.
@@ -281,6 +284,9 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     // without that check.
     PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
 
+    // Must not call SetNeedsLayout in intermediate layout. If we do,
+    // the NeedsLayout flag might not be cleared. crbug.com/967361
+    DCHECK(!constraint_space.IsIntermediateLayout() || box_->NeedsLayout());
     // Scrollbar changes are hard to detect. Make sure everyone gets the
     // message.
     box_->SetNeedsLayout(layout_invalidation_reason::kScrollbarChanged,
