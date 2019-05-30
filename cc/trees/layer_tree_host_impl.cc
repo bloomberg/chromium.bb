@@ -5734,6 +5734,20 @@ void LayerTreeHostImpl::SetElementFilterMutated(
   }
 }
 
+void LayerTreeHostImpl::SetElementBackdropFilterMutated(
+    ElementId element_id,
+    ElementListType list_type,
+    const FilterOperations& backdrop_filters) {
+  if (list_type == ElementListType::ACTIVE) {
+    active_tree()->SetBackdropFilterMutated(element_id, backdrop_filters);
+  } else {
+    if (pending_tree())
+      pending_tree()->SetBackdropFilterMutated(element_id, backdrop_filters);
+    if (recycle_tree())
+      recycle_tree()->SetBackdropFilterMutated(element_id, backdrop_filters);
+  }
+}
+
 void LayerTreeHostImpl::SetElementOpacityMutated(ElementId element_id,
                                                  ElementListType list_type,
                                                  float opacity) {

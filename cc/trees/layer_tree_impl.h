@@ -199,6 +199,8 @@ class CC_EXPORT LayerTreeImpl {
                            const gfx::Transform& transform);
   void SetOpacityMutated(ElementId element_id, float opacity);
   void SetFilterMutated(ElementId element_id, const FilterOperations& filters);
+  void SetBackdropFilterMutated(ElementId element_id,
+                                const FilterOperations& backdrop_filters);
 
   const std::unordered_map<ElementId, float, ElementIdHash>&
   element_id_to_opacity_animations_for_testing() const {
@@ -211,6 +213,10 @@ class CC_EXPORT LayerTreeImpl {
   const std::unordered_map<ElementId, FilterOperations, ElementIdHash>&
   element_id_to_filter_animations_for_testing() const {
     return element_id_to_filter_animations_;
+  }
+  const std::unordered_map<ElementId, FilterOperations, ElementIdHash>&
+  element_id_to_backdrop_filter_animations_for_testing() const {
+    return element_id_to_backdrop_filter_animations_;
   }
 
   int source_frame_number() const { return source_frame_number_; }
@@ -722,6 +728,8 @@ class CC_EXPORT LayerTreeImpl {
       element_id_to_transform_animations_;
   std::unordered_map<ElementId, FilterOperations, ElementIdHash>
       element_id_to_filter_animations_;
+  std::unordered_map<ElementId, FilterOperations, ElementIdHash>
+      element_id_to_backdrop_filter_animations_;
 
   std::unordered_map<ElementId, LayerImpl*, ElementIdHash>
       element_id_to_scrollable_layer_;

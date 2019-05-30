@@ -902,6 +902,20 @@ bool EffectTree::OnFilterAnimated(ElementId id,
   return true;
 }
 
+bool EffectTree::OnBackdropFilterAnimated(
+    ElementId id,
+    const FilterOperations& backdrop_filters) {
+  EffectNode* node = FindNodeFromElementId(id);
+  DCHECK(node);
+  if (node->backdrop_filters == backdrop_filters)
+    return false;
+  node->backdrop_filters = backdrop_filters;
+  node->effect_changed = true;
+  property_trees()->changed = true;
+  property_trees()->effect_tree.set_needs_update(true);
+  return true;
+}
+
 void EffectTree::UpdateEffects(int id) {
   EffectNode* node = Node(id);
   EffectNode* parent_node = parent(node);
@@ -1928,6 +1942,24 @@ bool PropertyTrees::ElementIsAnimatingChanged(
                 state.potentially_animating[property];
           // Filter animation changes only the node, and the subtree does not
           // care, thus there is no need to request property tree update.
+        } else {
+          DCHECK_NODE_EXISTENCE(check_node_existence, state, property,
+                                needs_rebuild)
+              << "Attempting to animate filter on non existent effect node";
+        }
+        break;
+      case TargetProperty::BACKDROP_FILTER:
+        if (EffectNode* effect_node =
+                effect_tree.FindNodeFromElementId(element_id)) {
+          if (mask.currently_running[property])
+            effect_node->is_currently_animating_backdrop_filter =
+                state.currently_running[property];
+          if (mask.potentially_animating[property])
+            effect_node->has_potential_backdrop_filter_animation =
+                state.potentially_animating[property];
+          // Backdrop-filter animation changes only the node, and the subtree
+          // does not care, thus there is no need to request property tree
+          // update.
         } else {
           DCHECK_NODE_EXISTENCE(check_node_existence, state, property,
                                 needs_rebuild)

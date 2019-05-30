@@ -180,6 +180,9 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void OnFilterAnimated(ElementListType list_type,
                         const FilterOperations& filters,
                         KeyframeModel* keyframe_model);
+  void OnBackdropFilterAnimated(ElementListType list_type,
+                                const FilterOperations& backdrop_filters,
+                                KeyframeModel* keyframe_model);
   void OnOpacityAnimated(ElementListType list_type,
                          float opacity,
                          KeyframeModel* keyframe_model);

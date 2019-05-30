@@ -702,6 +702,18 @@ void LayerTreeImpl::SetFilterMutated(ElementId element_id,
     set_needs_update_draw_properties();
 }
 
+void LayerTreeImpl::SetBackdropFilterMutated(
+    ElementId element_id,
+    const FilterOperations& backdrop_filters) {
+  DCHECK_EQ(
+      1u, property_trees()->element_id_to_effect_node_index.count(element_id));
+  if (IsSyncTree() || IsRecycleTree())
+    element_id_to_backdrop_filter_animations_[element_id] = backdrop_filters;
+  if (property_trees()->effect_tree.OnBackdropFilterAnimated(element_id,
+                                                             backdrop_filters))
+    set_needs_update_draw_properties();
+}
+
 void LayerTreeImpl::AddPresentationCallbacks(
     std::vector<LayerTreeHost::PresentationTimeCallback> callbacks) {
   std::copy(std::make_move_iterator(callbacks.begin()),
@@ -801,6 +813,23 @@ void LayerTreeImpl::UpdatePropertyTreeAnimationFromMainThread() {
     node->filters = element_id_to_filter->second;
     property_trees_.effect_tree.set_needs_update(true);
     ++element_id_to_filter;
+  }
+
+  auto element_id_to_backdrop_filter =
+      element_id_to_backdrop_filter_animations_.begin();
+  while (element_id_to_backdrop_filter !=
+         element_id_to_backdrop_filter_animations_.end()) {
+    const ElementId id = element_id_to_backdrop_filter->first;
+    EffectNode* node = property_trees_.effect_tree.FindNodeFromElementId(id);
+    if (!node || !node->is_currently_animating_backdrop_filter ||
+        node->backdrop_filters == element_id_to_backdrop_filter->second) {
+      element_id_to_backdrop_filter_animations_.erase(
+          element_id_to_backdrop_filter++);
+      continue;
+    }
+    node->backdrop_filters = element_id_to_backdrop_filter->second;
+    property_trees_.effect_tree.set_needs_update(true);
+    ++element_id_to_backdrop_filter;
   }
 
   auto element_id_to_transform = element_id_to_transform_animations_.begin();

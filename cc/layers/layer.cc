@@ -1620,6 +1620,10 @@ void Layer::OnFilterAnimated(const FilterOperations& filters) {
   inputs_.filters = filters;
 }
 
+void Layer::OnBackdropFilterAnimated(const FilterOperations& backdrop_filters) {
+  inputs_.backdrop_filters = backdrop_filters;
+}
+
 void Layer::OnOpacityAnimated(float opacity) {
   inputs_.opacity = opacity;
 }

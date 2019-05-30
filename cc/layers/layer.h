@@ -882,6 +882,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // Interactions with attached animations.
   void OnFilterAnimated(const FilterOperations& filters);
+  void OnBackdropFilterAnimated(const FilterOperations& backdrop_filters);
   void OnOpacityAnimated(float opacity);
   void OnTransformAnimated(const gfx::Transform& transform);
 

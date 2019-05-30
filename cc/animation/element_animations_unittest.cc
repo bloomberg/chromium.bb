@@ -838,6 +838,50 @@ TEST_F(ElementAnimationsTest, FilterTransition) {
   EXPECT_FALSE(animation_->keyframe_effect()->HasTickingKeyframeModel());
 }
 
+TEST_F(ElementAnimationsTest, BackdropFilterTransition) {
+  CreateTestLayer(true, false);
+  AttachTimelineAnimationLayer();
+
+  auto events = CreateEventsForTesting();
+
+  std::unique_ptr<KeyframedFilterAnimationCurve> curve(
+      KeyframedFilterAnimationCurve::Create());
+
+  FilterOperations start_filters;
+  start_filters.Append(FilterOperation::CreateInvertFilter(0.f));
+  curve->AddKeyframe(
+      FilterKeyframe::Create(base::TimeDelta(), start_filters, nullptr));
+  FilterOperations end_filters;
+  end_filters.Append(FilterOperation::CreateInvertFilter(1.f));
+  curve->AddKeyframe(FilterKeyframe::Create(base::TimeDelta::FromSecondsD(1.0),
+                                            end_filters, nullptr));
+
+  std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
+      std::move(curve), 1, 0, TargetProperty::BACKDROP_FILTER));
+  animation_->AddKeyframeModel(std::move(keyframe_model));
+
+  animation_->Tick(kInitialTickTime);
+  animation_->UpdateState(true, events.get());
+  EXPECT_TRUE(animation_->keyframe_effect()->HasTickingKeyframeModel());
+  EXPECT_EQ(start_filters,
+            client_.GetBackdropFilters(element_id_, ElementListType::ACTIVE));
+
+  animation_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(500));
+  animation_->UpdateState(true, events.get());
+  EXPECT_EQ(
+      1u,
+      client_.GetBackdropFilters(element_id_, ElementListType::ACTIVE).size());
+  EXPECT_EQ(
+      FilterOperation::CreateInvertFilter(0.5f),
+      client_.GetBackdropFilters(element_id_, ElementListType::ACTIVE).at(0));
+
+  animation_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
+  animation_->UpdateState(true, events.get());
+  EXPECT_EQ(end_filters,
+            client_.GetBackdropFilters(element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(animation_->keyframe_effect()->HasTickingKeyframeModel());
+}
+
 TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   CreateTestLayer(true, false);
   AttachTimelineAnimationLayer();
@@ -3236,6 +3280,221 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   EXPECT_TRUE(client_impl_.GetHasPotentialFilterAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_impl_.GetFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+}
+
+TEST_F(ElementAnimationsTest,
+       ObserverNotifiedWhenBackdropFilterAnimationChanges) {
+  CreateTestLayer(true, true);
+  AttachTimelineAnimationLayer();
+  CreateImplTimelineAndAnimation();
+
+  auto events = CreateEventsForTesting();
+
+  EXPECT_FALSE(client_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 1: An animation that's allowed to run until its finish point.
+  AddAnimatedBackdropFilterToAnimation(animation_.get(), 1.0, 0.f, 1.f);
+  EXPECT_TRUE(client_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  PushProperties();
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animation_impl_->ActivateKeyframeEffects();
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animation_impl_->Tick(kInitialTickTime);
+  animation_impl_->UpdateState(true, events.get());
+
+  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  events->events_.clear();
+
+  // Finish the animation.
+  animation_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
+  animation_->UpdateState(true, nullptr);
+  EXPECT_FALSE(client_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  PushProperties();
+
+  // Finished animations are pushed, but animations_impl hasn't yet ticked
+  // at/past the end of the animation.
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
+  animation_impl_->UpdateState(true, events.get());
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 2: An animation that's removed before it finishes.
+  int keyframe_model_id =
+      AddAnimatedBackdropFilterToAnimation(animation_.get(), 10.0, 0.f, 1.f);
+  EXPECT_TRUE(client_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  PushProperties();
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animation_impl_->ActivateKeyframeEffects();
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
+  animation_impl_->UpdateState(true, events.get());
+
+  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  events->events_.clear();
+
+  animation_->RemoveKeyframeModel(keyframe_model_id);
+  EXPECT_FALSE(client_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  PushProperties();
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animation_impl_->ActivateKeyframeEffects();
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 3: An animation that's aborted before it finishes.
+  keyframe_model_id =
+      AddAnimatedBackdropFilterToAnimation(animation_.get(), 10.0, 0.f, 0.5f);
+  EXPECT_TRUE(client_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  PushProperties();
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animation_impl_->ActivateKeyframeEffects();
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
+  animation_impl_->UpdateState(true, events.get());
+
+  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  events->events_.clear();
+
+  animation_impl_->AbortKeyframeModelsWithProperty(
+      TargetProperty::BACKDROP_FILTER, false);
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(4000));
+  animation_impl_->UpdateState(true, events.get());
+
+  element_animations_->NotifyAnimationAborted(events->events_[0]);
+  EXPECT_FALSE(client_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 4 : An animation that's not in effect.
+  keyframe_model_id =
+      AddAnimatedBackdropFilterToAnimation(animation_.get(), 1.0, 0.f, 0.5f);
+  animation_->keyframe_effect()
+      ->GetKeyframeModelById(keyframe_model_id)
+      ->set_time_offset(base::TimeDelta::FromMilliseconds(-10000));
+  animation_->keyframe_effect()
+      ->GetKeyframeModelById(keyframe_model_id)
+      ->set_fill_mode(KeyframeModel::FillMode::NONE);
+
+  PushProperties();
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animation_impl_->ActivateKeyframeEffects();
+  EXPECT_TRUE(client_impl_.GetHasPotentialBackdropFilterAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetBackdropFilterIsCurrentlyAnimating(
       element_id_, ElementListType::ACTIVE));
 }
 

@@ -96,10 +96,15 @@ struct CC_EXPORT EffectNode {
   // of exact timeline) filter animation.
   bool has_potential_filter_animation : 1;
   // Whether this node has a potentially running (i.e., irrespective
+  // of exact timeline) backdrop-filter animation.
+  bool has_potential_backdrop_filter_animation : 1;
+  // Whether this node has a potentially running (i.e., irrespective
   // of exact timeline) opacity animation.
   bool has_potential_opacity_animation : 1;
   // Whether this node has a currently running filter animation.
   bool is_currently_animating_filter : 1;
+  // Whether this node has a currently running backdrop-filter animation.
+  bool is_currently_animating_backdrop_filter : 1;
   // Whether this node has a currently running opacity animation.
   bool is_currently_animating_opacity : 1;
   // Whether this node has a child node with kDstIn blend mode.

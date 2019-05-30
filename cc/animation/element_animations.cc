@@ -80,6 +80,7 @@ TargetProperties ElementAnimations::GetPropertiesMaskForAnimationState() {
   properties[TargetProperty::TRANSFORM] = true;
   properties[TargetProperty::OPACITY] = true;
   properties[TargetProperty::FILTER] = true;
+  properties[TargetProperty::BACKDROP_FILTER] = true;
   return properties;
 }
 
@@ -262,10 +263,24 @@ void ElementAnimations::NotifyClientFilterAnimated(
     const FilterOperations& filters,
     int target_property_id,
     KeyframeModel* keyframe_model) {
-  if (KeyframeModelAffectsActiveElements(keyframe_model))
-    OnFilterAnimated(ElementListType::ACTIVE, filters, keyframe_model);
-  if (KeyframeModelAffectsPendingElements(keyframe_model))
-    OnFilterAnimated(ElementListType::PENDING, filters, keyframe_model);
+  switch (keyframe_model->target_property_id()) {
+    case TargetProperty::BACKDROP_FILTER:
+      if (KeyframeModelAffectsActiveElements(keyframe_model))
+        OnBackdropFilterAnimated(ElementListType::ACTIVE, filters,
+                                 keyframe_model);
+      if (KeyframeModelAffectsPendingElements(keyframe_model))
+        OnBackdropFilterAnimated(ElementListType::PENDING, filters,
+                                 keyframe_model);
+      break;
+    case TargetProperty::FILTER:
+      if (KeyframeModelAffectsActiveElements(keyframe_model))
+        OnFilterAnimated(ElementListType::ACTIVE, filters, keyframe_model);
+      if (KeyframeModelAffectsPendingElements(keyframe_model))
+        OnFilterAnimated(ElementListType::PENDING, filters, keyframe_model);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void ElementAnimations::NotifyClientTransformOperationsAnimated(
@@ -443,6 +458,18 @@ void ElementAnimations::OnFilterAnimated(ElementListType list_type,
   DCHECK(animation_host_->mutator_host_client());
   animation_host_->mutator_host_client()->SetElementFilterMutated(
       target_element_id, list_type, filters);
+}
+
+void ElementAnimations::OnBackdropFilterAnimated(
+    ElementListType list_type,
+    const FilterOperations& backdrop_filters,
+    KeyframeModel* keyframe_model) {
+  ElementId target_element_id = CalculateTargetElementId(this, keyframe_model);
+  DCHECK(target_element_id);
+  DCHECK(animation_host_);
+  DCHECK(animation_host_->mutator_host_client());
+  animation_host_->mutator_host_client()->SetElementBackdropFilterMutated(
+      target_element_id, list_type, backdrop_filters);
 }
 
 void ElementAnimations::OnOpacityAnimated(ElementListType list_type,

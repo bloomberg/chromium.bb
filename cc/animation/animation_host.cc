@@ -533,6 +533,15 @@ bool AnimationHost::IsAnimatingFilterProperty(ElementId element_id,
              : false;
 }
 
+bool AnimationHost::IsAnimatingBackdropFilterProperty(
+    ElementId element_id,
+    ElementListType list_type) const {
+  auto element_animations = GetElementAnimationsForElementId(element_id);
+  return element_animations ? element_animations->IsCurrentlyAnimatingProperty(
+                                  TargetProperty::BACKDROP_FILTER, list_type)
+                            : false;
+}
+
 bool AnimationHost::IsAnimatingOpacityProperty(
     ElementId element_id,
     ElementListType list_type) const {
@@ -560,6 +569,16 @@ bool AnimationHost::HasPotentiallyRunningFilterAnimation(
   return element_animations
              ? element_animations->IsPotentiallyAnimatingProperty(
                    TargetProperty::FILTER, list_type)
+             : false;
+}
+
+bool AnimationHost::HasPotentiallyRunningBackdropFilterAnimation(
+    ElementId element_id,
+    ElementListType list_type) const {
+  auto element_animations = GetElementAnimationsForElementId(element_id);
+  return element_animations
+             ? element_animations->IsPotentiallyAnimatingProperty(
+                   TargetProperty::BACKDROP_FILTER, list_type)
              : false;
 }
 

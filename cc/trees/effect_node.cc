@@ -25,8 +25,10 @@ EffectNode::EffectNode()
       is_drawn(true),
       subtree_hidden(false),
       has_potential_filter_animation(false),
+      has_potential_backdrop_filter_animation(false),
       has_potential_opacity_animation(false),
       is_currently_animating_filter(false),
+      is_currently_animating_backdrop_filter(false),
       is_currently_animating_opacity(false),
       has_masking_child(false),
       is_masked(false),
@@ -70,9 +72,13 @@ bool EffectNode::operator==(const EffectNode& other) const {
          is_drawn == other.is_drawn && subtree_hidden == other.subtree_hidden &&
          has_potential_filter_animation ==
              other.has_potential_filter_animation &&
+         has_potential_backdrop_filter_animation ==
+             other.has_potential_backdrop_filter_animation &&
          has_potential_opacity_animation ==
              other.has_potential_opacity_animation &&
          is_currently_animating_filter == other.is_currently_animating_filter &&
+         is_currently_animating_backdrop_filter ==
+             other.is_currently_animating_backdrop_filter &&
          is_currently_animating_opacity ==
              other.is_currently_animating_opacity &&
          has_masking_child == other.has_masking_child &&
@@ -154,6 +160,8 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("is_drawn", is_drawn);
   value->SetBoolean("has_potential_filter_animation",
                     has_potential_filter_animation);
+  value->SetBoolean("has_potential_backdrop_filter_animation",
+                    has_potential_backdrop_filter_animation);
   value->SetBoolean("has_potential_opacity_animation",
                     has_potential_opacity_animation);
   value->SetBoolean("has_masking_child", has_masking_child);

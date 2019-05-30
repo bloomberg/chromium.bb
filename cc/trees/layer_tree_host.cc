@@ -1729,6 +1729,23 @@ void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
   layer->OnFilterAnimated(filters);
 }
 
+void LayerTreeHost::SetElementBackdropFilterMutated(
+    ElementId element_id,
+    ElementListType list_type,
+    const FilterOperations& backdrop_filters) {
+  if (IsUsingLayerLists()) {
+    // In BlinkGenPropertyTrees/CompositeAfterPaint we always have property
+    // tree nodes and can set the backdrop_filter directly on the effect node.
+    property_trees_.effect_tree.OnBackdropFilterAnimated(element_id,
+                                                         backdrop_filters);
+    return;
+  }
+
+  Layer* layer = LayerByElementId(element_id);
+  DCHECK(layer);
+  layer->OnBackdropFilterAnimated(backdrop_filters);
+}
+
 void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
                                              ElementListType list_type,
                                              float opacity) {

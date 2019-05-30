@@ -199,6 +199,9 @@ TEST_F(AnimationTest, PropertiesMutate) {
   const int transform_x = 10;
   const int transform_y = 20;
 
+  const float start_invert = .8f;
+  const float end_invert = .6f;
+
   const double duration = 1.;
 
   AddOpacityTransitionToAnimation(animation_.get(), duration, start_opacity,
@@ -208,6 +211,8 @@ TEST_F(AnimationTest, PropertiesMutate) {
                                   transform_y, keyframe_effect_id_);
   AddAnimatedFilterToAnimation(animation_.get(), duration, start_brightness,
                                end_brightness, keyframe_effect_id_);
+  AddAnimatedBackdropFilterToAnimation(animation_.get(), duration, start_invert,
+                                       end_invert, keyframe_effect_id_);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
@@ -219,6 +224,8 @@ TEST_F(AnimationTest, PropertiesMutate) {
                                          TargetProperty::TRANSFORM));
   EXPECT_FALSE(client_.IsPropertyMutated(element_id_, ElementListType::ACTIVE,
                                          TargetProperty::FILTER));
+  EXPECT_FALSE(client_.IsPropertyMutated(element_id_, ElementListType::ACTIVE,
+                                         TargetProperty::BACKDROP_FILTER));
 
   EXPECT_FALSE(client_impl_.IsPropertyMutated(
       element_id_, ElementListType::ACTIVE, TargetProperty::OPACITY));
@@ -226,16 +233,18 @@ TEST_F(AnimationTest, PropertiesMutate) {
       element_id_, ElementListType::ACTIVE, TargetProperty::TRANSFORM));
   EXPECT_FALSE(client_impl_.IsPropertyMutated(
       element_id_, ElementListType::ACTIVE, TargetProperty::FILTER));
+  EXPECT_FALSE(client_impl_.IsPropertyMutated(
+      element_id_, ElementListType::ACTIVE, TargetProperty::BACKDROP_FILTER));
 
   host_impl_->ActivateAnimations(nullptr);
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
-  TickAnimationsTransferEvents(time, 3u);
+  TickAnimationsTransferEvents(time, 4u);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(false, keyframe_effect_id_);
 
   time += base::TimeDelta::FromSecondsD(duration);
-  TickAnimationsTransferEvents(time, 3u);
+  TickAnimationsTransferEvents(time, 4u);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   client_.ExpectOpacityPropertyMutated(element_id_, ElementListType::ACTIVE,
@@ -244,6 +253,8 @@ TEST_F(AnimationTest, PropertiesMutate) {
                                          transform_x, transform_y);
   client_.ExpectFilterPropertyMutated(element_id_, ElementListType::ACTIVE,
                                       end_brightness);
+  client_.ExpectBackdropFilterPropertyMutated(
+      element_id_, ElementListType::ACTIVE, end_invert);
 
   client_impl_.ExpectOpacityPropertyMutated(
       element_id_, ElementListType::ACTIVE, end_opacity);
@@ -251,6 +262,8 @@ TEST_F(AnimationTest, PropertiesMutate) {
       element_id_, ElementListType::ACTIVE, transform_x, transform_y);
   client_impl_.ExpectFilterPropertyMutated(element_id_, ElementListType::ACTIVE,
                                            end_brightness);
+  client_impl_.ExpectBackdropFilterPropertyMutated(
+      element_id_, ElementListType::ACTIVE, end_invert);
 
   client_impl_.ExpectOpacityPropertyMutated(
       element_id_, ElementListType::PENDING, end_opacity);
@@ -258,6 +271,8 @@ TEST_F(AnimationTest, PropertiesMutate) {
       element_id_, ElementListType::PENDING, transform_x, transform_y);
   client_impl_.ExpectFilterPropertyMutated(
       element_id_, ElementListType::PENDING, end_brightness);
+  client_impl_.ExpectBackdropFilterPropertyMutated(
+      element_id_, ElementListType::PENDING, end_invert);
 }
 
 TEST_F(AnimationTest, AttachTwoAnimationsToOneLayer) {

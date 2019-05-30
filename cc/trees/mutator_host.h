@@ -88,6 +88,9 @@ class MutatorHost {
 
   virtual bool IsAnimatingFilterProperty(ElementId element_id,
                                          ElementListType list_type) const = 0;
+  virtual bool IsAnimatingBackdropFilterProperty(
+      ElementId element_id,
+      ElementListType list_type) const = 0;
   virtual bool IsAnimatingOpacityProperty(ElementId element_id,
                                           ElementListType list_type) const = 0;
   virtual bool IsAnimatingTransformProperty(
@@ -95,6 +98,9 @@ class MutatorHost {
       ElementListType list_type) const = 0;
 
   virtual bool HasPotentiallyRunningFilterAnimation(
+      ElementId element_id,
+      ElementListType list_type) const = 0;
+  virtual bool HasPotentiallyRunningBackdropFilterAnimation(
       ElementId element_id,
       ElementListType list_type) const = 0;
   virtual bool HasPotentiallyRunningOpacityAnimation(

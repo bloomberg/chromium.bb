@@ -362,6 +362,10 @@ class CC_EXPORT LayerTreeHostImpl
   void SetElementFilterMutated(ElementId element_id,
                                ElementListType list_type,
                                const FilterOperations& filters) override;
+  void SetElementBackdropFilterMutated(
+      ElementId element_id,
+      ElementListType list_type,
+      const FilterOperations& backdrop_filters) override;
   void SetElementOpacityMutated(ElementId element_id,
                                 ElementListType list_type,
                                 float opacity) override;

@@ -32,6 +32,7 @@ void TestLayer::ClearMutatedProperties() {
   transform_ = gfx::Transform();
   opacity_ = 0;
   filters_ = FilterOperations();
+  backdrop_filters_ = FilterOperations();
   scroll_offset_ = gfx::ScrollOffset();
 
   has_potential_animation_.reset();
@@ -53,6 +54,17 @@ float TestLayer::brightness() const {
   for (unsigned i = 0; i < filters_.size(); ++i) {
     const FilterOperation& filter = filters_.at(i);
     if (filter.type() == FilterOperation::BRIGHTNESS)
+      return filter.amount();
+  }
+
+  NOTREACHED();
+  return 0;
+}
+
+float TestLayer::invert() const {
+  for (unsigned i = 0; i < backdrop_filters_.size(); ++i) {
+    const FilterOperation& filter = backdrop_filters_.at(i);
+    if (filter.type() == FilterOperation::INVERT)
       return filter.amount();
   }
 
@@ -97,6 +109,15 @@ void TestHostClient::SetElementFilterMutated(ElementId element_id,
   TestLayer* layer = FindTestLayer(element_id, list_type);
   if (layer)
     layer->set_filters(filters);
+}
+
+void TestHostClient::SetElementBackdropFilterMutated(
+    ElementId element_id,
+    ElementListType list_type,
+    const FilterOperations& backdrop_filters) {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  if (layer)
+    layer->set_backdrop_filters(backdrop_filters);
 }
 
 void TestHostClient::SetElementOpacityMutated(ElementId element_id,
@@ -201,6 +222,14 @@ FilterOperations TestHostClient::GetFilters(ElementId element_id,
   return layer->filters();
 }
 
+FilterOperations TestHostClient::GetBackdropFilters(
+    ElementId element_id,
+    ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  EXPECT_TRUE(layer);
+  return layer->backdrop_filters();
+}
+
 float TestHostClient::GetOpacity(ElementId element_id,
                                  ElementListType list_type) const {
   TestLayer* layer = FindTestLayer(element_id, list_type);
@@ -271,6 +300,22 @@ bool TestHostClient::GetHasPotentialFilterAnimation(
   return layer->has_potential_animation(TargetProperty::FILTER);
 }
 
+bool TestHostClient::GetBackdropFilterIsCurrentlyAnimating(
+    ElementId element_id,
+    ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  EXPECT_TRUE(layer);
+  return layer->is_currently_animating(TargetProperty::BACKDROP_FILTER);
+}
+
+bool TestHostClient::GetHasPotentialBackdropFilterAnimation(
+    ElementId element_id,
+    ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  EXPECT_TRUE(layer);
+  return layer->has_potential_animation(TargetProperty::BACKDROP_FILTER);
+}
+
 void TestHostClient::ExpectFilterPropertyMutated(ElementId element_id,
                                                  ElementListType list_type,
                                                  float brightness) const {
@@ -278,6 +323,16 @@ void TestHostClient::ExpectFilterPropertyMutated(ElementId element_id,
   EXPECT_TRUE(layer);
   EXPECT_TRUE(layer->is_property_mutated(TargetProperty::FILTER));
   EXPECT_EQ(brightness, layer->brightness());
+}
+
+void TestHostClient::ExpectBackdropFilterPropertyMutated(
+    ElementId element_id,
+    ElementListType list_type,
+    float invert) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  EXPECT_TRUE(layer);
+  EXPECT_TRUE(layer->is_property_mutated(TargetProperty::BACKDROP_FILTER));
+  EXPECT_EQ(invert, layer->invert());
 }
 
 void TestHostClient::ExpectOpacityPropertyMutated(ElementId element_id,

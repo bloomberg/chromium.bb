@@ -129,12 +129,18 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   bool IsAnimatingFilterProperty(ElementId element_id,
                                  ElementListType list_type) const override;
+  bool IsAnimatingBackdropFilterProperty(
+      ElementId element_id,
+      ElementListType list_type) const override;
   bool IsAnimatingOpacityProperty(ElementId element_id,
                                   ElementListType list_type) const override;
   bool IsAnimatingTransformProperty(ElementId element_id,
                                     ElementListType list_type) const override;
 
   bool HasPotentiallyRunningFilterAnimation(
+      ElementId element_id,
+      ElementListType list_type) const override;
+  bool HasPotentiallyRunningBackdropFilterAnimation(
       ElementId element_id,
       ElementListType list_type) const override;
   bool HasPotentiallyRunningOpacityAnimation(

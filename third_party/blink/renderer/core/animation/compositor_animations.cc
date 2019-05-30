@@ -155,6 +155,7 @@ CompositorElementIdNamespace CompositorElementNamespaceForProperty(
   }
   switch (property) {
     case CSSPropertyID::kOpacity:
+    case CSSPropertyID::kBackdropFilter:
       return CompositorElementIdNamespace::kPrimaryEffect;
     case CSSPropertyID::kRotate:
     case CSSPropertyID::kScale:
@@ -162,7 +163,6 @@ CompositorElementIdNamespace CompositorElementNamespaceForProperty(
     case CSSPropertyID::kTransform:
       return CompositorElementIdNamespace::kPrimaryTransform;
     case CSSPropertyID::kFilter:
-    case CSSPropertyID::kBackdropFilter:
       return CompositorElementIdNamespace::kEffectFilter;
     case CSSPropertyID::kVariable:
       // TODO(crbug.com/883721): Variables should not require the target
@@ -675,6 +675,10 @@ void CompositorAnimations::GetAnimationOnCompositor(
       case CSSPropertyID::kFilter:
       case CSSPropertyID::kBackdropFilter: {
         target_property = compositor_target_property::FILTER;
+        if (property.GetCSSProperty().PropertyID() ==
+            CSSPropertyID::kBackdropFilter) {
+          target_property = compositor_target_property::BACKDROP_FILTER;
+        }
         auto filter_curve = std::make_unique<CompositorFilterAnimationCurve>();
         AddKeyframesToCurve(*filter_curve, values);
         filter_curve->SetTimingFunction(*timing.timing_function);

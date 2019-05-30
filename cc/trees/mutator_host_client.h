@@ -38,6 +38,10 @@ class MutatorHostClient {
   virtual void SetElementFilterMutated(ElementId element_id,
                                        ElementListType list_type,
                                        const FilterOperations& filters) = 0;
+  virtual void SetElementBackdropFilterMutated(
+      ElementId element_id,
+      ElementListType list_type,
+      const FilterOperations& backdrop_filters) = 0;
   virtual void SetElementOpacityMutated(ElementId element_id,
                                         ElementListType list_type,
                                         float opacity) = 0;
