@@ -16,28 +16,6 @@
 #include "url/gurl.h"
 
 namespace payments {
-namespace {
-
-static const char* const kBasicCardNetworks[] = {
-    "amex",       "diners", "discover", "jcb",
-    "mastercard", "mir",    "unionpay", "visa"};
-
-// Performs the simple normalization of card network |method| ("visa", "amex",
-// etc.) into a "basic-card" |method| with "{supportedNetworks: [method]}"
-// |params|.
-void SimpleNormalize(std::string* method, std::set<std::string>* params) {
-  params->erase("");
-  for (size_t i = 0; i < base::size(kBasicCardNetworks); ++i) {
-    if (std::strcmp(kBasicCardNetworks[i], method->c_str()) == 0) {
-      params->insert(base::StringPrintf("{\"supportedNetworks\":[\"%s\"]}",
-                                        method->c_str()));
-      method->assign("basic-card");
-      return;
-    }
-  }
-}
-
-}  // namespace
 
 CanMakePaymentQuery::CanMakePaymentQuery() {}
 
@@ -74,7 +52,6 @@ bool CanMakePaymentQuery::CanQueryWithPerMethodQuota(
   for (const auto& method_and_params : query) {
     std::string method = method_and_params.first;
     std::set<std::string> params = method_and_params.second;
-    SimpleNormalize(&method, &params);
 
     const std::string id =
         frame_origin.spec() + ":" + top_level_origin.spec() + ":" + method;

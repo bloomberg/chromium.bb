@@ -106,7 +106,8 @@ class PaymentRequestStateTest : public testing::Test,
   std::vector<mojom::PaymentMethodDataPtr> GetMethodDataForVisa() {
     std::vector<mojom::PaymentMethodDataPtr> method_data;
     mojom::PaymentMethodDataPtr entry = mojom::PaymentMethodData::New();
-    entry->supported_method = "visa";
+    entry->supported_method = "basic-card";
+    entry->supported_networks.push_back(mojom::BasicCardNetwork::VISA);
     method_data.push_back(std::move(entry));
     return method_data;
   }
@@ -168,7 +169,8 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_NoEnrolledInstrument) {
   // The method data requires MasterCard.
   std::vector<mojom::PaymentMethodDataPtr> method_data;
   mojom::PaymentMethodDataPtr entry = mojom::PaymentMethodData::New();
-  entry->supported_method = "mastercard";
+  entry->supported_method = "basic-card";
+  entry->supported_networks.push_back(mojom::BasicCardNetwork::MASTERCARD);
   method_data.push_back(std::move(entry));
   RecreateStateWithOptionsAndDetails(mojom::PaymentOptions::New(),
                                      mojom::PaymentDetails::New(),

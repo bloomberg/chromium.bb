@@ -422,18 +422,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           "https://www.chromestatus.com/feature/5735596811091968 for more "
           "details."};
 
-    case WebFeature::kPaymentRequestNetworkNameInSupportedMethods:
-      return {
-          "PaymentRequestNetworkNameInSupportedMethods", kM64,
-          ReplacedWillBeRemoved(
-              "Card issuer network (\"amex\", \"diners\", \"discover\", "
-              "\"jcb\", "
-              "\"mastercard\", \"mir\", \"unionpay\", \"visa\") as payment "
-              "method",
-              "payment method name \"basic-card\" with issuer network in the "
-              "\"supportedNetworks\" field",
-              kM64, "5725727580225536")};
-
     case WebFeature::kHTMLImports:
       return {"DeprecatedHTMLImports", kM73,
               ReplacedWillBeRemoved("HTML Imports", "ES modules", kM73,

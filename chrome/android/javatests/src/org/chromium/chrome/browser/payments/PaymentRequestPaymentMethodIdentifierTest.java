@@ -138,7 +138,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
     }
 
     /**
-     * If the merchant requests supported methods of "mastercard" and "basic-card" with "visa"
+     * If the merchant requests supported method of "basic-card" with "mastercard" and "visa"
      * network support, then the user should be able to pay via their "visa" card. The merchant will
      * receive the "basic-card" method name.
      */
@@ -162,9 +162,9 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
     }
 
     /**
-     * If the merchant requests supported methods of "mastercard" and "basic-card" with "visa"
+     * If the merchant requests supported method of "basic-card" with "mastercard" and "visa"
      * network support, then the user should be able to add a "mastercard" card and pay with it. The
-     * merchant will receive the "mastercard" method name.
+     * merchant will receive the "basic-card" method name.
      */
     @Test
     @MediumTest
@@ -190,11 +190,11 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
                 ModalDialogProperties.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"5555555555554444", "12", "Jane Jones", "123", "mastercard"});
+                new String[] {"5555555555554444", "12", "Jane Jones", "123", "basic-card"});
     }
 
     /**
-     * If the merchant requests supported methods of "mastercard" and "basic-card" with "visa"
+     * If the merchant requests supported method of "basic-card" with "mastercard" and "visa"
      * network support, then the user should be able to add a new "visa" card and pay with it. The
      * merchant will receive the "basic-card" method name.
      */

@@ -330,7 +330,7 @@ class PaymentRequestHasEnrolledInstrumentQueryPMITest
     script_[CheckFor::BOB_PAY] = "[bobPayMethod]";
     script_[CheckFor::BOB_PAY_AND_BASIC_CARD] =
         "[bobPayMethod, basicCardMethod]";
-    script_[CheckFor::BOB_PAY_AND_VISA] = "[bobPayMethod, visaMethod]";
+    script_[CheckFor::BOB_PAY_AND_VISA] = "[bobPayMethod, basicVisaMethod]";
     scoped_feature_list_.InitAndEnableFeature(
         ::features::kPaymentRequestHasEnrolledInstrument);
   }

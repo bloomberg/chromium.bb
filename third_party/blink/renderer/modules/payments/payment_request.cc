@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -425,16 +424,6 @@ void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
   }
 }
 
-void CountPaymentRequestNetworkNameInSupportedMethod(
-    const String& supported_method,
-    ExecutionContext& execution_context) {
-  if (BasicCardHelper::IsNetworkName(supported_method)) {
-    Deprecation::CountDeprecation(
-        &execution_context,
-        WebFeature::kPaymentRequestNetworkNameInSupportedMethods);
-  }
-}
-
 void ValidateAndConvertPaymentDetailsModifiers(
     const HeapVector<Member<PaymentDetailsModifier>>& input,
     Vector<PaymentDetailsModifierPtr>& output,
@@ -469,9 +458,6 @@ void ValidateAndConvertPaymentDetailsModifiers(
           "Invalid payment method identifier format");
       return;
     }
-
-    CountPaymentRequestNetworkNameInSupportedMethod(modifier->supportedMethod(),
-                                                    execution_context);
 
     output.back()->method_data =
         payments::mojom::blink::PaymentMethodData::New();
@@ -613,9 +599,6 @@ void ValidateAndConvertPaymentMethodData(
       return;
     }
     method_names.insert(payment_method_data->supportedMethod());
-
-    CountPaymentRequestNetworkNameInSupportedMethod(
-        payment_method_data->supportedMethod(), execution_context);
 
     output.push_back(payments::mojom::blink::PaymentMethodData::New());
 

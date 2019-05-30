@@ -1446,7 +1446,6 @@ enum WebFeature {
   kFontShapingNotDefGlyphObserved = 1973,
   kPostMessageOutgoingWouldBeBlockedByConnectSrc = 1974,
   kPostMessageIncomingWouldBeBlockedByConnectSrc = 1975,
-  kPaymentRequestNetworkNameInSupportedMethods = 1976,
   kCrossOriginPropertyAccess = 1977,
   kCrossOriginPropertyAccessFromOpener = 1978,
   kCredentialManagerCreate = 1979,
