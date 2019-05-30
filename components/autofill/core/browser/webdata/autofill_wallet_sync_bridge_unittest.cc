@@ -244,6 +244,8 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
   void ResetBridge(bool initial_sync_done) {
     ModelTypeState model_type_state;
     model_type_state.set_initial_sync_done(initial_sync_done);
+    model_type_state.mutable_progress_marker()->set_data_type_id(
+        GetSpecificsFieldNumberFromModelType(syncer::AUTOFILL_WALLET_DATA));
     EXPECT_TRUE(table()->UpdateModelTypeState(syncer::AUTOFILL_WALLET_DATA,
                                               model_type_state));
     bridge_ = std::make_unique<AutofillWalletSyncBridge>(

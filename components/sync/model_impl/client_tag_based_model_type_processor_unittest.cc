@@ -82,7 +82,8 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
             std::make_unique<ClientTagBasedModelTypeProcessor>(
                 model_type,
                 /*dump_stack=*/base::RepeatingClosure(),
-                commit_only)) {
+                commit_only)),
+        model_type_(model_type) {
     supports_incremental_updates_ = supports_incremental_updates;
   }
 
@@ -114,6 +115,8 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   void SetInitialSyncDone(bool is_done) {
     ModelTypeState model_type_state(db().model_type_state());
     model_type_state.set_initial_sync_done(is_done);
+    model_type_state.mutable_progress_marker()->set_data_type_id(
+        GetSpecificsFieldNumberFromModelType(model_type_));
     db_->set_model_type_state(model_type_state);
   }
 
@@ -168,6 +171,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     data_callback_ = base::BindOnce(std::move(callback), std::move(data));
   }
 
+  const ModelType model_type_;
   bool supports_incremental_updates_;
 
   // The number of times MergeSyncData has been called.
@@ -393,6 +397,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
   model_type_state.set_authenticated_account_id("PersistedAccountId");
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(GetModelType()));
   metadata_batch->SetModelTypeState(model_type_state);
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
 
@@ -419,6 +425,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
   model_type_state.set_cache_guid("PersistedCacheGuid");
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(GetModelType()));
   metadata_batch->SetModelTypeState(model_type_state);
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
 
@@ -2243,6 +2251,38 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldDeleteMetadataWhenDataTypeIdMismatch) {
+  // Commit item.
+  InitializeToReadyState();
+  WriteItemAndAck(kKey1, kValue1);
+  // Reset the processor to simulate a restart.
+  ResetState(/*keep_db=*/true);
+
+  // A new processor loads the metadata after changing the data type id.
+  bridge()->SetInitialSyncDone(true);
+
+  std::unique_ptr<MetadataBatch> metadata_batch = db()->CreateMetadataBatch();
+  sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
+  // This processor is supposed to process Preferences. Mark the model type
+  // state to be for sessions to simulate a data type id mismatch.
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(SESSIONS));
+  metadata_batch->SetModelTypeState(model_type_state);
+
+  type_processor()->ModelReadyToSync(std::move(metadata_batch));
+  ASSERT_TRUE(type_processor()->IsModelReadyToSyncForTest());
+
+  OnSyncStarting();
+
+  // Model should still be ready to sync.
+  ASSERT_TRUE(type_processor()->IsModelReadyToSyncForTest());
+  // OnSyncStarting() should have completed.
+  EXPECT_NE(nullptr, worker());
+  // Upon a mismatch, metadata should have been cleared.
+  EXPECT_EQ(0U, db()->metadata_count());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldClearOrphanMetadataInGetLocalChangesWhenDataIsMissing) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
@@ -2446,6 +2486,8 @@ TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
   model_type_state.set_authenticated_account_id("PersistedAccountId");
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(GetModelType()));
   metadata_batch->SetModelTypeState(model_type_state);
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
 
@@ -2472,6 +2514,8 @@ TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
   sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
   model_type_state.set_initial_sync_done(true);
   model_type_state.set_authenticated_account_id("PersistedAccountId");
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(GetModelType()));
   metadata_batch->SetModelTypeState(model_type_state);
   type_processor()->ModelReadyToSync(std::move(metadata_batch));
 

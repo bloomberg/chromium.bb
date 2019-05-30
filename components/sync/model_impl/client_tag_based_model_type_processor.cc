@@ -167,12 +167,17 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
   }
 
   if (!model_type_state_.has_cache_guid()) {
+    // Initialize the cache_guid for old clients that didn't persist it.
     model_type_state_.set_cache_guid(activation_request_.cache_guid);
-  } else if (model_type_state_.cache_guid() != activation_request_.cache_guid) {
-    // There is a mismatch between the cache guid stored in |model_type_state_|
-    // and the one received from sync and stored it |activation_request_|. This
-    // indicates that the stored metadata are invalid (e.g. has been
-    // manipulated) and don't belong to the current syncing client.
+  }
+  // Check for invalid persisted metadata.
+  if (model_type_state_.cache_guid() != activation_request_.cache_guid ||
+      model_type_state_.progress_marker().data_type_id() !=
+          GetSpecificsFieldNumberFromModelType(type_)) {
+    // There is a mismatch between the cache guid or the data type id stored in
+    // |model_type_state_| and the one received from sync. This indicates that
+    // the stored metadata are invalid (e.g. has been manipulated) and don't
+    // belong to the current syncing client.
     ClearMetadataAndResetState();
 
     // The model is still ready to sync (with the same |bridge_|) - replay
