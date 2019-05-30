@@ -289,7 +289,8 @@ bool OverviewController::ToggleOverview(
   // can accept text input and it resizes correctly with the a11y keyboard.
   keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
 
-  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  auto windows =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
 
   // Hidden windows will be removed by wm::ShouldExcludeForOverview so we
   // must copy them out first.

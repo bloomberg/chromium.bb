@@ -19,7 +19,10 @@ namespace ash {
 namespace {
 
 bool HasFocusableWindow() {
-  return !Shell::Get()->mru_window_tracker()->BuildMruWindowList().empty();
+  return !Shell::Get()
+              ->mru_window_tracker()
+              ->BuildMruWindowList(kActiveDesk)
+              .empty();
 }
 
 }  // namespace
@@ -81,7 +84,7 @@ void FocusCycler::RotateFocus(Direction direction) {
     if (index == browser_index) {
       // Activate the most recently active browser window.
       MruWindowTracker::WindowList mru_windows(
-          Shell::Get()->mru_window_tracker()->BuildMruWindowList());
+          Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
       if (mru_windows.empty())
         break;
       auto* window = mru_windows.front();

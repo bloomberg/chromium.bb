@@ -132,7 +132,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
 
     aura::Window* root_window = dragged_window->GetRootWindow();
     std::vector<aura::Window*> windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
     for (aura::Window* window : windows) {
       if (window == dragged_window || window == source_window ||
           window->GetRootWindow() != root_window) {

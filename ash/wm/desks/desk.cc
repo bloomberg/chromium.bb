@@ -12,6 +12,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -127,7 +128,7 @@ void Desk::Activate(bool update_window_activation) {
   // Activate the window on this desk that was most recently used right before
   // the user switched to another desk, so as not to break the user's workflow.
   for (auto* window :
-       Shell::Get()->mru_window_tracker()->BuildMruWindowList()) {
+       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
     if (!windows_.contains(window))
       continue;
 

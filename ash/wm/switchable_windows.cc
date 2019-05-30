@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
 
@@ -46,11 +47,20 @@ std::vector<int> GetSwitchableContainersIds() {
 
 }  // namespace
 
-std::vector<aura::Window*> GetSwitchableContainersForRoot(aura::Window* root) {
+std::vector<aura::Window*> GetSwitchableContainersForRoot(
+    aura::Window* root,
+    bool active_desk_only) {
   DCHECK(root);
   DCHECK(root->IsRootWindow());
 
   std::vector<aura::Window*> containers;
+  if (active_desk_only) {
+    containers.push_back(desks_util::GetActiveDeskContainerForRoot(root));
+    containers.push_back(
+        root->GetChildById(kShellWindowId_AlwaysOnTopContainer));
+    return containers;
+  }
+
   for (const auto& id : GetSwitchableContainersIds()) {
     auto* container = root->GetChildById(id);
     DCHECK(container);

@@ -24,7 +24,7 @@ display::DisplayManager* GetDisplayManager() {
 }
 
 MruWindowTracker::WindowList GetWindowList() {
-  return Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  return Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks);
 }
 
 // Returns true when window cycle list can be processed to perform save/restore

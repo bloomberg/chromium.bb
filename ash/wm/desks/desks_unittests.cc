@@ -13,6 +13,7 @@
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -153,36 +154,6 @@ class TestDeskObserver : public Desk::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestDeskObserver);
 };
 
-// Used for waiting for the desk switch animations on all root windows to
-// complete.
-class DeskSwitchAnimationWaiter : public DesksController::Observer {
- public:
-  DeskSwitchAnimationWaiter() { DesksController::Get()->AddObserver(this); }
-
-  ~DeskSwitchAnimationWaiter() override {
-    DesksController::Get()->RemoveObserver(this);
-  }
-
-  void Wait() {
-    auto* controller = DesksController::Get();
-    EXPECT_TRUE(controller->AreDesksBeingModified());
-    run_loop_.Run();
-    EXPECT_FALSE(controller->AreDesksBeingModified());
-  }
-
-  // DesksController::Observer:
-  void OnDeskAdded(const Desk* desk) override {}
-  void OnDeskRemoved(const Desk* desk) override {}
-  void OnDeskActivationChanged(const Desk* activated,
-                               const Desk* deactivated) override {}
-  void OnDeskSwitchAnimationFinished() override { run_loop_.Quit(); }
-
- private:
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeskSwitchAnimationWaiter);
-};
-
 class DesksTest : public AshTestBase {
  public:
   DesksTest() = default;
@@ -193,14 +164,6 @@ class DesksTest : public AshTestBase {
     scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
 
     AshTestBase::SetUp();
-  }
-
-  void ActivateDesk(const Desk* desk) {
-    ASSERT_FALSE(desk->is_active());
-    DeskSwitchAnimationWaiter waiter;
-    DesksController::Get()->ActivateDesk(desk);
-    waiter.Wait();
-    ASSERT_TRUE(desk->is_active());
   }
 
  private:
@@ -502,12 +465,12 @@ TEST_F(DesksTest, WindowActivation) {
   EXPECT_EQ(3u, desk_1->windows().size());
   EXPECT_TRUE(desk_2->windows().empty());
 
-  // `desk_2` has no windows, so now no window should be active, and windows on
-  // `desk_1` cannot be activated.
+  // `desk_2` has no windows, so now no window should be active. However,
+  // windows on `desk_1` are activateable.
   EXPECT_EQ(nullptr, wm::GetActiveWindow());
-  EXPECT_FALSE(wm::CanActivateWindow(win0.get()));
-  EXPECT_FALSE(wm::CanActivateWindow(win1.get()));
-  EXPECT_FALSE(wm::CanActivateWindow(win2.get()));
+  EXPECT_TRUE(wm::CanActivateWindow(win0.get()));
+  EXPECT_TRUE(wm::CanActivateWindow(win1.get()));
+  EXPECT_TRUE(wm::CanActivateWindow(win2.get()));
 
   // Create two new windows, they should now go to desk_2.
   auto win3 = CreateTestWindow(gfx::Rect(0, 0, 300, 200));
@@ -533,8 +496,8 @@ TEST_F(DesksTest, WindowActivation) {
   EXPECT_EQ(desk_1, controller->active_desk());
   EXPECT_TRUE(wm::CanActivateWindow(win1.get()));
   EXPECT_TRUE(wm::CanActivateWindow(win2.get()));
-  EXPECT_FALSE(wm::CanActivateWindow(win3.get()));
-  EXPECT_FALSE(wm::CanActivateWindow(win4.get()));
+  EXPECT_TRUE(wm::CanActivateWindow(win3.get()));
+  EXPECT_TRUE(wm::CanActivateWindow(win4.get()));
 
   // After `win0` has been deleted, `win2` is next on the MRU list.
   EXPECT_EQ(win2.get(), wm::GetActiveWindow());
@@ -558,7 +521,7 @@ TEST_F(DesksTest, WindowActivation) {
   // already active window.
   EXPECT_EQ(win2.get(), wm::GetActiveWindow());
 
-  // Moved windows can now be activated.
+  // Moved windows can still be activated.
   EXPECT_TRUE(wm::CanActivateWindow(win3.get()));
   EXPECT_TRUE(wm::CanActivateWindow(win4.get()));
 }
@@ -873,13 +836,18 @@ TEST_F(DesksTest, MinimizedWindow) {
   EXPECT_TRUE(window_state->IsMinimized());
 
   // Minimized windows on the active desk show up in the MRU list...
-  EXPECT_EQ(1u,
-            Shell::Get()->mru_window_tracker()->BuildMruWindowList().size());
+  EXPECT_EQ(1u, Shell::Get()
+                    ->mru_window_tracker()
+                    ->BuildMruWindowList(kActiveDesk)
+                    .size());
 
   ActivateDesk(desk_2);
 
   // ... But they don't once their desk is inactive.
-  EXPECT_TRUE(Shell::Get()->mru_window_tracker()->BuildMruWindowList().empty());
+  EXPECT_TRUE(Shell::Get()
+                  ->mru_window_tracker()
+                  ->BuildMruWindowList(kActiveDesk)
+                  .empty());
 
   // Switching back to their desk should neither activate them nor unminimize
   // them.
@@ -986,6 +954,82 @@ TEST_F(DesksTest, DragWindowToNonMiniViewPoints) {
   EXPECT_EQ(1u, overview_grid->size());
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
   EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
+}
+
+TEST_F(DesksTest, MruWindowTracker) {
+  // Create two desks with two windows in each.
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  const Desk* desk_2 = controller->desks()[1].get();
+  ActivateDesk(desk_2);
+  EXPECT_EQ(desk_2, controller->active_desk());
+  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 300, 200));
+  auto win3 = CreateTestWindow(gfx::Rect(10, 30, 400, 200));
+
+  // Build active desk's MRU window list.
+  auto* mru_window_tracker = Shell::Get()->mru_window_tracker();
+  auto window_list = mru_window_tracker->BuildWindowForCycleList(kActiveDesk);
+  ASSERT_EQ(2u, window_list.size());
+  EXPECT_EQ(win3.get(), window_list[0]);
+  EXPECT_EQ(win2.get(), window_list[1]);
+
+  // Build the global MRU window list.
+  window_list = mru_window_tracker->BuildWindowForCycleList(kAllDesks);
+  ASSERT_EQ(4u, window_list.size());
+  EXPECT_EQ(win3.get(), window_list[0]);
+  EXPECT_EQ(win2.get(), window_list[1]);
+  EXPECT_EQ(win1.get(), window_list[2]);
+  EXPECT_EQ(win0.get(), window_list[3]);
+
+  // Switch back to desk_1 and test both MRU list types.
+  Desk* desk_1 = controller->desks()[0].get();
+  ActivateDesk(desk_1);
+  window_list = mru_window_tracker->BuildWindowForCycleList(kActiveDesk);
+  ASSERT_EQ(2u, window_list.size());
+  EXPECT_EQ(win1.get(), window_list[0]);
+  EXPECT_EQ(win0.get(), window_list[1]);
+  // TODO(afakhry): Check with UX if we should favor active desk's windows in
+  // the global MRU list (i.e. put them first in the list).
+  window_list = mru_window_tracker->BuildWindowForCycleList(kAllDesks);
+  ASSERT_EQ(4u, window_list.size());
+  EXPECT_EQ(win1.get(), window_list[0]);
+  EXPECT_EQ(win3.get(), window_list[1]);
+  EXPECT_EQ(win2.get(), window_list[2]);
+  EXPECT_EQ(win0.get(), window_list[3]);
+}
+
+TEST_F(DesksTest, NextActivatable) {
+  // Create two desks with two windows in each.
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  const Desk* desk_2 = controller->desks()[1].get();
+  ActivateDesk(desk_2);
+  EXPECT_EQ(desk_2, controller->active_desk());
+  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 300, 200));
+  auto win3 = CreateTestWindow(gfx::Rect(10, 30, 400, 200));
+  EXPECT_EQ(win3.get(), wm::GetActiveWindow());
+
+  // When deactivating a window, the next activatable window should be on the
+  // same desk.
+  wm::DeactivateWindow(win3.get());
+  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+  wm::DeactivateWindow(win2.get());
+  EXPECT_EQ(win3.get(), wm::GetActiveWindow());
+
+  // Similarly for desk_1.
+  Desk* desk_1 = controller->desks()[0].get();
+  ActivateDesk(desk_1);
+  EXPECT_EQ(win1.get(), wm::GetActiveWindow());
+  win1.reset();
+  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+  win0.reset();
+  EXPECT_EQ(nullptr, wm::GetActiveWindow());
 }
 
 class DesksWithSplitViewTest : public AshTestBase {

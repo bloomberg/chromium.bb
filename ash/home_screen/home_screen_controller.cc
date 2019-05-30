@@ -31,8 +31,10 @@ bool MinimizeAllWindows() {
   bool handled = false;
   aura::Window* container = Shell::Get()->GetPrimaryRootWindow()->GetChildById(
       kShellWindowId_HomeScreenContainer);
+  // The home screen opens for the current active desk, there's no need to
+  // minimize windows in the inactive desks.
   aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   for (auto it = windows.rbegin(); it != windows.rend(); it++) {
     if (!container->Contains(*it) && !wm::GetWindowState(*it)->IsMinimized()) {
       wm::GetWindowState(*it)->Minimize();

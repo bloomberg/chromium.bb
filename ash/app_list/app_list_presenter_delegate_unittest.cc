@@ -1606,7 +1606,8 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   wm::ActivateWindow(window1.get());
   wm::ActivateWindow(window2.get());
   wm::ActivateWindow(window3.get());
-  auto ordering = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  auto ordering =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
 
   // Press app list button.
   PressAppListButton();
@@ -1616,9 +1617,9 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   GetAppListTestHelper()->CheckVisibility(true);
 
   // Tests that the window ordering remains the same as before we minimize.
-  EXPECT_TRUE(std::equal(
-      ordering.begin(), ordering.end(),
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList().begin()));
+  auto new_order =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
+  EXPECT_TRUE(std::equal(ordering.begin(), ordering.end(), new_order.begin()));
 }
 
 // Tests that the app list button will end split view mode.

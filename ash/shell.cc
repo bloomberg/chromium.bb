@@ -795,9 +795,9 @@ Shell::~Shell() {
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
 
-  // The desks controller is destroyed after the window tree host manager. At
-  // this point it is guaranteed that querying the active desk is no longer
-  // needed.
+  // The desks controller is destroyed after the window tree host manager and
+  // before the focus controller. At this point it is guaranteed that querying
+  // the active desk is no longer needed.
   desks_controller_.reset();
 
   focus_rules_ = nullptr;
@@ -962,7 +962,8 @@ void Shell::Init(
   // started, and before anything else is created, including the initialization
   // of the hosts and the root window controllers. Many things may need to query
   // the active desk, even at this early stage. For this the controller must be
-  // present at all times.
+  // present at all times. The desks controller also depends on the focus
+  // controller.
   if (features::IsVirtualDesksEnabled())
     desks_controller_ = std::make_unique<DesksController>();
 

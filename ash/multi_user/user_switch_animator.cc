@@ -288,7 +288,7 @@ void UserSwitchAnimator::TransitionWindows(AnimationStep animation_step) {
     case ANIMATION_STEP_FINALIZE: {
       // Reactivate the MRU window of the new user.
       aura::Window::Windows mru_list =
-          Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+          Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
       if (!mru_list.empty()) {
         aura::Window* window = mru_list[0];
         if (owner_->IsWindowOnDesktopOfUser(window, new_account_id_) &&

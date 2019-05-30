@@ -134,7 +134,7 @@ bool IsTabDraggingSourceWindow(aura::Window* window) {
     return false;
 
   MruWindowTracker::WindowList window_list =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   if (window_list.empty())
     return false;
 
@@ -487,7 +487,7 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
 
 bool TabletModeWindowState::IsTopWindow(aura::Window* window) {
   MruWindowTracker::WindowList windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
 
   return !windows.empty() && window == windows[0];
 }

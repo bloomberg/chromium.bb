@@ -831,7 +831,8 @@ void HandleToggleDictation() {
 }
 
 bool CanHandleToggleOverview() {
-  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  auto windows =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   // Do not toggle overview if there is a window being dragged.
   for (auto* window : windows) {
     if (wm::GetWindowState(window)->is_dragged())
@@ -1876,8 +1877,11 @@ AcceleratorControllerImpl::GetAcceleratorProcessingRestriction(
     // cycling through its window elements.
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
-  if (Shell::Get()->mru_window_tracker()->BuildMruWindowList().empty() &&
-      actions_needing_window_.find(action) != actions_needing_window_.end()) {
+  if (base::ContainsKey(actions_needing_window_, action) &&
+      Shell::Get()
+          ->mru_window_tracker()
+          ->BuildMruWindowList(kActiveDesk)
+          .empty()) {
     Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
         mojom::AccessibilityAlert::WINDOW_NEEDED);
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;

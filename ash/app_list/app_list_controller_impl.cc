@@ -819,11 +819,11 @@ void AppListControllerImpl::UpdateExpandArrowVisibility() {
   bool should_show = false;
 
   // Hide the expand arrow view when the home screen is available and there is
-  // no activatable window.
+  // no activatable window on the current active desk.
   if (IsHomeScreenAvailable()) {
     should_show = !ash::Shell::Get()
                        ->mru_window_tracker()
-                       ->BuildWindowForCycleList()
+                       ->BuildWindowForCycleList(kActiveDesk)
                        .empty();
   } else {
     should_show = true;
@@ -1335,7 +1335,8 @@ void AppListControllerImpl::UpdateLauncherContainer() {
     parent_window->AddChild(window);
     bool is_showing_app_window = false;
     for (auto* app_window :
-         Shell::Get()->mru_window_tracker()->BuildWindowForCycleList()) {
+         Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(
+             kActiveDesk)) {
       if (!parent_window->Contains(app_window) &&
           !wm::GetWindowState(app_window)->IsMinimized()) {
         is_showing_app_window = true;

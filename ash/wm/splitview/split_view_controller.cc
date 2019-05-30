@@ -951,7 +951,7 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
 
   // Only windows in MRU list can be snapped.
   if (!base::ContainsValue(
-          Shell::Get()->mru_window_tracker()->BuildMruWindowList(),
+          Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk),
           gained_active)) {
     return;
   }

@@ -669,7 +669,8 @@ void SessionControllerImpl::EnsureActiveWindowAfterUnblockingUserSession() {
   if (!Shell::HasInstance())
     return;
 
-  auto mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  auto mru_list =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   if (!mru_list.empty())
     mru_list.front()->Focus();
 }

@@ -101,18 +101,25 @@ aura::Window* GetActiveDeskContainerForRoot(aura::Window* root) {
   return root->GetChildById(GetActiveDeskContainerId());
 }
 
+ASH_EXPORT bool BelongsToActiveDesk(aura::Window* window) {
+  DCHECK(window);
+
+  const int active_desk_id = GetActiveDeskContainerId();
+  aura::Window* desk_container = GetDeskContainerForContext(window);
+  return desk_container && desk_container->id() == active_desk_id;
+}
+
 aura::Window* GetDeskContainerForContext(aura::Window* context) {
   DCHECK(context);
 
-  while (context && !IsDeskContainerId(context->id()) &&
-         !context->IsRootWindow()) {
+  while (context) {
+    if (IsDeskContainerId(context->id()))
+      return context;
+
     context = context->parent();
   }
 
-  if (context->IsRootWindow())
-    return GetActiveDeskContainerForRoot(context);
-
-  return context;
+  return nullptr;
 }
 
 }  // namespace desks_util

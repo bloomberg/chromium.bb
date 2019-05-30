@@ -165,7 +165,8 @@ class TabletModeWindowManagerTest : public AshTestBase {
         params.can_maximize ? aura::client::kResizeBehaviorCanMaximize : 0;
     window->SetProperty(aura::client::kResizeBehaviorKey, behavior);
     aura::Window* container =
-        wm::GetSwitchableContainersForRoot(Shell::GetPrimaryRootWindow())[0];
+        wm::GetSwitchableContainersForRoot(Shell::GetPrimaryRootWindow(),
+                                           /*active_desk_only=*/true)[0];
     container->AddChild(window);
     return window;
   }
@@ -768,7 +769,7 @@ TEST_F(TabletModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   // The windows should be in the reverse order of creation in the MRU list.
   {
     aura::Window::Windows windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kAllDesks);
 
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -783,7 +784,7 @@ TEST_F(TabletModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   EXPECT_EQ(5, manager->GetNumberOfManagedWindows());
   {
     aura::Window::Windows windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kAllDesks);
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -796,7 +797,7 @@ TEST_F(TabletModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   DestroyTabletModeWindowManager();
   {
     aura::Window::Windows windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kAllDesks);
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);

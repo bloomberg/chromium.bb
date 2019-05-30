@@ -564,7 +564,8 @@ bool ShelfLayoutManager::ShouldBlurShelfBackground() {
 bool ShelfLayoutManager::HasVisibleWindow() const {
   aura::Window* root = shelf_widget_->GetNativeWindow()->GetRootWindow();
   const aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
+          kActiveDesk);
   // Process the window list and check if there are any visible windows.
   // Ignore app list windows that may be animating to hide after dismissal.
   for (auto* window : windows) {
@@ -1027,7 +1028,8 @@ bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
 
   // TODO(minch): Check active window directly if removed search field
   // in overview mode. http://crbug.com/866679
-  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  auto windows =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   for (auto* window : windows) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (window_state && window_state->is_dragged() &&

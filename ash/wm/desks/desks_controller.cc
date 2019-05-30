@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -34,7 +35,7 @@ void AppendWindowsToOverview(const base::flat_set<aura::Window*>& windows,
   auto* overview_session =
       Shell::Get()->overview_controller()->overview_session();
   for (auto* window :
-       Shell::Get()->mru_window_tracker()->BuildMruWindowList()) {
+       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
     if (!windows.contains(window) || wm::ShouldExcludeForOverview(window))
       continue;
 
@@ -58,6 +59,8 @@ void RemoveWindowsFromOverview(const base::flat_set<aura::Window*>& windows) {
 }  // namespace
 
 DesksController::DesksController() {
+  Shell::Get()->activation_client()->AddObserver(this);
+
   for (int id : desks_util::GetDesksContainersIds())
     available_container_ids_.push(id);
 
@@ -67,7 +70,9 @@ DesksController::DesksController() {
   active_desk_->Activate(/*update_window_activation=*/true);
 }
 
-DesksController::~DesksController() = default;
+DesksController::~DesksController() {
+  Shell::Get()->activation_client()->RemoveObserver(this);
+}
 
 // static
 DesksController* DesksController::Get() {
@@ -325,6 +330,26 @@ void DesksController::OnDeskSwitchAnimationFinished() {
     observer.OnDeskSwitchAnimationFinished();
 }
 
+void DesksController::OnWindowActivating(ActivationReason reason,
+                                         aura::Window* gaining_active,
+                                         aura::Window* losing_active) {
+  if (AreDesksBeingModified())
+    return;
+
+  if (!gaining_active)
+    return;
+
+  const Desk* window_desk = FindDeskOfWindow(gaining_active);
+  if (!window_desk || window_desk == active_desk_)
+    return;
+
+  ActivateDesk(window_desk);
+}
+
+void DesksController::OnWindowActivated(ActivationReason reason,
+                                        aura::Window* gained_active,
+                                        aura::Window* lost_active) {}
+
 bool DesksController::HasDesk(const Desk* desk) const {
   auto iter = std::find_if(
       desks_.begin(), desks_.end(),
@@ -364,6 +389,17 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
 
   for (auto& observer : observers_)
     observer.OnDeskActivationChanged(active_desk_, old_active);
+}
+
+const Desk* DesksController::FindDeskOfWindow(aura::Window* window) const {
+  DCHECK(window);
+
+  for (const auto& desk : desks_) {
+    if (desk->windows().contains(window))
+      return desk.get();
+  }
+
+  return nullptr;
 }
 
 }  // namespace ash

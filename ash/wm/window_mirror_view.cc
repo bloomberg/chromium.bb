@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -22,14 +23,11 @@ namespace wm {
 namespace {
 
 void EnsureAllChildrenAreVisible(ui::Layer* layer) {
-  std::list<ui::Layer*> layers;
-  layers.push_back(layer);
-  while (!layers.empty()) {
-    for (auto* child : layers.front()->children())
-      layers.push_back(child);
-    layers.front()->SetVisible(true);
-    layers.pop_front();
-  }
+  for (auto* child : layer->children())
+    EnsureAllChildrenAreVisible(child);
+
+  layer->SetVisible(true);
+  layer->SetOpacity(1);
 }
 
 }  // namespace
@@ -131,9 +129,10 @@ void WindowMirrorView::InitLayerOwner() {
   // This causes us to clip the non-client areas of the window.
   layer()->SetMasksToBounds(true);
 
-  // Some extra work is needed when the source window is minimized.
-  if (wm::GetWindowState(source_)->IsMinimized()) {
-    mirror_layer->SetOpacity(1);
+  // Some extra work is needed when the source window is minimized or is on an
+  // inactive desk.
+  if (wm::GetWindowState(source_)->IsMinimized() ||
+      !desks_util::BelongsToActiveDesk(source_)) {
     EnsureAllChildrenAreVisible(mirror_layer);
   }
 
@@ -165,10 +164,17 @@ gfx::Rect WindowMirrorView::GetClientAreaBounds() const {
 }
 
 void WindowMirrorView::ForceVisibilityAndOcclusion() {
-  // Force the occlusion tracker to treat the source as visible.
+  // Force the occlusion tracker to treat the source (or the desk container if
+  // source_ is on an inactive desk) as visible.
+  aura::Window* window_to_force_visible = source_;
+  aura::Window* desk_container =
+      desks_util::GetDeskContainerForContext(source_);
+  if (desk_container && !desks_util::IsActiveDeskContainer(desk_container))
+    window_to_force_visible = desk_container;
+
   force_occlusion_tracker_visible_ =
       std::make_unique<aura::WindowOcclusionTracker::ScopedForceVisible>(
-          source_);
+          window_to_force_visible);
 }
 
 void WindowMirrorView::OnWindowOcclusionTrackingResumed() {

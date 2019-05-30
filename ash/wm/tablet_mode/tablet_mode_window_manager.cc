@@ -153,7 +153,7 @@ void TabletModeWindowManager::OnOverviewModeEndingAnimationComplete(
   // windows in splitview mode. Note the snapped window might not be tracked in
   // our |window_state_map_|.
   MruWindowTracker::WindowList windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(kAllDesks);
   for (auto* window : windows) {
     if (split_view_controller->left_window() != window &&
         split_view_controller->right_window() != window) {
@@ -184,7 +184,7 @@ void TabletModeWindowManager::OnSplitViewModeEnded() {
   // Maximize all snapped windows upon exiting split view mode. Note the snapped
   // window might not be tracked in our |window_state_map_|.
   MruWindowTracker::WindowList windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(kAllDesks);
   for (auto* window : windows)
     MaximizeIfSnapped(window);
 }
@@ -311,7 +311,7 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
   // split view layout from the last time the current user session was active.
   if (accounts_since_entering_tablet_.count(account_id) == 0u) {
     MruWindowTracker::WindowList windows =
-        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks);
     DoSplitView(windows, GetSnapPositions(windows));
     accounts_since_entering_tablet_.insert(account_id);
   } else {
@@ -328,7 +328,8 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
     // become full screen, and if so, then it would be better not to reactivate
     // split view. See https://crbug.com/944134.
     MruWindowTracker::WindowList windows =
-        Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+        Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
+            kAllDesks);
     for (aura::Window* window : windows) {
       switch (wm::GetWindowState(window)->GetStateType()) {
         case WindowStateType::kLeftSnapped:
@@ -423,10 +424,10 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   // |activatable_windows| includes all windows to be tracked, and that includes
   // windows on the lock screen via |scoped_skip_user_session_blocked_check|.
   MruWindowTracker::WindowList split_view_eligible_windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks);
   ScopedSkipUserSessionBlockedCheck scoped_skip_user_session_blocked_check;
   MruWindowTracker::WindowList activatable_windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(kAllDesks);
 
   // Determine the desired split view layout.
   const std::vector<SplitViewController::SnapPosition> snap_positions =

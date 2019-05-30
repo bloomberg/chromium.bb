@@ -848,7 +848,7 @@ bool ShelfView::IsDraggedView(const ShelfAppButton* view) const {
 const std::vector<aura::Window*> ShelfView::GetOpenWindowsForShelfView(
     views::View* view) {
   std::vector<aura::Window*> window_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   std::vector<aura::Window*> open_windows;
   const ShelfItem* item = ShelfItemForView(view);
 

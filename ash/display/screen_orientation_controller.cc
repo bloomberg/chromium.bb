@@ -592,7 +592,7 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
 
   Shell* shell = Shell::Get();
   MruWindowTracker::WindowList mru_windows(
-      shell->mru_window_tracker()->BuildMruWindowList());
+      shell->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
 
   bool has_visible_window = false;
   for (auto* window : mru_windows) {

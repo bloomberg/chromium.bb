@@ -1267,10 +1267,13 @@ TEST_F(SplitViewControllerTest, LongPressWithUnsnappableWindow) {
   // Verify split view is not activated when long press occurs in overview mode
   // and the most recent window is unsnappable.
   ToggleOverview();
-  ASSERT_TRUE(
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList().size() > 0);
+  ASSERT_TRUE(Shell::Get()
+                  ->mru_window_tracker()
+                  ->BuildWindowForCycleList(kActiveDesk)
+                  .size() > 0);
   ASSERT_EQ(unsnappable_window.get(),
-            Shell::Get()->mru_window_tracker()->BuildWindowForCycleList()[0]);
+            Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(
+                kActiveDesk)[0]);
   LongPressOnOverivewButtonTray();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }

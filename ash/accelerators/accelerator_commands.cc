@@ -50,8 +50,10 @@ bool ToggleMinimized() {
   // Attempt to restore the window that would be cycled through next from
   // the launcher when there is no active window.
   if (!window) {
+    // Do not unminimize a window on an inactive desk, since this will cause
+    // desks to switch and that will be unintentional for the user.
     MruWindowTracker::WindowList mru_windows(
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList());
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
     if (!mru_windows.empty())
       wm::GetWindowState(mru_windows.front())->Activate();
     return true;

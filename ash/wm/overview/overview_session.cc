@@ -193,7 +193,8 @@ void OverviewSession::Init(const WindowList& windows,
   for (auto* root : root_windows) {
     // Observed switchable containers for newly created windows on all root
     // windows.
-    for (auto* container : wm::GetSwitchableContainersForRoot(root)) {
+    for (auto* container :
+         wm::GetSwitchableContainersForRoot(root, /*active_desk_only=*/true)) {
       container->AddObserver(this);
       observed_windows_.insert(container);
     }
@@ -235,7 +236,7 @@ void OverviewSession::Init(const WindowList& windows,
     }
   }
 
-  MaybeCreateAndPositionNoWindowsWidget();
+  UpdateNoWindowsWidget();
 
   // Create the widget that will receive focus while in overview mode for
   // accessiblity purposes.
@@ -354,7 +355,7 @@ void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
         grid->Shutdown();
       grid_list_.clear();
     } else {
-      MaybeCreateAndPositionNoWindowsWidget();
+      UpdateNoWindowsWidget();
     }
   } else {
     for (auto iter = grid_list_.begin(); iter != grid_list_.end(); ++iter) {
@@ -396,7 +397,7 @@ bool OverviewSession::AcceptSelection() {
 void OverviewSession::SelectWindow(OverviewItem* item) {
   aura::Window* window = item->GetWindow();
   aura::Window::Windows window_list =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   if (!window_list.empty()) {
     // Record WindowSelector_ActiveWindowChanged if the user is selecting a
     // window other than the window that was active prior to entering overview
@@ -450,7 +451,7 @@ void OverviewSession::AddItem(
   grid->AddItem(window, reposition, animate, ignored_items, index);
   ++num_items_;
 
-  MaybeCreateAndPositionNoWindowsWidget();
+  UpdateNoWindowsWidget();
 
   // Transfer focus from |window| to |overview_focus_widget_| to match the
   // behavior of entering overview mode in the beginning.
@@ -469,6 +470,8 @@ void OverviewSession::AppendItem(aura::Window* window,
   grid->AppendItem(window, reposition, animate);
   ++num_items_;
 
+  UpdateNoWindowsWidget();
+
   // Transfer focus from |window| to |overview_focus_widget_| to match the
   // behavior of entering overview mode in the beginning.
   DCHECK(overview_focus_widget_);
@@ -486,7 +489,7 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
   overview_item->overview_grid()->RemoveItem(overview_item);
   --num_items_;
 
-  MaybeCreateAndPositionNoWindowsWidget();
+  UpdateNoWindowsWidget();
 }
 
 void OverviewSession::InitiateDrag(OverviewItem* item,
@@ -934,7 +937,7 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
         /*ignored_items=*/{});
   }
   PositionWindows(/*animate=*/false);
-  MaybeCreateAndPositionNoWindowsWidget();
+  UpdateNoWindowsWidget();
 }
 
 void OverviewSession::ResetFocusRestoreWindow(bool focus) {
@@ -1003,12 +1006,12 @@ void OverviewSession::OnDisplayBoundsChanged() {
         /*ignored_items=*/{});
   }
   PositionWindows(/*animate=*/false);
-  MaybeCreateAndPositionNoWindowsWidget();
+  UpdateNoWindowsWidget();
   if (split_view_drag_indicators_)
     split_view_drag_indicators_->OnDisplayBoundsChanged();
 }
 
-void OverviewSession::MaybeCreateAndPositionNoWindowsWidget() {
+void OverviewSession::UpdateNoWindowsWidget() {
   // Hide the widget if there is an item in overview.
   if (!IsEmpty()) {
     no_windows_widget_.reset();

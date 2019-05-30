@@ -1490,7 +1490,7 @@ TEST_F(MultiProfileSupportTest, WindowsOrderPreservedTests) {
   EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
 
   aura::Window::Windows mru_list =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   EXPECT_EQ(mru_list[0], window(0));
   EXPECT_EQ(mru_list[1], window(1));
   EXPECT_EQ(mru_list[2], window(2));
@@ -1503,7 +1503,8 @@ TEST_F(MultiProfileSupportTest, WindowsOrderPreservedTests) {
   EXPECT_EQ("S[A], S[A], S[A]", GetStatus());
   EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
 
-  mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  mru_list =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   EXPECT_EQ(mru_list[0], window(0));
   EXPECT_EQ(mru_list[1], window(1));
   EXPECT_EQ(mru_list[2], window(2));

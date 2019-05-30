@@ -110,9 +110,11 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
     base::RecordAction(base::UserMetricsAction("Tablet_QuickSwitch"));
 
     // Build mru window list. Use cycle as it excludes some windows we are not
-    // interested in such as transient children.
+    // interested in such as transient children. Limit only to windows in the
+    // current active desk for now. TODO(afakhry): Revisit with UX.
     MruWindowTracker::WindowList mru_window_list =
-        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(
+            kActiveDesk);
 
     // Switch to the second most recently used window (most recent is the
     // current window) if it exists, unless splitview mode is active. Do not

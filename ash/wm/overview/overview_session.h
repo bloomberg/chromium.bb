@@ -303,7 +303,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Called when the display area for the overview window grids changed.
   void OnDisplayBoundsChanged();
 
-  void MaybeCreateAndPositionNoWindowsWidget();
+  void UpdateNoWindowsWidget();
 
   // Tracks observed windows.
   base::flat_set<aura::Window*> observed_windows_;

@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/wm/desks/desks_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -128,13 +129,19 @@ BrowserList::BrowserVector GetListOfActiveBrowsers() {
     // and the window was already shown.
     if (!multi_user_util::IsProfileFromActiveUser(browser->profile()))
       continue;
-    if (!browser->window()->GetNativeWindow()->IsVisible() &&
+
+    // Non-minimized invisible browser windows on the active desk should be
+    // excluded.
+    aura::Window* native_window = browser->window()->GetNativeWindow();
+    if (!native_window->IsVisible() &&
+        ash::desks_util::BelongsToActiveDesk(native_window) &&
         !browser->window()->IsMinimized()) {
       continue;
     }
     if (!IsBrowserRepresentedInBrowserList(browser) &&
-        !browser->is_type_tabbed())
+        !browser->is_type_tabbed()) {
       continue;
+    }
     active_browsers.push_back(browser);
   }
   return active_browsers;

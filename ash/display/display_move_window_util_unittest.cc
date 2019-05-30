@@ -230,7 +230,7 @@ TEST_F(DisplayMoveWindowUtilTest, NoMovementIfNotInCycleWindowList) {
             screen->GetDisplayNearestWindow(window.get()).id());
 
   MruWindowTracker::WindowList cycle_window_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   EXPECT_TRUE(cycle_window_list.empty());
   PerformMoveWindowAccel();
   EXPECT_EQ(display_manager()->GetDisplayAt(0).id(),

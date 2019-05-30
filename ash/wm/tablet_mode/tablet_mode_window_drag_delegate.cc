@@ -196,7 +196,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   if (controller->InOverviewSession()) {
     UMA_HISTOGRAM_COUNTS_100(
         "Tablet.WindowDrag.OpenedWindowsNumber",
-        shell->mru_window_tracker()->BuildMruWindowList().size());
+        shell->mru_window_tracker()->BuildMruWindowList(kActiveDesk).size());
     base::RecordAction(
         base::UserMetricsAction("Tablet.WindowDrag.OpenedOverview"));
   }

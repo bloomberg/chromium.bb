@@ -771,7 +771,8 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   overview_active_on_gesture_start_ =
       Shell::Get()->overview_controller()->InOverviewSession();
   const bool split_view_active = split_view_controller->InSplitViewMode();
-  auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  auto windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   if (window && (mode != Mode::kSlideDownToHide ||
                  overview_active_on_gesture_start_ || split_view_active)) {
     active_window_.reset();

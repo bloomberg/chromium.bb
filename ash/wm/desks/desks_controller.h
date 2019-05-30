@@ -13,6 +13,7 @@
 #include "ash/wm/desks/root_window_desk_switch_animator.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
 class Window;
@@ -25,7 +26,8 @@ class Desk;
 // Defines a controller for creating, destroying and managing virtual desks and
 // their windows.
 class ASH_EXPORT DesksController
-    : public RootWindowDeskSwitchAnimator::Delegate {
+    : public RootWindowDeskSwitchAnimator::Delegate,
+      public ::wm::ActivationChangeObserver {
  public:
   class Observer {
    public:
@@ -104,6 +106,14 @@ class ASH_EXPORT DesksController
   void OnEndingDeskScreenshotTaken() override;
   void OnDeskSwitchAnimationFinished() override;
 
+  // ::wm::ActivationChangeObserver:
+  void OnWindowActivating(ActivationReason reason,
+                          aura::Window* gaining_active,
+                          aura::Window* losing_active) override;
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
+
  private:
   bool HasDesk(const Desk* desk) const;
 
@@ -119,6 +129,10 @@ class ASH_EXPORT DesksController
   // activation or deactivation should be done in order to keep overview mode
   // active.
   void ActivateDeskInternal(const Desk* desk, bool update_window_activation);
+
+  // Returns the desk to which |window| belongs or nullptr if it doesn't belong
+  // to any desk.
+  const Desk* FindDeskOfWindow(aura::Window* window) const;
 
   std::vector<std::unique_ptr<Desk>> desks_;
 

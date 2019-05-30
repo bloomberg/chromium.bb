@@ -120,7 +120,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
     excluded_layers.insert(app_list_tablet_mode_container->layer());
 
   MruWindowTracker::WindowList windows =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
 
   for (aura::Window* window : windows) {
     if (window->GetProperty(kBlockedForAssistantSnapshotKey))

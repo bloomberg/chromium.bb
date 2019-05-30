@@ -1815,6 +1815,8 @@ test("ash_unittests") {
     "wm/collision_detection/collision_detection_utils_unittest.cc",
     "wm/container_finder_unittest.cc",
     "wm/default_window_resizer_unittest.cc",
+    "wm/desks/desks_test_util.cc",
+    "wm/desks/desks_test_util.h",
     "wm/desks/desks_unittests.cc",
     "wm/drag_window_resizer_unittest.cc",
     "wm/fullscreen_window_finder_unittest.cc",

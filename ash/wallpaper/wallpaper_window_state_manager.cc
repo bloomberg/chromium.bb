@@ -27,7 +27,8 @@ void WallpaperWindowStateManager::MinimizeInactiveWindows(
 
   aura::Window* active_window = wm::GetActiveWindow();
   aura::Window::Windows windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
+          kActiveDesk);
 
   for (aura::Window::Windows::iterator iter = windows.begin();
        iter != windows.end(); ++iter) {

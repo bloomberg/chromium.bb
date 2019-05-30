@@ -38,6 +38,11 @@ bool BelongsToContainerWithId(const aura::Window* window, int container_id) {
   return false;
 }
 
+bool IsInactiveDeskContainerId(int id) {
+  return desks_util::IsDeskContainerId(id) &&
+         id != desks_util::GetActiveDeskContainerId();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,18 +83,16 @@ bool AshFocusRules::IsWindowConsideredVisibleForActivation(
   if (window->IsVisible())
     return true;
 
-  const aura::Window* const parent = window->parent();
-  const bool is_on_active_desk = desks_util::IsActiveDeskContainer(parent);
-
   // Minimized windows are hidden in their minimized state, but they can always
-  // be activated, given that they're on the active desk.
-  if (wm::GetWindowState(window)->IsMinimized() && is_on_active_desk)
+  // be activated.
+  if (wm::GetWindowState(window)->IsMinimized())
     return true;
 
   if (!window->TargetVisibility())
     return false;
 
-  return is_on_active_desk ||
+  const aura::Window* const parent = window->parent();
+  return desks_util::IsDeskContainer(parent) ||
          parent->id() == kShellWindowId_LockScreenContainer;
 }
 
@@ -144,7 +147,7 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
     starting_window = transient_parent;
   } else {
     MruWindowTracker* mru = Shell::Get()->mru_window_tracker();
-    aura::Window::Windows windows = mru->BuildMruWindowList();
+    aura::Window::Windows windows = mru->BuildMruWindowList(kActiveDesk);
     starting_window = windows.empty() ? ignore : windows[0];
   }
   DCHECK(starting_window);
@@ -182,10 +185,15 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
 aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
     int index,
     aura::Window* ignore) const {
+  const int container_id = activatable_container_ids_[index];
+  // Inactive desk containers should be ignored, since windows in them should
+  // never be returned as a next activatable window.
+  if (IsInactiveDeskContainerId(container_id))
+    return nullptr;
   aura::Window* window = nullptr;
   aura::Window* root = ignore ? ignore->GetRootWindow() : nullptr;
-  aura::Window::Windows containers = wm::GetContainersFromAllRootWindows(
-      activatable_container_ids_[index], root);
+  aura::Window::Windows containers =
+      wm::GetContainersFromAllRootWindows(container_id, root);
   for (aura::Window* container : containers) {
     window = GetTopmostWindowToActivateInContainer(container, ignore);
     if (window)
