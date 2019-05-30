@@ -27,11 +27,6 @@ BaseState::~BaseState() = default;
 void BaseState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
   if (event->IsWorkspaceEvent()) {
     HandleWorkspaceEvents(window_state, event);
-    if (Shell::Get()->accessibility_controller()->autoclick_enabled()) {
-      Shell::Get()
-          ->accessibility_controller()
-          ->UpdateAutoclickMenuBoundsIfNeeded();
-    }
     if (window_state->IsPip())
       window_state->UpdatePipBounds();
     return;

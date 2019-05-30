@@ -166,6 +166,11 @@ class ASH_EXPORT WorkspaceLayoutManager
   // changes to system ui areas on the display they are on.
   void NotifySystemUiAreaChanged();
 
+  // Notifies the autoclick controller about a workspace event. If autoclick
+  // is enabled, the autoclick bubble may need to move in response to that
+  // event.
+  void NotifyAutoclickWorkspaceChanged();
+
   aura::Window* window_;
   aura::Window* root_window_;
   RootWindowController* root_window_controller_;

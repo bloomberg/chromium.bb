@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/autoclick/autoclick_controller.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -480,6 +482,11 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
       Shell::Get()->session_controller()->IsScreenLocked())
     return;
 
+  // The PIP avoids the autoclick bubble, so here we update the autoclick
+  // position before sending the WMEvent, so that if the PIP is
+  // also being shown the PIPs calculation does not need to take place twice.
+  NotifyAutoclickWorkspaceChanged();
+
   // If a user plugs an external display into a laptop running Aura the
   // display size will change.  Maximized windows need to resize to match.
   // We also do this when developers running Aura on a desktop manually resize
@@ -526,9 +533,21 @@ void WorkspaceLayoutManager::UpdateAlwaysOnTop(
 }
 
 void WorkspaceLayoutManager::NotifySystemUiAreaChanged() {
+  // The PIP avoids the autoclick bubble, so here we update the autoclick
+  // position before sending the WMEvent, so that if the PIP is
+  // also being shown the PIPs calculation does not need to take place twice.
+  NotifyAutoclickWorkspaceChanged();
   for (auto* window : windows_) {
     wm::WMEvent event(wm::WM_EVENT_SYSTEM_UI_AREA_CHANGED);
     wm::GetWindowState(window)->OnWMEvent(&event);
+  }
+}
+
+void WorkspaceLayoutManager::NotifyAutoclickWorkspaceChanged() {
+  if (Shell::Get()->accessibility_controller()->autoclick_enabled()) {
+    Shell::Get()
+        ->accessibility_controller()
+        ->UpdateAutoclickMenuBoundsIfNeeded();
   }
 }
 

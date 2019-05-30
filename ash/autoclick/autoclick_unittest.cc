@@ -9,6 +9,7 @@
 #include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/desks/desks_util.h"
@@ -911,6 +912,43 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
 
   // Reset state.
   shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+}
+
+TEST_F(AutoclickTest, AvoidsShelfBubble) {
+  const struct {
+    session_manager::SessionState session_state;
+  } kTestCases[]{
+      {session_manager::SessionState::OOBE},
+      {session_manager::SessionState::LOGIN_PRIMARY},
+      {session_manager::SessionState::ACTIVE},
+      {session_manager::SessionState::LOCKED},
+  };
+
+  for (auto test : kTestCases) {
+    GetSessionControllerClient()->SetSessionState(test.session_state);
+    // Set up autoclick and the shelf.
+    Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+    Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+        mojom::AutoclickMenuPosition::kBottomRight);
+    auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
+    EXPECT_FALSE(unified_system_tray->IsBubbleShown());
+    AutoclickMenuView* menu = GetAutoclickMenuView();
+    ASSERT_TRUE(menu);
+    gfx::Rect menu_bounds = menu->GetBoundsInScreen();
+
+    unified_system_tray->ShowBubble(true /* show_by_click */);
+    gfx::Rect new_menu_bounds = menu->GetBoundsInScreen();
+    // Y is unchanged when the bubble shows.
+    EXPECT_TRUE(abs(menu_bounds.y() - new_menu_bounds.y()) < 5);
+    // X is pushed over by at least the bubble's bounds.
+    EXPECT_TRUE(menu_bounds.x() -
+                    unified_system_tray->GetBubbleBoundsInScreen().width() >
+                new_menu_bounds.x());
+
+    unified_system_tray->CloseBubble();
+    new_menu_bounds = menu->GetBoundsInScreen();
+    EXPECT_EQ(menu_bounds, new_menu_bounds);
+  }
 }
 
 TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
