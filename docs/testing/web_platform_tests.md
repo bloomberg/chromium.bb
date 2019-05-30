@@ -201,7 +201,9 @@ web tests.
 
 If no testdriver.js API exists, check if it's a
 [known issue](https://github.com/web-platform-tests/wpt/labels/testdriver.js)
-and otherwise consider filing a new issue.
+and otherwise consider filing a new issue. For instructions on how to add a new
+testing API, see [WPT Test Automation for
+Chromium](https://docs.google.com/document/d/18BpD41vyX1cFZ77CE0a_DJYlGpdvyLlx3pwXVRxUzvI/preview#)
 
 An alternative is to write manual tests that are automated with scripts from
 [wpt_automation](../../third_party/blink/web_tests/external/wpt_automation).
