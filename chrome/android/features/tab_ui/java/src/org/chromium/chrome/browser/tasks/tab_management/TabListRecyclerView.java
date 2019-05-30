@@ -194,6 +194,8 @@ class TabListRecyclerView extends RecyclerView {
                 mFadeOutAnimator = null;
                 setVisibility(View.INVISIBLE);
                 mListener.finishedHiding();
+
+                if (mDynamicView != null) mDynamicView.dropCachedBitmap();
             }
         });
         mFadeOutAnimator.start();
