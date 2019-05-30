@@ -194,4 +194,5 @@ The app will appear on the device as "Chromium".
 
 ### Testing
 
-For information on running tests, see [Android Test Instructions](android_test_instructions.md).
+For information on running tests, see
+[Android Test Instructions](testing/android_test_instructions.md).

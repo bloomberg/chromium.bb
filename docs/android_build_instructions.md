@@ -350,7 +350,8 @@ for more on debugging, including how to debug Java code.
 
 ### Testing
 
-For information on running tests, see [Android Test Instructions](android_test_instructions.md).
+For information on running tests, see
+[Android Test Instructions](testing/android_test_instructions.md).
 
 ### Faster Edit/Deploy
 
