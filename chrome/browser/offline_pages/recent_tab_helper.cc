@@ -312,12 +312,17 @@ void RecentTabHelper::WebContentsWasHidden() {
   // - A last_n snapshot is currently being saved.
   // - The tab is in the process of being closed.
   // - The tab is currently presented as a custom tab.
+  // Note that a WebContents may be embedded in another WebContents. The
+  // outermost WebContents is the one associated with the tab.
   if (!last_n_listen_to_tab_hidden_ || last_n_ongoing_snapshot_info_ ||
-      tab_is_closing_ || delegate_->IsCustomTab(web_contents())) {
+      tab_is_closing_ ||
+      delegate_->IsCustomTab(web_contents()->GetOutermostWebContents())) {
     DVLOG(1) << "Will not snapshot for last_n (reasons: "
              << !last_n_listen_to_tab_hidden_ << ", "
              << !!last_n_ongoing_snapshot_info_ << ", " << tab_is_closing_
-             << ", " << delegate_->IsCustomTab(web_contents())
+             << ", "
+             << delegate_->IsCustomTab(
+                    web_contents()->GetOutermostWebContents())
              << ") for: " << web_contents()->GetLastCommittedURL().spec();
     return;
   }

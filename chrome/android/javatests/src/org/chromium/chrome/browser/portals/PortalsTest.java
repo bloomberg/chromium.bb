@@ -130,4 +130,38 @@ public class PortalsTest {
         executeScriptAndAwaitSwap(tab, "activatePortal();");
         executeScriptAndAwaitSwap(tab, "reactivatePredecessor();");
     }
+
+    /**
+     * Tests that an adopted predecessor can be destroyed.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testRemovePredecessor() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/portals/predecessor-adoption.html"));
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        executeScriptAndAwaitSwap(tab, "activatePortal();");
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                tab.getWebContents(), "removePredecessor();");
+    }
+
+    /**
+     * Tests that a previously activated portal can be destroyed.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testRemovePreviouslyActivePortal() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/portals/predecessor-adoption.html"));
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        executeScriptAndAwaitSwap(tab, "activatePortal();");
+        executeScriptAndAwaitSwap(tab, "reactivatePredecessor();");
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(), "removePortal();");
+    }
 }
