@@ -95,13 +95,14 @@ bool PendingExtensionManager::HasPendingExtensionFromSync() const {
   return false;
 }
 
-bool PendingExtensionManager::HasPendingExtensionFromPolicy() const {
-  return std::find_if(pending_extension_list_.begin(),
-                      pending_extension_list_.end(),
-                      [](const PendingExtensionInfo& info) {
-                        return info.install_source() ==
-                               Manifest::EXTERNAL_POLICY_DOWNLOAD;
-                      }) != pending_extension_list_.end();
+bool PendingExtensionManager::HasHighPriorityPendingExtension() const {
+  return std::find_if(
+             pending_extension_list_.begin(), pending_extension_list_.end(),
+             [](const PendingExtensionInfo& info) {
+               return info.install_source() ==
+                          Manifest::EXTERNAL_POLICY_DOWNLOAD ||
+                      info.install_source() == Manifest::EXTERNAL_COMPONENT;
+             }) != pending_extension_list_.end();
 }
 
 void PendingExtensionManager::ExpectPolicyReinstallForCorruption(
