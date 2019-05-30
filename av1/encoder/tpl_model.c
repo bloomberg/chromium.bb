@@ -46,12 +46,11 @@ static void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
   }
 }
 
-static uint32_t motion_compensated_prediction(AV1_COMP *cpi, MACROBLOCK *x,
-                                              uint8_t *cur_frame_buf,
-                                              uint8_t *ref_frame_buf,
-                                              int stride, int stride_ref,
-                                              BLOCK_SIZE bsize, int mi_row,
-                                              int mi_col) {
+static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
+                                  uint8_t *cur_frame_buf,
+                                  uint8_t *ref_frame_buf, int stride,
+                                  int stride_ref, BLOCK_SIZE bsize, int mi_row,
+                                  int mi_col) {
   AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MV_SPEED_FEATURES *const mv_sf = &cpi->sf.mv;
@@ -63,6 +62,7 @@ static uint32_t motion_compensated_prediction(AV1_COMP *cpi, MACROBLOCK *x,
   uint32_t sse;
   int cost_list[5];
   const MvLimits tmp_mv_limits = x->mv_limits;
+  search_site_config ss_cfg;
 
   MV best_ref_mv1 = { 0, 0 };
   MV best_ref_mv1_full; /* full-pixel value of best_ref_mv1 */
@@ -81,10 +81,11 @@ static uint32_t motion_compensated_prediction(AV1_COMP *cpi, MACROBLOCK *x,
 
   av1_set_mv_search_range(&x->mv_limits, &best_ref_mv1);
 
+  av1_init3smotion_compensation(&ss_cfg, stride_ref);
   av1_full_pixel_search(cpi, x, bsize, &best_ref_mv1_full, step_param,
                         search_method, 0, sadpb, cond_cost_list(cpi, cost_list),
                         &best_ref_mv1, INT_MAX, 0, (MI_SIZE * mi_col),
-                        (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_LOOKAHEAD]);
+                        (MI_SIZE * mi_row), 0, &ss_cfg);
 
   /* restore UMV window */
   x->mv_limits = tmp_mv_limits;
@@ -204,13 +205,10 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
     int mb_y_offset_ref =
         mi_row * MI_SIZE * ref_frame[rf_idx]->y_stride + mi_col * MI_SIZE;
 
-    /*printf("frames: %d %d %d %d %d\n", gf_group->size, frame_idx, rf_idx,
-      gf_group->ref_frame_gop_idx[frame_idx][rf_idx],
-      gf_group->ref_frame_disp_idx[frame_idx][rf_idx]);*/
-    motion_compensated_prediction(
-        cpi, x, xd->cur_buf->y_buffer + mb_y_offset,
-        ref_frame[rf_idx]->y_buffer + mb_y_offset_ref, xd->cur_buf->y_stride,
-        ref_frame[rf_idx]->y_stride, bsize, mi_row, mi_col);
+    motion_estimation(cpi, x, xd->cur_buf->y_buffer + mb_y_offset,
+                      ref_frame[rf_idx]->y_buffer + mb_y_offset_ref,
+                      xd->cur_buf->y_stride, ref_frame[rf_idx]->y_stride, bsize,
+                      mi_row, mi_col);
 
     ConvolveParams conv_params = get_conv_params(0, 0, xd->bd);
     WarpTypesAllowed warp_types;
@@ -800,9 +798,9 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
           mi_row * MI_SIZE * src->y_stride + mi_col * MI_SIZE;
       const int mb_y_offset_ref =
           mi_row * MI_SIZE * ref->y_stride + mi_col * MI_SIZE;
-      motion_compensated_prediction(
-          cpi, x, src->y_buffer + mb_y_offset, ref->y_buffer + mb_y_offset_ref,
-          src->y_stride, ref->y_stride, bsize, mi_row, mi_col);
+      motion_estimation(cpi, x, src->y_buffer + mb_y_offset,
+                        ref->y_buffer + mb_y_offset_ref, src->y_stride,
+                        ref->y_stride, bsize, mi_row, mi_col);
 
       av1_build_inter_predictor(
           ref->y_buffer + mb_y_offset_ref, ref->y_stride, &predictor[0], bw,
