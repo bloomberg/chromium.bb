@@ -23,6 +23,13 @@ class UkmEntryBuilder;
 
 namespace performance_manager {
 
+namespace {
+
+// A unique type ID for this implementation.
+const uintptr_t kGraphImplType = reinterpret_cast<uintptr_t>(&kGraphImplType);
+
+}  // namespace
+
 GraphImpl::GraphImpl() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -42,6 +49,20 @@ GraphImpl::~GraphImpl() {
   }
 
   DCHECK(nodes_.empty());
+}
+
+uintptr_t GraphImpl::GetImplType() const {
+  return kGraphImplType;
+}
+
+const void* GraphImpl::GetImpl() const {
+  return this;
+}
+
+// static
+GraphImpl* GraphImpl::FromGraph(const Graph* graph) {
+  CHECK_EQ(kGraphImplType, graph->GetImplType());
+  return reinterpret_cast<GraphImpl*>(const_cast<void*>(graph->GetImpl()));
 }
 
 void GraphImpl::RegisterObserver(GraphObserver* observer) {

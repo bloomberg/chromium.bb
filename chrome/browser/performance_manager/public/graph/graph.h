@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_GRAPH_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_GRAPH_H_
 
+#include <cstdint>
+
 #include "base/macros.h"
 
 namespace performance_manager {
@@ -16,6 +18,12 @@ class Graph {
  public:
   Graph();
   virtual ~Graph();
+
+  // The following functions are implementation detail and should not need to be
+  // used by external clients. They provide the ability to safely downcast to
+  // the underlying implementation.
+  virtual uintptr_t GetImplType() const = 0;
+  virtual const void* GetImpl() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Graph);

@@ -50,6 +50,14 @@ class GraphImpl : public Graph {
   GraphImpl();
   ~GraphImpl() override;
 
+  // Graph implementation:
+  uintptr_t GetImplType() const override;
+  const void* GetImpl() const override;
+
+  // Helper function for safely downcasting to the implementation. This also
+  // casts away constness. This will CHECK on an invalid cast.
+  static GraphImpl* FromGraph(const Graph* graph);
+
   void set_ukm_recorder(ukm::UkmRecorder* ukm_recorder) {
     ukm_recorder_ = ukm_recorder;
   }

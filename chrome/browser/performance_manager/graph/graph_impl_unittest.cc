@@ -15,6 +15,12 @@
 
 namespace performance_manager {
 
+TEST(GraphImplTest, SafeCasting) {
+  GraphImpl graph_impl;
+  const Graph* graph = &graph_impl;
+  EXPECT_EQ(&graph_impl, GraphImpl::FromGraph(graph));
+}
+
 TEST(GraphImplTest, FindOrCreateSystemNode) {
   GraphImpl graph;
 
