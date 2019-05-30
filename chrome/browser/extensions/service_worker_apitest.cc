@@ -1141,11 +1141,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdatePackedExtension) {
            "version": "0.1",
            "background": {"service_worker": "script.js"}
          })";
+  constexpr char kNewVersionString[] = "0.2";
+
   // This script installs an event listener for updates to the extension with
   // a callback that forces itself to reload.
-  constexpr char kScript[] =
+  constexpr char kScript1[] =
       R"(
          chrome.runtime.onUpdateAvailable.addListener(function(details) {
+           chrome.test.assertEq('%s', details.version);
            chrome.runtime.reload();
          });
          chrome.test.sendMessage('ready1');
@@ -1156,7 +1159,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdatePackedExtension) {
 
   // Write the manifest and script files and load the extension.
   test_dir.WriteManifest(kManifest1);
-  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
+                     base::StringPrintf(kScript1, kNewVersionString));
 
   {
     ExtensionTestMessageListener ready_listener("ready1", false);
@@ -1172,18 +1176,26 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdatePackedExtension) {
       R"({
            "name": "Test Extension",
            "manifest_version": 2,
-           "version": "0.2",
+           "version": "%s",
            "background": {"service_worker": "script.js"}
          })";
+  constexpr char kScript2[] =
+      R"(
+         chrome.runtime.onInstalled.addListener(function(details) {
+           chrome.test.assertEq('update', details.reason);
+           chrome.test.sendMessage('onInstalled');
+         });
+         chrome.test.sendMessage('ready2');
+        )";
   // Rewrite the manifest and script files with a version change in the manifest
   // file. After reloading the extension, the old version of the extension
   // should detect the update, force the reload, and the new script should
   // execute.
-  test_dir.WriteManifest(kManifest2);
-  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
-                     "chrome.test.sendMessage('ready2');");
+  test_dir.WriteManifest(base::StringPrintf(kManifest2, kNewVersionString));
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript2);
   {
     ExtensionTestMessageListener ready_listener("ready2", false);
+    ExtensionTestMessageListener on_installed_listener("onInstalled", false);
     base::FilePath path = test_dir.Pack();
     ExtensionService* const extension_service =
         ExtensionSystem::Get(profile())->extension_service();
@@ -1195,6 +1207,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdatePackedExtension) {
                          .GetByID(id)
                          ->version()
                          .GetString());
+    EXPECT_TRUE(on_installed_listener.WaitUntilSatisfied());
   }
 }
 
@@ -1218,6 +1231,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateUnpackedExtension) {
            "version": "0.2",
            "background": {"service_worker": "script.js"}
          })";
+  constexpr char kScript[] =
+      R"(
+         chrome.runtime.onInstalled.addListener(function(details) {
+           chrome.test.assertEq('%s', details.reason);
+           chrome.test.sendMessage('onInstalled');
+         });
+         chrome.test.sendMessage('%s');
+        )";
 
   std::string id;
 
@@ -1240,36 +1261,42 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateUnpackedExtension) {
   // Write the manifest and script files and load the extension.
   test_dir.WriteManifest(kManifest1);
   test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
-                     "chrome.test.sendMessage('ready1');");
+                     base::StringPrintf(kScript, "install", "ready1"));
   {
     ExtensionTestMessageListener ready_listener("ready1", false);
+    ExtensionTestMessageListener on_installed_listener("onInstalled", false);
 
     installer->Load(test_dir.UnpackedPath());
     EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(on_installed_listener.WaitUntilSatisfied());
     ASSERT_FALSE(id.empty());
   }
 
   // Rewrite the script file without a version change in the manifest and reload
   // the extension. The new script should execute.
   test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
-                     "chrome.test.sendMessage('ready2');");
+                     base::StringPrintf(kScript, "update", "ready2"));
   {
     ExtensionTestMessageListener ready_listener("ready2", false);
+    ExtensionTestMessageListener on_installed_listener("onInstalled", false);
 
     extension_service->ReloadExtension(id);
     EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(on_installed_listener.WaitUntilSatisfied());
   }
 
   // Rewrite the manifest and script files with a version change in the manifest
   // file. After reloading the extension, the new script should execute.
   test_dir.WriteManifest(kManifest2);
   test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
-                     "chrome.test.sendMessage('ready3');");
+                     base::StringPrintf(kScript, "update", "ready3"));
   {
     ExtensionTestMessageListener ready_listener("ready3", false);
+    ExtensionTestMessageListener on_installed_listener("onInstalled", false);
 
     extension_service->ReloadExtension(id);
     EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(on_installed_listener.WaitUntilSatisfied());
   }
 }
 
