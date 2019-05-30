@@ -108,10 +108,6 @@ class GpuArcVideoDecodeAccelerator
                      PendingCallback cb,
                      media::VideoDecodeAccelerator* vda);
 
-  // TODO(crbug.com/949898): Remove if all clients support a newer
-  // ProvidePictureBuffers().
-  void GetClientVersion(base::OnceClosure callback, uint32_t version);
-
   // Global counter that keeps track of the number of active clients (i.e., how
   // many VDAs in use by this class).
   // Since this class only works on the same thread, it's safe to access
@@ -156,12 +152,7 @@ class GpuArcVideoDecodeAccelerator
   bool secure_mode_ = false;
   size_t output_buffer_count_ = 0;
 
-  uint32_t client_version_ = std::numeric_limits<uint32_t>::max();
-
   THREAD_CHECKER(thread_checker_);
-
-  base::WeakPtrFactory<GpuArcVideoDecodeAccelerator> weak_this_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(GpuArcVideoDecodeAccelerator);
 };
 

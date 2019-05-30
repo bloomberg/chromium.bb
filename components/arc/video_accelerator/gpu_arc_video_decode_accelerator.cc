@@ -115,22 +115,12 @@ GpuArcVideoDecodeAccelerator::GpuArcVideoDecodeAccelerator(
     const gpu::GpuPreferences& gpu_preferences,
     scoped_refptr<ProtectedBufferManager> protected_buffer_manager)
     : gpu_preferences_(gpu_preferences),
-      protected_buffer_manager_(std::move(protected_buffer_manager)),
-      weak_this_factory_(this) {}
+      protected_buffer_manager_(std::move(protected_buffer_manager)) {}
 
 GpuArcVideoDecodeAccelerator::~GpuArcVideoDecodeAccelerator() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (vda_)
     client_count_--;
-}
-
-// TODO(crbug.com/949898): Remove if all clients support a newer
-// ProvidePictureBuffers().
-void GpuArcVideoDecodeAccelerator::GetClientVersion(base::OnceClosure callback,
-                                                    uint32_t version) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_version_ = version;
-  std::move(callback).Run();
 }
 
 void GpuArcVideoDecodeAccelerator::ProvidePictureBuffers(
@@ -159,28 +149,7 @@ void GpuArcVideoDecodeAccelerator::ProvidePictureBuffersWithVisibleRect(
   auto pbf = mojom::PictureBufferFormat::New();
   pbf->min_num_buffers = requested_num_of_buffers;
   pbf->coded_size = dimensions;
-
-  // TODO(crbug.com/949898): Remove if all clients support a newer
-  // ProvidePictureBuffers().
-  if (client_version_ == std::numeric_limits<uint32_t>::max()) {
-    // Base::Unretained(this) is safe here. |this| is ensured to be valid when
-    // GetClientVersion is called.
-    auto callback = base::BindOnce(
-        &GpuArcVideoDecodeAccelerator::ProvidePictureBuffersWithVisibleRect,
-        base::Unretained(this), requested_num_of_buffers, format,
-        textures_per_buffer, dimensions, visible_rect, texture_target);
-    client_.QueryVersion(base::BindRepeating(
-        &GpuArcVideoDecodeAccelerator::GetClientVersion,
-        weak_this_factory_.GetWeakPtr(), base::Passed(std::move(callback))));
-    return;
-  }
-
-  if (client_version_ >=
-      ::arc::mojom::VideoDecodeClient::kProvidePictureBuffersMinVersion) {
-    client_->ProvidePictureBuffers(std::move(pbf), visible_rect);
-  } else {
-    client_->ProvidePictureBuffersDeprecated(std::move(pbf));
-  }
+  client_->ProvidePictureBuffers(std::move(pbf), visible_rect);
 }
 
 void GpuArcVideoDecodeAccelerator::DismissPictureBuffer(

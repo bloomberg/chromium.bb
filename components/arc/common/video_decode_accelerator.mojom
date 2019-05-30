@@ -131,13 +131,9 @@ interface VideoDecodeAccelerator {
   Flush@6() => (Result result);
 };
 
-// Deprecated method IDs: 0
+// Deprecated method IDs: 0, 4
 // Next method ID: 6
 interface VideoDecodeClient {
-
-  // Callback to tell client how many and what size of buffers to provide.
-  [MinVersion=1]
-  ProvidePictureBuffersDeprecated@4(PictureBufferFormat format);
 
   // Called to notify the client that |picture| is ready to be displayed.
   // The calls to PictureReady() are in display order and Picture should
