@@ -884,6 +884,8 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
   }
   void SetAllocationPoint(Address, size_t);
 
+  // Only use when adjusting the area from allocation and free and not when
+  // returning it to free list.
   void SetRemainingAllocationSize(size_t);
 
   FreeList free_list_;

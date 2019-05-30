@@ -805,7 +805,8 @@ void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
   // Free and clear the old linear allocation area.
   if (HasCurrentAllocationArea()) {
     AddToFreeList(CurrentAllocationPoint(), RemainingAllocationSize());
-    SetRemainingAllocationSize(0);
+    GetThreadState()->Heap().DecreaseAllocatedObjectSize(
+        RemainingAllocationSize());
   }
   // Set up a new linear allocation area.
   current_allocation_point_ = point;
