@@ -102,7 +102,7 @@ message GetAttestationKeyInfoReply {
 }
 
 message ActivateAttestationKeyRequest {
-  optional KeyType key_type = 1;
+  reserved 1;
   optional EncryptedIdentityCredential encrypted_certificate = 2;
   // Whether, on success, the decrypted certificate should be retained in
   // association with the attestation key. When using an ACA, this is normally
