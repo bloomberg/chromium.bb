@@ -310,6 +310,12 @@ void ServiceWorkerContextClient::DidEvaluateScript(bool success) {
                                 GetWeakPtr(), status));
 }
 
+void ServiceWorkerContextClient::WillInitializeWorkerContext() {
+  GetContentClient()
+      ->renderer()
+      ->WillInitializeServiceWorkerContextOnWorkerThread();
+}
+
 void ServiceWorkerContextClient::DidInitializeWorkerContext(
     v8::Local<v8::Context> context) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());

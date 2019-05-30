@@ -113,6 +113,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       scoped_refptr<base::SequencedTaskRunner> worker_task_runner) override;
   void WillEvaluateScript() override;
   void DidEvaluateScript(bool success) override;
+  void WillInitializeWorkerContext() override;
   void DidInitializeWorkerContext(v8::Local<v8::Context> context) override;
   void WillDestroyWorkerContext(v8::Local<v8::Context> context) override;
   void WorkerContextDestroyed() override;

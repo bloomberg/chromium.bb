@@ -141,6 +141,10 @@ class WebServiceWorkerContextClient {
   // |success| is true if the evaluation completed with no uncaught exception.
   virtual void DidEvaluateScript(bool success) {}
 
+  // Called when the worker context is going to be initialized. This is the
+  // initial method call after creating the worker scheduler.
+  virtual void WillInitializeWorkerContext() {}
+
   // Called when the worker context is initialized. This is probably called
   // after WorkerContextStarted(). (WorkerThread::InitializeOnWorkerThread()
   // calls WorkerContextStarted() via

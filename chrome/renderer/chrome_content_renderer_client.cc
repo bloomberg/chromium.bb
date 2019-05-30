@@ -1498,6 +1498,13 @@ void ChromeContentRendererClient::
 }
 
 void ChromeContentRendererClient::
+    WillInitializeServiceWorkerContextOnWorkerThread() {
+  // This is called on the service worker thread.
+  ThreadProfiler::StartOnChildThread(
+      metrics::CallStackProfileParams::SERVICE_WORKER_THREAD);
+}
+
+void ChromeContentRendererClient::
     DidInitializeServiceWorkerContextOnWorkerThread(
         v8::Local<v8::Context> context,
         int64_t service_worker_version_id,

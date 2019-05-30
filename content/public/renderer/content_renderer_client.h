@@ -337,6 +337,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // started.
   virtual void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {}
 
+  // Notifies that a service worker context is going to be initialized. No
+  // meaningful task has run on the worker thread at this point. This
+  // function is called from the worker thread.
+  virtual void WillInitializeServiceWorkerContextOnWorkerThread() {}
+
   // Notifies that a service worker context has been created. This function
   // is called from the worker thread.
   virtual void DidInitializeServiceWorkerContextOnWorkerThread(
