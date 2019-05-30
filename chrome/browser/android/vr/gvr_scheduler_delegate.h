@@ -98,7 +98,10 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   void WebXrCancelProcessingFrameAfterTransfer();
 
   // Sends a GetFrameData response to the presentation client.
-  void SendVSync();
+  void SendVSyncWithNewHeadPose();
+  void SendVSync(device::mojom::VRPosePtr pose, const gfx::Transform& head_mat);
+  device::mojom::VRPosePtr GetHeadPose(gfx::Transform* head_mat_out);
+
   void WebXrPrepareSharedBuffer();
   void WebXrCreateOrResizeSharedBufferImage(WebXrSharedBuffer* buffer,
                                             const gfx::Size& size);
@@ -110,7 +113,7 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   bool WebVrCanAnimateFrame(bool is_from_onvsync);
   // Call this after state changes that could result in WebVrCanAnimateFrame
   // becoming true.
-  void WebXrTryStartAnimatingFrame(bool is_from_onvsync);
+  void WebXrTryStartAnimatingFrame();
 
   bool ShouldDrawWebVr();
 

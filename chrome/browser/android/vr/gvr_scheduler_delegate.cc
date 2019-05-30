@@ -284,7 +284,7 @@ void GvrSchedulerDelegate::OnGpuProcessConnectionReady() {
 
   // See if we can send a VSync.
   webxr_.NotifyMailboxBridgeReady();
-  WebXrTryStartAnimatingFrame(false);
+  WebXrTryStartAnimatingFrame();
 }
 
 void GvrSchedulerDelegate::CreateSurfaceBridge(
@@ -386,14 +386,44 @@ void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
 
   vsync_helper_.RequestVSync();
 
-  if (ShouldDrawWebVr())
-    browser_renderer_->ProcessControllerInputForWebXr(frame_time);
-  else
-    DrawFrame(-1, frame_time);
+  // The controller update logic is a bit complicated. We poll controller state
+  // on every VSync to ensure that the "exit VR" button stays responsive even
+  // for uncooperative apps. This has the side effect of filling in the
+  // input_states_ variable which gets attached to the frame data sent via
+  // the next SendVSync. However, fetching controller data needs a head pose
+  // to ensure the elbow model works right.
+  //
+  // If we're about to run SendVSync now, fetch a fresh head pose now and use
+  // that for both the controller update and for SendVSync. If not, just use
+  // a recent-ish head pose for the controller update, falling back to an
+  // identity transform if needed.
 
   webxr_vsync_pending_ = true;
   pending_time_ = frame_time;
-  WebXrTryStartAnimatingFrame(true);
+  bool can_animate = WebVrCanAnimateFrame(true);
+
+  if (ShouldDrawWebVr()) {
+    gfx::Transform head_mat;
+    device::mojom::VRPosePtr pose;
+    if (can_animate) {
+      // Get a fresh head pose.
+      pose = GetHeadPose(&head_mat);
+    } else if (webxr_.HaveAnimatingFrame()) {
+      // Get the most-recently-used head pose, if available. If we don't have an
+      // animating frame, it's OK to use the default head_mat value which is an
+      // identity transform.
+      head_mat = webxr_.GetAnimatingFrame()->head_pose;
+    }
+
+    browser_renderer_->ProcessControllerInputForWebXr(head_mat, frame_time);
+
+    if (can_animate)
+      SendVSync(std::move(pose), head_mat);
+  } else {
+    DrawFrame(-1, frame_time);
+    if (can_animate)
+      SendVSyncWithNewHeadPose();
+  }
 }
 
 void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
@@ -664,7 +694,7 @@ void GvrSchedulerDelegate::DrawFrameSubmitNow(FrameType frame_type,
     // See if we can animate a new WebVR frame. Intentionally using
     // ShouldDrawWebVr here since we also want to run this check after
     // UI frames, i.e. transitioning from transient UI to WebVR.
-    WebXrTryStartAnimatingFrame(false);
+    WebXrTryStartAnimatingFrame();
   }
 }
 
@@ -749,9 +779,12 @@ bool GvrSchedulerDelegate::WebVrCanAnimateFrame(bool is_from_onvsync) {
   return true;
 }
 
-void GvrSchedulerDelegate::WebXrTryStartAnimatingFrame(bool is_from_onvsync) {
-  if (WebVrCanAnimateFrame(is_from_onvsync)) {
-    SendVSync();
+void GvrSchedulerDelegate::WebXrTryStartAnimatingFrame() {
+  // This method is only used outside OnVSync, so the is_from_onvsync argument
+  // to WebVrCanAnimateFrame is always false. OnVSync calls SendVSync directly
+  // if needed, bypassing this method, so that it can supply a specific pose.
+  if (WebVrCanAnimateFrame(false)) {
+    SendVSyncWithNewHeadPose();
   }
 }
 
@@ -853,7 +886,28 @@ bool GvrSchedulerDelegate::WebVrHasOverstuffedBuffers() {
   return false;
 }
 
-void GvrSchedulerDelegate::SendVSync() {
+device::mojom::VRPosePtr GvrSchedulerDelegate::GetHeadPose(
+    gfx::Transform* head_mat_out) {
+  int64_t prediction_nanos = GetPredictedFrameTime().InMicroseconds() * 1000;
+
+  TRACE_EVENT_BEGIN0("gpu", "GvrSchedulerDelegate::GetVRPosePtrWithNeckModel");
+  device::mojom::VRPosePtr pose =
+      device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_, head_mat_out,
+                                                     prediction_nanos);
+  TRACE_EVENT_END0("gpu", "GvrSchedulerDelegate::GetVRPosePtrWithNeckModel");
+
+  return pose;
+}
+
+void GvrSchedulerDelegate::SendVSyncWithNewHeadPose() {
+  gfx::Transform head_mat;
+
+  device::mojom::VRPosePtr pose = GetHeadPose(&head_mat);
+  SendVSync(std::move(pose), head_mat);
+}
+
+void GvrSchedulerDelegate::SendVSync(device::mojom::VRPosePtr pose,
+                                     const gfx::Transform& head_mat) {
   DCHECK(!get_frame_data_callback_.is_null());
   DCHECK(webxr_vsync_pending_);
 
@@ -878,15 +932,6 @@ void GvrSchedulerDelegate::SendVSync() {
     DCHECK(buffer->mailbox_holder.sync_token.verified_flush());
     frame_data->buffer_holder = buffer->mailbox_holder;
   }
-
-  int64_t prediction_nanos = GetPredictedFrameTime().InMicroseconds() * 1000;
-
-  gfx::Transform head_mat;
-  TRACE_EVENT_BEGIN0("gpu", "GvrSchedulerDelegate::GetVRPosePtrWithNeckModel");
-  device::mojom::VRPosePtr pose =
-      device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_, &head_mat,
-                                                     prediction_nanos);
-  TRACE_EVENT_END0("gpu", "GvrSchedulerDelegate::GetVRPosePtrWithNeckModel");
 
   // Process all events. Check for ones we wish to react to.
   gvr::Event last_event;
@@ -1036,7 +1081,7 @@ void GvrSchedulerDelegate::GetFrameData(
   }
 
   get_frame_data_callback_ = std::move(callback);
-  WebXrTryStartAnimatingFrame(false);
+  WebXrTryStartAnimatingFrame();
 }
 
 void GvrSchedulerDelegate::SubmitFrameMissing(
@@ -1240,7 +1285,7 @@ void GvrSchedulerDelegate::ProcessWebVrFrameFromMailbox(
 
   // Unblock the next animating frame in case it was waiting for this
   // one to start processing.
-  WebXrTryStartAnimatingFrame(false);
+  WebXrTryStartAnimatingFrame();
 }
 
 void GvrSchedulerDelegate::OnWebXrTokenSignaled(
@@ -1271,7 +1316,7 @@ void GvrSchedulerDelegate::ProcessWebVrFrameFromGMB(
 
   // Unblock the next animating frame in case it was waiting for this
   // one to start processing.
-  WebXrTryStartAnimatingFrame(false);
+  WebXrTryStartAnimatingFrame();
 }
 
 void GvrSchedulerDelegate::GetEnvironmentIntegrationProvider(

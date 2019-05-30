@@ -88,7 +88,8 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
   void DrawBrowserFrame(base::TimeTicks current_time) override;
   void DrawWebXrFrame(base::TimeTicks current_time,
                       const gfx::Transform& head_pose) override;
-  void ProcessControllerInputForWebXr(base::TimeTicks current_time) override;
+  void ProcessControllerInputForWebXr(const gfx::Transform& head_pose,
+                                      base::TimeTicks current_time) override;
 
   void Draw(FrameType frame_type,
             base::TimeTicks current_time,
