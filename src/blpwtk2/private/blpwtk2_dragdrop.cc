@@ -28,6 +28,8 @@
 #include <net/base/filename_util.h>
 #include <third_party/blink/public/platform/web_input_event.h>
 #include <ui/base/clipboard/clipboard.h>
+#include <ui/base/clipboard/clipboard_format_type.h>
+#include <ui/base/clipboard/clipboard_constants.h>
 #include <ui/base/clipboard/custom_data_helper.h>
 #include <ui/base/dragdrop/drag_drop_types.h>
 #include <ui/base/dragdrop/drag_source_win.h>
@@ -71,10 +73,10 @@ blink::WebDragOperationsMask MakeWebDragOperations(DWORD effect)
              (!!(effect & DROPEFFECT_LINK)? blink::kWebDragOperationLink : blink::kWebDragOperationNone));
 }
 
-const ui::Clipboard::FormatType& GetFileSystemFileFormatType()
+const ui::ClipboardFormatType& GetFileSystemFileFormatType()
 {
-    static base::NoDestructor<ui::Clipboard::FormatType> format(
-        ui::Clipboard::GetFormatType("chromium/x-file-system-files"));
+    static base::NoDestructor<ui::ClipboardFormatType> format(
+        ui::ClipboardFormatType::GetType("chromium/x-file-system-files"));
 
     return *format;
 }
@@ -152,7 +154,7 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
         ReadFileSystemFilesFromPickle(pickle, &file_system_files))
     drop_data->file_system_files = file_system_files;
 
-    if (data.GetPickledData(ui::Clipboard::GetWebCustomDataFormatType(), &pickle))
+    if (data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(), &pickle))
         ui::ReadCustomDataIntoMap(
             pickle.data(), pickle.size(), &drop_data->custom_data);
 
@@ -177,19 +179,19 @@ std::vector<content::DropData::Metadata> MakeDropDataMetadata(const content::Dro
     if (!drop_data.text.is_null()) {
         metadata.push_back(content::DropData::Metadata::CreateForMimeType(
             content::DropData::Kind::STRING,
-            base::ASCIIToUTF16(ui::Clipboard::kMimeTypeText)));
+            base::ASCIIToUTF16(ui::kMimeTypeText)));
     }
 
     if (drop_data.url.is_valid()) {
         metadata.push_back(content::DropData::Metadata::CreateForMimeType(
             content::DropData::Kind::STRING,
-            base::ASCIIToUTF16(ui::Clipboard::kMimeTypeURIList)));
+            base::ASCIIToUTF16(ui::kMimeTypeURIList)));
     }
 
     if (!drop_data.html.is_null()) {
         metadata.push_back(content::DropData::Metadata::CreateForMimeType(
             content::DropData::Kind::STRING,
-            base::ASCIIToUTF16(ui::Clipboard::kMimeTypeHTML)));
+            base::ASCIIToUTF16(ui::kMimeTypeHTML)));
     }
 
     // On Aura, filenames are available before drop.
@@ -301,7 +303,7 @@ std::unique_ptr<ui::OSExchangeData> MakeOSExchangeData(const content::DropData& 
         base::Pickle pickle;
         ui::WriteCustomDataToPickle(custom_data, &pickle);
         provider->SetPickledData(
-            ui::Clipboard::GetWebCustomDataFormatType(),
+            ui::ClipboardFormatType::GetWebCustomDataType(),
             pickle);
     }
 

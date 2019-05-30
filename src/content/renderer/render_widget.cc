@@ -1529,6 +1529,10 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetScreenMetricsDelegate
+void RenderWidget::Redraw() {
+  if (layer_tree_view_)
+    layer_tree_view_->SetNeedsRedrawRect(gfx::Rect(size_));
+}
 
 void RenderWidget::ResizeWebWidget() {
   gfx::Size size = GetSizeForWebWidget();

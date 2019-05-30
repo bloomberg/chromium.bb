@@ -320,6 +320,7 @@ shared_library("blpwtk2") {
     "//content:resources",
     "//content:sandbox_helper_win",
     "//content/app/resources",
+    "//content/renderer/compositor",
     "//ipc",
     "//net",
     "//net:extras",
