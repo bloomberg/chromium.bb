@@ -10010,6 +10010,31 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Cache miss"/>
 </enum>
 
+<enum name="CorbCanonicalMimeType">
+  <summary>Coarse MIME type classification for CORB decisions.</summary>
+  <int value="0" label="Html">
+    https://mimesniff.spec.whatwg.org/#html-mime-type.
+  </int>
+  <int value="1" label="Xml">
+    https://mimesniff.spec.whatwg.org/#xml-mime-type, except `image/svg+xml` and
+    `application/dash+xml`.
+  </int>
+  <int value="2" label="Json">
+    https://mimesniff.spec.whatwg.org/#json-mime-type.
+  </int>
+  <int value="3" label="Plain">text/plain</int>
+  <int value="4" label="Others">
+    Other, unrecognized MIME type. Blocked if sniffing finds a JSON security
+    prefix.
+  </int>
+  <int value="5" label="NeverSniffed">
+    Used for content types that are unlikely to be incorrectly applied to
+    images, scripts and other legacy no-cors resources (which consequently don't
+    need any confimation sniffing). For example: `application/pdf`,
+    `application/zip`, etc.
+  </int>
+</enum>
+
 <enum name="CorbResultVsInitiatorLockCompatibility">
   <summary>
     Whether CORB blocking might have been caused by treating |request_initiator|

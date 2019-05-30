@@ -1625,6 +1625,7 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
   }
   if (should_be_blocked) {
     expected_counts[histogram_base + ".Blocked"] = 1;
+    expected_counts[histogram_base + ".Blocked.CanonicalMimeType"] = 1;
     expected_counts[histogram_base + ".Blocked.ContentLength.WasAvailable"] = 1;
     expected_counts[histogram_base + ".Blocked." + bucket] = 1;
     EXPECT_THAT(histograms.GetAllSamples(histogram_base + ".Blocked"),

@@ -975,6 +975,10 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
         content_length());
   }
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "SiteIsolation.XSD.Browser.Blocked.CanonicalMimeType",
+      canonical_mime_type_);
+
   LogBytesReadForSniffing();
 }
 

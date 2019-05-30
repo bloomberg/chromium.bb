@@ -54,6 +54,7 @@ namespace content {
 using testing::Not;
 using testing::HasSubstr;
 using Action = network::CrossOriginReadBlocking::Action;
+using CorbMimeType = network::CrossOriginReadBlocking::MimeType;
 using RequestInitiatorOriginLockCompatibility =
     network::InitiatorLockCompatibility;
 
@@ -117,22 +118,30 @@ void InspectHistograms(
   }
 
   std::string bucket;
+  CorbMimeType expected_mime_type = CorbMimeType::kInvalidMimeType;
   if (base::MatchPattern(resource_name, "*.html")) {
     bucket = "HTML";
+    expected_mime_type = CorbMimeType::kHtml;
   } else if (base::MatchPattern(resource_name, "*.xml")) {
     bucket = "XML";
+    expected_mime_type = CorbMimeType::kXml;
   } else if (base::MatchPattern(resource_name, "*.json")) {
     bucket = "JSON";
+    expected_mime_type = CorbMimeType::kJson;
   } else if (base::MatchPattern(resource_name, "*.txt")) {
     bucket = "Plain";
-  } else if (base::MatchPattern(resource_name, "*.zip")) {
+    expected_mime_type = CorbMimeType::kPlain;
+  } else if (base::MatchPattern(resource_name, "*.zip") ||
+             base::MatchPattern(resource_name, "*.pdf")) {
     // SiteIsolation.XSD.Browser.Blocked* histograms are only logged from the
     // pre-kNetworkService code.  Because of this we did not add
     // SiteIsolation.XSD.Browser.Blocked.NonSniffed histogram.  An empty
     // |bucket| value indicates that the test should not expect a histogram.
     bucket = "";
+    expected_mime_type = CorbMimeType::kNeverSniffed;
   } else {
     bucket = "Others";
+    expected_mime_type = CorbMimeType::kOthers;
   }
 
   // Determine the appropriate histograms, including a start and end action
@@ -153,6 +162,7 @@ void InspectHistograms(
       expected_counts[base + ".Blocked." + bucket] = 1;
   }
   if (0 != (expectations & kShouldBeBlocked)) {
+    expected_counts[base + ".Blocked.CanonicalMimeType"] = 1;
     expected_counts[base + ".Blocked.ContentLength.WasAvailable"] = 1;
     bool should_have_content_length =
         0 != (expectations & kShouldLogContentLengthUma);
@@ -171,16 +181,22 @@ void InspectHistograms(
       << ", expectations=" << expectations;
 
   // Determine if the bucket for the resource type (XHR) was incremented.
-  if (0 != (expectations & kShouldBeBlocked) && !is_restricted_uma_expected) {
-    EXPECT_THAT(
-        histograms.GetAllSamples(base + ".Blocked"),
-        testing::ElementsAre(base::Bucket(static_cast<int>(resource_type), 1)))
-        << "The wrong Blocked bucket was incremented.";
-    if (!bucket.empty()) {
-      EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked." + bucket),
+  if (0 != (expectations & kShouldBeBlocked)) {
+    EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked.CanonicalMimeType"),
+                testing::ElementsAre(
+                    base::Bucket(static_cast<int>(expected_mime_type), 1)))
+        << "The wrong CorbMimeType bucket was incremented.";
+    if (!is_restricted_uma_expected) {
+      EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked"),
                   testing::ElementsAre(
                       base::Bucket(static_cast<int>(resource_type), 1)))
           << "The wrong Blocked bucket was incremented.";
+      if (!bucket.empty()) {
+        EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked." + bucket),
+                    testing::ElementsAre(
+                        base::Bucket(static_cast<int>(resource_type), 1)))
+            << "The wrong Blocked bucket was incremented.";
+      }
     }
   }
 

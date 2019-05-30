@@ -63,8 +63,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // without any confirmation sniffing.
     kNeverSniffed = 5,
 
-    kMax,
-    kInvalidMimeType = kMax,
+    kInvalidMimeType,              // For DCHECKs.
+    kMaxValue = kInvalidMimeType,  // For UMA histograms.
   };
 
   // An instance for tracking the state of analyzing a single response
