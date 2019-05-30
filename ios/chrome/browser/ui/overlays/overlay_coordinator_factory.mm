@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/overlays/overlay_coordinator_factory.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/overlays/overlay_coordinator_factory+initialization.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -18,10 +19,6 @@
 // associated with this coordinator factory.
 @property(nonatomic, readonly)
     NSArray<Class>* supportedOverlayRequestCoordinatorClasses;
-// Initializer used by |+factoryForBrowser:modality:|.
-- (instancetype)initWithBrowser:(Browser*)browser
-    supportedOverlayRequestCoordinatorClasses:
-        (NSArray<Class>*)supportedOverlayClasses NS_DESIGNATED_INITIALIZER;
 @end
 
 @implementation OverlayRequestCoordinatorFactory
@@ -40,18 +37,6 @@
       supportedOverlayRequestCoordinatorClasses:supportedCoordinatorClasses];
 }
 
-- (instancetype)initWithBrowser:(Browser*)browser
-    supportedOverlayRequestCoordinatorClasses:
-        (NSArray<Class>*)supportedOverlayClasses {
-  if (self = [super init]) {
-    _browser = browser;
-    DCHECK(_browser);
-    _supportedOverlayRequestCoordinatorClasses = supportedOverlayClasses;
-    DCHECK(_supportedOverlayRequestCoordinatorClasses.count);
-  }
-  return self;
-}
-
 - (OverlayRequestCoordinator*)
     newCoordinatorForRequest:(OverlayRequest*)request
            dismissalDelegate:(OverlayUIDismissalDelegate*)dismissalDelegate
@@ -68,6 +53,22 @@
   }
   NOTREACHED() << "Received unsupported request type.";
   return nil;
+}
+
+@end
+
+@implementation OverlayRequestCoordinatorFactory (Initialization)
+
+- (instancetype)initWithBrowser:(Browser*)browser
+    supportedOverlayRequestCoordinatorClasses:
+        (NSArray<Class>*)supportedOverlayClasses {
+  if (self = [super init]) {
+    _browser = browser;
+    DCHECK(_browser);
+    _supportedOverlayRequestCoordinatorClasses = supportedOverlayClasses;
+    DCHECK(_supportedOverlayRequestCoordinatorClasses.count);
+  }
+  return self;
 }
 
 @end

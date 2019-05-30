@@ -9,6 +9,7 @@ source_set("overlays") {
   ]
   sources = [
     "overlay_container_coordinator.mm",
+    "overlay_coordinator_factory+initialization.h",
     "overlay_coordinator_factory.mm",
     "overlay_presenter_ui_delegate_impl.h",
     "overlay_presenter_ui_delegate_impl.mm",
