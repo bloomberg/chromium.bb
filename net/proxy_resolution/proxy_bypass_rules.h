@@ -164,6 +164,10 @@ class NET_EXPORT ProxyBypassRules {
   // (localhost or link local).
   static bool MatchesImplicitRules(const GURL& url);
 
+  // The delimiter used by |ToString()| for the string representation of the
+  // proxy bypass rules.
+  constexpr static char kBypassListDelimeter[] = ";";
+
  private:
   RuleList rules_;
 };

@@ -12,6 +12,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/json/json_writer.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -47,6 +50,7 @@
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/common/page_zoom.h"
+#include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/proxy_resolution/proxy_config.h"
 
 using ::chromeos::system::TimezoneSettings;
@@ -57,6 +61,8 @@ constexpr char kSetFontScaleAction[] =
     "org.chromium.arc.intent_helper.SET_FONT_SCALE";
 constexpr char kSetPageZoomAction[] =
     "org.chromium.arc.intent_helper.SET_PAGE_ZOOM";
+
+constexpr char kArcProxyBypassListDelimeter[] = ",";
 
 bool GetHttpProxyServer(const ProxyConfigDictionary* proxy_config_dict,
                         std::string* host,
@@ -547,6 +553,14 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
       std::string bypass_list;
       if (proxy_config_dict->GetBypassList(&bypass_list) &&
           !bypass_list.empty()) {
+        // Chrome uses semicolon [;] as delimiter for the proxy bypass list
+        // while ARC expects comma [,] delimiter.  Using the wrong delimiter
+        // causes loss of network connectivity for many apps in ARC.
+        auto bypassed_hosts = base::SplitStringPiece(
+            bypass_list, net::ProxyBypassRules::kBypassListDelimeter,
+            base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        bypass_list =
+            base::JoinString(bypassed_hosts, kArcProxyBypassListDelimeter);
         extras.SetString("bypassList", bypass_list);
       }
       break;
