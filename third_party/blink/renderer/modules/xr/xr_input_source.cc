@@ -132,15 +132,19 @@ XRInputSource::XRInputSource(
   }
 }
 
-// Deep copy because of the unique_ptrs
+// Must make new target_ray_space_ and grip_space_ to ensure that they point to
+// the correct XRInputSource object. Otherwise, the controller position gets
+// stuck when an XRInputSource gets re-created. Also need to make a deep copy of
+// the matrices since they use unique_ptrs.
 XRInputSource::XRInputSource(const XRInputSource& other)
     : active_frame_id_(other.active_frame_id_),
       primary_input_pressed_(other.primary_input_pressed_),
       selection_cancelled_(other.selection_cancelled_),
       session_(other.session_),
       source_id_(other.source_id_),
-      target_ray_space_(other.target_ray_space_),
-      grip_space_(other.grip_space_),
+      target_ray_space_(
+          MakeGarbageCollected<XRTargetRaySpace>(other.session_, this)),
+      grip_space_(MakeGarbageCollected<XRGripSpace>(other.session_, this)),
       gamepad_(other.gamepad_),
       emulated_position_(other.emulated_position_),
       base_timestamp_(other.base_timestamp_) {
