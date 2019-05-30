@@ -184,13 +184,7 @@ void LabelButton::SetBorder(std::unique_ptr<Border> border) {
 gfx::Size LabelButton::CalculatePreferredSize() const {
   // Cache the computed size, as recomputing it is an expensive operation.
   if (!cached_preferred_size_) {
-    // Use a temporary label copy for sizing to avoid calculation side-effects.
-    Label label(GetText(), {label_->font_list()});
-    label.SetLineHeight(label_->line_height());
-    label.SetShadows(label_->shadows());
-
-    // Calculate the required size.
-    const gfx::Size preferred_label_size = label.GetPreferredSize();
+    const gfx::Size preferred_label_size = label_->GetPreferredSize();
     gfx::Size size = GetUnclampedSizeWithoutLabel();
     size.Enlarge(preferred_label_size.width(), 0);
 
