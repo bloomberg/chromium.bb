@@ -80,15 +80,9 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
-- (void)reloadAndWaitForCompletion:(BOOL)wait {
-  [ChromeEarlGreyAppInterface startReloading];
-  if (wait) {
-    [self waitForPageToFinishLoading];
-  }
-}
-
 - (NSError*)reload {
-  [self reloadAndWaitForCompletion:YES];
+  [ChromeEarlGreyAppInterface startReloading];
+  [self waitForPageToFinishLoading];
   return nil;
 }
 
