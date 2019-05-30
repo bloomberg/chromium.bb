@@ -92,6 +92,7 @@ component("ui_devtools") {
     "//base",
     "//net",
     "//ui/gfx",
+    "//third_party/inspector_protocol:encoding",
   ]
 
   public_deps = [

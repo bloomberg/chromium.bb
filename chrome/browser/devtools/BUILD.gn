@@ -198,7 +198,8 @@ static_library("devtools") {
     sources += [ "devtools_dock_tile.cc" ]
   }
   if (!is_android) {
-    deps += [ ":protocol_generated_sources" ]
+    deps += [ ":protocol_generated_sources",
+              "//third_party/inspector_protocol:encoding" ]
     sources += [
       "protocol/browser_handler.cc",
       "protocol/browser_handler.h",
