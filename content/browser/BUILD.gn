@@ -2117,6 +2117,7 @@ jumbo_source_set("browser") {
     deps += [
       "//components/remote_cocoa/app_shim",
       "//components/remote_cocoa/browser",
+      "//components/remote_cocoa/common:mojo",
       "//ui/events:dom_keyboard_layout",
     ]
   }
@@ -2589,7 +2590,6 @@ jumbo_source_set("browser") {
       "../app_shim_remote_cocoa/render_widget_host_view_cocoa.mm",
       "../app_shim_remote_cocoa/web_contents_view_cocoa.h",
       "../app_shim_remote_cocoa/web_contents_view_cocoa.mm",
-      "ns_view_bridge_factory_host.mm",
     ]
   }
 

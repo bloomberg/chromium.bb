@@ -30,6 +30,12 @@
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
+namespace remote_cocoa {
+namespace mojom {
+class BridgeFactory;
+}  // namespace mojom
+}  // namespace remote_cocoa
+
 namespace ui {
 enum class DomCode;
 class Layer;
@@ -44,7 +50,6 @@ class ScopedPasswordInputEnabler;
 namespace content {
 
 class CursorManager;
-class NSViewBridgeFactoryHost;
 class RenderWidgetHost;
 class RenderWidgetHostNSViewBridgeLocal;
 class RenderWidgetHostViewMac;
@@ -453,11 +458,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // https://crbug.com/831843
   RenderWidgetHostImpl* GetWidgetForKeyboardEvent();
 
-  // Migrate the NSView for this RenderWidgetHostView to be in the process
-  // hosted by |bridge_factory_host|, and make it a child view of the NSView
-  // referred to by |parent_ns_view_id|.
-  void MigrateNSViewBridge(NSViewBridgeFactoryHost* bridge_factory_host,
-                           uint64_t parent_ns_view_id);
+  // Migrate the NSView for this RenderWidgetHostView to be in the process at
+  // the other end of |remote_cocoa_application|, and make it a child view of
+  // the NSView referred to by |parent_ns_view_id|.
+  void MigrateNSViewBridge(
+      remote_cocoa::mojom::BridgeFactory* remote_cocoa_application,
+      uint64_t parent_ns_view_id);
 
   // Specify a ui::Layer into which the renderer's content should be
   // composited. If nullptr is specified, then this layer will create a

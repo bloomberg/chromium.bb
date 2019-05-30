@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/ns_view_bridge_factory_impl.h"
+#include "content/public/browser/remote_cocoa.h"
 
 #include <utility>
 #include <vector>
@@ -15,6 +15,7 @@
 #include "content/app_shim_remote_cocoa/web_contents_ns_view_bridge.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
 #include "content/common/render_widget_host_ns_view.mojom.h"
+#include "content/common/web_contents_ns_view_bridge.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -129,30 +130,18 @@ class RenderWidgetHostNSViewBridgeOwner
 
 }
 
-// static
-NSViewBridgeFactoryImpl* NSViewBridgeFactoryImpl::Get() {
-  static base::NoDestructor<NSViewBridgeFactoryImpl> instance;
-  return instance.get();
-}
-
-void NSViewBridgeFactoryImpl::BindRequest(
-    mojom::NSViewBridgeFactoryAssociatedRequest request) {
-  binding_.Bind(std::move(request),
-                ui::WindowResizeHelperMac::Get()->task_runner());
-}
-
-void NSViewBridgeFactoryImpl::CreateRenderWidgetHostNSViewBridge(
-    mojom::StubInterfaceAssociatedPtrInfo stub_client,
-    mojom::StubInterfaceAssociatedRequest stub_bridge_request) {
+void CreateRenderWidgetHostNSView(
+    mojo::ScopedInterfaceEndpointHandle host_handle,
+    mojo::ScopedInterfaceEndpointHandle view_request_handle) {
   // Cast from the stub interface to the mojom::RenderWidgetHostNSViewClient
   // and mojom::RenderWidgetHostNSViewBridge private interfaces.
   // TODO(ccameron): Remove the need for this cast.
   // https://crbug.com/888290
   mojom::RenderWidgetHostNSViewClientAssociatedPtr client(
       mojo::AssociatedInterfacePtrInfo<mojom::RenderWidgetHostNSViewClient>(
-          stub_client.PassHandle(), 0));
+          std::move(host_handle), 0));
   mojom::RenderWidgetHostNSViewBridgeAssociatedRequest bridge_request(
-      stub_bridge_request.PassHandle());
+      std::move(view_request_handle));
 
   // Create a RenderWidgetHostNSViewBridgeOwner. The resulting object will be
   // destroyed when its underlying pipe is closed.
@@ -160,10 +149,15 @@ void NSViewBridgeFactoryImpl::CreateRenderWidgetHostNSViewBridge(
       std::move(client), std::move(bridge_request)));
 }
 
-void NSViewBridgeFactoryImpl::CreateWebContentsNSViewBridge(
+void CreateWebContentsNSView(
     uint64_t view_id,
-    mojom::WebContentsNSViewClientAssociatedPtrInfo client,
-    mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request) {
+    mojo::ScopedInterfaceEndpointHandle host_handle,
+    mojo::ScopedInterfaceEndpointHandle view_request_handle) {
+  mojom::WebContentsNSViewClientAssociatedPtr client(
+      mojo::AssociatedInterfacePtrInfo<mojom::WebContentsNSViewClient>(
+          std::move(host_handle), 0));
+  mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request(
+      std::move(view_request_handle));
   // Note that the resulting object will be destroyed when its underlying pipe
   // is closed.
   mojo::MakeStrongAssociatedBinding(
@@ -173,9 +167,5 @@ void NSViewBridgeFactoryImpl::CreateWebContentsNSViewBridge(
       std::move(bridge_request),
       ui::WindowResizeHelperMac::Get()->task_runner());
 }
-
-NSViewBridgeFactoryImpl::NSViewBridgeFactoryImpl() : binding_(this) {}
-
-NSViewBridgeFactoryImpl::~NSViewBridgeFactoryImpl() {}
 
 }  // namespace content

@@ -15,6 +15,7 @@
 #import "base/message_loop/message_pump_mac.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
+#include "components/remote_cocoa/common/bridge_factory.mojom.h"
 #include "content/app_shim_remote_cocoa/web_contents_ns_view_bridge.h"
 #import "content/app_shim_remote_cocoa/web_contents_view_cocoa.h"
 #include "content/browser/download/drag_download_file.h"
@@ -26,11 +27,10 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
+#include "content/common/web_contents_ns_view_bridge.mojom-shared.h"
 #include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/ns_view_bridge_factory_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
-#include "content/public/common/web_contents_ns_view_bridge.mojom-shared.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -351,11 +351,8 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
   // Add the RenderWidgetHostView to the ui::Layer heirarchy.
   child_views_.push_back(view->GetWeakPtr());
   if (views_host_) {
-    NSViewBridgeFactoryHost* factory_host =
-        NSViewBridgeFactoryHost::GetFromHostId(
-            views_host_->GetViewsFactoryHostId());
-
-    view->MigrateNSViewBridge(factory_host, ns_view_id_);
+    auto* remote_cocoa_application = views_host_->GetRemoteCocoaApplication();
+    view->MigrateNSViewBridge(remote_cocoa_application, ns_view_id_);
     view->SetParentUiLayer(views_host_->GetUiLayer());
     view->SetParentAccessibilityElement(views_host_accessibility_element_);
   }
@@ -626,25 +623,31 @@ void WebContentsViewMac::DragPromisedFileTo(
 void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
   views_host_ = host;
   // Create an NSView in the target process, if one exists.
-  uint64_t factory_host_id = views_host_->GetViewsFactoryHostId();
-  NSViewBridgeFactoryHost* factory_host =
-      NSViewBridgeFactoryHost::GetFromHostId(factory_host_id);
-  if (factory_host) {
+  auto* remote_cocoa_application = views_host_->GetRemoteCocoaApplication();
+  if (remote_cocoa_application) {
     mojom::WebContentsNSViewClientAssociatedPtr client;
     ns_view_client_binding_.Bind(mojo::MakeRequest(&client));
     mojom::WebContentsNSViewBridgeAssociatedRequest bridge_request =
         mojo::MakeRequest(&ns_view_bridge_remote_);
 
-    factory_host->GetFactory()->CreateWebContentsNSViewBridge(
-        ns_view_id_, client.PassInterface(), std::move(bridge_request));
+    // Cast from mojom::WebContentsNSViewClientPtr and
+    // mojom::WebContentsNSViewBridgeRequest to the public interfaces
+    // accepted by the application.
+    // TODO(ccameron): Remove the need for this cast.
+    // https://crbug.com/888290
+    mojo::AssociatedInterfacePtrInfo<remote_cocoa::mojom::StubInterface>
+        stub_client(client.PassInterface().PassHandle(), 0);
+    remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_bridge_request(
+        bridge_request.PassHandle());
+
+    remote_cocoa_application->CreateWebContentsNSView(
+        ns_view_id_, std::move(stub_client), std::move(stub_bridge_request));
     ns_view_bridge_remote_->SetParentNSView(views_host_->GetNSViewId());
 
     // Because this view is being displayed from a remote process, reset the
     // in-process NSView's client pointer, so that the in-process NSView will
     // not call back into |this|.
     [cocoa_view() setClient:nullptr];
-  } else if (factory_host_id != NSViewBridgeFactoryHost::kLocalDirectHostId) {
-    LOG(ERROR) << "Failed to look up NSViewBridgeFactoryHost!";
   }
 
   // TODO(https://crbug.com/933679): WebContentsNSViewBridge::SetParentView
@@ -654,7 +657,7 @@ void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
   // ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId());
 
   for (auto* rwhv_mac : GetChildViews()) {
-    rwhv_mac->MigrateNSViewBridge(factory_host, ns_view_id_);
+    rwhv_mac->MigrateNSViewBridge(remote_cocoa_application, ns_view_id_);
     rwhv_mac->SetParentUiLayer(views_host_->GetUiLayer());
   }
 }

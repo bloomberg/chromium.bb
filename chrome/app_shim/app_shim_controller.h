@@ -62,8 +62,6 @@ class AppShimController : public chrome::mojom::AppShim {
   // chrome::mojom::AppShim implementation.
   void CreateViewsBridgeFactory(
       remote_cocoa::mojom::BridgeFactoryAssociatedRequest request) override;
-  void CreateContentNSViewBridgeFactory(
-      content::mojom::NSViewBridgeFactoryAssociatedRequest request) override;
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override;
   void Hide() override;
   void SetBadgeLabel(const std::string& badge_label) override;

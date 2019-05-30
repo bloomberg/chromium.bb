@@ -9,9 +9,7 @@
 namespace views {
 
 BridgeFactoryHost::BridgeFactoryHost(
-    uint64_t host_id,
-    remote_cocoa::mojom::BridgeFactoryAssociatedRequest* request)
-    : host_id_(host_id) {
+    remote_cocoa::mojom::BridgeFactoryAssociatedRequest* request) {
   *request = mojo::MakeRequest(&bridge_factory_ptr_);
 }
 

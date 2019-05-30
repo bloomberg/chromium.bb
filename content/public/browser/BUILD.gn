@@ -443,10 +443,7 @@ jumbo_source_set("browser_sources") {
   }
 
   if (is_mac) {
-    sources += [
-      "ns_view_bridge_factory_host.h",
-      "ns_view_bridge_factory_impl.h",
-    ]
+    sources += [ "remote_cocoa.h" ]
   }
 
   if (!is_android) {

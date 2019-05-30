@@ -29,6 +29,7 @@ specific_include_rules = {
   ],
   ".*_mac.*": [
     "+content/app_shim_remote_cocoa",
+    "+components/remote_cocoa",
   ],
   "render_process_host_impl\.cc": [
     "+content/browser/frame_host/render_frame_message_filter.h",

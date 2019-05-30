@@ -23,13 +23,8 @@ class VIEWS_EXPORT BridgeFactoryHost {
   };
 
   BridgeFactoryHost(
-      uint64_t host_id,
       remote_cocoa::mojom::BridgeFactoryAssociatedRequest* request);
   ~BridgeFactoryHost();
-
-  // Return an id for the host process. This can be used to look up other
-  // factories to create NSViews (e.g in content).
-  uint64_t GetHostId() const { return host_id_; }
 
   remote_cocoa::mojom::BridgeFactory* GetFactory();
 
@@ -37,7 +32,6 @@ class VIEWS_EXPORT BridgeFactoryHost {
   void RemoveObserver(const Observer* observer);
 
  private:
-  const uint64_t host_id_;
   remote_cocoa::mojom::BridgeFactoryAssociatedPtr bridge_factory_ptr_;
   base::ObserverList<Observer> observers_;
 };

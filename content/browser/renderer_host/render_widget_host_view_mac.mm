@@ -20,6 +20,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/remote_cocoa/common/bridge_factory.mojom.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 #import "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge_local.h"
@@ -42,7 +43,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/ns_view_bridge_factory_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/platform_canvas.h"
@@ -241,7 +241,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 }
 
 void RenderWidgetHostViewMac::MigrateNSViewBridge(
-    NSViewBridgeFactoryHost* bridge_factory_host,
+    remote_cocoa::mojom::BridgeFactory* remote_cocoa_application,
     uint64_t parent_ns_view_id) {
   // Destroy the previous remote accessibility element.
   remote_window_accessible_.reset();
@@ -253,10 +253,11 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   ns_view_bridge_remote_.reset();
 
   // Enable accessibility focus overriding for remote NSViews.
-  accessibility_focus_overrider_.SetAppIsRemote(bridge_factory_host != nullptr);
+  accessibility_focus_overrider_.SetAppIsRemote(remote_cocoa_application !=
+                                                nullptr);
 
   // If no host is specified, then use the locally hosted NSView.
-  if (!bridge_factory_host) {
+  if (!remote_cocoa_application) {
     ns_view_bridge_ = ns_view_bridge_local_.get();
     return;
   }
@@ -268,15 +269,15 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
 
   // Cast from mojom::RenderWidgetHostNSViewClientPtr and
   // mojom::RenderWidgetHostNSViewBridgeRequest to the public interfaces
-  // accepted by the factory.
+  // accepted by the application.
   // TODO(ccameron): Remove the need for this cast.
   // https://crbug.com/888290
-  mojo::AssociatedInterfacePtrInfo<mojom::StubInterface> stub_client(
-      client.PassInterface().PassHandle(), 0);
-  mojom::StubInterfaceAssociatedRequest stub_bridge_request(
+  mojo::AssociatedInterfacePtrInfo<remote_cocoa::mojom::StubInterface>
+      stub_client(client.PassInterface().PassHandle(), 0);
+  remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_bridge_request(
       bridge_request.PassHandle());
 
-  bridge_factory_host->GetFactory()->CreateRenderWidgetHostNSViewBridge(
+  remote_cocoa_application->CreateRenderWidgetHostNSView(
       std::move(stub_client), std::move(stub_bridge_request));
 
   ns_view_bridge_ = ns_view_bridge_remote_.get();

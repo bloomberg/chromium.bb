@@ -24,6 +24,21 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgeFactoryImpl
   static BridgeFactoryImpl* Get();
   void BindRequest(mojom::BridgeFactoryAssociatedRequest request);
 
+  // Set callbacks to create content types (content types cannot be created
+  // in remote_cocoa).
+  // TODO(https://crbug.com/888290): Move these types from content to
+  // remote_cocoa.
+  using RenderWidgetHostNSViewCreateCallback = base::RepeatingCallback<void(
+      mojo::ScopedInterfaceEndpointHandle host_handle,
+      mojo::ScopedInterfaceEndpointHandle view_request_handle)>;
+  using WebContentsNSViewCreateCallback = base::RepeatingCallback<void(
+      uint64_t view_id,
+      mojo::ScopedInterfaceEndpointHandle host_handle,
+      mojo::ScopedInterfaceEndpointHandle view_request_handle)>;
+  void SetContentNSViewCreateCallbacks(
+      RenderWidgetHostNSViewCreateCallback render_widget_host_create_callback,
+      WebContentsNSViewCreateCallback web_conents_create_callback);
+
   // mojom::BridgeFactory:
   void CreateAlert(mojom::AlertBridgeRequest bridge_request) override;
   void CreateBridgedNativeWidget(
@@ -31,11 +46,21 @@ class REMOTE_COCOA_APP_SHIM_EXPORT BridgeFactoryImpl
       mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
       mojom::BridgedNativeWidgetHostAssociatedPtrInfo host,
       mojom::TextInputHostAssociatedPtrInfo text_input_host) override;
+  void CreateRenderWidgetHostNSView(
+      mojom::StubInterfaceAssociatedPtrInfo host,
+      mojom::StubInterfaceAssociatedRequest view_request) override;
+  void CreateWebContentsNSView(
+      uint64_t view_id,
+      mojom::StubInterfaceAssociatedPtrInfo host,
+      mojom::StubInterfaceAssociatedRequest view_request) override;
 
  private:
   friend class base::NoDestructor<BridgeFactoryImpl>;
   BridgeFactoryImpl();
   ~BridgeFactoryImpl() override;
+
+  RenderWidgetHostNSViewCreateCallback render_widget_host_create_callback_;
+  WebContentsNSViewCreateCallback web_conents_create_callback_;
 
   mojo::AssociatedBinding<mojom::BridgeFactory> binding_;
 };

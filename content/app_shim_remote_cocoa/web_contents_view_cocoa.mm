@@ -8,7 +8,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #import "content/app_shim_remote_cocoa/web_drag_source_mac.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
-#include "content/public/common/web_contents_ns_view_bridge.mojom.h"
+#include "content/common/web_contents_ns_view_bridge.mojom.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/custom_data_helper.h"

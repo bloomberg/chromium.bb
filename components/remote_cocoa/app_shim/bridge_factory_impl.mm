@@ -108,6 +108,13 @@ void BridgeFactoryImpl::BindRequest(
                 ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
+void BridgeFactoryImpl::SetContentNSViewCreateCallbacks(
+    RenderWidgetHostNSViewCreateCallback render_widget_host_create_callback,
+    WebContentsNSViewCreateCallback web_conents_create_callback) {
+  render_widget_host_create_callback_ = render_widget_host_create_callback;
+  web_conents_create_callback_ = web_conents_create_callback;
+}
+
 void BridgeFactoryImpl::CreateAlert(mojom::AlertBridgeRequest bridge_request) {
   // The resulting object manages its own lifetime.
   ignore_result(new AlertBridge(std::move(bridge_request)));
@@ -121,6 +128,25 @@ void BridgeFactoryImpl::CreateBridgedNativeWidget(
   // The resulting object will be destroyed when its message pipe is closed.
   ignore_result(new Bridge(bridge_id, std::move(bridge_request),
                            std::move(host), std::move(text_input_host)));
+}
+
+void BridgeFactoryImpl::CreateRenderWidgetHostNSView(
+    mojom::StubInterfaceAssociatedPtrInfo host,
+    mojom::StubInterfaceAssociatedRequest view_request) {
+  if (!render_widget_host_create_callback_)
+    return;
+  render_widget_host_create_callback_.Run(host.PassHandle(),
+                                          view_request.PassHandle());
+}
+
+void BridgeFactoryImpl::CreateWebContentsNSView(
+    uint64_t view_id,
+    mojom::StubInterfaceAssociatedPtrInfo host,
+    mojom::StubInterfaceAssociatedRequest view_request) {
+  if (!web_conents_create_callback_)
+    return;
+  web_conents_create_callback_.Run(view_id, host.PassHandle(),
+                                   view_request.PassHandle());
 }
 
 BridgeFactoryImpl::BridgeFactoryImpl() : binding_(this) {}

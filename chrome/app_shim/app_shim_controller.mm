@@ -28,8 +28,7 @@
 #include "components/remote_cocoa/app_shim/bridge_factory_impl.h"
 #include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #include "components/remote_cocoa/common/bridge_factory.mojom.h"
-#include "content/public/browser/ns_view_bridge_factory_impl.h"
-#include "content/public/common/ns_view_bridge_factory.mojom.h"
+#include "content/public/browser/remote_cocoa.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -307,11 +306,9 @@ void AppShimController::LaunchAppDone(
 void AppShimController::CreateViewsBridgeFactory(
     remote_cocoa::mojom::BridgeFactoryAssociatedRequest request) {
   remote_cocoa::BridgeFactoryImpl::Get()->BindRequest(std::move(request));
-}
-
-void AppShimController::CreateContentNSViewBridgeFactory(
-    content::mojom::NSViewBridgeFactoryAssociatedRequest request) {
-  content::NSViewBridgeFactoryImpl::Get()->BindRequest(std::move(request));
+  remote_cocoa::BridgeFactoryImpl::Get()->SetContentNSViewCreateCallbacks(
+      base::BindRepeating(content::CreateRenderWidgetHostNSView),
+      base::BindRepeating(content::CreateWebContentsNSView));
 }
 
 void AppShimController::CreateCommandDispatcherForWidget(uint64_t widget_id) {

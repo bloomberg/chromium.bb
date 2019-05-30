@@ -17,10 +17,6 @@
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace content {
-class NSViewBridgeFactoryHost;
-}  // namespace content
-
 namespace views {
 class BridgeFactoryHost;
 }  // namespace views
@@ -120,7 +116,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   std::unique_ptr<AppShimHostBootstrap> bootstrap_;
 
   std::unique_ptr<views::BridgeFactoryHost> views_bridge_factory_host_;
-  std::unique_ptr<content::NSViewBridgeFactoryHost> content_bridge_factory_;
 
   std::string app_id_;
   base::FilePath profile_path_;
