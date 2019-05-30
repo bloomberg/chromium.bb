@@ -139,6 +139,7 @@ if (is_android) {
       "//base:base_java",
       "//components/feature_engagement/public:public_java",
       "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//ui/android:ui_java",
     ]
   }
 
