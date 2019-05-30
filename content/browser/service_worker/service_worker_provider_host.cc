@@ -11,7 +11,6 @@
 #include "base/debug/alias.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
-#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -316,10 +315,9 @@ bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
 }
 
 ServiceWorkerVersion* ServiceWorkerProviderHost::controller() const {
-  // TODO(crbug.com/951571): Remove this instrumentation logic once the bug is
-  // debugged. Limit crash rate at 20%.
-  bool should_crash = base::RandInt(0, 9) < 2;
-  CheckControllerConsistency(should_crash);
+#if DCHECK_IS_ON()
+  CheckControllerConsistency(false);
+#endif  // DCHECK_IS_ON()
   return controller_.get();
 }
 
@@ -861,6 +859,7 @@ bool ServiceWorkerProviderHost::IsControllerDecided() const {
   return true;
 }
 
+#if DCHECK_IS_ON()
 void ServiceWorkerProviderHost::CheckControllerConsistency(
     bool should_crash) const {
   if (!controller_) {
@@ -898,6 +897,7 @@ void ServiceWorkerProviderHost::CheckControllerConsistency(
       break;
   }
 }
+#endif  // DCHECK_IS_ON()
 
 void ServiceWorkerProviderHost::Register(
     const GURL& script_url,

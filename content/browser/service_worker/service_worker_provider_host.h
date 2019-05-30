@@ -509,9 +509,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // controller has not yet been decided.
   bool IsControllerDecided() const;
 
-  // TODO(crbug.com/951571): Put this check function behind DCHECK_IS_ON() once
-  // we figured out the cause of invalid controller status.
+#if DCHECK_IS_ON()
   void CheckControllerConsistency(bool should_crash) const;
+#endif  // DCHECK_IS_ON()
 
   // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,

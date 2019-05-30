@@ -37,33 +37,6 @@ ServiceWorkerVersionInfo GetVersionInfo(ServiceWorkerVersion* version) {
   return version->GetInfo();
 }
 
-void CrashBecauseIsController(
-    scoped_refptr<ServiceWorkerVersion> activating_version,
-    scoped_refptr<ServiceWorkerVersion> exiting_version,
-    ServiceWorkerProviderHost* provider_host) {
-  std::string debug_log = base::StringPrintf(
-      "sw:%d/ex_regid:%" PRId64 "/ac_regid:%" PRId64 "/pr_id:%d/ca:%d",
-      activating_version->skip_waiting(), exiting_version->registration_id(),
-      activating_version->registration_id(), provider_host->provider_id(),
-      provider_host->IsSetControllerRegistrationAllowed());
-  DEBUG_ALIAS_FOR_CSTR(debug_log_copy, debug_log.c_str(), 128);
-  CHECK(false) << "A controllee has a controller which became redundant.";
-}
-
-void CrashBecauseHasControllee(
-    scoped_refptr<ServiceWorkerVersion> activating_version,
-    scoped_refptr<ServiceWorkerVersion> exiting_version) {
-  std::string debug_log = base::StringPrintf(
-      "sw:%d/ex_regid:%" PRId64 "/ac_regid:%" PRId64 "/cl_ids:",
-      activating_version->skip_waiting(), exiting_version->registration_id(),
-      activating_version->registration_id());
-  for (auto& pair : exiting_version->controllee_map()) {
-    debug_log += pair.second->client_uuid() + ",";
-  }
-  DEBUG_ALIAS_FOR_CSTR(debug_log_copy, debug_log.c_str(), 1024);
-  CHECK(false) << "Redundant service worker has controllee(s).";
-}
-
 }  // namespace
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(
@@ -463,32 +436,6 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   if (activating_version->skip_waiting()) {
     for (auto& observer : listeners_)
       observer.OnSkippedWaiting(this);
-  }
-
-  // TODO(crbug.com/951571): Remove this instrumentation logic once the bug is
-  // debugged.
-  if (exiting_version.get()) {
-    for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-             context_->GetClientProviderHostIterator(
-                 scope_.GetOrigin(), false /* include_reserved_clients */);
-         !it->IsAtEnd(); it->Advance()) {
-      ServiceWorkerProviderHost* host = it->GetProviderHost();
-      if (!host->IsContextSecureForServiceWorker())
-        continue;
-      if (host->MatchRegistration() != this)
-        continue;
-      ServiceWorkerVersion* controller = host->controller();
-      if (!controller)
-        continue;
-      if (controller == exiting_version) {
-        CrashBecauseIsController(activating_version, exiting_version, host);
-        return;
-      }
-    }
-    if (exiting_version->HasControllee()) {
-      CrashBecauseHasControllee(activating_version, exiting_version);
-      return;
-    }
   }
 
   // "10. Queue a task to fire an event named activate..."
