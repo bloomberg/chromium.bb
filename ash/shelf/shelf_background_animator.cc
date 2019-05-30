@@ -13,7 +13,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_constants.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
@@ -57,7 +57,7 @@ bool ShelfBackgroundAnimator::AnimationValues::InitialValuesEqualTargetValuesOf(
 ShelfBackgroundAnimator::ShelfBackgroundAnimator(
     ShelfBackgroundType background_type,
     Shelf* shelf,
-    WallpaperController* wallpaper_controller)
+    WallpaperControllerImpl* wallpaper_controller)
     : shelf_(shelf), wallpaper_controller_(wallpaper_controller) {
   if (wallpaper_controller_)
     wallpaper_controller_->AddObserver(this);

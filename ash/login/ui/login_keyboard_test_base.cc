@@ -15,7 +15,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/command_line.h"
 #include "base/strings/strcat.h"
 

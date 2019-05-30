@@ -233,7 +233,6 @@ SigninScreenHandler::SigninScreenHandler(
       proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
       histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
-      observer_binding_(this),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
@@ -268,12 +267,12 @@ SigninScreenHandler::SigninScreenHandler(
   tablet_mode_client->AddObserver(this);
   OnTabletModeToggled(tablet_mode_client->tablet_mode_enabled());
 
-  ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
-  observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-  WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
+  WallpaperControllerClient::Get()->AddObserver(this);
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
+  if (auto* wallpaper_controller_client = WallpaperControllerClient::Get())
+    wallpaper_controller_client->RemoveObserver(this);
   TabletModeClient::Get()->RemoveObserver(this);
   OobeUI* oobe_ui = GetOobeUI();
   if (oobe_ui && oobe_ui_observer_added_)
@@ -828,14 +827,12 @@ void SigninScreenHandler::OnCurrentScreenChanged(OobeScreenId current_screen,
   }
 }
 
-void SigninScreenHandler::OnWallpaperChanged(uint32_t image_id) {}
-
-void SigninScreenHandler::OnWallpaperColorsChanged(
-    const std::vector<SkColor>& prominent_colors) {
+void SigninScreenHandler::OnWallpaperColorsChanged() {
   // Updates the color of the scrollable container on account picker screen,
   // based on wallpaper color extraction results.
+  auto colors = WallpaperControllerClient::Get()->GetWallpaperColors();
   SkColor dark_muted_color =
-      prominent_colors[static_cast<int>(ash::ColorProfileType::DARK_MUTED)];
+      colors[static_cast<int>(ash::ColorProfileType::DARK_MUTED)];
   if (dark_muted_color == ash::kInvalidWallpaperColor)
     dark_muted_color = ash::login_constants::kDefaultBaseColor;
 
@@ -851,9 +848,10 @@ void SigninScreenHandler::OnWallpaperColorsChanged(
          color_utils::SkColorToRgbaString(scroll_color));
 }
 
-void SigninScreenHandler::OnWallpaperBlurChanged(bool blurred) {
-  CallJS("login.AccountPickerScreen.togglePodBackground",
-         !blurred /*show_pod_background=*/);
+void SigninScreenHandler::OnWallpaperBlurChanged() {
+  const bool show_pod_background =
+      !WallpaperControllerClient::Get()->IsWallpaperBlurred();
+  CallJS("login.AccountPickerScreen.togglePodBackground", show_pod_background);
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
@@ -1209,12 +1207,8 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
   // The wallpaper may have been set before the instance is initialized, so make
   // sure the colors and blur state are updated.
-  WallpaperControllerClient::Get()->GetWallpaperColors(
-      base::BindOnce(&SigninScreenHandler::OnWallpaperColorsChanged,
-                     weak_factory_.GetWeakPtr()));
-  WallpaperControllerClient::Get()->IsWallpaperBlurred(
-      base::BindOnce(&SigninScreenHandler::OnWallpaperBlurChanged,
-                     weak_factory_.GetWeakPtr()));
+  OnWallpaperColorsChanged();
+  OnWallpaperBlurChanged();
 
   session_manager::SessionManager* session_manager =
       session_manager::SessionManager::Get();

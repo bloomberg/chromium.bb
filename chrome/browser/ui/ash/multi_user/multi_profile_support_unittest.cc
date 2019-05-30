@@ -278,7 +278,7 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
 
   user_manager::ScopedUserManager user_manager_enabler_;
 
-  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  std::unique_ptr<::WallpaperControllerClient> wallpaper_controller_client_;
 
   TestWallpaperController test_wallpaper_controller_;
 
@@ -315,9 +315,9 @@ void MultiProfileSupportTest::SetUpForThisManyWindows(int windows) {
       AccountId::FromUserEmail("A"));
   ash::MultiUserWindowManagerImpl::Get()->SetAnimationSpeedForTest(
       ash::MultiUserWindowManagerImpl::ANIMATION_SPEED_DISABLED);
-  wallpaper_controller_client_ = std::make_unique<WallpaperControllerClient>();
-  wallpaper_controller_client_->InitForTesting(
-      test_wallpaper_controller_.CreateInterfacePtr());
+  wallpaper_controller_client_ =
+      std::make_unique<::WallpaperControllerClient>();
+  wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
 }
 
 void MultiProfileSupportTest::TearDown() {

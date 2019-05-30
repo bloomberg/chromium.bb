@@ -396,9 +396,18 @@ void SearchBoxView::ShowZeroStateSuggestions() {
 }
 
 void SearchBoxView::OnWallpaperColorsChanged() {
-  GetWallpaperProminentColors(
-      base::BindOnce(&SearchBoxView::OnWallpaperProminentColorsReceived,
-                     weak_ptr_factory_.GetWeakPtr()));
+  const auto& colors = view_delegate_->GetWallpaperProminentColors();
+  if (colors.empty())
+    return;
+
+  DCHECK_EQ(static_cast<size_t>(ColorProfileType::NUM_OF_COLOR_PROFILES),
+            colors.size());
+
+  SetSearchBoxColor(colors[static_cast<int>(ColorProfileType::DARK_MUTED)]);
+  UpdateSearchIcon();
+  search_box()->set_placeholder_text_color(search_box_color());
+  UpdateBackgroundColor(search_box::kSearchBoxBackgroundDefault);
+  SchedulePaint();
 }
 
 void SearchBoxView::ProcessAutocomplete() {
@@ -437,26 +446,6 @@ void SearchBoxView::ProcessAutocomplete() {
   // Current text in the search_box does not match the first result's url or
   // search result text.
   ClearAutocompleteText();
-}
-
-void SearchBoxView::GetWallpaperProminentColors(
-    AppListViewDelegate::GetWallpaperProminentColorsCallback callback) {
-  view_delegate_->GetWallpaperProminentColors(std::move(callback));
-}
-
-void SearchBoxView::OnWallpaperProminentColorsReceived(
-    const std::vector<SkColor>& prominent_colors) {
-  if (prominent_colors.empty())
-    return;
-  DCHECK_EQ(static_cast<size_t>(ColorProfileType::NUM_OF_COLOR_PROFILES),
-            prominent_colors.size());
-
-  SetSearchBoxColor(
-      prominent_colors[static_cast<int>(ColorProfileType::DARK_MUTED)]);
-  UpdateSearchIcon();
-  search_box()->set_placeholder_text_color(search_box_color());
-  UpdateBackgroundColor(search_box::kSearchBoxBackgroundDefault);
-  SchedulePaint();
 }
 
 void SearchBoxView::AcceptAutocompleteText() {

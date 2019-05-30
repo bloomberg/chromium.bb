@@ -6,12 +6,13 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
+#include "ash/public/cpp/wallpaper_controller_client.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_shell_delegate.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
@@ -40,27 +41,20 @@ class ShelfContextMenuModelTest : public AshTestBase {
 };
 
 // A test wallpaper controller client class.
-class TestWallpaperControllerClient : public mojom::WallpaperControllerClient {
+class TestWallpaperControllerClient : public WallpaperControllerClient {
  public:
-  TestWallpaperControllerClient() : binding_(this) {}
-  ~TestWallpaperControllerClient() override = default;
+  TestWallpaperControllerClient() = default;
+  virtual ~TestWallpaperControllerClient() = default;
 
   size_t open_count() const { return open_count_; }
 
-  mojom::WallpaperControllerClientPtr CreateInterfacePtr() {
-    mojom::WallpaperControllerClientPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
-  // mojom::WallpaperControllerClient:
+  // WallpaperControllerClient:
   void OpenWallpaperPicker() override { open_count_++; }
   void OnReadyToSetWallpaper() override {}
   void OnFirstWallpaperAnimationFinished() override {}
 
  private:
   size_t open_count_ = 0;
-  mojo::Binding<mojom::WallpaperControllerClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperControllerClient);
 };
@@ -147,13 +141,11 @@ TEST_F(ShelfContextMenuModelTest, Invocation) {
   EXPECT_TRUE(submenu->IsItemCheckedAt(0));
 
   TestWallpaperControllerClient client;
-  Shell::Get()->wallpaper_controller()->SetClientForTesting(
-      client.CreateInterfacePtr());
+  Shell::Get()->wallpaper_controller()->SetClient(&client);
   EXPECT_EQ(0u, client.open_count());
 
   // Click the third option, wallpaper picker. It should open.
   menu3.ActivatedAt(2);
-  Shell::Get()->wallpaper_controller()->FlushForTesting();
   EXPECT_EQ(1u, client.open_count());
 }
 

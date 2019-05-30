@@ -8,8 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/new_window_delegate.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/wallpaper.mojom.h"
+#include "ash/public/cpp/wallpaper_controller.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -229,11 +228,7 @@ void ArcIntentHelperBridge::OnOpenChromePage(mojom::ChromePage page) {
 void ArcIntentHelperBridge::OpenWallpaperPicker() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   RecordOpenType(ArcIntentHelperOpenType::WALLPAPER_PICKER);
-  ash::mojom::WallpaperControllerPtr wallpaper_controller_ptr;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &wallpaper_controller_ptr);
-  wallpaper_controller_ptr->OpenWallpaperPickerIfAllowed();
+  ash::WallpaperController::Get()->OpenWallpaperPickerIfAllowed();
 }
 
 void ArcIntentHelperBridge::SetWallpaperDeprecated(

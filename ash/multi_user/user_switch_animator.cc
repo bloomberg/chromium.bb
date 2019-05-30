@@ -7,7 +7,7 @@
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_positioner.h"
 #include "base/bind.h"
@@ -82,11 +82,11 @@ void PutMruWindowLast(std::vector<aura::Window*>* window_list) {
 
 UserSwitchAnimator::UserSwitchAnimator(
     MultiUserWindowManagerImpl* owner,
-    mojom::WallpaperUserInfoPtr wallpaper_user_info,
+    const WallpaperUserInfo& wallpaper_user_info,
     base::TimeDelta animation_speed)
     : owner_(owner),
-      wallpaper_user_info_(std::move(wallpaper_user_info)),
-      new_account_id_(wallpaper_user_info_->account_id),
+      wallpaper_user_info_(wallpaper_user_info),
+      new_account_id_(wallpaper_user_info_.account_id),
       animation_speed_(animation_speed),
       animation_step_(ANIMATION_STEP_HIDE_OLD_USER),
       screen_cover_(GetScreenCover(NULL)),
@@ -160,8 +160,7 @@ void UserSwitchAnimator::FinalizeAnimation() {
 }
 
 void UserSwitchAnimator::TransitionWallpaper(AnimationStep animation_step) {
-  WallpaperController* wallpaper_controller =
-      Shell::Get()->wallpaper_controller();
+  auto* wallpaper_controller = Shell::Get()->wallpaper_controller();
 
   // Handle the wallpaper switch.
   if (animation_step == ANIMATION_STEP_HIDE_OLD_USER) {
@@ -172,8 +171,7 @@ void UserSwitchAnimator::TransitionWallpaper(AnimationStep animation_step) {
     wallpaper_controller->SetAnimationDuration(
         duration > kMinimalAnimationTime ? duration : kMinimalAnimationTime);
     if (screen_cover_ != NEW_USER_COVERS_SCREEN) {
-      DCHECK(wallpaper_user_info_);
-      wallpaper_controller->ShowUserWallpaper(std::move(wallpaper_user_info_));
+      wallpaper_controller->ShowUserWallpaper(wallpaper_user_info_);
       wallpaper_user_id_for_test_ =
           (NO_USER_COVERS_SCREEN == screen_cover_ ? "->" : "") +
           new_account_id_.Serialize();
@@ -181,10 +179,8 @@ void UserSwitchAnimator::TransitionWallpaper(AnimationStep animation_step) {
   } else if (animation_step == ANIMATION_STEP_FINALIZE) {
     // Revert the wallpaper cross dissolve animation duration back to the
     // default.
-    if (screen_cover_ == NEW_USER_COVERS_SCREEN) {
-      DCHECK(wallpaper_user_info_);
-      wallpaper_controller->ShowUserWallpaper(std::move(wallpaper_user_info_));
-    }
+    if (screen_cover_ == NEW_USER_COVERS_SCREEN)
+      wallpaper_controller->ShowUserWallpaper(wallpaper_user_info_);
 
     // Coming here the wallpaper user id is the final result. No matter how we
     // got here.

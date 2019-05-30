@@ -110,10 +110,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual void ViewClosed() = 0;
 
   // Gets the wallpaper prominent colors.
-  using GetWallpaperProminentColorsCallback =
-      base::OnceCallback<void(const std::vector<SkColor>&)>;
-  virtual void GetWallpaperProminentColors(
-      GetWallpaperProminentColorsCallback callback) = 0;
+  virtual const std::vector<SkColor>& GetWallpaperProminentColors() = 0;
 
   // Activates (opens) the item.
   virtual void ActivateItem(const std::string& id,

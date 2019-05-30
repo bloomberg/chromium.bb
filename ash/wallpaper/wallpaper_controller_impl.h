@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_
-#define ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_
+#ifndef ASH_WALLPAPER_WALLPAPER_CONTROLLER_IMPL_H_
+#define ASH_WALLPAPER_WALLPAPER_CONTROLLER_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -13,11 +13,12 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/wallpaper_controller.h"
+#include "ash/public/cpp/wallpaper_info.h"
 #include "ash/public/cpp/wallpaper_types.h"
-#include "ash/public/interfaces/wallpaper.mojom.h"
+#include "ash/public/cpp/wallpaper_user_info.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
-#include "ash/wallpaper/wallpaper_info.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
@@ -26,8 +27,6 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/user_manager/user_type.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/compositor/compositor_lock.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -44,7 +43,6 @@ struct ColorProfile;
 namespace ash {
 
 class WallpaperColorCalculator;
-class WallpaperControllerObserver;
 class WallpaperResizer;
 class WallpaperWindowStateManager;
 
@@ -63,14 +61,15 @@ using LoadedCallback = base::OnceCallback<void(const gfx::ImageSkia& image)>;
 //   - Move wallpaper to locked container(s) when session state is not ACTIVE to
 //     hide the user desktop and move it to unlocked container when session
 //     state is ACTIVE;
-class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
-                                       public WindowTreeHostManager::Observer,
-                                       public ShellObserver,
-                                       public WallpaperResizerObserver,
-                                       public WallpaperColorCalculatorObserver,
-                                       public SessionObserver,
-                                       public TabletModeObserver,
-                                       public ui::CompositorLockClient {
+class ASH_EXPORT WallpaperControllerImpl
+    : public WallpaperController,
+      public WindowTreeHostManager::Observer,
+      public ShellObserver,
+      public WallpaperResizerObserver,
+      public WallpaperColorCalculatorObserver,
+      public SessionObserver,
+      public TabletModeObserver,
+      public ui::CompositorLockClient {
  public:
   enum WallpaperResolution {
     WALLPAPER_RESOLUTION_LARGE,
@@ -82,8 +81,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   static const char kLargeWallpaperSubDir[];
   static const char kOriginalWallpaperSubDir[];
 
-  explicit WallpaperController(PrefService* local_state);
-  ~WallpaperController() override;
+  explicit WallpaperControllerImpl(PrefService* local_state);
+  ~WallpaperControllerImpl() override;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
@@ -113,14 +112,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
       const base::FilePath& wallpaper_path,
       bool show_wallpaper,
       const scoped_refptr<base::SingleThreadTaskRunner>& reply_task_runner,
-      base::WeakPtr<WallpaperController> weak_ptr);
-
-  // Binds the mojom::WallpaperController interface request to this object.
-  void BindRequest(mojom::WallpaperControllerRequest request);
-
-  // Add/Remove observers.
-  void AddObserver(WallpaperControllerObserver* observer);
-  void RemoveObserver(WallpaperControllerObserver* observer);
+      base::WeakPtr<WallpaperControllerImpl> weak_ptr);
 
   // Returns the prominent color based on |color_profile|.
   SkColor GetProminentColor(color_utils::ColorProfile color_profile) const;
@@ -218,60 +210,59 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
                            const WallpaperInfo& info,
                            bool show_wallpaper);
 
-  // mojom::WallpaperController:
-  void Init(mojom::WallpaperControllerClientPtr client,
-            const base::FilePath& user_data_path,
-            const base::FilePath& chromeos_wallpapers_path,
-            const base::FilePath& chromeos_custom_wallpapers_path,
-            const base::FilePath& device_policy_wallpaper_path) override;
-  void SetCustomWallpaper(mojom::WallpaperUserInfoPtr user_info,
+  // WallpaperController:
+  void SetClient(WallpaperControllerClient* client) override;
+  void Init(const base::FilePath& user_data,
+            const base::FilePath& wallpapers,
+            const base::FilePath& custom_wallpapers,
+            const base::FilePath& device_policy_wallpaper) override;
+  void SetCustomWallpaper(const WallpaperUserInfo& user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
                           WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode) override;
   void SetOnlineWallpaperIfExists(
-      mojom::WallpaperUserInfoPtr user_info,
+      const WallpaperUserInfo& user_info,
       const std::string& url,
       WallpaperLayout layout,
       bool preview_mode,
       SetOnlineWallpaperIfExistsCallback callback) override;
   void SetOnlineWallpaperFromData(
-      mojom::WallpaperUserInfoPtr user_info,
+      const WallpaperUserInfo& user_info,
       const std::string& image_data,
       const std::string& url,
       WallpaperLayout layout,
       bool preview_mode,
       SetOnlineWallpaperFromDataCallback callback) override;
-  void SetDefaultWallpaper(mojom::WallpaperUserInfoPtr user_info,
+  void SetDefaultWallpaper(const WallpaperUserInfo& user_info,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,
       const base::FilePath& customized_default_large_path) override;
-  void SetPolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
+  void SetPolicyWallpaper(const WallpaperUserInfo& user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
   void SetDevicePolicyWallpaperPath(
       const base::FilePath& device_policy_wallpaper_path) override;
-  void SetThirdPartyWallpaper(mojom::WallpaperUserInfoPtr user_info,
+  bool SetThirdPartyWallpaper(const WallpaperUserInfo& user_info,
                               const std::string& wallpaper_files_id,
                               const std::string& file_name,
                               WallpaperLayout layout,
-                              const gfx::ImageSkia& image,
-                              SetThirdPartyWallpaperCallback callback) override;
+                              const gfx::ImageSkia& image) override;
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
-  void UpdateCustomWallpaperLayout(mojom::WallpaperUserInfoPtr user_info,
+  void UpdateCustomWallpaperLayout(const WallpaperUserInfo& user_info,
                                    WallpaperLayout layout) override;
-  void ShowUserWallpaper(mojom::WallpaperUserInfoPtr user_info) override;
+  void ShowUserWallpaper(const WallpaperUserInfo& user_info) override;
   void ShowSigninWallpaper() override;
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
   void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
   void RemoveAlwaysOnTopWallpaper() override;
-  void RemoveUserWallpaper(mojom::WallpaperUserInfoPtr user_info,
+  void RemoveUserWallpaper(const WallpaperUserInfo& user_info,
                            const std::string& wallpaper_files_id) override;
-  void RemovePolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
+  void RemovePolicyWallpaper(const WallpaperUserInfo& user_info,
                              const std::string& wallpaper_files_id) override;
   void GetOfflineWallpaperList(
       GetOfflineWallpaperListCallback callback) override;
@@ -279,16 +270,14 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void OpenWallpaperPickerIfAllowed() override;
   void MinimizeInactiveWindows(const std::string& user_id_hash) override;
   void RestoreMinimizedWindows(const std::string& user_id_hash) override;
-  void AddObserver(mojom::WallpaperObserverAssociatedPtrInfo observer) override;
-  void GetWallpaperImage(GetWallpaperImageCallback callback) override;
-  void GetWallpaperColors(GetWallpaperColorsCallback callback) override;
-  void IsWallpaperBlurred(IsWallpaperBlurredCallback callback) override;
-  void IsActiveUserWallpaperControlledByPolicy(
-      IsActiveUserWallpaperControlledByPolicyCallback callback) override;
-  void GetActiveUserWallpaperInfo(
-      GetActiveUserWallpaperInfoCallback callback) override;
-  void ShouldShowWallpaperSetting(
-      ShouldShowWallpaperSettingCallback callback) override;
+  void AddObserver(WallpaperControllerObserver* observer) override;
+  void RemoveObserver(WallpaperControllerObserver* observer) override;
+  gfx::ImageSkia GetWallpaperImage() override;
+  const std::vector<SkColor>& GetWallpaperColors() override;
+  bool IsWallpaperBlurred() override;
+  bool IsActiveUserWallpaperControlledByPolicy() override;
+  WallpaperInfo GetActiveUserWallpaperInfo() override;
+  bool ShouldShowWallpaperSetting() override;
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
@@ -314,12 +303,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // CompositorLockClient:
   void CompositorLockTimedOut() override;
 
-  // Sets dummy values for wallpaper directories.
-  void InitializePathsForTesting(
-      const base::FilePath& user_data_path,
-      const base::FilePath& chromeos_wallpapers_path,
-      const base::FilePath& chromeos_custom_wallpapers_path);
-
   // Shows a default wallpaper for testing, without changing users' wallpaper
   // info.
   void ShowDefaultWallpaperForTesting();
@@ -330,12 +313,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // the required widget is not ready. This function synchronously creates an
   // empty widget for those tests to prevent crashes.
   void CreateEmptyWallpaperForTesting();
-
-  // Sets a test client interface with empty file paths.
-  void SetClientForTesting(mojom::WallpaperControllerClientPtr client);
-
-  // Flushes the mojo message pipe to chrome.
-  void FlushForTesting();
 
   void set_wallpaper_reload_no_delay_for_test() {
     wallpaper_reload_delay_ = base::TimeDelta::FromMilliseconds(0);
@@ -457,7 +434,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // policy wallpaper for public accounts. Shows the wallpaper immediately if
   // |show_wallpaper| is true, otherwise only sets the wallpaper info and
   // updates the cache.
-  void SaveAndSetWallpaper(mojom::WallpaperUserInfoPtr user_info,
+  void SaveAndSetWallpaper(const WallpaperUserInfo& user_info,
                            const std::string& wallpaper_files_id,
                            const std::string& file_name,
                            WallpaperType type,
@@ -542,15 +519,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // Called when the device policy controlled wallpaper has been decoded.
   void OnDevicePolicyWallpaperDecoded(const gfx::ImageSkia& image);
 
-  // Implementation of |IsActiveUserWallpaperControlledByPolicy|.
-  bool IsActiveUserWallpaperControlledByPolicyImpl() const;
-
-  // Implementation of |GetActiveUserWallpaperInfo|.
-  bool GetActiveUserWallpaperInfoImpl(WallpaperInfo* info_out) const;
-
-  // Implementation of |ShouldShowWallpaperSetting|.
-  bool ShouldShowWallpaperSettingImpl() const;
-
   // When wallpaper resizes, we can check which displays will be affected. For
   // simplicity, we only lock the compositor for the internal display.
   void GetInternalDisplayCompositorLock();
@@ -559,19 +527,14 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // This is used when we want to change wallpaper dimming.
   void RepaintWallpaper();
 
-  bool locked_;
+  bool locked_ = false;
 
-  WallpaperMode wallpaper_mode_;
+  WallpaperMode wallpaper_mode_ = WALLPAPER_NONE;
 
   // Client interface in chrome browser.
-  mojom::WallpaperControllerClientPtr wallpaper_controller_client_;
-
-  // Bindings for the WallpaperController interface.
-  mojo::BindingSet<mojom::WallpaperController> bindings_;
+  WallpaperControllerClient* wallpaper_controller_client_ = nullptr;
 
   base::ObserverList<WallpaperControllerObserver>::Unchecked observers_;
-
-  mojo::AssociatedInterfacePtrSet<mojom::WallpaperObserver> mojo_observers_;
 
   std::unique_ptr<WallpaperResizer> current_wallpaper_;
 
@@ -594,7 +557,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   std::map<AccountId, WallpaperInfo> ephemeral_users_wallpaper_info_;
 
   // Cached user info of the current user.
-  mojom::WallpaperUserInfoPtr current_user_;
+  WallpaperUserInfo current_user_;
 
   // Cached wallpapers of users.
   CustomWallpaperMap wallpaper_cache_map_;
@@ -628,7 +591,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
-  ScopedSessionObserver scoped_session_observer_;
+  ScopedSessionObserver scoped_session_observer_{this};
 
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
 
@@ -661,15 +624,15 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   std::vector<base::FilePath> decode_requests_for_testing_;
 
   // PrefService provided by Shell when constructing this.
-  // Valid for the lifetime of ash::Shell which owns WallpaperController.
+  // Valid for the lifetime of ash::Shell which owns WallpaperControllerImpl.
   // May be null in tests.
   PrefService* local_state_ = nullptr;
 
-  base::WeakPtrFactory<WallpaperController> weak_factory_;
+  base::WeakPtrFactory<WallpaperControllerImpl> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(WallpaperController);
+  DISALLOW_COPY_AND_ASSIGN(WallpaperControllerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_
+#endif  // ASH_WALLPAPER_WALLPAPER_CONTROLLER_IMPL_H_

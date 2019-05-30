@@ -9,7 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"

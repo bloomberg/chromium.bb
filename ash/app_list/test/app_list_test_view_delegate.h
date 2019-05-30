@@ -80,8 +80,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void DismissAppList() override;
   void ViewClosing() override {}
   void ViewClosed() override {}
-  void GetWallpaperProminentColors(
-      GetWallpaperProminentColorsCallback callback) override {}
+  const std::vector<SkColor>& GetWallpaperProminentColors() override;
   void ActivateItem(const std::string& id,
                     int event_flags,
                     ash::AppListLaunchedFrom launched_from) override;

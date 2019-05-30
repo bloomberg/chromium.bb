@@ -25,10 +25,10 @@
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
-#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
@@ -176,8 +176,7 @@ class ASH_EXPORT AppListControllerImpl
   void ViewShown(int64_t display_id) override;
   void ViewClosing() override;
   void ViewClosed() override;
-  void GetWallpaperProminentColors(
-      GetWallpaperProminentColorsCallback callback) override;
+  const std::vector<SkColor>& GetWallpaperProminentColors() override;
   void ActivateItem(const std::string& id,
                     int event_flags,
                     AppListLaunchedFrom launched_from) override;

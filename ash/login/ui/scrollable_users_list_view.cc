@@ -13,7 +13,7 @@
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/numerics/ranges.h"
 #include "base/timer/timer.h"
@@ -387,7 +387,7 @@ void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {
 
   // Only draw a gradient if the wallpaper is blurred. Otherwise, draw a rounded
   // rectangle.
-  if (ash::Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
+  if (Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
     cc::PaintFlags flags;
 
     // Only draw a gradient if the content can be scrolled.

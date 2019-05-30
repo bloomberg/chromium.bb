@@ -188,7 +188,7 @@ class VideoActivityNotifier;
 class VideoDetector;
 class VoiceInteractionController;
 class VpnList;
-class WallpaperController;
+class WallpaperControllerImpl;
 class WaylandServerController;
 class WindowCycleController;
 class WindowPositioner;
@@ -496,7 +496,7 @@ class ASH_EXPORT Shell : public SessionObserver,
     return voice_interaction_controller_.get();
   }
   VpnList* vpn_list() { return vpn_list_.get(); }
-  WallpaperController* wallpaper_controller() {
+  WallpaperControllerImpl* wallpaper_controller() {
     return wallpaper_controller_.get();
   }
   WindowCycleController* window_cycle_controller() {
@@ -693,7 +693,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<TrayAction> tray_action_;
   std::unique_ptr<VoiceInteractionController> voice_interaction_controller_;
   std::unique_ptr<VpnList> vpn_list_;
-  std::unique_ptr<WallpaperController> wallpaper_controller_;
+  std::unique_ptr<WallpaperControllerImpl> wallpaper_controller_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<OverviewController> overview_controller_;
   // Owned by |focus_controller_|.

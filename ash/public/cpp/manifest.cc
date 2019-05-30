@@ -25,7 +25,6 @@
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/public/interfaces/vpn_list.mojom.h"
-#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/no_destructor.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
@@ -73,8 +72,7 @@ const service_manager::Manifest& GetManifest() {
                   mojom::LoginScreen, mojom::MediaController,
                   mojom::NightLightController, mojom::ShutdownController,
                   mojom::TabletModeController, mojom::TrayAction,
-                  mojom::VoiceInteractionController, mojom::VpnList,
-                  mojom::WallpaperController>())
+                  mojom::VoiceInteractionController, mojom::VpnList>())
           .ExposeCapability("test", service_manager::Manifest::InterfaceList<
                                         mojom::ShelfIntegrationTestApi>())
           .RequireCapability("*", "accessibility")
