@@ -3110,7 +3110,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
       params.post_data, base::Optional<SourceLocation>(),
       params.started_from_context_menu, has_user_gesture, InitiatorCSPInfo(),
-      params.href_translate,
+      std::vector<int>(), params.href_translate,
       false /* is_history_navigation_in_new_child_frame */, params.input_start);
 
   CommitNavigationParams commit_params(

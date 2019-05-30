@@ -232,6 +232,15 @@ DocumentLoader::DocumentLoader(
     redirect_chain_.push_back(url_);
 
   response_ = params_->response.ToResourceResponse();
+
+  for (auto feature : params_->initiator_origin_trial_features) {
+    // Convert from int to OriginTrialFeature. These values are passed between
+    // blink navigations. OriginTrialFeature isn't visible outside of blink (and
+    // doesn't need to be) so the values are transferred outside of blink as
+    // ints and casted to OriginTrialFeature once being processed in blink.
+    initiator_origin_trial_features_.push_back(
+        static_cast<OriginTrialFeature>(feature));
+  }
 }
 
 FrameLoader& DocumentLoader::GetFrameLoader() const {
@@ -1574,6 +1583,9 @@ void DocumentLoader::InstallNewDocument(
 
     OriginTrialContext::AddTokensFromHeader(
         document, response_.HttpHeaderField(http_names::kOriginTrial));
+
+    OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
+        document, &initiator_origin_trial_features_);
   }
   bool stale_while_revalidate_enabled =
       RuntimeEnabledFeatures::StaleWhileRevalidateEnabled(document);

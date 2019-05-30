@@ -39,6 +39,8 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateFromInfo(
   result->frame_load_type = info.frame_load_type;
   result->is_client_redirect = info.is_client_redirect;
   result->navigation_timings.input_start = info.input_start;
+  result->initiator_origin_trial_features =
+      info.initiator_origin_trial_features;
   return result;
 }
 

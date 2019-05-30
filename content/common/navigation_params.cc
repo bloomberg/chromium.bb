@@ -55,6 +55,7 @@ CommonNavigationParams::CommonNavigationParams(
     bool started_from_context_menu,
     bool has_user_gesture,
     const InitiatorCSPInfo& initiator_csp_info,
+    const std::vector<int>& initiator_origin_trial_features,
     const std::string& href_translate,
     bool is_history_navigation_in_new_child_frame,
     base::TimeTicks input_start)
@@ -75,6 +76,7 @@ CommonNavigationParams::CommonNavigationParams(
       started_from_context_menu(started_from_context_menu),
       has_user_gesture(has_user_gesture),
       initiator_csp_info(initiator_csp_info),
+      initiator_origin_trial_features(initiator_origin_trial_features),
       href_translate(href_translate),
       is_history_navigation_in_new_child_frame(
           is_history_navigation_in_new_child_frame),

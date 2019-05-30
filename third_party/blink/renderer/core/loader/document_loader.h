@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -497,6 +498,8 @@ class CORE_EXPORT DocumentLoader
   Dactyloscoper dactyloscoper_;
 
   const base::TickClock* clock_;
+
+  Vector<OriginTrialFeature> initiator_origin_trial_features_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

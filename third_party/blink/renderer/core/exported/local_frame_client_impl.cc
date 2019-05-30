@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
@@ -584,6 +585,23 @@ void LocalFrameClientImpl::BeginNavigation(
         source_location->LineNumber();
     navigation_info->source_location.column_number =
         source_location->ColumnNumber();
+  }
+
+  std::unique_ptr<Vector<OriginTrialFeature>> initiator_origin_trial_features =
+      OriginTrialContext::GetEnabledNavigationFeatures(
+          web_frame_->GetFrame()->GetDocument());
+  if (initiator_origin_trial_features) {
+    navigation_info->initiator_origin_trial_features.reserve(
+        initiator_origin_trial_features->size());
+    for (auto feature : *initiator_origin_trial_features) {
+      // Convert from OriginTrialFeature to int. We convert to int here since
+      // OriginTrialFeature is not visible (and is not needed) outside of
+      // blink. These values are only passed outside of blink so they can be
+      // forwarded to the next blink navigation, but aren't used outside of
+      // blink other than to forward the values between navigations.
+      navigation_info->initiator_origin_trial_features.emplace_back(
+          static_cast<int>(feature));
+    }
   }
 
   if (WebDevToolsAgentImpl* devtools = DevToolsAgent()) {

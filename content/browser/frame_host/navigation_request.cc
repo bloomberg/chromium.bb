@@ -552,6 +552,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       base::TimeTicks::Now(), params.method, nullptr,
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
       params.gesture == NavigationGestureUser, InitiatorCSPInfo(),
+      std::vector<int>() /* initiator_origin_trial_features */,
       std::string() /* href_translate */,
       false /* is_history_navigation_in_new_child_frame */,
       base::TimeTicks::Now());

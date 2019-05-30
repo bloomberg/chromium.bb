@@ -9,6 +9,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -102,6 +103,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       bool started_from_context_menu,
       bool has_user_gesture,
       const InitiatorCSPInfo& initiator_csp_info,
+      const std::vector<int>& initiator_origin_trial_features,
       const std::string& href_translate,
       bool is_history_navigation_in_new_child_frame,
       base::TimeTicks input_start = base::TimeTicks());
@@ -177,6 +179,13 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
   // We require a copy of the relevant CSP to perform navigation checks.
   InitiatorCSPInfo initiator_csp_info;
+
+  // The origin trial features activated in the initiator that should be applied
+  // in the document being navigated to. The int values are blink
+  // OriginTrialFeature enum values. OriginTrialFeature enum is not visible
+  // outside of blink (and doesn't need to be) so these values are casted to int
+  // as they are passed through content across navigations.
+  std::vector<int> initiator_origin_trial_features;
 
   // The current origin policy for this request's origin.
   // (Empty if none applies.)

@@ -137,6 +137,10 @@ struct BLINK_EXPORT WebNavigationInfo {
   enum class ArchiveStatus { Absent, Present };
   ArchiveStatus archive_status = ArchiveStatus::Absent;
 
+  // The origin trial features activated in the document initiating this
+  // navigation that should be applied in the document being navigated to.
+  WebVector<int> initiator_origin_trial_features;
+
   // The value of hrefTranslate attribute of a link, if this navigation was
   // inititated by clicking a link.
   WebString href_translate;
@@ -323,6 +327,9 @@ struct BLINK_EXPORT WebNavigationParams {
   // An optional tick clock to be used for document loader timing. This is used
   // for testing.
   const base::TickClock* tick_clock = nullptr;
+  // The origin trial features activated in the document initiating this
+  // navigation that should be applied in the document being navigated to.
+  WebVector<int> initiator_origin_trial_features;
 };
 
 }  // namespace blink

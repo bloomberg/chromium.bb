@@ -16,6 +16,18 @@ using content::URLLoaderInterceptor;
 
 namespace {
 constexpr char kBaseDataDir[] = "content/test/data/origin_trials/";
+
+void NavigateViaRenderer(content::WebContents* web_contents, const GURL& url) {
+  EXPECT_TRUE(
+      content::ExecJs(web_contents->GetMainFrame(),
+                      base::StrCat({"location.href='", url.spec(), "';"})));
+  // Enqueue a no-op script execution, which will block until the navigation
+  // initiated above completes.
+  EXPECT_TRUE(content::ExecJs(web_contents->GetMainFrame(), "true"));
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), url);
+}
+
 }  // namespace
 
 namespace content {
@@ -66,11 +78,50 @@ IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest, Basic) {
                               "internals.originTrialsTest().normalMethod();"));
 }
 
+IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest,
+                       NonNavigationTrialNotActivatedAcrossNavigations) {
+  NavigateToURL(shell(), GURL("https://example.test/basic.html"));
+  EXPECT_TRUE(content::ExecJs(shell()->web_contents()->GetMainFrame(),
+                              "internals.originTrialsTest().normalMethod();"));
+  NavigateViaRenderer(shell()->web_contents(),
+                      GURL("https://other.test/notrial.html"));
+  EXPECT_TRUE(content::ExecJs(shell()->web_contents()->GetMainFrame(),
+                              "internals.originTrialsTest();"));
+  EXPECT_FALSE(content::ExecJs(shell()->web_contents()->GetMainFrame(),
+                               "internals.originTrialsTest().normalMethod();"));
+}
+
 IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest, Navigation) {
   NavigateToURL(shell(), GURL("https://example.test/navigation.html"));
   // Ensure we can invoke navigationMethod(), which is only available when the
   // FrobulateNavigation OT is enabled.
   EXPECT_TRUE(
+      content::ExecJs(shell()->web_contents()->GetMainFrame(),
+                      "internals.originTrialsTest().navigationMethod();"));
+}
+
+IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest,
+                       NavigationTrialActivatedAcrossNavigations) {
+  NavigateToURL(shell(), GURL("https://example.test/navigation.html"));
+  EXPECT_TRUE(
+      content::ExecJs(shell()->web_contents()->GetMainFrame(),
+                      "internals.originTrialsTest().navigationMethod();"));
+
+  NavigateViaRenderer(shell()->web_contents(),
+                      GURL("https://other.test/notrial.html"));
+  // Ensure we can invoke navigationMethod() after having navigated from
+  // navigation.html, since navigationMethod() is exposed via a cross-navigation
+  // OT.
+  EXPECT_TRUE(
+      content::ExecJs(shell()->web_contents()->GetMainFrame(),
+                      "internals.originTrialsTest().navigationMethod();"));
+
+  NavigateViaRenderer(shell()->web_contents(),
+                      GURL("https://other.test/basic.html"));
+  // Ensure we can't invoke navigationMethod() after a second navigation, as
+  // cross-navigation OTs should only be forwarded to immediate navigations from
+  // where the trial was activated.
+  EXPECT_FALSE(
       content::ExecJs(shell()->web_contents()->GetMainFrame(),
                       "internals.originTrialsTest().navigationMethod();"));
 }

@@ -488,6 +488,10 @@ void FillNavigationParamsRequest(
         common_params.initiator_origin.value();
   }
 
+  navigation_params->initiator_origin_trial_features = {
+      common_params.initiator_origin_trial_features.begin(),
+      common_params.initiator_origin_trial_features.end()};
+
   navigation_params->was_discarded = commit_params.was_discarded;
 
   if (!commit_params.prefetched_signed_exchanges.empty()) {
@@ -569,6 +573,11 @@ CommonNavigationParams MakeCommonNavigationParams(
       static_cast<RequestExtraData*>(info->url_request.GetExtraData());
   DCHECK(extra_data);
 
+  // Convert from WebVector<int> to std::vector<int>.
+  std::vector<int> initiator_origin_trial_features(
+      info->initiator_origin_trial_features.begin(),
+      info->initiator_origin_trial_features.end());
+
   NavigationDownloadPolicy download_policy;
   RenderFrameImpl::MaybeSetDownloadFramePolicy(
       info->is_opener_navigation, info->url_request, current_origin,
@@ -590,8 +599,8 @@ CommonNavigationParams MakeCommonNavigationParams(
                            ? base::Optional<CSPSource>(BuildCSPSource(
                                  info->initiator_csp.self_source.value()))
                            : base::nullopt),
-      info->href_translate.Latin1(), is_history_navigation_in_new_child_frame,
-      info->input_start);
+      initiator_origin_trial_features, info->href_translate.Latin1(),
+      is_history_navigation_in_new_child_frame, info->input_start);
 }
 
 WebFrameLoadType NavigationTypeToLoadType(
