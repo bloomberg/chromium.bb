@@ -364,7 +364,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
         if (hasSelection()) {
             // Device is not provisioned, don't trigger SelectionClient logic at all.
-            boolean blockSelectionClient = !isDeviceProvisioned(mContext);
+            boolean blockSelectionClient = !isDeviceProvisioned();
 
             // Disable SelectionClient logic if it's incognito.
             blockSelectionClient |= isIncognito();
@@ -1567,10 +1567,11 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return client == null ? null : client.getCustomTextClassifier();
     }
 
-    private static boolean isDeviceProvisioned(Context context) {
-        if (context == null || context.getContentResolver() == null) return true;
+    @VisibleForTesting
+    public boolean isDeviceProvisioned() {
+        if (mContext == null || mContext.getContentResolver() == null) return true;
         return Settings.Global.getInt(
-                       context.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0)
+                       mContext.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0)
                 != 0;
     }
 
