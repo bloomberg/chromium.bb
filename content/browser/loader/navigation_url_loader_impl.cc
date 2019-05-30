@@ -138,16 +138,6 @@ size_t GetCertificateChainsSizeInKB(const net::SSLInfo& ssl_info) {
   return (cert_pickle.size() + unverified_cert_pickle.size()) / 1000;
 }
 
-WebContents* GetWebContentsFromFrameTreeNodeID(int frame_tree_node_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  FrameTreeNode* frame_tree_node =
-      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  if (!frame_tree_node)
-    return nullptr;
-
-  return WebContentsImpl::FromFrameTreeNode(frame_tree_node);
-}
-
 const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("navigation_url_loader", R"(
       semantics {
@@ -483,7 +473,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     request_info_ = std::move(request_info);
     frame_tree_node_id_ = request_info_->frame_tree_node_id;
     web_contents_getter_ = base::BindRepeating(
-        &GetWebContentsFromFrameTreeNodeID, frame_tree_node_id_);
+        &WebContents::FromFrameTreeNodeId, frame_tree_node_id_);
     navigation_ui_data_ = std::move(navigation_ui_data);
     // The ResourceDispatcherHostImpl can be null in unit tests.
     ResourceDispatcherHostImpl* rph = ResourceDispatcherHostImpl::Get();
@@ -530,8 +520,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     global_request_id_ = MakeGlobalRequestID();
     frame_tree_node_id_ = frame_tree_node_id;
     started_ = true;
-    web_contents_getter_ =
-        base::Bind(&GetWebContentsFromFrameTreeNodeID, frame_tree_node_id);
+    web_contents_getter_ = base::BindRepeating(
+        &WebContents::FromFrameTreeNodeId, frame_tree_node_id);
     navigation_ui_data_ = std::move(navigation_ui_data);
 
     base::PostTaskWithTraits(
