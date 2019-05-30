@@ -13690,7 +13690,7 @@
       }
     ]
   },
-  "WebKit Linux Trusty ASAN": {
+  "WebKit Linux ASAN": {
     "isolated_scripts": [
       {
         "args": [
@@ -13722,7 +13722,7 @@
       }
     ]
   },
-  "WebKit Linux Trusty Leak": {
+  "WebKit Linux Leak": {
     "isolated_scripts": [
       {
         "args": [
@@ -13754,7 +13754,7 @@
       }
     ]
   },
-  "WebKit Linux Trusty MSAN": {
+  "WebKit Linux MSAN": {
     "isolated_scripts": [
       {
         "args": [
