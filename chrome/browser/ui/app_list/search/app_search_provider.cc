@@ -309,7 +309,8 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
     }
     proxy->AppRegistryCache().ForEachApp([this, apps_vector](
                                              const apps::AppUpdate& update) {
-      if (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue) {
+      if ((update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) ||
+          (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue)) {
         return;
       }
 
