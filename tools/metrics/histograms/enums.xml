@@ -4241,6 +4241,15 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="kBrightnessPercent"/>
 </enum>
 
+<enum name="AutoScreenBrightnessModelLoadingStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="MissingGlobal"/>
+  <int value="2" label="IllFormattedGlobal"/>
+  <int value="3" label="MissingPersonal"/>
+  <int value="4" label="IllFormattedPersonal"/>
+  <int value="5" label="MissingIterationCount"/>
+</enum>
+
 <enum name="AutoScreenBrightnessNoBrightnessChangeCause">
   <int value="0" label="WaitingForInitialAls"/>
   <int value="1" label="WaitingForAvgHorizon"/>

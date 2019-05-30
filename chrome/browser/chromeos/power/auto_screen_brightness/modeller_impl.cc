@@ -32,11 +32,33 @@ namespace auto_screen_brightness {
 
 namespace {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ModelLoadingStatus {
+  // Global curve, personal curve and model iteration count are all loaded
+  // successfully.
+  kSuccess = 0,
+  // Global curve data is missing.
+  kMissingGlobal = 1,
+  // Global curve data exists but cannot be used to create a curve.
+  kIllFormattedGlobal = 2,
+  // Personal curve data is missing.
+  kMissingPersonal = 3,
+  // Personal curve data exists but cannot be used to create a curve.
+  kIllFormattedPersonal = 4,
+  // Model iteration count is missing or is invalid.
+  kMissingIterationCount = 5,
+  kMaxValue = kMissingIterationCount
+};
+
+void LogModelLoadingStatus(ModelLoadingStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.ModelLoadingStatus", status);
+}
+
 // Loads saved model from locations specified by |spec|. This
 // should run in another thread to be non-blocking to the main thread (if
 // |is_testing| is false). The ambient values read from disk should be in the
 // log-domain already.
-// TODO(jiameng): add UMA metrics to record model loading status.
 Model LoadModelFromDisk(const ModellerImpl::ModelSavingSpec& spec,
                         bool is_testing) {
   DCHECK(is_testing ||
@@ -47,29 +69,40 @@ Model LoadModelFromDisk(const ModellerImpl::ModelSavingSpec& spec,
   // If global curve doesn't exist or can't be parsed, then we ignore all saved
   // data.
   if (!PathExists(spec.global_curve) ||
-      !base::ReadFileToString(spec.global_curve, &content))
+      !base::ReadFileToString(spec.global_curve, &content)) {
+    LogModelLoadingStatus(ModelLoadingStatus::kMissingGlobal);
     return loaded_model;
+  }
   loaded_model.global_curve = MonotoneCubicSpline::FromString(content);
-  if (!loaded_model.global_curve)
+  if (!loaded_model.global_curve) {
+    LogModelLoadingStatus(ModelLoadingStatus::kIllFormattedGlobal);
     return loaded_model;
+  }
 
   // If personal curve doesn't exist or can't be parsed, then we ignore any
   // saved personal model. The iteration count is implicitly set to 0.
   if (!PathExists(spec.personal_curve) ||
-      !base::ReadFileToString(spec.personal_curve, &content))
+      !base::ReadFileToString(spec.personal_curve, &content)) {
+    LogModelLoadingStatus(ModelLoadingStatus::kMissingPersonal);
     return loaded_model;
+  }
   loaded_model.personal_curve = MonotoneCubicSpline::FromString(content);
-  if (!loaded_model.personal_curve)
+  if (!loaded_model.personal_curve) {
+    LogModelLoadingStatus(ModelLoadingStatus::kIllFormattedPersonal);
     return loaded_model;
+  }
 
   int iteration_count = 0;
   // If iteration count doesn't exist or can't be parsed, it's reset to 0.
   if (!PathExists(spec.iteration_count) ||
       !base::ReadFileToString(spec.iteration_count, &content) ||
-      content.empty() || !base::StringToInt(content, &iteration_count))
+      content.empty() || !base::StringToInt(content, &iteration_count)) {
+    LogModelLoadingStatus(ModelLoadingStatus::kMissingIterationCount);
     return loaded_model;
+  }
   loaded_model.iteration_count = iteration_count;
 
+  LogModelLoadingStatus(ModelLoadingStatus::kSuccess);
   return loaded_model;
 }
 
@@ -463,7 +496,10 @@ void ModellerImpl::OnInitializationComplete() {
   DCHECK(is_modeller_enabled_.has_value());
   DCHECK(*is_modeller_enabled_ == model_.global_curve.has_value());
 
-  // TODO(jiameng): log model status to UMA.
+  UMA_HISTOGRAM_COUNTS_1000(
+      "AutoScreenBrightness.ModelIterationCountAtInitialization",
+      model_.iteration_count);
+
   for (auto& observer : observers_) {
     NotifyObserverInitStatus(observer);
   }
