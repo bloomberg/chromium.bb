@@ -132,7 +132,6 @@ crbug.com/751849 [ win7 debug nvidia d3d11 passthrough ] conformance/extensions/
 crbug.com/angleproject/2103 [ win ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Skip ]
 
 # Note that the following test seems to pass, but it may still be flaky.
-crbug.com/525188 [ win ] conformance/glsl/constructors/glsl-construct-vec-mat-index.html [ RetryOnFailure ]
 crbug.com/478572 [ win ] deqp/data/gles2/shaders/functions.html [ Failure ]
 crbug.com/931006 [ win ] conformance/textures/misc/texture-active-bind.html [ Failure ]
 crbug.com/951628 [ win no-passthrough ] conformance/rendering/blending.html [ Failure ]
