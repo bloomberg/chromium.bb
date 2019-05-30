@@ -54,6 +54,7 @@ void WorkerScriptFetchInitiator::Start(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     AppCacheNavigationHandleCore* appcache_handle_core,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override,
     StoragePartitionImpl* storage_partition,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -119,6 +120,8 @@ void WorkerScriptFetchInitiator::Start(
           std::move(subresource_loader_factories), resource_context,
           std::move(service_worker_context), appcache_handle_core,
           blob_url_loader_factory ? blob_url_loader_factory->Clone() : nullptr,
+          url_loader_factory_override ? url_loader_factory_override->Clone()
+                                      : nullptr,
           std::move(callback)));
 }
 
@@ -251,6 +254,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     AppCacheNavigationHandleCore* appcache_handle_core,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         blob_url_loader_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        url_loader_factory_override_info,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(resource_context);
@@ -269,6 +274,10 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     // creating a new URLLoaderFactoryBundle.
     url_loader_factory = network::SharedURLLoaderFactory::Create(
         std::move(blob_url_loader_factory_info));
+  } else if (url_loader_factory_override_info) {
+    // For unit tests.
+    url_loader_factory = network::SharedURLLoaderFactory::Create(
+        std::move(url_loader_factory_override_info));
   } else {
     // Add the default factory to the bundle for browser if NetworkService
     // is on. When NetworkService is off, we already created the default factory

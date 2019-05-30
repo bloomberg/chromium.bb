@@ -63,6 +63,8 @@ class WorkerScriptFetchInitiator {
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       AppCacheNavigationHandleCore* appcache_handle_core,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory>
+          url_loader_factory_override,
       StoragePartitionImpl* storage_partition,
       CompletionCallback callback);
 
@@ -92,6 +94,8 @@ class WorkerScriptFetchInitiator {
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           blob_url_loader_factory_info,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          url_loader_factory_override_info,
       CompletionCallback callback);
   static void DidCreateScriptLoaderOnIO(
       CompletionCallback callback,

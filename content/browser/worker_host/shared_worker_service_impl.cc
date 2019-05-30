@@ -103,6 +103,11 @@ void SharedWorkerServiceImpl::SetWorkerTerminationCallbackForTesting(
   terminate_all_workers_callback_ = std::move(callback);
 }
 
+void SharedWorkerServiceImpl::SetURLLoaderFactoryForTesting(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_override_ = std::move(url_loader_factory);
+}
+
 void SharedWorkerServiceImpl::ConnectToWorker(
     int process_id,
     int frame_id,
@@ -209,7 +214,8 @@ void SharedWorkerServiceImpl::CreateWorker(
       process_id, weak_host->instance()->url(),
       weak_host->instance()->constructor_origin(), ResourceType::kSharedWorker,
       service_worker_context_, appcache_handle_core,
-      std::move(blob_url_loader_factory), storage_partition_,
+      std::move(blob_url_loader_factory), url_loader_factory_override_,
+      storage_partition_,
       base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,
                      weak_factory_.GetWeakPtr(), std::move(instance), weak_host,
                      std::move(client), process_id, frame_id, message_port));

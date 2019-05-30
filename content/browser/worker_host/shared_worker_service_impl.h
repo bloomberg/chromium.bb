@@ -53,6 +53,11 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   void TerminateAllWorkersForTesting(base::OnceClosure callback);
   void SetWorkerTerminationCallbackForTesting(base::OnceClosure callback);
 
+  // Uses |url_loader_factory| to load workers' scripts instead of
+  // StoragePartition's URLLoaderFactoryGetter.
+  void SetURLLoaderFactoryForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
   // Creates the worker if necessary or connects to an already existing worker.
   void ConnectToWorker(
       int process_id,
@@ -126,6 +131,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   StoragePartitionImpl* const storage_partition_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override_;
 
   base::WeakPtrFactory<SharedWorkerServiceImpl> weak_factory_;
 

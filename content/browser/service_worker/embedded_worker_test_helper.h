@@ -22,8 +22,9 @@
 
 namespace content {
 
-class MockRenderProcessHost;
+class FakeNetworkURLLoaderFactory;
 class FakeServiceWorker;
+class MockRenderProcessHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class TestBrowserContext;
@@ -154,7 +155,6 @@ class EmbeddedWorkerTestHelper {
   virtual std::unique_ptr<FakeServiceWorker> CreateServiceWorker();
 
  private:
-  class MockNetworkURLLoaderFactory;
   class MockRendererInterface;
 
   std::unique_ptr<TestBrowserContext> browser_context_;
@@ -180,7 +180,7 @@ class EmbeddedWorkerTestHelper {
   int new_mock_render_process_id_;
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
-  std::unique_ptr<MockNetworkURLLoaderFactory> default_network_loader_factory_;
+  std::unique_ptr<FakeNetworkURLLoaderFactory> default_network_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerTestHelper);
 };

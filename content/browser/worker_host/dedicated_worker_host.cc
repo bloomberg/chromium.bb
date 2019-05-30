@@ -102,7 +102,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         process_id_, script_url, request_initiator_origin,
         ResourceType::kWorker,
         storage_partition_impl->GetServiceWorkerContext(),
-        appcache_handle_->core(), std::move(blob_url_loader_factory),
+        appcache_handle_->core(), std::move(blob_url_loader_factory), nullptr,
         storage_partition_impl,
         base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
                        weak_factory_.GetWeakPtr(), std::move(client)));

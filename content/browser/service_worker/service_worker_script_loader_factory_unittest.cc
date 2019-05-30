@@ -12,68 +12,14 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/fake_network_url_loader_factory.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
-#include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
-
-namespace {
-
-// A URLLoaderFactory that returns 200 OK with an empty javascript to any
-// request.
-// TODO(bashi): Avoid duplicated MockNetworkURLLoaderFactory. This is almost the
-// same as EmbeddedWorkerTestHelper::MockNetworkURLLoaderFactory.
-class MockNetworkURLLoaderFactory final
-    : public network::mojom::URLLoaderFactory {
- public:
-  MockNetworkURLLoaderFactory() = default;
-
-  // network::mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    const std::string headers =
-        "HTTP/1.1 200 OK\n"
-        "Content-Type: application/javascript\n\n";
-    net::HttpResponseInfo info;
-    info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-        net::HttpUtil::AssembleRawHeaders(headers));
-    network::ResourceResponseHead response;
-    response.headers = info.headers;
-    response.headers->GetMimeType(&response.mime_type);
-    client->OnReceiveResponse(response);
-
-    const std::string body = "/*this body came from the network*/";
-    uint32_t bytes_written = body.size();
-    mojo::DataPipe data_pipe;
-    data_pipe.producer_handle->WriteData(body.data(), &bytes_written,
-                                         MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-    client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-
-    network::URLLoaderCompletionStatus status;
-    status.error_code = net::OK;
-    client->OnComplete(status);
-  }
-
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
-  DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
-};
-
-}  // namespace
 
 class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
  public:
@@ -102,7 +48,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
         version_.get(), context->AsWeakPtr(), &remote_endpoint_);
 
-    network_loader_factory_ = std::make_unique<MockNetworkURLLoaderFactory>();
+    network_loader_factory_ = std::make_unique<FakeNetworkURLLoaderFactory>();
     helper_->SetNetworkFactory(network_loader_factory_.get());
 
     factory_ = std::make_unique<ServiceWorkerScriptLoaderFactory>(
@@ -134,7 +80,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
   scoped_refptr<ServiceWorkerVersion> version_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
-  std::unique_ptr<MockNetworkURLLoaderFactory> network_loader_factory_;
+  std::unique_ptr<FakeNetworkURLLoaderFactory> network_loader_factory_;
   std::unique_ptr<ServiceWorkerScriptLoaderFactory> factory_;
 };
 
