@@ -535,7 +535,6 @@
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],

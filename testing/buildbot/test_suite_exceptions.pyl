@@ -1560,8 +1560,6 @@
         ]
       },
       'chromeos-amd64-generic-rel': {
-        # TODO(crbug.com/957807): Remove from experimental.
-        'experiment_percentage': 100,
         'swarming': {
           'shards': 6,
         },
