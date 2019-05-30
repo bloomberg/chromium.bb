@@ -8494,6 +8494,7 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookies) {
     std::unique_ptr<URLRequest> r(
         context.CreateRequest(url_requiring_auth, DEFAULT_PRIORITY, &d,
                               TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->set_site_for_cookies(url_requiring_auth);
     r->Start();
 
     d.RunUntilComplete();
@@ -8522,6 +8523,7 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookies) {
 
     std::unique_ptr<URLRequest> r(context.CreateRequest(
         url_with_identity, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->set_site_for_cookies(url_with_identity);
     r->Start();
 
     d.RunUntilComplete();
@@ -8548,9 +8550,10 @@ TEST_F(URLRequestTest, CatchFilteredCookies) {
   // Make sure cookies blocked from being stored are caught.
   {
     TestDelegate d;
+    GURL test_url = test_server.GetURL("/set-cookie?not_stored_cookie=true");
     std::unique_ptr<URLRequest> req(context.CreateRequest(
-        test_server.GetURL("/set-cookie?not_stored_cookie=true"),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_url);
     req->Start();
     d.RunUntilComplete();
 
@@ -8564,18 +8567,20 @@ TEST_F(URLRequestTest, CatchFilteredCookies) {
   // Set a cookie to be blocked later
   {
     TestDelegate d;
+    GURL test_url = test_server.GetURL("/set-cookie?not_sent_cookies=true");
     std::unique_ptr<URLRequest> req(context.CreateRequest(
-        test_server.GetURL("/set-cookie?not_sent_cookies=true"),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_url);
     req->Start();
     d.RunUntilComplete();
   }
   {
     TestDelegate d;
     // Make sure cookies blocked from being sent are caught.
+    GURL test_url = test_server.GetURL("/echoheader?Cookie");
     std::unique_ptr<URLRequest> req(context.CreateRequest(
-        test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
-        TRAFFIC_ANNOTATION_FOR_TESTS));
+        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_url);
     req->Start();
     d.RunUntilComplete();
 
@@ -8613,6 +8618,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     std::unique_ptr<URLRequest> request(
         context.CreateRequest(url_requiring_auth, DEFAULT_PRIORITY, &delegate,
                               TRAFFIC_ANNOTATION_FOR_TESTS));
+    request->set_site_for_cookies(url_requiring_auth);
     request->Start();
 
     delegate.RunUntilAuthRequired();
@@ -8659,6 +8665,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     std::unique_ptr<URLRequest> request(
         context.CreateRequest(url_requiring_auth_wo_cookies, DEFAULT_PRIORITY,
                               &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    request->set_site_for_cookies(url_requiring_auth_wo_cookies);
     request->Start();
 
     delegate.RunUntilAuthRequired();
@@ -8992,6 +8999,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
         context.CreateRequest(original_url, DEFAULT_PRIORITY, &delegate,
                               TRAFFIC_ANNOTATION_FOR_TESTS));
 
+    request->set_site_for_cookies(original_url);
     request->Start();
     delegate.RunUntilRedirect();
 
@@ -9043,6 +9051,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
         context.CreateRequest(original_url_wo_cookie, DEFAULT_PRIORITY,
                               &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
+    request->set_site_for_cookies(original_url_wo_cookie);
     request->Start();
 
     delegate.RunUntilRedirect();

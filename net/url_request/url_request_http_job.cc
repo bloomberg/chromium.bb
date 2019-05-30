@@ -636,13 +636,14 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     cookie_store->GetCookieListWithOptionsAsync(
         request_->url(), options,
         base::Bind(&URLRequestHttpJob::SetCookieHeaderAndStart,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(), options));
   } else {
     StartTransaction();
   }
 }
 
 void URLRequestHttpJob::SetCookieHeaderAndStart(
+    const CookieOptions& options,
     const CookieList& cookie_list,
     const CookieStatusList& excluded_list) {
   DCHECK(request_->not_sent_cookies().empty());
@@ -665,6 +666,25 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
       // Disable privacy mode as we are sending cookies anyway.
       request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
+    }
+  }
+
+  // Copy any cookies that would not be sent under SameSiteByDefaultCookies
+  // and/or CookiesWithoutSameSiteMustBeSecure, into the |excluded_cookies| list
+  // so that we can display appropriate console warning messages about them.
+  // I.e. they are still included in the Cookie header, but they are *also*
+  // copied into |excluded_cookies| with the CookieInclusionStatus that *would*
+  // apply. This special-casing will go away once SameSiteByDefaultCookies and
+  // CookiesWithoutSameSiteMustBeSecure are on by default, as the affected
+  // cookies will just be excluded in the first place.
+  for (const CanonicalCookie& cookie : cookie_list) {
+    CanonicalCookie::CookieInclusionStatus
+        include_but_maybe_would_exclude_status =
+            cookie_util::CookieWouldBeExcludedDueToSameSite(cookie, options);
+    if (include_but_maybe_would_exclude_status !=
+        CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+      excluded_cookies.push_back(
+          {cookie, include_but_maybe_would_exclude_status});
     }
   }
 
@@ -734,14 +754,14 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
         &returned_status);
 
     if (returned_status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
-      OnSetCookieResult(base::nullopt, std::move(cookie_string),
+      OnSetCookieResult(options, base::nullopt, std::move(cookie_string),
                         returned_status);
       continue;
     }
 
     if (!CanSetCookie(*cookie, &options)) {
       OnSetCookieResult(
-          base::make_optional<CanonicalCookie>(*cookie),
+          options, base::make_optional<CanonicalCookie>(*cookie),
           std::move(cookie_string),
           CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
       continue;
@@ -749,9 +769,10 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 
     request_->context()->cookie_store()->SetCookieWithOptionsAsync(
         request_->url(), cookie_string, options,
-        base::BindOnce(
-            &URLRequestHttpJob::OnSetCookieResult, weak_factory_.GetWeakPtr(),
-            base::make_optional<CanonicalCookie>(*cookie), cookie_string));
+        base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
+                       weak_factory_.GetWeakPtr(), options,
+                       base::make_optional<CanonicalCookie>(*cookie),
+                       cookie_string));
   }
   // Removing the 1 that |num_cookie_lines_left| started with, signifing that
   // loop has been exited.
@@ -762,12 +783,32 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 }
 
 void URLRequestHttpJob::OnSetCookieResult(
+    const CookieOptions& options,
     base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CanonicalCookie::CookieInclusionStatus status) {
   if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
     cs_status_list_.emplace_back(std::move(cookie), std::move(cookie_string),
                                  status);
+  } else {
+    DCHECK(cookie.has_value());
+    // Even if the status is INCLUDE, copy any cookies that would not be set
+    // under SameSiteByDefaultCookies and/or CookiesWithoutSameSiteMustBeSecure
+    // into |cs_status_list_| so that we can display appropriate console warning
+    // messages about them. I.e. they are still set, but they are *also* copied
+    // into |cs_status_list_| with the CookieInclusionStatus that *would* apply.
+    // This special-casing will go away once SameSiteByDefaultCookies and
+    // CookiesWithoutSameSiteMustBeSecure are on by default, as the affected
+    // cookies will just be excluded in the first place.
+    CanonicalCookie::CookieInclusionStatus
+        include_but_maybe_would_exclude_status =
+            cookie_util::CookieWouldBeExcludedDueToSameSite(cookie.value(),
+                                                            options);
+    if (include_but_maybe_would_exclude_status !=
+        CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+      cs_status_list_.emplace_back(std::move(cookie), std::move(cookie_string),
+                                   include_but_maybe_would_exclude_status);
+    }
   }
 
   num_cookie_lines_left_--;

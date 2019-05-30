@@ -135,6 +135,18 @@ NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForScriptSet(const GURL& url,
                                    const GURL& site_for_cookies);
 
+// Checks whether a cookie would be excluded due to SameSite restrictions,
+// assuming SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
+// were turned on. This should be called on a cookie that is in fact included,
+// (presumably because SameSiteByDefaultCookies and
+// CookiesWithoutSameSiteMustBeSecure are not actually enabled). If the
+// return value is not INCLUDE, the cookie should be added to the excluded
+// cookies list so that an appropriate warning message can be shown in the
+// console.
+NET_EXPORT CanonicalCookie::CookieInclusionStatus
+CookieWouldBeExcludedDueToSameSite(const CanonicalCookie& cookie,
+                                   const CookieOptions& options);
+
 // Takes a OnceCallback with only a CookieList and binds it to a callback that
 // also accepts a CookieStatusList, making it compatible with
 // CookieStore::GetCookieListCallback.

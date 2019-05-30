@@ -149,11 +149,13 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   void DoneWithRequest(CompletionCause reason);
 
   // Callback functions for Cookie Monster
-  void SetCookieHeaderAndStart(const CookieList& cookie_list,
+  void SetCookieHeaderAndStart(const CookieOptions& options,
+                               const CookieList& cookie_list,
                                const CookieStatusList& excluded_list);
 
   // Another Cookie Monster callback
-  void OnSetCookieResult(base::Optional<CanonicalCookie> cookie,
+  void OnSetCookieResult(const CookieOptions& options,
+                         base::Optional<CanonicalCookie> cookie,
                          std::string cookie_string,
                          CanonicalCookie::CookieInclusionStatus status);
   int num_cookie_lines_left_;

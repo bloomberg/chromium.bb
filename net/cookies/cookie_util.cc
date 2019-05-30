@@ -467,6 +467,28 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
     return CookieOptions::SameSiteCookieContext::CROSS_SITE;
 }
 
+CanonicalCookie::CookieInclusionStatus CookieWouldBeExcludedDueToSameSite(
+    const CanonicalCookie& cookie,
+    const CookieOptions& options) {
+  // Check if cookie would be excluded under SameSiteByDefaultCookies.
+  bool cross_site_context = options.same_site_cookie_context() ==
+                            CookieOptions::SameSiteCookieContext::CROSS_SITE;
+  if (cross_site_context && cookie.SameSite() == CookieSameSite::UNSPECIFIED) {
+    DCHECK_EQ(CookieSameSite::NO_RESTRICTION, cookie.GetEffectiveSameSite());
+    return CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX;
+  }
+
+  // Check if cookie would be excluded under CookiesWithoutSameSiteMustBeSecure.
+  if (cookie.SameSite() == CookieSameSite::NO_RESTRICTION &&
+      !cookie.IsSecure()) {
+    return CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_NONE_INSECURE;
+  }
+
+  return CanonicalCookie::CookieInclusionStatus::INCLUDE;
+}
+
 base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
 IgnoreCookieStatusList(base::OnceCallback<void(const CookieList&)> callback) {
   return base::BindOnce(
