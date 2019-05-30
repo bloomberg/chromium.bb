@@ -27,7 +27,8 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
     private final Rect mDirtyRect = new Rect();
 
     private Bitmap mBitmap;
-    private Rect mBitmapSize = new Rect();
+    private Rect mViewSize = new Rect();
+    protected float mScale = 1;
 
     /**
      * Builds a {@link ViewResourceAdapter} instance around {@code view}.
@@ -71,7 +72,19 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
 
     @Override
     public Rect getBitmapSize() {
-        return mBitmapSize;
+        return mViewSize;
+    }
+
+    /**
+     * Set the downsampling scale. The rendered size is not affected.
+     * @param scale The scale to use. <1 means the Bitmap is smaller than the View.
+     */
+    public void setDownsamplingScale(float scale) {
+        assert scale <= 1;
+        if (mScale != scale) {
+            invalidate(null);
+        }
+        mScale = scale;
     }
 
     /**
@@ -143,7 +156,10 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
      * @param canvas The {@link Canvas} that will be drawn to.
      */
     protected void capture(Canvas canvas) {
+        canvas.save();
+        canvas.scale(mScale, mScale);
         mView.draw(canvas);
+        canvas.restore();
     }
 
     /**
@@ -156,8 +172,8 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
      * @return Whether |mBitmap| is corresponding to |mView| or not.
      */
     private boolean validateBitmap() {
-        int viewWidth = mView.getWidth();
-        int viewHeight = mView.getHeight();
+        int viewWidth = (int) (mView.getWidth() * mScale);
+        int viewHeight = (int) (mView.getHeight() * mScale);
         boolean isEmpty = viewWidth == 0 || viewHeight == 0;
         if (isEmpty) {
             viewWidth = 1;
@@ -172,8 +188,8 @@ public class ViewResourceAdapter extends DynamicResource implements OnLayoutChan
         if (mBitmap == null) {
             mBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888);
             mBitmap.setHasAlpha(true);
-            mDirtyRect.set(0, 0, viewWidth, viewHeight);
-            mBitmapSize.set(0, 0, mBitmap.getWidth(), mBitmap.getHeight());
+            mViewSize.set(0, 0, mView.getWidth(), mView.getHeight());
+            mDirtyRect.set(mViewSize);
         }
 
         return !isEmpty;

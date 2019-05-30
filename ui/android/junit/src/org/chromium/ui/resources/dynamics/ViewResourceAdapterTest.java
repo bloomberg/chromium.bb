@@ -79,6 +79,19 @@ public class ViewResourceAdapterTest {
     }
 
     @Test
+    public void testSetDownsamplingSize() {
+        float scale = 0.5f;
+        mAdapter.setDownsamplingScale(scale);
+        Bitmap bitmap = mAdapter.getBitmap();
+        assertEquals(mViewWidth * scale, bitmap.getWidth(), 1);
+        assertEquals(mViewHeight * scale, bitmap.getHeight(), 1);
+
+        Rect rect = mAdapter.getBitmapSize();
+        assertEquals(mViewWidth, rect.width());
+        assertEquals(mViewHeight, rect.height());
+    }
+
+    @Test
     public void testIsDirty() {
         assertTrue(mAdapter.isDirty());
 
@@ -88,6 +101,21 @@ public class ViewResourceAdapterTest {
 
     @Test
     public void testOnLayoutChange() {
+        mAdapter.getBitmap();
+        assertFalse(mAdapter.isDirty());
+
+        mAdapter.onLayoutChange(mView, 0, 0, 1, 2, 0, 0, mViewWidth, mViewHeight);
+        assertTrue(mAdapter.isDirty());
+
+        Rect dirtyRect = mAdapter.getDirtyRect();
+        assertEquals(1, dirtyRect.width());
+        assertEquals(2, dirtyRect.height());
+    }
+
+    @Test
+    public void testOnLayoutChangeDownsampled() {
+        mAdapter.setDownsamplingScale(0.5f);
+
         mAdapter.getBitmap();
         assertFalse(mAdapter.isDirty());
 
@@ -114,6 +142,19 @@ public class ViewResourceAdapterTest {
 
     @Test
     public void testInvalidateRect() {
+        mAdapter.getBitmap();
+        assertFalse(mAdapter.isDirty());
+
+        Rect dirtyRect = new Rect(1, 2, 3, 4);
+        mAdapter.invalidate(dirtyRect);
+        assertTrue(mAdapter.isDirty());
+        assertEquals(dirtyRect.toString(), mAdapter.getDirtyRect().toString());
+    }
+
+    @Test
+    public void testInvalidateRectDownsampled() {
+        mAdapter.setDownsamplingScale(0.5f);
+
         mAdapter.getBitmap();
         assertFalse(mAdapter.isDirty());
 
@@ -208,6 +249,20 @@ public class ViewResourceAdapterTest {
 
     @Test
     public void testGetDirtyRect() {
+        mAdapter.getBitmap();
+        Rect rect = mAdapter.getDirtyRect();
+        assertTrue(rect.isEmpty());
+
+        mAdapter.invalidate(null);
+        rect = mAdapter.getDirtyRect();
+        assertEquals(mViewWidth, rect.width());
+        assertEquals(mViewHeight, rect.height());
+    }
+
+    @Test
+    public void testGetDirtyRectDownsampled() {
+        mAdapter.setDownsamplingScale(0.5f);
+
         mAdapter.getBitmap();
         Rect rect = mAdapter.getDirtyRect();
         assertTrue(rect.isEmpty());
