@@ -31,6 +31,14 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "ui/gfx/color_utils.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "components/arc/arc_util.h"
+#include "components/arc/test/connection_holder_util.h"
+#include "components/arc/test/fake_app_instance.h"
+#endif  // defined(OS_CHROMEOS)
+
 class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
  public:
   PwaInstallViewBrowserTest()
@@ -53,9 +61,19 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
 
+#if defined(OS_CHROMEOS)
+    arc::SetArcAvailableCommandLineForTesting(command_line);
+#endif  // defined(OS_CHROMEOS)
+
     command_line->AppendSwitchASCII(
         network::switches::kUnsafelyTreatInsecureOriginAsSecure,
         GetInstallableAppURL().GetOrigin().spec());
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+#if defined(OS_CHROMEOS)
+    arc::ArcSessionManager::SetUiEnabledForTesting(false);
+#endif  // defined(OS_CHROMEOS)
   }
 
   void SetUpOnMainThread() override {
@@ -415,3 +433,33 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
       banners::AppBannerManager::GetInstallableWebAppName(web_contents_),
       "Manifest listing related chrome app"));
 }
+
+#if defined(OS_CHROMEOS)
+// Omnibox install promotion should not show if prefer_related_applications is
+// true and an ARC app listed as related.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
+                       ListedRelatedAndroidAppInstalled) {
+  arc::SetArcPlayStoreEnabledForProfile(browser()->profile(), true);
+  ArcAppListPrefs* arc_app_list_prefs =
+      ArcAppListPrefs::Get(browser()->profile());
+  auto app_instance =
+      std::make_unique<arc::FakeAppInstance>(arc_app_list_prefs);
+  arc_app_list_prefs->app_connection_holder()->SetInstance(app_instance.get());
+  WaitForInstanceReady(arc_app_list_prefs->app_connection_holder());
+
+  // Install test Android app.
+  arc::mojom::ArcPackageInfo package;
+  package.package_name = "com.example.app";
+  app_instance->InstallPackage(package.Clone());
+
+  NavigateToURL(
+      https_server_.GetURL("/banners/manifest_test_page.html?manifest="
+                           "manifest_listing_related_android_app.json"));
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+
+  EXPECT_FALSE(pwa_install_view_->GetVisible());
+  EXPECT_TRUE(base::EqualsASCII(
+      banners::AppBannerManager::GetInstallableWebAppName(web_contents_),
+      "Manifest listing related android app"));
+}
+#endif  // defined(OS_CHROMEOS)

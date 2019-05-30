@@ -21,11 +21,20 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // Platform values defined in:
 // https://github.com/w3c/manifest/wiki/Platforms
 const char kPlatformChromeWebStore[] = "chrome_web_store";
+
+#if defined(OS_CHROMEOS)
+const char kPlatformPlay[] = "play";
+#endif  // defined(OS_CHROMEOS)
 
 bool gDisableTriggeringForTesting = false;
 
@@ -61,24 +70,42 @@ void AppBannerManagerDesktop::InvalidateWeakPtrs() {
 
 bool AppBannerManagerDesktop::IsSupportedAppPlatform(
     const base::string16& platform) const {
-  return base::EqualsASCII(platform, kPlatformChromeWebStore);
+  if (base::EqualsASCII(platform, kPlatformChromeWebStore))
+    return true;
 
-  // TODO(https://crbug.com/949430): Implement for ARC apps on Chrome OS.
+#if defined(OS_CHROMEOS)
+  if (base::EqualsASCII(platform, kPlatformPlay) &&
+      arc::IsArcAllowedForProfile(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()))) {
+    return true;
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  return false;
 }
 
 bool AppBannerManagerDesktop::IsRelatedAppInstalled(
     const blink::Manifest::RelatedApplication& related_app) const {
-  const base::string16& platform = related_app.platform.string();
-  if (!base::EqualsASCII(platform, kPlatformChromeWebStore))
+  std::string id = base::UTF16ToUTF8(related_app.id.string());
+  if (id.empty())
     return false;
 
-  std::string id = base::UTF16ToUTF8(related_app.id.string());
-  return !id.empty() &&
+  const base::string16& platform = related_app.platform.string();
 
-         extension_registry_->GetExtensionById(
-             id, extensions::ExtensionRegistry::ENABLED) != nullptr;
+  if (base::EqualsASCII(platform, kPlatformChromeWebStore)) {
+    return extension_registry_->GetExtensionById(
+               id, extensions::ExtensionRegistry::ENABLED) != nullptr;
+  }
 
-  // TODO(https://crbug.com/949430): Implement for ARC apps on Chrome OS.
+#if defined(OS_CHROMEOS)
+  if (base::EqualsASCII(platform, kPlatformPlay)) {
+    ArcAppListPrefs* arc_app_list_prefs =
+        ArcAppListPrefs::Get(web_contents()->GetBrowserContext());
+    return arc_app_list_prefs && arc_app_list_prefs->GetPackage(id) != nullptr;
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  return false;
 }
 
 bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
