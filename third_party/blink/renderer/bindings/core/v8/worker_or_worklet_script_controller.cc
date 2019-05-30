@@ -163,15 +163,18 @@ void WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
     v8::ExtensionConfiguration extension_configuration =
         ScriptController::ExtensionsFor(global_scope_);
 
-    Agent* agent = global_scope_->GetAgent();
-    DCHECK(agent);
+    // TODO(nhiroki): Replace this null check with DCHECK(agent) after making
+    // WorkletGlobalScope take a proper Agent.
+    v8::MicrotaskQueue* microtask_queue = nullptr;
+    if (Agent* agent = global_scope_->GetAgent())
+      microtask_queue = agent->event_loop()->microtask_queue();
 
     V8PerIsolateData::UseCounterDisabledScope use_counter_disabled(
         V8PerIsolateData::From(isolate_));
     context = v8::Context::New(isolate_, &extension_configuration,
                                global_template, v8::MaybeLocal<v8::Value>(),
                                v8::DeserializeInternalFieldsCallback(),
-                               agent->event_loop()->microtask_queue());
+                               microtask_queue);
   }
   DCHECK(!context.IsEmpty());
 

@@ -46,6 +46,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   WorkerOrWorkletGlobalScope(
       v8::Isolate*,
+      Agent* agent,
       OffMainThreadWorkerScriptFetchOption,
       const String& name,
       const base::UnguessableToken& parent_devtools_token,
