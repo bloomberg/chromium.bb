@@ -39,7 +39,7 @@ ProfileProvider::~ProfileProvider() {
 }
 
 void ProfileProvider::Init() {
-#if BUILDFLAG(USE_NEW_TCMALLOC)
+#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) && BUILDFLAG(USE_NEW_TCMALLOC)
   if (base::FeatureList::IsEnabled(heap_profiling::kOOPHeapProfilingFeature)) {
     HeapCollectionMode mode = HeapCollector::CollectionModeFromString(
         base::GetFieldTrialParamValueByFeature(
