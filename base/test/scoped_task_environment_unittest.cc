@@ -274,8 +274,8 @@ TEST_P(ScopedTaskEnvironmentTest, SupportsSequenceLocalStorageOnMainThread) {
       GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC);
 
   SequenceLocalStorageSlot<int> sls_slot;
-  sls_slot.Set(5);
-  EXPECT_EQ(5, sls_slot.Get());
+  sls_slot.emplace(5);
+  EXPECT_EQ(5, *sls_slot);
 }
 
 TEST_P(ScopedTaskEnvironmentTest, SingleThreadShouldNotInitializeThreadPool) {

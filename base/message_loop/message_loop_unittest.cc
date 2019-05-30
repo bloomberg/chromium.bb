@@ -2246,18 +2246,13 @@ TEST_F(MessageLoopTest, SequenceLocalStorageSetGet) {
   SequenceLocalStorageSlot<int> slot;
 
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      BindOnce(&SequenceLocalStorageSlot<int>::Set, Unretained(&slot), 11));
+      FROM_HERE, BindLambdaForTesting([&]() { slot.emplace(11); }));
 
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(
-                     [](SequenceLocalStorageSlot<int>* slot) {
-                       EXPECT_EQ(slot->Get(), 11);
-                     },
-                     &slot));
+      FROM_HERE, BindLambdaForTesting([&]() { EXPECT_EQ(*slot, 11); }));
 
   RunLoop().RunUntilIdle();
-  EXPECT_EQ(slot.Get(), 11);
+  EXPECT_EQ(*slot, 11);
 }
 
 // Verify that tasks posted to and code running in different MessageLoops access
@@ -2268,23 +2263,18 @@ TEST_F(MessageLoopTest, SequenceLocalStorageDifferentMessageLoops) {
   {
     MessageLoop loop;
     ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        BindOnce(&SequenceLocalStorageSlot<int>::Set, Unretained(&slot), 11));
+        FROM_HERE, BindLambdaForTesting([&]() { slot.emplace(11); }));
 
     RunLoop().RunUntilIdle();
-    EXPECT_EQ(slot.Get(), 11);
+    EXPECT_EQ(*slot, 11);
   }
 
   MessageLoop loop;
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(
-                     [](SequenceLocalStorageSlot<int>* slot) {
-                       EXPECT_NE(slot->Get(), 11);
-                     },
-                     &slot));
+      FROM_HERE, BindLambdaForTesting([&]() { EXPECT_FALSE(slot); }));
 
   RunLoop().RunUntilIdle();
-  EXPECT_NE(slot.Get(), 11);
+  EXPECT_NE(slot.GetOrCreateValue(), 11);
 }
 
 namespace {

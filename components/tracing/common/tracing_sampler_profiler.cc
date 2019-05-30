@@ -143,9 +143,9 @@ void TracingSamplerProfiler::CreateOnChildThread() {
   using ProfilerSlot =
       base::SequenceLocalStorageSlot<std::unique_ptr<TracingSamplerProfiler>>;
   static base::NoDestructor<ProfilerSlot> slot;
-  if (!slot.get()->Get()) {
-    slot.get()->Set(base::WrapUnique(
-        new TracingSamplerProfiler(base::PlatformThread::CurrentId())));
+  if (!*slot) {
+    slot->emplace(
+        new TracingSamplerProfiler(base::PlatformThread::CurrentId()));
   }
 }
 

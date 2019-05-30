@@ -789,22 +789,22 @@ TEST_P(ThreadPoolImplTest, SequenceLocalStorage) {
 
   sequenced_task_runner1->PostTask(
       FROM_HERE,
-      BindOnce([](SequenceLocalStorageSlot<int>* slot) { slot->Set(11); },
+      BindOnce([](SequenceLocalStorageSlot<int>* slot) { slot->emplace(11); },
                &slot));
 
-  sequenced_task_runner1->PostTask(FROM_HERE,
-                                   BindOnce(
-                                       [](SequenceLocalStorageSlot<int>* slot) {
-                                         EXPECT_EQ(slot->Get(), 11);
-                                       },
-                                       &slot));
+  sequenced_task_runner1->PostTask(
+      FROM_HERE, BindOnce(
+                     [](SequenceLocalStorageSlot<int>* slot) {
+                       EXPECT_EQ(slot->GetOrCreateValue(), 11);
+                     },
+                     &slot));
 
-  sequenced_task_runner2->PostTask(FROM_HERE,
-                                   BindOnce(
-                                       [](SequenceLocalStorageSlot<int>* slot) {
-                                         EXPECT_NE(slot->Get(), 11);
-                                       },
-                                       &slot));
+  sequenced_task_runner2->PostTask(
+      FROM_HERE, BindOnce(
+                     [](SequenceLocalStorageSlot<int>* slot) {
+                       EXPECT_NE(slot->GetOrCreateValue(), 11);
+                     },
+                     &slot));
 
   thread_pool_.FlushForTesting();
 }
@@ -1078,7 +1078,7 @@ TEST_P(ThreadPoolImplTestAllTraitsExecutionModes, NoLeakWhenPostingNestedTask) {
       &thread_pool_, GetTraits(), GetExecutionMode());
 
   task_runner->PostTask(FROM_HERE, BindLambdaForTesting([&] {
-                          sls.Set(std::move(must_be_destroyed));
+                          sls.emplace(std::move(must_be_destroyed));
                           task_runner->PostTask(FROM_HERE, DoNothing());
                         }));
 

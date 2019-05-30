@@ -55,7 +55,7 @@ std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
   static base::NoDestructor<
       base::SequenceLocalStorageSlot<std::unique_ptr<network::NetworkService>>>
       service;
-  return service->Get();
+  return service->GetOrCreateValue();
 }
 
 network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {

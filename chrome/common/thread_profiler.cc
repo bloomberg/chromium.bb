@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop/work_id_provider.h"
+#include "base/no_destructor.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/rand_util.h"
 #include "base/threading/platform_thread.h"
@@ -29,12 +29,6 @@ using CallStackProfileParams = metrics::CallStackProfileParams;
 using StackSamplingProfiler = base::StackSamplingProfiler;
 
 namespace {
-
-// The profiler object is stored in a SequenceLocalStorageSlot on child threads
-// to give it the same lifetime as the threads.
-base::LazyInstance<
-    base::SequenceLocalStorageSlot<std::unique_ptr<ThreadProfiler>>>::Leaky
-    g_child_thread_profiler_sequence_local_storage = LAZY_INSTANCE_INITIALIZER;
 
 // Run continuous profiling 2% of the time.
 constexpr const double kFractionOfExecutionTimeToSample = 0.02;
@@ -172,12 +166,17 @@ void ThreadProfiler::SetAuxUnwinderFactory(
 
 // static
 void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
+  // The profiler object is stored in a SequenceLocalStorageSlot on child
+  // threads to give it the same lifetime as the threads.
+  static base::NoDestructor<
+      base::SequenceLocalStorageSlot<std::unique_ptr<ThreadProfiler>>>
+      child_thread_profiler_sequence_local_storage;
+
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  auto profiler = std::unique_ptr<ThreadProfiler>(
+  child_thread_profiler_sequence_local_storage->emplace(
       new ThreadProfiler(thread, base::ThreadTaskRunnerHandle::Get()));
-  g_child_thread_profiler_sequence_local_storage.Get().Set(std::move(profiler));
 }
 
 // static

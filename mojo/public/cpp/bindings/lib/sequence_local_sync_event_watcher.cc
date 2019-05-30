@@ -73,10 +73,7 @@ class SequenceLocalSyncEventWatcher::SequenceLocalState {
   // Initializes a SequenceLocalState instance in sequence-local storage if
   // not already initialized. Returns a WeakPtr to the stored state object.
   static base::WeakPtr<SequenceLocalState> GetOrCreate() {
-    auto& state_ptr = GetStorageSlot().Get();
-    if (!state_ptr)
-      state_ptr = std::make_unique<SequenceLocalState>();
-    return state_ptr->weak_ptr_factory_.GetWeakPtr();
+    return GetStorageSlot().GetOrCreateValue().weak_ptr_factory_.GetWeakPtr();
   }
 
   // Registers a new watcher and returns an iterator into the WatcherStateMap to
@@ -108,7 +105,7 @@ class SequenceLocalSyncEventWatcher::SequenceLocalState {
     if (registered_watchers_.empty()) {
       // If no more watchers are registered, clear our sequence-local storage.
       // Deletes |this|.
-      GetStorageSlot().Get().reset();
+      GetStorageSlot().reset();
     }
   }
 
@@ -168,8 +165,7 @@ class SequenceLocalSyncEventWatcher::SequenceLocalState {
   }
 
  private:
-  using StorageSlotType =
-      base::SequenceLocalStorageSlot<std::unique_ptr<SequenceLocalState>>;
+  using StorageSlotType = base::SequenceLocalStorageSlot<SequenceLocalState>;
   static StorageSlotType& GetStorageSlot() {
     static base::NoDestructor<StorageSlotType> storage;
     return *storage;
