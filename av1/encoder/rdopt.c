@@ -11924,11 +11924,6 @@ static int inter_mode_search_order_independent_skip(
     return 2;
   }
 
-  if (!cpi->oxcf.enable_global_motion &&
-      (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV)) {
-    return 1;
-  }
-
   if (!cpi->oxcf.enable_onesided_comp && comp_pred && cpi->all_one_sided_refs) {
     return 1;
   }
