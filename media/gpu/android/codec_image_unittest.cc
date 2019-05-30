@@ -81,8 +81,7 @@ class CodecImageTest : public testing::Test {
       CodecImage::DestructionCb destruction_cb = base::DoNothing()) {
     std::unique_ptr<CodecOutputBuffer> buffer;
     wrapper_->DequeueOutputBuffer(nullptr, nullptr, &buffer);
-    scoped_refptr<CodecImage> image = new CodecImage();
-    image->Initialize(
+    scoped_refptr<CodecImage> image = new CodecImage(
         std::move(buffer), kind == kTextureOwner ? texture_owner_ : nullptr,
         base::BindRepeating(&PromotionHintReceiver::OnPromotionHint,
                             base::Unretained(&promotion_hint_receiver_)));

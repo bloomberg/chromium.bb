@@ -43,7 +43,10 @@ class CodecImageGroupWithDestructionHook : public CodecImageGroup {
 // CodecImage with a mocked ReleaseCodecBuffer.
 class MockCodecImage : public CodecImage {
  public:
-  MockCodecImage() = default;
+  MockCodecImage()
+      : CodecImage(nullptr,
+                   nullptr,
+                   PromotionHintAggregator::NotifyPromotionHintCB()) {}
 
   MOCK_METHOD0(ReleaseCodecBuffer, void());
 

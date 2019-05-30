@@ -18,7 +18,6 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/codec_wrapper.h"
-#include "media/gpu/android/shared_image_video_provider.h"
 #include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/android/video_frame_factory.h"
 #include "media/gpu/gles2_decoder_helper.h"
@@ -27,6 +26,7 @@
 
 namespace media {
 class CodecImageGroup;
+class GpuVideoFrameFactory;
 
 // VideoFrameFactoryImpl creates CodecOutputBuffer backed VideoFrames and tries
 // to eagerly render them to their surface to release the buffers back to the
@@ -40,7 +40,8 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   // cleaned up properly. The release callback may be called from any thread.
   using ImageReadyCB =
       base::OnceCallback<void(gpu::Mailbox mailbox,
-                              VideoFrame::ReleaseMailboxCB release_cb)>;
+                              VideoFrame::ReleaseMailboxCB release_cb,
+                              base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info)>;
 
   // |get_stub_cb| will be run on |gpu_task_runner|.
   VideoFrameFactoryImpl(
@@ -80,9 +81,12 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
                            VideoPixelFormat pixel_format,
                            OverlayMode overlay_mode,
                            bool enable_threaded_texture_mailboxes,
-                           SharedImageVideoProvider::ImageRecord record);
+                           gpu::Mailbox mailbox,
+                           VideoFrame::ReleaseMailboxCB release_cb,
+                           base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info);
 
-  std::unique_ptr<SharedImageVideoProvider> image_provider_;
+  // The gpu thread side of the implementation.
+  std::unique_ptr<GpuVideoFrameFactory> gpu_video_frame_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   GetStubCb get_stub_cb_;
 
@@ -94,64 +98,46 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   // Is the sync mailbox manager enabled?
   bool enable_threaded_texture_mailboxes_ = false;
 
-  // Current group that new CodecImages should belong to.  Do not use this on
-  // our thread; everything must be posted to the gpu main thread, including
-  // destruction of it.
-  scoped_refptr<CodecImageGroup> image_group_;
-
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(VideoFrameFactoryImpl);
 };
 
-// GpuSharedImageVideoFactory creates SharedImageVideo objects.  It must be run
-// on the gpu main thread.
-//
-// GpuSharedImageVideoFactory is an implementation detail of
-// DirectSharedImageVideoProvider.  It really should be split out into its own
-// file from here, but in the interest of making CL diffs more readable, that
-// is left for later.
-class GpuSharedImageVideoFactory
+// GpuVideoFrameFactory is an implementation detail of VideoFrameFactoryImpl. It
+// may be created on any thread but only accessed on the gpu thread thereafter.
+class GpuVideoFrameFactory
     : public gpu::CommandBufferStub::DestructionObserver {
  public:
-  GpuSharedImageVideoFactory();
-  ~GpuSharedImageVideoFactory() override;
+  GpuVideoFrameFactory();
+  ~GpuVideoFrameFactory() override;
 
-  // TODO(liberato): Now that this is used as part of an image provider, it
-  // doesn't really make sense for it to call back with a TextureOwner.  That
-  // should be handled by VideoFrameFactoryImpl if it wants.
-  void Initialize(VideoFrameFactory::OverlayMode overlay_mode,
-                  VideoFrameFactory::GetStubCb get_stub_cb,
-                  VideoFrameFactory::InitCb init_cb);
+  scoped_refptr<TextureOwner> Initialize(
+      VideoFrameFactory::OverlayMode overlay_mode,
+      VideoFrameFactory::GetStubCb get_stub_cb);
 
-  // Similar to SharedImageVideoProvider::ImageReadyCB, but provides additional
-  // details for the provider that's using us.
-  using FactoryImageReadyCB =
-      base::OnceCallback<void(SharedImageVideoProvider::ImageRecord record,
-                              scoped_refptr<CodecImage> codec_image)>;
+  // Creates a SharedImage for |output_buffer|, and returns it via the callback.
+  void CreateImage(
+      std::unique_ptr<CodecOutputBuffer> output_buffer,
+      scoped_refptr<TextureOwner> texture_owner,
+      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
+      VideoFrameFactoryImpl::ImageReadyCB image_ready_cb,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // Creates a SharedImage for |spec|, and returns it via the callback.
-  // TODO(liberato): |texture_owner| is only needed to get the service id, to
-  // create the per-frame texture.  All of that is only needed for legacy
-  // mailbox support, where we have to have one texture per CodecImage.
-  void CreateImage(FactoryImageReadyCB cb,
-                   const SharedImageVideoProvider::ImageSpec& spec,
-                   scoped_refptr<TextureOwner> texture_owner);
+  // Set our image group.  Must be called before the first call to
+  // CreateVideoFrame occurs.
+  void SetImageGroup(scoped_refptr<CodecImageGroup> image_group);
 
  private:
   // Creates a SharedImage for |mailbox|, and returns success or failure.
-  bool CreateImageInternal(const SharedImageVideoProvider::ImageSpec& spec,
-                           scoped_refptr<TextureOwner> texture_owner,
-                           gpu::Mailbox mailbox,
-                           scoped_refptr<CodecImage> image);
+  bool CreateImageInternal(
+      std::unique_ptr<CodecOutputBuffer> output_buffer,
+      scoped_refptr<TextureOwner> texture_owner,
+      gpu::Mailbox mailbox,
+      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
 
   void OnWillDestroyStub(bool have_context) override;
 
   // Removes |image| from |images_|.
   void OnImageDestructed(CodecImage* image);
-
-  // Set our image group.  Must be called before the first call to
-  // CreateVideoFrame occurs.
-  void SetImageGroup(scoped_refptr<CodecImageGroup> image_group);
 
   // Outstanding images that should be considered for early rendering.
   std::vector<CodecImage*> images_;
@@ -170,8 +156,8 @@ class GpuSharedImageVideoFactory
   base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
 
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<GpuSharedImageVideoFactory> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(GpuSharedImageVideoFactory);
+  base::WeakPtrFactory<GpuVideoFrameFactory> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(GpuVideoFrameFactory);
 };
 
 namespace internal {

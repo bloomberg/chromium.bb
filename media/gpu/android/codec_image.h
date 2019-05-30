@@ -33,16 +33,9 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   // since CodecImageGroup calls the same cb for multiple images.
   using DestructionCb = base::RepeatingCallback<void(CodecImage*)>;
 
-  CodecImage();
-
-  // (Re-)Initialize this CodecImage to use |output_buffer| et. al.
-  //
-  // May be called on a random thread, but only if the CodecImage is otherwise
-  // not in use.
-  void Initialize(
-      std::unique_ptr<CodecOutputBuffer> output_buffer,
-      scoped_refptr<TextureOwner> texture_owner,
-      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
+  CodecImage(std::unique_ptr<CodecOutputBuffer> output_buffer,
+             scoped_refptr<TextureOwner> texture_owner,
+             PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
 
   void SetDestructionCb(DestructionCb destruction_cb);
 
@@ -139,7 +132,7 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   bool RenderToOverlay();
 
   // The phase of the image buffer's lifecycle.
-  Phase phase_ = Phase::kInvalidated;
+  Phase phase_;
 
   // The buffer backing this image.
   std::unique_ptr<CodecOutputBuffer> output_buffer_;
