@@ -79,7 +79,10 @@ void VirtualFidoDiscoveryFactory::CreateAuthenticator(
     blink::test::mojom::VirtualAuthenticatorOptionsPtr options,
     CreateAuthenticatorCallback callback) {
   auto authenticator = std::make_unique<VirtualAuthenticator>(
-      mojo::ConvertTo<::device::FidoTransportProtocol>(options->transport));
+      mojo::ConvertTo<::device::ProtocolVersion>(options->protocol),
+      mojo::ConvertTo<::device::FidoTransportProtocol>(options->transport),
+      mojo::ConvertTo<::device::AuthenticatorAttachment>(options->attachment),
+      options->has_resident_key, options->has_user_verification);
   auto* authenticator_ptr = authenticator.get();
   authenticators_.emplace(authenticator_ptr->unique_id(),
                           std::move(authenticator));

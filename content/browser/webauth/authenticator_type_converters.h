@@ -17,6 +17,7 @@
 #include "device/fido/public_key_credential_user_entity.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 
 // TODO(hongjunchoi): Remove type converters and instead expose mojo interface
 // directly from device/fido service.
@@ -109,6 +110,13 @@ struct TypeConverter<::device::AttestationConveyancePreference,
                      ::blink::mojom::AttestationConveyancePreference> {
   static ::device::AttestationConveyancePreference Convert(
       const ::blink::mojom::AttestationConveyancePreference& input);
+};
+
+template <>
+struct TypeConverter<::device::ProtocolVersion,
+                     ::blink::test::mojom::ClientToAuthenticatorProtocol> {
+  static ::device::ProtocolVersion Convert(
+      const ::blink::test::mojom::ClientToAuthenticatorProtocol& input);
 };
 
 }  // namespace mojo

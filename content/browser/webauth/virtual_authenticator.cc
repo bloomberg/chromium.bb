@@ -10,15 +10,25 @@
 #include "base/containers/span.h"
 #include "base/guid.h"
 #include "crypto/ec_private_key.h"
+#include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_u2f_device.h"
 
 namespace content {
 
 VirtualAuthenticator::VirtualAuthenticator(
-    ::device::FidoTransportProtocol transport)
-    : transport_(transport),
+    ::device::ProtocolVersion protocol,
+    ::device::FidoTransportProtocol transport,
+    ::device::AuthenticatorAttachment attachment,
+    bool has_resident_key,
+    bool has_user_verification)
+    : protocol_(protocol),
+      attachment_(attachment),
+      has_resident_key_(has_resident_key),
+      has_user_verification_(has_user_verification),
       unique_id_(base::GenerateGUID()),
-      state_(base::MakeRefCounted<::device::VirtualFidoDevice::State>()) {}
+      state_(base::MakeRefCounted<::device::VirtualFidoDevice::State>()) {
+  state_->transport = transport;
+}
 
 VirtualAuthenticator::~VirtualAuthenticator() = default;
 
@@ -28,7 +38,21 @@ void VirtualAuthenticator::AddBinding(
 }
 
 std::unique_ptr<::device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
-  return std::make_unique<::device::VirtualU2fDevice>(state_);
+  switch (protocol_) {
+    case ::device::ProtocolVersion::kU2f:
+      return std::make_unique<::device::VirtualU2fDevice>(state_);
+    case ::device::ProtocolVersion::kCtap2: {
+      device::VirtualCtap2Device::Config config;
+      config.resident_key_support = has_resident_key_;
+      config.internal_uv_support = has_user_verification_;
+      config.is_platform_authenticator =
+          attachment_ == ::device::AuthenticatorAttachment::kPlatform;
+      return std::make_unique<::device::VirtualCtap2Device>(state_, config);
+    }
+    default:
+      NOTREACHED();
+      return std::make_unique<::device::VirtualU2fDevice>(state_);
+  }
 }
 
 void VirtualAuthenticator::GetUniqueId(GetUniqueIdCallback callback) {

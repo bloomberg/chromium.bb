@@ -507,6 +507,11 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     }
   }
 
+  if (config.is_platform_authenticator) {
+    options_updated = true;
+    options.is_platform_device = true;
+  }
+
   if (options_updated) {
     device_info_->options = std::move(options);
   }

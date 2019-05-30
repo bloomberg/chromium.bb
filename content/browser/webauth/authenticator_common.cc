@@ -11,6 +11,7 @@
 
 #include "base/base64url.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -30,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
@@ -494,6 +496,10 @@ std::string Base64UrlEncode(const base::span<const uint8_t> input) {
 }
 
 base::flat_set<device::FidoTransportProtocol> GetTransportsEnabledByFlags() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebAuthTestingAPI)) {
+    return device::GetAllTransportProtocols();
+  }
   base::flat_set<device::FidoTransportProtocol> transports;
   transports.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
   transports.insert(device::FidoTransportProtocol::kInternal);
