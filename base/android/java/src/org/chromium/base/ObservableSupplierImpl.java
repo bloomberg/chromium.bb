@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.util;
+package org.chromium.base;
 
 import android.os.Handler;
 import android.support.annotation.Nullable;
-
-import org.chromium.base.Callback;
-import org.chromium.base.ObserverList;
 
 /**
  * Concrete implementation of {@link ObservableSupplier} to be used by classes owning the
@@ -75,7 +72,8 @@ public class ObservableSupplierImpl<E> implements ObservableSupplier<E> {
     }
 
     private void checkThread() {
-        assert mThread == Thread.currentThread()
+        assert mThread
+                == Thread.currentThread()
             : "ObservableSupplierImpl must only be used on a single Thread.";
     }
 }

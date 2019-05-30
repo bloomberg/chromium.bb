@@ -8,10 +8,10 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.view.Window;
 
+import org.chromium.base.ObservableSupplier;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
-import org.chromium.chrome.browser.util.ObservableSupplier;
 
 /**
  * A UI coordinator that manages the system status bar and bottom navigation bar for

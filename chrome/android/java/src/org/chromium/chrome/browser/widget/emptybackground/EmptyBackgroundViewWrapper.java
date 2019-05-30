@@ -11,6 +11,7 @@ import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewStub;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -24,7 +25,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.util.ObservableSupplier;
 
 import java.util.List;
 

@@ -186,7 +186,6 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/toolbar/ToolbarSecurityIconTest.java",
   "junit/src/org/chromium/chrome/browser/usage_stats/EventTrackerTest.java",
   "junit/src/org/chromium/chrome/browser/usage_stats/PageViewObserverTest.java",
-  "junit/src/org/chromium/chrome/browser/util/ObservableSupplierImplTest.java",
   "junit/src/org/chromium/chrome/browser/util/UrlUtilitiesUnitTest.java",
   "junit/src/org/chromium/chrome/browser/util/test/ShadowUrlUtilities.java",
   "junit/src/org/chromium/chrome/browser/webapps/MockWebappDataStorageClockRule.java",

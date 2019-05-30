@@ -8,10 +8,10 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.view.View;
 
+import org.chromium.base.ObservableSupplier;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
-import org.chromium.chrome.browser.util.ObservableSupplier;
 
 /**
  * A factory for creating an {@link AppMenuCoordinator}.

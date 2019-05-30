@@ -1645,8 +1645,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/IntentUtils.java",
   "java/src/org/chromium/chrome/browser/util/KeyNavigationUtil.java",
   "java/src/org/chromium/chrome/browser/util/MathUtils.java",
-  "java/src/org/chromium/chrome/browser/util/ObservableSupplier.java",
-  "java/src/org/chromium/chrome/browser/util/ObservableSupplierImpl.java",
   "java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
   "java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
