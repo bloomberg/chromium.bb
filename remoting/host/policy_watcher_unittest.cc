@@ -8,11 +8,11 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/mock_log.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/fake_async_policy_loader.h"
@@ -61,7 +61,9 @@ class MockPolicyCallback {
 
 class PolicyWatcherTest : public testing::Test {
  public:
-  PolicyWatcherTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
+  PolicyWatcherTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
   void SetUp() override {
     // We expect no callbacks unless explicitly specified by individual tests.
@@ -249,7 +251,7 @@ class PolicyWatcherTest : public testing::Test {
   static const char* kHostDomain;
   static const char* kClientDomain;
   static const char* kPortRange;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockPolicyCallback mock_policy_callback_;
 
   // |policy_loader_| is owned by |policy_watcher_|. PolicyWatcherTest retains
@@ -503,12 +505,14 @@ TEST_P(MisspelledPolicyTest, WarningLogged) {
   const char* misspelled_policy_name = GetParam();
   base::test::MockLog mock_log;
 
-  ON_CALL(mock_log, Log(testing::_, testing::_, testing::_, testing::_,
-                        testing::_)).WillByDefault(testing::Return(true));
+  ON_CALL(mock_log,
+          Log(testing::_, testing::_, testing::_, testing::_, testing::_))
+      .WillByDefault(testing::Return(true));
 
   EXPECT_CALL(mock_log,
               Log(logging::LOG_WARNING, testing::_, testing::_, testing::_,
-                  testing::HasSubstr(misspelled_policy_name))).Times(1);
+                  testing::HasSubstr(misspelled_policy_name)))
+      .Times(1);
 
   EXPECT_CALL(mock_policy_callback_,
               OnPolicyUpdatePtr(IsPolicies(&nat_true_others_default_)));

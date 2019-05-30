@@ -13,10 +13,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
@@ -169,7 +169,7 @@ class ClientSessionTest : public testing::Test {
   int curr_display_;
 
   // Message loop that will process all ClientSession tasks.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // AutoThreadTaskRunner on which |client_session_| will be run.
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
@@ -200,12 +200,13 @@ class ClientSessionTest : public testing::Test {
 };
 
 void ClientSessionTest::SetUp() {
-  // Arrange to run |message_loop_| until no components depend on it.
+  // Arrange to run |scoped_task_environment_| until no components depend on it.
   task_runner_ = new AutoThreadTaskRunner(
-      message_loop_.task_runner(), run_loop_.QuitClosure());
+      scoped_task_environment_.GetMainThreadTaskRunner(),
+      run_loop_.QuitClosure());
 
-  desktop_environment_factory_.reset(
-      new FakeDesktopEnvironmentFactory(message_loop_.task_runner()));
+  desktop_environment_factory_.reset(new FakeDesktopEnvironmentFactory(
+      scoped_task_environment_.GetMainThreadTaskRunner()));
   desktop_environment_options_ = DesktopEnvironmentOptions::CreateDefault();
 }
 

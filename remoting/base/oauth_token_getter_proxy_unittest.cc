@@ -9,8 +9,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -135,7 +135,7 @@ class OAuthTokenGetterProxyTest : public testing::Test {
 
   std::unique_ptr<TokenCallbackResult> expected_callback_result_;
 
-  base::MessageLoop main_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuthTokenGetterProxyTest);
 };

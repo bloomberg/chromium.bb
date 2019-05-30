@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
@@ -124,7 +124,7 @@ class ChannelMultiplexerTest : public testing::Test {
 
  private:
   // Must be instantiated before the FakeStreamChannelFactories below.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  protected:
   FakeStreamChannelFactory host_channel_factory_;

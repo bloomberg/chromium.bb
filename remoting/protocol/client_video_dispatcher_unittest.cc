@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/base/constants.h"
@@ -46,7 +46,7 @@ class ClientVideoDispatcherTest : public testing::Test,
   void OnMessageReceived(std::unique_ptr<CompoundBuffer> buffer);
   void OnReadError(int error);
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Set to true in OnChannelInitialized().
   bool initialized_ = false;

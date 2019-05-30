@@ -9,8 +9,8 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/http/http_status_code.h"
 #include "remoting/base/chromoting_event.h"
 #include "remoting/base/fake_oauth_token_getter.h"
@@ -139,7 +139,7 @@ class TelemetryLogWriterTest : public testing::Test {
 
  private:
   int id_ = 0;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // Test workflow: add request -> log event -> respond request.

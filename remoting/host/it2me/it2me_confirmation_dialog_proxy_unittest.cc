@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -87,7 +87,7 @@ class It2MeConfirmationDialogProxyTest : public testing::Test {
   ~It2MeConfirmationDialogProxyTest() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner() {
-    return message_loop_.task_runner();
+    return scoped_task_environment_.GetMainThreadTaskRunner();
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> dialog_task_runner() {
@@ -111,7 +111,7 @@ class It2MeConfirmationDialogProxyTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::RunLoop run_loop_;
   base::Thread dialog_thread_;
 
