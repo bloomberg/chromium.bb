@@ -1419,8 +1419,8 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheDateRange) {
                   origin, data);
   EXPECT_TRUE(tester.ContainsEntry(RemoveCodeCacheTester::kJs,
                                    kFilterResourceURLForCodeCache, origin));
-  tester.SetLastUseTime(RemoveCodeCacheTester::kJs, kResourceURL, origin,
-                        in_range_time);
+  tester.SetLastUseTime(RemoveCodeCacheTester::kJs,
+                        kFilterResourceURLForCodeCache, origin, in_range_time);
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
