@@ -171,6 +171,7 @@ static INLINE void update_frames_till_gf_update(AV1_COMP *cpi) {
   }
 }
 
+#if !CONFIG_REALTIME_ONLY
 static INLINE void update_twopass_gf_group_index(AV1_COMP *cpi) {
   // Increment the gf group index ready for the next frame. If this is
   // a show_existing_frame with a source other than altref, or if it is not
@@ -181,11 +182,14 @@ static INLINE void update_twopass_gf_group_index(AV1_COMP *cpi) {
     ++cpi->twopass.gf_group.index;
   }
 }
+#endif
 
 static void update_rc_counts(AV1_COMP *cpi) {
   update_keyframe_counters(cpi);
   update_frames_till_gf_update(cpi);
+#if !CONFIG_REALTIME_ONLY
   if (cpi->oxcf.pass == 2) update_twopass_gf_group_index(cpi);
+#endif
 }
 
 // Get update type of the current frame.
@@ -1017,10 +1021,12 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   }
 
   if (source == NULL) {  // If no source was found, we can't encode a frame.
+#if !CONFIG_REALTIME_ONLY
     if (flush && oxcf->pass == 1 && !cpi->twopass.first_pass_done) {
       av1_end_first_pass(cpi); /* get last stats packet */
       cpi->twopass.first_pass_done = 1;
     }
+#endif
     return -1;
   }
 
@@ -1065,11 +1071,13 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     cpi->common.frame_presentation_time = (uint32_t)pts64;
   }
 
+#if !CONFIG_REALTIME_ONLY
   if (oxcf->pass == 2 && (!frame_params.show_existing_frame || is_overlay)) {
     // GF_GROUP needs updating for arf overlays as well as non-show-existing
     av1_get_second_pass_params(cpi, &frame_params, *frame_flags);
     frame_update_type = get_frame_update_type(cpi);
   }
+#endif
 
   if (frame_params.show_existing_frame &&
       frame_params.frame_type != KEY_FRAME) {
@@ -1179,6 +1187,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     update_ref_frame_map(cpi, frame_update_type);
   }
 
+#if !CONFIG_REALTIME_ONLY
   if (oxcf->pass == 2) {
 #if TXCOEFF_COST_TIMER
     cm->cum_txcoeff_cost_timer += cm->txcoeff_cost_timer;
@@ -1190,6 +1199,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 #endif
     av1_twopass_postencode_update(cpi);
   }
+#endif  // !CONFIG_REALTIME_ONLY
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
     update_fb_of_context_type(cpi, &frame_params, cpi->fb_of_context_type);

@@ -360,6 +360,12 @@ if(CONFIG_INTERNAL_STATS)
   list(APPEND AOM_AV1_ENCODER_SOURCES "${AOM_ROOT}/av1/encoder/blockiness.c")
 endif()
 
+if(CONFIG_REALTIME_ONLY)
+  list(REMOVE_ITEM AOM_AV1_ENCODER_SOURCES "${AOM_ROOT}/av1/encoder/firstpass.c"
+                   "${AOM_ROOT}/av1/encoder/firstpass.h"
+                   "${AOM_ROOT}/av1/encoder/pass2_strategy.c")
+endif()
+
 # Setup AV1 common/decoder/encoder targets. The libaom target must exist before
 # this function is called.
 function(setup_av1_targets)
