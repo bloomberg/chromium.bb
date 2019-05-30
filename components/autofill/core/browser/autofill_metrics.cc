@@ -946,13 +946,6 @@ void AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(bool is_local) {
 }
 
 // static
-void AutofillMetrics::LogSaveCardReachedPersonalDataManager(bool is_local) {
-  std::string histogram_name = "Autofill.SaveCardReachedPersonalDataManager.";
-  histogram_name += is_local ? "Local" : "Server";
-  base::UmaHistogramBoolean(histogram_name, true);
-}
-
-// static
 void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.Events", event,
                             NUM_UNMASK_PROMPT_EVENTS);

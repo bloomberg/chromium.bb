@@ -1789,12 +1789,6 @@ std::string PersonalDataManager::OnAcceptedLocalCreditCardSave(
   if (is_off_the_record_)
     return std::string();
 
-  // Log that local credit card save reached the PersonalDataManager. This is a
-  // temporary metric to measure the impact, if any, of CreditCardSaveManager's
-  // destruction before its callbacks are executed.
-  // TODO(crbug.com/892299): Remove this once the overall problem is fixed.
-  AutofillMetrics::LogSaveCardReachedPersonalDataManager(/*is_local=*/true);
-
   return SaveImportedCreditCard(imported_card);
 }
 
