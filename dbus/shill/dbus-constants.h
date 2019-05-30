@@ -79,6 +79,7 @@ const char kPortalDetectionFailedPhaseProperty[] =
     "PortalDetectionFailedPhase";
 const char kPortalDetectionFailedStatusProperty[] =
     "PortalDetectionFailedStatus";
+const char kProbeUrlProperty[] = "ProbeUrl";
 const char kSavedIPConfigProperty[] = "SavedIPConfig";
 const char kStaticIPConfigProperty[] = "StaticIPConfig";
 const char kLinkMonitorDisableProperty[] = "LinkMonitorDisable";
