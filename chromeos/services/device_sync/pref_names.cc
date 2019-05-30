@@ -77,13 +77,25 @@ const char kCryptAuthSchedulerClientDirective[] =
 const char kCryptAuthSchedulerNextEnrollmentRequestClientMetadata[] =
     "cryptauth.scheduler.next_enrollment_request_client_metadata";
 
+// (CryptAuth v2) The ClientMetadata of the last scheduled DeviceSync request.
+const char kCryptAuthSchedulerNextDeviceSyncRequestClientMetadata[] =
+    "cryptauth.scheduler.next_device_sync_request_client_metadata";
+
 // (CryptAuth v2) The time of the last enrollment attempt.
 const char kCryptAuthSchedulerLastEnrollmentAttemptTime[] =
     "cryptauth.scheduler.last_enrollment_attempt_time";
 
+// (CryptAuth v2) The time of the last DeviceSync attempt.
+const char kCryptAuthSchedulerLastDeviceSyncAttemptTime[] =
+    "cryptauth.scheduler.last_device_sync_attempt_time";
+
 // (CryptAuth v2) The time of the last successful enrollment.
 const char kCryptAuthSchedulerLastSuccessfulEnrollmentTime[] =
     "cryptauth.scheduler.last_successful_enrollment_time";
+
+// (CryptAuth v2) The time of the last successful DeviceSync.
+const char kCryptAuthSchedulerLastSuccessfulDeviceSyncTime[] =
+    "cryptauth.scheduler.last_device_sync_enrollment_time";
 
 }  // namespace prefs
 

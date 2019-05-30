@@ -24,12 +24,8 @@ const int64_t kTestClientDirectiveCheckinDelayMillis = 2592000000;  // 30 days
 const int64_t kTestClientDirectivePolicyReferenceVersion = 2;
 const int64_t kTestClientDirectiveRetryPeriodMillis = 43200000;  // 12 hours
 const int64_t kTestClientDirectiveCreateTimeMillis = 1566073800000;
-const char kTestClientDirectiveInvokeNextKeyName[] =
-    "client_directive_invoke_next_key_name";
 const char kTestClientDirectivePolicyReferenceName[] =
     "client_directive_policy_reference_name";
-const TargetService kTestClientDirectiveInvokeNextService =
-    TargetService::DEVICE_SYNC;
 
 ClientMetadata BuildClientMetadata(
     int32_t retry_count,
@@ -135,10 +131,6 @@ const ClientAppMetadata& GetClientAppMetadataForTest() {
 
 const ClientDirective& GetClientDirectiveForTest() {
   static const base::NoDestructor<ClientDirective> client_directive([] {
-    InvokeNext invoke_next;
-    invoke_next.set_service(kTestClientDirectiveInvokeNextService);
-    invoke_next.set_key_name(kTestClientDirectiveInvokeNextKeyName);
-
     ClientDirective client_directive;
     client_directive.mutable_policy_reference()->CopyFrom(
         BuildPolicyReference(kTestClientDirectivePolicyReferenceName,
@@ -150,7 +142,6 @@ const ClientDirective& GetClientDirectiveForTest() {
         kTestClientDirectiveRetryPeriodMillis);
     client_directive.set_create_time_millis(
         kTestClientDirectiveCreateTimeMillis);
-    client_directive.add_invoke_next()->CopyFrom(invoke_next);
 
     return client_directive;
   }());

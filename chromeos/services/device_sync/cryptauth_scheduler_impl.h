@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -15,6 +16,8 @@
 #include "base/timer/timer.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_result.h"
 #include "chromeos/services/device_sync/cryptauth_scheduler.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_directive.pb.h"
@@ -29,22 +32,24 @@ class NetworkStateHandler;
 namespace device_sync {
 
 // CryptAuthScheduler implementation which stores scheduling metadata
-// persistently so that the enrollment schedule is saved across device reboots.
-//
-// Enrollment scheduling will not start until StartEnrollmentScheduling() is
-// called. Enrollment requests made before scheduling has started, while another
-// enrollment request is in process, or while offline will be cached and
+// persistently so that the Enrollment and DeviceSync schedules are saved across
+// device reboots. Requests made before scheduling has started, while an
+// Enrollment/DeviceSync attempt is in progress, or while offline are cached and
 // rescheduled as soon as possible.
 //
-// Enrollment requests can come from four sources:
-//   1) If an enrollment has never successfully completed, an initialization
-//      request will be made immediately.
-//   2) Periodic enrollment requests are made at time intervals provided by the
-//      server in the ClientDirective proto.
-//   3) Enrollment requests can be made using the scheduler's public function
-//      RequestEnrollment().
-//   4) Failed enrollment attempts will be retried at time intervals provided by
-//      the server in the ClientDirective proto.
+// If an Enrollment has never successfully completed, an initialization request
+// is made immediately on startup. After a successful Enrollment, periodic
+// Enrollment requests are made at time intervals provided by the CryptAuth
+// server in the ClientDirective proto. Note that there is no periodic
+// scheduling for DeviceSync, per se.
+//
+// ClientDirectives received from CryptAuth may contain an InvokeNext field
+// specifying that an Enrollment and/or DeviceSync request should be made
+// after the current Enrollment or DeviceSync attempt finishes successfully.
+// These subsequent requests are handled internally by the scheduler.
+//
+// All failed Enrollment/DeviceSync attempts will be retried at time intervals
+// specified in the ClientDirective proto.
 class CryptAuthSchedulerImpl : public CryptAuthScheduler,
                                public NetworkStateHandlerObserver {
  public:
@@ -59,6 +64,8 @@ class CryptAuthSchedulerImpl : public CryptAuthScheduler,
             NetworkHandler::Get()->network_state_handler(),
         base::Clock* clock = base::DefaultClock::GetInstance(),
         std::unique_ptr<base::OneShotTimer> enrollment_timer =
+            std::make_unique<base::OneShotTimer>(),
+        std::unique_ptr<base::OneShotTimer> device_sync_timer =
             std::make_unique<base::OneShotTimer>());
 
    private:
@@ -71,47 +78,99 @@ class CryptAuthSchedulerImpl : public CryptAuthScheduler,
   ~CryptAuthSchedulerImpl() override;
 
  private:
+  enum class RequestType { kEnrollment, kDeviceSync };
+
+  static std::string GetLastAttemptTimePrefName(RequestType request_type);
+  static std::string GetLastSuccessTimePrefName(RequestType request_type);
+  static std::string GetPendingRequestPrefName(RequestType request_type);
+
   CryptAuthSchedulerImpl(PrefService* pref_service,
                          NetworkStateHandler* network_state_handler,
                          base::Clock* clock,
-                         std::unique_ptr<base::OneShotTimer> enrollment_timer);
+                         std::unique_ptr<base::OneShotTimer> enrollment_timer,
+                         std::unique_ptr<base::OneShotTimer> device_sync_timer);
 
   // CryptAuthScheduler:
   void OnEnrollmentSchedulingStarted() override;
+  void OnDeviceSyncSchedulingStarted() override;
   void RequestEnrollment(
+      const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
+      const base::Optional<std::string>& session_id) override;
+  void RequestDeviceSync(
       const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
       const base::Optional<std::string>& session_id) override;
   void HandleEnrollmentResult(
       const CryptAuthEnrollmentResult& enrollment_result) override;
+  void HandleDeviceSyncResult(
+      const CryptAuthDeviceSyncResult& device_sync_result) override;
   base::Optional<base::Time> GetLastSuccessfulEnrollmentTime() const override;
+  base::Optional<base::Time> GetLastSuccessfulDeviceSyncTime() const override;
   base::TimeDelta GetRefreshPeriod() const override;
-  base::TimeDelta GetTimeToNextEnrollmentRequest() const override;
+  base::Optional<base::TimeDelta> GetTimeToNextEnrollmentRequest()
+      const override;
+  base::Optional<base::TimeDelta> GetTimeToNextDeviceSyncRequest()
+      const override;
   bool IsWaitingForEnrollmentResult() const override;
+  bool IsWaitingForDeviceSyncResult() const override;
   size_t GetNumConsecutiveEnrollmentFailures() const override;
+  size_t GetNumConsecutiveDeviceSyncFailures() const override;
 
   // NetworkStateHandlerObserver:
   void DefaultNetworkChanged(const NetworkState* network) override;
   void OnShuttingDown() override;
 
-  bool DoesMachineHaveNetworkConnectivity();
+  // Shared logic between Enrollment and DeviceSync CryptAuthScheduler methods.
+  void OnSchedulingStarted(RequestType request_type);
+  void MakeRequest(
+      RequestType request_type,
+      const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
+      const base::Optional<std::string>& session_id);
+  void HandleResult(
+      RequestType request_type,
+      bool success,
+      const base::Optional<cryptauthv2::ClientDirective>& new_client_directive);
+  void HandleInvokeNext(const ::google::protobuf::RepeatedPtrField<
+                            cryptauthv2::InvokeNext>& invoke_next_list,
+                        const std::string& session_id);
+  base::Optional<base::Time> GetLastSuccessTime(RequestType request_type) const;
+  base::Optional<base::TimeDelta> GetTimeToNextRequest(
+      RequestType request_type) const;
+  bool IsWaitingForResult(RequestType request_type) const;
+  size_t GetNumConsecutiveFailures(RequestType request_type) const;
 
-  // Starts a new timer that will fire when an enrollment is ready to be
-  // attempted.
-  void ScheduleNextEnrollment();
+  // Returns true if online.
+  bool DoesMachineHaveNetworkConnectivity() const;
 
-  void OnEnrollmentTimerFired();
+  // Sets the pending requests from the persisted pref values.
+  void InitializePendingRequest(RequestType request_type);
 
-  base::Optional<cryptauthv2::ClientMetadata> pending_enrollment_request_;
+  // Starts a new timer that will fire when an Enrollment/DeviceSync is ready to
+  // be attempted. Early returns if an Enrollment/DeviceSync is already in
+  // progress, if scheduling hasn't started, or if there is no request to be
+  // made. The request is persisted to prefs if another Enrollment/DeviceSync
+  // attempt isn't already in progress.
+  void ScheduleNextRequest(RequestType request_type);
 
-  // Only non-null while an enrollment attempt is in progress, in other words,
-  // between NotifyEnrollmentRequested() and HandleEnrollmentResult().
-  base::Optional<cryptauthv2::ClientMetadata> current_enrollment_request_;
+  // Notifies the Enrollment/DeviceSync delegate that an Enrollment/DeviceSync
+  // attempt should be made. Early returns if not online; the attempt is
+  // rescheduled when connectivity is restored.
+  void OnTimerFired(RequestType request_type);
 
   PrefService* pref_service_ = nullptr;
   NetworkStateHandler* network_state_handler_ = nullptr;
   base::Clock* clock_ = nullptr;
-  std::unique_ptr<base::OneShotTimer> enrollment_timer_ = nullptr;
   cryptauthv2::ClientDirective client_directive_;
+  base::flat_map<RequestType, std::unique_ptr<base::OneShotTimer>>
+      request_timers_;
+  base::flat_map<RequestType, base::Optional<cryptauthv2::ClientMetadata>>
+      pending_requests_{{RequestType::kEnrollment, base::nullopt},
+                        {RequestType::kDeviceSync, base::nullopt}};
+
+  // Values only non-null while an attempt is in progress, in other words,
+  // between Notify*Requested() and Handle*Result().
+  base::flat_map<RequestType, base::Optional<cryptauthv2::ClientMetadata>>
+      current_requests_{{RequestType::kEnrollment, base::nullopt},
+                        {RequestType::kDeviceSync, base::nullopt}};
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthSchedulerImpl);
 };

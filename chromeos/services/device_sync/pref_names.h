@@ -32,8 +32,11 @@ extern const char kCryptAuthDeviceRegistry[];
 extern const char kCryptAuthKeyRegistry[];
 extern const char kCryptAuthSchedulerClientDirective[];
 extern const char kCryptAuthSchedulerNextEnrollmentRequestClientMetadata[];
+extern const char kCryptAuthSchedulerNextDeviceSyncRequestClientMetadata[];
 extern const char kCryptAuthSchedulerLastEnrollmentAttemptTime[];
+extern const char kCryptAuthSchedulerLastDeviceSyncAttemptTime[];
 extern const char kCryptAuthSchedulerLastSuccessfulEnrollmentTime[];
+extern const char kCryptAuthSchedulerLastSuccessfulDeviceSyncTime[];
 
 }  // namespace prefs
 

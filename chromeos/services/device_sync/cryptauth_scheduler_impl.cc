@@ -27,23 +27,23 @@ namespace {
 constexpr base::TimeDelta kZeroTimeDelta = base::TimeDelta::FromSeconds(0);
 
 // The default period between successful enrollments in days. Superseded by the
-// ClientDirective's checkin_delay_millis sent by CryptAuth in SyncKeysResponse.
+// ClientDirective's checkin_delay_millis sent by CryptAuth.
 constexpr base::TimeDelta kDefaultRefreshPeriod = base::TimeDelta::FromDays(30);
 
-// The default period, in hours, between enrollment attempts if the previous
-// enrollment attempt failed. Superseded by the ClientDirective's
-// retry_period_millis sent by CryptAuth in SyncKeysResponse.
+// The default period, in hours, between Enrollment/DeviceSync attempts if the
+// previous Enrollment/DeviceSync attempt failed. Superseded by the
+// ClientDirective's retry_period_millis sent by CryptAuth.
 constexpr base::TimeDelta kDefaultRetryPeriod = base::TimeDelta::FromHours(12);
 
 // The time to wait before an "immediate" retry attempt after a failed
-// enrollment attempt. Note: SyncKeys requests are throttled by CryptAuth if
-// more than one is sent within a five-minute window.
+// Enrollment/DeviceSync attempt. Note: Some request types are throttled by
+// CryptAuth if more than one is sent within a five-minute window.
 constexpr base::TimeDelta kImmediateRetryDelay =
     base::TimeDelta::FromMinutes(5);
 
-// The default number of "immediate" retries after a failed enrollment attempt.
-// Superseded by the ClientDirective's retry_attempts sent by CryptAuth in the
-// SyncKeysResponse.
+// The default number of "immediate" retries after a failed
+// Enrollment/DeviceSync attempt. Superseded by the ClientDirective's
+// retry_attempts sent by CryptAuth.
 const int kDefaultMaxImmediateRetries = 3;
 
 const char kNoClientDirective[] = "[No ClientDirective]";
@@ -58,8 +58,7 @@ bool IsClientDirectiveValid(
 }
 
 // Fills a ClientDirective with our chosen default parameters. This
-// ClientDirective is used until a ClientDirective is received from CryptAuth in
-// the SyncKeysResponse.
+// ClientDirective is used until a ClientDirective is received from CryptAuth.
 cryptauthv2::ClientDirective CreateDefaultClientDirective() {
   cryptauthv2::ClientDirective client_directive;
   client_directive.set_checkin_delay_millis(
@@ -126,9 +125,11 @@ CryptAuthSchedulerImpl::Factory::BuildInstance(
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
     base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> enrollment_timer) {
+    std::unique_ptr<base::OneShotTimer> enrollment_timer,
+    std::unique_ptr<base::OneShotTimer> device_sync_timer) {
   return base::WrapUnique(new CryptAuthSchedulerImpl(
-      pref_service, network_state_handler, clock, std::move(enrollment_timer)));
+      pref_service, network_state_handler, clock, std::move(enrollment_timer),
+      std::move(device_sync_timer)));
 }
 
 // static
@@ -138,43 +139,40 @@ void CryptAuthSchedulerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(
       prefs::kCryptAuthSchedulerNextEnrollmentRequestClientMetadata,
       kNoClientMetadata);
+  registry->RegisterStringPref(
+      prefs::kCryptAuthSchedulerNextDeviceSyncRequestClientMetadata,
+      kNoClientMetadata);
   registry->RegisterTimePref(
       prefs::kCryptAuthSchedulerLastEnrollmentAttemptTime, base::Time());
   registry->RegisterTimePref(
+      prefs::kCryptAuthSchedulerLastDeviceSyncAttemptTime, base::Time());
+  registry->RegisterTimePref(
       prefs::kCryptAuthSchedulerLastSuccessfulEnrollmentTime, base::Time());
+  registry->RegisterTimePref(
+      prefs::kCryptAuthSchedulerLastSuccessfulDeviceSyncTime, base::Time());
 }
 
 CryptAuthSchedulerImpl::CryptAuthSchedulerImpl(
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
     base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> enrollment_timer)
+    std::unique_ptr<base::OneShotTimer> enrollment_timer,
+    std::unique_ptr<base::OneShotTimer> device_sync_timer)
     : pref_service_(pref_service),
       network_state_handler_(network_state_handler),
       clock_(clock),
-      enrollment_timer_(std::move(enrollment_timer)),
       client_directive_(BuildClientDirective(pref_service)) {
   DCHECK(pref_service_);
   DCHECK(network_state_handler_);
   DCHECK(clock_);
   DCHECK(IsClientDirectiveValid(client_directive_));
 
-  // Queue up the most recently scheduled enrollment request if applicable.
-  const base::Value* client_metadata_from_pref = pref_service_->Get(
-      prefs::kCryptAuthSchedulerNextEnrollmentRequestClientMetadata);
-  if (client_metadata_from_pref->GetString() != kNoClientMetadata) {
-    pending_enrollment_request_ =
-        util::DecodeProtoMessageFromValueString<cryptauthv2::ClientMetadata>(
-            client_metadata_from_pref);
-  }
+  request_timers_[RequestType::kEnrollment] = std::move(enrollment_timer);
+  request_timers_[RequestType::kDeviceSync] = std::move(device_sync_timer);
 
-  // If we are recovering from a failure, reset the failure count to 1 in the
-  // hopes that the restart solved the issue. This will allow for immediate
-  // retries again if allowed by the ClientDirective.
-  if (pending_enrollment_request_ &&
-      pending_enrollment_request_->retry_count() > 0) {
-    pending_enrollment_request_->set_retry_count(1);
-  }
+  // Queue up the most recently scheduled requests if applicable.
+  InitializePendingRequest(RequestType::kEnrollment);
+  InitializePendingRequest(RequestType::kDeviceSync);
 }
 
 CryptAuthSchedulerImpl::~CryptAuthSchedulerImpl() {
@@ -182,106 +180,255 @@ CryptAuthSchedulerImpl::~CryptAuthSchedulerImpl() {
     network_state_handler_->RemoveObserver(this, FROM_HERE);
 }
 
-void CryptAuthSchedulerImpl::OnEnrollmentSchedulingStarted() {
-  network_state_handler_->AddObserver(this, FROM_HERE);
+// static
+std::string CryptAuthSchedulerImpl::GetLastAttemptTimePrefName(
+    RequestType request_type) {
+  switch (request_type) {
+    case RequestType::kEnrollment:
+      return prefs::kCryptAuthSchedulerLastEnrollmentAttemptTime;
+    case RequestType::kDeviceSync:
+      return prefs::kCryptAuthSchedulerLastDeviceSyncAttemptTime;
+  }
+}
 
-  ScheduleNextEnrollment();
+// static
+std::string CryptAuthSchedulerImpl::GetLastSuccessTimePrefName(
+    RequestType request_type) {
+  switch (request_type) {
+    case RequestType::kEnrollment:
+      return prefs::kCryptAuthSchedulerLastSuccessfulEnrollmentTime;
+    case RequestType::kDeviceSync:
+      return prefs::kCryptAuthSchedulerLastSuccessfulDeviceSyncTime;
+  }
+}
+
+// static
+std::string CryptAuthSchedulerImpl::GetPendingRequestPrefName(
+    RequestType request_type) {
+  switch (request_type) {
+    case RequestType::kEnrollment:
+      return prefs::kCryptAuthSchedulerNextEnrollmentRequestClientMetadata;
+    case RequestType::kDeviceSync:
+      return prefs::kCryptAuthSchedulerNextDeviceSyncRequestClientMetadata;
+  }
+}
+
+void CryptAuthSchedulerImpl::OnEnrollmentSchedulingStarted() {
+  OnSchedulingStarted(RequestType::kEnrollment);
+}
+
+void CryptAuthSchedulerImpl::OnDeviceSyncSchedulingStarted() {
+  OnSchedulingStarted(RequestType::kDeviceSync);
 }
 
 void CryptAuthSchedulerImpl::RequestEnrollment(
     const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
     const base::Optional<std::string>& session_id) {
-  enrollment_timer_->Stop();
+  MakeRequest(RequestType::kEnrollment, invocation_reason, session_id);
+}
 
-  pending_enrollment_request_ =
-      BuildClientMetadata(0 /* retry_count */, invocation_reason, session_id);
-
-  ScheduleNextEnrollment();
+void CryptAuthSchedulerImpl::RequestDeviceSync(
+    const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
+    const base::Optional<std::string>& session_id) {
+  MakeRequest(RequestType::kDeviceSync, invocation_reason, session_id);
 }
 
 void CryptAuthSchedulerImpl::HandleEnrollmentResult(
     const CryptAuthEnrollmentResult& enrollment_result) {
-  DCHECK(current_enrollment_request_);
-  DCHECK(!enrollment_timer_->IsRunning());
+  HandleResult(RequestType::kEnrollment, enrollment_result.IsSuccess(),
+               enrollment_result.client_directive());
+}
 
-  base::Time now = clock_->Now();
-
-  pref_service_->SetTime(prefs::kCryptAuthSchedulerLastEnrollmentAttemptTime,
-                         now);
-
-  // If unsuccessful and a more immediate request isn't pending, queue up the
-  // failure recovery attempt.
-  if (enrollment_result.IsSuccess()) {
-    pref_service_->SetTime(
-        prefs::kCryptAuthSchedulerLastSuccessfulEnrollmentTime, now);
-  } else if (!pending_enrollment_request_) {
-    current_enrollment_request_->set_retry_count(
-        current_enrollment_request_->retry_count() + 1);
-    pending_enrollment_request_ = current_enrollment_request_;
-  }
-
-  if (enrollment_result.client_directive() &&
-      IsClientDirectiveValid(*enrollment_result.client_directive())) {
-    client_directive_ = *enrollment_result.client_directive();
-
-    pref_service_->Set(
-        prefs::kCryptAuthSchedulerClientDirective,
-        util::EncodeProtoMessageAsValueString(&client_directive_));
-  }
-
-  current_enrollment_request_.reset();
-
-  ScheduleNextEnrollment();
+void CryptAuthSchedulerImpl::HandleDeviceSyncResult(
+    const CryptAuthDeviceSyncResult& device_sync_result) {
+  HandleResult(RequestType::kDeviceSync, device_sync_result.IsSuccess(),
+               device_sync_result.client_directive());
 }
 
 base::Optional<base::Time>
 CryptAuthSchedulerImpl::GetLastSuccessfulEnrollmentTime() const {
-  base::Time time = pref_service_->GetTime(
-      prefs::kCryptAuthSchedulerLastSuccessfulEnrollmentTime);
-  if (time.is_null())
-    return base::nullopt;
+  return GetLastSuccessTime(RequestType::kEnrollment);
+}
 
-  return time;
+base::Optional<base::Time>
+CryptAuthSchedulerImpl::GetLastSuccessfulDeviceSyncTime() const {
+  return GetLastSuccessTime(RequestType::kDeviceSync);
 }
 
 base::TimeDelta CryptAuthSchedulerImpl::GetRefreshPeriod() const {
   return base::TimeDelta::FromMilliseconds(
       client_directive_.checkin_delay_millis());
 }
+base::Optional<base::TimeDelta>
+CryptAuthSchedulerImpl::GetTimeToNextEnrollmentRequest() const {
+  return GetTimeToNextRequest(RequestType::kEnrollment);
+}
 
-base::TimeDelta CryptAuthSchedulerImpl::GetTimeToNextEnrollmentRequest() const {
-  // Enrollment already requested.
-  if (IsWaitingForEnrollmentResult())
+base::Optional<base::TimeDelta>
+CryptAuthSchedulerImpl::GetTimeToNextDeviceSyncRequest() const {
+  return GetTimeToNextRequest(RequestType::kDeviceSync);
+}
+
+bool CryptAuthSchedulerImpl::IsWaitingForEnrollmentResult() const {
+  return IsWaitingForResult(RequestType::kEnrollment);
+}
+
+bool CryptAuthSchedulerImpl::IsWaitingForDeviceSyncResult() const {
+  return IsWaitingForResult(RequestType::kDeviceSync);
+}
+
+size_t CryptAuthSchedulerImpl::GetNumConsecutiveEnrollmentFailures() const {
+  return GetNumConsecutiveFailures(RequestType::kEnrollment);
+}
+
+size_t CryptAuthSchedulerImpl::GetNumConsecutiveDeviceSyncFailures() const {
+  return GetNumConsecutiveFailures(RequestType::kDeviceSync);
+}
+
+void CryptAuthSchedulerImpl::DefaultNetworkChanged(
+    const NetworkState* network) {
+  // The updated default network may not be online.
+  if (!DoesMachineHaveNetworkConnectivity())
+    return;
+
+  // Now that the device has connectivity, reschedule requests.
+  ScheduleNextRequest(RequestType::kEnrollment);
+  ScheduleNextRequest(RequestType::kDeviceSync);
+}
+
+void CryptAuthSchedulerImpl::OnShuttingDown() {
+  DCHECK(network_state_handler_);
+  network_state_handler_->RemoveObserver(this, FROM_HERE);
+  network_state_handler_ = nullptr;
+}
+
+void CryptAuthSchedulerImpl::OnSchedulingStarted(RequestType request_type) {
+  if (!network_state_handler_->HasObserver(this))
+    network_state_handler_->AddObserver(this, FROM_HERE);
+
+  ScheduleNextRequest(request_type);
+}
+
+void CryptAuthSchedulerImpl::MakeRequest(
+    RequestType request_type,
+    const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
+    const base::Optional<std::string>& session_id) {
+  request_timers_[request_type]->Stop();
+
+  pending_requests_[request_type] =
+      BuildClientMetadata(0 /* retry_count */, invocation_reason, session_id);
+
+  ScheduleNextRequest(request_type);
+}
+
+void CryptAuthSchedulerImpl::HandleResult(
+    RequestType request_type,
+    bool success,
+    const base::Optional<cryptauthv2::ClientDirective>& new_client_directive) {
+  DCHECK(current_requests_[request_type]);
+  DCHECK(!request_timers_[request_type]->IsRunning());
+
+  base::Time now = clock_->Now();
+
+  pref_service_->SetTime(GetLastAttemptTimePrefName(request_type), now);
+
+  if (new_client_directive && IsClientDirectiveValid(*new_client_directive)) {
+    client_directive_ = *new_client_directive;
+
+    pref_service_->Set(
+        prefs::kCryptAuthSchedulerClientDirective,
+        util::EncodeProtoMessageAsValueString(&client_directive_));
+  }
+
+  // If successful, process InvokeNext field of ClientDirective. If unsuccessful
+  // and a more immediate request isn't pending, queue up the failure recovery
+  // attempt.
+  if (success) {
+    pref_service_->SetTime(GetLastSuccessTimePrefName(request_type), now);
+
+    HandleInvokeNext(client_directive_.invoke_next(),
+                     current_requests_[request_type]->session_id());
+  } else if (!pending_requests_[request_type]) {
+    current_requests_[request_type]->set_retry_count(
+        current_requests_[request_type]->retry_count() + 1);
+    pending_requests_[request_type] = current_requests_[request_type];
+  }
+
+  current_requests_[request_type].reset();
+
+  // Because the ClientDirective might have changed, we update both timers.
+  ScheduleNextRequest(RequestType::kEnrollment);
+  ScheduleNextRequest(RequestType::kDeviceSync);
+}
+
+void CryptAuthSchedulerImpl::HandleInvokeNext(
+    const ::google::protobuf::RepeatedPtrField<cryptauthv2::InvokeNext>&
+        invoke_next_list,
+    const std::string& session_id) {
+  for (const cryptauthv2::InvokeNext& invoke_next : invoke_next_list) {
+    if (invoke_next.service() == cryptauthv2::ENROLLMENT) {
+      PA_LOG(VERBOSE) << "Enrollment requested by InvokeNext";
+      RequestEnrollment(cryptauthv2::ClientMetadata::SERVER_INITIATED,
+                        session_id);
+    } else if (invoke_next.service() == cryptauthv2::DEVICE_SYNC) {
+      PA_LOG(VERBOSE) << "DeviceSync requested by InvokeNext";
+      RequestDeviceSync(cryptauthv2::ClientMetadata::SERVER_INITIATED,
+                        session_id);
+    } else {
+      PA_LOG(WARNING) << "Unknown InvokeNext TargetService "
+                      << invoke_next.service();
+    }
+  }
+}
+
+base::Optional<base::Time> CryptAuthSchedulerImpl::GetLastSuccessTime(
+    RequestType request_type) const {
+  base::Time time =
+      pref_service_->GetTime(GetLastSuccessTimePrefName(request_type));
+  if (time.is_null())
+    return base::nullopt;
+
+  return time;
+}
+
+base::Optional<base::TimeDelta> CryptAuthSchedulerImpl::GetTimeToNextRequest(
+    RequestType request_type) const {
+  // Request already in progress.
+  if (IsWaitingForResult(request_type))
     return kZeroTimeDelta;
 
-  if (!pending_enrollment_request_)
-    return base::TimeDelta::Max();
+  // No pending request.
+  const auto it = pending_requests_.find(request_type);
+  if (it == pending_requests_.end() || !it->second)
+    return base::nullopt;
 
-  // Attempt the pending enrollment request immediately unless it is periodic.
-  if (pending_enrollment_request_->retry_count() == 0) {
-    if (pending_enrollment_request_->invocation_reason() !=
-        cryptauthv2::ClientMetadata::PERIODIC) {
-      return kZeroTimeDelta;
-    }
+  int64_t retry_count = it->second->retry_count();
+  cryptauthv2::ClientMetadata::InvocationReason invocation_reason =
+      it->second->invocation_reason();
 
-    base::Optional<base::Time> last_successful_enrollment_time =
-        GetLastSuccessfulEnrollmentTime();
-    if (!last_successful_enrollment_time)
+  // If we are not recovering from failure, attempt all but periodic requests
+  // immediately.
+  if (retry_count == 0) {
+    if (invocation_reason != cryptauthv2::ClientMetadata::PERIODIC)
       return kZeroTimeDelta;
+
+    base::Optional<base::Time> last_success_time =
+        GetLastSuccessTime(request_type);
+    DCHECK(last_success_time);
 
     base::TimeDelta time_since_last_success =
-        clock_->Now() - *last_successful_enrollment_time;
+        clock_->Now() - *last_success_time;
     return std::max(kZeroTimeDelta,
                     GetRefreshPeriod() - time_since_last_success);
   }
 
   base::TimeDelta time_since_last_attempt =
-      clock_->Now() - pref_service_->GetTime(
-                          prefs::kCryptAuthSchedulerLastEnrollmentAttemptTime);
+      clock_->Now() -
+      pref_service_->GetTime(GetLastAttemptTimePrefName(request_type));
 
   // Recover from failure using immediate retry.
-  if (pending_enrollment_request_->retry_count() <=
-      client_directive_.retry_attempts()) {
+  DCHECK(retry_count > 0);
+  if (retry_count <= client_directive_.retry_attempts()) {
     return std::max(kZeroTimeDelta,
                     kImmediateRetryDelay - time_since_last_attempt);
   }
@@ -292,37 +439,30 @@ base::TimeDelta CryptAuthSchedulerImpl::GetTimeToNextEnrollmentRequest() const {
                                       time_since_last_attempt);
 }
 
-bool CryptAuthSchedulerImpl::IsWaitingForEnrollmentResult() const {
-  return current_enrollment_request_.has_value();
+bool CryptAuthSchedulerImpl::IsWaitingForResult(
+    RequestType request_type) const {
+  const auto it = current_requests_.find(request_type);
+  return (it != current_requests_.end() && it->second);
 }
 
-size_t CryptAuthSchedulerImpl::GetNumConsecutiveEnrollmentFailures() const {
-  if (current_enrollment_request_)
-    return current_enrollment_request_->retry_count();
+size_t CryptAuthSchedulerImpl::GetNumConsecutiveFailures(
+    RequestType request_type) const {
+  const auto current_request_it = current_requests_.find(request_type);
+  if (current_request_it != current_requests_.end() &&
+      current_request_it->second) {
+    return current_request_it->second->retry_count();
+  }
 
-  if (pending_enrollment_request_)
-    return pending_enrollment_request_->retry_count();
+  const auto pending_request_it = pending_requests_.find(request_type);
+  if (pending_request_it != pending_requests_.end() &&
+      pending_request_it->second) {
+    return pending_request_it->second->retry_count();
+  }
 
   return 0;
 }
 
-void CryptAuthSchedulerImpl::DefaultNetworkChanged(
-    const NetworkState* network) {
-  // The updated default network may not be online.
-  if (!DoesMachineHaveNetworkConnectivity())
-    return;
-
-  // Now that the device has connectivity, reschedule enrollment.
-  ScheduleNextEnrollment();
-}
-
-void CryptAuthSchedulerImpl::OnShuttingDown() {
-  DCHECK(network_state_handler_);
-  network_state_handler_->RemoveObserver(this, FROM_HERE);
-  network_state_handler_ = nullptr;
-}
-
-bool CryptAuthSchedulerImpl::DoesMachineHaveNetworkConnectivity() {
+bool CryptAuthSchedulerImpl::DoesMachineHaveNetworkConnectivity() const {
   if (!network_state_handler_)
     return false;
 
@@ -334,56 +474,102 @@ bool CryptAuthSchedulerImpl::DoesMachineHaveNetworkConnectivity() {
   return default_network && default_network->IsConnectedState();
 }
 
-void CryptAuthSchedulerImpl::ScheduleNextEnrollment() {
-  // Wait for the current enrollment attempt to finish before determining the
-  // next enrollment request in case we need to recover from a failure.
-  if (IsWaitingForEnrollmentResult())
+void CryptAuthSchedulerImpl::InitializePendingRequest(
+    RequestType request_type) {
+  // Queue up the persisted scheduled request if applicable.
+  const base::Value* client_metadata_from_pref =
+      pref_service_->Get(GetPendingRequestPrefName(request_type));
+  if (client_metadata_from_pref->GetString() != kNoClientMetadata) {
+    pending_requests_[request_type] =
+        util::DecodeProtoMessageFromValueString<cryptauthv2::ClientMetadata>(
+            client_metadata_from_pref);
+  }
+
+  // If we are recovering from a failure, reset the failure count to 1 in the
+  // hopes that the restart solved the issue. This will allow for immediate
+  // retries again if permitted by the ClientDirective.
+  if (pending_requests_[request_type] &&
+      pending_requests_[request_type]->retry_count() > 0) {
+    pending_requests_[request_type]->set_retry_count(1);
+  }
+}
+
+void CryptAuthSchedulerImpl::ScheduleNextRequest(RequestType request_type) {
+  // Wait for the current attempt to finish before determining the next request
+  // in case we need to recover from a failure.
+  if (IsWaitingForResult(request_type))
     return;
 
-  // If no enrollment request has been explicitly made, schedule the standard
-  // periodic enrollment attempt.
-  if (!pending_enrollment_request_) {
-    pending_enrollment_request_ =
+  // For Enrollment only, if no request has already been explicitly made,
+  // schedule a periodic attempt.
+  if (request_type == RequestType::kEnrollment &&
+      !pending_requests_[request_type]) {
+    pending_requests_[request_type] =
         BuildClientMetadata(0 /* retry_count */,
-                            GetLastSuccessfulEnrollmentTime()
+                            GetLastSuccessTime(request_type)
                                 ? cryptauthv2::ClientMetadata::PERIODIC
                                 : cryptauthv2::ClientMetadata::INITIALIZATION,
                             base::nullopt /* session_id */);
   }
 
-  DCHECK(pending_enrollment_request_);
-  pref_service_->Set(
-      prefs::kCryptAuthSchedulerNextEnrollmentRequestClientMetadata,
-      util::EncodeProtoMessageAsValueString(
-          &pending_enrollment_request_.value()));
+  if (!pending_requests_[request_type]) {
+    DCHECK_EQ(RequestType::kDeviceSync, request_type);
+    pref_service_->SetString(GetPendingRequestPrefName(request_type),
+                             kNoClientMetadata);
+    return;
+  }
 
-  if (!HasEnrollmentSchedulingStarted())
+  // Persist the pending request even if scheduling hasn't started yet.
+  pref_service_->Set(GetPendingRequestPrefName(request_type),
+                     util::EncodeProtoMessageAsValueString(
+                         &pending_requests_[request_type].value()));
+
+  bool has_scheduling_started = (request_type == RequestType::kEnrollment &&
+                                 HasEnrollmentSchedulingStarted()) ||
+                                (request_type == RequestType::kDeviceSync &&
+                                 HasDeviceSyncSchedulingStarted());
+  if (!has_scheduling_started)
     return;
 
-  enrollment_timer_->Start(
-      FROM_HERE, GetTimeToNextEnrollmentRequest(),
-      base::BindOnce(&CryptAuthSchedulerImpl::OnEnrollmentTimerFired,
-                     base::Unretained(this)));
+  base::Optional<base::TimeDelta> delay = GetTimeToNextRequest(request_type);
+  DCHECK(delay);
+  request_timers_[request_type]->Start(
+      FROM_HERE, *delay,
+      base::BindOnce(&CryptAuthSchedulerImpl::OnTimerFired,
+                     base::Unretained(this), request_type));
 }
 
-void CryptAuthSchedulerImpl::OnEnrollmentTimerFired() {
-  DCHECK(!current_enrollment_request_);
-  DCHECK(pending_enrollment_request_);
+void CryptAuthSchedulerImpl::OnTimerFired(RequestType request_type) {
+  DCHECK(!current_requests_[request_type]);
+  DCHECK(pending_requests_[request_type]);
 
   if (!DoesMachineHaveNetworkConnectivity()) {
-    PA_LOG(INFO) << "Enrollment triggered while the device is offline. Waiting "
+    std::string type_string =
+        request_type == RequestType::kEnrollment ? "Enrollment" : "DeviceSync";
+    PA_LOG(INFO) << type_string
+                 << " triggered while the device is offline. Waiting "
                  << "for online connectivity before making request.";
     return;
   }
 
-  current_enrollment_request_ = pending_enrollment_request_;
-  pending_enrollment_request_.reset();
+  current_requests_[request_type] = pending_requests_[request_type];
+  pending_requests_[request_type].reset();
 
-  base::Optional<cryptauthv2::PolicyReference> policy_reference = base::nullopt;
-  if (client_directive_.has_policy_reference())
-    policy_reference = client_directive_.policy_reference();
+  switch (request_type) {
+    case RequestType::kEnrollment: {
+      base::Optional<cryptauthv2::PolicyReference> policy_reference =
+          base::nullopt;
+      if (client_directive_.has_policy_reference())
+        policy_reference = client_directive_.policy_reference();
 
-  NotifyEnrollmentRequested(*current_enrollment_request_, policy_reference);
+      NotifyEnrollmentRequested(*current_requests_[request_type],
+                                policy_reference);
+      return;
+    }
+    case RequestType::kDeviceSync:
+      NotifyDeviceSyncRequested(*current_requests_[request_type]);
+      return;
+  }
 }
 
 }  // namespace device_sync

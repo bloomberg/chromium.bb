@@ -280,7 +280,8 @@ base::Time CryptAuthV2EnrollmentManagerImpl::GetLastEnrollmentTime() const {
 }
 
 base::TimeDelta CryptAuthV2EnrollmentManagerImpl::GetTimeToNextAttempt() const {
-  return scheduler_->GetTimeToNextEnrollmentRequest();
+  return scheduler_->GetTimeToNextEnrollmentRequest().value_or(
+      base::TimeDelta::Max());
 }
 
 bool CryptAuthV2EnrollmentManagerImpl::IsEnrollmentInProgress() const {
@@ -445,7 +446,7 @@ void CryptAuthV2EnrollmentManagerImpl::OnEnrollmentFinished(
                << GetTimeToNextAttempt();
 
   if (!enrollment_result.IsSuccess()) {
-    PA_LOG(INFO) << "Number of consecutive failures: "
+    PA_LOG(INFO) << "Number of consecutive Enrollment failures: "
                  << scheduler_->GetNumConsecutiveEnrollmentFailures();
   }
 

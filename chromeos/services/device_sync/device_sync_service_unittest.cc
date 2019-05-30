@@ -224,7 +224,8 @@ class FakeCryptAuthSchedulerFactory : public CryptAuthSchedulerImpl::Factory {
       PrefService* pref_service,
       NetworkStateHandler* network_state_handler,
       base::Clock* clock,
-      std::unique_ptr<base::OneShotTimer> enrollment_timer) override {
+      std::unique_ptr<base::OneShotTimer> enrollment_timer,
+      std::unique_ptr<base::OneShotTimer> device_sync_timer) override {
     EXPECT_EQ(test_pref_service_, pref_service);
 
     // Only one instance is expected to be created per test.

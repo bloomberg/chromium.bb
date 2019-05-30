@@ -43,8 +43,13 @@ class FakeCryptAuthScheduler : public CryptAuthScheduler {
   }
 
   void set_last_successful_enrollment_time(
-      base::Time last_successful_enrollment_time) {
+      base::Optional<base::Time> last_successful_enrollment_time) {
     last_successful_enrollment_time_ = last_successful_enrollment_time;
+  }
+
+  void set_last_successful_device_sync_time(
+      base::Optional<base::Time> last_successful_device_sync_time) {
+    last_successful_device_sync_time_ = last_successful_device_sync_time;
   }
 
   void set_refresh_period(base::TimeDelta refresh_period) {
@@ -52,8 +57,13 @@ class FakeCryptAuthScheduler : public CryptAuthScheduler {
   }
 
   void set_time_to_next_enrollment_request(
-      base::TimeDelta time_to_next_enrollment_request) {
+      base::Optional<base::TimeDelta> time_to_next_enrollment_request) {
     time_to_next_enrollment_request_ = time_to_next_enrollment_request;
+  }
+
+  void set_time_to_next_device_sync_request(
+      base::Optional<base::TimeDelta> time_to_next_device_sync_request) {
+    time_to_next_device_sync_request_ = time_to_next_device_sync_request;
   }
 
   void set_num_consecutive_enrollment_failures(
@@ -61,28 +71,50 @@ class FakeCryptAuthScheduler : public CryptAuthScheduler {
     num_consecutive_enrollment_failures_ = num_consecutive_enrollment_failures;
   }
 
+  void set_num_consecutive_device_sync_failures(
+      size_t num_consecutive_device_sync_failures) {
+    num_consecutive_device_sync_failures_ =
+        num_consecutive_device_sync_failures;
+  }
+
   // CryptAuthScheduler:
   void RequestEnrollment(
       const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
       const base::Optional<std::string>& session_id) override;
+  void RequestDeviceSync(
+      const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
+      const base::Optional<std::string>& session_id) override;
   void HandleEnrollmentResult(
       const CryptAuthEnrollmentResult& enrollment_result) override;
+  void HandleDeviceSyncResult(
+      const CryptAuthDeviceSyncResult& device_sync_result) override;
   base::Optional<base::Time> GetLastSuccessfulEnrollmentTime() const override;
+  base::Optional<base::Time> GetLastSuccessfulDeviceSyncTime() const override;
   base::TimeDelta GetRefreshPeriod() const override;
-  base::TimeDelta GetTimeToNextEnrollmentRequest() const override;
+  base::Optional<base::TimeDelta> GetTimeToNextEnrollmentRequest()
+      const override;
+  base::Optional<base::TimeDelta> GetTimeToNextDeviceSyncRequest()
+      const override;
   bool IsWaitingForEnrollmentResult() const override;
+  bool IsWaitingForDeviceSyncResult() const override;
   size_t GetNumConsecutiveEnrollmentFailures() const override;
+  size_t GetNumConsecutiveDeviceSyncFailures() const override;
 
  private:
   std::vector<CryptAuthEnrollmentResult> handled_enrollment_results_;
+  std::vector<CryptAuthDeviceSyncResult> handled_device_sync_results_;
   base::Optional<cryptauthv2::PolicyReference>
       client_directive_policy_reference_;
   base::Optional<base::Time> last_successful_enrollment_time_;
+  base::Optional<base::Time> last_successful_device_sync_time_;
   base::TimeDelta refresh_period_ = kDefaultRefreshPeriod;
-  base::TimeDelta time_to_next_enrollment_request_ =
+  base::Optional<base::TimeDelta> time_to_next_enrollment_request_ =
       kDefaultTimeToNextEnrollmentRequest;
+  base::Optional<base::TimeDelta> time_to_next_device_sync_request_;
   size_t num_consecutive_enrollment_failures_ = 0u;
+  size_t num_consecutive_device_sync_failures_ = 0u;
   bool is_waiting_for_enrollment_result_ = false;
+  bool is_waiting_for_device_sync_result_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthScheduler);
 };
@@ -120,6 +152,33 @@ class FakeCryptAuthSchedulerEnrollmentDelegate
       weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthSchedulerEnrollmentDelegate);
+};
+
+// Fake CryptAuthScheduler::DeviceSyncDelegate implementation.
+class FakeCryptAuthSchedulerDeviceSyncDelegate
+    : public CryptAuthScheduler::DeviceSyncDelegate {
+ public:
+  FakeCryptAuthSchedulerDeviceSyncDelegate();
+  ~FakeCryptAuthSchedulerDeviceSyncDelegate() override;
+
+  base::WeakPtr<FakeCryptAuthSchedulerDeviceSyncDelegate> GetWeakPtr();
+
+  const std::vector<cryptauthv2::ClientMetadata>&
+  client_metadata_from_device_sync_requests() const {
+    return client_metadata_from_device_sync_requests_;
+  }
+
+ private:
+  // CryptAuthScheduler::DeviceSyncDelegate:
+  void OnDeviceSyncRequested(
+      const cryptauthv2::ClientMetadata& client_metadata) override;
+
+  std::vector<cryptauthv2::ClientMetadata>
+      client_metadata_from_device_sync_requests_;
+  base::WeakPtrFactory<FakeCryptAuthSchedulerDeviceSyncDelegate>
+      weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthSchedulerDeviceSyncDelegate);
 };
 
 }  // namespace device_sync

@@ -33,9 +33,7 @@ extern const int64_t kTestClientDirectiveCheckinDelayMillis;
 extern const int64_t kTestClientDirectivePolicyReferenceVersion;
 extern const int64_t kTestClientDirectiveRetryPeriodMillis;
 extern const int64_t kTestClientDirectiveCreateTimeMillis;
-extern const char kTestClientDirectiveInvokeNextKeyName[];
 extern const char kTestClientDirectivePolicyReferenceName[];
-extern const TargetService kTestClientDirectiveInvokeNextService;
 
 ClientMetadata BuildClientMetadata(
     int32_t retry_count,
