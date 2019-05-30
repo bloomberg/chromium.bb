@@ -1124,7 +1124,7 @@ void Element::bbRequestSpellCheck() {
   Node* stayWithin = this;
   while (element) {
     if (element->IsFrameOwnerElement()) {
-      Document* contentDocument = ToHTMLFrameOwnerElement(element)->contentDocument();
+      Document* contentDocument = DynamicTo<HTMLFrameOwnerElement>(element)->contentDocument();
       if (contentDocument && contentDocument->documentElement()) {
         contentDocument->documentElement()->bbRequestSpellCheck();
       }
@@ -1132,7 +1132,7 @@ void Element::bbRequestSpellCheck() {
     }
     else if (element->IsTextControl()) {
       HTMLElement* innerElement = ToTextControl(element)->InnerEditorElement();
-      if (innerElement && HasEditableStyle(*innerElement->ToNode()) && innerElement->IsSpellCheckingEnabled()) {
+      if (innerElement && HasEditableStyle(*innerElement) && innerElement->IsSpellCheckingEnabled()) {
         VisiblePosition startPos = CreateVisiblePosition(PositionTemplate<EditingStrategy>::FirstPositionInNode(*innerElement));
         VisiblePosition endPos = CreateVisiblePosition(PositionTemplate<EditingStrategy>::LastPositionInNode(*innerElement));
         if (startPos.IsNotNull() && endPos.IsNotNull()) {
@@ -1142,7 +1142,7 @@ void Element::bbRequestSpellCheck() {
       }
       element = ElementTraversal::NextSkippingChildren(*element, stayWithin);
     }
-    else if (HasEditableStyle(*element->ToNode()) && element->IsSpellCheckingEnabled()) {
+    else if (HasEditableStyle(*element) && element->IsSpellCheckingEnabled()) {
       VisiblePosition startPos = CreateVisiblePosition(PositionTemplate<EditingStrategy>::FirstPositionInNode(*element));
       VisiblePosition endPos = CreateVisiblePosition(PositionTemplate<EditingStrategy>::LastPositionInNode(*element));
       if (startPos.IsNotNull() && endPos.IsNotNull()) {
