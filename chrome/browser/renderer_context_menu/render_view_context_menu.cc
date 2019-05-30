@@ -69,6 +69,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -78,6 +79,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_features.h"
@@ -966,12 +968,22 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
 
   // Log other situations.
 
-  // chrome://downloads link context.
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK) &&
+      // Ignore link-related commands that don't actually open a link.
       IsCommandForOpenLink(id) &&
-      GetDocumentURL(params_) == GURL("chrome://downloads")) {
-    base::RecordAction(base::UserMetricsAction(
-        "Downloads_OpenUrlOfDownloadedItemFromContextMenu"));
+      // Ignore using right click + open in new tab for internal links.
+      !params_.link_url.SchemeIs(content::kChromeUIScheme)) {
+    const GURL doc_url = GetDocumentURL(params_);
+    const GURL history_url = GURL(chrome::kChromeUIHistoryURL);
+    if (doc_url == history_url.Resolve(chrome::kChromeUIHistorySyncedTabs)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "HistoryPage.OtherDevicesMenu",
+          browser_sync::SyncedTabsHistogram::OPENED_LINK_VIA_CONTEXT_MENU,
+          browser_sync::SyncedTabsHistogram::LIMIT);
+    } else if (doc_url == GURL(chrome::kChromeUIDownloadsURL)) {
+      base::RecordAction(base::UserMetricsAction(
+          "Downloads_OpenUrlOfDownloadedItemFromContextMenu"));
+    }
   }
 
   // Log for specific contexts. Note that since the menu is displayed for

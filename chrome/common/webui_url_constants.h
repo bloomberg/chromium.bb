@@ -83,6 +83,7 @@ extern const char kChromeUIHangUIHost[];
 extern const char kChromeUIHelpHost[];
 extern const char kChromeUIHelpURL[];
 extern const char kChromeUIHistoryHost[];
+extern const char kChromeUIHistorySyncedTabs[];
 extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIIdentityInternalsHost[];
 extern const char kChromeUIInspectHost[];

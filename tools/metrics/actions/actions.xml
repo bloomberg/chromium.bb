@@ -5391,6 +5391,10 @@ should be able to be added at any place in this file.
   <description>
     Records open a URL of download items in chrome://downloads page from context
     menu.
+
+    As of M-76, &quot;Save link as...&quot;, &quot;Copy link address&quot;, and
+    &quot;Copy link text&quot; context menu actions no longer log this action
+    (this was accidentally the case before M-76).
   </description>
 </action>
 

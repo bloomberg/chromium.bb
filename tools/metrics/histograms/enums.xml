@@ -43560,16 +43560,17 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="OtherSessionsActions">
   <int value="0" label="Menu initialized"/>
-  <int value="1" label="Menu shown"/>
+  <int value="1" label="Menu shown (deprecated)"/>
   <int value="2" label="Link clicked"/>
   <int value="3" label="Link context menu shown"/>
-  <int value="4" label="Device context menu shown"/>
+  <int value="4" label="Device context menu shown (deprecated)"/>
   <int value="5" label="Unused/previous device context menu shown"/>
   <int value="6" label="Collapse Session"/>
   <int value="7" label="Expand Session"/>
   <int value="8" label="Open All"/>
   <int value="9" label="Has foreign data"/>
   <int value="10" label="Hide for now"/>
+  <int value="11" label="Opened link via context menu"/>
 </enum>
 
 <enum name="OutputDeviceStatus">

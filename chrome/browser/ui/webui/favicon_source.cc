@@ -18,6 +18,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/sync/driver/sync_service_utils.h"
@@ -35,7 +36,7 @@
 namespace {
 favicon::FaviconRequestOrigin ParseFaviconRequestOrigin(const GURL& url) {
   GURL history_url(chrome::kChromeUIHistoryURL);
-  if (url == history_url.Resolve("/syncedTabs"))
+  if (url == history_url.Resolve(chrome::kChromeUIHistorySyncedTabs))
     return favicon::FaviconRequestOrigin::HISTORY_SYNCED_TABS;
   if (url == history_url)
     return favicon::FaviconRequestOrigin::HISTORY;
