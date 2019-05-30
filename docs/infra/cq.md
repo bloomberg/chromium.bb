@@ -54,7 +54,7 @@ test suites which a given CL affects, and ensures that they all pass.
 
 ## FAQ
 
-### What exactly does CQ run?
+### What exactly does the CQ run?
 
 CQ runs the jobs specified in [cq.cfg](../../infra/config/branch/cq.cfg). See
 [`cq_builders.md`](cq_builders.md) for an auto generated file with links to
@@ -65,9 +65,31 @@ percentage of CQ builds, and the outcome of the build doesn't affect if the CL
 can land or not. See the schema linked at the top of the file for more
 information on what the fields in the config do.
 
+The CQ has the following structure:
+
+* Compile all test suites that might be affected by the CL.
+* Runs all test suites that might be affected by the CL.
+    * Many test suites are divided into shards. Each shard is run as a separate
+      swarming task.
+    * These steps are labeled '(with patch)'
+* Retry each shard that has a test failure. The retry has the exact same
+  configuration as the original run. No recompile is necessary.
+    * If the retry succeeds, then the failure is ignored.
+    * These steps are labeled '(retry shards with patch)'
+    * It's important to retry with the exact same configuration. Attempting to
+      retry the failing test in isolation often produces different behavior.
+* Recompile each failing test suite without the CL. Rerun each failing test
+  suite in isolation.
+    * If the retry fails, then the fail is ignored, as it's assumed that the test
+      is broken/flaky on tip of tree.
+    * These steps are labeled '(without patch)'
+* Fail the build if there are tests which failed in both '(with patch)' and
+  '(retry shards with patch)' but passed in '(without patch)'.
+
 ### Why did my CL fail the CQ?
 
 Please follow these general guidelines:
+
 1. Check to see if your patch caused the build failures, and fix if possible.
 1. If compilation or individual tests are failing on one or more CQ bots and you
    suspect that your CL is not responsible, please contact your friendly
@@ -115,20 +137,16 @@ causes of flaky tests on the CQ:
   of tests being run, not mocking out network traffic or other real world
   interactions.
 
-CQ handles flakiness mainly by retrying tests. It retries at a few different
-levels:
+The CQ mitigates flakiness by retrying failed tests. The core tradeoff in retry
+policy is that adding retries increases the probability that a flaky test will
+land on tip of tree sublinearly, but mitigates the impact of the flaky test on
+unrelated CLs exponentially.
 
-1. Per test retries.
-
-   Most test suites have test retries built into them, which
-   retry failed tests a few times.
-1. Per build retries.
-
-   After a test suite fails in a build, the build will retry the test suite
-   again, both without patch, and with the patch applied.
-1. Per CQ run retries.
-
-   If a build fails, CQ will retry the individual trybot which failed.
+For example, imagine a CL that adds a test that fails with 50% probability. Even
+with no retries, the test will land with 50% probability. Subsequently, 50% of
+all unrelated CQ attempts would flakily fail. This effect is cumulative across
+different flaky tests. Since the CQ has roughly ~20,000 unique flaky tests,
+without retries, pretty much no CL would ever pass the CQ.
 
 ## Help!
 
