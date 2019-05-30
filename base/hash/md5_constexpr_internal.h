@@ -6,6 +6,7 @@
 #define BASE_HASH_MD5_CONSTEXPR_INTERNAL_H_
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 
 #include "base/hash/md5.h"
@@ -239,29 +240,38 @@ struct MD5CE {
   // Converts an IntermediateData to a final digest.
   static constexpr MD5Digest IntermediateDataToMD5Digest(
       const IntermediateData& intermediate) {
-    return MD5Digest{static_cast<uint8_t>((intermediate.a >> 0) & 0xff),
-                     static_cast<uint8_t>((intermediate.a >> 8) & 0xff),
-                     static_cast<uint8_t>((intermediate.a >> 16) & 0xff),
-                     static_cast<uint8_t>((intermediate.a >> 24) & 0xff),
-                     static_cast<uint8_t>((intermediate.b >> 0) & 0xff),
-                     static_cast<uint8_t>((intermediate.b >> 8) & 0xff),
-                     static_cast<uint8_t>((intermediate.b >> 16) & 0xff),
-                     static_cast<uint8_t>((intermediate.b >> 24) & 0xff),
-                     static_cast<uint8_t>((intermediate.c >> 0) & 0xff),
-                     static_cast<uint8_t>((intermediate.c >> 8) & 0xff),
-                     static_cast<uint8_t>((intermediate.c >> 16) & 0xff),
-                     static_cast<uint8_t>((intermediate.c >> 24) & 0xff),
-                     static_cast<uint8_t>((intermediate.d >> 0) & 0xff),
-                     static_cast<uint8_t>((intermediate.d >> 8) & 0xff),
-                     static_cast<uint8_t>((intermediate.d >> 16) & 0xff),
-                     static_cast<uint8_t>((intermediate.d >> 24) & 0xff)};
+    return MD5Digest{{static_cast<uint8_t>((intermediate.a >> 0) & 0xff),
+                      static_cast<uint8_t>((intermediate.a >> 8) & 0xff),
+                      static_cast<uint8_t>((intermediate.a >> 16) & 0xff),
+                      static_cast<uint8_t>((intermediate.a >> 24) & 0xff),
+                      static_cast<uint8_t>((intermediate.b >> 0) & 0xff),
+                      static_cast<uint8_t>((intermediate.b >> 8) & 0xff),
+                      static_cast<uint8_t>((intermediate.b >> 16) & 0xff),
+                      static_cast<uint8_t>((intermediate.b >> 24) & 0xff),
+                      static_cast<uint8_t>((intermediate.c >> 0) & 0xff),
+                      static_cast<uint8_t>((intermediate.c >> 8) & 0xff),
+                      static_cast<uint8_t>((intermediate.c >> 16) & 0xff),
+                      static_cast<uint8_t>((intermediate.c >> 24) & 0xff),
+                      static_cast<uint8_t>((intermediate.d >> 0) & 0xff),
+                      static_cast<uint8_t>((intermediate.d >> 8) & 0xff),
+                      static_cast<uint8_t>((intermediate.d >> 16) & 0xff),
+                      static_cast<uint8_t>((intermediate.d >> 24) & 0xff)}};
   }
 
   static constexpr uint32_t StringLength(const char* string) {
     const char* end = string;
     while (*end != 0)
       ++end;
-    return end - string;
+    // Double check that the precision losing conversion is safe.
+    DCHECK(end >= string);
+    DCHECK(static_cast<std::ptrdiff_t>(static_cast<uint32_t>(end - string)) ==
+           (end - string));
+    return static_cast<uint32_t>(end - string);
+  }
+
+  static constexpr uint32_t SwapEndian(uint32_t a) {
+    return ((a & 0xff) << 24) | (((a >> 8) & 0xff) << 16) |
+           (((a >> 16) & 0xff) << 8) | ((a >> 24) & 0xff);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -271,10 +281,15 @@ struct MD5CE {
     return IntermediateDataToMD5Digest(ProcessMessage(data, n));
   }
 
-  static constexpr uint64_t Hash(const char* data, uint32_t n) {
+  static constexpr uint64_t Hash64(const char* data, uint32_t n) {
     IntermediateData intermediate = ProcessMessage(data, n);
-    return (static_cast<uint64_t>(intermediate.b) << 32) |
-           static_cast<uint64_t>(intermediate.a);
+    return (static_cast<uint64_t>(SwapEndian(intermediate.a)) << 32) |
+           static_cast<uint64_t>(SwapEndian(intermediate.b));
+  }
+
+  static constexpr uint32_t Hash32(const char* data, uint32_t n) {
+    IntermediateData intermediate = ProcessMessage(data, n);
+    return SwapEndian(intermediate.a);
   }
 };
 
@@ -290,12 +305,20 @@ constexpr MD5Digest MD5SumConstexpr(const char* string, uint32_t length) {
   return internal::MD5CE::Sum(string, length);
 }
 
-constexpr uint64_t MD5HashConstexpr(const char* string) {
-  return internal::MD5CE::Hash(string, internal::MD5CE::StringLength(string));
+constexpr uint64_t MD5Hash64Constexpr(const char* string) {
+  return internal::MD5CE::Hash64(string, internal::MD5CE::StringLength(string));
 }
 
-constexpr uint64_t MD5HashConstexpr(const char* string, uint32_t length) {
-  return internal::MD5CE::Hash(string, length);
+constexpr uint64_t MD5Hash64Constexpr(const char* string, uint32_t length) {
+  return internal::MD5CE::Hash64(string, length);
+}
+
+constexpr uint32_t MD5Hash32Constexpr(const char* string) {
+  return internal::MD5CE::Hash32(string, internal::MD5CE::StringLength(string));
+}
+
+constexpr uint32_t MD5Hash32Constexpr(const char* string, uint32_t length) {
+  return internal::MD5CE::Hash32(string, length);
 }
 
 }  // namespace base

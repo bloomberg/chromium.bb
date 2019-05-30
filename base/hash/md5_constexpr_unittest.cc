@@ -36,8 +36,11 @@ static_assert(Equal(MD5SumConstexpr(kMessage0),
                               0x52, 0x5A, 0x2F, 0x31, 0xAA, 0xF1, 0x61, 0xD0}),
               "incorrect MD5Sum implementation");
 
-static_assert(MD5HashConstexpr(kMessage0) == 0x8D93B77C7D696BF9ull,
-              "incorrect MD5Hash implementation");
+static_assert(MD5Hash64Constexpr(kMessage0) == 0xF96B697D7CB7938Dull,
+              "incorrect MD5Hash64 implementation");
+
+static_assert(MD5Hash32Constexpr(kMessage0) == 0xF96B697Dul,
+              "incorrect MD5Hash32 implementation");
 
 constexpr char kMessage1[] = "The quick brown fox jumps over the lazy dog";
 static_assert(Equal(MD5SumConstexpr(kMessage1, base::size(kMessage1) - 1),
@@ -45,9 +48,13 @@ static_assert(Equal(MD5SumConstexpr(kMessage1, base::size(kMessage1) - 1),
                               0x6b, 0xd8, 0x1d, 0x35, 0x42, 0xa4, 0x19, 0xd6}),
               "incorrect MD5Sum implementation");
 
-static_assert(MD5HashConstexpr(kMessage1, base::size(kMessage1) - 1) ==
-                  0x82b62b379d7d109eull,
-              "incorrect MD5Hash implementation");
+static_assert(MD5Hash64Constexpr(kMessage1, base::size(kMessage1) - 1) ==
+                  0x9E107D9D372BB682ull,
+              "incorrect MD5Hash64 implementation");
+
+static_assert(MD5Hash32Constexpr(kMessage1, base::size(kMessage1) - 1) ==
+                  0x9E107D9Dul,
+              "incorrect MD5Hash32 implementation");
 
 // Comparison operator for checking that the constexpr MD5 implementation
 // matches the default implementation.

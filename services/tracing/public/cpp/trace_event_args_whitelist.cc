@@ -36,8 +36,7 @@ const char* const kRendererHostAllowedArgs[] = {
     "bytes_allocated", nullptr};
 const char* const kV8GCAllowedArgs[] = {"num_items", "num_tasks", nullptr};
 const char* const kTopLevelFlowAllowedArgs[] = {"task_queue_name", nullptr};
-const char* const kTopLevelIpcRunTaskAllowedArgs[] = {"ipc_program_counter",
-                                                      nullptr};
+const char* const kTopLevelIpcRunTaskAllowedArgs[] = {"ipc_hash", nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},

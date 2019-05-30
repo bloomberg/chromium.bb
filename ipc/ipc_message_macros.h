@@ -199,6 +199,7 @@
 #include <tuple>
 
 #include "base/export_template.h"
+#include "base/hash/md5_constexpr.h"
 #include "base/location.h"
 #include "base/task/common/task_annotator.h"
 #include "ipc/ipc_message_templates.h"
@@ -325,12 +326,15 @@
 //     return handled;
 //   }
 
+#define IPC_TASK_ANNOTATOR_STRINGIFY(s) #s
+
 // A macro to be used from within the IPC_MESSAGE_FORWARD macros, for providing
 // the IPC message context to the TaskAnnotator. This allows posted tasks to be
 // associated with the incoming IPC message that caused them to be posted.
-#define IPC_TASK_ANNOTATOR_CONTEXT(msg_class)                    \
-  base::TaskAnnotator::ScopedSetIpcProgramCounter scoped_ipc_pc( \
-      base::GetProgramCounter());
+#define IPC_TASK_ANNOTATOR_CONTEXT(msg_class)                            \
+  static constexpr uint32_t kMessageHash =                               \
+      base::MD5Hash32Constexpr(IPC_TASK_ANNOTATOR_STRINGIFY(msg_class)); \
+  base::TaskAnnotator::ScopedSetIpcHash scoped_ipc_hash(kMessageHash);
 
 #define IPC_BEGIN_MESSAGE_MAP(class_name, msg) \
   { \

@@ -617,13 +617,12 @@ LogMessage::~LogMessage() {
     if (!task_trace.empty())
       task_trace.OutputToStream(&stream_);
 
-    // Include the IPC context, if any. This is output as a stack trace with a
-    // single frame.
+    // Include the IPC context, if any.
+    // TODO(chrisha): Integrate with symbolization once those tools exist!
     const auto* task = base::TaskAnnotator::CurrentTaskForThread();
-    if (task && task->ipc_program_counter) {
-      stream_ << "IPC message handler context:" << std::endl;
-      base::debug::StackTrace ipc_trace(&task->ipc_program_counter, 1);
-      ipc_trace.OutputToStream(&stream_);
+    if (task && task->ipc_hash) {
+      stream_ << "IPC message handler context: "
+              << base::StringPrintf("0x%08X", task->ipc_hash) << std::endl;
     }
   }
 #endif

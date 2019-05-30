@@ -27,9 +27,9 @@ class BASE_EXPORT TaskAnnotator {
     virtual void BeforeRunTask(const PendingTask* pending_task) = 0;
   };
 
-  // This is used to set the |ipc_program_counter| field for PendingTasks. It is
-  // intended to be used only from within generated IPC handler dispatch code.
-  class ScopedSetIpcProgramCounter;
+  // This is used to set the |ipc_hash| field for PendingTasks. It is intended
+  // to be used only from within generated IPC handler dispatch code.
+  class ScopedSetIpcHash;
 
   static const PendingTask* CurrentTaskForThread();
 
@@ -66,16 +66,16 @@ class BASE_EXPORT TaskAnnotator {
   DISALLOW_COPY_AND_ASSIGN(TaskAnnotator);
 };
 
-class BASE_EXPORT TaskAnnotator::ScopedSetIpcProgramCounter {
+class BASE_EXPORT TaskAnnotator::ScopedSetIpcHash {
  public:
-  explicit ScopedSetIpcProgramCounter(const void* program_counter);
-  ~ScopedSetIpcProgramCounter();
+  explicit ScopedSetIpcHash(uint32_t ipc_hash);
+  ~ScopedSetIpcHash();
 
  private:
   std::unique_ptr<PendingTask> dummy_pending_task_;
-  const void* old_ipc_program_counter_ = nullptr;
+  uint32_t old_ipc_hash_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedSetIpcProgramCounter);
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetIpcHash);
 };
 
 }  // namespace base

@@ -407,8 +407,9 @@ bool {{class_name}}StubDispatch::Accept(
           "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}",
           "message", message->name());
 #endif
-      base::TaskAnnotator::ScopedSetIpcProgramCounter scoped_ipc_pc(
-          base::GetProgramCounter());
+      static constexpr uint32_t kMessageHash = base::MD5Hash32Constexpr(
+              "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}");
+      base::TaskAnnotator::ScopedSetIpcHash scoped_ipc_hash(kMessageHash);
       mojo::internal::MessageDispatchContext context(message);
 {%-       if method|method_supports_lazy_serialization %}
       if (!message->is_serialized()) {
@@ -464,8 +465,9 @@ bool {{class_name}}StubDispatch::AcceptWithResponder(
           "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}",
           "message", message->name());
 #endif
-      base::TaskAnnotator::ScopedSetIpcProgramCounter scoped_ipc_pc(
-          base::GetProgramCounter());
+      static constexpr uint32_t kMessageHash = base::MD5Hash32Constexpr(
+              "(Impl){{namespace_as_string}}::{{class_name}}::{{method.name}}");
+      base::TaskAnnotator::ScopedSetIpcHash scoped_ipc_hash(kMessageHash);
       mojo::internal::MessageDispatchContext context(message);
 {%-       if method|method_supports_lazy_serialization %}
       if (!message->is_serialized()) {

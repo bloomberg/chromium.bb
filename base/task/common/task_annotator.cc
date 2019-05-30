@@ -31,7 +31,7 @@ ThreadLocalPointer<PendingTask>* GetTLSForCurrentPendingTask() {
 }
 
 // Determines whether or not the given |task| is a dummy pending task that has
-// been injected by ScopedSetIpcProgramCounter solely for the purposes of
+// been injected by ScopedSetIpcHash solely for the purposes of
 // tracking IPC context.
 bool IsDummyPendingTask(const PendingTask* task) {
   if (task->sequence_num == kSentinelSequenceNum &&
@@ -78,7 +78,7 @@ void TaskAnnotator::WillQueueTask(const char* trace_event_name,
   if (!parent_task)
     return;
 
-  pending_task->ipc_program_counter = parent_task->ipc_program_counter;
+  pending_task->ipc_hash = parent_task->ipc_hash;
   pending_task->task_backtrace[0] = parent_task->posted_from.program_counter();
   std::copy(parent_task->task_backtrace.begin(),
             parent_task->task_backtrace.end() - 1,
@@ -96,8 +96,7 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
   debug::ScopedTaskRunActivity task_activity(*pending_task);
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("toplevel.ipc"),
-               "TaskAnnotator::RunTask", "ipc_program_counter",
-               pending_task->ipc_program_counter);
+               "TaskAnnotator::RunTask", "ipc_hash", pending_task->ipc_hash);
 
   TRACE_EVENT_WITH_FLOW0(
       TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), trace_event_name,
@@ -115,9 +114,9 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
   // Store a marker to locate |task_backtrace| content easily on a memory
   // dump. The layout is as follows:
   //
-  // +------------ +----+---------+-----+-----------+--------+-------------+
-  // | Head Marker | PC | frame 0 | ... | frame N-1 | IPC PC | Tail Marker |
-  // +------------ +----+---------+-----+-----------+--------+-------------+
+  // +------------ +----+---------+-----+-----------+----------+-------------+
+  // | Head Marker | PC | frame 0 | ... | frame N-1 | IPC hash | Tail Marker |
+  // +------------ +----+---------+-----+-----------+----------+-------------+
   //
   // Markers glossary (compliments of wez):
   //      cool code,do it dude!
@@ -131,7 +130,7 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
   std::copy(pending_task->task_backtrace.begin(),
             pending_task->task_backtrace.end(), task_backtrace.begin() + 2);
   task_backtrace[kStackTaskTraceSnapshotSize - 2] =
-      pending_task->ipc_program_counter;
+      reinterpret_cast<void*>(pending_task->ipc_hash);
   debug::Alias(&task_backtrace);
 
   auto* tls = GetTLSForCurrentPendingTask();
@@ -162,8 +161,7 @@ void TaskAnnotator::ClearObserverForTesting() {
   g_task_annotator_observer = nullptr;
 }
 
-TaskAnnotator::ScopedSetIpcProgramCounter::ScopedSetIpcProgramCounter(
-    const void* program_counter) {
+TaskAnnotator::ScopedSetIpcHash::ScopedSetIpcHash(uint32_t ipc_hash) {
   // We store the IPC context in the currently running task. If there is none
   // then introduce a dummy task.
   auto* tls = GetTLSForCurrentPendingTask();
@@ -175,18 +173,18 @@ TaskAnnotator::ScopedSetIpcProgramCounter::ScopedSetIpcProgramCounter(
     tls->Set(current_task);
   }
 
-  old_ipc_program_counter_ = current_task->ipc_program_counter;
-  current_task->ipc_program_counter = program_counter;
+  old_ipc_hash_ = current_task->ipc_hash;
+  current_task->ipc_hash = ipc_hash;
 }
 
-TaskAnnotator::ScopedSetIpcProgramCounter::~ScopedSetIpcProgramCounter() {
+TaskAnnotator::ScopedSetIpcHash::~ScopedSetIpcHash() {
   auto* tls = GetTLSForCurrentPendingTask();
   auto* current_task = tls->Get();
   DCHECK(current_task);
   if (current_task == dummy_pending_task_.get()) {
     tls->Set(nullptr);
   } else {
-    current_task->ipc_program_counter = old_ipc_program_counter_;
+    current_task->ipc_hash = old_ipc_hash_;
   }
 }
 
