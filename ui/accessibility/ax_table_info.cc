@@ -61,6 +61,10 @@ void FindRowsAndThenCells(AXNode* node,
   }
 }
 
+size_t GetSizeTAttribute(const AXNode& node, IntAttribute attribute) {
+  return base::saturated_cast<size_t>(node.GetIntAttribute(attribute));
+}
+
 }  // namespace
 
 // static
@@ -87,8 +91,7 @@ AXTableInfo* AXTableInfo::Create(AXTree* tree, AXNode* table_node) {
 }
 
 bool AXTableInfo::Update() {
-  const AXNodeData& node_data = table_node_->data();
-  if (!IsTableLike(node_data.role))
+  if (!table_node_->IsTable())
     return false;
 
   ClearVectors();
@@ -103,20 +106,21 @@ bool AXTableInfo::Update() {
   // Get the optional row and column count from the table. If we encounter
   // a cell with an index or span larger than this, we'll update the
   // table row and column count to be large enough to fit all cells.
-  row_count = size_t{
-      std::max(0, node_data.GetIntAttribute(IntAttribute::kTableRowCount))};
-  col_count = size_t{
-      std::max(0, node_data.GetIntAttribute(IntAttribute::kTableColumnCount))};
+  row_count = GetSizeTAttribute(*table_node_, IntAttribute::kTableRowCount);
+  col_count = GetSizeTAttribute(*table_node_, IntAttribute::kTableColumnCount);
 
-  int32_t aria_rows = node_data.GetIntAttribute(IntAttribute::kAriaRowCount);
-  aria_row_count = (aria_rows != ax::mojom::kUnknownAriaColumnOrRowCount)
-                       ? base::make_optional(size_t{std::max(0, aria_rows)})
-                       : base::nullopt;
+  int32_t aria_rows = table_node_->GetIntAttribute(IntAttribute::kAriaRowCount);
+  aria_row_count =
+      (aria_rows != ax::mojom::kUnknownAriaColumnOrRowCount)
+          ? base::make_optional(base::saturated_cast<size_t>(aria_rows))
+          : base::nullopt;
 
-  int32_t aria_cols = node_data.GetIntAttribute(IntAttribute::kAriaColumnCount);
-  aria_col_count = (aria_cols != ax::mojom::kUnknownAriaColumnOrRowCount)
-                       ? base::make_optional(size_t{std::max(0, aria_cols)})
-                       : base::nullopt;
+  int32_t aria_cols =
+      table_node_->GetIntAttribute(IntAttribute::kAriaColumnCount);
+  aria_col_count =
+      (aria_cols != ax::mojom::kUnknownAriaColumnOrRowCount)
+          ? base::make_optional(base::saturated_cast<size_t>(aria_cols))
+          : base::nullopt;
 
   // Iterate over the cells and build up an array of CellData
   // entries, one for each cell. Compute the actual row and column
@@ -175,9 +179,9 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
 
     // Make sure the row index is always at least as high as the one reported by
     // Blink.
-    row_id_to_index[row_node->id()] = std::max(
-        next_row_index,
-        size_t{row_node->GetIntAttribute(IntAttribute::kTableRowIndex)});
+    row_id_to_index[row_node->id()] =
+        std::max(next_row_index,
+                 GetSizeTAttribute(*row_node, IntAttribute::kTableRowIndex));
     size_t* current_row_index = &row_id_to_index[row_node->id()];
 
     for (AXNode* cell : cell_nodes_in_this_row) {
@@ -189,19 +193,18 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
 
       // Get table cell accessibility attributes - note that these may
       // be missing or invalid, we'll correct them next.
-      const AXNodeData& node_data = cell->data();
       cell_data.row_index =
-          size_t{node_data.GetIntAttribute(IntAttribute::kTableCellRowIndex)};
+          GetSizeTAttribute(*cell, IntAttribute::kTableCellRowIndex);
       cell_data.row_span =
-          size_t{node_data.GetIntAttribute(IntAttribute::kTableCellRowSpan)};
+          GetSizeTAttribute(*cell, IntAttribute::kTableCellRowSpan);
       cell_data.aria_row_index =
-          size_t{node_data.GetIntAttribute(IntAttribute::kAriaCellRowIndex)};
-      cell_data.col_index = size_t{
-          node_data.GetIntAttribute(IntAttribute::kTableCellColumnIndex)};
+          GetSizeTAttribute(*cell, IntAttribute::kAriaCellRowIndex);
+      cell_data.col_index =
+          GetSizeTAttribute(*cell, IntAttribute::kTableCellColumnIndex);
       cell_data.aria_col_index =
-          size_t{node_data.GetIntAttribute(IntAttribute::kAriaCellColumnIndex)};
+          GetSizeTAttribute(*cell, IntAttribute::kAriaCellColumnIndex);
       cell_data.col_span =
-          size_t{node_data.GetIntAttribute(IntAttribute::kTableCellColumnSpan)};
+          GetSizeTAttribute(*cell, IntAttribute::kTableCellColumnSpan);
 
       // The col span and row span must be at least 1.
       cell_data.row_span = std::max(size_t{1}, cell_data.row_span);
@@ -225,12 +228,12 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
         // The starting ARIA row and column index might be specified in
         // the row node, we should check there.
         if (!cell_data.aria_row_index) {
-          cell_data.aria_row_index = size_t{row_node->data().GetIntAttribute(
-              IntAttribute::kAriaCellRowIndex)};
+          cell_data.aria_row_index =
+              GetSizeTAttribute(*row_node, IntAttribute::kAriaCellRowIndex);
         }
         if (!cell_data.aria_col_index) {
-          cell_data.aria_col_index = size_t{row_node->data().GetIntAttribute(
-              IntAttribute::kAriaCellColumnIndex)};
+          cell_data.aria_col_index =
+              GetSizeTAttribute(*row_node, IntAttribute::kAriaCellColumnIndex);
         }
         cell_data.aria_row_index =
             std::max(cell_data.aria_row_index, current_aria_row_index);
