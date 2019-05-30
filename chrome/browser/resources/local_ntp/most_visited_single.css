@@ -73,7 +73,8 @@ a:visited {
   user-select: none;
 }
 
-body.grid-layout :-webkit-any(#mv-tiles, .mv-tiles-old) {
+body.grid-layout #mv-tiles,
+body.grid-layout .mv-tiles-old {
   display: block;
   flex-wrap: unset;
   justify-content: unset;
