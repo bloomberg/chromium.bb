@@ -75,8 +75,7 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
-        // TODO(ender): enable line below when https://crrev.com/c/1599741 is submitted.
-        // if (!hasFocus) mImageFetcher.clearCache();
+        if (!hasFocus) mImageFetcher.clear();
     }
 
     private void fetchEntityImage(OmniboxSuggestion suggestion, PropertyModel model) {
