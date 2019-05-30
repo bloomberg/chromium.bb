@@ -623,11 +623,13 @@ bool EventRewriterChromeOS::ShouldRemapToRightClick(
   *matched_mask = 0;
   if (base::FeatureList::IsEnabled(
           ::chromeos::features::kUseSearchClickForRightClick)) {
-    if (AreFlagsSet(flags, kSearchLeftButton))
+    if (AreFlagsSet(flags, kSearchLeftButton)) {
       *matched_mask = kSearchLeftButton;
+    }
   } else {
-    if (AreFlagsSet(flags, kAltLeftButton))
+    if (AreFlagsSet(flags, kAltLeftButton)) {
       *matched_mask = kAltLeftButton;
+    }
   }
 
   return (*matched_mask != 0) &&
@@ -1294,7 +1296,14 @@ int EventRewriterChromeOS::RewriteModifierClick(
     *flags |= ui::EF_RIGHT_MOUSE_BUTTON;
     if (mouse_event.type() == ui::ET_MOUSE_PRESSED) {
       pressed_device_ids_.insert(mouse_event.source_device_id());
-      base::RecordAction(base::UserMetricsAction("AltClickMappedToRightClick"));
+      if (matched_mask == kSearchLeftButton) {
+        base::RecordAction(
+            base::UserMetricsAction("SearchClickMappedToRightClick"));
+      } else {
+        DCHECK(matched_mask == kAltLeftButton);
+        base::RecordAction(
+            base::UserMetricsAction("AltClickMappedToRightClick"));
+      }
     } else {
       pressed_device_ids_.erase(mouse_event.source_device_id());
     }

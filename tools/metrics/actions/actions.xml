@@ -17075,6 +17075,15 @@ should be able to be added at any place in this file.
   <description>User interacts with an answer card.</description>
 </action>
 
+<action name="SearchClickMappedToRightClick">
+  <owner>zentaro@chromium.org</owner>
+  <description>
+    User pressed search click on a touchpad device to generate right click. This
+    is measuring the transition of use from the legacy alt click behaviour that
+    is tracked by AltClickMappedToRightClick.
+  </description>
+</action>
+
 <action name="SearchEngine_ManualChange">
   <owner>ianwen@chromium.org</owner>
   <description>
