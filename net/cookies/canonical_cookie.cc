@@ -634,9 +634,25 @@ std::string CanonicalCookie::DomainWithoutDot() const {
   return domain_.substr(1);
 }
 
-CookieLineWithStatus::CookieLineWithStatus(
+CookieAndLineWithStatus::CookieAndLineWithStatus() = default;
+
+CookieAndLineWithStatus::CookieAndLineWithStatus(
+    base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CanonicalCookie::CookieInclusionStatus status)
-    : cookie_string(std::move(cookie_string)), status(status) {}
+    : cookie(std::move(cookie)),
+      cookie_string(std::move(cookie_string)),
+      status(status) {}
+
+CookieAndLineWithStatus::CookieAndLineWithStatus(
+    const CookieAndLineWithStatus&) = default;
+
+CookieAndLineWithStatus& CookieAndLineWithStatus::operator=(
+    const CookieAndLineWithStatus& cookie_and_line_with_status) = default;
+
+CookieAndLineWithStatus::CookieAndLineWithStatus(CookieAndLineWithStatus&&) =
+    default;
+
+CookieAndLineWithStatus::~CookieAndLineWithStatus() = default;
 
 }  // namespace net

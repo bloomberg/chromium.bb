@@ -405,6 +405,7 @@ void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(
 void URLRequestHttpJob::NotifyHeadersComplete() {
   DCHECK(!response_info_);
   DCHECK_EQ(0, num_cookie_lines_left_);
+  DCHECK(request_->not_stored_cookies().empty());
 
   response_info_ = transaction_->GetResponseInfo();
 
@@ -421,7 +422,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
 
   // Clear |cs_status_list_| after any processing in case
   // SaveCookiesAndNotifyHeadersComplete is called again.
-  cs_status_list_.clear();
+  request_->set_not_stored_cookies(std::move(cs_status_list_));
 
   // The HTTP transaction may be restarted several times for the purposes
   // of sending authorization information. Each time it restarts, we get
@@ -626,6 +627,7 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
   CookieStore* cookie_store = request_->context()->cookie_store();
   if (cookie_store && !(request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES)) {
     CookieOptions options;
+    options.set_return_excluded_cookies();
     options.set_include_httponly();
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForRequest(
@@ -643,12 +645,12 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 void URLRequestHttpJob::SetCookieHeaderAndStart(
     const CookieList& cookie_list,
     const CookieStatusList& excluded_list) {
+  DCHECK(request_->not_sent_cookies().empty());
+  CookieStatusList excluded_cookies = excluded_list;
+
   if (!cookie_list.empty()) {
-    // |excluded_cookies| isn't currently being used, but it will be as part of
-    // crbug.com/856777
-    CookieStatusList excluded_cookies = excluded_list;
     if (!CanGetCookies(cookie_list)) {
-      for (auto cookie : cookie_list) {
+      for (const auto& cookie : cookie_list) {
         excluded_cookies.push_back(
             {cookie,
              CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
@@ -665,6 +667,8 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
       request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
     }
   }
+
+  request_->set_not_sent_cookies(std::move(excluded_cookies));
 
   StartTransaction();
 }
@@ -702,6 +706,8 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
           request_->url(), request_->site_for_cookies(),
           request_->initiator()));
 
+  options.set_return_excluded_cookies();
+
   // Set all cookies, without waiting for them to be set. Any subsequent read
   // will see the combined result of all cookie operation.
   const base::StringPiece name("Set-Cookie");
@@ -728,12 +734,14 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
         &returned_status);
 
     if (returned_status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
-      OnSetCookieResult(std::move(cookie_string), returned_status);
+      OnSetCookieResult(base::nullopt, std::move(cookie_string),
+                        returned_status);
       continue;
     }
 
     if (!CanSetCookie(*cookie, &options)) {
       OnSetCookieResult(
+          base::make_optional<CanonicalCookie>(*cookie),
           std::move(cookie_string),
           CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
       continue;
@@ -741,8 +749,9 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 
     request_->context()->cookie_store()->SetCookieWithOptionsAsync(
         request_->url(), cookie_string, options,
-        base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
-                       weak_factory_.GetWeakPtr(), cookie_string));
+        base::BindOnce(
+            &URLRequestHttpJob::OnSetCookieResult, weak_factory_.GetWeakPtr(),
+            base::make_optional<CanonicalCookie>(*cookie), cookie_string));
   }
   // Removing the 1 that |num_cookie_lines_left| started with, signifing that
   // loop has been exited.
@@ -753,10 +762,13 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 }
 
 void URLRequestHttpJob::OnSetCookieResult(
+    base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
     CanonicalCookie::CookieInclusionStatus status) {
-  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE)
-    cs_status_list_.emplace_back(std::move(cookie_string), status);
+  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    cs_status_list_.emplace_back(std::move(cookie), std::move(cookie_string),
+                                 status);
+  }
 
   num_cookie_lines_left_--;
 
@@ -937,6 +949,12 @@ void URLRequestHttpJob::RestartTransactionWithAuth(
   // headers in the 401/407. Since cookies were already appended to
   // extra_headers, we need to strip them out before adding them again.
   request_info_.extra_headers.RemoveHeader(HttpRequestHeaders::kCookie);
+
+  // TODO(https://crbug.com/968327/): This is weird, as all other clearing is at
+  // the URLRequest layer. Should this call into URLRequest so it can share
+  // logic at that layer with SetAuth()?
+  request_->set_not_sent_cookies({});
+  request_->set_not_stored_cookies({});
 
   AddCookieHeaderAndStart();
 }

@@ -435,6 +435,15 @@ int URLRequest::GetResponseCode() const {
   return job_->GetResponseCode();
 }
 
+void URLRequest::set_not_sent_cookies(CookieStatusList excluded_cookies) {
+  not_sent_cookies_ = std::move(excluded_cookies);
+}
+
+void URLRequest::set_not_stored_cookies(
+    CookieAndLineStatusList excluded_cookies) {
+  not_stored_cookies_ = std::move(excluded_cookies);
+}
+
 void URLRequest::SetLoadFlags(int flags) {
   if ((load_flags_ & LOAD_IGNORE_LIMITS) != (flags & LOAD_IGNORE_LIMITS)) {
     DCHECK(!job_.get());
@@ -676,6 +685,9 @@ void URLRequest::StartJob(URLRequestJob* job) {
 
   response_info_.was_cached = false;
 
+  not_sent_cookies_.clear();
+  not_stored_cookies_.clear();
+
   GURL referrer_url(referrer_);
   if (referrer_url != URLRequestJob::ComputeReferrerForPolicy(
                           referrer_policy_, referrer_url, url())) {
@@ -886,6 +898,9 @@ void URLRequest::FollowDeferredRedirect(
   DCHECK(job_.get());
   DCHECK(status_.is_success());
 
+  not_sent_cookies_.clear();
+  not_stored_cookies_.clear();
+
   status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->FollowDeferredRedirect(removed_headers, modified_headers);
 }
@@ -893,6 +908,9 @@ void URLRequest::FollowDeferredRedirect(
 void URLRequest::SetAuth(const AuthCredentials& credentials) {
   DCHECK(job_.get());
   DCHECK(job_->NeedsAuth());
+
+  not_sent_cookies_.clear();
+  not_stored_cookies_.clear();
 
   status_ = URLRequestStatus::FromError(ERR_IO_PENDING);
   job_->SetAuth(credentials);
@@ -1086,6 +1104,7 @@ void URLRequest::NotifyAuthRequiredComplete(
 void URLRequest::NotifyCertificateRequested(
     SSLCertRequestInfo* cert_request_info) {
   status_ = URLRequestStatus();
+
   OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_CERTIFICATE_REQUESTED);
   delegate_->OnCertificateRequested(this, cert_request_info);
 }

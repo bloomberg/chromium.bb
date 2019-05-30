@@ -512,10 +512,30 @@ std::unique_ptr<HttpResponse> HandleServerRedirect(HttpStatusCode redirect_code,
                                                    const HttpRequest& request) {
   GURL request_url = request.GetURL();
   std::string dest = UnescapeBinaryURLComponent(request_url.query_piece());
+  RequestQuery query = ParseQuery(request_url);
 
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
   http_response->set_code(redirect_code);
   http_response->AddCustomHeader("Location", dest);
+  http_response->set_content_type("text/html");
+  http_response->set_content(base::StringPrintf(
+      "<html><head></head><body>Redirecting to %s</body></html>",
+      dest.c_str()));
+  return std::move(http_response);
+}
+// /server-redirect-with-cookie?URL
+// Returns a server redirect to URL, and sets the cookie server-redirect=true.
+std::unique_ptr<HttpResponse> HandleServerRedirectWithCookie(
+    HttpStatusCode redirect_code,
+    const HttpRequest& request) {
+  GURL request_url = request.GetURL();
+  std::string dest = UnescapeBinaryURLComponent(request_url.query_piece());
+  RequestQuery query = ParseQuery(request_url);
+
+  std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
+  http_response->set_code(redirect_code);
+  http_response->AddCustomHeader("Location", dest);
+  http_response->AddCustomHeader("Set-Cookie", "server-redirect=true");
   http_response->set_content_type("text/html");
   http_response->set_content(base::StringPrintf(
       "<html><head></head><body>Redirecting to %s</body></html>",
@@ -760,6 +780,10 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
       "/server-redirect-307", &HandleServerRedirect, HTTP_TEMPORARY_REDIRECT));
   server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
       "/server-redirect-308", &HandleServerRedirect, HTTP_PERMANENT_REDIRECT));
+
+  server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
+      "/server-redirect-with-cookie", &HandleServerRedirectWithCookie,
+      HTTP_MOVED_PERMANENTLY));
 
   server->RegisterDefaultHandler(
       base::BindRepeating(&HandleCrossSiteRedirect, server));

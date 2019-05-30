@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/cookie_constants.h"
@@ -21,8 +22,6 @@ class GURL;
 namespace net {
 
 class ParsedCookie;
-
-struct CookieWithStatus;
 
 class NET_EXPORT CanonicalCookie {
  public:
@@ -299,11 +298,25 @@ struct CookieWithStatus {
   CanonicalCookie::CookieInclusionStatus status;
 };
 
-// Just used for the next function to send the cookie string with it's status
-struct CookieLineWithStatus {
-  CookieLineWithStatus(std::string cookie_string,
-                       CanonicalCookie::CookieInclusionStatus status);
+// Used to pass excluded cookie information when it's possible that the
+// canonical cookie object may not be available.
+struct NET_EXPORT CookieAndLineWithStatus {
+  CookieAndLineWithStatus();
+  CookieAndLineWithStatus(base::Optional<CanonicalCookie> cookie,
+                          std::string cookie_string,
+                          CanonicalCookie::CookieInclusionStatus status);
+  CookieAndLineWithStatus(
+      const CookieAndLineWithStatus& cookie_and_line_with_status);
 
+  CookieAndLineWithStatus& operator=(
+      const CookieAndLineWithStatus& cookie_and_line_with_status);
+
+  CookieAndLineWithStatus(
+      CookieAndLineWithStatus&& cookie_and_line_with_status);
+
+  ~CookieAndLineWithStatus();
+
+  base::Optional<CanonicalCookie> cookie;
   std::string cookie_string;
   CanonicalCookie::CookieInclusionStatus status;
 };
@@ -311,6 +324,8 @@ struct CookieLineWithStatus {
 typedef std::vector<CanonicalCookie> CookieList;
 
 typedef std::vector<CookieWithStatus> CookieStatusList;
+
+typedef std::vector<CookieAndLineWithStatus> CookieAndLineStatusList;
 
 }  // namespace net
 

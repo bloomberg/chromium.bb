@@ -77,6 +77,7 @@
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert_net/cert_net_fetcher_impl.h"
+#include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "net/disk_cache/disk_cache.h"
@@ -2578,7 +2579,10 @@ class FilteringTestLayeredNetworkDelegate : public LayeredNetworkDelegate {
       std::unique_ptr<NetworkDelegate> network_delegate)
       : LayeredNetworkDelegate(std::move((network_delegate))),
         set_cookie_called_count_(0),
-        blocked_set_cookie_count_(0) {}
+        blocked_set_cookie_count_(0),
+        block_get_cookies_(false),
+        get_cookie_called_count_(0),
+        blocked_get_cookie_count_(0) {}
   ~FilteringTestLayeredNetworkDelegate() override = default;
 
   bool OnCanSetCookieInternal(const URLRequest& request,
@@ -2610,10 +2614,41 @@ class FilteringTestLayeredNetworkDelegate : public LayeredNetworkDelegate {
 
   void ResetBlockedSetCookieCount() { blocked_set_cookie_count_ = 0; }
 
+  bool OnCanGetCookiesInternal(const URLRequest& request,
+                               const net::CookieList& cookie,
+                               bool allowed_from_caller) override {
+    // Filter out cookies if |block_get_cookies_| is set and
+    // combine with |allowed_from_caller|.
+    bool allowed = allowed_from_caller && !block_get_cookies_;
+
+    ++get_cookie_called_count_;
+
+    if (!allowed)
+      ++blocked_get_cookie_count_;
+
+    return allowed;
+  }
+
+  void set_block_get_cookies() { block_get_cookies_ = true; }
+
+  void unset_block_get_cookies() { block_get_cookies_ = false; }
+
+  int get_cookie_called_count() const { return get_cookie_called_count_; }
+
+  int blocked_get_cookie_count() const { return blocked_get_cookie_count_; }
+
+  void ResetGetCookieCalledCount() { get_cookie_called_count_ = 0; }
+
+  void ResetBlockedGetCookieCount() { blocked_get_cookie_count_ = 0; }
+
  private:
   std::string cookie_name_filter_;
   int set_cookie_called_count_;
   int blocked_set_cookie_count_;
+
+  bool block_get_cookies_;
+  int get_cookie_called_count_;
+  int blocked_get_cookie_count_;
 };
 
 TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
@@ -8499,37 +8534,166 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookies) {
   }
 }
 
-TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookie) {
+TEST_F(URLRequestTest, CatchFilteredCookies) {
+  HttpTestServer test_server;
+  ASSERT_TRUE(test_server.Start());
+
+  FilteringTestLayeredNetworkDelegate network_delegate(
+      std::make_unique<TestNetworkDelegate>());
+  network_delegate.SetCookieFilter("not_stored_cookie");
+  network_delegate.set_block_get_cookies();
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+  // Make sure cookies blocked from being stored are caught.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL("/set-cookie?not_stored_cookie=true"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->Start();
+    d.RunUntilComplete();
+
+    ASSERT_EQ(1u, req->not_stored_cookies().size());
+    EXPECT_EQ("not_stored_cookie",
+              req->not_stored_cookies().front().cookie->Name());
+    EXPECT_EQ(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+        req->not_stored_cookies().front().status);
+  }
+  // Set a cookie to be blocked later
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL("/set-cookie?not_sent_cookies=true"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->Start();
+    d.RunUntilComplete();
+  }
+  {
+    TestDelegate d;
+    // Make sure cookies blocked from being sent are caught.
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_TRUE(d.data_received().find("not_sent_cookies=true") ==
+                std::string::npos);
+
+    ASSERT_EQ(1u, req->not_sent_cookies().size());
+    EXPECT_EQ("not_sent_cookies",
+              req->not_sent_cookies().front().cookie.Name());
+    EXPECT_EQ(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
+        req->not_sent_cookies().front().status);
+  }
+}
+
+TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
   ASSERT_TRUE(http_test_server()->Start());
 
-  GURL url_requiring_auth = http_test_server()->GetURL(
-      "/auth-basic?set-cookie-if-not-challenged&set-cookie-if-challenged");
+  GURL url_requiring_auth =
+      http_test_server()->GetURL("/auth-basic?set-cookie-if-challenged");
+  GURL url_requiring_auth_wo_cookies =
+      http_test_server()->GetURL("/auth-basic");
+  // Check not_stored_cookies is populated first round trip, and cleared on the
+  // second.
+  {
+    FilteringTestLayeredNetworkDelegate filtering_network_delegate(
+        std::make_unique<TestNetworkDelegate>());
+    filtering_network_delegate.SetCookieFilter("got_challenged");
+    TestURLRequestContext context(true);
+    context.set_network_delegate(&filtering_network_delegate);
+    context.Init();
 
-  FilteringTestLayeredNetworkDelegate filtering_network_delegate(
-      std::make_unique<TestNetworkDelegate>());  // Must outlive URLRequest.
-  filtering_network_delegate.SetCookieFilter(
-      "got_challenged");  // Filter the cookie auth-basic sets
-  TestURLRequestContext context(true);
-  context.set_network_delegate(&filtering_network_delegate);
-  context.Init();
+    TestDelegate delegate;
 
-  TestDelegate delegate;
+    std::unique_ptr<URLRequest> request(
+        context.CreateRequest(url_requiring_auth, DEFAULT_PRIORITY, &delegate,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
+    request->Start();
 
-  delegate.set_credentials(AuthCredentials(kUser, kSecret));
+    delegate.RunUntilAuthRequired();
+    // Make sure it was blocked once.
+    EXPECT_EQ(1, filtering_network_delegate.blocked_set_cookie_count());
 
-  std::unique_ptr<URLRequest> request(
-      context.CreateRequest(url_requiring_auth, DEFAULT_PRIORITY, &delegate,
-                            TRAFFIC_ANNOTATION_FOR_TESTS));
-  request->Start();
+    // The number of cookies blocked from the most recent round trip.
+    ASSERT_EQ(1u, request->not_stored_cookies().size());
 
-  delegate.RunUntilComplete();
-  EXPECT_THAT(delegate.request_status(), IsOk());
+    // Now check the second round trip
+    request->SetAuth(AuthCredentials(kUser, kSecret));
+    delegate.RunUntilComplete();
+    EXPECT_THAT(delegate.request_status(), IsOk());
 
-  // Make sure the cookie was actually filtered.
-  EXPECT_EQ(std::string::npos,
-            delegate.data_received().find("Cookie: got_challenged=true"));
-  // Make sure it was blocked twice.
-  EXPECT_EQ(2, filtering_network_delegate.blocked_set_cookie_count());
+    // There are DCHECKs in URLRequestHttpJob that would fail if
+    // not_sent_cookies and not_stored_cookies were not cleared properly.
+
+    // Make sure the cookie was actually filtered and not sent.
+    EXPECT_EQ(std::string::npos,
+              delegate.data_received().find("Cookie: got_challenged=true"));
+
+    // The number of cookies blocked from the most recent round trip.
+    ASSERT_EQ(0u, request->not_stored_cookies().size());
+  }
+
+  // Check not_sent_cookies on first round trip (and cleared for the second).
+  {
+    FilteringTestLayeredNetworkDelegate filtering_network_delegate(
+        std::make_unique<TestNetworkDelegate>());
+    filtering_network_delegate.set_block_get_cookies();
+    TestURLRequestContext context(true);
+    context.set_network_delegate(&filtering_network_delegate);
+
+    std::unique_ptr<CookieMonster> cm =
+        std::make_unique<CookieMonster>(nullptr, nullptr);
+    cm->SetCookieWithOptionsAsync(url_requiring_auth_wo_cookies,
+                                  "another_cookie=true", CookieOptions(),
+                                  CookieStore::SetCookiesCallback());
+    context.set_cookie_store(cm.get());
+    context.Init();
+
+    TestDelegate delegate;
+
+    std::unique_ptr<URLRequest> request(
+        context.CreateRequest(url_requiring_auth_wo_cookies, DEFAULT_PRIORITY,
+                              &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    request->Start();
+
+    delegate.RunUntilAuthRequired();
+
+    ASSERT_EQ(1u, request->not_sent_cookies().size());
+    EXPECT_EQ("another_cookie",
+              request->not_sent_cookies().front().cookie.Name());
+    EXPECT_EQ("true", request->not_sent_cookies().front().cookie.Value());
+
+    // Check not_sent_cookies on second roundtrip.
+    request->set_not_sent_cookies({});
+    cm->DeleteAllAsync(CookieStore::DeleteCallback());
+    cm->SetCookieWithOptionsAsync(url_requiring_auth_wo_cookies,
+                                  "one_more_cookie=true", CookieOptions(),
+                                  CookieStore::SetCookiesCallback());
+
+    request->SetAuth(AuthCredentials(kUser, kSecret));
+    delegate.RunUntilComplete();
+    EXPECT_THAT(delegate.request_status(), IsOk());
+
+    // There are DCHECKs in URLRequestHttpJob that would fail if
+    // not_sent_cookies and not_stored_cookies we not cleared properly.
+
+    // Make sure the cookie was actually filtered.
+    EXPECT_EQ(std::string::npos,
+              delegate.data_received().find("Cookie: one_more_cookie=true"));
+    // got_challenged was set after the first request and blocked on the second,
+    // so it should only have been blocked this time
+    EXPECT_EQ(2, filtering_network_delegate.blocked_get_cookie_count());
+
+    // // The number of cookies blocked from the most recent round trip.
+    ASSERT_EQ(1u, request->not_sent_cookies().size());
+    EXPECT_EQ("one_more_cookie",
+              request->not_sent_cookies().front().cookie.Name());
+  }
 }
 
 // Tests that load timing works as expected with auth and the cache.
@@ -8796,6 +8960,119 @@ TEST_F(URLRequestTestHTTP, Redirect302PreserveReferenceFragment) {
   EXPECT_EQ(OK, d.request_status());
   EXPECT_EQ(original_url, r->original_url());
   EXPECT_EQ(expected_url, r->url());
+}
+
+TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  // FilteringTestLayeredNetworkDelegate filters by name, so the names of the
+  // two cookies have to be the same. The values have been set to different
+  // strings (the value of the server-redirect cookies is "true" and set-cookie
+  // is "other") to differentiate between the two round trips.
+  GURL redirect_to(
+      http_test_server()->GetURL("/set-cookie?server-redirect=other"));
+
+  GURL original_url(http_test_server()->GetURL("/server-redirect-with-cookie?" +
+                                               redirect_to.spec()));
+
+  GURL original_url_wo_cookie(
+      http_test_server()->GetURL("/server-redirect?" + redirect_to.spec()));
+  // Check not_stored_cookies on first round trip.
+  {
+    FilteringTestLayeredNetworkDelegate filtering_network_delegate(
+        std::make_unique<TestNetworkDelegate>());  // Must outlive URLRequest.
+    filtering_network_delegate.SetCookieFilter(
+        "server-redirect");  // Filter the cookie server-redirect sets.
+    TestURLRequestContext context(true);
+    context.set_network_delegate(&filtering_network_delegate);
+    context.Init();
+
+    TestDelegate delegate;
+    std::unique_ptr<URLRequest> request(
+        context.CreateRequest(original_url, DEFAULT_PRIORITY, &delegate,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    request->Start();
+    delegate.RunUntilRedirect();
+
+    // Make sure it was blocked once.
+    EXPECT_EQ(1, filtering_network_delegate.blocked_set_cookie_count());
+
+    // The number of cookies blocked from the most recent round trip.
+    ASSERT_EQ(1u, request->not_stored_cookies().size());
+    EXPECT_EQ("server-redirect",
+              request->not_stored_cookies().front().cookie->Name());
+    EXPECT_EQ("true", request->not_stored_cookies().front().cookie->Value());
+
+    // Check not_stored_cookies on second round trip (and clearing from the
+    // first).
+    request->FollowDeferredRedirect(base::nullopt, base::nullopt);
+    delegate.RunUntilComplete();
+    EXPECT_THAT(delegate.request_status(), IsOk());
+
+    // There are DCHECKs in URLRequestHttpJob that would fail if
+    // not_sent_cookies and not_stored_cookies we not cleared properly.
+
+    // Make sure it was blocked twice.
+    EXPECT_EQ(2, filtering_network_delegate.blocked_set_cookie_count());
+
+    // The number of cookies blocked from the most recent round trip.
+    ASSERT_EQ(1u, request->not_stored_cookies().size());
+    EXPECT_EQ("server-redirect",
+              request->not_stored_cookies().front().cookie->Name());
+    EXPECT_EQ("other", request->not_stored_cookies().front().cookie->Value());
+  }
+
+  // Check not_sent_cookies on first round trip.
+  {
+    FilteringTestLayeredNetworkDelegate filtering_network_delegate(
+        std::make_unique<TestNetworkDelegate>());
+    filtering_network_delegate.set_block_get_cookies();
+    TestURLRequestContext context(true);
+    context.set_network_delegate(&filtering_network_delegate);
+    std::unique_ptr<CookieMonster> cm =
+        std::make_unique<CookieMonster>(nullptr, nullptr);
+    cm->SetCookieWithOptionsAsync(original_url, "another_cookie=true",
+                                  CookieOptions(),
+                                  CookieStore::SetCookiesCallback());
+    context.set_cookie_store(cm.get());
+    context.Init();
+
+    TestDelegate delegate;
+    std::unique_ptr<URLRequest> request(
+        context.CreateRequest(original_url_wo_cookie, DEFAULT_PRIORITY,
+                              &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    request->Start();
+
+    delegate.RunUntilRedirect();
+
+    ASSERT_EQ(1u, request->not_sent_cookies().size());
+    EXPECT_EQ("another_cookie",
+              request->not_sent_cookies().front().cookie.Name());
+
+    // Check not_sent_cookies on second round trip
+    request->set_not_sent_cookies({});
+    cm->DeleteAllAsync(CookieStore::DeleteCallback());
+    cm->SetCookieWithOptionsAsync(original_url_wo_cookie,
+                                  "one_more_cookie=true", CookieOptions(),
+                                  CookieStore::SetCookiesCallback());
+
+    request->FollowDeferredRedirect(base::nullopt, base::nullopt);
+    delegate.RunUntilComplete();
+    EXPECT_THAT(delegate.request_status(), IsOk());
+
+    // There are DCHECKs in URLRequestHttpJob that would fail if
+    // not_sent_cookies and not_stored_cookies we not cleared properly.
+
+    EXPECT_EQ(2, filtering_network_delegate.blocked_get_cookie_count());
+
+    // The number of cookies blocked from the most recent round trip.
+    ASSERT_EQ(1u, request->not_sent_cookies().size());
+    EXPECT_EQ("one_more_cookie",
+              request->not_sent_cookies().front().cookie.Name());
+    EXPECT_EQ("true", request->not_sent_cookies().front().cookie.Value());
+  }
 }
 
 TEST_F(URLRequestTestHTTP, RedirectPreserveFirstPartyURL) {
