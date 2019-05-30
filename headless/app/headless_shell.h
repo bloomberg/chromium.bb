@@ -97,13 +97,13 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   bool RemoteDebuggingEnabled() const;
 
   GURL url_;
-  HeadlessBrowser* browser_;  // Not owned.
+  HeadlessBrowser* browser_ = nullptr;  // Not owned.
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-  HeadlessWebContents* web_contents_;
-  HeadlessBrowserContext* browser_context_;
+  HeadlessWebContents* web_contents_ = nullptr;
+  HeadlessBrowserContext* browser_context_ = nullptr;
 #endif
-  bool processed_page_ready_;
+  bool processed_page_ready_ = false;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   std::unique_ptr<base::FileProxy> file_proxy_;
   base::WeakPtrFactory<HeadlessShell> weak_factory_;

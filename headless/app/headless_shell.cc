@@ -172,15 +172,7 @@ int RunContentMain(
 
 }  // namespace
 
-HeadlessShell::HeadlessShell()
-    : browser_(nullptr),
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-      web_contents_(nullptr),
-      browser_context_(nullptr),
-#endif
-      processed_page_ready_(false),
-      weak_factory_(this) {
-}
+HeadlessShell::HeadlessShell() : weak_factory_(this) {}
 
 HeadlessShell::~HeadlessShell() = default;
 
