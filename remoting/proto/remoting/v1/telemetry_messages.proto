@@ -8,12 +8,12 @@ option optimize_for = LITE_RUNTIME;
 
 package remoting.apis.v1;
 
+import "chromoting_event.proto";
 import "generic_log_entry.proto";
 
 // Contains one or more ChromotingEvents to use for generating telemetry events.
 message ChromotingEventData {
-  // TODO(yuweih): Uncomment and fix this:
-  // repeated chromoting_extensions.ChromotingEvent events = 1;
+  repeated ChromotingEvent events = 1;
 }
 
 // Contains a GenericLogEntry for generating a telemetry event.
