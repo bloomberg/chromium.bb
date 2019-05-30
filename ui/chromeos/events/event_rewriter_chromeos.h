@@ -206,6 +206,14 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   int GetRemappedModifierMasks(const ui::Event& event,
                                int original_flags) const;
 
+  // Returns true if this event should be remapped to a right-click.
+  // |matched_mask| will be set to the variant (Alt+Click or Search+Click)
+  // that was used to match based on flag/feature settings. |matched_mask|
+  // only has a valid value when returning true.
+  bool ShouldRemapToRightClick(const ui::MouseEvent& mouse_event,
+                               int flags,
+                               int* matched_mask) const;
+
   // Rewrite a particular kind of event.
   ui::EventRewriteStatus RewriteKeyEvent(
       const ui::KeyEvent& key_event,

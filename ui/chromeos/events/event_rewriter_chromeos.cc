@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
@@ -18,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "device/udev_linux/scoped_udev.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -42,6 +44,11 @@ const int kHotrodRemoteVendorId = 0x0471;
 const int kHotrodRemoteProductId = 0x21cc;
 const int kUnknownVendorId = -1;
 const int kUnknownProductId = -1;
+
+// Flag masks for remapping alt+click or search+click to right click.
+constexpr int kAltLeftButton = (ui::EF_ALT_DOWN | ui::EF_LEFT_MOUSE_BUTTON);
+constexpr int kSearchLeftButton =
+    (ui::EF_COMMAND_DOWN | ui::EF_LEFT_MOUSE_BUTTON);
 
 // Table of properties of remappable keys and/or remapping targets (not
 // strictly limited to "modifiers").
@@ -296,6 +303,11 @@ bool IsKeyCodeInMappings(ui::KeyboardCode key_code,
     }
   }
   return false;
+}
+
+// Returns true if all bits in |flag_mask| are set in |flags|.
+bool AreFlagsSet(int flags, int flag_mask) {
+  return (flags & flag_mask) == flag_mask;
 }
 
 }  // namespace
@@ -602,6 +614,26 @@ int EventRewriterChromeOS::GetRemappedModifierMasks(const ui::Event& event,
     }
   }
   return rewritten_flags | unmodified_flags;
+}
+
+bool EventRewriterChromeOS::ShouldRemapToRightClick(
+    const ui::MouseEvent& mouse_event,
+    int flags,
+    int* matched_mask) const {
+  *matched_mask = 0;
+  if (base::FeatureList::IsEnabled(
+          ::chromeos::features::kUseSearchClickForRightClick)) {
+    if (AreFlagsSet(flags, kSearchLeftButton))
+      *matched_mask = kSearchLeftButton;
+  } else {
+    if (AreFlagsSet(flags, kAltLeftButton))
+      *matched_mask = kAltLeftButton;
+  }
+
+  return (*matched_mask != 0) &&
+         ((mouse_event.type() == ui::ET_MOUSE_PRESSED) ||
+          pressed_device_ids_.count(mouse_event.source_device_id())) &&
+         IsFromTouchpadDevice(mouse_event);
 }
 
 ui::EventRewriteStatus EventRewriterChromeOS::RewriteKeyEvent(
@@ -1254,13 +1286,11 @@ int EventRewriterChromeOS::RewriteModifierClick(
   // Note that this behavior is limited to mouse events coming from touchpad
   // devices. https://crbug.com/890648.
 
-  // Remap Alt+Button1 to Button3.
-  const int kAltLeftButton = (ui::EF_ALT_DOWN | ui::EF_LEFT_MOUSE_BUTTON);
-  if (((*flags & kAltLeftButton) == kAltLeftButton) &&
-      ((mouse_event.type() == ui::ET_MOUSE_PRESSED) ||
-       pressed_device_ids_.count(mouse_event.source_device_id())) &&
-      IsFromTouchpadDevice(mouse_event)) {
-    *flags &= ~kAltLeftButton;
+  // Remap either Alt+Button1 or Search+Button1 to Button3 based on
+  // flag/setting.
+  int matched_mask;
+  if (ShouldRemapToRightClick(mouse_event, *flags, &matched_mask)) {
+    *flags &= ~matched_mask;
     *flags |= ui::EF_RIGHT_MOUSE_BUTTON;
     if (mouse_event.type() == ui::ET_MOUSE_PRESSED) {
       pressed_device_ids_.insert(mouse_event.source_device_id());

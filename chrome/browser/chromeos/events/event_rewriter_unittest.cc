@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -141,6 +143,11 @@ class EventRewriterTest : public ChromeAshTestBase {
   void TestRewriteNumPadKeys();
   void TestRewriteNumPadKeysOnAppleKeyboard();
 
+  // Parameterized version of test depending on feature flag values. The feature
+  // kUseSearchClickForRightClick determines if this should test for alt-click
+  // or search-click.
+  void DontRewriteIfNotRewritten(int right_click_flags);
+
   const ui::MouseEvent* RewriteMouseButtonEvent(
       const ui::MouseEvent& event,
       std::unique_ptr<ui::Event>* new_event) {
@@ -158,6 +165,7 @@ class EventRewriterTest : public ChromeAshTestBase {
     int_pref->SetValue(static_cast<int>(modifierKey));
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   FakeChromeUserManager* fake_user_manager_;  // Not owned.
   user_manager::ScopedUserManager user_manager_enabler_;
   input_method::MockInputMethodManagerImpl* input_method_manager_mock_;
@@ -2867,7 +2875,11 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
             GetKeyEventAsString(*static_cast<ui::KeyEvent*>(events[0].get())));
 }
 
-TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
+// Parameterized version of test with the same name that accepts the
+// event flags that correspond to a right-click. This will be either
+// Alt+Click or Search+Click. After a transition period this will
+// default to Search+Click and the Alt+Click logic will be removed.
+void EventRewriterTest::DontRewriteIfNotRewritten(int right_click_flags) {
   ui::DeviceDataManager* device_data_manager =
       ui::DeviceDataManager::GetInstance();
   std::vector<ui::InputDevice> touchpad_devices(2);
@@ -2883,38 +2895,36 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   static_cast<ui::DeviceHotplugEventObserver*>(device_data_manager)
       ->OnMouseDevicesUpdated(mouse_devices);
 
-  const int kLeftAndAltFlag = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN;
-
-  // Test Alt + Left click.
+  // Test (Alt|Search) + Left click.
   {
     ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), kLeftAndAltFlag,
+                         ui::EventTimeForNow(), right_click_flags,
                          ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_press(&press);
     test_press.set_source_device_id(kTouchpadId1);
     // Sanity check.
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
-    EXPECT_EQ(kLeftAndAltFlag, press.flags());
+    EXPECT_EQ(right_click_flags, press.flags());
     std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result = RewriteMouseButtonEvent(press, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_NE(right_click_flags, right_click_flags & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), kLeftAndAltFlag,
+                           ui::EventTimeForNow(), right_click_flags,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(kTouchpadId1);
     std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result = RewriteMouseButtonEvent(release, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_NE(right_click_flags, right_click_flags & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
 
-  // No ALT in frst click.
+  // No (ALT|SEARCH) in first click.
   {
     ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
@@ -2928,78 +2938,88 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   }
   {
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), kLeftAndAltFlag,
+                           ui::EventTimeForNow(), right_click_flags,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(kTouchpadId1);
     std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result = RewriteMouseButtonEvent(release, &new_event);
-    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
+    EXPECT_EQ(right_click_flags, right_click_flags & result->flags());
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
 
   // ALT on different device.
   {
     ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), kLeftAndAltFlag,
+                         ui::EventTimeForNow(), right_click_flags,
                          ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_press(&press);
     test_press.set_source_device_id(kTouchpadId2);
     std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result = RewriteMouseButtonEvent(press, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_NE(right_click_flags, right_click_flags & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), kLeftAndAltFlag,
+                           ui::EventTimeForNow(), right_click_flags,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(kTouchpadId1);
     std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result = RewriteMouseButtonEvent(release, &new_event);
-    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
+    EXPECT_EQ(right_click_flags, right_click_flags & result->flags());
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), kLeftAndAltFlag,
+                           ui::EventTimeForNow(), right_click_flags,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(kTouchpadId2);
     std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result = RewriteMouseButtonEvent(release, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
+    EXPECT_NE(right_click_flags, right_click_flags & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
 
   // No rewrite for non-touchpad devices.
   {
     ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), kLeftAndAltFlag,
+                         ui::EventTimeForNow(), right_click_flags,
                          ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_press(&press);
     test_press.set_source_device_id(kMouseId);
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
-    EXPECT_EQ(kLeftAndAltFlag, press.flags());
+    EXPECT_EQ(right_click_flags, press.flags());
     std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result = RewriteMouseButtonEvent(press, &new_event);
-    EXPECT_TRUE(kLeftAndAltFlag & result->flags());
+    EXPECT_EQ(right_click_flags, right_click_flags & result->flags());
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), kLeftAndAltFlag,
+                           ui::EventTimeForNow(), right_click_flags,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(kMouseId);
     std::unique_ptr<ui::Event> new_event;
     const ui::MouseEvent* result = RewriteMouseButtonEvent(release, &new_event);
-    EXPECT_TRUE(kLeftAndAltFlag & result->flags());
+    EXPECT_EQ(right_click_flags, right_click_flags & result->flags());
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
+}
+
+TEST_F(EventRewriterTest, DontRewriteIfNotRewritten_AltClickIsRightClick) {
+  DontRewriteIfNotRewritten(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN);
+}
+
+TEST_F(EventRewriterTest, DontRewriteIfNotRewritten_SearchClickIsRightClick) {
+  scoped_feature_list_.InitAndEnableFeature(
+      chromeos::features::kUseSearchClickForRightClick);
+  DontRewriteIfNotRewritten(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_COMMAND_DOWN);
 }
 
 TEST_F(EventRewriterAshTest, StickyKeyEventDispatchImpl) {
