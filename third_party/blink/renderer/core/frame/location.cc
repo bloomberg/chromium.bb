@@ -292,11 +292,10 @@ void Location::SetLocation(const String& url,
   // execution, there are concerns about the correctness of that statement,
   // see http://github.com/whatwg/html/issues/2591.
   Document* current_document = current_window->document();
-  if (current_document && completed_url.ProtocolIsJavaScript() &&
-      !ContentSecurityPolicy::ShouldBypassMainWorld(current_document)) {
+  if (current_document && completed_url.ProtocolIsJavaScript()) {
     String script_source = DecodeURLEscapeSequences(
         completed_url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
-    if (!current_document->GetContentSecurityPolicy()->AllowInline(
+    if (!current_document->GetContentSecurityPolicyForWorld()->AllowInline(
             ContentSecurityPolicy::InlineType::kNavigation,
             nullptr /* element */, script_source, String() /* nonce */,
             current_document->Url(), OrdinalNumber())) {
