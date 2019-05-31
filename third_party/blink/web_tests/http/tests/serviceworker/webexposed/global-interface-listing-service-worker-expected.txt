@@ -702,11 +702,6 @@ interface ImageBitmap
     getter width
     method close
     method constructor
-interface ImageBitmapRenderingContext
-    attribute @@toStringTag
-    getter canvas
-    method constructor
-    method transferFromImageBitmap
 interface ImageData
     attribute @@toStringTag
     getter data

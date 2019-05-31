@@ -148,8 +148,6 @@ void ModulesInitializer::Initialize() {
       std::make_unique<WebGLRenderingContext::Factory>());
   OffscreenCanvas::RegisterRenderingContextFactory(
       std::make_unique<WebGL2RenderingContext::Factory>());
-  OffscreenCanvas::RegisterRenderingContextFactory(
-      std::make_unique<ImageBitmapRenderingContext::Factory>());
 #if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
   OffscreenCanvas::RegisterRenderingContextFactory(
       std::make_unique<WebGL2ComputeRenderingContext::Factory>());

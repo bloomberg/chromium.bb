@@ -56,7 +56,7 @@ class PLATFORM_EXPORT ImageLayerBridge
   }
   void SetUV(const FloatPoint& left_top, const FloatPoint& right_bottom);
 
-  bool IsAccelerated() { return image_ && image_->IsTextureBacked(); }
+  bool IsAccelerated() { return image_->IsTextureBacked(); }
 
   void Trace(blink::Visitor* visitor) {}
 

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -47,10 +46,8 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
   ContextType GetContextType() const override {
     return CanvasRenderingContext::kContextImageBitmap;
   }
-  ImageBitmap* TransferToImageBitmap(ScriptState*) override;
 
   void SetCanvasGetContextResult(RenderingContext&) final;
-  void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
 
   ~ImageBitmapRenderingContext() override;
 };
