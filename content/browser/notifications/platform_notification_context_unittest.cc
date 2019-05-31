@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -17,6 +18,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -158,6 +160,61 @@ class PlatformNotificationContextTest : public ::testing::Test {
             }));
     base::RunLoop().RunUntilIdle();
     return notification_database_datas;
+  }
+
+  // Reads the resources stored in |context| for |notification_id| and |origin|.
+  // Returns if reading the resources succeeded or not.
+  bool ReadNotificationResourcesSync(PlatformNotificationContextImpl* context,
+                                     const std::string& notification_id,
+                                     const GURL& origin) {
+    bool result = false;
+    base::RunLoop run_loop;
+    context->ReadNotificationResources(
+        notification_id, origin,
+        base::BindLambdaForTesting(
+            [&](bool success,
+                const blink::NotificationResources& notification_resources) {
+              result = success;
+              run_loop.QuitClosure().Run();
+            }));
+    run_loop.Run();
+    return result;
+  }
+
+  // Writes the |resources| to |context| and returns the success status.
+  bool WriteNotificationResourcesSync(
+      PlatformNotificationContextImpl* context,
+      std::vector<NotificationResourceData> resources) {
+    bool result = false;
+    base::RunLoop run_loop;
+    context->WriteNotificationResources(
+        std::move(resources), base::BindLambdaForTesting([&](bool success) {
+          result = success;
+          run_loop.QuitClosure().Run();
+        }));
+    run_loop.Run();
+    return result;
+  }
+
+  // Writes notification |data| for |origin| to |context| and verifies the
+  // result callback synchronously. Returns the written notification id.
+  std::string WriteNotificationDataSync(
+      PlatformNotificationContextImpl* context,
+      const GURL& origin,
+      const NotificationDatabaseData& data) {
+    std::string notification_id;
+    base::RunLoop run_loop;
+    context->WriteNotificationData(
+        next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+        origin, data,
+        base::BindLambdaForTesting([&](bool success, const std::string& id) {
+          DCHECK(success);
+          notification_id = id;
+          run_loop.QuitClosure().Run();
+        }));
+    run_loop.Run();
+    DCHECK(!notification_id.empty());
+    return notification_id;
   }
 
   void SetPermissionStatus(const GURL& origin,
@@ -745,6 +802,96 @@ TEST_F(PlatformNotificationContextTest, WriteDisplaysNotification) {
 
   ASSERT_EQ(1u, displayed_notification_ids.size());
   EXPECT_EQ(notification_id(), *displayed_notification_ids.begin());
+}
+
+TEST_F(PlatformNotificationContextTest, WriteReadNotificationResources) {
+  scoped_refptr<PlatformNotificationContextImpl> context =
+      CreatePlatformNotificationContext();
+  GURL origin("https://example.com");
+
+  // Write a notification to the database.
+  NotificationDatabaseData data;
+  std::string notification_id =
+      WriteNotificationDataSync(context.get(), origin, data);
+
+  // There should not be any stored resources yet.
+  ASSERT_FALSE(
+      ReadNotificationResourcesSync(context.get(), notification_id, origin));
+
+  // Store resources for the new notification.
+  std::vector<NotificationResourceData> resources;
+  resources.push_back(
+      {notification_id, origin, blink::NotificationResources()});
+  // Also try inserting resources for an invalid notification id.
+  std::string invalid_id = "invalid-id";
+  resources.push_back({invalid_id, origin, blink::NotificationResources()});
+  // Writing resources should succeed.
+  ASSERT_TRUE(
+      WriteNotificationResourcesSync(context.get(), std::move(resources)));
+
+  // Reading resources should succeed now.
+  ASSERT_TRUE(
+      ReadNotificationResourcesSync(context.get(), notification_id, origin));
+
+  // The resources for the missing notification id should have been ignored.
+  ASSERT_FALSE(
+      ReadNotificationResourcesSync(context.get(), invalid_id, origin));
+}
+
+TEST_F(PlatformNotificationContextTest, ReDisplayNotifications) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNotificationTriggers);
+
+  NotificationBrowserClient notification_browser_client(browser_context());
+  SetBrowserClientForTesting(&notification_browser_client);
+  PlatformNotificationService* service =
+      notification_browser_client.GetPlatformNotificationService(
+          browser_context());
+
+  scoped_refptr<PlatformNotificationContextImpl> context =
+      CreatePlatformNotificationContext();
+  GURL origin("https://example.com");
+
+  // Store the initial data:
+  // 1 notification with a future trigger and resources.
+  NotificationDatabaseData data1;
+  data1.notification_resources = blink::NotificationResources();
+  data1.notification_data.show_trigger_timestamp =
+      base::Time::Now() + base::TimeDelta::FromDays(10);
+  WriteNotificationDataSync(context.get(), origin, data1);
+  // 1 notification with stored resources.
+  NotificationDatabaseData data2;
+  std::string notification_id =
+      WriteNotificationDataSync(context.get(), origin, data2);
+  std::vector<NotificationResourceData> resources;
+  resources.push_back(
+      {notification_id, origin, blink::NotificationResources()});
+  WriteNotificationResourcesSync(context.get(), std::move(resources));
+  // 1 notification without resources.
+  NotificationDatabaseData data3;
+  WriteNotificationDataSync(context.get(), origin, data3);
+
+  // Expect to see the two notifications without trigger.
+  ASSERT_EQ(2u, GetDisplayedNotificationsSync(service).size());
+
+  // Close the notification with resources without deleting it.
+  service->ClosePersistentNotification(notification_id);
+  ASSERT_EQ(1u, GetDisplayedNotificationsSync(service).size());
+
+  base::RunLoop run_loop;
+  context->ReDisplayNotifications(
+      {origin}, base::BindLambdaForTesting([&](size_t display_count) {
+        // Expect the notification with resources to be reshown.
+        ASSERT_EQ(1u, display_count);
+        run_loop.QuitClosure().Run();
+      }));
+  run_loop.Run();
+
+  // Expect to see the two notifications again.
+  ASSERT_EQ(2u, GetDisplayedNotificationsSync(service).size());
+  // The resources for the reshown notification should have been deleted.
+  ASSERT_FALSE(
+      ReadNotificationResourcesSync(context.get(), notification_id, origin));
 }
 
 }  // namespace content

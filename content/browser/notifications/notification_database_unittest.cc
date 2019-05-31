@@ -612,6 +612,48 @@ TEST_F(NotificationDatabaseTest, DeleteNotificationDataDifferentOrigin) {
       database->ReadNotificationData(notification_id, origin, &database_data));
 }
 
+TEST_F(NotificationDatabaseTest, DeleteInvalidNotificationResources) {
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  // Deleting non-existing resources is not considered to be a failure.
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->DeleteNotificationResources("bad-id",
+                                                  GURL("https://chrome.com")));
+}
+
+TEST_F(NotificationDatabaseTest, DeleteNotificationResources) {
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  const std::string notification_id = GenerateNotificationId();
+
+  blink::NotificationResources notification_resources;
+  NotificationDatabaseData database_data;
+  database_data.notification_id = notification_id;
+  database_data.notification_resources = notification_resources;
+
+  GURL origin("https://example.com");
+
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->WriteNotificationData(origin, database_data));
+
+  // Reading notification resources after writing should succeed.
+  EXPECT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadNotificationResources(notification_id, origin,
+                                                &notification_resources));
+
+  // Delete the notification resources for the notification which was just
+  // written to the database, and verify that reading them again will fail.
+  EXPECT_EQ(NotificationDatabase::STATUS_OK,
+            database->DeleteNotificationResources(notification_id, origin));
+  EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
+            database->ReadNotificationResources(notification_id, origin,
+                                                &notification_resources));
+}
+
 TEST_F(NotificationDatabaseTest, ReadAllNotificationData) {
   std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,

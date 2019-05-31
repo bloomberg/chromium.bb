@@ -364,6 +364,19 @@ NotificationDatabase::Status NotificationDatabase::DeleteNotificationData(
       db_->Write(leveldb::WriteOptions(), &batch));
 }
 
+NotificationDatabase::Status NotificationDatabase::DeleteNotificationResources(
+    const std::string& notification_id,
+    const GURL& origin) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_EQ(State::INITIALIZED, state_);
+  DCHECK(!notification_id.empty());
+  DCHECK(origin.is_valid());
+
+  std::string key = CreateResourcesKey(origin, notification_id);
+  return LevelDBStatusToNotificationDatabaseStatus(
+      db_->Delete(leveldb::WriteOptions(), key));
+}
+
 NotificationDatabase::Status
 NotificationDatabase::DeleteAllNotificationDataForOrigin(
     const GURL& origin,

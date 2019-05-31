@@ -443,9 +443,146 @@ void PlatformNotificationContextImpl::DoTriggerNotification(
     return;
   }
 
+  // Remove resources from DB as we don't need them anymore.
+  database_->DeleteNotificationResources(write_database_data.notification_id,
+                                         write_database_data.origin);
+
   write_database_data.notification_resources = std::move(resources);
   service_proxy_->DisplayNotification(std::move(write_database_data),
                                       base::DoNothing());
+}
+
+void PlatformNotificationContextImpl::WriteNotificationResources(
+    std::vector<NotificationResourceData> resource_data,
+    WriteResourcesResultCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (has_shutdown_ || !service_proxy_)
+    return;
+
+  LazyInitialize(base::BindOnce(
+      &PlatformNotificationContextImpl::DoWriteNotificationResources, this,
+      std::move(resource_data), std::move(callback)));
+}
+
+void PlatformNotificationContextImpl::DoWriteNotificationResources(
+    std::vector<NotificationResourceData> resource_data,
+    WriteResourcesResultCallback callback,
+    bool initialized) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!initialized) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(std::move(callback), /* success= */ false));
+    return;
+  }
+
+  NotificationDatabase::Status status = NotificationDatabase::STATUS_OK;
+  for (auto& data : resource_data) {
+    NotificationDatabaseData notification_data;
+    status = database_->ReadNotificationData(data.notification_id, data.origin,
+                                             &notification_data);
+    // Ignore missing notifications.
+    if (status == NotificationDatabase::STATUS_ERROR_NOT_FOUND) {
+      status = NotificationDatabase::STATUS_OK;
+      continue;
+    }
+    if (status != NotificationDatabase::STATUS_OK)
+      break;
+
+    // We do not support storing action icons again as they are not used on
+    // Android N+ and this will only be used for Q+.
+    DCHECK(data.resources.action_icons.empty());
+    size_t action_item_count =
+        notification_data.notification_data.actions.size();
+    data.resources.action_icons.resize(action_item_count);
+
+    notification_data.notification_resources = std::move(data.resources);
+    status = database_->WriteNotificationData(data.origin, notification_data);
+    if (status != NotificationDatabase::STATUS_OK)
+      break;
+  }
+
+  if (status == NotificationDatabase::STATUS_OK) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(std::move(callback), /* success= */ true));
+    return;
+  }
+
+  // Blow away the database if reading data failed due to corruption.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(std::move(callback), /* success= */ false));
+}
+
+void PlatformNotificationContextImpl::ReDisplayNotifications(
+    std::vector<GURL> origins,
+    ReDisplayNotificationsResultCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (has_shutdown_ || !service_proxy_)
+    return;
+
+  LazyInitialize(
+      base::BindOnce(&PlatformNotificationContextImpl::DoReDisplayNotifications,
+                     this, std::move(origins), std::move(callback)));
+}
+
+void PlatformNotificationContextImpl::DoReDisplayNotifications(
+    std::vector<GURL> origins,
+    ReDisplayNotificationsResultCallback callback,
+    bool initialized) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  size_t display_count = 0;
+  if (!initialized) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(std::move(callback), display_count));
+    return;
+  }
+
+  NotificationDatabase::Status status = NotificationDatabase::STATUS_OK;
+  for (const auto& origin : origins) {
+    std::vector<NotificationDatabaseData> datas;
+    status = database_->ReadAllNotificationDataForOrigin(origin, &datas);
+    if (status != NotificationDatabase::STATUS_OK)
+      break;
+
+    for (const auto& data : datas) {
+      if (CanTrigger(data))
+        continue;
+      blink::NotificationResources resources;
+      status = database_->ReadNotificationResources(data.notification_id,
+                                                    data.origin, &resources);
+      // Ignore notifications without resources as they might already be shown.
+      if (status == NotificationDatabase::STATUS_ERROR_NOT_FOUND) {
+        status = NotificationDatabase::STATUS_OK;
+        continue;
+      }
+      if (status != NotificationDatabase::STATUS_OK)
+        break;
+
+      // Remove resources from DB as we don't need them anymore.
+      database_->DeleteNotificationResources(data.notification_id, data.origin);
+
+      NotificationDatabaseData display_data = data;
+      display_data.notification_resources = std::move(resources);
+      service_proxy_->DisplayNotification(std::move(display_data),
+                                          base::DoNothing());
+      ++display_count;
+    }
+    if (status != NotificationDatabase::STATUS_OK)
+      break;
+  }
+
+  // Blow away the database if reading data failed due to corruption.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
+
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(std::move(callback), display_count));
 }
 
 void PlatformNotificationContextImpl::ReadNotificationResources(

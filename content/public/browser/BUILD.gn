@@ -215,6 +215,7 @@ jumbo_source_set("browser_sources") {
     "notification_observer.h",
     "notification_registrar.cc",
     "notification_registrar.h",
+    "notification_resource_data.h",
     "notification_service.h",
     "notification_source.h",
     "notification_types.h",
