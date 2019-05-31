@@ -131,7 +131,7 @@ void RendererUtil::handleInputEvents(content::RenderWidget *rw, const WebView::I
         case WM_MBUTTONUP:
         case WM_RBUTTONUP: {
             ui::MouseEvent uiMouseEvent(msg);
-            blink::WebMouseEvent blinkMouseEvent = 
+            blink::WebMouseEvent blinkMouseEvent =
                             ui::MakeWebMouseEvent(uiMouseEvent);
             rw->bbHandleInputEvent(blinkMouseEvent);
         } break;
@@ -169,8 +169,8 @@ String RendererUtil::printToPDF(
             local_frame->MainWorldScriptContext();
         v8::Local<v8::Object> winObject = jsContext->Global();
 
-        if (winObject->Has(
-                v8::String::NewFromUtf8(isolate, propertyName.c_str()))) {
+        if (winObject->Has(jsContext,
+                v8::String::NewFromUtf8(isolate, propertyName.c_str())).FromJust()) {
           std::vector<char> buffer = printing::PrintRenderFrameHelper::Get(
                                          renderView->GetMainRenderFrame())
                                          ->PrintToPDF(local_frame);
