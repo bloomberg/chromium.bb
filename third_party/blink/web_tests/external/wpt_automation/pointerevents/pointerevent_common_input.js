@@ -561,23 +561,6 @@ function mouseDragAndDropInTargets(targetSelectorList) {
   });
 }
 
-// Keyboard inputs.
-function keyboardScroll(direction) {
-  return new Promise(function(resolve, reject) {
-    if (window.eventSender) {
-      if (direction == 'down')
-        eventSender.keyDown('ArrowDown');
-      else if (direction == 'right')
-        eventSender.keyDown('ArrowRight');
-      else
-        reject();
-      resolve();
-    } else {
-      reject();
-    }
-  });
-}
-
 function smoothDrag(targetSelector1, targetSelector2, pointerType) {
   return new Promise(function(resolve, reject) {
     if (window.chrome && chrome.gpuBenchmarking) {
