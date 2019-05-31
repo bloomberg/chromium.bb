@@ -23,7 +23,8 @@ void TestCompletionCallbackBaseInternal::DidSetResult() {
 void TestCompletionCallbackBaseInternal::WaitForResult() {
   DCHECK(!run_loop_);
   if (!have_result_) {
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>(
+        base::RunLoop::Type::kNestableTasksAllowed);
     run_loop_->Run();
     run_loop_.reset();
     DCHECK(have_result_);

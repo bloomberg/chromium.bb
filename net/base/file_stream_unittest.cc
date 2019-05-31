@@ -537,7 +537,6 @@ class TestWriteReadCompletionCallback {
           base::MakeRefCounted<IOBufferWithSize>(4);
       rv = stream_->Read(buf.get(), buf->size(), callback.callback());
       if (rv == ERR_IO_PENDING) {
-        base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
         rv = callback.WaitForResult();
       }
       EXPECT_LE(0, rv);
@@ -574,7 +573,6 @@ class TestWriteReadCompletionCallback {
       EXPECT_THAT(stream_->Seek(0, callback64.callback()),
                   IsError(ERR_IO_PENDING));
       {
-        base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
         EXPECT_LE(0, callback64.WaitForResult());
       }
     }
