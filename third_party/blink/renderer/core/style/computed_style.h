@@ -222,7 +222,24 @@ class ComputedStyle : public ComputedStyleBase,
   friend class StyleResolver;
 
  protected:
-  // list of associated pseudo styles
+  // This cache stores ComputedStyles for pseudo elements originating from this
+  // ComputedStyle's element. Pseudo elements which are represented by
+  // PseudoElement in DOM store the ComputedStyle on those elements, so this
+  // cache is for:
+  //
+  // 1. Pseudo elements which do not generate a PseudoElement internally like
+  //    ::first-line and ::selection.
+  //
+  // 2. Pseudo element style requested from getComputedStyle() where the element
+  //    currently doesn't generate a PseudoElement. E.g.:
+  //
+  //    <style>
+  //      #div::before { color: green /* no content property! */}
+  //    </style>
+  //    <div id=div></div>
+  //    <script>
+  //      getComputedStyle(div, "::before").color // still green.
+  //    </script>
   mutable std::unique_ptr<PseudoStyleCache> cached_pseudo_styles_;
 
   DataRef<SVGComputedStyle> svg_style_;
