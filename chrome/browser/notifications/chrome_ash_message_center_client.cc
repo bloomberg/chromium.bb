@@ -7,6 +7,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/i18n/string_compare.h"
 #include "base/stl_util.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/arc_application_notifier_controller.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -33,7 +35,6 @@ ChromeAshMessageCenterClient* g_chrome_ash_message_center_client = nullptr;
 // profile, so this just returns the active profile.
 Profile* GetProfileForNotifiers() {
   const auto* user = user_manager::UserManager::Get()->GetActiveUser();
-  CHECK(user->is_profile_created());
   return chromeos::ProfileHelper::Get()->GetProfileByUser(user);
 }
 
@@ -92,6 +93,10 @@ ChromeAshMessageCenterClient::ChromeAshMessageCenterClient(
 ChromeAshMessageCenterClient::~ChromeAshMessageCenterClient() {
   DCHECK_EQ(this, g_chrome_ash_message_center_client);
   g_chrome_ash_message_center_client = nullptr;
+  if (deferred_notifier_list_callback_) {
+    std::move(deferred_notifier_list_callback_)
+        .Run(std::vector<ash::mojom::NotifierUiDataPtr>());
+  }
 }
 
 void ChromeAshMessageCenterClient::Display(
@@ -159,7 +164,26 @@ void ChromeAshMessageCenterClient::SetNotifierEnabled(
 
 void ChromeAshMessageCenterClient::GetNotifierList(
     GetNotifierListCallback callback) {
+  if (deferred_notifier_list_callback_) {
+    std::move(deferred_notifier_list_callback_)
+        .Run(std::vector<ash::mojom::NotifierUiDataPtr>());
+    registrar_.RemoveAll();
+  }
   Profile* profile = GetProfileForNotifiers();
+  if (profile) {
+    RespondWithNotifierList(profile, std::move(callback));
+  } else {
+    LOG(ERROR) << "GetNotifierList called before profile fully loaded, see "
+                  "https://crbug.com/968825";
+    deferred_notifier_list_callback_ = std::move(callback);
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
+                   content::NotificationService::AllSources());
+  }
+}
+
+void ChromeAshMessageCenterClient::RespondWithNotifierList(
+    Profile* profile,
+    GetNotifierListCallback callback) const {
   CHECK(profile);
   std::vector<ash::mojom::NotifierUiDataPtr> notifiers;
   for (auto& source : sources_) {
@@ -175,6 +199,26 @@ void ChromeAshMessageCenterClient::GetNotifierList(
   std::sort(notifiers.begin(), notifiers.end(), comparator);
 
   std::move(callback).Run(std::move(notifiers));
+}
+
+void ChromeAshMessageCenterClient::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_ADDED: {
+      Profile* profile = GetProfileForNotifiers();
+      if (profile) {
+        CHECK(deferred_notifier_list_callback_);
+        RespondWithNotifierList(profile,
+                                std::move(deferred_notifier_list_callback_));
+        registrar_.RemoveAll();
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 }
 
 void ChromeAshMessageCenterClient::GetArcAppIdByPackageName(
