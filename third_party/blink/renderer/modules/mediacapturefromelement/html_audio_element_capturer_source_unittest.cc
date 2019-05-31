@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/html_audio_element_capturer_source.h"
+
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/fake_audio_render_callback.h"
@@ -26,7 +25,7 @@ using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::Property;
 
-namespace content {
+namespace blink {
 
 static const int kNumChannelsForTest = 1;
 static const int kBufferDurationMs = 10;
@@ -116,8 +115,6 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
     ASSERT_TRUE(source()->ConnectToTrack(blink_audio_track_));
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
-
   blink::WebMediaStreamSource blink_audio_source_;
   blink::WebMediaStreamTrack blink_audio_track_;
 
@@ -127,8 +124,7 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
 };
 
 // Constructs and destructs all objects. This is a non trivial sequence.
-TEST_F(HTMLAudioElementCapturerSourceTest, ConstructAndDestruct) {
-}
+TEST_F(HTMLAudioElementCapturerSourceTest, ConstructAndDestruct) {}
 
 // This test verifies that Audio can be properly captured when injected in the
 // WebAudioSourceProviderImpl.
@@ -150,8 +146,8 @@ TEST_F(HTMLAudioElementCapturerSourceTest, CaptureAudio) {
       .Times(1)
       .WillOnce([&](const auto&, auto) { std::move(quit_closure).Run(); });
 
-  std::unique_ptr<media::AudioBus> bus = media::AudioBus::Create(
-      kNumChannelsForTest, kAudioTrackSamplesPerBuffer);
+  std::unique_ptr<media::AudioBus> bus =
+      media::AudioBus::Create(kNumChannelsForTest, kAudioTrackSamplesPerBuffer);
   InjectAudio(bus.get());
   run_loop.Run();
 
@@ -191,4 +187,4 @@ TEST_F(HTMLAudioElementCapturerSourceTest,
   track()->RemoveSink(&sink);
 }
 
-}  // namespace content
+}  // namespace blink

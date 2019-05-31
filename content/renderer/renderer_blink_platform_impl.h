@@ -40,9 +40,7 @@ namespace scheduler {
 class WebThreadScheduler;
 }
 class WebGraphicsContext3DProvider;
-class WebMediaPlayer;
 class WebMediaRecorderHandler;
-class WebMediaStream;
 class WebSecurityOrigin;
 }  // namespace blink
 
@@ -158,10 +156,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebLocalFrame* frame) override;
   std::unique_ptr<webrtc::AsyncResolverFactory>
   CreateWebRtcAsyncResolverFactory() override;
-  void CreateHTMLAudioElementCapturer(
-      blink::WebMediaStream* web_media_stream,
-      blink::WebMediaPlayer* web_media_player,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<webrtc::RtpCapabilities> GetRtpSenderCapabilities(
       const blink::WebString& kind) override;
   std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(

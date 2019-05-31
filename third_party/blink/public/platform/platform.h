@@ -110,9 +110,7 @@ class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
-class WebMediaPlayer;
 class WebMediaRecorderHandler;
-class WebMediaStream;
 class WebMediaStreamCenter;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
@@ -628,13 +626,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // May return null if WebRTC functionality is not implemented.
   virtual std::unique_ptr<webrtc::AsyncResolverFactory>
   CreateWebRtcAsyncResolverFactory();
-
-  // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
-  // by the second parameter.
-  virtual void CreateHTMLAudioElementCapturer(
-      WebMediaStream*,
-      WebMediaPlayer*,
-      scoped_refptr<base::SingleThreadTaskRunner>) {}
 
   // Returns the most optimistic view of the capabilities of the system for
   // sending or receiving media of the given kind ("audio" or "video").

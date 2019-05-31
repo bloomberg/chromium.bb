@@ -53,7 +53,6 @@
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
-#include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
 #include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/p2p/port_allocator.h"
@@ -125,9 +124,7 @@ using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;
 using blink::WebBlobRegistry;
 using blink::WebDatabaseObserver;
-using blink::WebMediaPlayer;
 using blink::WebMediaRecorderHandler;
-using blink::WebMediaStream;
 using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamTrack;
 using blink::WebRTCPeerConnectionHandler;
@@ -738,47 +735,6 @@ RendererBlinkPlatformImpl::CreateWebRtcAsyncResolverFactory() {
       render_thread->GetPeerConnectionDependencyFactory();
   rtc_dependency_factory->EnsureInitialized();
   return rtc_dependency_factory->CreateAsyncResolverFactory();
-}
-
-//------------------------------------------------------------------------------
-
-void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
-    WebMediaStream* web_media_stream,
-    WebMediaPlayer* web_media_player,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(web_media_stream);
-  DCHECK(web_media_player);
-
-  blink::WebMediaStreamSource web_media_stream_source;
-  blink::WebMediaStreamTrack web_media_stream_track;
-  const WebString track_id = WebString::FromUTF8(base::GenerateGUID());
-
-  web_media_stream_source.Initialize(track_id,
-                                     blink::WebMediaStreamSource::kTypeAudio,
-                                     track_id, false /* is_remote */);
-  web_media_stream_track.Initialize(web_media_stream_source);
-
-  blink::MediaStreamAudioSource* const media_stream_source =
-      HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
-          web_media_player, std::move(task_runner));
-
-  // Takes ownership of |media_stream_source|.
-  web_media_stream_source.SetPlatformSource(
-      base::WrapUnique(media_stream_source));
-
-  blink::WebMediaStreamSource::Capabilities capabilities;
-  capabilities.device_id = track_id;
-  capabilities.echo_cancellation = std::vector<bool>({false});
-  capabilities.auto_gain_control = std::vector<bool>({false});
-  capabilities.noise_suppression = std::vector<bool>({false});
-  capabilities.sample_size = {
-      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
-      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
-  };
-  web_media_stream_source.SetCapabilities(capabilities);
-
-  media_stream_source->ConnectToTrack(web_media_stream_track);
-  web_media_stream->AddTrack(web_media_stream_track);
 }
 
 //------------------------------------------------------------------------------

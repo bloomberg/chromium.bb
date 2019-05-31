@@ -1871,7 +1871,6 @@ test("content_unittests") {
     "../renderer/media/webrtc/webrtc_set_description_observer_unittest.cc",
     "../renderer/media/webrtc/webrtc_video_track_source_unittest.cc",
     "../renderer/media/webrtc_local_audio_source_provider_unittest.cc",
-    "../renderer/media_capture_from_element/html_audio_element_capturer_source_unittest.cc",
     "../renderer/media_recorder/audio_track_recorder_unittest.cc",
     "../renderer/media_recorder/media_recorder_handler_unittest.cc",
     "../renderer/media_recorder/video_track_recorder_unittest.cc",

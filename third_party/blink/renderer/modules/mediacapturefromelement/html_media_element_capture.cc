@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/mediacapturefromelement/html_media_element_capture.h"
 
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -18,6 +19,7 @@
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/html_media_element_encrypted_media.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/html_audio_element_capturer_source.h"
 #include "third_party/blink/renderer/modules/mediacapturefromelement/html_video_element_capturer_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
@@ -81,6 +83,47 @@ void CreateHTMLVideoElementCapturer(
           std::move(task_runner)),
       false,  // is_remote
       web_media_stream);
+}
+
+// Fills in the WebMediaStream to capture from the WebMediaPlayer identified
+// by the second parameter.
+void CreateHTMLAudioElementCapturer(
+    WebMediaStream* web_media_stream,
+    WebMediaPlayer* web_media_player,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(web_media_stream);
+  DCHECK(web_media_player);
+
+  blink::WebMediaStreamSource web_media_stream_source;
+  blink::WebMediaStreamTrack web_media_stream_track;
+  const WebString track_id(CreateCanonicalUUIDString());
+
+  web_media_stream_source.Initialize(track_id,
+                                     blink::WebMediaStreamSource::kTypeAudio,
+                                     track_id, false /* is_remote */);
+  web_media_stream_track.Initialize(web_media_stream_source);
+
+  blink::MediaStreamAudioSource* const media_stream_source =
+      HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
+          web_media_player, std::move(task_runner));
+
+  // Takes ownership of |media_stream_source|.
+  web_media_stream_source.SetPlatformSource(
+      base::WrapUnique(media_stream_source));
+
+  blink::WebMediaStreamSource::Capabilities capabilities;
+  capabilities.device_id = track_id;
+  capabilities.echo_cancellation = std::vector<bool>({false});
+  capabilities.auto_gain_control = std::vector<bool>({false});
+  capabilities.noise_suppression = std::vector<bool>({false});
+  capabilities.sample_size = {
+      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
+      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
+  };
+  web_media_stream_source.SetCapabilities(capabilities);
+
+  media_stream_source->ConnectToTrack(web_media_stream_track);
+  web_media_stream->AddTrack(web_media_stream_track);
 }
 
 // Class to register to the events of |m_mediaElement|, acting accordingly on
@@ -157,7 +200,7 @@ void MediaElementEventListener::Invoke(ExecutionContext* context,
             TaskType::kInternalMediaRealTime));
   }
   if (media_element_->HasAudio()) {
-    Platform::Current()->CreateHTMLAudioElementCapturer(
+    CreateHTMLAudioElementCapturer(
         &web_stream, media_element_->GetWebMediaPlayer(),
         media_element_->GetExecutionContext()->GetTaskRunner(
             TaskType::kInternalMediaRealTime));
@@ -243,10 +286,9 @@ MediaStream* HTMLMediaElementCapture::captureStream(
                                        TaskType::kInternalMediaRealTime));
   }
   if (element.HasAudio()) {
-    Platform::Current()->CreateHTMLAudioElementCapturer(
-        &web_stream, element.GetWebMediaPlayer(),
-        element.GetExecutionContext()->GetTaskRunner(
-            TaskType::kInternalMediaRealTime));
+    CreateHTMLAudioElementCapturer(&web_stream, element.GetWebMediaPlayer(),
+                                   element.GetExecutionContext()->GetTaskRunner(
+                                       TaskType::kInternalMediaRealTime));
   }
   listener->UpdateSources(context);
 

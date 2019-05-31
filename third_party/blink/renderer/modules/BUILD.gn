@@ -323,6 +323,7 @@ jumbo_source_set("unit_tests") {
     "media_controls/media_controls_orientation_lock_delegate_test.cc",
     "media_controls/media_controls_rotate_to_fullscreen_delegate_test.cc",
     "mediacapturefromelement/canvas_capture_handler_unittest.cc",
+    "mediacapturefromelement/html_audio_element_capturer_source_unittest.cc",
     "mediacapturefromelement/html_video_element_capturer_source_unittest.cc",
     "mediastream/media_constraints_test.cc",
     "mediastream/media_devices_test.cc",
@@ -418,6 +419,7 @@ jumbo_source_set("unit_tests") {
   deps = [
     ":modules",
     ":modules_testing",
+    "//media:test_support",
     "//net:quic_test_tools",
     "//services/device/public/cpp:test_support",
     "//services/viz/public/interfaces:interfaces_blink",

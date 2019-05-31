@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/html_audio_element_capturer_source.h"
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
-namespace content {
+namespace blink {
 
-//static
+// static
 HtmlAudioElementCapturerSource*
 HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
     blink::WebMediaPlayer* player,
@@ -42,34 +43,35 @@ HtmlAudioElementCapturerSource::HtmlAudioElementCapturerSource(
 }
 
 HtmlAudioElementCapturerSource::~HtmlAudioElementCapturerSource() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   EnsureSourceIsStopped();
 }
 
 bool HtmlAudioElementCapturerSource::EnsureSourceIsStarted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (audio_source_ && !is_started_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HtmlAudioElementCapturerSource::SetAudioCallback,
-                       weak_factory_.GetWeakPtr()));
+    // TODO(crbug.com/964463): Use per-frame task runner.
+    Thread::Current()->GetTaskRunner()->PostTask(
+        FROM_HERE, WTF::Bind(&HtmlAudioElementCapturerSource::SetAudioCallback,
+                             weak_factory_.GetWeakPtr()));
     is_started_ = true;
   }
   return is_started_;
 }
 
 void HtmlAudioElementCapturerSource::SetAudioCallback() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (audio_source_ && is_started_) {
-    // base:Unretained() is safe here since EnsureSourceIsStopped() guarantees
+    // WTF::Unretained() is safe here since EnsureSourceIsStopped() guarantees
     // no more calls to OnAudioBus().
-    audio_source_->SetCopyAudioCallback(base::BindRepeating(
-        &HtmlAudioElementCapturerSource::OnAudioBus, base::Unretained(this)));
+    audio_source_->SetCopyAudioCallback(ConvertToBaseCallback(
+        CrossThreadBind(&HtmlAudioElementCapturerSource::OnAudioBus,
+                        CrossThreadUnretained(this))));
   }
 }
 
 void HtmlAudioElementCapturerSource::EnsureSourceIsStopped() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!is_started_)
     return;
 
@@ -104,4 +106,4 @@ void HtmlAudioElementCapturerSource::OnAudioBus(
   blink::MediaStreamAudioSource::DeliverDataToTracks(*audio_bus, capture_time);
 }
 
-}  // namespace content
+}  // namespace blink

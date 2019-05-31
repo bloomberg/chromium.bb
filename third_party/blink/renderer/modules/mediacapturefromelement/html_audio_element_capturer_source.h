@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_CAPTURE_FROM_ELEMENT_HTML_AUDIO_ELEMENT_CAPTURER_SOURCE_H_
-#define CONTENT_RENDERER_MEDIA_CAPTURE_FROM_ELEMENT_HTML_AUDIO_ELEMENT_CAPTURER_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIACAPTUREFROMELEMENT_HTML_AUDIO_ELEMENT_CAPTURER_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIACAPTUREFROMELEMENT_HTML_AUDIO_ELEMENT_CAPTURER_SOURCE_H_
 
 #include "base/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 class WebMediaPlayer;
@@ -20,13 +21,13 @@ namespace media {
 class AudioBus;
 }  // namespace media
 
-namespace content {
+namespace blink {
 
 // This class is a blink::MediaStreamAudioSource that registers to the
 // constructor- passed weak WebAudioSourceProviderImpl to receive a copy of the
 // audio data intended for rendering. This copied data is received on
 // OnAudioBus() and sent to all the registered Tracks.
-class CONTENT_EXPORT HtmlAudioElementCapturerSource final
+class MODULES_EXPORT HtmlAudioElementCapturerSource final
     : public blink::MediaStreamAudioSource {
  public:
   static HtmlAudioElementCapturerSource* CreateFromWebMediaPlayerImpl(
@@ -56,13 +57,13 @@ class CONTENT_EXPORT HtmlAudioElementCapturerSource final
   int last_num_channels_;
   int last_bus_frames_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<HtmlAudioElementCapturerSource> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HtmlAudioElementCapturerSource);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_CAPTURE_FROM_ELEMENT_HTML_AUDIO_ELEMENT_CAPTURER_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIACAPTUREFROMELEMENT_HTML_AUDIO_ELEMENT_CAPTURER_SOURCE_H_
