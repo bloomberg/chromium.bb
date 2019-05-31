@@ -2100,9 +2100,40 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-bool ShelfView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  shelf_->ProcessMouseWheelEvent(event);
-  return true;
+void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
+  gfx::Point location_in_screen(event->location());
+  View::ConvertPointToScreen(this, &location_in_screen);
+
+  switch (event->type()) {
+    case ui::ET_MOUSEWHEEL:
+      event->SetHandled();
+      shelf_->ProcessMouseWheelEvent(*event->AsMouseWheelEvent());
+      break;
+    case ui::ET_MOUSE_PRESSED:
+      if (!event->IsOnlyLeftMouseButton()) {
+        if (event->IsOnlyRightMouseButton()) {
+          ShowContextMenuForViewImpl(this, location_in_screen,
+                                     ui::MENU_SOURCE_MOUSE);
+          event->SetHandled();
+        }
+        return;
+      }
+
+      FALLTHROUGH;
+    case ui::ET_MOUSE_DRAGGED:
+    case ui::ET_MOUSE_RELEASED:
+      // Convert the event location from current view to screen, since dragging
+      // the shelf by mouse can open the fullscreen app list. Updating the
+      // bounds of the app list during dragging is based on screen coordinate
+      // space.
+      event->set_location(location_in_screen);
+
+      event->SetHandled();
+      shelf_->ProcessMouseEvent(*event->AsMouseEvent());
+      break;
+    default:
+      break;
+  }
 }
 
 void ShelfView::ShelfItemAdded(int model_index) {

@@ -25,6 +25,10 @@ constexpr int kAppListInvalidProfileID = -1;
 // id is only used for mojo callings between AppListController and AppListClient
 constexpr int kAppListProfileIdStartFrom = 0;
 
+// The threshold of mouse drag event. The mouse event is treated as tapping if
+// drag offset is smaller than the threshold.
+constexpr int kMouseDragThreshold = 2;
+
 // Id of OEM folder in app list.
 ASH_PUBLIC_EXPORT extern const char kOemFolderId[];
 

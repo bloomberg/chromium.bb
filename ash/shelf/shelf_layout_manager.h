@@ -35,6 +35,7 @@
 namespace ui {
 class ImplicitAnimationObserver;
 class MouseEvent;
+class LocatedEvent;
 }  // namespace ui
 
 namespace ash {
@@ -107,6 +108,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // appropriate. Returns true if the gesture has been handled and it should not
   // be processed any further, false otherwise.
   bool ProcessGestureEvent(const ui::GestureEvent& event_in_screen);
+
+  // Handles mouse events from the shelf.
+  void ProcessMouseEventFromShelf(const ui::MouseEvent& event_in_screen);
 
   // Returns how the shelf background should be painted.
   ShelfBackgroundType GetShelfBackgroundType() const;
@@ -374,13 +378,28 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Returns true if the home gesture handler should handle the event.
   bool ShouldHomeGestureHandleEvent(float scroll_y) const;
 
-  // Gesture related functions:
+  // Gesture drag related functions:
   bool StartGestureDrag(const ui::GestureEvent& gesture_in_screen);
   void UpdateGestureDrag(const ui::GestureEvent& gesture_in_screen);
-  void CompleteGestureDrag(const ui::GestureEvent& gesture_in_screen);
-  void CompleteAppListDrag(const ui::GestureEvent& gesture_in_screen);
-  void CancelGestureDrag();
-  bool CanStartFullscreenAppListDrag(float scroll_y_hint) const;
+
+  // Mouse drag related functions:
+  void AttemptToDragByMouse(const ui::MouseEvent& mouse_in_screen);
+  void StartMouseDrag(const ui::MouseEvent& mouse_in_screen);
+  void UpdateMouseDrag(const ui::MouseEvent& mouse_in_screen);
+  void ReleaseMouseDrag(const ui::MouseEvent& mouse_in_screen);
+
+  // Drag related functions, utilized by both gesture drag and mouse drag:
+  bool IsDragAllowed() const;
+  bool StartAppListDrag(const ui::LocatedEvent& event_in_screen,
+                        float scroll_y_hint);
+  bool StartShelfDrag();
+  void UpdateDrag(const ui::LocatedEvent& event_in_screen,
+                  float scroll_x,
+                  float scroll_y);
+  void CompleteDrag(const ui::LocatedEvent& event_in_screen);
+  void CompleteAppListDrag(const ui::LocatedEvent& event_in_screen);
+  void CancelDrag();
+
   float GetAppListBackgroundOpacityOnShelfOpacity();
 
   // Returns true if the gesture is swiping up on a hidden shelf or swiping down
@@ -389,7 +408,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Returns true if should change the visibility of the shelf after drag.
   bool ShouldChangeVisibilityAfterDrag(
-      const ui::GestureEvent& gesture_in_screen);
+      const ui::LocatedEvent& gesture_in_screen);
 
   // Updates the mask to limit the content to the non lock screen container.
   // The mask will be removed if the workspace state is either in fullscreen
@@ -444,30 +463,31 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   base::ObserverList<ShelfLayoutManagerObserver>::Unchecked observers_;
 
-  // The shelf reacts to gesture-drags, and can be set to auto-hide for certain
-  // gestures. Swiping up from the shelf in tablet mode can open the
+  // The enum keeps track of the present status of the drag (from gesture or
+  // mouse). The shelf reacts to drags, and can be set to auto-hide for certain
+  // events. For example, swiping up from the shelf in tablet mode can open the
   // fullscreen app list. Some shelf behaviour (e.g. visibility state,
-  // background color etc.) are affected by various stages of the drag. The enum
-  // keeps track of the present status of the gesture drag.
-  enum GestureDragStatus {
-    GESTURE_DRAG_NONE,
-    GESTURE_DRAG_IN_PROGRESS,
-    GESTURE_DRAG_CANCEL_IN_PROGRESS,
-    GESTURE_DRAG_COMPLETE_IN_PROGRESS,
-    GESTURE_DRAG_APPLIST_IN_PROGRESS,
+  // background color etc.) are affected by various stages of the drag.
+  enum DragStatus {
+    kDragNone,
+    kDragAttempt,
+    kDragInProgress,
+    kDragCancelInProgress,
+    kDragCompleteInProgress,
+    kDragAppListInProgress,
   };
 
-  GestureDragStatus gesture_drag_status_ = GESTURE_DRAG_NONE;
+  DragStatus drag_status_ = kDragNone;
 
   // Tracks the amount of the drag. The value is only valid when
-  // |gesture_drag_status_| is set to GESTURE_DRAG_IN_PROGRESS.
-  float gesture_drag_amount_ = 0.f;
+  // |drag_status_| is set to kDragInProgress.
+  float drag_amount_ = 0.f;
 
   // Tracks the amount of launcher that above the shelf bottom during dragging.
   float launcher_above_shelf_bottom_amount_ = 0.f;
 
-  // Manage the auto-hide state during the gesture.
-  ShelfAutoHideState gesture_drag_auto_hide_state_ = SHELF_AUTO_HIDE_SHOWN;
+  // Manage the auto-hide state during drag.
+  ShelfAutoHideState drag_auto_hide_state_ = SHELF_AUTO_HIDE_SHOWN;
 
   // Used to delay updating shelf background.
   UpdateShelfObserver* update_shelf_observer_ = nullptr;
@@ -500,6 +520,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   ScopedSessionObserver scoped_session_observer_{this};
   ScopedObserver<WallpaperController, ShelfLayoutManager>
       wallpaper_controller_observer_{this};
+
+  // Location of the most recent mouse drag event in screen coordinate.
+  gfx::Point last_mouse_drag_position_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

@@ -829,11 +829,11 @@ void AppListControllerImpl::UpdateExpandArrowVisibility() {
 }
 
 ash::AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
-    const ui::GestureEvent& gesture_in_screen,
+    const ui::LocatedEvent& event_in_screen,
     float launcher_above_shelf_bottom_amount) const {
   if (presenter_.GetView())
     return presenter_.GetView()->CalculateStateAfterShelfDrag(
-        gesture_in_screen, launcher_above_shelf_bottom_amount);
+        event_in_screen, launcher_above_shelf_bottom_amount);
   return ash::AppListViewState::kClosed;
 }
 

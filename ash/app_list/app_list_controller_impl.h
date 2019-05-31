@@ -289,7 +289,7 @@ class ASH_EXPORT AppListControllerImpl
 
   // Get updated app list view state after dragging from shelf.
   ash::AppListViewState CalculateStateAfterShelfDrag(
-      const ui::GestureEvent& gesture_in_screen,
+      const ui::LocatedEvent& event_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
   void SetAppListModelForTest(std::unique_ptr<app_list::AppListModel> model);

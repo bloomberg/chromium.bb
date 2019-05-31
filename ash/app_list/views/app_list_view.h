@@ -265,7 +265,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Calculates and returns the app list view state after dragging from shelf
   // ends.
   ash::AppListViewState CalculateStateAfterShelfDrag(
-      const ui::GestureEvent& gesture_in_screen,
+      const ui::LocatedEvent& event_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
   // Returns a animation metrics reportre for state transition.

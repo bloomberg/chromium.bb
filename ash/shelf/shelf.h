@@ -24,6 +24,7 @@ class Rect;
 namespace ui {
 class GestureEvent;
 class MouseWheelEvent;
+class MouseEvent;
 }
 
 namespace ash {
@@ -134,6 +135,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // auto-hide with a swipe, even if that gesture event hits another window.
   // Returns true if the event was handled.
   bool ProcessGestureEvent(const ui::GestureEvent& event);
+
+  // Handles a mouse |event| coming from the Shelf.
+  void ProcessMouseEvent(const ui::MouseEvent& event);
 
   // Handles a mousewheel scroll event coming from the shelf.
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);

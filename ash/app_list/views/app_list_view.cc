@@ -1761,17 +1761,19 @@ int AppListView::GetFullscreenStateHeight() const {
 }
 
 ash::AppListViewState AppListView::CalculateStateAfterShelfDrag(
-    const ui::GestureEvent& gesture_in_screen,
+    const ui::LocatedEvent& event_in_screen,
     float launcher_above_shelf_bottom_amount) const {
   ash::AppListViewState app_list_state = ash::AppListViewState::kPeeking;
-  if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START &&
-      fabs(gesture_in_screen.details().velocity_y()) > kDragVelocityThreshold) {
+  if (event_in_screen.type() == ui::ET_SCROLL_FLING_START &&
+      fabs(event_in_screen.AsGestureEvent()->details().velocity_y()) >
+          kDragVelocityThreshold) {
     // If the scroll sequence terminates with a fling, show the fullscreen app
     // list if the fling was fast enough and in the correct direction, otherwise
     // close it.
-    app_list_state = gesture_in_screen.details().velocity_y() < 0
-                         ? ash::AppListViewState::kFullscreenAllApps
-                         : ash::AppListViewState::kClosed;
+    app_list_state =
+        event_in_screen.AsGestureEvent()->details().velocity_y() < 0
+            ? ash::AppListViewState::kFullscreenAllApps
+            : ash::AppListViewState::kClosed;
   } else {
     // Snap the app list to corresponding state according to the snapping
     // thresholds.

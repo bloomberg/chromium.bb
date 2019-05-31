@@ -434,9 +434,8 @@ void ShelfLayoutManager::ProcessGestureEventOfAutoHideShelf(
     if (is_shelf_window && !IsStatusAreaWindow(target) &&
         visibility_state() == SHELF_AUTO_HIDE &&
         state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN &&
-        event->type() == ui::ET_GESTURE_END &&
-        gesture_drag_status_ != GESTURE_DRAG_NONE) {
-      CompleteGestureDrag(*event);
+        event->type() == ui::ET_GESTURE_END && drag_status_ != kDragNone) {
+      CompleteDrag(*event);
     }
 
     return;
@@ -462,23 +461,14 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
 
 bool ShelfLayoutManager::ProcessGestureEvent(
     const ui::GestureEvent& event_in_screen) {
-  // The gestures are disabled in the lock/login screen.
-  SessionControllerImpl* controller = Shell::Get()->session_controller();
-  if (!controller->NumberOfLoggedInUsers() || controller->IsScreenLocked())
-    return false;
-
-  if (IsShelfHiddenForFullscreen())
-    return false;
-
-  // Gestures are disabled when status area is visible without shelf.
-  if (state_.is_status_area_visible && state_.visibility_state == SHELF_HIDDEN)
+  if (!IsDragAllowed())
     return false;
 
   if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_BEGIN)
     return StartGestureDrag(event_in_screen);
 
-  if (gesture_drag_status_ != GESTURE_DRAG_IN_PROGRESS &&
-      gesture_drag_status_ != GESTURE_DRAG_APPLIST_IN_PROGRESS) {
+  if (drag_status_ != kDragInProgress &&
+      drag_status_ != kDragAppListInProgress) {
     return false;
   }
 
@@ -489,16 +479,42 @@ bool ShelfLayoutManager::ProcessGestureEvent(
 
   if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_END ||
       event_in_screen.type() == ui::ET_SCROLL_FLING_START) {
-    if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS)
+    if (drag_status_ == kDragAppListInProgress)
       CompleteAppListDrag(event_in_screen);
     else
-      CompleteGestureDrag(event_in_screen);
+      CompleteDrag(event_in_screen);
     return true;
   }
 
   // Unexpected event. Reset the state and let the event fall through.
-  CancelGestureDrag();
+  CancelDrag();
   return false;
+}
+
+void ShelfLayoutManager::ProcessMouseEventFromShelf(
+    const ui::MouseEvent& event_in_screen) {
+  ui::EventType event_type = event_in_screen.type();
+  DCHECK(event_type == ui::ET_MOUSE_PRESSED ||
+         event_type == ui::ET_MOUSE_DRAGGED ||
+         event_type == ui::ET_MOUSE_RELEASED);
+
+  if (!IsDragAllowed())
+    return;
+
+  switch (event_type) {
+    case ui::ET_MOUSE_PRESSED:
+      AttemptToDragByMouse(event_in_screen);
+      break;
+    case ui::ET_MOUSE_DRAGGED:
+      UpdateMouseDrag(event_in_screen);
+      return;
+    case ui::ET_MOUSE_RELEASED:
+      ReleaseMouseDrag(event_in_screen);
+      return;
+    default:
+      NOTREACHED();
+      return;
+  }
 }
 
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
@@ -789,11 +805,10 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   state.pre_lock_screen_animation_active =
       state_.pre_lock_screen_animation_active;
 
-  // Force an update because gesture drags affect the shelf bounds and we
-  // should animate back to the normal bounds at the end of a gesture.
-  bool force_update =
-      (gesture_drag_status_ == GESTURE_DRAG_CANCEL_IN_PROGRESS ||
-       gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS);
+  // Force an update because drag events affect the shelf bounds and we
+  // should animate back to the normal bounds at the end of the drag event.
+  bool force_update = (drag_status_ == kDragCancelInProgress ||
+                       drag_status_ == kDragCompleteInProgress);
 
   if (!force_update && state_.Equals(state))
     return;  // Nothing changed.
@@ -1108,14 +1123,13 @@ void ShelfLayoutManager::CalculateTargetBounds(
   target_bounds->shelf_opacity = ComputeTargetOpacity(state);
   if (is_showing_status_area_without_shelf) {
     target_bounds->status_opacity = 1.0f;
-  } else if (state.IsShelfAutoHidden() &&
-             gesture_drag_status_ != GESTURE_DRAG_IN_PROGRESS) {
+  } else if (state.IsShelfAutoHidden() && drag_status_ != kDragInProgress) {
     target_bounds->status_opacity = 0.0f;
   } else {
     target_bounds->status_opacity = target_bounds->shelf_opacity;
   }
 
-  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS)
+  if (drag_status_ == kDragInProgress)
     UpdateShelfTargetBoundsForGesture(target_bounds);
 
   target_bounds->shelf_insets = SelectValueForShelfAlignment(
@@ -1144,7 +1158,7 @@ void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(
 
 void ShelfLayoutManager::UpdateShelfTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
-  CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
+  CHECK_EQ(kDragInProgress, drag_status_);
   const bool horizontal = shelf_->IsHorizontalAlignment();
   const int shelf_size = ShelfConstants::shelf_size();
   gfx::Rect available_bounds =
@@ -1152,7 +1166,7 @@ void ShelfLayoutManager::UpdateShelfTargetBoundsForGesture(
   int resistance_free_region = 0;
   bool hidden_at_start = false;
 
-  if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&
+  if (drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&
       visibility_state() == SHELF_AUTO_HIDE &&
       auto_hide_state() != SHELF_AUTO_HIDE_SHOWN) {
     // If the shelf was hidden when the drag started (and the state hasn't
@@ -1164,20 +1178,20 @@ void ShelfLayoutManager::UpdateShelfTargetBoundsForGesture(
   }
 
   bool resist = SelectValueForShelfAlignment(
-      gesture_drag_amount_<-resistance_free_region, gesture_drag_amount_>
+      drag_amount_ < -resistance_free_region, drag_amount_ >
           resistance_free_region,
-      gesture_drag_amount_ < -resistance_free_region);
+      drag_amount_ < -resistance_free_region);
 
   float translate = 0.f;
   if (resist) {
-    float diff = fabsf(gesture_drag_amount_) - resistance_free_region;
+    float diff = fabsf(drag_amount_) - resistance_free_region;
     diff = std::min(diff, sqrtf(diff));
-    if (gesture_drag_amount_ < 0)
+    if (drag_amount_ < 0)
       translate = -resistance_free_region - diff;
     else
       translate = resistance_free_region + diff;
   } else {
-    translate = gesture_drag_amount_;
+    translate = drag_amount_;
   }
   // Move the shelf with the gesture.
   const int baseline = SelectValueForShelfAlignment(
@@ -1287,12 +1301,12 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
-  if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS)
+  if (drag_status_ == kDragAppListInProgress)
     return SHELF_AUTO_HIDE_SHOWN;
 
-  if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS ||
-      gesture_drag_status_ == GESTURE_DRAG_CANCEL_IN_PROGRESS) {
-    return gesture_drag_auto_hide_state_;
+  if (drag_status_ == kDragCompleteInProgress ||
+      drag_status_ == kDragCancelInProgress) {
+    return drag_auto_hide_state_;
   }
 
   // Don't show if the user is dragging the mouse.
@@ -1399,7 +1413,7 @@ void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
 }
 
 float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
-  if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
+  if (drag_status_ == kDragInProgress ||
       state.visibility_state == SHELF_VISIBLE) {
     return 1.0f;
   }
@@ -1447,38 +1461,26 @@ bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
 
   // Scroll down events should never be handled, unless they are currently being
   // handled
-  if (scroll_y >= 0 && gesture_drag_status_ != GESTURE_DRAG_APPLIST_IN_PROGRESS)
+  if (scroll_y >= 0 && drag_status_ != kDragAppListInProgress)
     return false;
 
   return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Gesture drag related functions:
 bool ShelfLayoutManager::StartGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
-  if (CanStartFullscreenAppListDrag(
-          gesture_in_screen.details().scroll_y_hint())) {
-    const gfx::Rect shelf_bounds = GetIdealBounds();
-    shelf_background_type_before_drag_ = shelf_background_type_;
-    gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
+  if (drag_status_ != kDragNone)
+    return false;
 
-    // TODO(michaelpg): Simplify gesture drag logic and remove these DCHECKs.
-    DCHECK(Shell::Get()->app_list_controller());
-    Shell::Get()->app_list_controller()->Show(
-        display::Screen::GetScreen()
-            ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
-            .id(),
-        app_list::kSwipeFromShelf, gesture_in_screen.time_stamp());
-    Shell::Get()->app_list_controller()->UpdateYPositionAndOpacity(
-        shelf_bounds.y(), GetAppListBackgroundOpacityOnShelfOpacity());
-    launcher_above_shelf_bottom_amount_ =
-        shelf_bounds.bottom() - gesture_in_screen.location().y();
+  float scroll_y_hint = gesture_in_screen.details().scroll_y_hint();
+  if (StartAppListDrag(gesture_in_screen, scroll_y_hint))
     return true;
-  }
 
-  if (ShouldHomeGestureHandleEvent(
-          gesture_in_screen.details().scroll_y_hint())) {
-    GestureDragStatus previous_drag_status = gesture_drag_status_;
-    gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
+  if (ShouldHomeGestureHandleEvent(scroll_y_hint)) {
+    DragStatus previous_drag_status = drag_status_;
+    drag_status_ = kDragAppListInProgress;
     HomeLauncherGestureHandler* home_launcher_handler =
         Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
     if (home_launcher_handler->OnPressEvent(
@@ -1486,143 +1488,126 @@ bool ShelfLayoutManager::StartGestureDrag(
             gesture_in_screen.location())) {
       return true;
     } else {
-      gesture_drag_status_ = previous_drag_status;
+      drag_status_ = previous_drag_status;
     }
   }
 
-  // Disable the shelf dragging if the fullscreen app list is opened.
-  if (is_app_list_visible_ && !IsHomeScreenAvailable())
-    return false;
-
-  // Also disable shelf drags until the overflow shelf is closed.
-  if (shelf_widget_->IsShowingOverflowBubble())
-    return false;
-
-  gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
-  gesture_drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
-                                      ? auto_hide_state()
-                                      : SHELF_AUTO_HIDE_SHOWN;
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
-  gesture_drag_amount_ = 0.f;
-  return true;
+  return StartShelfDrag();
 }
 
 void ShelfLayoutManager::UpdateGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
-  if (ShouldHomeGestureHandleEvent(gesture_in_screen.details().scroll_y())) {
+  float scroll_x = gesture_in_screen.details().scroll_x();
+  float scroll_y = gesture_in_screen.details().scroll_y();
+
+  if (ShouldHomeGestureHandleEvent(scroll_y)) {
     HomeLauncherGestureHandler* home_launcher_handler =
         Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
-    if (home_launcher_handler->OnScrollEvent(
-            gesture_in_screen.location(),
-            gesture_in_screen.details().scroll_y())) {
+    if (home_launcher_handler->OnScrollEvent(gesture_in_screen.location(),
+                                             scroll_y)) {
       return;
     }
   }
 
-  if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
-    // Dismiss the app list if the shelf changed to vertical alignment during
-    // dragging.
-    DCHECK(Shell::Get()->app_list_controller());
-    if (!shelf_->IsHorizontalAlignment()) {
-      Shell::Get()->app_list_controller()->DismissAppList();
-      launcher_above_shelf_bottom_amount_ = 0.f;
-      gesture_drag_status_ = GESTURE_DRAG_NONE;
+  UpdateDrag(gesture_in_screen, scroll_x, scroll_y);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Mouse drag related functions:
+
+void ShelfLayoutManager::AttemptToDragByMouse(
+    const ui::MouseEvent& mouse_in_screen) {
+  if (drag_status_ != kDragNone)
+    return;
+
+  drag_status_ = kDragAttempt;
+  last_mouse_drag_position_ = mouse_in_screen.location();
+}
+
+void ShelfLayoutManager::StartMouseDrag(const ui::MouseEvent& mouse_in_screen) {
+  float scroll_y_hint = mouse_in_screen.y() - last_mouse_drag_position_.y();
+  if (!StartAppListDrag(mouse_in_screen, scroll_y_hint))
+    StartShelfDrag();
+}
+
+void ShelfLayoutManager::UpdateMouseDrag(
+    const ui::MouseEvent& mouse_in_screen) {
+  if (drag_status_ == kDragNone)
+    return;
+
+  DCHECK(drag_status_ == kDragAttempt || drag_status_ == kDragInProgress ||
+         drag_status_ == kDragAppListInProgress);
+
+  if (drag_status_ == kDragAttempt) {
+    // Do not start drag for the small offset.
+    if (abs(mouse_in_screen.location().y() - last_mouse_drag_position_.y()) <
+      kMouseDragThreshold) {
       return;
     }
-    const gfx::Rect shelf_bounds = GetIdealBounds();
-    Shell::Get()->app_list_controller()->UpdateYPositionAndOpacity(
-        std::min(gesture_in_screen.location().y(), shelf_bounds.y()),
-        GetAppListBackgroundOpacityOnShelfOpacity());
-    launcher_above_shelf_bottom_amount_ =
-        shelf_bounds.bottom() - gesture_in_screen.location().y();
+
+    // Mouse events do not provide the drag offset like gesture events. So
+    // start mouse drag when mouse is moved.
+    StartMouseDrag(mouse_in_screen);
   } else {
-    gesture_drag_amount_ +=
-        PrimaryAxisValue(gesture_in_screen.details().scroll_y(),
-                         gesture_in_screen.details().scroll_x());
-    LayoutShelf();
+    int scroll_x =
+        mouse_in_screen.location().x() - last_mouse_drag_position_.x();
+    int scroll_y =
+        mouse_in_screen.location().y() - last_mouse_drag_position_.y();
+    UpdateDrag(mouse_in_screen, scroll_x, scroll_y);
+    last_mouse_drag_position_ = mouse_in_screen.location();
   }
 }
 
-void ShelfLayoutManager::CompleteGestureDrag(
-    const ui::GestureEvent& gesture_in_screen) {
-  if (!ShouldChangeVisibilityAfterDrag(gesture_in_screen)) {
-    CancelGestureDrag();
-    return;
-  }
-
-  shelf_widget_->Deactivate();
-  shelf_widget_->status_area_widget()->Deactivate();
-
-  gesture_drag_auto_hide_state_ =
-      gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN
-          ? SHELF_AUTO_HIDE_HIDDEN
-          : SHELF_AUTO_HIDE_SHOWN;
-
-  // Gesture drag will only change the auto hide state of the shelf but not the
-  // auto hide behavior. Auto hide behavior can only be changed through the
-  // context menu of the shelf. Set |gesture_drag_status_| to
-  // GESTURE_DRAG_COMPLETE_IN_PROGRESS to set the auto hide state to
-  // |gesture_drag_auto_hide_state_|.
-  gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
-  UpdateVisibilityState();
-  gesture_drag_status_ = GESTURE_DRAG_NONE;
-}
-
-void ShelfLayoutManager::CompleteAppListDrag(
-    const ui::GestureEvent& gesture_in_screen) {
-  // Change the shelf alignment to vertical during drag will reset
-  // |gesture_drag_status_| to |GESTURE_DRAG_NONE|.
-  if (gesture_drag_status_ == GESTURE_DRAG_NONE)
+void ShelfLayoutManager::ReleaseMouseDrag(
+    const ui::MouseEvent& mouse_in_screen) {
+  if (drag_status_ == kDragNone)
     return;
 
-  HomeLauncherGestureHandler* home_launcher_handler =
-      Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
-  DCHECK(home_launcher_handler);
-  if (home_launcher_handler->OnReleaseEvent(gesture_in_screen.location())) {
-    gesture_drag_status_ = GESTURE_DRAG_NONE;
-    return;
+  DCHECK(drag_status_ == kDragAttempt ||
+         drag_status_ == kDragAppListInProgress ||
+         drag_status_ == kDragInProgress);
+
+  switch (drag_status_) {
+    case kDragAttempt:
+      drag_status_ = kDragNone;
+      break;
+    case kDragAppListInProgress:
+      CompleteAppListDrag(mouse_in_screen);
+      break;
+    case kDragInProgress:
+      CompleteDrag(mouse_in_screen);
+      break;
+    default:
+      NOTREACHED();
   }
-  DCHECK(Shell::Get()->app_list_controller());
-
-  using ash::AppListViewState;
-  AppListViewState app_list_state =
-      Shell::Get()->app_list_controller()->CalculateStateAfterShelfDrag(
-          gesture_in_screen, launcher_above_shelf_bottom_amount_);
-
-  // Keep auto-hide shelf visible if failed to open the app list.
-  base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
-  if (app_list_state == AppListViewState::kClosed)
-    auto_hide_lock.emplace(shelf_);
-  Shell::Get()->app_list_controller()->EndDragFromShelf(app_list_state);
-  gesture_drag_status_ = GESTURE_DRAG_NONE;
+  last_mouse_drag_position_ = gfx::Point();
 }
 
-void ShelfLayoutManager::CancelGestureDrag() {
-  if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
-    HomeLauncherGestureHandler* home_launcher_handler =
-        Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
-    DCHECK(home_launcher_handler);
-    if (home_launcher_handler->IsDragInProgress())
-      home_launcher_handler->Cancel();
-    else {
-      DCHECK(Shell::Get()->app_list_controller());
-      Shell::Get()->app_list_controller()->DismissAppList();
-    }
-  } else {
-    // Set |gesture_drag_status_| to GESTURE_DRAG_CANCEL_IN_PROGRESS to set the
-    // auto hide state to |gesture_drag_auto_hide_state_|, which is the
-    // visibility state before starting drag.
-    gesture_drag_status_ = GESTURE_DRAG_CANCEL_IN_PROGRESS;
-    UpdateVisibilityState();
-  }
-  gesture_drag_status_ = GESTURE_DRAG_NONE;
+////////////////////////////////////////////////////////////////////////////////
+// Drag related functions:
+
+bool ShelfLayoutManager::IsDragAllowed() const {
+  // The gestures are disabled in the lock/login screen.
+  SessionControllerImpl* controller = Shell::Get()->session_controller();
+  if (!controller->NumberOfLoggedInUsers() || controller->IsScreenLocked())
+    return false;
+
+  if (IsShelfHiddenForFullscreen())
+    return false;
+
+  // Gestures are disabled when status area is visible without shelf.
+  if (state_.is_status_area_visible && state_.visibility_state == SHELF_HIDDEN)
+    return false;
+
+  return true;
 }
 
-bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
-    float scroll_y_hint) const {
-  // If the home screen is available, dragging is handled by
+bool ShelfLayoutManager::StartAppListDrag(
+    const ui::LocatedEvent& event_in_screen,
+    float scroll_y_hint) {
+  // If the home screen is available, gesture dragging is handled by
   // HomeLauncherGestureHandler.
-  if (IsHomeScreenAvailable())
+  if (IsHomeScreenAvailable() && event_in_screen.IsGestureEvent())
     return false;
 
   // Fullscreen app list can only be dragged from bottom alignment shelf.
@@ -1647,7 +1632,139 @@ bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
   if (scroll_y_hint >= 0)
     return false;
 
+  const gfx::Rect shelf_bounds = GetIdealBounds();
+  shelf_background_type_before_drag_ = shelf_background_type_;
+  drag_status_ = kDragAppListInProgress;
+
+  // TODO(michaelpg): Simplify gesture drag logic and remove these DCHECKs.
+  DCHECK(Shell::Get()->app_list_controller());
+  Shell::Get()->app_list_controller()->Show(
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
+          .id(),
+      app_list::kSwipeFromShelf, event_in_screen.time_stamp());
+  Shell::Get()->app_list_controller()->UpdateYPositionAndOpacity(
+      shelf_bounds.y(), GetAppListBackgroundOpacityOnShelfOpacity());
+  launcher_above_shelf_bottom_amount_ =
+      shelf_bounds.bottom() - event_in_screen.location().y();
+
   return true;
+}
+
+bool ShelfLayoutManager::StartShelfDrag() {
+  // Disable the shelf dragging if the fullscreen app list is opened.
+  if (is_app_list_visible_ && !IsHomeScreenAvailable())
+    return false;
+
+  // Also disable shelf drags until the overflow shelf is closed.
+  if (shelf_widget_->IsShowingOverflowBubble())
+    return false;
+
+  drag_status_ = kDragInProgress;
+  drag_auto_hide_state_ = visibility_state() == SHELF_AUTO_HIDE
+                              ? auto_hide_state()
+                              : SHELF_AUTO_HIDE_SHOWN;
+  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  drag_amount_ = 0.f;
+  return true;
+}
+
+void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
+                                    float scroll_x,
+                                    float scroll_y) {
+  if (drag_status_ == kDragAppListInProgress) {
+    // Dismiss the app list if the shelf changed to vertical alignment during
+    // dragging.
+    DCHECK(Shell::Get()->app_list_controller());
+    if (!shelf_->IsHorizontalAlignment()) {
+      Shell::Get()->app_list_controller()->DismissAppList();
+      launcher_above_shelf_bottom_amount_ = 0.f;
+      drag_status_ = kDragNone;
+      return;
+    }
+    const gfx::Rect shelf_bounds = GetIdealBounds();
+    Shell::Get()->app_list_controller()->UpdateYPositionAndOpacity(
+        std::min(event_in_screen.location().y(), shelf_bounds.y()),
+        GetAppListBackgroundOpacityOnShelfOpacity());
+    launcher_above_shelf_bottom_amount_ =
+        shelf_bounds.bottom() - event_in_screen.location().y();
+  } else {
+    drag_amount_ += PrimaryAxisValue(scroll_y, scroll_x);
+    LayoutShelf();
+  }
+}
+
+void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
+  if (!ShouldChangeVisibilityAfterDrag(event_in_screen)) {
+    CancelDrag();
+    return;
+  }
+
+  shelf_widget_->Deactivate();
+  shelf_widget_->status_area_widget()->Deactivate();
+
+  drag_auto_hide_state_ = drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN
+                              ? SHELF_AUTO_HIDE_HIDDEN
+                              : SHELF_AUTO_HIDE_SHOWN;
+
+  // Gesture drag will only change the auto hide state of the shelf but not the
+  // auto hide behavior. Auto hide behavior can only be changed through the
+  // context menu of the shelf. Set |drag_status_| to
+  // kDragCompleteInProgress to set the auto hide state to
+  // |drag_auto_hide_state_|.
+  drag_status_ = kDragCompleteInProgress;
+  UpdateVisibilityState();
+  drag_status_ = kDragNone;
+}
+
+void ShelfLayoutManager::CompleteAppListDrag(
+    const ui::LocatedEvent& event_in_screen) {
+  // Change the shelf alignment to vertical during drag will reset
+  // |drag_status_| to |kDragNone|.
+  if (drag_status_ == kDragNone)
+    return;
+
+  HomeLauncherGestureHandler* home_launcher_handler =
+      Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
+  DCHECK(home_launcher_handler);
+  if (home_launcher_handler->OnReleaseEvent(event_in_screen.location())) {
+    drag_status_ = kDragNone;
+    return;
+  }
+  DCHECK(Shell::Get()->app_list_controller());
+
+  using ash::AppListViewState;
+  AppListViewState app_list_state =
+      Shell::Get()->app_list_controller()->CalculateStateAfterShelfDrag(
+          event_in_screen, launcher_above_shelf_bottom_amount_);
+
+  // Keep auto-hide shelf visible if failed to open the app list.
+  base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
+  if (app_list_state == AppListViewState::kClosed)
+    auto_hide_lock.emplace(shelf_);
+  Shell::Get()->app_list_controller()->EndDragFromShelf(app_list_state);
+  drag_status_ = kDragNone;
+}
+
+void ShelfLayoutManager::CancelDrag() {
+  if (drag_status_ == kDragAppListInProgress) {
+    HomeLauncherGestureHandler* home_launcher_handler =
+        Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
+    DCHECK(home_launcher_handler);
+    if (home_launcher_handler->IsDragInProgress())
+      home_launcher_handler->Cancel();
+    else {
+      DCHECK(Shell::Get()->app_list_controller());
+      Shell::Get()->app_list_controller()->DismissAppList();
+    }
+  } else {
+    // Set |drag_status_| to kDragCancelInProgress to set the
+    // auto hide state to |drag_auto_hide_state_|, which is the
+    // visibility state before starting drag.
+    drag_status_ = kDragCancelInProgress;
+    UpdateVisibilityState();
+  }
+  drag_status_ = kDragNone;
 }
 
 float ShelfLayoutManager::GetAppListBackgroundOpacityOnShelfOpacity() {
@@ -1676,39 +1793,40 @@ bool ShelfLayoutManager::IsSwipingCorrectDirection() {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
     case SHELF_ALIGNMENT_RIGHT:
-      if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN)
-        return gesture_drag_amount_ > 0;
-      return gesture_drag_amount_ < 0;
+      if (drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN)
+        return drag_amount_ > 0;
+      return drag_amount_ < 0;
     case SHELF_ALIGNMENT_LEFT:
-      if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN)
-        return gesture_drag_amount_ < 0;
-      return gesture_drag_amount_ > 0;
+      if (drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN)
+        return drag_amount_ < 0;
+      return drag_amount_ > 0;
   }
   return false;
 }
 
 bool ShelfLayoutManager::ShouldChangeVisibilityAfterDrag(
-    const ui::GestureEvent& gesture_in_screen) {
+    const ui::LocatedEvent& event_in_screen) {
   // Shelf can be visible in 1) SHELF_VISIBLE or 2) SHELF_AUTO_HIDE but in
   // SHELF_AUTO_HIDE_SHOWN. See details in IsVisible. Dragging on SHELF_VISIBLE
   // shelf should not change its visibility since it should be kept visible.
   if (visibility_state() == SHELF_VISIBLE)
     return false;
 
-  if (gesture_in_screen.type() == ui::ET_GESTURE_SCROLL_END) {
+  if (event_in_screen.type() == ui::ET_GESTURE_SCROLL_END ||
+      event_in_screen.type() == ui::ET_MOUSE_RELEASED) {
     // The visibility of the shelf changes only if the shelf was dragged X%
     // along the correct axis. If the shelf was already visible, then the
     // direction of the drag does not matter.
     const float kDragHideThreshold = 0.4f;
     const gfx::Rect bounds = GetIdealBounds();
     const float drag_ratio =
-        fabs(gesture_drag_amount_) /
+        fabs(drag_amount_) /
         (shelf_->IsHorizontalAlignment() ? bounds.height() : bounds.width());
 
     return IsSwipingCorrectDirection() && drag_ratio > kDragHideThreshold;
   }
 
-  if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START)
+  if (event_in_screen.type() == ui::ET_SCROLL_FLING_START)
     return IsSwipingCorrectDirection();
 
   return false;

@@ -490,6 +490,25 @@ class ShelfLayoutManagerTest : public AshTestBase {
                                                kNumScrollSteps);
   }
 
+  // Drag Shelf from |start| to |target| by mouse.
+  void MouseDragShelfTo(const gfx::Point& start, const gfx::Point& target) {
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->MoveMouseTo(start);
+    generator->PressLeftButton();
+    generator->DragMouseTo(target);
+    generator->ReleaseLeftButton();
+  }
+
+  // Move mouse to show Shelf in auto-hide mode.
+  void MouseMouseToShowAutoHiddenShelf() {
+    display::Display display =
+        display::Screen::GetScreen()->GetPrimaryDisplay();
+    const int display_bottom = display.bounds().bottom();
+    GetEventGenerator()->MoveMouseTo(1, display_bottom - 1);
+    ASSERT_TRUE(TriggerAutoHideTimeout());
+    EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
+  }
+
  private:
   base::TimeTicks timestamp_;
   gfx::Point current_point_;
@@ -1821,6 +1840,68 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
     right_center.Offset(-1, 0);  // Make sure the point is inside shelf.
     RunGestureDragTests(right_center, shelf_bounds.left_center());
     GetAppListTestHelper()->WaitUntilIdle();
+  }
+}
+
+TEST_F(ShelfLayoutManagerTest, MouseDrag) {
+  Shelf* shelf = GetPrimaryShelf();
+  gfx::Rect shelf_bounds_in_screen = GetVisibleShelfWidgetBoundsInScreen();
+
+  // Calculate drag start point and end point. |start_point| and |target_point|
+  // make sure that mouse event is received by Shelf/AppListView instead of
+  // child views (like AppListButton and SearchBoxView).
+  int x = shelf_bounds_in_screen.x() + shelf_bounds_in_screen.width() / 4;
+  int y = shelf_bounds_in_screen.CenterPoint().y();
+  gfx::Point start_point(x, y);
+  gfx::Point target_point = gfx::Point(x, 0);
+
+  auto test_procedure = [this, &start_point, &target_point]() {
+    GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+
+    // Drag AppListView from bottom to top. Check that the final state of
+    // AppList is kFullscreenAllApps.
+    MouseDragShelfTo(start_point, target_point);
+    GetAppListTestHelper()->WaitUntilIdle();
+    GetAppListTestHelper()->CheckState(
+        ash::AppListViewState::kFullscreenAllApps);
+
+    // Drag AppListView from top to bottom. Check that the AppList is closed
+    // after dragging.
+    MouseDragShelfTo(target_point, start_point);
+    GetAppListTestHelper()->WaitUntilIdle();
+    GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  };
+
+  {
+    SCOPED_TRACE("NEVER_AUTO_HIDE");
+    GetEventGenerator()->MoveMouseTo(
+        GetPrimaryDisplay().bounds().CenterPoint());
+
+    // Check the shelf's default state.
+    ASSERT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+    ASSERT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+    ASSERT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+
+    // Verifies that dragging AppList view from Shelf works as expected.
+    test_procedure();
+  }
+
+  {
+    SCOPED_TRACE("AUTO_HIDE");
+    GetEventGenerator()->MoveMouseTo(
+        GetPrimaryDisplay().bounds().CenterPoint());
+    shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+    views::Widget* widget = CreateTestWidget();
+    widget->Maximize();
+
+    GetShelfLayoutManager()->LayoutShelf();
+    ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+    ASSERT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+    MouseMouseToShowAutoHiddenShelf();
+
+    // Verifies that dragging AppList view from Shelf in auto-hide mode works as
+    // expected.
+    test_procedure();
   }
 }
 

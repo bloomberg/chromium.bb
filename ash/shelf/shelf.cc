@@ -266,6 +266,11 @@ bool Shelf::ProcessGestureEvent(const ui::GestureEvent& event) {
   return shelf_layout_manager_->ProcessGestureEvent(event);
 }
 
+void Shelf::ProcessMouseEvent(const ui::MouseEvent& event) {
+  if (shelf_layout_manager_)
+    shelf_layout_manager_->ProcessMouseEventFromShelf(event);
+}
+
 void Shelf::ProcessMouseWheelEvent(const ui::MouseWheelEvent& event) {
   if (Shell::Get()->app_list_controller())
     Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(event);
