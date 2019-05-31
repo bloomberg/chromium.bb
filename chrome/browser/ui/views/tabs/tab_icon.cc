@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
+#include "base/timer/elapsed_timer.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -167,6 +170,9 @@ void TabIcon::SetBackgroundColor(SkColor bg_color) {
 }
 
 void TabIcon::OnPaint(gfx::Canvas* canvas) {
+  // This is used to log to UMA. NO EARLY RETURNS!
+  base::ElapsedTimer paint_timer;
+
   // Compute the bounds adjusted for the hiding fraction.
   gfx::Rect contents_bounds = GetContentsBounds();
 
@@ -183,19 +189,23 @@ void TabIcon::OnPaint(gfx::Canvas* canvas) {
   // The old animation replaces the favicon and should early-abort.
   if (!use_new_loading_animation_ && ShowingLoadingAnimation()) {
     PaintLoadingAnimation(canvas, icon_bounds);
-    return;
-  }
-
-  // Don't paint the attention indicator during the loading animation.
-  if (!ShowingLoadingAnimation() && ShowingAttentionIndicator() &&
-      !should_display_crashed_favicon_) {
-    PaintAttentionIndicatorAndIcon(canvas, GetIconToPaint(), icon_bounds);
   } else {
-    MaybePaintFavicon(canvas, GetIconToPaint(), icon_bounds);
+    // Don't paint the attention indicator during the loading animation.
+    if (!ShowingLoadingAnimation() && ShowingAttentionIndicator() &&
+        !should_display_crashed_favicon_) {
+      PaintAttentionIndicatorAndIcon(canvas, GetIconToPaint(), icon_bounds);
+    } else {
+      MaybePaintFavicon(canvas, GetIconToPaint(), icon_bounds);
+    }
+
+    if (ShowingLoadingAnimation())
+      PaintLoadingAnimation(canvas, icon_bounds);
   }
 
-  if (ShowingLoadingAnimation())
-    PaintLoadingAnimation(canvas, icon_bounds);
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "TabStrip.Tab.Icon.PaintDuration", paint_timer.Elapsed(),
+      base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromMicroseconds(10000), 50);
 }
 
 void TabIcon::OnThemeChanged() {
@@ -216,6 +226,8 @@ void TabIcon::AnimationEnded(const gfx::Animation* animation) {
 void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
                                              const gfx::ImageSkia& icon,
                                              const gfx::Rect& bounds) {
+  TRACE_EVENT0("views", "TabIcon::PaintAttentionIndicatorAndIcon");
+
   gfx::Point circle_center(
       bounds.x() + (base::i18n::IsRTL() ? 0 : gfx::kFaviconSize),
       bounds.y() + gfx::kFaviconSize);
@@ -247,6 +259,8 @@ void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
 }
 
 void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas, gfx::Rect bounds) {
+  TRACE_EVENT0("views", "TabIcon::PaintLoadingAnimation");
+
   const ui::ThemeProvider* tp = GetThemeProvider();
   base::Optional<SkScalar> stroke_width;
   if (use_new_loading_animation_)
@@ -287,6 +301,8 @@ const gfx::ImageSkia& TabIcon::GetIconToPaint() {
 void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
                                 const gfx::ImageSkia& icon,
                                 const gfx::Rect& bounds) {
+  TRACE_EVENT0("views", "TabIcon::MaybePaintFavicon");
+
   if (icon.isNull())
     return;
 

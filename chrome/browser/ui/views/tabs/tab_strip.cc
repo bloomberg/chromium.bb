@@ -23,6 +23,7 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -1829,6 +1830,9 @@ bool TabStrip::OnMouseWheel(const ui::MouseWheelEvent& event) {
 }
 
 void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
+  // This is used to log to UMA. NO EARLY RETURNS!
+  base::ElapsedTimer paint_timer;
+
   // The view order doesn't match the paint order (tabs_ contains the tab
   // ordering). Additionally we need to paint the tabs that are closing in
   // |tabs_closing_map_|.
@@ -1918,6 +1922,11 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // If the active tab is being dragged, it goes last.
   if (active_tab && is_dragging)
     active_tab->Paint(paint_info);
+
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "TabStrip.PaintChildrenDuration", paint_timer.Elapsed(),
+      base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromMicroseconds(10000), 50);
 }
 
 const char* TabStrip::GetClassName() const {
