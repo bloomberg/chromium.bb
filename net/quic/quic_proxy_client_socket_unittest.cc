@@ -22,6 +22,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
+#include "net/quic/address_utils.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
 #include "net/quic/mock_quic_data.h"
@@ -192,9 +193,8 @@ class QuicProxyClientSocketTest
     QuicChromiumPacketWriter* writer = new QuicChromiumPacketWriter(
         socket.get(), base::ThreadTaskRunnerHandle::Get().get());
     quic::QuicConnection* connection = new quic::QuicConnection(
-        connection_id_,
-        quic::QuicSocketAddress(quic::QuicSocketAddressImpl(peer_addr_)),
-        helper_.get(), alarm_factory_.get(), writer, true /* owns_writer */,
+        connection_id_, net::ToQuicSocketAddress(peer_addr_), helper_.get(),
+        alarm_factory_.get(), writer, true /* owns_writer */,
         quic::Perspective::IS_CLIENT, quic::test::SupportedVersions(version_));
     connection->set_visitor(&visitor_);
     quic::test::QuicConnectionPeer::SetSendAlgorithm(connection,

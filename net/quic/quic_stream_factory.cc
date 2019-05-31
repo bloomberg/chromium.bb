@@ -1821,8 +1821,8 @@ int QuicStreamFactory::CreateSession(
   QuicChromiumPacketWriter* writer =
       new QuicChromiumPacketWriter(socket.get(), task_runner_);
   quic::QuicConnection* connection = new quic::QuicConnection(
-      connection_id, quic::QuicSocketAddress(quic::QuicSocketAddressImpl(addr)),
-      helper_.get(), alarm_factory_.get(), writer, true /* owns_writer */,
+      connection_id, ToQuicSocketAddress(addr), helper_.get(),
+      alarm_factory_.get(), writer, true /* owns_writer */,
       quic::Perspective::IS_CLIENT,
       quic::ParsedQuicVersionVector{
           quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, quic_version)});

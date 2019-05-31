@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
+#include "net/quic/address_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
 
 namespace net {
@@ -93,10 +94,8 @@ bool QuicChromiumPacketReader::ProcessReadResult(int result) {
   IPEndPoint peer_address;
   socket_->GetLocalAddress(&local_address);
   socket_->GetPeerAddress(&peer_address);
-  return visitor_->OnPacket(
-      packet,
-      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(local_address)),
-      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(peer_address)));
+  return visitor_->OnPacket(packet, ToQuicSocketAddress(local_address),
+                            ToQuicSocketAddress(peer_address));
 }
 
 void QuicChromiumPacketReader::OnReadComplete(int result) {

@@ -13,6 +13,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
+#include "net/quic/address_utils.h"
 #include "net/socket/udp_server_socket.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
@@ -211,10 +212,8 @@ void QuicSimpleServer::OnReadComplete(int result) {
 
   quic::QuicReceivedPacket packet(read_buffer_->data(), result,
                                   helper_->GetClock()->Now(), false);
-  dispatcher_->ProcessPacket(
-      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(server_address_)),
-      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(client_address_)),
-      packet);
+  dispatcher_->ProcessPacket(ToQuicSocketAddress(server_address_),
+                             ToQuicSocketAddress(client_address_), packet);
 
   StartReading();
 }

@@ -85,8 +85,7 @@ bool QuicClientMessageLooplNetworkHelper::CreateUDPSocketAndBind(
     LOG(ERROR) << "GetLocalAddress failed: " << ErrorToShortString(rc);
     return false;
   }
-  client_address_ =
-      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(address));
+  client_address_ = ToQuicSocketAddress(address);
 
   socket_.swap(socket);
   packet_reader_.reset(new QuicChromiumPacketReader(

@@ -20,6 +20,7 @@
 #include "net/http/transport_security_state_test_util.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
+#include "net/quic/address_utils.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
 #include "net/quic/mock_quic_data.h"
@@ -138,8 +139,8 @@ class QuicChromiumClientSessionTest
         socket.get(), base::ThreadTaskRunnerHandle::Get().get());
     quic::QuicConnection* connection = new quic::QuicConnection(
         quic::QuicUtils::CreateRandomConnectionId(&random_),
-        quic::QuicSocketAddress(quic::QuicSocketAddressImpl(kIpEndPoint)),
-        &helper_, &alarm_factory_, writer, true, quic::Perspective::IS_CLIENT,
+        ToQuicSocketAddress(kIpEndPoint), &helper_, &alarm_factory_, writer,
+        true, quic::Perspective::IS_CLIENT,
         quic::test::SupportedVersions(version_));
     session_.reset(new TestingQuicChromiumClientSession(
         connection, std::move(socket),

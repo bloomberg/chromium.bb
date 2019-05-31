@@ -47,6 +47,7 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/transport_security_state.h"
+#include "net/quic/address_utils.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
@@ -103,8 +104,7 @@ class QuicSimpleClientFactory : public quic::QuicToyClient::ClientFactory {
                    << "' : " << net::ErrorToShortString(rv);
         return nullptr;
       }
-      ip_addr =
-          quic::QuicIpAddress(quic::QuicIpAddressImpl(addresses[0].address()));
+      ip_addr = net::ToQuicIpAddress(addresses[0].address());
     }
 
     quic::QuicServerId server_id(host, port, false);

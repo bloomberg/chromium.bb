@@ -29,6 +29,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
+#include "net/quic/address_utils.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
@@ -91,15 +92,14 @@ class TestQuicConnection : public quic::QuicConnection {
                      QuicChromiumConnectionHelper* helper,
                      QuicChromiumAlarmFactory* alarm_factory,
                      quic::QuicPacketWriter* writer)
-      : quic::QuicConnection(
-            connection_id,
-            quic::QuicSocketAddress(quic::QuicSocketAddressImpl(address)),
-            helper,
-            alarm_factory,
-            writer,
-            true /* owns_writer */,
-            quic::Perspective::IS_CLIENT,
-            versions) {}
+      : quic::QuicConnection(connection_id,
+                             ToQuicSocketAddress(address),
+                             helper,
+                             alarm_factory,
+                             writer,
+                             true /* owns_writer */,
+                             quic::Perspective::IS_CLIENT,
+                             versions) {}
 
   void SetSendAlgorithm(quic::SendAlgorithmInterface* send_algorithm) {
     quic::test::QuicConnectionPeer::SetSendAlgorithm(this, send_algorithm);
@@ -249,10 +249,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   void ProcessPacket(std::unique_ptr<quic::QuicReceivedPacket> packet) {
-    connection_->ProcessUdpPacket(
-        quic::QuicSocketAddress(quic::QuicSocketAddressImpl(self_addr_)),
-        quic::QuicSocketAddress(quic::QuicSocketAddressImpl(peer_addr_)),
-        *packet);
+    connection_->ProcessUdpPacket(ToQuicSocketAddress(self_addr_),
+                                  ToQuicSocketAddress(peer_addr_), *packet);
   }
 
   // Configures the test fixture to use the list of expected writes.

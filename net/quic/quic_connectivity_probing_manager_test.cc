@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "net/log/test_net_log.h"
+#include "net/quic/address_utils.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
@@ -26,12 +27,12 @@ const NetworkChangeNotifier::NetworkHandle testNetworkHandle = 1;
 const IPEndPoint kIpEndPoint =
     IPEndPoint(IPAddress::IPv4AllZeros(), quic::test::kTestPort);
 const quic::QuicSocketAddress testPeerAddress =
-    quic::QuicSocketAddress(quic::QuicSocketAddressImpl(kIpEndPoint));
+    ToQuicSocketAddress(kIpEndPoint);
 
 const IPEndPoint newIpEndPoint =
     IPEndPoint(IPAddress::IPv4AllZeros(), quic::test::kTestPort + 1);
 const quic::QuicSocketAddress newPeerAddress =
-    quic::QuicSocketAddress(quic::QuicSocketAddressImpl(newIpEndPoint));
+    ToQuicSocketAddress(newIpEndPoint);
 }  // anonymous namespace
 
 class MockQuicChromiumClientSession
@@ -102,8 +103,7 @@ class QuicConnectivityProbingManagerTest : public ::testing::Test {
     EXPECT_THAT(socket_->Connect(kIpEndPoint), IsOk());
     IPEndPoint self_address;
     socket_->GetLocalAddress(&self_address);
-    self_address_ =
-        quic::QuicSocketAddress(quic::QuicSocketAddressImpl(self_address));
+    self_address_ = ToQuicSocketAddress(self_address);
     // Create packet writer and reader for probing.
     writer_.reset(
         new QuicChromiumPacketWriter(socket_.get(), test_task_runner_.get()));

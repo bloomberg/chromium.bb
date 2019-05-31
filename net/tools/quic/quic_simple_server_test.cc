@@ -5,6 +5,7 @@
 #include "net/tools/quic/quic_simple_server.h"
 
 #include "base/stl_util.h"
+#include "net/quic/address_utils.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -48,10 +49,8 @@ class QuicChromeServerDispatchPacketTest : public QuicTest {
 
   void DispatchPacket(const quic::QuicReceivedPacket& packet) {
     IPEndPoint client_addr, server_addr;
-    dispatcher_.ProcessPacket(
-        quic::QuicSocketAddress(quic::QuicSocketAddressImpl(server_addr)),
-        quic::QuicSocketAddress(quic::QuicSocketAddressImpl(client_addr)),
-        packet);
+    dispatcher_.ProcessPacket(ToQuicSocketAddress(server_addr),
+                              ToQuicSocketAddress(client_addr), packet);
   }
 
  protected:
