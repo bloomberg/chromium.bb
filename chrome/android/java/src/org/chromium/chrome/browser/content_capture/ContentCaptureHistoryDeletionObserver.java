@@ -22,8 +22,10 @@ public class ContentCaptureHistoryDeletionObserver implements HistoryDeletionBri
                                 != historyDeletionInfo.getTimeRangeEnd())) {
             contentCaptureController.clearAllContentCaptureData();
         } else {
-            contentCaptureController.clearContentCaptureDataForURLs(
-                    historyDeletionInfo.getDeletedURLs());
+            String[] deletedURLs = historyDeletionInfo.getDeletedURLs();
+            if (deletedURLs.length > 0) {
+                contentCaptureController.clearContentCaptureDataForURLs(deletedURLs);
+            }
         }
     }
 }
