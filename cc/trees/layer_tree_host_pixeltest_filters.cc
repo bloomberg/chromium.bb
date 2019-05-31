@@ -939,8 +939,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, EnlargedTextureWithCropOffsetFilter) {
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_crop_offset.png")));
 }
 
-// TODO(crbug.com/948128): Enable this test for SkiaRenderer.
-TEST_P(LayerTreeHostFiltersPixelTestNonSkia, BlurFilterWithClip) {
+TEST_P(LayerTreeHostFiltersPixelTest, BlurFilterWithClip) {
   scoped_refptr<SolidColorLayer> child1 =
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLUE);
   scoped_refptr<SolidColorLayer> child2 =

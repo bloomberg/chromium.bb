@@ -1800,8 +1800,9 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   if (rpdq_params.backdrop_filter) {
     layer_flags |= SkCanvas::kInitWithPrevious_SaveLayerFlag;
   }
+  SkRect bounds = gfx::RectFToSkRect(params->visible_rect);
   current_canvas_->saveLayer(
-      SkCanvas::SaveLayerRec(nullptr, &paint, rpdq_params.backdrop_filter.get(),
+      SkCanvas::SaveLayerRec(&bounds, &paint, rpdq_params.backdrop_filter.get(),
                              rpdq_params.mask_image.get(),
                              &rpdq_params.mask_to_quad_matrix, layer_flags));
 
