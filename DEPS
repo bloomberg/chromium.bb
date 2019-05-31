@@ -1378,7 +1378,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/${{platform}}',
-          'version': 'git_revision:f87a7deecc778c67e04af82265f040fef5d05c3f',
+          'version': 'git_revision:5ceacf1dcbfff2a7ed77dbff4400f411e0d7f8b0',
         },
       ],
       'dep_type': 'cipd',
