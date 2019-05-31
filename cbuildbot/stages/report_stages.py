@@ -1042,7 +1042,8 @@ class ReportStage(generic_stages.BuilderStage,
               fields=dict(mon_fields, builder_name=self._run.GetBuilderName()))
 
       if config_lib.IsMasterCQ(self._run.config):
-        self._RunRiskReport()
+        # TODO(crbug.com/968275): Fully delete the RiskReport code
+        # self._RunRiskReport()
         self_destructed = self._run.attrs.metadata.GetValueWithDefault(
             constants.SELF_DESTRUCTED_BUILD, False)
         mon_fields = {'status': status_for_db,
