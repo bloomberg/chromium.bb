@@ -42,11 +42,12 @@ class GraphicsLayerUpdater::UpdateContext {
   UpdateContext()
       : compositing_stacking_context_(nullptr),
         compositing_ancestor_(nullptr),
-        use_slow_path(false) {}
+        use_slow_path_(false) {}
 
   UpdateContext(const UpdateContext& other, const PaintLayer& layer)
       : compositing_stacking_context_(other.compositing_stacking_context_),
-        compositing_ancestor_(other.CompositingContainer(layer)) {
+        compositing_ancestor_(other.CompositingContainer(layer)),
+        use_slow_path_(other.use_slow_path_) {
     CompositingState compositing_state = layer.GetCompositingState();
     if (compositing_state != kNotComposited &&
         compositing_state != kPaintsIntoGroupedBacking) {
@@ -64,11 +65,11 @@ class GraphicsLayerUpdater::UpdateContext {
     // for these situations, to simplify the logic.
     if (layer.GetLayoutObject().IsSVGRoot() ||
         layer.IsReplacedNormalFlowStacking())
-      use_slow_path = true;
+      use_slow_path_ = true;
   }
 
   const PaintLayer* CompositingContainer(const PaintLayer& layer) const {
-    if (use_slow_path)
+    if (use_slow_path_)
       return layer.EnclosingLayerWithCompositedLayerMapping(kExcludeSelf);
 
     const PaintLayer* compositing_container;
@@ -100,7 +101,7 @@ class GraphicsLayerUpdater::UpdateContext {
  private:
   const PaintLayer* compositing_stacking_context_;
   const PaintLayer* compositing_ancestor_;
-  bool use_slow_path;
+  bool use_slow_path_;
 };
 
 GraphicsLayerUpdater::GraphicsLayerUpdater() : needs_rebuild_tree_(false) {}
