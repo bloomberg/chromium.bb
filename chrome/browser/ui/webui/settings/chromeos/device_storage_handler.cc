@@ -164,6 +164,7 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   UpdateDownloadsSize();
   UpdateDriveCacheSize();
   UpdateBrowsingDataSize();
+  UpdateAndroidRunning();
   UpdateAndroidSize();
   UpdateCrostiniSize();
   UpdateOtherUsersSize();
@@ -342,6 +343,11 @@ void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {
   }
 }
 
+void StorageHandler::UpdateAndroidRunning() {
+  FireWebUIListener("storage-android-running-changed",
+                    base::Value(is_android_running_));
+}
+
 void StorageHandler::UpdateAndroidSize() {
   if (!is_android_running_)
     return;
@@ -443,13 +449,13 @@ void StorageHandler::OnGetOtherUserSize(
 
 void StorageHandler::OnConnectionReady() {
   is_android_running_ = true;
-  FireWebUIListener("storage-android-running-changed", base::Value(true));
+  UpdateAndroidRunning();
   UpdateAndroidSize();
 }
 
 void StorageHandler::OnConnectionClosed() {
   is_android_running_ = false;
-  FireWebUIListener("storage-android-running-changed", base::Value(false));
+  UpdateAndroidRunning();
 }
 
 void StorageHandler::OnArcPlayStoreEnabledChanged(bool enabled) {
