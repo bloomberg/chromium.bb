@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h"
 
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
-#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/apps/platform_apps/app_window_interactive_uitest_base.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
@@ -101,11 +101,11 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   // Verify that since the auto hide title bars in tablet mode feature turned
   // on, immersive mode is enabled once tablet mode is entered, and disabled
   // once tablet mode is exited.
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_TRUE(IsImmersiveActive());
   ViewBoundsChangeWaiter::VerifyY(client_view, 0);
 
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_FALSE(IsImmersiveActive());
   ViewBoundsChangeWaiter::VerifyY(client_view, kFrameHeight);
 
@@ -113,22 +113,22 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   // will remain fullscreened after exiting tablet mode.
   app_window_->OSFullscreen();
   EXPECT_TRUE(IsImmersiveActive());
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_TRUE(IsImmersiveActive());
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_TRUE(IsImmersiveActive());
   app_window_->Restore();
 
   // Verify that minimized windows do not have immersive mode enabled.
   app_window_->Minimize();
   EXPECT_FALSE(IsImmersiveActive());
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_FALSE(IsImmersiveActive());
   window()->Restore();
   EXPECT_TRUE(IsImmersiveActive());
   app_window_->Minimize();
   EXPECT_FALSE(IsImmersiveActive());
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_FALSE(IsImmersiveActive());
 
   // Verify that activation change should not change the immersive
@@ -153,10 +153,10 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
 
   app_window_->OSFullscreen();
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_TRUE(window()->IsFullscreen());
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
 
   CloseAppWindow(app_window_);
@@ -171,9 +171,9 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
 
   app_window_->ForcedFullscreen();
 
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_FALSE(IsImmersiveActive());
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_FALSE(IsImmersiveActive());
 }
 
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
   EXPECT_TRUE(window()->IsFullscreen());
   EXPECT_TRUE(IsImmersiveActive());
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
   EXPECT_TRUE(window()->IsFullscreen());
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
 
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
 
   // Immersive fullscreen should be disabled if window exits fullscreen in
   // clamshell mode.
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   app_window_->OSFullscreen();
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
   EXPECT_TRUE(window()->IsFullscreen());

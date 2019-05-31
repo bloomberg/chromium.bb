@@ -6,19 +6,24 @@
 
 #include <utility>
 
-FakeTabletModeController::FakeTabletModeController() = default;
+FakeTabletModeController::FakeTabletModeController() : binding_(this) {}
 
 FakeTabletModeController::~FakeTabletModeController() = default;
 
-void FakeTabletModeController::SetTabletModeToggleObserver(
-    ash::TabletModeToggleObserver* observer) {
-  observer_ = observer;
+ash::mojom::TabletModeControllerPtr
+FakeTabletModeController::CreateInterfacePtr() {
+  ash::mojom::TabletModeControllerPtr ptr;
+  binding_.Bind(mojo::MakeRequest(&ptr));
+  return ptr;
 }
 
-bool FakeTabletModeController::IsEnabled() const {
-  return enabled_;
+void FakeTabletModeController::SetClient(
+    ash::mojom::TabletModeClientPtr client) {
+  was_client_set_ = true;
 }
 
-void FakeTabletModeController::SetEnabledForTest(bool enabled) {
-  enabled_ = enabled;
+void FakeTabletModeController::SetTabletModeEnabledForTesting(
+    bool enabled,
+    SetTabletModeEnabledForTestingCallback callback) {
+  std::move(callback).Run(enabled);
 }

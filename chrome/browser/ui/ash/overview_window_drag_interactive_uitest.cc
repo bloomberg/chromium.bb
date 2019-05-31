@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -76,7 +77,7 @@ class OverviewWindowDragTest
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
-    ash::ShellTestApi().EnableTabletModeWindowManager(true);
+    test::SetAndWaitForTabletMode(true);
 
     int additional_browsers = std::get<0>(GetParam()) - 1;
     bool blank_page = std::get<1>(GetParam());

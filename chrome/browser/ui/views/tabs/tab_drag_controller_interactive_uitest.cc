@@ -75,6 +75,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "content/public/common/service_manager_connection.h"
@@ -1746,7 +1747,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // bounds are different from the maximized bound's origin.
   browser()->window()->SetBounds(browser()->window()->GetBounds() +
                                  gfx::Vector2d(100, 50));
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  test::SetAndWaitForTabletMode(true);
 
   DragWindowAndVerifyOffset(this, GetTabStripForBrowser(browser()), 1);
   ASSERT_FALSE(TabDragController::IsActive());
@@ -1754,7 +1755,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        OffsetForDraggingRightSnappedWindowInTabletMode) {
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  test::SetAndWaitForTabletMode(true);
 
   // Right snap the browser window.
   aura::Window* window = browser()->window()->GetNativeWindow();
@@ -2195,7 +2196,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
   EXPECT_EQ(2u, browser_list->size());
 
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  test::SetAndWaitForTabletMode(true);
 
   // Move to the first tab of |browser2| and drag it toward to browser(). Note
   // dragging on |browser2| which only has one tab in tablet mode will open

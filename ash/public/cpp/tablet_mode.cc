@@ -4,26 +4,29 @@
 
 #include "ash/public/cpp/tablet_mode.h"
 
-#include "base/logging.h"
+#include "base/callback.h"
+#include "base/no_destructor.h"
 
 namespace ash {
 
 namespace {
-TabletMode* g_instance = nullptr;
+
+TabletMode::TabletModeCallback* GetCallback() {
+  static base::NoDestructor<TabletMode::TabletModeCallback> callback;
+  return callback.get();
 }
 
-TabletMode* TabletMode::Get() {
-  return g_instance;
+}  // namespace
+
+// static
+void TabletMode::SetCallback(TabletModeCallback callback) {
+  DCHECK(GetCallback()->is_null() || callback.is_null());
+  *GetCallback() = std::move(callback);
 }
 
-TabletMode::TabletMode() {
-  DCHECK_EQ(nullptr, g_instance);
-  g_instance = this;
-}
-
-TabletMode::~TabletMode() {
-  DCHECK_EQ(this, g_instance);
-  g_instance = nullptr;
+// static
+bool TabletMode::IsEnabled() {
+  return GetCallback()->Run();
 }
 
 }  // namespace ash

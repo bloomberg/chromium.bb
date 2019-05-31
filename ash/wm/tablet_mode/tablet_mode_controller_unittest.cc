@@ -20,7 +20,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -667,18 +666,19 @@ TEST_F(TabletModeControllerTest, VerticalHingeUnstableAnglesTest) {
 // Tests that when a TabletModeController is created that cached tablet mode
 // state will trigger a mode update.
 TEST_F(TabletModeControllerTest, InitializedWhileTabletModeSwitchOn) {
-  ShellTestApi test_api;
   base::RunLoop().RunUntilIdle();
   power_manager_client()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks::Now());
 
-  test_api.ResetTabletModeController();
-  AccelerometerReader::GetInstance()->RemoveObserver(tablet_mode_controller());
-  tablet_mode_controller()->OnShellInitialized();
-  EXPECT_FALSE(tablet_mode_controller()->IsTabletModeWindowManagerEnabled());
+  // Clear the callback that was set by the original TabletModeController.
+  TabletMode::SetCallback({});
+
+  TabletModeController controller;
+  controller.OnShellInitialized();
+  EXPECT_FALSE(controller.IsTabletModeWindowManagerEnabled());
   // PowerManagerClient callback is a posted task.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(tablet_mode_controller()->IsTabletModeWindowManagerEnabled());
+  EXPECT_TRUE(controller.IsTabletModeWindowManagerEnabled());
 }
 
 TEST_F(TabletModeControllerTest, RestoreAfterExit) {

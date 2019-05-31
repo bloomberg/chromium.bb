@@ -12,7 +12,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/tablet_mode_toggle_observer.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -110,7 +109,7 @@ bool IsAngleBetweenAccelerometerReadingsStable(
          kNoisyMagnitudeDeviation;
 }
 
-bool ShouldInitTabletModeController() {
+bool IsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnableTabletMode);
 }
@@ -172,7 +171,10 @@ constexpr char TabletModeController::kLidAngleHistogramName[];
 TabletModeController::TabletModeController()
     : event_blocker_(new InternalInputDevicesEventBlocker),
       tablet_mode_usage_interval_start_time_(base::Time::Now()),
-      tick_clock_(base::DefaultTickClock::GetInstance()) {
+      tick_clock_(base::DefaultTickClock::GetInstance()),
+      binding_(this),
+      scoped_session_observer_(this),
+      weak_factory_(this) {
   Shell::Get()->AddShellObserver(this);
   base::RecordAction(base::UserMetricsAction("Touchview_Initially_Disabled"));
 
@@ -180,7 +182,7 @@ TabletModeController::TabletModeController()
   // unavailable. This will require refactoring
   // IsTabletModeWindowManagerEnabled to check for the existence of the
   // controller.
-  if (ShouldInitTabletModeController()) {
+  if (IsEnabled()) {
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
     AccelerometerReader::GetInstance()->AddObserver(this);
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
@@ -197,6 +199,10 @@ TabletModeController::TabletModeController()
   power_manager_client->AddObserver(this);
   power_manager_client->GetSwitchStates(base::BindOnce(
       &TabletModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
+
+  TabletMode::SetCallback(base::BindRepeating(
+      &TabletModeController::IsTabletModeWindowManagerEnabled,
+      base::Unretained(this)));
 }
 
 TabletModeController::~TabletModeController() {
@@ -216,7 +222,7 @@ TabletModeController::~TabletModeController() {
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->kiosk_next_shell_controller()->RemoveObserver(this);
 
-  if (ShouldInitTabletModeController()) {
+  if (IsEnabled()) {
     Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
     AccelerometerReader::GetInstance()->RemoveObserver(this);
     ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
@@ -225,6 +231,8 @@ TabletModeController::~TabletModeController() {
 
   for (auto& observer : tablet_mode_observers_)
     observer.OnTabletControllerDestroyed();
+
+  TabletMode::SetCallback(TabletMode::TabletModeCallback());
 }
 
 // TODO(jcliang): Hide or remove EnableTabletModeWindowManager
@@ -265,8 +273,8 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
     }
 
     state_ = State::kInTabletMode;
-    if (toggle_observer_)  // Null at startup and in tests.
-      toggle_observer_->OnTabletModeToggled(true);
+    if (client_)  // Null at startup and in tests.
+      client_->OnTabletModeToggled(true);
     VLOG(1) << "Enter tablet mode.";
   } else {
     state_ = State::kExitingTabletMode;
@@ -284,8 +292,8 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
       observer.OnTabletModeEnded();
 
     state_ = State::kInClamshellMode;
-    if (toggle_observer_)  // Null at startup and in tests.
-      toggle_observer_->OnTabletModeToggled(false);
+    if (client_)  // Null at startup and in tests.
+      client_->OnTabletModeToggled(false);
     VLOG(1) << "Exit tablet mode.";
   }
 
@@ -299,6 +307,12 @@ bool TabletModeController::IsTabletModeWindowManagerEnabled() const {
 void TabletModeController::AddWindow(aura::Window* window) {
   if (IsTabletModeWindowManagerEnabled())
     tablet_mode_window_manager_->AddWindow(window);
+}
+
+void TabletModeController::BindRequest(
+    mojom::TabletModeControllerRequest request) {
+  DCHECK(!binding_.is_bound()) << "Only one client allowed.";
+  binding_.Bind(std::move(request));
 }
 
 void TabletModeController::AddObserver(TabletModeObserver* observer) {
@@ -321,6 +335,10 @@ bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {
 
 bool TabletModeController::AreInternalInputDeviceEventsBlocked() const {
   return event_blocker_->should_be_blocked();
+}
+
+void TabletModeController::FlushForTesting() {
+  binding_.FlushForTesting();
 }
 
 bool TabletModeController::TriggerRecordLidAngleTimerForTesting() {
@@ -360,28 +378,6 @@ void TabletModeController::MaybeObserveBoundsAnimation(aura::Window* window) {
   window->layer()->GetAnimator()->AddObserver(this);
   fps_counter_ = std::make_unique<TabletModeTransitionFpsCounter>(
       window->layer()->GetCompositor(), entering_tablet_mode);
-}
-
-void TabletModeController::SetTabletModeToggleObserver(
-    TabletModeToggleObserver* observer) {
-  DCHECK(observer);
-  DCHECK(!toggle_observer_);
-  toggle_observer_ = observer;
-}
-
-bool TabletModeController::IsEnabled() const {
-  return IsTabletModeWindowManagerEnabled();
-}
-
-void TabletModeController::SetEnabledForTest(bool enabled) {
-  // Disable Accelerometer and PowerManagerClient observers to prevent possible
-  // tablet mode overrides. It won't be possible to physically switch to/from
-  // tablet mode after calling this function. This is needed for tests that
-  // run on DUTs and require switching to/back tablet mode in runtime, like some
-  // ARC++ Tast tests.
-  AccelerometerReader::GetInstance()->RemoveObserver(this);
-  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
-  EnableTabletModeWindowManager(enabled);
 }
 
 void TabletModeController::OnShellInitialized() {
@@ -523,7 +519,7 @@ void TabletModeController::SuspendImminent(
   // Stop listening to any incoming input device changes during suspend as the
   // input devices may be removed during suspend and cause the device enter/exit
   // tablet mode unexpectedly.
-  if (ShouldInitTabletModeController()) {
+  if (IsEnabled()) {
     ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
     bluetooth_devices_observer_.reset();
   }
@@ -534,7 +530,7 @@ void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
   tablet_mode_usage_interval_start_time_ = base::Time::Now();
 
   // Start listening to the input device changes again.
-  if (ShouldInitTabletModeController()) {
+  if (IsEnabled()) {
     bluetooth_devices_observer_ =
         std::make_unique<BluetoothDevicesObserver>(base::BindRepeating(
             &TabletModeController::OnBluetoothAdapterOrDeviceChanged,
@@ -750,6 +746,26 @@ TabletModeController::CurrentTabletModeIntervalType() {
   if (IsTabletModeWindowManagerEnabled())
     return TABLET_MODE_INTERVAL_ACTIVE;
   return TABLET_MODE_INTERVAL_INACTIVE;
+}
+
+void TabletModeController::SetClient(mojom::TabletModeClientPtr client) {
+  client_ = std::move(client);
+  client_->OnTabletModeToggled(IsTabletModeWindowManagerEnabled());
+}
+
+// Used for testing. Called via Mojo.
+void TabletModeController::SetTabletModeEnabledForTesting(
+    bool enabled,
+    SetTabletModeEnabledForTestingCallback callback) {
+  // Disable Accelerometer and PowerManagerClient observers to prevent possible
+  // tablet mode overrides. It won't be possible to physically switch to/from
+  // tablet mode after calling this function. This is needed for tests that
+  // run on DUTs and require switching to/back tablet mode in runtime, like some
+  // ARC++ Tast tests.
+  AccelerometerReader::GetInstance()->RemoveObserver(this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
+  EnableTabletModeWindowManager(enabled);
+  std::move(callback).Run(IsTabletModeWindowManagerEnabled());
 }
 
 bool TabletModeController::AllowUiModeChange() const {

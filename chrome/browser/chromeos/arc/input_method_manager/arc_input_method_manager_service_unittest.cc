@@ -212,12 +212,10 @@ class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
     service_->Shutdown();
     chrome_keyboard_controller_client_test_helper_.reset();
     profile_.reset();
+    tablet_mode_client_.reset(nullptr);
     chromeos::input_method::InputMethodManager::Shutdown();
     ui::IMEBridge::Shutdown();
     ChromeAshTestBase::TearDown();
-    // To match ChromeBrowserMainExtraPartsAsh, shut down the TabletModeClient
-    // after Shell.
-    tablet_mode_client_.reset();
   }
 
  private:

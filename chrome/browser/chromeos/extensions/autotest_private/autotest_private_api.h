@@ -620,6 +620,7 @@ class AutotestPrivateSetTabletModeEnabledFunction
                              AUTOTESTPRIVATE_SETTABLETMODEENABLED)
 
  private:
+  void OnSetTabletModeEnabled(bool enabled);
   ~AutotestPrivateSetTabletModeEnabledFunction() override;
   ResponseAction Run() override;
 };
