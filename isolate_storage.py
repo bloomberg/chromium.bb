@@ -538,7 +538,7 @@ class IsolateServer(StorageApi):
           'content': content,
       }
       response = net.url_read_json(url=url, data=data)
-      return response is not None and response['ok']
+      return response is not None and response.get('ok')
 
     # upload to GS
     url = push_state.upload_url
