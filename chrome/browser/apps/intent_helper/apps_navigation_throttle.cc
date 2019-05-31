@@ -455,7 +455,8 @@ AppsNavigationThrottle::HandleRequest() {
   content::WebContents* web_contents = handle->GetWebContents();
   const GURL& url = handle->GetURL();
   if (!ShouldIgnoreNavigation(page_transition, kAllowFormSubmit,
-                              kAllowClientRedirect)) {
+                              kAllowClientRedirect) &&
+      !handle->WasStartedFromContextMenu()) {
     navigate_from_link_ = true;
   }
 
