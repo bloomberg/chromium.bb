@@ -40,13 +40,39 @@ struct OnboardingPage {
   string? custom_header_name;
 };
 
+enum OnboardingPresentationState {
+  // We're loading data and preparing the flow. The webview should visible and
+  // the user should see a loading indicator to indicate this inactive state.
+  kLoading,
+
+  // The flow is ready, the webview can be shown.
+  kReady,
+
+  // TODO(crbug.com/958995): Add an error state, where we can show retry
+  // actions and stop showing the webview. At the moment we simply end the flow
+  // when we find errors.
+};
+
+// Describes how the flow should be presented at a given point.
+struct OnboardingPresentation {
+  OnboardingPresentationState state;
+
+  // Properties that inform which actions can be presented to the user.
+  bool can_show_next_page;
+  bool can_show_previous_page;
+  bool can_skip_flow;
+};
+
 // Represents a webview host, responsible for displaying supervision
 // onboarding pages. This will usually be a WebUI page that contains a
 // webview tag and manages its properties.
-// TODO(958995): Complete this interface.
 interface OnboardingWebviewHost {
+  // Sets the presentation for the flow. Guaranteed to be called at least once
+  // after this webview host is bound.
+  SetPresentation(OnboardingPresentation presentation);
+
   // Requests the host to load the given page.
-  LoadPage(OnboardingPage page) => (string? custom_header_value);
+  LoadPage(OnboardingPage page) => (OnboardingLoadPageResult result);
 
   // Requests that the host exit the flow immediately. This might mean
   // different things depending on the type of host. If we are running in OOBE
@@ -55,8 +81,20 @@ interface OnboardingWebviewHost {
   ExitFlow();
 };
 
+// Result of a LoadPage call. Contains data about errors and custom data
+// found during the load.
+struct OnboardingLoadPageResult {
+  // Error code for this operation. If net::OK, the load was successful.
+  // See net/base/net_errors.h for possible list of values.
+  int32 net_error;
+
+  // Value for the custom HTTP header that was extracted while the page was
+  // loading. Will be missing if we couldn't find the requested header or if
+  // the page didn't request one.
+  string? custom_header_value;
+};
+
 // Interface responsible for managing the whole onboarding flow.
-// TODO(958995): Complete this interface.
 interface OnboardingController {
   // Binds the given webview host to this controller. The host will start
   // receiving commands as soon as this is called.

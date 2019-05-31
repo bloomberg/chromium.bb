@@ -41,7 +41,7 @@ class OnboardingControllerImpl : public mojom::OnboardingController {
                            identity::AccessTokenInfo access_token_info);
 
   // Callback to OnboardingWebviewHost::LoadPage.
-  void LoadPageCallback(const base::Optional<std::string>& custom_header_value);
+  void LoadPageCallback(mojom::OnboardingLoadPageResultPtr result);
 
   Profile* profile_;
   mojom::OnboardingWebviewHostPtr webview_host_;

@@ -331,15 +331,6 @@ IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, NextButtonExitsScreen) {
   WaitForScreenExit();
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, BackButtonExitsScreen) {
-  ShowScreen();
-  WaitForScreen();
-  EXPECT_EQ(1u, supervision_server()->GetReceivedRequestsCount());
-
-  ClickButton("supervision-onboarding-back-button");
-  WaitForScreenExit();
-}
-
 IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest, SkipButtonExitsScreen) {
   ShowScreen();
   WaitForScreen();

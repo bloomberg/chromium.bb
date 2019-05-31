@@ -54,6 +54,10 @@ void OnboardingControllerImpl::BindWebviewHost(
     mojom::OnboardingWebviewHostPtr webview_host) {
   webview_host_ = std::move(webview_host);
 
+  auto presentation = mojom::OnboardingPresentation::New();
+  presentation->state = mojom::OnboardingPresentationState::kLoading;
+  webview_host_->SetPresentation(std::move(presentation));
+
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
 
@@ -104,20 +108,41 @@ void OnboardingControllerImpl::AccessTokenCallback(
 }
 
 void OnboardingControllerImpl::LoadPageCallback(
-    const base::Optional<std::string>& custom_header_value) {
+    mojom::OnboardingLoadPageResultPtr result) {
   DCHECK(webview_host_);
 
-  bool eligible =
-      custom_header_value.has_value() &&
-      base::EqualsCaseInsensitiveASCII(custom_header_value.value(),
-                                       kDeviceOnboardingExperimentName);
-  if (!eligible ||
-      !base::FeatureList::IsEnabled(features::kSupervisionOnboardingScreens)) {
+  // TODO(crbug.com/958995): Log the load page callback results to UMA. We want
+  // to see how many users get errors, have missing header values or actually
+  // end up seeing the page.
+
+  if (result->net_error != net::Error::OK) {
+    // TODO(crbug.com/958995): Fail here more gracefully. We should provide a
+    // way to retry the fetch if the error is recoverable.
+    LOG(ERROR) << "Supervision Onboarding webview failed to load with error: "
+               << net::ErrorToString(result->net_error);
     webview_host_->ExitFlow();
+    return;
   }
 
-  profile_->GetPrefs()->SetBoolean(ash::prefs::kKioskNextShellEligible,
-                                   eligible);
+  if (!result->custom_header_value.has_value() ||
+      !base::EqualsCaseInsensitiveASCII(result->custom_header_value.value(),
+                                        kDeviceOnboardingExperimentName)) {
+    webview_host_->ExitFlow();
+    return;
+  }
+
+  profile_->GetPrefs()->SetBoolean(ash::prefs::kKioskNextShellEligible, true);
+
+  if (!base::FeatureList::IsEnabled(features::kSupervisionOnboardingScreens)) {
+    webview_host_->ExitFlow();
+    return;
+  }
+
+  auto presentation = mojom::OnboardingPresentation::New();
+  presentation->state = mojom::OnboardingPresentationState::kReady;
+  presentation->can_show_next_page = true;
+  presentation->can_skip_flow = true;
+  webview_host_->SetPresentation(std::move(presentation));
 }
 
 }  // namespace supervision

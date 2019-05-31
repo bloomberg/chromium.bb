@@ -21,19 +21,16 @@
       this.page_ = null;
 
       /**
-       * Custom header values found in responses to requests made by the
-       * webview.
-       * @private {?string}
-       */
-      this.customHeaderValue_ = null;
-
-      /**
        * Pending callback for a webview page load. It will be called with the
        * list of custom header values if asked by the controller, or an empty
        * array otherwise.
-       * @private {?function({customHeaderValue: ?string})}
+       * @private{?function({result:
+       *     !chromeos.supervision.mojom.OnboardingLoadPageResult})}
        */
       this.pendingLoadPageCallback_ = null;
+
+      /** @private {?chromeos.supervision.mojom.OnboardingLoadPageResult} */
+      this.pendingLoadPageResult_ = null;
 
       this.webviewListener_ = this.webviewFinishedLoading_.bind(this);
       this.webviewHeaderListener_ = this.onHeadersReceived_.bind(this);
@@ -42,19 +39,21 @@
 
     /**
      * @param {!chromeos.supervision.mojom.OnboardingPage} page
-     * @return {!Promise<{customHeaderValue: ?string}>}
+     * @return {Promise<{
+     *     result: !chromeos.supervision.mojom.OnboardingLoadPageResult,
+     *  }>}
      */
     loadPage(page) {
       // TODO(958995): Handle the case where we are still loading the previous
       // page but the controller wants to load the next one. For now we just
       // resolve the previous callback.
       if (this.pendingLoadPageCallback_) {
-        this.pendingLoadPageCallback_({customHeaderValue: null});
+        this.pendingLoadPageCallback_({result: {netError: 0}});
       }
 
       this.page_ = page;
-      this.customHeaderValue_ = null;
       this.pendingLoadPageCallback_ = null;
+      this.pendingLoadPageResult_ = {netError: 0};
 
       this.webview_.request.onBeforeSendHeaders.addListener(
           this.webviewAuthListener_,
@@ -65,9 +64,6 @@
           {urls: [page.urlFilterPattern], types: ['main_frame']},
           ['responseHeaders', 'extraHeaders']);
 
-      // TODO(958995): Report load errors through the mojo interface.
-      // At the moment we are treating any loadstop/abort event as a successful
-      // load.
       this.webview_.addEventListener('loadstop', this.webviewListener_);
       this.webview_.addEventListener('loadabort', this.webviewListener_);
       this.webview_.src = page.url.url;
@@ -91,7 +87,9 @@
       const header = responseEvent.responseHeaders.find(
           h => h.name.toUpperCase() ==
               this.page_.customHeaderName.toUpperCase());
-      this.customHeaderValue_ = header ? header.value : null;
+      if (header) {
+        this.pendingLoadPageResult_.customHeaderValue = header.value;
+      }
 
       return {};
     }
@@ -124,9 +122,11 @@
       this.webview_.removeEventListener('loadstop', this.webviewListener_);
       this.webview_.removeEventListener('loadabort', this.webviewListener_);
 
-      this.pendingLoadPageCallback_({
-        customHeaderValue: this.customHeaderValue_,
-      });
+      if (e.type == 'loadabort') {
+        this.pendingLoadPageResult_.netError = e.code;
+      }
+
+      this.pendingLoadPageCallback_({result: this.pendingLoadPageResult_});
     }
   }
 
@@ -137,7 +137,11 @@
 
     properties: {
       /** True if the webview loaded the page. */
-      pageLoaded_: {type: Boolean, value: false},
+      isReady_: {type: Boolean, value: false},
+
+      hideBackButton_: {type: Boolean, value: true},
+      hideSkipButton_: {type: Boolean, value: true},
+      hideNextButton_: {type: Boolean, value: true},
     },
 
     /** Overridden from LoginScreenBehavior. */
@@ -167,13 +171,10 @@
       this.hostCallbackRouter_ =
           new chromeos.supervision.mojom.OnboardingWebviewHostCallbackRouter();
 
-      this.hostCallbackRouter_.loadPage.addListener(p => {
-        this.pageLoaded_ = false;
-        return this.webviewLoader_.loadPage(p).then(response => {
-          this.pageLoaded_ = true;
-          return response;
-        });
-      });
+      this.hostCallbackRouter_.setPresentation.addListener(
+          this.setPresentation_.bind(this));
+      this.hostCallbackRouter_.loadPage.addListener(
+          this.webviewLoader_.loadPage.bind(this.webviewLoader_));
       this.hostCallbackRouter_.exitFlow.addListener(this.exitFlow_.bind(this));
 
       this.controller_.bindWebviewHost(this.hostCallbackRouter_.createProxy());
@@ -185,6 +186,19 @@
         commonScreenSize: true,
         resetAllowed: true,
       });
+    },
+
+    /**
+     * @param {!chromeos.supervision.mojom.OnboardingPresentation} presentation
+     * @private
+     */
+    setPresentation_: function(presentation) {
+      this.isReady_ = presentation.state ==
+          chromeos.supervision.mojom.OnboardingPresentationState.kReady;
+
+      this.hideBackButton_ = !presentation.canShowPreviousPage;
+      this.hideSkipButton_ = !presentation.canSkipFlow;
+      this.hideNextButton_ = !presentation.canShowNextPage;
     },
 
     /** @private */

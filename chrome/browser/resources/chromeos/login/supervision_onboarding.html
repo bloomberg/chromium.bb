@@ -20,30 +20,30 @@
     <link rel="stylesheet" href="supervision_onboarding.css">
     <div id="supervision-onboarding-flow-container">
       <oobe-dialog id="loading-dialog" role="dialog" no-header no-footer-padding
-          hidden="[[pageLoaded_]]">
+          hidden="[[isReady_]]">
         <div slot="footer" class="flex layout vertical center center-justified">
           <throbber-notice text="$i18n{supervisionOnboardingWaitMessage}">
           </throbber-notice>
         </div>
       </oobe-dialog>
       <oobe-dialog id="supervision-onboarding-content" role="dialog" no-header
-          no-footer-padding has-buttons hidden="[[!pageLoaded_]]">
+          no-footer-padding has-buttons hidden="[[!isReady_]]">
         <webview id="supervisionOnboardingWebview" slot="footer">
         </webview>
         <div id="supervision-onboarding-flow-buttons" slot="bottom-buttons"
             class="layout horizontal end-justified">
           <oobe-back-button id="supervision-onboarding-back-button"
-              on-tap="onBack_">
+              hidden="[[hideBackButton_]]" on-tap="onBack_">
             <div i18n-content="supervisionOnboardingBackButtonLabel"></div>
           </oobe-back-button>
           <div class="flex">
           </div>
           <oobe-text-button id="supervision-onboarding-skip-button" border
-              on-tap="onSkip_">
+              hidden="[[hideSkipButton_]]" on-tap="onSkip_">
             <div i18n-content="supervisionOnboardingSkipButtonLabel"></div>
           </oobe-text-button>
           <oobe-text-button id="supervision-onboarding-next-button" inverse
-              on-tap="onNext_">
+              hidden="[[hideNextButton_]]" on-tap="onNext_">
             <div i18n-content="supervisionOnboardingNextButtonLabel"></div>
           </oobe-text-button>
         </div>

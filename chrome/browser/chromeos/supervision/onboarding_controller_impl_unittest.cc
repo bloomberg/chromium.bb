@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/supervision/onboarding_controller_impl.h"
 
 #include <memory>
+#include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/macros.h"
@@ -16,6 +17,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/net_errors.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,6 +26,7 @@ namespace supervision {
 namespace {
 
 const char kTestAccountId[] = "test-account-id";
+const char kFakeAccessToken[] = "fake-access-token";
 
 }  // namespace
 
@@ -33,19 +36,24 @@ class FakeOnboardingWebviewHost : mojom::OnboardingWebviewHost {
       mojom::OnboardingWebviewHostRequest request)
       : binding_(this, std::move(request)) {}
 
-  void LoadPage(mojom::OnboardingPagePtr page,
-                LoadPageCallback callback) override {
-    ASSERT_FALSE(exited_flow_);
+  void ExpectPresentations(const std::vector<mojom::OnboardingPresentation>&
+                               expected_presentations) {
+    ASSERT_EQ(presentations_.size(), expected_presentations.size());
 
-    page_loaded_ = *page;
+    for (std::size_t i = 0; i < expected_presentations.size(); ++i) {
+      const auto& expected_presentation = expected_presentations[i];
+      const auto& presentation = presentations_[i];
+      EXPECT_TRUE(presentation->Equals(expected_presentation));
 
-    std::move(callback).Run(custom_header_value_);
-  }
-
-  void ExitFlow() override {
-    ASSERT_FALSE(exited_flow_);
-
-    exited_flow_ = true;
+      // To yield more readable errors, we also test each property individually.
+      EXPECT_EQ(expected_presentation.state, presentation->state);
+      EXPECT_EQ(expected_presentation.can_show_next_page,
+                presentation->can_show_next_page);
+      EXPECT_EQ(expected_presentation.can_show_previous_page,
+                presentation->can_show_previous_page);
+      EXPECT_EQ(expected_presentation.can_skip_flow,
+                presentation->can_skip_flow);
+    }
   }
 
   bool exited_flow() const { return exited_flow_; }
@@ -54,23 +62,44 @@ class FakeOnboardingWebviewHost : mojom::OnboardingWebviewHost {
     return page_loaded_;
   }
 
-  void clear_custom_header_value() { custom_header_value_ = base::nullopt; }
-
-  void set_custom_header_value(const std::string& custom_header_value) {
-    custom_header_value_ = custom_header_value;
+  void set_load_page_result(const mojom::OnboardingLoadPageResult& result) {
+    load_page_result_ = result;
   }
 
  private:
+  void SetPresentation(mojom::OnboardingPresentationPtr presentation) override {
+    presentations_.push_back(std::move(presentation));
+  }
+
+  void LoadPage(mojom::OnboardingPagePtr page,
+                LoadPageCallback callback) override {
+    ASSERT_FALSE(exited_flow_);
+
+    page_loaded_ = *page;
+
+    std::move(callback).Run(load_page_result_.Clone());
+  }
+
+  void ExitFlow() override {
+    ASSERT_FALSE(exited_flow_);
+
+    exited_flow_ = true;
+  }
+
   mojo::Binding<mojom::OnboardingWebviewHost> binding_;
 
+  mojom::OnboardingLoadPageResult load_page_result_{
+      net::Error::OK, kDeviceOnboardingExperimentName};
+
   bool exited_flow_ = false;
-  base::Optional<std::string> custom_header_value_;
+
+  std::vector<mojom::OnboardingPresentationPtr> presentations_;
   base::Optional<mojom::OnboardingPage> page_loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeOnboardingWebviewHost);
 };
 
-class OnboardingControllerTest : public testing::Test {
+class OnboardingControllerBaseTest : public testing::Test {
  protected:
   void SetUp() override {
     profile_ = IdentityTestEnvironmentProfileAdaptor::
@@ -86,15 +115,9 @@ class OnboardingControllerTest : public testing::Test {
     controller_impl_->BindRequest(mojo::MakeRequest(&controller_));
   }
 
-  void BindWebviewHost() {
-    mojom::OnboardingWebviewHostPtr webview_host_proxy;
-    webview_host_ = std::make_unique<FakeOnboardingWebviewHost>(
-        mojo::MakeRequest(&webview_host_proxy));
+  void BindHostAndSetupFailedAuth() {
+    BindWebviewHost();
 
-    controller_->BindWebviewHost(std::move(webview_host_proxy));
-  }
-
-  void WaitForAuthRequestAndReturnError() {
     identity_test_env()
         ->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
             GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
@@ -102,12 +125,36 @@ class OnboardingControllerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void WaitForAuthRequestAndReturnToken(const std::string& access_token) {
-    identity_test_env()
-        ->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-            access_token, base::Time::Now() + base::TimeDelta::FromHours(1));
+  void BindHostAndReturnLoadPageSuccess() {
+    mojom::OnboardingLoadPageResult result;
+    result.net_error = net::Error::OK;
+    result.custom_header_value = kDeviceOnboardingExperimentName;
 
-    base::RunLoop().RunUntilIdle();
+    BindWebviewHostAndReturnResult(result);
+  }
+
+  void BindHostAndReturnLoadPageError() {
+    mojom::OnboardingLoadPageResult result;
+    result.net_error = net::Error::ERR_FAILED;
+    result.custom_header_value = kDeviceOnboardingExperimentName;
+
+    BindWebviewHostAndReturnResult(result);
+  }
+
+  void BindHostAndReturnMissingCustomHeader() {
+    mojom::OnboardingLoadPageResult result;
+    result.net_error = net::Error::OK;
+    result.custom_header_value = base::nullopt;
+
+    BindWebviewHostAndReturnResult(result);
+  }
+
+  void BindHostAndReturnWrongCustomHeader() {
+    mojom::OnboardingLoadPageResult result;
+    result.net_error = net::Error::OK;
+    result.custom_header_value = "clearly-wrong-header-value";
+
+    BindWebviewHostAndReturnResult(result);
   }
 
   Profile* profile() { return profile_.get(); }
@@ -119,6 +166,26 @@ class OnboardingControllerTest : public testing::Test {
   FakeOnboardingWebviewHost* webview_host() { return webview_host_.get(); }
 
  private:
+  void BindWebviewHost() {
+    mojom::OnboardingWebviewHostPtr webview_host_proxy;
+    webview_host_ = std::make_unique<FakeOnboardingWebviewHost>(
+        mojo::MakeRequest(&webview_host_proxy));
+
+    controller_->BindWebviewHost(std::move(webview_host_proxy));
+  }
+
+  void BindWebviewHostAndReturnResult(
+      const mojom::OnboardingLoadPageResult& result) {
+    BindWebviewHost();
+    webview_host()->set_load_page_result(result);
+    identity_test_env()
+        ->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+            kFakeAccessToken,
+            base::Time::Now() + base::TimeDelta::FromHours(1));
+
+    base::RunLoop().RunUntilIdle();
+  }
+
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
@@ -128,25 +195,64 @@ class OnboardingControllerTest : public testing::Test {
   std::unique_ptr<FakeOnboardingWebviewHost> webview_host_;
 };
 
-TEST_F(OnboardingControllerTest, ExitFlowOnAuthError) {
-  BindWebviewHost();
+class OnboardingControllerFlowDisabledTest
+    : public OnboardingControllerBaseTest {
+ protected:
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kSupervisionOnboardingScreens);
 
-  WaitForAuthRequestAndReturnError();
+    OnboardingControllerBaseTest::SetUp();
+  }
 
-  EXPECT_FALSE(webview_host()->page_loaded().has_value());
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(OnboardingControllerFlowDisabledTest, ExitFlowWhenFlowIsDisabled) {
+  BindHostAndReturnLoadPageSuccess();
+
   EXPECT_TRUE(webview_host()->exited_flow());
 }
 
-TEST_F(OnboardingControllerTest, RequestWebviewHostToLoadStartPageCorrectly) {
-  BindWebviewHost();
+TEST_F(OnboardingControllerFlowDisabledTest,
+       PresentOnlyLoadingStateWhenFlowIsDisabled) {
+  BindHostAndReturnLoadPageSuccess();
 
-  WaitForAuthRequestAndReturnToken("fake_access_token");
+  mojom::OnboardingPresentation loading;
+  loading.state = mojom::OnboardingPresentationState::kLoading;
+
+  webview_host()->ExpectPresentations({loading});
+}
+
+TEST_F(OnboardingControllerFlowDisabledTest,
+       SetEligibleForKioskNextWhenFlowIsDisabled) {
+  BindHostAndReturnLoadPageSuccess();
+
+  EXPECT_TRUE(
+      profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
+}
+
+class OnboardingControllerTest : public OnboardingControllerBaseTest {
+ protected:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kSupervisionOnboardingScreens);
+
+    OnboardingControllerBaseTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(OnboardingControllerTest, RequestWebviewHostToLoadStartPageCorrectly) {
+  BindHostAndReturnLoadPageSuccess();
 
   ASSERT_TRUE(webview_host()->page_loaded().has_value());
-
   EXPECT_EQ(webview_host()->page_loaded()->url,
             GURL("https://families.google.com/kids/deviceonboarding/start"));
-  EXPECT_EQ(webview_host()->page_loaded()->access_token, "fake_access_token");
+  EXPECT_EQ(webview_host()->page_loaded()->access_token, kFakeAccessToken);
   EXPECT_EQ(webview_host()->page_loaded()->custom_header_name,
             kExperimentHeaderName);
   EXPECT_EQ(webview_host()->page_loaded()->url_filter_pattern,
@@ -158,78 +264,131 @@ TEST_F(OnboardingControllerTest, OverridePageUrlsByCommandLine) {
       chromeos::switches::kSupervisionOnboardingUrlPrefix,
       "https://example.com/");
 
-  BindWebviewHost();
-
-  WaitForAuthRequestAndReturnToken("fake_access_token");
+  BindHostAndReturnLoadPageSuccess();
 
   ASSERT_TRUE(webview_host()->page_loaded().has_value());
-
   EXPECT_EQ(webview_host()->page_loaded()->url,
             GURL("https://example.com/kids/deviceonboarding/start"));
-  EXPECT_EQ(webview_host()->page_loaded()->access_token, "fake_access_token");
+  EXPECT_EQ(webview_host()->page_loaded()->access_token, kFakeAccessToken);
   EXPECT_EQ(webview_host()->page_loaded()->custom_header_name,
             kExperimentHeaderName);
   EXPECT_EQ(webview_host()->page_loaded()->url_filter_pattern,
             "https://example.com/*");
 }
 
-TEST_F(OnboardingControllerTest,
-       StayInFlowWhenHeaderValueIsCorrectAndFlagIsSet) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kSupervisionOnboardingScreens);
-  BindWebviewHost();
-
-  webview_host()->set_custom_header_value(kDeviceOnboardingExperimentName);
-  WaitForAuthRequestAndReturnToken("fake_access_token");
+TEST_F(OnboardingControllerTest, StayInFlowWhenLoadSucceeds) {
+  BindHostAndReturnLoadPageSuccess();
 
   EXPECT_FALSE(webview_host()->exited_flow());
 }
 
-TEST_F(OnboardingControllerTest, ExitFlowWhenFlagIsNotSet) {
-  BindWebviewHost();
+TEST_F(OnboardingControllerTest, PresentReadyStateWhenLoadSucceeds) {
+  BindHostAndReturnLoadPageSuccess();
 
-  webview_host()->set_custom_header_value(kDeviceOnboardingExperimentName);
-  WaitForAuthRequestAndReturnToken("fake_access_token");
+  mojom::OnboardingPresentation loading;
+  loading.state = mojom::OnboardingPresentationState::kLoading;
 
-  EXPECT_TRUE(webview_host()->exited_flow());
+  mojom::OnboardingPresentation ready;
+  ready.state = mojom::OnboardingPresentationState::kReady;
+  ready.can_show_next_page = true;
+  ready.can_skip_flow = true;
+
+  webview_host()->ExpectPresentations({loading, ready});
 }
 
-TEST_F(OnboardingControllerTest, ExitFlowWhenHeaderValueIsMissing) {
-  BindWebviewHost();
-
-  webview_host()->clear_custom_header_value();
-  WaitForAuthRequestAndReturnToken("fake_access_token");
-
-  EXPECT_TRUE(webview_host()->exited_flow());
-}
-
-TEST_F(OnboardingControllerTest, ExitFlowWhenHeaderValueIsWrong) {
-  BindWebviewHost();
-
-  webview_host()->set_custom_header_value("clearly-wrong-header-value");
-  WaitForAuthRequestAndReturnToken("fake_access_token");
-
-  EXPECT_TRUE(webview_host()->exited_flow());
-}
-
-TEST_F(OnboardingControllerTest,
-       SetEligibleForKioskNextWhenHeaderValueIsCorrect) {
-  BindWebviewHost();
-
-  webview_host()->set_custom_header_value(kDeviceOnboardingExperimentName);
-  WaitForAuthRequestAndReturnToken("fake_access_token");
+TEST_F(OnboardingControllerTest, SetEligibleForKioskNextWhenLoadSucceeds) {
+  BindHostAndReturnLoadPageSuccess();
 
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
 }
 
+TEST_F(OnboardingControllerTest, ExitFlowOnAuthError) {
+  BindHostAndSetupFailedAuth();
+
+  EXPECT_FALSE(webview_host()->page_loaded().has_value());
+  EXPECT_TRUE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest, PresentOnlyLoadingStateOnAuthError) {
+  BindHostAndSetupFailedAuth();
+
+  mojom::OnboardingPresentation loading;
+  loading.state = mojom::OnboardingPresentationState::kLoading;
+  webview_host()->ExpectPresentations({loading});
+}
+
+TEST_F(OnboardingControllerTest, SetNotEligibleForKioskNextOnAuthError) {
+  BindHostAndSetupFailedAuth();
+
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
+}
+
+TEST_F(OnboardingControllerTest, ExitFlowOnLoadPageError) {
+  BindHostAndReturnLoadPageError();
+
+  EXPECT_TRUE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest, PresentOnlyLoadingStateOnLoadPageError) {
+  BindHostAndReturnLoadPageError();
+
+  mojom::OnboardingPresentation loading;
+  loading.state = mojom::OnboardingPresentationState::kLoading;
+  webview_host()->ExpectPresentations({loading});
+}
+
+TEST_F(OnboardingControllerTest, SetNotEligibleForKioskNextOnLoadPageError) {
+  BindHostAndReturnLoadPageError();
+
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
+}
+
+TEST_F(OnboardingControllerTest, ExitFlowWhenHeaderValueIsMissing) {
+  BindHostAndReturnMissingCustomHeader();
+
+  EXPECT_TRUE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest,
+       PresentOnlyLoadingStateWhenHeaderValueIsMissing) {
+  BindHostAndReturnMissingCustomHeader();
+
+  mojom::OnboardingPresentation loading;
+  loading.state = mojom::OnboardingPresentationState::kLoading;
+
+  webview_host()->ExpectPresentations({loading});
+}
+
+TEST_F(OnboardingControllerTest,
+       SetNotEligibleForKioskNextWhenHeaderValueIsMissing) {
+  BindHostAndReturnMissingCustomHeader();
+
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
+}
+
+TEST_F(OnboardingControllerTest, ExitFlowWhenHeaderValueIsWrong) {
+  BindHostAndReturnWrongCustomHeader();
+
+  EXPECT_TRUE(webview_host()->exited_flow());
+}
+
+TEST_F(OnboardingControllerTest,
+       PresentOnlyLoadingStateWhenHeaderValueIsWrong) {
+  BindHostAndReturnWrongCustomHeader();
+
+  mojom::OnboardingPresentation loading;
+  loading.state = mojom::OnboardingPresentationState::kLoading;
+
+  webview_host()->ExpectPresentations({loading});
+}
+
 TEST_F(OnboardingControllerTest,
        SetNotEligibleForKioskNextWhenHeaderValueIsWrong) {
-  BindWebviewHost();
-
-  webview_host()->set_custom_header_value("clearly-wrong-header-value");
-  WaitForAuthRequestAndReturnToken("fake_access_token");
+  BindHostAndReturnWrongCustomHeader();
 
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(ash::prefs::kKioskNextShellEligible));
