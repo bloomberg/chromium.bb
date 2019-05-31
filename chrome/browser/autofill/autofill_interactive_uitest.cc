@@ -269,11 +269,16 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
   // InProcessBrowserTest:
   void SetUp() override {
+    LOG(ERROR) << "crbug/967588: AutofillInteractiveTestBase::SetUp() entered";
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    LOG(ERROR) << "crbug/967588: embedded_test_server InitializeAndListen";
     InProcessBrowserTest::SetUp();
+    LOG(ERROR) << "crbug/967588: AutofillInteractiveTestBase::SetUp() exited";
   }
 
   void SetUpOnMainThread() override {
+    LOG(ERROR) << "crbug/967588: "
+                  "AutofillInteractiveTestBase::SetUpOnMainThread() entered";
     AutofillUiTest::SetUpOnMainThread();
 
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
@@ -282,6 +287,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
         &AutofillInteractiveTestBase::HandleTestURL, base::Unretained(this)));
     ASSERT_TRUE(https_server_.InitializeAndListen());
     https_server_.StartAcceptingConnections();
+    LOG(ERROR) << "crbug/967588: https_server started accepting connections";
 
     controllable_http_response_ =
         std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -293,10 +299,14 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &AutofillInteractiveTestBase::HandleTestURL, base::Unretained(this)));
     embedded_test_server()->StartAcceptingConnections();
+    LOG(ERROR)
+        << "crbug/967588: embedded_test_server started accepting connections";
 
     // By default, all SSL cert checks are valid. Can be overriden in tests if
     // needed.
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
+    LOG(ERROR) << "crbug/967588: "
+                  "AutofillInteractiveTestBase::SetUpOnMainThread() exited";
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
