@@ -1126,6 +1126,11 @@ interface PushSubscription
     method getKey
     method toJSON
     method unsubscribe
+interface PushSubscriptionChangeEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter newSubscription
+    getter oldSubscription
+    method constructor
 interface PushSubscriptionOptions
     attribute @@toStringTag
     getter applicationServerKey

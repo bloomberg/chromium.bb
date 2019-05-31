@@ -1227,6 +1227,10 @@
       status: "stable",
     },
     {
+      name: "PushMessagingSubscriptionChange",
+      status: "experimental",
+    },
+    {
       name: "RasterInducingScroll",
       status: "experimental",
     },
