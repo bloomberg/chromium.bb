@@ -1187,39 +1187,50 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 #backgrounds-default-icon {
   background-color: white;
   background-repeat: no-repeat;
-  height: 174px;
+  margin: auto;
   opacity: 1;
-  width: 174px;
 }
 
-#backgrounds-default-icon-header {
+.mini-page {
+  margin: auto;
+  padding-top: 26px;
+  width: fit-content;
+}
+
+.mini-header {
   -webkit-mask-image: url(icons/header.svg);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
-  background-color: rgb(var(--GG500-rgb));
-  height: 50px;
-  margin-inline-start: 17px;
-  margin-top: 24px;
-  position: absolute;
-  width: 140px;
+  background-color: rgb(var(--GG300-rgb));
+  height: 40px;
+  width: 130px;
 }
 
-#backgrounds-default-icon-shortcuts {
+.mini-shortcuts {
   -webkit-mask-image: url(icons/shortcut-circles.svg);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
-  background-color: rgb(var(--GG500-rgb));
-  height: 50px;
-  margin-inline-start: 17px;
-  margin-top: 86px;
-  position: absolute;
-  width: 140px;
+  background-color: rgb(var(--GG300-rgb));
+  height: 42px;
+  margin-inline-start: 7px;
+  margin-top: 12px;
+  width: 116px;
 }
 
-.selected #backgrounds-default-icon-header,
-.selected #backgrounds-default-icon-shortcuts {
-  margin-inline-start: 14px;
-  width: 116px;
+#backgrounds-default:not(.selected) .mini-page {
+  padding-top: 32px;
+}
+
+#backgrounds-default:not(.selected) .mini-header {
+  height: 48px;
+  width: 156px;
+}
+
+#backgrounds-default:not(.selected) .mini-shortcuts {
+  height: 50px;
+  margin-inline-start: 8px;
+  margin-top: 14px;
+  width: 140px;
 }
 
 #shortcuts-menu {
@@ -1249,6 +1260,7 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 4px;
+  box-sizing: border-box;
   height: 176px;
   position: relative;
   width: 268px;
@@ -1258,6 +1270,7 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 4px;
+  box-sizing: border-box;
   height: 144px;
   position: absolute;
   right: 40px;
@@ -1268,6 +1281,10 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 html[dir=rtl] .sh-option-mini {
   left: 40px;
   right: unset;
+}
+
+.sh-option-mini .mini-shortcuts {
+  background-color: rgb(var(--GG500-rgb));
 }
 
 .sh-option-icon {
@@ -1302,6 +1319,7 @@ html[dir=rtl] .sh-option-icon {
   background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 4px;
+  box-sizing: border-box;
   display: flex;
   height: 64px;
   margin-top: 24px;
