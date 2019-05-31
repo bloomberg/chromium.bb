@@ -692,7 +692,7 @@ void ServiceWorkerGlobalScope::DispatchOrQueueFetchEvent(
   DCHECK(IsContextThread());
   TRACE_EVENT2("ServiceWorker",
                "ServiceWorkerGlobalScope::DispatchOrQueueFetchEvent", "url",
-               params->request->url.ElidedString().Utf8().data(), "queued",
+               params->request->url.ElidedString().Utf8(), "queued",
                RequestedTermination() ? "true" : "false");
   if (RequestedTermination()) {
     timeout_timer_->PushPendingTask(WTF::Bind(
@@ -1581,7 +1581,7 @@ void ServiceWorkerGlobalScope::DispatchFetchEvent(
       TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
                           TRACE_ID_LOCAL(event_id)),
       TRACE_EVENT_FLAG_FLOW_OUT, "url",
-      params->request->url.ElidedString().Utf8().data());
+      params->request->url.ElidedString().Utf8());
 
   // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
   const bool navigation_preload_sent = !!params->preload_handle;
