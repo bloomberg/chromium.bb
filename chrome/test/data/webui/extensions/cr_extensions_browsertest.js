@@ -73,7 +73,7 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
 /**
  * Test fixture with one installed extension.
  */
-CrExtensionsBrowserTestWithInstalledExtension =
+const CrExtensionsBrowserTestWithInstalledExtension =
     class extends CrExtensionsBrowserTest {
   /** @override */
   testGenPreamble() {
@@ -85,7 +85,8 @@ CrExtensionsBrowserTestWithInstalledExtension =
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Sidebar Tests
 
-CrExtensionsSidebarTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsSidebarTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/sidebar.html';
@@ -115,7 +116,8 @@ TEST_F('CrExtensionsSidebarTest', 'SetSelected', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Toolbar Tests
 
-CrExtensionsToolbarTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsToolbarTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
@@ -156,7 +158,8 @@ GEN('#endif');
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Item Tests
 
-CrExtensionsItemsTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsItemsTest = class extends CrExtensionsBrowserTest {
   get browsePreload() {
     return 'chrome://extensions/item.html';
   }
@@ -215,7 +218,8 @@ TEST_F('CrExtensionsItemsTest', 'HtmlInName', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Activity Log Tests
 
-CrExtensionsActivityLogTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsActivityLogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/activity_log/activity_log.html';
@@ -241,7 +245,8 @@ TEST_F('CrExtensionsActivityLogTest', 'All', () => {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Activity Log History Tests
 
-CrExtensionsActivityLogHistoryTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsActivityLogHistoryTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/activity_log/activity_log_history.html';
@@ -261,7 +266,9 @@ TEST_F('CrExtensionsActivityLogHistoryTest', 'All', () => {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Activity Log Item Tests
 
-CrExtensionsActivityLogHistoryItemTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsActivityLogHistoryItemTest =
+    class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/activity_log/activity_log_history_item.html';
@@ -281,7 +288,8 @@ TEST_F('CrExtensionsActivityLogHistoryItemTest', 'All', () => {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Activity Log Stream Tests
 
-CrExtensionsActivityLogStreamTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsActivityLogStreamTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/activity_log/activity_log_stream.html';
@@ -301,7 +309,9 @@ TEST_F('CrExtensionsActivityLogStreamTest', 'All', () => {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Activity Log Stream Item Tests
 
-CrExtensionsActivityLogStreamItemTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsActivityLogStreamItemTest =
+    class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/activity_log/activity_log_stream_item.html';
@@ -321,7 +331,8 @@ TEST_F('CrExtensionsActivityLogStreamItemTest', 'All', () => {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Detail View Tests
 
-CrExtensionsDetailViewTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsDetailViewTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/detail_view.html';
@@ -363,7 +374,8 @@ TEST_F('CrExtensionsDetailViewTest', 'Warnings', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Item List Tests
 
-CrExtensionsItemListTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsItemListTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/item_list.html';
@@ -413,7 +425,8 @@ TEST_F('CrExtensionsItemListTest', 'LoadTimeData', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Load Error Tests
 
-CrExtensionsLoadErrorTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsLoadErrorTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
@@ -442,7 +455,8 @@ TEST_F('CrExtensionsLoadErrorTest', 'CodeSection', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Manager Tests
 
-CrExtensionsManagerUnitTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsManagerUnitTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/manager.html';
@@ -502,7 +516,8 @@ TEST_F('CrExtensionsManagerUnitTest', 'KioskMode', function() {
 });
 GEN('#endif');
 
-CrExtensionsManagerUnitTestWithActivityLogFlag =
+// eslint-disable-next-line no-var
+var CrExtensionsManagerUnitTestWithActivityLogFlag =
     class extends CrExtensionsManagerUnitTest {
   /** @override */
   get commandLineSwitches() {
@@ -519,7 +534,8 @@ TEST_F(
           extension_manager_tests.TestNames.UpdateFromActivityLog);
     });
 
-CrExtensionsManagerTestWithMultipleExtensionTypesInstalled =
+// eslint-disable-next-line no-var
+var CrExtensionsManagerTestWithMultipleExtensionTypesInstalled =
     class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
@@ -561,7 +577,8 @@ TEST_F(
       this.runMochaTest(extension_manager_tests.TestNames.ChangePages);
     });
 
-CrExtensionsManagerTestWithIdQueryParam =
+// eslint-disable-next-line no-var
+var CrExtensionsManagerTestWithIdQueryParam =
     class extends CrExtensionsBrowserTestWithInstalledExtension {
   /** @override */
   get browsePreload() {
@@ -616,7 +633,8 @@ TEST_F(
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Keyboard Shortcuts Tests
 
-CrExtensionsShortcutTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsShortcutTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/keyboard_shortcuts.html';
@@ -651,7 +669,8 @@ TEST_F('CrExtensionsShortcutTest', 'ScopeChange', function() {
   this.runMochaTest(extension_shortcut_tests.TestNames.ScopeChange);
 });
 
-CrExtensionsShortcutInputTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsShortcutInputTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/keyboard_shortcuts.html';
@@ -677,7 +696,8 @@ TEST_F('CrExtensionsShortcutInputTest', 'Basic', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Pack Dialog Tests
 
-CrExtensionsPackDialogTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsPackDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
@@ -725,7 +745,8 @@ TEST_F('CrExtensionsPackDialogTest', 'MAYBE_PackWarning', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Options Dialog Tests
 
-CrExtensionsOptionsDialogTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsOptionsDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   testGenPreamble() {
     GEN('  InstallExtensionWithInPageOptions();');
@@ -752,7 +773,8 @@ TEST_F('CrExtensionsOptionsDialogTest', 'Layout', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Error Page Tests
 
-CrExtensionsErrorPageTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsErrorPageTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/error_page.html';
@@ -786,7 +808,8 @@ TEST_F('CrExtensionsErrorPageTest', 'ErrorSelection', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Code Section Tests
 
-CrExtensionsCodeSectionTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsCodeSectionTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
@@ -811,7 +834,8 @@ TEST_F('CrExtensionsCodeSectionTest', 'LongSource', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Navigation Helper Tests
 
-CrExtensionsNavigationHelperTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsNavigationHelperTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/navigation_helper.html';
@@ -857,7 +881,8 @@ TEST_F('CrExtensionsNavigationHelperTest', 'SupportedRoutes', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Error Console tests
 
-CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
@@ -891,7 +916,8 @@ TEST_F('CrExtensionsErrorConsoleTest', 'TestUpDownErrors', () => {
 ////////////////////////////////////////////////////////////////////////////////
 // extensions-toggle-row tests.
 
-CrExtensionsToggleRowTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsToggleRowTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/toggle_row.html';
@@ -914,7 +940,8 @@ TEST_F('CrExtensionsToggleRowTest', 'ToggleRowTest', function() {
 
 GEN('#if defined(OS_CHROMEOS)');
 
-CrExtensionsKioskModeTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsKioskModeTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/kiosk_dialog.html';
@@ -962,7 +989,8 @@ GEN('#endif');
 ////////////////////////////////////////////////////////////////////////////////
 // RuntimeHostsDialog tests
 
-CrExtensionsRuntimeHostsDialogTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsRuntimeHostsDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/runtime_hosts_dialog.html';
@@ -982,7 +1010,9 @@ TEST_F('CrExtensionsRuntimeHostsDialogTest', 'All', () => {
 ////////////////////////////////////////////////////////////////////////////////
 // RuntimeHostPermissions tests
 
-CrExtensionsRuntimeHostPermissionsTest = class extends CrExtensionsBrowserTest {
+// eslint-disable-next-line no-var
+var CrExtensionsRuntimeHostPermissionsTest =
+    class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/runtime_host_permissions.html';
@@ -1002,7 +1032,8 @@ TEST_F('CrExtensionsRuntimeHostPermissionsTest', 'All', () => {
 ////////////////////////////////////////////////////////////////////////////////
 // HostPermissionsToggleList tests
 
-CrExtensionsHostPermissionsToggleListTest =
+// eslint-disable-next-line no-var
+var CrExtensionsHostPermissionsToggleListTest =
     class extends CrExtensionsBrowserTest {
   /** @override */
   get browsePreload() {

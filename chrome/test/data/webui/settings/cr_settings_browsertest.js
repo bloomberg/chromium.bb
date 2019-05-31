@@ -2557,7 +2557,8 @@ TEST_F('CrSettingsAddUsersTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
-CrSettingsSplitSettingsFlagTest = class extends CrSettingsBrowserTest {
+// eslint-disable-next-line no-var
+var CrSettingsSplitSettingsFlagTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://settings/basic_page/basic_page.html';

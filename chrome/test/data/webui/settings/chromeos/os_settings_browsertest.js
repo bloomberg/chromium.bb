@@ -42,7 +42,8 @@ const OSSettingsBrowserTest = class extends PolymerTest {
 };
 
 // Test fixture for the Smb Shares page.
-OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
+// eslint-disable-next-line no-var
+var OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
     return super.browsePreload + 'os_downloads_page/smb_shares_page.html';

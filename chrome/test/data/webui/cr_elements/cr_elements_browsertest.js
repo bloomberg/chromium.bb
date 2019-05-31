@@ -594,7 +594,8 @@ GEN('#endif');
 ////////////////////////////////////////////////////////////////////////////////
 // View Manager Tests
 
-CrElementsViewManagerTest = class extends CrElementsBrowserTest {
+// eslint-disable-next-line no-var
+var CrElementsViewManagerTest = class extends CrElementsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.html';

@@ -12,7 +12,8 @@ GEN_INCLUDE([
   'settings_accessibility_test.js',
 ]);
 
-TtsAccessibilityTest = class extends SettingsAccessibilityTest {
+// eslint-disable-next-line no-var
+var TtsAccessibilityTest = class extends SettingsAccessibilityTest {
   /** @override */
   get commandLineSwitches() {
     return ['enable-experimental-a11y-features'];

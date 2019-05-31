@@ -15,7 +15,8 @@ GEN('#include "chrome/browser/ui/webui/extensions/' +
  * @constructor
  * @extends {PolymerTest}
  */
-CrExtensionsA11yTest = class extends PolymerTest {
+// eslint-disable-next-line no-var
+var CrExtensionsA11yTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/';

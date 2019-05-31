@@ -10,7 +10,8 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chromeos/constants/chromeos_features.h"');
 
 // Test fixture for the top-level OS settings UI.
-OSSettingsUIBrowserTest = class extends PolymerTest {
+// eslint-disable-next-line no-var
+var OSSettingsUIBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://os-settings/';

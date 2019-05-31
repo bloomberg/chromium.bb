@@ -44,7 +44,8 @@ const PrintPreviewTest = class extends PolymerTest {
   }
 };
 
-PrintPreviewAppTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewAppTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -77,7 +78,8 @@ TEST_F('PrintPreviewAppTest', 'PrintPresets', function() {
   this.runMochaTest(print_preview_app_test.TestNames.PrintPresets);
 });
 
-PrintPreviewSidebarTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewSidebarTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/sidebar.html';
@@ -107,7 +109,8 @@ TEST_F(
                             .SettingsSectionsVisibilityChange);
     });
 
-PrintPreviewPagesSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewPagesSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/pages_settings.html';
@@ -144,7 +147,8 @@ TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
   this.runMochaTest(pages_settings_test.TestNames.NupChangesPages);
 });
 
-PrintPreviewPolicyTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewPolicyTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -184,7 +188,8 @@ TEST_F('PrintPreviewPolicyTest', 'DisableHeaderFooterByPolicy', function() {
   this.runMochaTest(policy_tests.TestNames.DisableHeaderFooterByPolicy);
 });
 
-PrintPreviewSettingsSelectTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewSettingsSelectTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/settings_select.html';
@@ -204,7 +209,8 @@ TEST_F('PrintPreviewSettingsSelectTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewSelectBehaviorTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewSelectBehaviorTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/select_behavior.html';
@@ -234,7 +240,8 @@ TEST_F('PrintPreviewSelectBehaviorTest', 'CallProcessSelectChange', function() {
   this.runMochaTest(select_behavior_test.TestNames.CallProcessSelectChange);
 });
 
-PrintPreviewNumberSettingsSectionTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewNumberSettingsSectionTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/number_settings_section.html';
@@ -260,7 +267,8 @@ TEST_F(
           number_settings_section_test.TestNames.BlocksInvalidKeys);
     });
 
-PrintPreviewRestoreStateTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewRestoreStateTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -295,7 +303,8 @@ TEST_F('PrintPreviewRestoreStateTest', 'SaveValues', function() {
   this.runMochaTest(restore_state_test.TestNames.SaveValues);
 });
 
-PrintPreviewModelTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewModelTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/data/model.html';
@@ -336,7 +345,8 @@ TEST_F('PrintPreviewModelTest', 'ChangeDestination', function() {
   this.runMochaTest(model_test.TestNames.ChangeDestination);
 });
 
-PrintPreviewModelSettingsAvailabilityTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewModelSettingsAvailabilityTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/data/model.html';
@@ -357,7 +367,8 @@ TEST_F('PrintPreviewModelSettingsAvailabilityTest', 'All', function() {
 });
 
 GEN('#if defined(OS_CHROMEOS)');
-PrintPreviewModelSettingsPolicyTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewModelSettingsPolicyTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/data/model.html';
@@ -378,7 +389,8 @@ TEST_F('PrintPreviewModelSettingsPolicyTest', 'All', function() {
 });
 GEN('#endif');
 
-PrintPreviewPreviewGenerationTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewPreviewGenerationTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -467,7 +479,8 @@ TEST_F(
     });
 
 GEN('#if !defined(OS_CHROMEOS)');
-PrintPreviewLinkContainerTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewLinkContainerTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/link_container.html';
@@ -508,7 +521,8 @@ TEST_F('PrintPreviewLinkContainerTest', 'OpenInPreviewLinkClick', function() {
 GEN('#endif');  // defined(OS_MACOSX)
 
 GEN('#if defined(OS_WIN) || defined(OS_MACOSX)');
-PrintPreviewSystemDialogBrowserTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewSystemDialogBrowserTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -547,7 +561,8 @@ TEST_F(
     });
 GEN('#endif');  // defined(OS_WIN) || defined(OS_MACOSX)
 
-PrintPreviewInvalidSettingsBrowserTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewInvalidSettingsBrowserTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -600,7 +615,8 @@ TEST_F(
                             .InvalidCertificateErrorReselectDestination);
     });
 
-PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_settings.html';
@@ -691,7 +707,8 @@ TEST_F(
           destination_select_test.TestNames.MultipleRecentDestinationsAccounts);
     });
 
-PrintPreviewDestinationDialogTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationDialogTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_dialog.html';
@@ -737,7 +754,8 @@ TEST_F('PrintPreviewDestinationDialogTest', 'UserAccounts', function() {
   this.runMochaTest(destination_dialog_test.TestNames.UserAccounts);
 });
 
-PrintPreviewAdvancedDialogTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewAdvancedDialogTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/advanced_settings_dialog.html';
@@ -780,7 +798,8 @@ TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettingsFilter', function() {
   this.runMochaTest(advanced_dialog_test.TestNames.AdvancedSettingsFilter);
 });
 
-PrintPreviewPreviewAreaTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewPreviewAreaTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/preview_area.html';
@@ -808,7 +827,8 @@ TEST_F('PrintPreviewPreviewAreaTest', 'StateChanges', function() {
   this.runMochaTest(preview_area_test.TestNames.StateChanges);
 });
 
-PrintPreviewCustomMarginsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewCustomMarginsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/margin_control_container.html';
@@ -890,7 +910,8 @@ TEST_F('PrintPreviewCustomMarginsTest', 'ControlsDisabledOnError', function() {
   this.runMochaTest(custom_margins_test.TestNames.ControlsDisabledOnError);
 });
 
-PrintPreviewDestinationSearchTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationSearchTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_dialog.html';
@@ -945,7 +966,8 @@ TEST_F('PrintPreviewDestinationSearchTest', 'CloudKioskPrinter', function() {
   this.runMochaTest(destination_search_test.TestNames.CloudKioskPrinter);
 });
 
-PrintPreviewHeaderTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewHeaderTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/header.html';
@@ -989,7 +1011,8 @@ TEST_F('PrintPreviewHeaderTest', 'EnterprisePolicy', function() {
   this.runMochaTest(header_test.TestNames.EnterprisePolicy);
 });
 
-PrintPreviewHeaderNewTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewHeaderNewTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/header_new.html';
@@ -1029,7 +1052,8 @@ TEST_F('PrintPreviewHeaderNewTest', 'EnterprisePolicy', function() {
   this.runMochaTest(header_new_test.TestNames.EnterprisePolicy);
 });
 
-PrintPreviewButtonStripTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewButtonStripTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/button_strip.html';
@@ -1061,7 +1085,8 @@ TEST_F('PrintPreviewButtonStripTest', 'ButtonStripFiresEvents', function() {
   this.runMochaTest(button_strip_test.TestNames.ButtonStripFiresEvents);
 });
 
-PrintPreviewDestinationItemTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationItemTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_list_item.html';
@@ -1101,7 +1126,8 @@ TEST_F('PrintPreviewDestinationItemTest', 'QueryDescription', function() {
   this.runMochaTest(destination_item_test.TestNames.QueryDescription);
 });
 
-PrintPreviewAdvancedItemTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewAdvancedItemTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/advanced_settings_item.html';
@@ -1146,7 +1172,8 @@ TEST_F('PrintPreviewAdvancedItemTest', 'QueryOption', function() {
   this.runMochaTest(advanced_item_test.TestNames.QueryOption);
 });
 
-PrintPreviewDestinationListTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationListTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_list.html';
@@ -1176,7 +1203,8 @@ TEST_F(
           destination_list_test.TestNames.FireDestinationSelected);
     });
 
-PrintPreviewPrintButtonTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewPrintButtonTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -1207,7 +1235,8 @@ TEST_F('PrintPreviewPrintButtonTest', 'PDFPrintVisiblePreview', function() {
   this.runMochaTest(print_button_test.TestNames.PDFPrintVisiblePreview);
 });
 
-PrintPreviewKeyEventTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewKeyEventTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/app.html';
@@ -1269,7 +1298,8 @@ TEST_F('PrintPreviewKeyEventTest', 'CtrlShiftPOpensSystemDialog', function() {
   this.runMochaTest(key_event_test.TestNames.CtrlShiftPOpensSystemDialog);
 });
 
-PrintPreviewDestinationSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/destination_settings.html';
@@ -1352,7 +1382,8 @@ TEST_F(
           destination_settings_test.TestNames.UpdateRecentDestinations);
     });
 
-PrintPreviewScalingSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewScalingSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/scaling_settings.html';
@@ -1391,7 +1422,8 @@ TEST_F(
           scaling_settings_test.TestNames.InputNotDisabledOnValidityChange);
     });
 
-PrintPreviewCopiesSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewCopiesSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/copies_settings.html';
@@ -1411,7 +1443,8 @@ TEST_F('PrintPreviewCopiesSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewMediaSizeSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewMediaSizeSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/media_size_settings.html';
@@ -1431,7 +1464,8 @@ TEST_F('PrintPreviewMediaSizeSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewDpiSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewDpiSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/dpi_settings.html';
@@ -1451,7 +1485,8 @@ TEST_F('PrintPreviewDpiSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewOtherOptionsSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewOtherOptionsSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/other_options_settings.html';
@@ -1471,7 +1506,8 @@ TEST_F('PrintPreviewOtherOptionsSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewLayoutSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewLayoutSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/layout_settings.html';
@@ -1491,7 +1527,8 @@ TEST_F('PrintPreviewLayoutSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewColorSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewColorSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/color_settings.html';
@@ -1511,7 +1548,8 @@ TEST_F('PrintPreviewColorSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewMarginsSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewMarginsSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/margins_settings.html';
@@ -1531,7 +1569,8 @@ TEST_F('PrintPreviewMarginsSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewPagesPerSheetSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewPagesPerSheetSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/pages_per_sheet_settings.html';
@@ -1551,7 +1590,8 @@ TEST_F('PrintPreviewPagesPerSheetSettingsTest', 'All', function() {
   mocha.run();
 });
 
-PrintPreviewDuplexSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewDuplexSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/duplex_settings.html';
@@ -1572,7 +1612,8 @@ TEST_F('PrintPreviewDuplexSettingsTest', 'All', function() {
 });
 
 GEN('#if defined(OS_CHROMEOS)');
-PrintPreviewPinSettingsTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewPinSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/ui/pin_settings.html';
@@ -1593,7 +1634,8 @@ TEST_F('PrintPreviewPinSettingsTest', 'All', function() {
 });
 GEN('#endif');
 
-PrintPreviewUserManagerTest = class extends PrintPreviewTest {
+// eslint-disable-next-line no-var
+var PrintPreviewUserManagerTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
     return 'chrome://print/data/user_manager.html';

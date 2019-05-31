@@ -30,7 +30,9 @@ const OnboardingWelcomeBrowserTest = class extends PolymerTest {
   }
 };
 
-OnboardingWelcomeAppChooserTest = class extends OnboardingWelcomeBrowserTest {
+// eslint-disable-next-line no-var
+var OnboardingWelcomeAppChooserTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/google_apps/nux_google_apps.html';
@@ -51,7 +53,9 @@ TEST_F('OnboardingWelcomeAppChooserTest', 'All', function() {
   mocha.run();
 });
 
-OnboardingWelcomeWelcomeAppTest = class extends OnboardingWelcomeBrowserTest {
+// eslint-disable-next-line no-var
+var OnboardingWelcomeWelcomeAppTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/welcome_app.html';
@@ -73,7 +77,9 @@ TEST_F('OnboardingWelcomeWelcomeAppTest', 'All', function() {
   mocha.run();
 });
 
-OnboardingWelcomeSigninViewTest = class extends OnboardingWelcomeBrowserTest {
+// eslint-disable-next-line no-var
+var OnboardingWelcomeSigninViewTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/signin_view.html';
@@ -92,7 +98,8 @@ TEST_F('OnboardingWelcomeSigninViewTest', 'All', function() {
   mocha.run();
 });
 
-OnboardingWelcomeNavigationBehaviorTest =
+// eslint-disable-next-line no-var
+var OnboardingWelcomeNavigationBehaviorTest =
     class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
@@ -112,7 +119,8 @@ TEST_F('OnboardingWelcomeNavigationBehaviorTest', 'All', function() {
   mocha.run();
 });
 
-OnboardingWelcomeModuleMetricsTest =
+// eslint-disable-next-line no-var
+var OnboardingWelcomeModuleMetricsTest =
     class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
@@ -132,7 +140,9 @@ TEST_F('OnboardingWelcomeModuleMetricsTest', 'All', function() {
   mocha.run();
 });
 
-OnboardingWelcomeSetAsDefaultTest = class extends OnboardingWelcomeBrowserTest {
+// eslint-disable-next-line no-var
+var OnboardingWelcomeSetAsDefaultTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/set_as_default/nux_set_as_default.html';
@@ -152,7 +162,8 @@ TEST_F('OnboardingWelcomeSetAsDefaultTest', 'All', function() {
   mocha.run();
 });
 
-OnboardingWelcomeNtpBackgroundTest =
+// eslint-disable-next-line no-var
+var OnboardingWelcomeNtpBackgroundTest =
     class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
