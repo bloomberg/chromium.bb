@@ -5,8 +5,8 @@
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/navigation_handle.h"
@@ -99,7 +99,7 @@ void WebAppIconDownloader::FetchIcons(const std::vector<GURL>& urls) {
   // If no downloads were initiated, we can proceed directly to running the
   // callback.
   if (in_progress_requests_.empty() && !need_favicon_urls_) {
-    base::MessageLoopCurrent::Get()->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback_), true, icons_map_));
   }
 }
