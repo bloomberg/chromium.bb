@@ -95,7 +95,8 @@ def PathToDexForPlatformVersion(device, package_name):
   if version_codes.LOLLIPOP <= sdk_level <= version_codes.LOLLIPOP_MR1:
     # Of the form "com.example.foo-\d", where \d is some digit (usually 1 or 2)
     package_with_suffix = os.path.basename(os.path.dirname(path_to_apk))
-    dalvik_prefix = '/data/dalvik-cache/arm'
+    arch = _GetFormattedArch(device)
+    dalvik_prefix = '/data/dalvik-cache/{arch}'.format(arch=arch)
     odex_file = '{prefix}/data@app@{package}@base.apk@classes.dex'.format(
         prefix=dalvik_prefix,
         package=package_with_suffix)
@@ -113,7 +114,7 @@ def PathToDexForPlatformVersion(device, package_name):
     raise DeviceOSError(
         'Unable to find odex file: you must run dex2oat on debuggable apps '
         'on >= P after installation.')
-  raise DeviceOSError('Unable to find odex file')
+  raise DeviceOSError('Unable to find odex file ' + odex_file)
 
 
 def _AdbOatDumpForPackage(device, package_name, out_file):
