@@ -37,6 +37,8 @@ TEST(MimeUtilTest, ExtensionTest) {
     // These are test cases for testing platform mime types on Chrome OS.
     {FILE_PATH_LITERAL("epub"), "application/epub+zip", true},
     {FILE_PATH_LITERAL("apk"), "application/vnd.android.package-archive", true},
+    {FILE_PATH_LITERAL("cer"), "application/x-x509-ca-cert", true},
+    {FILE_PATH_LITERAL("crt"), "application/x-x509-ca-cert", true},
     {FILE_PATH_LITERAL("zip"), "application/zip", true},
     {FILE_PATH_LITERAL("ics"), "text/calendar", true},
 #endif
