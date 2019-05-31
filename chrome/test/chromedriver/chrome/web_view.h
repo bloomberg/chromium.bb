@@ -121,11 +121,11 @@ class WebView {
   // used as the error code instead of |kUnknownError| in appropriate cases, and
   // respects timeout.
   // |result| will never be NULL on success.
-  virtual Status CallUserSyncFunction(const std::string& frame,
-                                      const std::string& function,
-                                      const base::ListValue& args,
-                                      const base::TimeDelta& timeout,
-                                      std::unique_ptr<base::Value>* result) = 0;
+  virtual Status CallUserSyncScript(const std::string& frame,
+                                    const std::string& script,
+                                    const base::ListValue& args,
+                                    const base::TimeDelta& timeout,
+                                    std::unique_ptr<base::Value>* result) = 0;
 
   // Gets the frame ID for a frame element returned by invoking the given
   // JavaScript function. |frame| is a frame ID or an empty string for the main

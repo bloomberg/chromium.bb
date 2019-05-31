@@ -404,12 +404,17 @@ Status WebViewImpl::CallAsyncFunction(const std::string& frame,
       frame, function, args, false, timeout, result);
 }
 
-Status WebViewImpl::CallUserSyncFunction(const std::string& frame,
-                                         const std::string& function,
-                                         const base::ListValue& args,
-                                         const base::TimeDelta& timeout,
-                                         std::unique_ptr<base::Value>* result) {
-  return CallFunctionWithTimeout(frame, function, args, timeout, result);
+Status WebViewImpl::CallUserSyncScript(const std::string& frame,
+                                       const std::string& script,
+                                       const base::ListValue& args,
+                                       const base::TimeDelta& timeout,
+                                       std::unique_ptr<base::Value>* result) {
+  base::ListValue sync_args;
+  sync_args.AppendString(script);
+  // Deep-copy needed since ListValue only accepts unique_ptrs of Values.
+  sync_args.Append(args.CreateDeepCopy());
+  return CallFunctionWithTimeout(frame, kExecuteScriptScript, sync_args,
+                                 timeout, result);
 }
 
 Status WebViewImpl::CallUserAsyncFunction(
@@ -1137,6 +1142,7 @@ Status EvaluateScript(DevToolsClient* client,
   if (context_id)
     params.SetInteger("contextId", context_id);
   params.SetBoolean("returnByValue", return_type == ReturnByValue);
+  params.SetBoolean("awaitPromise", true);
   std::unique_ptr<base::DictionaryValue> cmd_result;
 
   Timeout local_timeout(timeout);

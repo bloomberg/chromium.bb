@@ -415,20 +415,28 @@ function callFunction(func, args, w3c, opt_unwrappedReturn) {
   const cache = getPageCache(null, w3cEnabled);
   cache.clearStale();
 
+  function buildError(error) {
+    return {
+      status: error.code || StatusCode.JAVA_SCRIPT_ERROR,
+      value: error.message || error
+    };
+  }
+
   let status = 0;
   let returnValue;
   try {
     const unwrappedArgs = jsonDeserialize(args, [], cache);
-    if (opt_unwrappedReturn)
-      return func.apply(null, unwrappedArgs);
-    const tmp = jsonSerialize(func.apply(null, unwrappedArgs), []);
-    returnValue = tmp;
+    const tmp = func.apply(null, unwrappedArgs);
+    return Promise.resolve(tmp).then((result) => {
+      if (opt_unwrappedReturn)
+        return result;
+      const clone = jsonSerialize(result, []);
+      return {
+        status: 0,
+        value: clone
+      };
+    }).catch(buildError);
   } catch (error) {
-    status = error.code || StatusCode.JAVA_SCRIPT_ERROR;
-    returnValue = error.message;
+    return buildError(error);
   }
-  return {
-      status: status,
-      value: returnValue
-  };
 }

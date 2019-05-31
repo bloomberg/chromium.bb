@@ -84,11 +84,11 @@ class WebViewImpl : public WebView {
                            const base::ListValue& args,
                            const base::TimeDelta& timeout,
                            std::unique_ptr<base::Value>* result) override;
-  Status CallUserSyncFunction(const std::string& frame,
-                              const std::string& function,
-                              const base::ListValue& args,
-                              const base::TimeDelta& timeout,
-                              std::unique_ptr<base::Value>* result) override;
+  Status CallUserSyncScript(const std::string& frame,
+                            const std::string& script,
+                            const base::ListValue& args,
+                            const base::TimeDelta& timeout,
+                            std::unique_ptr<base::Value>* result) override;
   Status CallUserAsyncFunction(const std::string& frame,
                                const std::string& function,
                                const base::ListValue& args,

@@ -575,9 +575,9 @@ Status ExecuteExecuteScript(Session* session,
     if (script.find("//") != std::string::npos)
       script = script + "\n";
 
-    Status status = web_view->CallUserSyncFunction(
-        session->GetCurrentFrameId(), "function(){" + script + "}", *args,
-        session->script_timeout, value);
+    Status status =
+        web_view->CallUserSyncScript(session->GetCurrentFrameId(), script,
+                                     *args, session->script_timeout, value);
     if (status.code() == kTimeout)
       return Status(kScriptTimeout);
     return status;
