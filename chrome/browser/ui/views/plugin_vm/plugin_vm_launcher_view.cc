@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -218,7 +219,7 @@ bool PluginVmLauncherView::ShouldShowWindowTitle() const {
 bool PluginVmLauncherView::Accept() {
   if (state_ == State::FINISHED) {
     // Launch button has been clicked.
-    // TODO(https://crbug.com/904852): Launch PluginVm.
+    plugin_vm::PluginVmManager::GetForProfile(profile_)->LaunchPluginVm();
     return true;
   }
   DCHECK_EQ(state_, State::ERROR);
