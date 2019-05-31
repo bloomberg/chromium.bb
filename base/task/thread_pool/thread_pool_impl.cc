@@ -436,13 +436,14 @@ void ThreadPoolImpl::UpdateCanRunPolicy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CanRunPolicy can_run_policy;
-  if ((!has_fence_ && !has_best_effort_fence_) ||
+  if ((!has_fence_ && !has_best_effort_fence_ &&
+       !has_disable_best_effort_switch_) ||
       task_tracker_->HasShutdownStarted()) {
     can_run_policy = CanRunPolicy::kAll;
   } else if (has_fence_) {
     can_run_policy = CanRunPolicy::kNone;
   } else {
-    DCHECK(has_best_effort_fence_);
+    DCHECK(has_best_effort_fence_ || has_disable_best_effort_switch_);
     can_run_policy = CanRunPolicy::kForegroundOnly;
   }
 
