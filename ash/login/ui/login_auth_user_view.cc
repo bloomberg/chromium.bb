@@ -302,15 +302,15 @@ LockScreenMessage GetOverrideMessage() {
   return message;
 }
 
-LockScreenMessage GetLockScreenMessage(mojom::AuthDisabledReason lock_reason,
+LockScreenMessage GetLockScreenMessage(AuthDisabledReason lock_reason,
                                        const base::Time& unlock_time,
                                        const base::TimeDelta& used_time) {
   switch (lock_reason) {
-    case mojom::AuthDisabledReason::TIME_WINDOW_LIMIT:
+    case AuthDisabledReason::kTimeWindowLimit:
       return GetWindowLimitMessage(unlock_time);
-    case mojom::AuthDisabledReason::TIME_USAGE_LIMIT:
+    case AuthDisabledReason::kTimeUsageLimit:
       return GetUsageLimitMessage(used_time);
-    case mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE:
+    case AuthDisabledReason::kTimeLimitOverride:
       return GetOverrideMessage();
     default:
       NOTREACHED();
@@ -487,11 +487,10 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
   ~DisabledAuthMessageView() override = default;
 
   // Set the parameters needed to render the message.
-  void SetAuthDisabledMessage(
-      const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) {
+  void SetAuthDisabledMessage(const AuthDisabledData& auth_disabled_data) {
     LockScreenMessage message = GetLockScreenMessage(
-        auth_disabled_data->reason, auth_disabled_data->auth_reenabled_time,
-        auth_disabled_data->device_used_time);
+        auth_disabled_data.reason, auth_disabled_data.auth_reenabled_time,
+        auth_disabled_data.device_used_time);
     message_icon_->SetImage(gfx::CreateVectorIcon(
         *message.icon, kDisabledAuthMessageIconSizeDp, SK_ColorWHITE));
     message_title_->SetText(message.title);
@@ -970,7 +969,7 @@ void LoginAuthUserView::NotifyFingerprintAuthResult(bool success) {
 }
 
 void LoginAuthUserView::SetAuthDisabledMessage(
-    const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) {
+    const AuthDisabledData& auth_disabled_data) {
   disabled_auth_message_->SetAuthDisabledMessage(auth_disabled_data);
   Layout();
 }

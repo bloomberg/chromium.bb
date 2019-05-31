@@ -48,16 +48,6 @@ void TestLoginScreen::ShowErrorMessage(int32_t login_attempts,
 
 void TestLoginScreen::ClearErrors() {}
 
-void TestLoginScreen::SetAuthType(const AccountId& account_id,
-                                  ::proximity_auth::mojom::AuthType auth_type,
-                                  const base::string16& initial_value) {}
-
-void TestLoginScreen::EnableAuthForUser(const AccountId& account_id) {}
-
-void TestLoginScreen::DisableAuthForUser(
-    const AccountId& account_id,
-    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {}
-
 void TestLoginScreen::IsReadyForPassword(IsReadyForPasswordCallback callback) {
   std::move(callback).Run(true);
 }

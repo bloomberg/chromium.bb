@@ -346,31 +346,6 @@ void LoginScreenController::ClearErrors() {
   NOTIMPLEMENTED();
 }
 
-void LoginScreenController::SetAuthType(
-    const AccountId& account_id,
-    proximity_auth::mojom::AuthType auth_type,
-    const base::string16& initial_value) {
-  if (auth_type == proximity_auth::mojom::AuthType::USER_CLICK) {
-    login_data_dispatcher_.SetTapToUnlockEnabledForUser(account_id,
-                                                        true /*enabled*/);
-  } else if (auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN) {
-    login_data_dispatcher_.SetForceOnlineSignInForUser(account_id);
-  } else {
-    NOTIMPLEMENTED();
-  }
-}
-
-void LoginScreenController::EnableAuthForUser(const AccountId& account_id) {
-  login_data_dispatcher_.EnableAuthForUser(account_id);
-}
-
-void LoginScreenController::DisableAuthForUser(
-    const AccountId& account_id,
-    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
-  login_data_dispatcher_.DisableAuthForUser(account_id,
-                                            std::move(auth_disabled_data));
-}
-
 void LoginScreenController::IsReadyForPassword(
     IsReadyForPasswordCallback callback) {
   std::move(callback).Run(LockScreen::HasInstance() && !IsAuthenticating());

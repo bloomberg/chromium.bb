@@ -12,8 +12,8 @@
 #include "ash/login/ui/login_password_view.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/session/user_info.h"
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -129,8 +129,7 @@ class ASH_EXPORT LoginAuthUserView
 
   // Set the parameters needed to render the message that is shown to user when
   // auth method is |AUTH_DISABLED|.
-  void SetAuthDisabledMessage(
-      const ash::mojom::AuthDisabledDataPtr& auth_disabled_data);
+  void SetAuthDisabledMessage(const AuthDisabledData& auth_disabled_data);
 
   const LoginUserInfo& current_user() const;
 

@@ -69,7 +69,7 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
     // be enabled.
     virtual void OnAuthDisabledForUser(
         const AccountId& user,
-        const ash::mojom::AuthDisabledDataPtr& auth_disabled_data);
+        const AuthDisabledData& auth_disabled_data);
 
     // Called when the given user can click their pod to unlock.
     virtual void OnTapToUnlockEnabledForUserChanged(const AccountId& user,
@@ -144,6 +144,8 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  void SetTapToUnlockEnabledForUser(const AccountId& user, bool enabled);
+
   // LoginScreenModel:
   // TODO(estade): for now, LoginScreenModel overrides are mixed with
   // non-virtual methods. More of the non-virtual methods will become a part of
@@ -158,11 +160,11 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
                         const UserAvatar& avatar) override;
   void NotifyFingerprintAuthResult(const AccountId& account_id,
                                    bool successful) override;
-  void EnableAuthForUser(const AccountId& account_id);
+  void EnableAuthForUser(const AccountId& account_id) override;
   void DisableAuthForUser(const AccountId& account_id,
-                          ash::mojom::AuthDisabledDataPtr auth_disabled_data);
-  void SetTapToUnlockEnabledForUser(const AccountId& user, bool enabled);
-  void SetForceOnlineSignInForUser(const AccountId& user);
+                          const AuthDisabledData& auth_disabled_data) override;
+  void EnableTapToUnlockForUser(const AccountId& user) override;
+  void ForceOnlineSignInForUser(const AccountId& user) override;
   void SetLockScreenNoteState(mojom::TrayActionState state);
   void ShowEasyUnlockIcon(const AccountId& user,
                           const EasyUnlockIconOptions& icon) override;

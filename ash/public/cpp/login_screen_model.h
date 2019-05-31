@@ -16,6 +16,7 @@ namespace ash {
 
 enum class FingerprintState;
 enum class OobeDialogState;
+struct AuthDisabledData;
 struct EasyUnlockIconOptions;
 struct InputMethodItem;
 struct LocaleItem;
@@ -57,6 +58,25 @@ class ASH_PUBLIC_EXPORT LoginScreenModel {
   // should be shown to the user.
   virtual void NotifyFingerprintAuthResult(const AccountId& account_id,
                                            bool successful) = 0;
+
+  // Called when auth should be enabled for the given user. When auth is
+  // disabled, the user cannot unlock the device. Auth is enabled by default.
+  // |account_id|:            The account id of the user in the user pod.
+  virtual void EnableAuthForUser(const AccountId& account_id) = 0;
+
+  // Called when auth should be disabled for the given user. When auth is
+  // disabled, the user cannot unlock the device. Auth is enabled by default.
+  // |account_id|:            The account id of the user in the user pod.
+  // |auth_disabled_data|:    The data needed to customize the lock screen UI.
+  virtual void DisableAuthForUser(
+      const AccountId& account_id,
+      const AuthDisabledData& auth_disabled_data) = 0;
+
+  // Sets the authentication type to tap-to-unlock for the user.
+  virtual void EnableTapToUnlockForUser(const AccountId& account_id) = 0;
+
+  // Forces online sign-in for the user.
+  virtual void ForceOnlineSignInForUser(const AccountId& account_id) = 0;
 
   // Called when |avatar| for |account_id| has changed.
   virtual void SetAvatarForUser(const AccountId& account_id,

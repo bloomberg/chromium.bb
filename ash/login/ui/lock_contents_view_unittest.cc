@@ -1809,10 +1809,9 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
   // Setting auth disabled will hide the password field and show the message.
   DataDispatcher()->DisableAuthForUser(
       kFirstUserAccountId,
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(8),
-          base::TimeDelta::FromHours(1)));
+      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                       base::Time::Now() + base::TimeDelta::FromHours(8),
+                       base::TimeDelta::FromHours(1)));
   EXPECT_FALSE(password_view->GetVisible());
   EXPECT_FALSE(pin_view->GetVisible());
   EXPECT_TRUE(disabled_auth_message->GetVisible());
@@ -1825,10 +1824,9 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
   // Set auth disabled again.
   DataDispatcher()->DisableAuthForUser(
       kFirstUserAccountId,
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(8),
-          base::TimeDelta::FromHours(1)));
+      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                       base::Time::Now() + base::TimeDelta::FromHours(8),
+                       base::TimeDelta::FromHours(1)));
   EXPECT_FALSE(password_view->GetVisible());
   EXPECT_FALSE(pin_view->GetVisible());
   EXPECT_TRUE(disabled_auth_message->GetVisible());
@@ -1865,10 +1863,9 @@ TEST_F(LockContentsViewUnitTest,
   // Setting auth disabled hides the note action button.
   DataDispatcher()->DisableAuthForUser(
       kFirstUserAccountId,
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(8),
-          base::TimeDelta::FromHours(1)));
+      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                       base::Time::Now() + base::TimeDelta::FromHours(8),
+                       base::TimeDelta::FromHours(1)));
   EXPECT_FALSE(note_action_button->GetVisible());
   // Setting auth enabled shows the note action button.
   DataDispatcher()->EnableAuthForUser(kFirstUserAccountId);
@@ -1877,10 +1874,9 @@ TEST_F(LockContentsViewUnitTest,
   // Set auth disabled again.
   DataDispatcher()->DisableAuthForUser(
       kFirstUserAccountId,
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(8),
-          base::TimeDelta::FromHours(1)));
+      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                       base::Time::Now() + base::TimeDelta::FromHours(8),
+                       base::TimeDelta::FromHours(1)));
   EXPECT_FALSE(note_action_button->GetVisible());
   // Set the lock screen note state to |kNotAvailable| while the note action
   // button is hidden.
@@ -1908,10 +1904,9 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
   // The message is visible after disabling auth and it receives initial focus.
   DataDispatcher()->DisableAuthForUser(
       kFirstUserAccountId,
-      ash::mojom::AuthDisabledData::New(
-          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
-          base::Time::Now() + base::TimeDelta::FromHours(8),
-          base::TimeDelta::FromHours(1)));
+      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                       base::Time::Now() + base::TimeDelta::FromHours(8),
+                       base::TimeDelta::FromHours(1)));
   EXPECT_TRUE(disabled_auth_message->GetVisible());
   EXPECT_TRUE(HasFocusInAnyChildView(disabled_auth_message));
   // Tabbing from the message will move focus to the user view.

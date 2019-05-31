@@ -349,7 +349,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   // Force online sign-in for the user at |user_index|.
   void ForceOnlineSignInForUserIndex(size_t user_index) {
     DCHECK(user_index >= 0 && user_index < debug_users_.size());
-    debug_dispatcher_.SetForceOnlineSignInForUser(
+    debug_dispatcher_.ForceOnlineSignInForUser(
         debug_users_[user_index].account_id);
   }
 
@@ -357,14 +357,14 @@ class LockDebugView::DebugDataDispatcherTransformer
   // manner.
   void UpdateAuthDisabledReason() {
     switch (auth_disabled_reason_) {
-      case mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE:
-        auth_disabled_reason_ = mojom::AuthDisabledReason::TIME_USAGE_LIMIT;
+      case AuthDisabledReason::kTimeLimitOverride:
+        auth_disabled_reason_ = AuthDisabledReason::kTimeUsageLimit;
         break;
-      case mojom::AuthDisabledReason::TIME_USAGE_LIMIT:
-        auth_disabled_reason_ = mojom::AuthDisabledReason::TIME_WINDOW_LIMIT;
+      case AuthDisabledReason::kTimeUsageLimit:
+        auth_disabled_reason_ = AuthDisabledReason::kTimeWindowLimit;
         break;
-      case mojom::AuthDisabledReason::TIME_WINDOW_LIMIT:
-        auth_disabled_reason_ = mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE;
+      case AuthDisabledReason::kTimeWindowLimit:
+        auth_disabled_reason_ = AuthDisabledReason::kTimeLimitOverride;
         break;
     }
   }
@@ -379,11 +379,11 @@ class LockDebugView::DebugDataDispatcherTransformer
     } else {
       debug_dispatcher_.DisableAuthForUser(
           user.account_id,
-          mojom::AuthDisabledData::New(
-              auth_disabled_reason_,
-              base::Time::Now() + base::TimeDelta::FromHours(user_index) +
-                  base::TimeDelta::FromHours(8),
-              base::TimeDelta::FromMinutes(15)));
+          AuthDisabledData(auth_disabled_reason_,
+                           base::Time::Now() +
+                               base::TimeDelta::FromHours(user_index) +
+                               base::TimeDelta::FromHours(8),
+                           base::TimeDelta::FromMinutes(15)));
       UpdateAuthDisabledReason();
     }
   }
@@ -525,8 +525,8 @@ class LockDebugView::DebugDataDispatcherTransformer
 
   // When auth is disabled, this property is used to define the reason, which
   // customizes the UI accordingly.
-  mojom::AuthDisabledReason auth_disabled_reason_ =
-      mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE;
+  AuthDisabledReason auth_disabled_reason_ =
+      AuthDisabledReason::kTimeLimitOverride;
 
   DISALLOW_COPY_AND_ASSIGN(DebugDataDispatcherTransformer);
 };

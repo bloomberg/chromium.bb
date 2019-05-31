@@ -324,18 +324,18 @@ void ScreenLocker::EnableAuthForUser(const AccountId& account_id) {
   CHECK(user) << "Invalid user - cannot enable authentication.";
 
   users_with_disabled_auth_.erase(account_id);
-  LoginScreenClient::Get()->login_screen()->EnableAuthForUser(account_id);
+  ash::LoginScreen::Get()->GetModel()->EnableAuthForUser(account_id);
 }
 
 void ScreenLocker::DisableAuthForUser(
     const AccountId& account_id,
-    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
+    const ash::AuthDisabledData& auth_disabled_data) {
   const user_manager::User* user = FindUnlockUser(account_id);
   CHECK(user) << "Invalid user - cannot disable authentication.";
 
   users_with_disabled_auth_.insert(account_id);
-  LoginScreenClient::Get()->login_screen()->DisableAuthForUser(
-      account_id, std::move(auth_disabled_data));
+  ash::LoginScreen::Get()->GetModel()->DisableAuthForUser(account_id,
+                                                          auth_disabled_data);
 }
 
 void ScreenLocker::Authenticate(const UserContext& user_context,

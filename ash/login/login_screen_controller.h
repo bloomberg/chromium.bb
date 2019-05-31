@@ -123,13 +123,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
                         const std::string& help_link_text,
                         int32_t help_topic_id) override;
   void ClearErrors() override;
-  void SetAuthType(const AccountId& account_id,
-                   proximity_auth::mojom::AuthType auth_type,
-                   const base::string16& initial_value) override;
-  void EnableAuthForUser(const AccountId& account_id) override;
-  void DisableAuthForUser(
-      const AccountId& account_id,
-      ash::mojom::AuthDisabledDataPtr auth_disabled_data) override;
   void IsReadyForPassword(IsReadyForPasswordCallback callback) override;
   void ShowKioskAppError(const std::string& message) override;
   void SetAddUserButtonEnabled(bool enable) override;

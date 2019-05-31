@@ -101,10 +101,6 @@ class ScreenTimeController
   // Disables the time limits message in the lock screen.
   void OnScreenLockByPolicyEnd();
 
-  // Converts the active policy to its equivalent on the ash enum.
-  base::Optional<ash::mojom::AuthDisabledReason> ConvertLockReason(
-      usage_time_limit::PolicyType active_policy);
-
   // Called when the policy of time limits changes.
   void OnPolicyChanged();
 

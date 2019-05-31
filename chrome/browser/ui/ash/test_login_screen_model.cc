@@ -18,6 +18,14 @@ void TestLoginScreenModel::SetAvatarForUser(const AccountId& account_id,
 void TestLoginScreenModel::NotifyFingerprintAuthResult(
     const AccountId& account_id,
     bool successful) {}
+void TestLoginScreenModel::EnableAuthForUser(const AccountId& account_id) {}
+void TestLoginScreenModel::DisableAuthForUser(
+    const AccountId& account_id,
+    const ash::AuthDisabledData& auth_disabled_data) {}
+void TestLoginScreenModel::EnableTapToUnlockForUser(
+    const AccountId& account_id) {}
+void TestLoginScreenModel::ForceOnlineSignInForUser(
+    const AccountId& account_id) {}
 void TestLoginScreenModel::ShowEasyUnlockIcon(
     const AccountId& account_id,
     const ash::EasyUnlockIconOptions& icon) {}
