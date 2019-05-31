@@ -27,6 +27,13 @@
 namespace {
 
 using RequestFinishedInfo = base::RefCountedData<Cronet_RequestFinishedInfo>;
+using UrlResponseInfo = base::RefCountedData<Cronet_UrlResponseInfo>;
+using CronetError = base::RefCountedData<Cronet_Error>;
+
+template <typename T>
+T* GetData(scoped_refptr<base::RefCountedData<T>> ptr) {
+  return ptr == nullptr ? nullptr : &ptr->data;
+}
 
 net::RequestPriority ConvertRequestPriority(
     Cronet_UrlRequestParams_REQUEST_PRIORITY priority) {
@@ -45,7 +52,7 @@ net::RequestPriority ConvertRequestPriority(
   return net::DEFAULT_PRIORITY;
 }
 
-std::unique_ptr<Cronet_UrlResponseInfo> CreateCronet_UrlResponseInfo(
+scoped_refptr<UrlResponseInfo> CreateCronet_UrlResponseInfo(
     const std::vector<std::string>& url_chain,
     int http_status_code,
     const std::string& http_status_text,
@@ -54,11 +61,11 @@ std::unique_ptr<Cronet_UrlResponseInfo> CreateCronet_UrlResponseInfo(
     const std::string& negotiated_protocol,
     const std::string& proxy_server,
     int64_t received_byte_count) {
-  auto response_info = std::make_unique<Cronet_UrlResponseInfo>();
-  response_info->url = url_chain.back();
-  response_info->url_chain = url_chain;
-  response_info->http_status_code = http_status_code;
-  response_info->http_status_text = http_status_text;
+  auto response_info = base::MakeRefCounted<UrlResponseInfo>();
+  response_info->data.url = url_chain.back();
+  response_info->data.url_chain = url_chain;
+  response_info->data.http_status_code = http_status_code;
+  response_info->data.http_status_text = http_status_text;
   // |headers| could be nullptr.
   if (headers != nullptr) {
     size_t iter = 0;
@@ -68,13 +75,13 @@ std::unique_ptr<Cronet_UrlResponseInfo> CreateCronet_UrlResponseInfo(
       Cronet_HttpHeader header;
       header.name = header_name;
       header.value = header_value;
-      response_info->all_headers_list.push_back(std::move(header));
+      response_info->data.all_headers_list.push_back(std::move(header));
     }
   }
-  response_info->was_cached = was_cached;
-  response_info->negotiated_protocol = negotiated_protocol;
-  response_info->proxy_server = proxy_server;
-  response_info->received_byte_count = received_byte_count;
+  response_info->data.was_cached = was_cached;
+  response_info->data.negotiated_protocol = negotiated_protocol;
+  response_info->data.proxy_server = proxy_server;
+  response_info->data.received_byte_count = received_byte_count;
   return response_info;
 }
 
@@ -123,17 +130,16 @@ bool IsCronetErrorImmediatelyRetryable(Cronet_Error_ERROR_CODE error_code) {
   }
 }
 
-std::unique_ptr<Cronet_Error> CreateCronet_Error(
-    int net_error,
-    int quic_error,
-    const std::string& error_string) {
-  auto error = std::make_unique<Cronet_Error>();
-  error->error_code = NetErrorToCronetErrorCode(net_error);
-  error->message = error_string;
-  error->internal_error_code = net_error;
-  error->quic_detailed_error_code = quic_error;
-  error->immediately_retryable =
-      IsCronetErrorImmediatelyRetryable(error->error_code);
+scoped_refptr<CronetError> CreateCronet_Error(int net_error,
+                                              int quic_error,
+                                              const std::string& error_string) {
+  auto error = base::MakeRefCounted<CronetError>();
+  error->data.error_code = NetErrorToCronetErrorCode(net_error);
+  error->data.message = error_string;
+  error->data.internal_error_code = net_error;
+  error->data.quic_detailed_error_code = quic_error;
+  error->data.immediately_retryable =
+      IsCronetErrorImmediatelyRetryable(error->data.error_code);
   return error;
 }
 
@@ -343,6 +349,8 @@ Cronet_RESULT Cronet_UrlRequestImpl::InitWithParams(
 
   request_finished_listener_ = params->request_finished_listener;
   request_finished_executor_ = params->request_finished_executor;
+  // Copy, don't move -- this function isn't allowed to change |params|.
+  annotations_ = params->annotations;
 
   auto network_tasks = std::make_unique<NetworkTasks>(url, this);
   network_tasks_ = network_tasks.get();
@@ -509,7 +517,7 @@ void Cronet_UrlRequestImpl::OnUploadDataProviderError(
     return;
   error_ = CreateCronet_Error(
       0, 0, "Failure from UploadDataProvider: " + error_message);
-  error_->error_code = Cronet_Error_ERROR_CODE_ERROR_CALLBACK;
+  error_->data.error_code = Cronet_Error_ERROR_CODE_ERROR_CALLBACK;
 
   request_->MaybeReportMetricsAndRunCallback(
       base::BindOnce(&Cronet_UrlRequestImpl::PostCallbackOnFailedToExecutor,
@@ -528,7 +536,7 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnRedirectReceived(
   if (IsDone())
     return;
   Cronet_UrlRequestCallback_OnRedirectReceived(
-      callback_, this, response_info_.get(), new_location.c_str());
+      callback_, this, GetData(response_info_), new_location.c_str());
 }
 
 void Cronet_UrlRequestImpl::InvokeCallbackOnResponseStarted() {
@@ -543,7 +551,7 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnResponseStarted() {
   }
 #endif  // DCHECK_IS_ON()
   Cronet_UrlRequestCallback_OnResponseStarted(callback_, this,
-                                              response_info_.get());
+                                              GetData(response_info_));
 }
 
 void Cronet_UrlRequestImpl::InvokeCallbackOnReadCompleted(
@@ -552,7 +560,7 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnReadCompleted(
   if (IsDone())
     return;
   Cronet_UrlRequestCallback_OnReadCompleted(
-      callback_, this, response_info_.get(), cronet_buffer.release(),
+      callback_, this, GetData(response_info_), cronet_buffer.release(),
       bytes_read);
 }
 
@@ -562,8 +570,9 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnSucceeded() {
     return;
   }
   InvokeAllStatusListeners();
-  MaybeReportMetrics();
-  Cronet_UrlRequestCallback_OnSucceeded(callback_, this, response_info_.get());
+  MaybeReportMetrics(Cronet_RequestFinishedInfo_FINISHED_REASON_SUCCEEDED);
+  Cronet_UrlRequestCallback_OnSucceeded(callback_, this,
+                                        GetData(response_info_));
   // |this| may have been deleted here.
 }
 
@@ -573,16 +582,17 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnFailed() {
     return;
   }
   InvokeAllStatusListeners();
-  MaybeReportMetrics();
-  Cronet_UrlRequestCallback_OnFailed(callback_, this, response_info_.get(),
-                                     error_.get());
+  MaybeReportMetrics(Cronet_RequestFinishedInfo_FINISHED_REASON_FAILED);
+  Cronet_UrlRequestCallback_OnFailed(callback_, this, GetData(response_info_),
+                                     GetData(error_));
   // |this| may have been deleted here.
 }
 
 void Cronet_UrlRequestImpl::InvokeCallbackOnCanceled() {
   InvokeAllStatusListeners();
-  MaybeReportMetrics();
-  Cronet_UrlRequestCallback_OnCanceled(callback_, this, response_info_.get());
+  MaybeReportMetrics(Cronet_RequestFinishedInfo_FINISHED_REASON_CANCELED);
+  Cronet_UrlRequestCallback_OnCanceled(callback_, this,
+                                       GetData(response_info_));
   // |this| may have been deleted here.
 }
 
@@ -606,22 +616,30 @@ void Cronet_UrlRequestImpl::InvokeAllStatusListeners() {
 #endif  // DCHECK_IS_ON()
 }
 
-void Cronet_UrlRequestImpl::MaybeReportMetrics() {
+void Cronet_UrlRequestImpl::MaybeReportMetrics(
+    Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason) {
   if (request_finished_info_ == nullptr)
     return;
-  engine_->ReportRequestFinished(request_finished_info_);
+  request_finished_info_->data.annotations = std::move(annotations_);
+  request_finished_info_->data.finished_reason = finished_reason;
+
+  engine_->ReportRequestFinished(request_finished_info_, response_info_,
+                                 error_);
   if (request_finished_listener_ != nullptr) {
     DCHECK(request_finished_executor_ != nullptr);
     // Execute() owns and deletes the runnable.
     request_finished_executor_->Execute(
         new cronet::OnceClosureRunnable(base::BindOnce(
-            [](scoped_refptr<RequestFinishedInfo> request_finished_info,
-               Cronet_RequestFinishedInfoListenerPtr
-                   request_finished_listener) {
+            [](Cronet_RequestFinishedInfoListenerPtr request_finished_listener,
+               scoped_refptr<RequestFinishedInfo> request_finished_info,
+               scoped_refptr<UrlResponseInfo> response_info,
+               scoped_refptr<CronetError> error) {
               request_finished_listener->OnRequestFinished(
-                  &request_finished_info->data, nullptr, nullptr);
+                  GetData(request_finished_info), GetData(response_info),
+                  GetData(error));
             },
-            request_finished_info_, request_finished_listener_)));
+            request_finished_listener_, request_finished_info_, response_info_,
+            error_)));
   }
 }
 
@@ -697,7 +715,8 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnReadCompleted(
   {
     base::AutoLock lock(url_request_->lock_);
     url_request_->waiting_on_read_ = true;
-    url_request_->response_info_->received_byte_count = received_byte_count;
+    url_request_->response_info_->data.received_byte_count =
+        received_byte_count;
   }
 
   // Invoke Cronet_UrlRequestCallback_OnReadCompleted on client executor.
@@ -711,7 +730,8 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnSucceeded(
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   {
     base::AutoLock lock(url_request_->lock_);
-    url_request_->response_info_->received_byte_count = received_byte_count;
+    url_request_->response_info_->data.received_byte_count =
+        received_byte_count;
   }
 
   // Invoke Cronet_UrlRequestCallback_OnSucceeded on client executor.
@@ -730,7 +750,8 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnError(
   {
     base::AutoLock lock(url_request_->lock_);
     if (url_request_->response_info_)
-      url_request_->response_info_->received_byte_count = received_byte_count;
+      url_request_->response_info_->data.received_byte_count =
+          received_byte_count;
     url_request_->error_ =
         CreateCronet_Error(net_error, quic_error, error_string);
   }

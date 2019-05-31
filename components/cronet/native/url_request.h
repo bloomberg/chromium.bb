@@ -90,10 +90,18 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   // and |executor_| may be deleted and so the callbacks cannot be issued.
   void InvokeAllStatusListeners();
 
-  // Reports metrics if metrics were collected. This method should only be
-  // called on Callback's executor thread and before Callback's OnSucceeded,
-  // OnFailed and OnCanceled.
-  void MaybeReportMetrics();
+  // Reports metrics if metrics were collected, otherwise does nothing. This
+  // method should only be called once on Callback's executor thread and before
+  // Callback's OnSucceeded, OnFailed and OnCanceled.
+  //
+  // Adds |finished_reason| to the reported RequestFinishedInfo. Also passes
+  // pointers to |response_info_| and |error_|.
+  //
+  // Also, the field |annotations_| is moved into the RequestFinishedInfo.
+  //
+  // |finished_reason|: Success / fail / cancel status of request.
+  void MaybeReportMetrics(
+      Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason);
 
   // Synchronize access to |request_| and other objects below from different
   // threads.
@@ -126,6 +134,11 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   scoped_refptr<base::RefCountedData<Cronet_RequestFinishedInfo>>
       request_finished_info_;
 
+  // Annotations passed via UrlRequestParams.annotations. These annotations
+  // aren't used by Cronet itself -- they're just moved into the
+  // RequestFinishedInfo passed to RequestFinishedInfoListener instances.
+  std::vector<Cronet_RawDataPtr> annotations_;
+
   // Optional; allows a listener to receive request info and stats.
   //
   // A nullptr value indicates that there is no RequestFinishedInfo listener
@@ -144,18 +157,30 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   // Response info updated by callback with number of bytes received. May be
   // nullptr, if no response has been received.
   //
-  // NOTE: the synchronization of this field is complex -- it can't be
-  // completely protected by |lock_| since we pass this field as a unowned
-  // pointer to OnSucceed(), OnFailed(), and OnCanceled(). The pointee of this
-  // field cannot be updated after one of those callback calls is made.
-  std::unique_ptr<Cronet_UrlResponseInfo> response_info_;
-  // The error reported by request. May be nullptr if no error has occurred.
+  // Ownership is shared since we guarantee that the UrlResponseInfo will
+  // be valid if its UrlRequest isn't destroyed. We also guarantee that it's
+  // valid in RequestFinishedListener.OnRequestFinished() even if the
+  // UrlRequest is destroyed (and furthermore, each listener finishes at
+  // different times).
   //
   // NOTE: the synchronization of this field is complex -- it can't be
   // completely protected by |lock_| since we pass this field as a unowned
   // pointer to OnSucceed(), OnFailed(), and OnCanceled(). The pointee of this
   // field cannot be updated after one of those callback calls is made.
-  std::unique_ptr<Cronet_Error> error_;
+  scoped_refptr<base::RefCountedData<Cronet_UrlResponseInfo>> response_info_;
+
+  // The error reported by request. May be nullptr if no error has occurred.
+  //
+  // Ownership is shared since we guarantee that the Error will be valid if its
+  // UrlRequest isn't destroyed. We also guarantee that it's valid in
+  // RequestFinishedListener.OnRequestFinished() even if the UrlRequest is
+  // destroyed (and furthermore, each listener finishes at different times).
+  //
+  // NOTE: the synchronization of this field is complex -- it can't be
+  // completely protected by |lock_| since we pass this field as an unowned
+  // pointer to OnSucceed(), OnFailed(), and OnCanceled(). The pointee of this
+  // field cannot be updated after one of those callback calls is made.
+  scoped_refptr<base::RefCountedData<Cronet_Error>> error_;
 
   // The upload data stream if specified.
   std::unique_ptr<Cronet_UploadDataSinkImpl> upload_data_sink_;

@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/cronet/native/test/test_request_finished_info_listener.h"
 #include "components/cronet/native/test/test_upload_data_provider.h"
 #include "components/cronet/native/test/test_url_request_callback.h"
 #include "components/cronet/native/test/test_util.h"
@@ -24,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using cronet::test::TestRequestFinishedInfoListener;
 using cronet::test::TestUploadDataProvider;
 using cronet::test::TestUrlRequestCallback;
 using ::testing::HasSubstr;
@@ -233,22 +235,46 @@ void VerifyRequestMetrics(Cronet_MetricsPtr metrics) {
   }
 }
 
-// Basic sanity checking of all Cronet_RequestFinishedInfo fields.
-void VerifyRequestFinishedInfo(Cronet_RequestFinishedInfoPtr request_info) {
-  VerifyRequestMetrics(Cronet_RequestFinishedInfo_metrics_get(request_info));
-  // TODO(crbug.com/879208): Verify non-metrics fields once these have been
-  // added to |request_info|.
+// Convert a TestUrlRequestCallback::ResponseStep into the equivalent
+// RequestFinishedInfo.FINISHED_REASON.
+Cronet_RequestFinishedInfo_FINISHED_REASON MapFinishedReason(
+    TestUrlRequestCallback::ResponseStep response_step) {
+  switch (response_step) {
+    case TestUrlRequestCallback::ON_SUCCEEDED:
+      return Cronet_RequestFinishedInfo_FINISHED_REASON_SUCCEEDED;
+    case TestUrlRequestCallback::ON_FAILED:
+      return Cronet_RequestFinishedInfo_FINISHED_REASON_FAILED;
+    case TestUrlRequestCallback::ON_CANCELED:
+      return Cronet_RequestFinishedInfo_FINISHED_REASON_CANCELED;
+    default:
+      CHECK(false) << "Unknown TestUrlRequestCallback::ResponseStep: "
+                   << response_step;
+      return Cronet_RequestFinishedInfo_FINISHED_REASON_FAILED;
+  }
 }
 
-// App implementation of Cronet_RequestFinishedInfoListener methods.
-static void TestRequestInfoListener_OnRequestFinished(
-    Cronet_RequestFinishedInfoListenerPtr self,
-    Cronet_RequestFinishedInfoPtr request_info,
-    Cronet_UrlResponseInfoPtr,
-    Cronet_ErrorPtr) {
-  CHECK(self);
-  Cronet_RequestFinishedInfoListener_Destroy(self);
-  VerifyRequestFinishedInfo(request_info);
+// Basic sanity checking of all Cronet_RequestFinishedInfo,
+// Cronet_UrlResponseInfoPtr, and Cronet_ErrorPtr fields passed to
+// RequestFinishedInfoListener.OnRequestFinished().
+//
+// All fields are checked except for |annotations|.
+//
+// |test_request_finished_info_listener| Test listener -- will verify all fields
+//     of this listener.
+// |callback| Callback associated with the UrlRequest associated with
+//     |request_info|.
+void VerifyRequestFinishedInfoListener(
+    TestRequestFinishedInfoListener* test_request_finished_info_listener,
+    const TestUrlRequestCallback& callback) {
+  Cronet_RequestFinishedInfoPtr request_info =
+      test_request_finished_info_listener->request_finished_info();
+  VerifyRequestMetrics(Cronet_RequestFinishedInfo_metrics_get(request_info));
+  auto finished_reason =
+      Cronet_RequestFinishedInfo_finished_reason_get(request_info);
+  EXPECT_EQ(MapFinishedReason(callback.response_step_), finished_reason);
+  EXPECT_EQ(callback.original_response_info_,
+            test_request_finished_info_listener->url_response_info());
+  EXPECT_EQ(callback.last_error_, test_request_finished_info_listener->error());
 }
 
 // Parameterized off whether to use a direct executor, and whether (if so, how)
@@ -305,13 +331,17 @@ class UrlRequestTest : public ::testing::TestWithParam<
     Cronet_UrlRequestCallbackPtr callback =
         test_callback->CreateUrlRequestCallback();
 
-    MaybeAddRequestFinishedListener(request_params, engine, executor);
+    TestRequestFinishedInfoListener test_request_finished_info_listener;
+    MaybeAddRequestFinishedListener(request_params, engine, executor,
+                                    &test_request_finished_info_listener);
 
     Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(),
                                      request_params, callback, executor);
 
     Cronet_UrlRequest_Start(request);
     test_callback->WaitForDone();
+    MaybeVerifyRequestFinishedInfo(&test_request_finished_info_listener,
+                                   *test_callback);
     CleanupRequestFinishedListener(request_params, engine);
     // Wait for all posted tasks to be executed to ensure there is no unhandled
     // exception.
@@ -386,15 +416,16 @@ class UrlRequestTest : public ::testing::TestWithParam<
   void MaybeAddRequestFinishedListener(
       Cronet_UrlRequestParamsPtr url_request_params,
       Cronet_EnginePtr engine,
-      Cronet_ExecutorPtr executor) {
+      Cronet_ExecutorPtr executor,
+      TestRequestFinishedInfoListener* test_request_finished_info_listener) {
     auto request_finished_listener_type = GetRequestFinishedListenerTypeParam();
 
     if (request_finished_listener_type ==
         RequestFinishedListenerType::kNoListener)
       return;
 
-    request_finished_listener_ = Cronet_RequestFinishedInfoListener_CreateWith(
-        TestRequestInfoListener_OnRequestFinished);
+    request_finished_listener_ =
+        test_request_finished_info_listener->CreateRequestFinishedListener();
 
     switch (request_finished_listener_type) {
       case RequestFinishedListenerType::kUrlRequestListener:
@@ -430,6 +461,21 @@ class UrlRequestTest : public ::testing::TestWithParam<
                                                           nullptr);
     Cronet_UrlRequestParams_request_finished_executor_set(url_request_params,
                                                           nullptr);
+  }
+
+  // TestRequestFinishedInfoListener.WaitForDone() is called and checks are
+  // performed only if a RequestFinishedInfoListener is registered.
+  //
+  // This method should be called after TestUrlRequestCallback.WaitForDone().
+  void MaybeVerifyRequestFinishedInfo(
+      TestRequestFinishedInfoListener* test_request_finished_info_listener,
+      const TestUrlRequestCallback& callback) {
+    if (GetRequestFinishedListenerTypeParam() ==
+        RequestFinishedListenerType::kNoListener)
+      return;
+    test_request_finished_info_listener->WaitForDone();
+    VerifyRequestFinishedInfoListener(test_request_finished_info_listener,
+                                      callback);
   }
 
   void TestCancel(TestUrlRequestCallback::FailureType failure_type,
@@ -490,7 +536,9 @@ TEST_P(UrlRequestTest, InitChecks) {
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
-  MaybeAddRequestFinishedListener(request_params, engine, executor);
+  TestRequestFinishedInfoListener test_request_finished_info_listener;
+  MaybeAddRequestFinishedListener(request_params, engine, executor,
+                                  &test_request_finished_info_listener);
   EXPECT_EQ(Cronet_RESULT_NULL_POINTER_URL,
             Cronet_UrlRequest_InitWithParams(
                 request, engine, /* url = */ nullptr,
@@ -1122,7 +1170,9 @@ TEST_P(UrlRequestTest, SimpleRequest) {
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
-  MaybeAddRequestFinishedListener(request_params, engine, executor);
+  TestRequestFinishedInfoListener test_request_finished_info_listener;
+  MaybeAddRequestFinishedListener(request_params, engine, executor,
+                                  &test_request_finished_info_listener);
 
   Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(), request_params,
                                    callback, executor);
@@ -1130,10 +1180,92 @@ TEST_P(UrlRequestTest, SimpleRequest) {
   Cronet_UrlRequest_Start(request);
 
   test_callback.WaitForDone();
+  MaybeVerifyRequestFinishedInfo(&test_request_finished_info_listener,
+                                 test_callback);
   EXPECT_TRUE(test_callback.IsDone());
   ASSERT_EQ("The quick brown fox jumps over the lazy dog.",
             test_callback.response_as_string_);
 
+  Cronet_UrlRequestParams_Destroy(request_params);
+  Cronet_UrlRequest_Destroy(request);
+  Cronet_UrlRequestCallback_Destroy(callback);
+  Cronet_Engine_Destroy(engine);
+}
+
+TEST_P(UrlRequestTest, ReceiveBackAnnotations) {
+  Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
+  Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
+  std::string url = cronet::TestServer::GetSimpleURL();
+
+  TestUrlRequestCallback test_callback(GetDirectExecutorParam());
+  // Executor provided by the application is owned by |test_callback|.
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor();
+  // Callback provided by the application.
+  Cronet_UrlRequestCallbackPtr callback =
+      test_callback.CreateUrlRequestCallback();
+  TestRequestFinishedInfoListener test_request_finished_info_listener;
+  MaybeAddRequestFinishedListener(request_params, engine, executor,
+                                  &test_request_finished_info_listener);
+
+  int object_to_annotate = 0;
+  Cronet_UrlRequestParams_annotations_add(request_params, &object_to_annotate);
+  Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(), request_params,
+                                   callback, executor);
+
+  Cronet_UrlRequest_Start(request);
+
+  test_callback.WaitForDone();
+  MaybeVerifyRequestFinishedInfo(&test_request_finished_info_listener,
+                                 test_callback);
+  EXPECT_TRUE(test_callback.IsDone());
+  if (GetRequestFinishedListenerTypeParam() !=
+      RequestFinishedListenerType::kNoListener) {
+    ASSERT_EQ(1u,
+              Cronet_RequestFinishedInfo_annotations_size(
+                  test_request_finished_info_listener.request_finished_info()));
+    EXPECT_EQ(
+        &object_to_annotate,
+        Cronet_RequestFinishedInfo_annotations_at(
+            test_request_finished_info_listener.request_finished_info(), 0));
+  }
+
+  Cronet_UrlRequestParams_Destroy(request_params);
+  Cronet_UrlRequest_Destroy(request);
+  Cronet_UrlRequestCallback_Destroy(callback);
+  Cronet_Engine_Destroy(engine);
+}
+
+TEST_P(UrlRequestTest, UrlParamsAnnotationsUnchanged) {
+  Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
+  Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
+  std::string url = cronet::TestServer::GetSimpleURL();
+
+  TestUrlRequestCallback test_callback(GetDirectExecutorParam());
+  // Executor provided by the application is owned by |test_callback|.
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor();
+  // Callback provided by the application.
+  Cronet_UrlRequestCallbackPtr callback =
+      test_callback.CreateUrlRequestCallback();
+  TestRequestFinishedInfoListener test_request_finished_info_listener;
+  MaybeAddRequestFinishedListener(request_params, engine, executor,
+                                  &test_request_finished_info_listener);
+
+  int object_to_annotate = 0;
+  Cronet_UrlRequestParams_annotations_add(request_params, &object_to_annotate);
+  Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(), request_params,
+                                   callback, executor);
+  ASSERT_EQ(1u, Cronet_UrlRequestParams_annotations_size(request_params));
+  EXPECT_EQ(&object_to_annotate,
+            Cronet_UrlRequestParams_annotations_at(request_params, 0));
+  EXPECT_EQ(0, object_to_annotate);
+
+  if (request_finished_listener_ != nullptr) {
+    // This test never actually runs |request_finished_listener_|, so we delete
+    // it here.
+    Cronet_RequestFinishedInfoListener_Destroy(request_finished_listener_);
+  }
   Cronet_UrlRequestParams_Destroy(request_params);
   Cronet_UrlRequest_Destroy(request);
   Cronet_UrlRequestCallback_Destroy(callback);
@@ -1202,7 +1334,9 @@ TEST_P(UrlRequestTest, CancelRequest) {
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
-  MaybeAddRequestFinishedListener(request_params, engine, executor);
+  TestRequestFinishedInfoListener test_request_finished_info_listener;
+  MaybeAddRequestFinishedListener(request_params, engine, executor,
+                                  &test_request_finished_info_listener);
 
   Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(), request_params,
                                    callback, executor);
@@ -1210,6 +1344,8 @@ TEST_P(UrlRequestTest, CancelRequest) {
   Cronet_UrlRequest_Start(request);
 
   test_callback.WaitForDone();
+  MaybeVerifyRequestFinishedInfo(&test_request_finished_info_listener,
+                                 test_callback);
   EXPECT_TRUE(test_callback.IsDone());
   EXPECT_TRUE(test_callback.on_canceled_called_);
   ASSERT_FALSE(test_callback.on_error_called_);
@@ -1233,7 +1369,9 @@ TEST_P(UrlRequestTest, FailedRequestHostNotFound) {
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
-  MaybeAddRequestFinishedListener(request_params, engine, executor);
+  TestRequestFinishedInfoListener test_request_finished_info_listener;
+  MaybeAddRequestFinishedListener(request_params, engine, executor,
+                                  &test_request_finished_info_listener);
 
   Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(), request_params,
                                    callback, executor);
@@ -1241,6 +1379,8 @@ TEST_P(UrlRequestTest, FailedRequestHostNotFound) {
   Cronet_UrlRequest_Start(request);
 
   test_callback.WaitForDone();
+  MaybeVerifyRequestFinishedInfo(&test_request_finished_info_listener,
+                                 test_callback);
   EXPECT_TRUE(test_callback.IsDone());
   EXPECT_TRUE(test_callback.on_error_called_);
   EXPECT_FALSE(test_callback.on_canceled_called_);
@@ -1346,13 +1486,17 @@ TEST_P(UrlRequestTest, PerfTest) {
     // Callback provided by the application.
     Cronet_UrlRequestCallbackPtr callback =
         test_callback.CreateUrlRequestCallback();
-    MaybeAddRequestFinishedListener(request_params, engine, executor);
+    TestRequestFinishedInfoListener test_request_finished_info_listener;
+    MaybeAddRequestFinishedListener(request_params, engine, executor,
+                                    &test_request_finished_info_listener);
 
     Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(),
                                      request_params, callback, executor);
 
     Cronet_UrlRequest_Start(request);
     test_callback.WaitForDone();
+    MaybeVerifyRequestFinishedInfo(&test_request_finished_info_listener,
+                                   test_callback);
 
     EXPECT_TRUE(test_callback.IsDone());
     ASSERT_EQ(kDownloadSize, test_callback.response_data_length_);
@@ -1393,7 +1537,9 @@ TEST_P(UrlRequestTest, GetStatus) {
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
-  MaybeAddRequestFinishedListener(request_params, engine, executor);
+  TestRequestFinishedInfoListener test_request_finished_info_listener;
+  MaybeAddRequestFinishedListener(request_params, engine, executor,
+                                  &test_request_finished_info_listener);
 
   Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(), request_params,
                                    callback, executor);
@@ -1433,6 +1579,8 @@ TEST_P(UrlRequestTest, GetStatus) {
     GetRequestStatus(request, &test_callback);
     test_callback.WaitForNextStep();
   } while (!Cronet_UrlRequest_IsDone(request));
+  MaybeVerifyRequestFinishedInfo(&test_request_finished_info_listener,
+                                 test_callback);
 
   EXPECT_EQ(Cronet_UrlRequestStatusListener_Status_INVALID,
             GetRequestStatus(request, &test_callback));
@@ -1462,9 +1610,9 @@ TEST_F(UrlRequestTestNoParam,
   Cronet_EngineParams_Destroy(engine_params);
   Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
+  TestRequestFinishedInfoListener test_request_finished_info_listener;
   Cronet_RequestFinishedInfoListenerPtr request_finished_listener =
-      Cronet_RequestFinishedInfoListener_CreateWith(
-          TestRequestInfoListener_OnRequestFinished);
+      test_request_finished_info_listener.CreateRequestFinishedListener();
   // Executor type doesn't matter for this test.
   TestUrlRequestCallback test_callback(/*direct_executor=*/true);
   // Executor provided by the application is owned by |test_callback|.
@@ -1491,7 +1639,7 @@ TEST_F(UrlRequestTestNoParam,
 }
 
 TEST_F(UrlRequestTestNoParam,
-       UseRequestFinishedInfoAfterUrlRequestDestruction) {
+       UseRequestFinishedInfoAfterUrlRequestDestructionSuccess) {
   Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
   Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
@@ -1518,15 +1666,16 @@ TEST_F(UrlRequestTestNoParam,
       Cronet_RequestFinishedInfoListener_CreateWith(
           +[](Cronet_RequestFinishedInfoListenerPtr self,
               Cronet_RequestFinishedInfoPtr request_finished_info,
-              Cronet_UrlResponseInfoPtr, Cronet_ErrorPtr) {
+              Cronet_UrlResponseInfoPtr response_info, Cronet_ErrorPtr error) {
             auto* listener_context = static_cast<ListenerContext*>(
                 Cronet_RequestFinishedInfoListener_GetClientContext(self));
             listener_context->test_callback->WaitForDone();
             Cronet_UrlRequest_Destroy(listener_context->url_request);
-            // The next line shouldn't use-after-free on
-            // |request_finished_info|.
+            // The next few get methods shouldn't use-after-free on
+            // |request_finished_info| or |response_info|.
             EXPECT_NE(nullptr, Cronet_RequestFinishedInfo_metrics_get(
                                    request_finished_info));
+            EXPECT_NE(nullptr, Cronet_UrlResponseInfo_url_get(response_info));
             Cronet_RequestFinishedInfoListener_Destroy(self);
             listener_context->done_event->Signal();
           });
@@ -1545,6 +1694,66 @@ TEST_F(UrlRequestTestNoParam,
   EXPECT_TRUE(test_callback.IsDone());
   ASSERT_EQ("The quick brown fox jumps over the lazy dog.",
             test_callback.response_as_string_);
+
+  Cronet_UrlRequestParams_Destroy(request_params);
+  Cronet_UrlRequestCallback_Destroy(callback);
+  Cronet_Engine_Destroy(engine);
+}
+
+TEST_F(UrlRequestTestNoParam,
+       UseRequestFinishedInfoAfterUrlRequestDestructionFailure) {
+  Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
+  Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
+  std::string url = "https://notfound.example.com";
+
+  // The UrlRequest executor type doesn't matter, but the
+  // RequestFinishedInfoListener executor type can't be direct.
+  TestUrlRequestCallback test_callback(/* direct_executor= */ false);
+  // Executor provided by the application is owned by |test_callback|.
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor();
+  // Callback provided by the application.
+  Cronet_UrlRequestCallbackPtr callback =
+      test_callback.CreateUrlRequestCallback();
+
+  base::WaitableEvent done_event;
+  struct ListenerContext {
+    TestUrlRequestCallback* test_callback;
+    Cronet_UrlRequestPtr url_request;
+    base::WaitableEvent* done_event;
+  };
+  ListenerContext listener_context = {&test_callback, request, &done_event};
+
+  auto* request_finished_listener =
+      Cronet_RequestFinishedInfoListener_CreateWith(
+          +[](Cronet_RequestFinishedInfoListenerPtr self,
+              Cronet_RequestFinishedInfoPtr request_finished_info,
+              Cronet_UrlResponseInfoPtr response_info, Cronet_ErrorPtr error) {
+            auto* listener_context = static_cast<ListenerContext*>(
+                Cronet_RequestFinishedInfoListener_GetClientContext(self));
+            listener_context->test_callback->WaitForDone();
+            Cronet_UrlRequest_Destroy(listener_context->url_request);
+            // The next few get methods shouldn't use-after-free on
+            // |request_finished_info| or |error|.
+            EXPECT_NE(nullptr, Cronet_RequestFinishedInfo_metrics_get(
+                                   request_finished_info));
+            EXPECT_NE(nullptr, Cronet_Error_message_get(error));
+            Cronet_RequestFinishedInfoListener_Destroy(self);
+            listener_context->done_event->Signal();
+          });
+  Cronet_RequestFinishedInfoListener_SetClientContext(request_finished_listener,
+                                                      &listener_context);
+
+  Cronet_UrlRequestParams_request_finished_listener_set(
+      request_params, request_finished_listener);
+  Cronet_UrlRequestParams_request_finished_executor_set(request_params,
+                                                        executor);
+  Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(), request_params,
+                                   callback, executor);
+  Cronet_UrlRequest_Start(request);
+
+  done_event.Wait();
+  EXPECT_TRUE(test_callback.IsDone());
 
   Cronet_UrlRequestParams_Destroy(request_params);
   Cronet_UrlRequestCallback_Destroy(callback);
