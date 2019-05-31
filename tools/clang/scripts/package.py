@@ -260,10 +260,12 @@ def main():
       'bin/llvm-ar',
 
       # AddressSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/linux/libclang_rt.asan-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a',
       'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a.syms',
 
       # AddressSanitizer C++ runtime.
+      'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a',
       'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a.syms',
 
@@ -287,6 +289,7 @@ def main():
       'lib/clang/$V/lib/linux/libclang_rt.msan_cxx-x86_64.a.syms',
 
       # Profile runtime (used by profiler and code coverage).
+      'lib/clang/$V/lib/linux/libclang_rt.profile-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.profile-x86_64.a',
       'lib/clang/$V/lib/linux/libclang_rt.profile-aarch64-android.a',
       'lib/clang/$V/lib/linux/libclang_rt.profile-arm-android.a',
@@ -300,10 +303,12 @@ def main():
       'lib/clang/$V/lib/linux/libclang_rt.tsan_cxx-x86_64.a.syms',
 
       # UndefinedBehaviorSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a',
       'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a.syms',
 
       # UndefinedBehaviorSanitizer C++ runtime.
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a',
       'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a.syms',
 
@@ -317,22 +322,28 @@ def main():
   elif sys.platform == 'win32':
     want.extend([
       # AddressSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/windows/clang_rt.asan-i386.lib',
       'lib/clang/$V/lib/windows/clang_rt.asan-x86_64.lib',
 
       # AddressSanitizer C++ runtime.
+      'lib/clang/$V/lib/windows/clang_rt.asan_cxx-i386.lib',
       'lib/clang/$V/lib/windows/clang_rt.asan_cxx-x86_64.lib',
 
       # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
       'lib/clang/$V/lib/windows/clang_rt.fuzzer_no_main-x86_64.lib',
 
       # Thunk for AddressSanitizer needed for static build of a shared lib.
+      'lib/clang/$V/lib/windows/clang_rt.asan_dll_thunk-i386.lib',
       'lib/clang/$V/lib/windows/clang_rt.asan_dll_thunk-x86_64.lib',
 
       # AddressSanitizer runtime for component build.
+      'lib/clang/$V/lib/windows/clang_rt.asan_dynamic-i386.dll',
+      'lib/clang/$V/lib/windows/clang_rt.asan_dynamic-i386.lib',
       'lib/clang/$V/lib/windows/clang_rt.asan_dynamic-x86_64.dll',
       'lib/clang/$V/lib/windows/clang_rt.asan_dynamic-x86_64.lib',
 
       # Thunk for AddressSanitizer for component build of a shared lib.
+      'lib/clang/$V/lib/windows/clang_rt.asan_dynamic_runtime_thunk-i386.lib',
       'lib/clang/$V/lib/windows/clang_rt.asan_dynamic_runtime_thunk-x86_64.lib',
 
       # Profile runtime (used by profiler and code coverage).
@@ -340,9 +351,11 @@ def main():
       'lib/clang/$V/lib/windows/clang_rt.profile-x86_64.lib',
 
       # UndefinedBehaviorSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/windows/clang_rt.ubsan_standalone-i386.lib',
       'lib/clang/$V/lib/windows/clang_rt.ubsan_standalone-x86_64.lib',
 
       # UndefinedBehaviorSanitizer C++ runtime.
+      'lib/clang/$V/lib/windows/clang_rt.ubsan_standalone_cxx-i386.lib',
       'lib/clang/$V/lib/windows/clang_rt.ubsan_standalone_cxx-x86_64.lib',
     ])
 
