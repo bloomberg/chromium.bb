@@ -44,8 +44,9 @@ public interface GridTabSwitcher {
      * Before calling {@link OverviewModeController#showOverview} to start showing the
      * GridTabSwitcher {@link TabListRecyclerView}, call this to populate it without making it
      * visible.
+     * @return Whether the {@link TabListRecyclerView} can be shown quickly.
      */
-    void prepareOverview();
+    boolean prepareOverview();
 
     /**
      * This is called after the compositor animation is done, for potential clean-up work.

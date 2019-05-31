@@ -184,13 +184,12 @@ public class TabListCoordinator implements Destroyable {
      * Reset the tab grid with the given List of Tabs. Can be null.
      * @param tabs List of Tabs to show for in the UI.
      */
-    public void resetWithListOfTabs(@Nullable List<Tab> tabs) {
-        mMediator.resetWithListOfTabs(tabs);
-
+    public boolean resetWithListOfTabs(@Nullable List<Tab> tabs) {
         if (mMode == TabListMode.STRIP && tabs != null && tabs.size() > 1) {
             TabGroupUtils.maybeShowIPH(
                     FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE, mRecyclerView);
         }
+        return mMediator.resetWithListOfTabs(tabs);
     }
 
     void prepareOverview() {

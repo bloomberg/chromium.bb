@@ -106,9 +106,9 @@ public class GridTabSwitcherCoordinator
     }
 
     @Override
-    public void prepareOverview() {
+    public boolean prepareOverview() {
         mTabGridCoordinator.prepareOverview();
-        mMediator.prepareOverview();
+        return mMediator.prepareOverview();
     }
 
     @Override
@@ -138,7 +138,7 @@ public class GridTabSwitcherCoordinator
      * @param tabList The current {@link TabList} to show the tabs for in the grid.
      */
     @Override
-    public void resetWithTabList(TabList tabList) {
+    public boolean resetWithTabList(TabList tabList) {
         List<Tab> tabs = null;
         if (tabList != null) {
             tabs = new ArrayList<>();
@@ -146,7 +146,7 @@ public class GridTabSwitcherCoordinator
                 tabs.add(tabList.getTabAt(i));
             }
         }
-        mTabGridCoordinator.resetWithListOfTabs(tabs);
+        return mTabGridCoordinator.resetWithListOfTabs(tabs);
     }
 
     @Override

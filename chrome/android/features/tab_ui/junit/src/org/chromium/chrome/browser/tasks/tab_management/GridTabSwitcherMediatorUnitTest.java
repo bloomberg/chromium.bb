@@ -285,9 +285,9 @@ public class GridTabSwitcherMediatorUnitTest {
     @Test
     public void resetsToNullAfterHidingFinishes() {
         initAndAssertAllProperties();
+        mMediator.setCleanupDelayForTesting(0);
         mMediator.postHiding();
         verify(mResetHandler).resetWithTabList(eq(null));
-        assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
     }
 
     @Test

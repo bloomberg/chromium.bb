@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_PADDING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
+import android.os.Handler;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
@@ -56,6 +57,13 @@ class GridTabSwitcherMediator
 
     private static final int DEFAULT_TOP_PADDING = 0;
 
+    /** Field trial parameter for the {@link TabListRecyclerView} cleanup delay. */
+    private static final String CLEANUP_DELAY_PARAM = "cleanup-delay";
+    private static final int DEFAULT_CLEANUP_DELAY_MS = 10_000;
+    private Integer mCleanupDelayMsForTesting;
+    private final Handler mHandler;
+    private final Runnable mClearTabListRunnable;
+
     private final ResetHandler mResetHandler;
     private final PropertyModel mContainerViewModel;
     private final TabModelSelector mTabModelSelector;
@@ -94,7 +102,10 @@ class GridTabSwitcherMediator
      * Interface to delegate resetting the tab grid.
      */
     interface ResetHandler {
-        void resetWithTabList(TabList tabList);
+        /**
+         * @return Whether the {@link TabListRecyclerView} can be shown quickly.
+         */
+        boolean resetWithTabList(TabList tabList);
     }
 
     /**
@@ -172,6 +183,21 @@ class GridTabSwitcherMediator
 
         mCompositorViewHolder = compositorViewHolder;
         mTabGridDialogResetHandler = tabGridDialogResetHandler;
+
+        mClearTabListRunnable = () -> mResetHandler.resetWithTabList(null);
+        mHandler = new Handler();
+    }
+
+    private int getCleanupDelay() {
+        if (mCleanupDelayMsForTesting != null) return mCleanupDelayMsForTesting;
+
+        String delay = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.TAB_TO_GTS_ANIMATION, CLEANUP_DELAY_PARAM);
+        try {
+            return Integer.valueOf(delay);
+        } catch (NumberFormatException e) {
+            return DEFAULT_CLEANUP_DELAY_MS;
+        }
     }
 
     private void setVisibility(boolean isVisible) {
@@ -210,14 +236,16 @@ class GridTabSwitcherMediator
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
     }
 
-    void prepareOverview() {
-        mResetHandler.resetWithTabList(
+    boolean prepareOverview() {
+        mHandler.removeCallbacks(mClearTabListRunnable);
+        boolean quick = mResetHandler.resetWithTabList(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter());
         int initialPosition = Math.max(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index()
                         - INITIAL_SCROLL_INDEX_OFFSET,
                 0);
         mContainerViewModel.set(INITIAL_SCROLL_INDEX, initialPosition);
+        return quick;
     }
 
     @Override
@@ -257,10 +285,19 @@ class GridTabSwitcherMediator
         }
     }
 
+    /**
+     * Do clean-up work after the overview hiding animation is finished.
+     * @see GridTabSwitcher#postHiding
+     */
     void postHiding() {
-        // TODO(crbug.com/964406): see if we can lazily release it.
-        mResetHandler.resetWithTabList(null);
-        mContainerViewModel.set(INITIAL_SCROLL_INDEX, 0);
+        mHandler.postDelayed(mClearTabListRunnable, getCleanupDelay());
+    }
+
+    /**
+     * Set the delay for lazy cleanup.
+     */
+    void setCleanupDelayForTesting(int timeoutMs) {
+        mCleanupDelayMsForTesting = timeoutMs;
     }
 
     /**

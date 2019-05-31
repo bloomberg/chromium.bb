@@ -495,21 +495,55 @@ class TabListMediator {
         return position != TabModel.INVALID_TAB_INDEX && position < mModel.size();
     }
 
+    private boolean areTabsUnchanged(@Nullable List<Tab> tabs) {
+        if (tabs == null) {
+            return mModel.size() == 0;
+        }
+        if (tabs.size() != mModel.size()) return false;
+        for (int i = 0; i < tabs.size(); i++) {
+            if (tabs.get(i).getId() != mModel.get(i).get(TabProperties.TAB_ID)) return false;
+        }
+        return true;
+    }
+
     /**
      * Initialize the component with a list of tabs to show in a grid.
      * @param tabs The list of tabs to be shown.
+     * @return Whether the {@link TabListRecyclerView} can be shown quickly.
      */
-    public void resetWithListOfTabs(@Nullable List<Tab> tabs) {
+    public boolean resetWithListOfTabs(@Nullable List<Tab> tabs) {
+        if (areTabsUnchanged(tabs)) {
+            if (tabs == null) return true;
+
+            for (int i = 0; i < tabs.size(); i++) {
+                Tab tab = tabs.get(i);
+
+                boolean isSelected = mTabModelSelector.getCurrentTab() == tab;
+                mModel.get(i).set(TabProperties.IS_SELECTED, isSelected);
+
+                if (mThumbnailProvider != null && isSelected) {
+                    // TODO(crbug.com/964406): should force update but it's too slow.
+                    ThumbnailFetcher callback =
+                            new ThumbnailFetcher(mThumbnailProvider, tab, false);
+                    mModel.get(i).set(TabProperties.THUMBNAIL_FETCHER, callback);
+                }
+
+                mModel.get(i).set(TabProperties.CREATE_GROUP_LISTENER,
+                        getCreateGroupButtonListener(tab, isSelected));
+            }
+            return true;
+        }
         mModel.set(new ArrayList<>());
         if (tabs == null) {
-            return;
+            return true;
         }
         Tab currentTab = mTabModelSelector.getCurrentTab();
-        if (currentTab == null) return;
+        if (currentTab == null) return false;
 
         for (int i = 0; i < tabs.size(); i++) {
             addTabInfoToModel(tabs.get(i), i, tabs.get(i).getId() == currentTab.getId());
         }
+        return false;
     }
 
     /**
@@ -644,11 +678,6 @@ class TabListMediator {
     }
 
     private void addTabInfoToModel(final Tab tab, int index, boolean isSelected) {
-        TabActionListener createGroupButtonOnClickListener = null;
-        if (isSelected && mCreateGroupButtonProvider != null) {
-            createGroupButtonOnClickListener =
-                    mCreateGroupButtonProvider.getCreateGroupButtonOnClickListener(tab);
-        }
         boolean showIPH = false;
         if (mCloseAllRelatedTabs && !mShownIPH) {
             showIPH = getRelatedTabsForId(tab.getId()).size() > 1;
@@ -671,7 +700,8 @@ class TabListMediator {
                         .with(TabProperties.IPH_PROVIDER, showIPH ? mIphProvider : null)
                         .with(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
-                        .with(TabProperties.CREATE_GROUP_LISTENER, createGroupButtonOnClickListener)
+                        .with(TabProperties.CREATE_GROUP_LISTENER,
+                                getCreateGroupButtonListener(tab, isSelected))
                         .with(TabProperties.ALPHA, 1f)
                         .build();
 
@@ -695,5 +725,15 @@ class TabListMediator {
             tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
         tab.addObserver(mTabObserver);
+    }
+
+    @Nullable
+    private TabActionListener getCreateGroupButtonListener(Tab tab, boolean isSelected) {
+        TabActionListener createGroupButtonOnClickListener = null;
+        if (isSelected && mCreateGroupButtonProvider != null) {
+            createGroupButtonOnClickListener =
+                    mCreateGroupButtonProvider.getCreateGroupButtonOnClickListener(tab);
+        }
+        return createGroupButtonOnClickListener;
     }
 }

@@ -51,8 +51,9 @@ import java.util.List;
 
 /** Tests for the {@link GridTabSwitcherLayout}, mainly for animation performance. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=" + ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
+        "force-fieldtrials=Study/Group", "force-fieldtrial-params=Study.Group:cleanup-delay/0"})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class GridTabSwitcherLayoutPerfTest {
     private static final String TAG = "GTSLayoutTest";
@@ -107,6 +108,14 @@ public class GridTabSwitcherLayoutPerfTest {
     public void testTabToGridFromLiveTabWith10Tabs() throws InterruptedException {
         prepareTabs(10, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs");
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({"force-fieldtrial-params=Study.Group:cleanup-delay/10000"})
+    public void testTabToGridFromLiveTabWith10TabsWarm() throws InterruptedException {
+        prepareTabs(10, NTP_URL);
+        reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs (warm)");
     }
 
     @Test
@@ -249,10 +258,8 @@ public class GridTabSwitcherLayoutPerfTest {
             frameRates.add(fps);
             frameInterval.add((float) maxFrameInterval);
         };
-
         Thread.sleep(mWaitingTime);
 
-        GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
         for (int i = 0; i < mRepeat; i++) {
             mGtsLayout.setPerfListenerForTesting(null);
             TestThreadUtils.runOnUiThreadBlocking(

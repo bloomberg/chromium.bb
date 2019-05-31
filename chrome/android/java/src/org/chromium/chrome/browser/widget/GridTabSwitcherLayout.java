@@ -51,6 +51,10 @@ public class GridTabSwitcherLayout
     @VisibleForTesting
     static final long ZOOMING_DURATION = 300;
 
+    /** Field trial parameter for whether skipping slow zooming animation */
+    private static final String SKIP_SLOW_ZOOMING_PARAM = "skip-slow-zooming";
+    private static final boolean DEFAULT_SKIP_SLOW_ZOOMING = false;
+
     // The transition animation from a tab to the tab switcher.
     private AnimatorSet mTabToSwitcherAnimation;
 
@@ -101,7 +105,10 @@ public class GridTabSwitcherLayout
 
         boolean showShrinkingAnimation =
                 animate && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
-        mGridTabSwitcher.prepareOverview();
+        boolean quick = mGridTabSwitcher.prepareOverview();
+        if (getSkipSlowZooming()) {
+            showShrinkingAnimation &= quick;
+        }
 
         if (!showShrinkingAnimation) {
             mGridController.showOverview(animate);
@@ -165,6 +172,7 @@ public class GridTabSwitcherLayout
     @Override
     public void onOverviewModeFinishedShowing() {
         doneShowing();
+        mTabContentManager.cacheTabThumbnail(mTabModelSelector.getCurrentTab());
     }
 
     @Override
@@ -317,6 +325,16 @@ public class GridTabSwitcherLayout
         if (mPerfListenerForTesting != null) {
             mPerfListenerForTesting.onAnimationDone(
                     frameRendered, elapsedMs, mMaxFrameInterval, dirtySpan);
+        }
+    }
+
+    private boolean getSkipSlowZooming() {
+        String skip = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.TAB_TO_GTS_ANIMATION, SKIP_SLOW_ZOOMING_PARAM);
+        try {
+            return Boolean.valueOf(skip);
+        } catch (NumberFormatException e) {
+            return DEFAULT_SKIP_SLOW_ZOOMING;
         }
     }
 
