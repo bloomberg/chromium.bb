@@ -21,7 +21,6 @@ mojom("interfaces_internal") {
     "accessibility_focus_ring_controller.mojom",
     "ash_message_center_controller.mojom",
     "assistant_controller.mojom",
-    "assistant_setup.mojom",
     "assistant_volume_control.mojom",
     "constants.mojom",
     "cros_display_config.mojom",

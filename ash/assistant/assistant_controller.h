@@ -25,7 +25,6 @@
 #include "ash/public/cpp/assistant/assistant_image_downloader.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
-#include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/macros.h"

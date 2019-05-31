@@ -83,12 +83,6 @@ void BindAssistantScreenContextControllerRequestOnMainThread(
       ->BindRequest(std::move(request));
 }
 
-void BindAssistantSetupControllerRequestOnMainThread(
-    mojom::AssistantSetupControllerRequest request) {
-  Shell::Get()->assistant_controller()->setup_controller()->BindRequest(
-      std::move(request));
-}
-
 void BindAssistantVolumeControlRequestOnMainThread(
     mojom::AssistantVolumeControlRequest request) {
   Shell::Get()->assistant_controller()->BindRequest(std::move(request));
@@ -192,9 +186,6 @@ void RegisterInterfaces(
     registry->AddInterface(
         base::BindRepeating(
             &BindAssistantScreenContextControllerRequestOnMainThread),
-        main_thread_task_runner);
-    registry->AddInterface(
-        base::BindRepeating(&BindAssistantSetupControllerRequestOnMainThread),
         main_thread_task_runner);
     registry->AddInterface(
         base::BindRepeating(&BindAssistantVolumeControlRequestOnMainThread),

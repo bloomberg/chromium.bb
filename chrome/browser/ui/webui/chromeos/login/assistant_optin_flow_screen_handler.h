@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/interfaces/assistant_setup.mojom.h"
+#include "ash/public/cpp/assistant/assistant_setup.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -154,7 +154,7 @@ class AssistantOptInFlowScreenHandler
   bool voice_match_enrollment_done_ = false;
 
   // Assistant optin flow type.
-  ash::mojom::FlowType flow_type_ = ash::mojom::FlowType::CONSENT_FLOW;
+  ash::FlowType flow_type_ = ash::FlowType::kConsentFlow;
 
   // Time that get settings request is sent.
   base::TimeTicks send_request_time_;

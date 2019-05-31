@@ -9,8 +9,6 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "ash/public/interfaces/assistant_controller.mojom.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
@@ -85,14 +83,7 @@ class AssistantHotwordNotificationDelegate
 }  // namespace
 
 AssistantSetup::AssistantSetup(service_manager::Connector* connector)
-    : connector_(connector), binding_(this), weak_factory_(this) {
-  // Bind to the AssistantSetupController in ash.
-  ash::mojom::AssistantSetupControllerPtr setup_controller;
-  connector_->BindInterface(ash::mojom::kServiceName, &setup_controller);
-  ash::mojom::AssistantSetupPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr));
-  setup_controller->SetAssistantSetup(std::move(ptr));
-
+    : connector_(connector), weak_factory_(this) {
   arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
 }
 
@@ -101,7 +92,7 @@ AssistantSetup::~AssistantSetup() {
 }
 
 void AssistantSetup::StartAssistantOptInFlow(
-    ash::mojom::FlowType type,
+    ash::FlowType type,
     StartAssistantOptInFlowCallback callback) {
   chromeos::AssistantOptInDialog::Show(type, std::move(callback));
 }
@@ -214,9 +205,9 @@ void AssistantSetup::MaybeStartAssistantOptInFlow() {
   if (!pref_service->GetUserPrefValue(
           assistant::prefs::kAssistantConsentStatus)) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AssistantSetup::StartAssistantOptInFlow,
-                                  weak_factory_.GetWeakPtr(),
-                                  ash::mojom::FlowType::CONSENT_FLOW,
-                                  base::DoNothing::Once<bool>()));
+        FROM_HERE,
+        base::BindOnce(&AssistantSetup::StartAssistantOptInFlow,
+                       weak_factory_.GetWeakPtr(), ash::FlowType::kConsentFlow,
+                       base::DoNothing::Once<bool>()));
   }
 }

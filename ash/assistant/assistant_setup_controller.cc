@@ -26,22 +26,12 @@ namespace ash {
 
 AssistantSetupController::AssistantSetupController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), binding_(this) {
+    : assistant_controller_(assistant_controller), weak_ptr_factory_(this) {
   assistant_controller_->AddObserver(this);
 }
 
 AssistantSetupController::~AssistantSetupController() {
   assistant_controller_->RemoveObserver(this);
-}
-
-void AssistantSetupController::BindRequest(
-    mojom::AssistantSetupControllerRequest request) {
-  binding_.Bind(std::move(request));
-}
-
-void AssistantSetupController::SetAssistantSetup(
-    mojom::AssistantSetupPtr assistant_setup) {
-  assistant_setup_ = std::move(assistant_setup);
 }
 
 void AssistantSetupController::OnAssistantControllerConstructed() {
@@ -79,30 +69,26 @@ void AssistantSetupController::OnOptInButtonPressed() {
   }
 }
 
-void AssistantSetupController::StartOnboarding(bool relaunch,
-                                               mojom::FlowType type) {
-  if (!assistant_setup_)
+void AssistantSetupController::StartOnboarding(bool relaunch, FlowType type) {
+  auto* assistant_setup = AssistantSetup::GetInstance();
+  if (!assistant_setup)
     return;
 
   if (relaunch) {
-    assistant_setup_->StartAssistantOptInFlow(
-        type,
-        base::BindOnce(
-            [](AssistantController* assistant_controller, bool completed) {
-              if (completed) {
-                assistant_controller->ui_controller()->ShowUi(
-                    AssistantEntryPoint::kSetup);
-              }
-            },
-            // AssistantController owns |assistant_setup_| so a raw pointer is
-            // safe.
-            assistant_controller_));
+    assistant_setup->StartAssistantOptInFlow(
+        type, base::BindOnce(&AssistantSetupController::OnOptInFlowFinished,
+                             weak_ptr_factory_.GetWeakPtr()));
   } else {
-    assistant_setup_->StartAssistantOptInFlow(type, base::DoNothing());
+    assistant_setup->StartAssistantOptInFlow(type, base::DoNothing());
   }
 
   // Assistant UI should be hidden while the user onboards.
   assistant_controller_->ui_controller()->HideUi(AssistantExitPoint::kSetup);
+}
+
+void AssistantSetupController::OnOptInFlowFinished(bool completed) {
+  if (completed)
+    assistant_controller_->ui_controller()->ShowUi(AssistantEntryPoint::kSetup);
 }
 
 }  // namespace ash

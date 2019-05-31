@@ -38,6 +38,12 @@ constexpr char kFlowFinished[] = "flow-finished";
 constexpr char kReloadRequested[] = "reload-requested";
 constexpr char kVoiceMatchDone[] = "voice-match-done";
 
+bool IsKnownEnumValue(ash::FlowType flow_type) {
+  return flow_type == ash::FlowType::kConsentFlow ||
+         flow_type == ash::FlowType::kSpeakerIdEnrollment ||
+         flow_type == ash::FlowType::kSpeakerIdRetrain;
+}
+
 }  // namespace
 
 constexpr StaticOobeScreenId AssistantOptInFlowScreenView::kScreenId;
@@ -253,7 +259,7 @@ void AssistantOptInFlowScreenHandler::OnEmailOptInResult(bool opted_in) {
 void AssistantOptInFlowScreenHandler::OnDialogClosed() {
   // Disable hotword for user if voice match enrollment has not completed.
   if (!voice_match_enrollment_done_ &&
-      flow_type_ == ash::mojom::FlowType::SPEAKER_ID_ENROLLMENT) {
+      flow_type_ == ash::FlowType::kSpeakerIdEnrollment) {
     ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
         arc::prefs::kVoiceInteractionHotwordEnabled, false);
   }
@@ -493,7 +499,7 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     ShowNextScreen();
   } else if (action == kSkipPressed) {
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_SKIPPED);
-    if (flow_type_ != ash::mojom::FlowType::SPEAKER_ID_RETRAIN) {
+    if (flow_type_ != ash::FlowType::kSpeakerIdRetrain) {
       // No need to disable hotword for retrain flow since user has a model.
       prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
     }
@@ -507,8 +513,7 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     assistant::mojom::SpeakerIdEnrollmentClientPtr client_ptr;
     client_binding_.Bind(mojo::MakeRequest(&client_ptr));
     settings_manager_->StartSpeakerIdEnrollment(
-        flow_type_ == ash::mojom::FlowType::SPEAKER_ID_RETRAIN,
-        std::move(client_ptr));
+        flow_type_ == ash::FlowType::kSpeakerIdRetrain, std::move(client_ptr));
   }
 }
 
@@ -579,11 +584,11 @@ void AssistantOptInFlowScreenHandler::HandleFlowInitialized(
   if (on_initialized_)
     std::move(on_initialized_).Run();
 
-  flow_type_ = static_cast<ash::mojom::FlowType>(flow_type);
-  DCHECK(IsKnownEnumValue(flow_type_));
+  DCHECK(IsKnownEnumValue(static_cast<ash::FlowType>(flow_type)));
+  flow_type_ = static_cast<ash::FlowType>(flow_type);
 
   if (settings_manager_.is_bound() &&
-      flow_type_ == ash::mojom::FlowType::CONSENT_FLOW) {
+      flow_type_ == ash::FlowType::kConsentFlow) {
     SendGetSettingsRequest();
   }
 }

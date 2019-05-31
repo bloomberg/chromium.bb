@@ -132,11 +132,11 @@ void AssistantController::StartSpeakerIdEnrollmentFlow() {
   if (consent_status == mojom::ConsentStatus::kActivityControlAccepted) {
     // If activity control has been accepted, launch the enrollment flow.
     setup_controller()->StartOnboarding(false /* relaunch */,
-                                        mojom::FlowType::SPEAKER_ID_ENROLLMENT);
+                                        FlowType::kSpeakerIdEnrollment);
   } else {
     // If activity control has not been accepted, launch the opt-in flow.
     setup_controller()->StartOnboarding(false /* relaunch */,
-                                        mojom::FlowType::CONSENT_FLOW);
+                                        FlowType::kConsentFlow);
   }
 }
 

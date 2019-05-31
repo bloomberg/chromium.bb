@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -41,8 +42,7 @@ constexpr int kCaptionBarHeight = 32;
 constexpr char kFlowTypeParamKey[] = "flow-type";
 constexpr char kCaptionBarHeightParamKey[] = "caption-bar-height";
 
-GURL CreateAssistantOptInURL(ash::mojom::FlowType type) {
-  // TODO(updowndota): Directly use mojom enum types in js.
+GURL CreateAssistantOptInURL(ash::FlowType type) {
   GURL gurl(chrome::kChromeUIAssistantOptInURL);
   gurl = net::AppendQueryParameter(
       gurl, kFlowTypeParamKey, base::NumberToString(static_cast<int>(type)));
@@ -116,8 +116,8 @@ void AssistantOptInUI::Initialize() {
 
 // static
 void AssistantOptInDialog::Show(
-    ash::mojom::FlowType type,
-    ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback) {
+    ash::FlowType type,
+    ash::AssistantSetup::StartAssistantOptInFlowCallback callback) {
   if (g_dialog) {
     g_dialog->Focus();
     std::move(callback).Run(false);
@@ -129,8 +129,8 @@ void AssistantOptInDialog::Show(
 }
 
 AssistantOptInDialog::AssistantOptInDialog(
-    ash::mojom::FlowType type,
-    ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback)
+    ash::FlowType type,
+    ash::AssistantSetup::StartAssistantOptInFlowCallback callback)
     : SystemWebDialogDelegate(CreateAssistantOptInURL(type), base::string16()),
       callback_(std::move(callback)) {}
 

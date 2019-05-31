@@ -46,6 +46,8 @@ component("cpp") {
     "ash_view_ids.h",
     "assistant/assistant_image_downloader.cc",
     "assistant/assistant_image_downloader.h",
+    "assistant/assistant_setup.cc",
+    "assistant/assistant_setup.h",
     "assistant/assistant_state_base.cc",
     "assistant/assistant_state_base.h",
     "assistant/assistant_state_proxy.cc",
