@@ -1,0 +1,8 @@
+{
+  "sysroot": {
+    "buildTarget": {
+      "name": "betty"
+    },
+    "path": "/build/betty"
+  }
+}
