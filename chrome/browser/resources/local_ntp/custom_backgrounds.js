@@ -107,6 +107,8 @@ customBackgrounds.IDS = {
   RESTORE_DEFAULT_TEXT: 'edit-bg-restore-default-text',
   SHORTCUTS_BUTTON: 'shortcuts-button',
   SHORTCUTS_MENU: 'shortcuts-menu',
+  SHORTCUTS_OPTION_CUSTOM_LINKS: 'sh-option-cl',
+  SHORTCUTS_OPTION_MOST_VISITED: 'sh-option-mv',
   UPLOAD_IMAGE: 'edit-bg-upload-image',
   UPLOAD_IMAGE_TEXT: 'edit-bg-upload-image-text',
   TILES: 'bg-sel-tiles',
@@ -587,9 +589,12 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
 /**
  * Apply styling to a selected tile in the richer picker and enable the done
  * button.
- * @param {!Element} tile The tile to apply styling to.
+ * @param {?Element} tile The tile to apply styling to.
  */
 customBackgrounds.richerPicker_selectTile = function(tile) {
+  if (!tile) {
+    return;
+  }
   tile.parentElement.classList.toggle(customBackgrounds.CLASSES.SELECTED, true);
   $(customBackgrounds.IDS.MENU_DONE).disabled = false;
   customBackgrounds.selectedTile = tile;
@@ -610,7 +615,7 @@ customBackgrounds.richerPicker_selectTile = function(tile) {
  * @param {?Element} tile The tile to remove styling from.
  */
 customBackgrounds.richerPicker_deselectTile = function(tile) {
-  if (tile === null) {
+  if (!tile) {
     return;
   }
   tile.parentElement.classList.toggle(
@@ -631,6 +636,21 @@ customBackgrounds.richerPicker_deselectTile = function(tile) {
   }
 };
 
+/**
+ * Apply styling to a selected shortcut option in the richer picker and enable
+ * the done button.
+ * @param {?Element} option The option to apply styling to.
+ */
+customBackgrounds.richerPicker_selectShortcutOption = function(option) {
+  if (!option || customBackgrounds.selectedTile === option) {
+    return;  // The option has already been selected.
+  }
+  // Clear the previous selection, if any.
+  if (customBackgrounds.selectedTile) {
+    customBackgrounds.richerPicker_deselectTile(customBackgrounds.selectedTile);
+  }
+  customBackgrounds.richerPicker_selectTile(option);
+};
 
 /**
  * Apply border and checkmark when a tile is selected
@@ -1433,6 +1453,28 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
         event.keyCode === customBackgrounds.KEYCODES.SPACE) {
       richerPickerOpenBackgrounds();
+    }
+  };
+
+  const clOption = $(customBackgrounds.IDS.SHORTCUTS_OPTION_CUSTOM_LINKS);
+  clOption.onclick = function() {
+    customBackgrounds.richerPicker_selectShortcutOption(clOption);
+  };
+  clOption.onkeydown = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
+        event.keyCode === customBackgrounds.KEYCODES.SPACE) {
+      customBackgrounds.richerPicker_selectShortcutOption(clOption);
+    }
+  };
+
+  const mvOption = $(customBackgrounds.IDS.SHORTCUTS_OPTION_MOST_VISITED);
+  mvOption.onclick = function() {
+    customBackgrounds.richerPicker_selectShortcutOption(mvOption);
+  };
+  mvOption.onkeydown = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
+        event.keyCode === customBackgrounds.KEYCODES.SPACE) {
+      customBackgrounds.richerPicker_selectShortcutOption(mvOption);
     }
   };
 

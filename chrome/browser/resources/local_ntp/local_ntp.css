@@ -1244,16 +1244,8 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 }
 
 .sh-option {
-  width: 268px;
-}
-
-#sh-option-cl {
   margin-inline-end: 9px;
-}
-
-.sh-option-select {
-  position: absolute;
-  visibility: none;
+  width: 268px;
 }
 
 .sh-option-image {
@@ -1264,6 +1256,11 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   height: 176px;
   position: relative;
   width: 268px;
+}
+
+.selected .sh-option-image {
+  background-color: rgb(var(--GB050-rgb));
+  border-color: rgb(var(--GB600-rgb));
 }
 
 .sh-option-mini {
@@ -1283,8 +1280,17 @@ html[dir=rtl] .sh-option-mini {
   right: unset;
 }
 
+.selected .sh-option-mini {
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
+}
+
 .sh-option-mini .mini-shortcuts {
   background-color: rgb(var(--GG500-rgb));
+}
+
+.selected .sh-option-mini .mini-shortcuts {
+  background-color: rgb(var(--GB600-rgb));
 }
 
 .sh-option-icon {
@@ -1310,7 +1316,34 @@ html[dir=rtl] .sh-option-icon {
   right: 16px;
 }
 
-.sh-title {
+.selected .sh-option-icon {
+  background-color: rgba(var(--GB600-rgb), .24);
+}
+
+.sh-option-image .selected-circle {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .16), 0 1px 2px rgba(0, 0, 0, .23);
+  height: 24px;
+  left: 208px;
+  top: 8px;
+  width: 24px;
+}
+
+html[dir=rtl] .sh-option-image .selected-circle {
+  left: 0;
+  right: 208px;
+}
+
+.sh-option-image .selected-check {
+  left: -2px;
+  top: -2px;
+}
+
+html[dir=rtl] .sh-option-image .selected-check {
+  left: 0;
+  right: -2px;
+}
+
+.sh-option-title {
   font-weight: bold;
   margin: 8px 0;
 }
