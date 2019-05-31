@@ -158,7 +158,7 @@ void IndentOutdentCommand::IndentIntoBlockquote(const Position& start,
                                                 const Position& end,
                                                 HTMLElement*& target_blockquote,
                                                 EditingState* editing_state) {
-  Element* enclosing_cell = ToElement(EnclosingNodeOfType(start, &IsTableCell));
+  auto* enclosing_cell = To<Element>(EnclosingNodeOfType(start, &IsTableCell));
   Element* element_to_split_to;
   if (enclosing_cell)
     element_to_split_to = enclosing_cell;

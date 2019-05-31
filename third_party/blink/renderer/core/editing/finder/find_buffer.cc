@@ -254,9 +254,10 @@ void FindBuffer::CollectScopedForcedUpdates(Node& start_node,
   // We assume |start_node| is always visible/activatable if locked, so we don't
   // need to check activatability of ancestors here.
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
-    if (!ancestor.IsElementNode())
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
       continue;
-    PushScopedForcedUpdateIfNeeded(ToElement(ancestor));
+    PushScopedForcedUpdateIfNeeded(*ancestor_element);
   }
 
   while (node && node != node_after_block && node != search_range_end_node) {
@@ -265,8 +266,8 @@ void FindBuffer::CollectScopedForcedUpdates(Node& start_node,
       node = FlatTreeTraversal::NextSkippingChildren(*node);
       continue;
     }
-    if (node->IsElementNode())
-      PushScopedForcedUpdateIfNeeded(ToElement(*node));
+    if (auto* element = DynamicTo<Element>(node))
+      PushScopedForcedUpdateIfNeeded(*element);
     node = FlatTreeTraversal::Next(*node);
   }
 }

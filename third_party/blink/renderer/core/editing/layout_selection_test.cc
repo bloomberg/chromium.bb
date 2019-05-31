@@ -808,7 +808,7 @@ TEST_P(LayoutSelectionTest, ClearByRemoveLayoutObject) {
       "    'baz', End(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 
-  Element* span_baz = ToElement(GetDocument().body()->lastChild());
+  auto* span_baz = To<Element>(GetDocument().body()->lastChild());
   span_baz->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
   GetDocument().UpdateStyleAndLayout();
   Selection().CommitAppearanceIfNeeded();

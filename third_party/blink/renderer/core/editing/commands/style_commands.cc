@@ -478,7 +478,7 @@ WritingDirection StyleCommands::TextDirectionForSelection(
     if (!runner.IsStyledElement())
       continue;
 
-    Element* element = &ToElement(runner);
+    auto* element = To<Element>(&runner);
     const CSSComputedStyleDeclaration& style =
         *MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
     const CSSValue* unicode_bidi =

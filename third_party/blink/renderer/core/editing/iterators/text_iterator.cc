@@ -78,7 +78,8 @@ TextIteratorBehavior AdjustBehaviorFlags<EditingInFlatTreeStrategy>(
 }
 
 static inline bool HasDisplayContents(const Node& node) {
-  return node.IsElementNode() && ToElement(node).HasDisplayContentsStyle();
+  auto* element = DynamicTo<Element>(node);
+  return element && element->HasDisplayContentsStyle();
 }
 
 // Checks if |advance()| skips the descendants of |node|, which is the case if
@@ -175,8 +176,8 @@ bool ShouldHandleChildren(const Node& node,
   if (!behavior.EntersTextControls() && IsTextControl(node))
     return false;
 
-  if (node.IsElementNode()) {
-    if (auto* context = ToElement(node).GetDisplayLockContext())
+  if (auto* element = DynamicTo<Element>(node)) {
+    if (auto* context = element->GetDisplayLockContext())
       return context->IsActivatable();
   }
   return true;
@@ -324,10 +325,10 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     } else {
       // Enter author shadow roots, from youngest, if any and if necessary.
       if (iteration_progress_ < kHandledOpenShadowRoots) {
+        auto* element = DynamicTo<Element>(node_.Get());
         if (std::is_same<Strategy, EditingStrategy>::value &&
-            EntersOpenShadowRoots() && node_->IsElementNode() &&
-            ToElement(node_)->OpenShadowRoot()) {
-          ShadowRoot* youngest_shadow_root = ToElement(node_)->OpenShadowRoot();
+            EntersOpenShadowRoots() && element && element->OpenShadowRoot()) {
+          ShadowRoot* youngest_shadow_root = element->OpenShadowRoot();
           DCHECK(youngest_shadow_root->GetType() == ShadowRootType::V0 ||
                  youngest_shadow_root->GetType() == ShadowRootType::kOpen);
           node_ = youngest_shadow_root;
@@ -345,7 +346,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
         if (std::is_same<Strategy, EditingStrategy>::value &&
             EntersTextControls() && layout_object->IsTextControl()) {
           ShadowRoot* user_agent_shadow_root =
-              ToElement(node_)->UserAgentShadowRoot();
+              To<Element>(node_.Get())->UserAgentShadowRoot();
           DCHECK(user_agent_shadow_root->IsUserAgent());
           node_ = user_agent_shadow_root;
           iteration_progress_ = kHandledNone;

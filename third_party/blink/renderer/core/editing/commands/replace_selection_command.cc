@@ -556,7 +556,7 @@ void ReplaceSelectionCommand::RemoveRedundantStylesAndKeepStyleSpanInline(
     if (!node->IsStyledElement())
       continue;
 
-    Element* element = ToElement(node);
+    auto* element = To<Element>(node);
 
     const CSSPropertyValueSet* inline_style = element->InlineStyle();
     EditingStyle* new_inline_style =

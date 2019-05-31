@@ -47,7 +47,7 @@ TEST_F(FrameCaretTest, BlinkAfterTyping) {
   GetDocument().GetPage()->GetFocusController().SetActive(true);
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
   GetDocument().body()->SetInnerHTMLFromString("<textarea>");
-  Element* editor = ToElement(GetDocument().body()->firstChild());
+  auto* editor = To<Element>(GetDocument().body()->firstChild());
   editor->focus();
   UpdateAllLifecyclePhasesForTest();
 

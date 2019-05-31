@@ -256,10 +256,10 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
   const EphemeralRange active_match_range(active_match);
   if (node) {
     for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*node)) {
-      if (!runner.IsElementNode())
+      auto* element = DynamicTo<Element>(runner);
+      if (!element)
         continue;
-      Element& element = ToElement(runner);
-      if (element.IsFocusable()) {
+      if (element->IsFocusable()) {
         // Found a focusable parent node. Set the active match as the
         // selection and focus to the focusable node.
         GetFrame()->Selection().SetSelectionAndEndTyping(
@@ -267,8 +267,8 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
                 .SetBaseAndExtent(active_match_range)
                 .Build());
         GetFrame()->GetDocument()->SetFocusedElement(
-            &element, FocusParams(SelectionBehaviorOnFocus::kNone,
-                                  kWebFocusTypeNone, nullptr));
+            element, FocusParams(SelectionBehaviorOnFocus::kNone,
+                                 kWebFocusTypeNone, nullptr));
         return;
       }
     }
@@ -278,13 +278,13 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
   // This, for example, sets focus to the first link if you search for
   // text and text that is within one or more links.
   for (Node& runner : active_match_range.Nodes()) {
-    if (!runner.IsElementNode())
+    auto* element = DynamicTo<Element>(runner);
+    if (!element)
       continue;
-    Element& element = ToElement(runner);
-    if (element.IsFocusable()) {
+    if (element->IsFocusable()) {
       GetFrame()->GetDocument()->SetFocusedElement(
-          &element, FocusParams(SelectionBehaviorOnFocus::kNone,
-                                kWebFocusTypeNone, nullptr));
+          element, FocusParams(SelectionBehaviorOnFocus::kNone,
+                               kWebFocusTypeNone, nullptr));
       return;
     }
   }

@@ -133,7 +133,8 @@ String ElementInnerTextCollector::RunOn(const Element& element) {
 
 // static
 bool ElementInnerTextCollector::HasDisplayContentsStyle(const Node& node) {
-  return node.IsElementNode() && ToElement(node).HasDisplayContentsStyle();
+  auto* element = DynamicTo<Element>(node);
+  return element && element->HasDisplayContentsStyle();
 }
 
 // An element is *being rendered* if it has any associated CSS layout boxes,
@@ -278,8 +279,8 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
 
   // 2. If the node is display locked, then we should not process it or its
   // children, since they are not visible or accessible via innerText.
-  if (node.IsElementNode()) {
-    auto* context = ToElement(node).GetDisplayLockContext();
+  if (auto* element = DynamicTo<Element>(node)) {
+    auto* context = element->GetDisplayLockContext();
     if (context && context->IsLocked())
       return;
   }

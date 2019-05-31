@@ -3188,7 +3188,7 @@ TEST_F(InputMethodControllerTest, AutocapitalizeTextInputFlags) {
 
     GetDocument().write(element);
     GetDocument().UpdateStyleAndLayout();
-    ToElement(GetDocument().body()->lastChild())->focus();
+    To<Element>(GetDocument().body()->lastChild())->focus();
 
     EXPECT_EQ(expected_flags,
               Controller().TextInputInfo().flags & autocapitalize_mask);

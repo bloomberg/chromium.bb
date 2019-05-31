@@ -553,7 +553,7 @@ void MarkupAccumulator::SerializeNodesWithNamespaces(
     return;
   }
 
-  const Element& target_element = ToElement(target_node);
+  const auto& target_element = To<Element>(target_node);
   if (ShouldIgnoreElement(target_element))
     return;
 

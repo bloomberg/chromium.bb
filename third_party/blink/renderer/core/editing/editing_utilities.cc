@@ -426,14 +426,14 @@ bool IsRootEditableElement(const Node& node) {
 }
 
 Element* RootEditableElement(const Node& node) {
-  const Node* result = nullptr;
+  const Element* result = nullptr;
   for (const Node* n = &node; n && HasEditableStyle(*n); n = n->parentNode()) {
-    if (n->IsElementNode())
-      result = n;
+    if (auto* element = DynamicTo<Element>(n))
+      result = element;
     if (node.GetDocument().body() == n)
       break;
   }
-  return ToElement(const_cast<Node*>(result));
+  return const_cast<Element*>(result);
 }
 
 ContainerNode* HighestEditableRoot(const Position& position) {
@@ -967,9 +967,7 @@ template <typename Strategy>
 Element* EnclosingBlockAlgorithm(const PositionTemplate<Strategy>& position,
                                  EditingBoundaryCrossingRule rule) {
   Node* enclosing_node = EnclosingNodeOfType(position, IsEnclosingBlock, rule);
-  return enclosing_node && enclosing_node->IsElementNode()
-             ? ToElement(enclosing_node)
-             : nullptr;
+  return DynamicTo<Element>(enclosing_node);
 }
 
 Element* EnclosingBlock(const Position& position,
@@ -984,11 +982,11 @@ Element* EnclosingBlock(const PositionInFlatTree& position,
 
 Element* EnclosingBlockFlowElement(const Node& node) {
   if (IsBlockFlowElement(node))
-    return const_cast<Element*>(&ToElement(node));
+    return const_cast<Element*>(To<Element>(&node));
 
   for (Node& runner : NodeTraversal::AncestorsOf(node)) {
     if (IsBlockFlowElement(runner) || IsHTMLBodyElement(runner))
-      return ToElement(&runner);
+      return To<Element>(&runner);
   }
   return nullptr;
 }
@@ -1065,7 +1063,7 @@ static Element* TableElementJustBeforeAlgorithm(
       MostBackwardCaretPosition(visible_position.DeepEquivalent()));
   if (IsDisplayInsideTable(upstream.AnchorNode()) &&
       upstream.AtLastEditingPositionForNode())
-    return ToElement(upstream.AnchorNode());
+    return To<Element>(upstream.AnchorNode());
 
   return nullptr;
 }
@@ -1085,7 +1083,7 @@ Element* TableElementJustAfter(const VisiblePosition& visible_position) {
       MostForwardCaretPosition(visible_position.DeepEquivalent()));
   if (IsDisplayInsideTable(downstream.AnchorNode()) &&
       downstream.AtFirstEditingPositionForNode())
-    return ToElement(downstream.AnchorNode());
+    return To<Element>(downstream.AnchorNode());
 
   return nullptr;
 }
@@ -1132,10 +1130,14 @@ bool IsPresentationalHTMLElement(const Node* node) {
 
 Element* AssociatedElementOf(const Position& position) {
   Node* node = position.AnchorNode();
-  if (!node || node->IsElementNode())
-    return ToElement(node);
+  if (!node)
+    return nullptr;
+
+  if (auto* element = DynamicTo<Element>(node))
+    return element;
+
   ContainerNode* parent = NodeTraversal::Parent(*node);
-  return parent && parent->IsElementNode() ? ToElement(parent) : nullptr;
+  return DynamicTo<Element>(parent);
 }
 
 Element* EnclosingElementWithTag(const Position& p,
@@ -1145,9 +1147,9 @@ Element* EnclosingElementWithTag(const Position& p,
 
   ContainerNode* root = HighestEditableRoot(p);
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*p.AnchorNode())) {
-    if (!runner.IsElementNode())
+    auto* ancestor = DynamicTo<Element>(runner);
+    if (!ancestor)
       continue;
-    Element* ancestor = ToElement(&runner);
     if (root && !HasEditableStyle(*ancestor))
       continue;
     if (ancestor->HasTagName(tag_name))
