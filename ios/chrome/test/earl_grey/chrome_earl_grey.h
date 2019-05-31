@@ -266,6 +266,13 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // induced.
 - (id)executeJavaScript:(NSString*)javaScript;
 
+#pragma mark - Cookie Utilities
+
+// Returns cookies as key value pairs, where key is a cookie name and value is a
+// cookie value.
+// A GREYAssert is induced if cookies can not be returned.
+- (NSDictionary*)cookies;
+
 @end
 
 // Helpers that only compile under EarlGrey 1 are included in this "EG1"
@@ -273,13 +280,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // TODO(crbug.com/922813): Update these helpers to compile under EG2 and move
 // them into the main class declaration as they are converted.
 @interface ChromeEarlGreyImpl (EG1)
-
-#pragma mark - Cookie Utilities
-
-// Returns cookies as key value pairs, where key is a cookie name and value is a
-// cookie value.
-// NOTE: this method fails the test if there are errors getting cookies.
-- (NSDictionary*)cookies;
 
 #pragma mark - Navigation Utilities
 

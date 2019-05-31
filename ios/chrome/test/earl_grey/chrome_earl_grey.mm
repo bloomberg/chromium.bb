@@ -228,6 +228,30 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return nil;
 }
 
+#pragma mark - Cookie Utilities (EG2)
+
+- (NSDictionary*)cookies {
+  NSString* const kGetCookiesScript =
+      @"document.cookie ? document.cookie.split(/;\\s*/) : [];";
+  id result = [self executeJavaScript:kGetCookiesScript];
+  EG_TEST_HELPER_ASSERT_TRUE([result isKindOfClass:[NSArray class]],
+                             @"Unexpected script response");
+
+  NSArray* nameValuePairs = base::mac::ObjCCastStrict<NSArray>(result);
+  NSMutableDictionary* cookies = [NSMutableDictionary dictionary];
+  for (NSString* nameValuePair in nameValuePairs) {
+    NSArray* cookieNameValue = [nameValuePair componentsSeparatedByString:@"="];
+    EG_TEST_HELPER_ASSERT_TRUE((2 == cookieNameValue.count),
+                               @"Cookie has invalid format.");
+
+    NSString* cookieName = cookieNameValue[0];
+    NSString* cookieValue = cookieNameValue[1];
+    cookies[cookieName] = cookieValue;
+  }
+
+  return cookies;
+}
+
 #pragma mark - WebState Utilities (EG2)
 
 - (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
@@ -414,31 +438,6 @@ id ExecuteJavaScript(NSString* javascript,
 }  // namespace chrome_test_util
 
 @implementation ChromeEarlGreyImpl (EG1)
-
-#pragma mark - Cookie Utilities
-
-- (NSDictionary*)cookies {
-  NSString* const kGetCookiesScript =
-      @"document.cookie ? document.cookie.split(/;\\s*/) : [];";
-
-  NSError* error = nil;
-  id result = chrome_test_util::ExecuteJavaScript(kGetCookiesScript, &error);
-
-  GREYAssertTrue(result && !error, @"Failed to get cookies.");
-
-  NSArray* nameValuePairs = base::mac::ObjCCastStrict<NSArray>(result);
-  NSMutableDictionary* cookies = [NSMutableDictionary dictionary];
-  for (NSString* nameValuePair in nameValuePairs) {
-    NSArray* cookieNameValue = [nameValuePair componentsSeparatedByString:@"="];
-    GREYAssertEqual(2U, cookieNameValue.count, @"Cookie has invalid format.");
-
-    NSString* cookieName = cookieNameValue[0];
-    NSString* cookieValue = cookieNameValue[1];
-    cookies[cookieName] = cookieValue;
-  }
-
-  return cookies;
-}
 
 #pragma mark - Navigation Utilities
 
