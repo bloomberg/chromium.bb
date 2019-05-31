@@ -166,7 +166,7 @@ ScriptPromise GPUBuffer::mapReadAsync(ScriptState* script_state,
   GetProcs().bufferMapReadAsync(
       GetHandle(),
       [](DawnBufferMapAsyncStatus status, const void* data,
-         uint64_t data_length, DawnCallbackUserdata userdata) {
+         uint64_t data_length, void* userdata) {
         // It is safe to const_cast the |data| pointer because it is a shadow
         // copy that Dawn wire makes and does not point to the mapped GPU data.
         // Dawn wire's copy of the data is not used outside of tests.

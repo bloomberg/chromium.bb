@@ -22,7 +22,7 @@ class MockBufferMapReadCallback {
                void(DawnBufferMapAsyncStatus status,
                     const uint32_t* ptr,
                     uint64_t data_length,
-                    DawnCallbackUserdata userdata));
+                    void* userdata));
 };
 
 std::unique_ptr<StrictMock<MockBufferMapReadCallback>>
@@ -30,7 +30,7 @@ std::unique_ptr<StrictMock<MockBufferMapReadCallback>>
 void ToMockBufferMapReadCallback(DawnBufferMapAsyncStatus status,
                                  const void* ptr,
                                  uint64_t data_length,
-                                 DawnCallbackUserdata userdata) {
+                                 void* userdata) {
   // Assume the data is uint32_t
   mock_buffer_map_read_callback->Call(status, static_cast<const uint32_t*>(ptr),
                                       data_length, userdata);
@@ -38,12 +38,11 @@ void ToMockBufferMapReadCallback(DawnBufferMapAsyncStatus status,
 
 class MockDeviceErrorCallback {
  public:
-  MOCK_METHOD2(Call, void(const char* message, DawnCallbackUserdata userdata));
+  MOCK_METHOD2(Call, void(const char* message, void* userdata));
 };
 
 std::unique_ptr<StrictMock<MockDeviceErrorCallback>> mock_device_error_callback;
-void ToMockDeviceErrorCallback(const char* message,
-                               DawnCallbackUserdata userdata) {
+void ToMockDeviceErrorCallback(const char* message, void* userdata) {
   mock_device_error_callback->Call(message, userdata);
 }
 
