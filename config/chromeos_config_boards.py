@@ -128,6 +128,7 @@ x86_internal_release_boards = frozenset([
     'lakitu-nc',
     'lakitu-st',
     'lakitu_next',
+    'lakitu-vca',
     'lars',
     'leon',
     'lulu',
@@ -214,6 +215,7 @@ lakitu_boards = frozenset([
     'lakitu-nc',
     'lakitu-st',
     'lakitu_next',
+    'lakitu-vca'
 ])
 
 lassen_boards = frozenset([

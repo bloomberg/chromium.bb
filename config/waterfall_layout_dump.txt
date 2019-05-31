@@ -94,6 +94,7 @@
     lakitu-gpu-paladin
     lakitu-paladin
     lakitu-st-paladin
+    lakitu-vca-paladin
     lasilla-ground-paladin
     leon-paladin
     littlejoe-paladin
@@ -2446,6 +2447,18 @@
   lakitu-st-release-tryjob
   lakitu-st-unittest-stress
   lakitu-unittest-stress
+  lakitu-vca-compile-only-pre-cq
+  lakitu-vca-full-tryjob
+  lakitu-vca-incremental-tryjob
+  lakitu-vca-llvm-next-toolchain-tryjob
+  lakitu-vca-llvm-toolchain-tryjob
+  lakitu-vca-no-vmtest-pre-cq
+  lakitu-vca-paladin-tryjob
+  lakitu-vca-payloads-tryjob
+  lakitu-vca-postsubmit-tryjob
+  lakitu-vca-pre-cq
+  lakitu-vca-release-tryjob
+  lakitu-vca-unittest-stress
   lakitu_next-compile-only-pre-cq
   lakitu_next-full-tryjob
   lakitu_next-incremental-tryjob
@@ -2667,6 +2680,7 @@
     lakitu-gpu-paladin-tryjob
     lakitu-paladin-tryjob
     lakitu-st-paladin-tryjob
+    lakitu-vca-paladin-tryjob
     lasilla-ground-paladin-tryjob
     leon-paladin-tryjob
     littlejoe-paladin-tryjob
