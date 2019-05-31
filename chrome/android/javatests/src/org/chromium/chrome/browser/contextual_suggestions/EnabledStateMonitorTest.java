@@ -4,17 +4,12 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
-import android.support.test.filters.SmallTest;
-
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags.Add;
-import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -26,7 +21,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.test.util.UiRestriction;
 
 /**
@@ -67,39 +61,6 @@ public class EnabledStateMonitorTest {
     public void tearDown() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeSigninController.get().setSignedInAccountName(mOriginalSignedInAccountName);
-        });
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSuggestions"})
-    @Policies.Add({ @Policies.Item(key = "ContextualSuggestionsEnabled", string = "false") })
-    public void testEnterprisePolicy_Disabled() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertFalse(mEnabledStateMonitor.getEnabledState());
-            Assert.assertFalse(mEnabledStateMonitor.getSettingsEnabled());
-        });
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSuggestions"})
-    @Policies.Add({ @Policies.Item(key = "ContextualSuggestionsEnabled", string = "true") })
-    public void testEnterprisePolicy_Enabled() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertTrue(mEnabledStateMonitor.getEnabledState());
-            Assert.assertTrue(mEnabledStateMonitor.getSettingsEnabled());
-        });
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"ContextualSuggestions"})
-    @Policies.Remove({ @Policies.Item(key = "ContextualSuggestionsEnabled") })
-    public void testEnterprisePolicy_DefaultEnabled() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertTrue(mEnabledStateMonitor.getEnabledState());
-            Assert.assertTrue(mEnabledStateMonitor.getSettingsEnabled());
         });
     }
 }
