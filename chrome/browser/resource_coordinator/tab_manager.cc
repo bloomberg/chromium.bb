@@ -35,7 +35,6 @@
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
-#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -240,8 +239,6 @@ void TabManager::DiscardTab(LifecycleUnitDiscardReason reason,
                             TabDiscardDoneCB tab_discard_done) {
   if (reason == LifecycleUnitDiscardReason::URGENT) {
     stats_collector_->RecordWillDiscardUrgently(GetNumAliveTabs());
-    resource_coordinator::TabActivityWatcher::GetInstance()
-        ->LogOldestNTabFeatures();
   }
 
 #if defined(OS_CHROMEOS)
