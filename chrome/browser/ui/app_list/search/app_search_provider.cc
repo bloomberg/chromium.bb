@@ -163,10 +163,15 @@ class AppSearchProvider::App {
         installed_internally_(installed_internally) {}
   ~App() = default;
 
-  struct CompareByLastActivityTime {
+  struct CompareByLastActivityTimeAndThenAppId {
     bool operator()(const std::unique_ptr<App>& app1,
                     const std::unique_ptr<App>& app2) {
-      return app1->GetLastActivityTime() > app2->GetLastActivityTime();
+      // Sort decreasing by last activity time, then increasing by App ID.
+      base::Time t1 = app1->GetLastActivityTime();
+      base::Time t2 = app2->GetLastActivityTime();
+      if (t1 != t2)
+        return t1 > t2;
+      return app1->id_ < app2->id_;
     }
   };
 
@@ -906,9 +911,11 @@ void AppSearchProvider::MaybeRecordQueryLatencyHistogram(
 void AppSearchProvider::UpdateResults() {
   const bool show_recommendations = query_.empty();
 
-  // Presort app based on last active time in order to be able to remove
-  // duplicates from results.
-  std::sort(apps_.begin(), apps_.end(), App::CompareByLastActivityTime());
+  // Presort app based on last activity time in order to be able to remove
+  // duplicates from results. We break ties by App ID, which is arbitrary, but
+  // deterministic.
+  std::sort(apps_.begin(), apps_.end(),
+            App::CompareByLastActivityTimeAndThenAppId());
 
   if (show_recommendations) {
     // Get the map of app ids to their position in the app list, and then

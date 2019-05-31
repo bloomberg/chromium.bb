@@ -127,12 +127,7 @@ class AppSearchProviderTest : public AppListTestBase {
   }
 
   void CreateSearchWithContinueReading() {
-    clock_.SetNow(kTestCurrentTime);
-    // Create ranker here so that tests can modify feature flags.
-    ranker_ = std::make_unique<AppSearchResultRanker>(temp_dir_.GetPath(),
-                                                      kEphemeralUser);
-    app_search_ = std::make_unique<AppSearchProvider>(
-        profile_.get(), nullptr, &clock_, model_updater_.get(), ranker_.get());
+    CreateSearch();
 
     session_tracker_ = std::make_unique<sync_sessions::SyncedSessionTracker>(
         &mock_sync_sessions_client_);
@@ -412,18 +407,17 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
   constexpr SessionID kTabId2 = SessionID::FromSerializedValue(222);
   constexpr SessionID kTabId3 = SessionID::FromSerializedValue(333);
 
+  const base::Time now = base::Time::Now();
+
   // Case 1: test that ContinueReading is recommended for the latest foreign
   // tab.
   {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 =
-        base::Time::Now() - base::TimeDelta::FromMinutes(2);
-    const base::Time kTimestamp2 =
-        base::Time::Now() - base::TimeDelta::FromMinutes(1);
-    const base::Time kTimestamp3 =
-        base::Time::Now() - base::TimeDelta::FromMinutes(3);
+    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(2);
+    const base::Time kTimestamp2 = now - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp3 = now - base::TimeDelta::FromMinutes(3);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -476,8 +470,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 =
-        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(1);
 
     session_tracker()->PutWindowInSession(kLocalSessionTag, kWindowId1);
     session_tracker()->PutTabInWindow(kLocalSessionTag, kWindowId1, kTabId1);
@@ -503,8 +496,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 =
-        base::Time::Now() - base::TimeDelta::FromMinutes(121);
+    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(121);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -530,8 +522,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 =
-        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(1);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -557,8 +548,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 =
-        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(1);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -584,8 +574,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 =
-        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(1);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
@@ -610,8 +599,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
                                         sync_pb::SyncEnums::TYPE_CROS);
-    const base::Time kTimestamp1 =
-        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp1 = now - base::TimeDelta::FromMinutes(1);
 
     session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
