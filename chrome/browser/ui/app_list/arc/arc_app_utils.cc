@@ -639,6 +639,12 @@ std::string AppIdToArcPackageName(const std::string& app_id, Profile* profile) {
   return app_info->package_name;
 }
 
+std::string ArcPackageNameToAppId(const std::string& package_name,
+                                  Profile* profile) {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
+  return arc_prefs->GetAppIdByPackageName(package_name);
+}
+
 bool IsArcAppSticky(const std::string& app_id, Profile* profile) {
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
