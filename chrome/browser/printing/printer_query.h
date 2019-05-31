@@ -35,10 +35,6 @@ class PrinterQuery : public base::RefCountedDeleteOnSequence<PrinterQuery> {
   // Can only be called on the IO thread.
   PrinterQuery(int render_process_id, int render_frame_id);
 
-  // Virtual so that tests can override.
-  virtual void GetSettingsDone(const PrintSettings& new_settings,
-                               PrintingContext::Result result);
-
   // Detach the PrintJobWorker associated to this object. Virtual so that tests
   // can override.
   // Called on the UI thread.
@@ -91,6 +87,13 @@ class PrinterQuery : public base::RefCountedDeleteOnSequence<PrinterQuery> {
   friend class base::DeleteHelper<PrinterQuery>;
 
   virtual ~PrinterQuery();
+
+  // Virtual so that tests can override.
+  virtual void GetSettingsDone(const PrintSettings& new_settings,
+                               PrintingContext::Result result);
+
+  void PostSettingsDoneToIO(const PrintSettings& new_settings,
+                            PrintingContext::Result result);
 
   // For unit tests to manually set the print callback.
   void set_callback(base::OnceClosure callback);

@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_worker.h"
+#include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"

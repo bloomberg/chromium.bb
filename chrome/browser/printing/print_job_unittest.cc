@@ -26,10 +26,9 @@ namespace {
 
 class TestPrintJobWorker : public PrintJobWorker {
  public:
-  explicit TestPrintJobWorker(PrinterQuery* query)
+  TestPrintJobWorker()
       : PrintJobWorker(content::ChildProcessHost::kInvalidUniqueID,
-                       content::ChildProcessHost::kInvalidUniqueID,
-                       query) {}
+                       content::ChildProcessHost::kInvalidUniqueID) {}
   friend class TestQuery;
 };
 
@@ -52,7 +51,7 @@ class TestQuery : public PrinterQuery {
 
     // We're screwing up here since we're calling worker from the main thread.
     // That's fine for testing. It is actually simulating PrinterQuery behavior.
-    auto worker = std::make_unique<TestPrintJobWorker>(this);
+    auto worker = std::make_unique<TestPrintJobWorker>();
     EXPECT_TRUE(worker->Start());
     worker->printing_context()->UseDefaultSettings();
     settings_ = worker->printing_context()->settings();
