@@ -348,8 +348,8 @@
       physical_group: {
         valid_type: "str",
         valid_values: ["border", "border-color", "border-style", "border-width",
-                       "inset", "margin", "max-size", "min-size", "padding",
-                       "scroll-margin", "scroll-padding", "size"],
+                       "inset", "margin", "max-size", "min-size", "overflow",
+                       "padding", "scroll-margin", "scroll-padding", "size"],
       }
     },
 
@@ -2422,6 +2422,22 @@
       keywords: ["normal", "break-word"],
       default_value: "normal",
       typedom_types: ["Keyword"]
+    },
+    {
+      name: "overflow-inline",
+      direction_aware_options: {
+        resolver: "inline",
+        physical_group: "overflow",
+      },
+      runtime_flag: "CSSLogicalOverflow",
+    },
+    {
+      name: "overflow-block",
+      direction_aware_options: {
+        resolver: "block",
+        physical_group: "overflow",
+      },
+      runtime_flag: "CSSLogicalOverflow",
     },
     {
       name: "overflow-x",

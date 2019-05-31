@@ -258,6 +258,8 @@ outlineStyle
 outlineWidth
 overflow
 overflowAnchor
+overflowBlock
+overflowInline
 overflowWrap
 overflowX
 overflowY

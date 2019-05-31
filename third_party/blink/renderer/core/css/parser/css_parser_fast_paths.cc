@@ -662,11 +662,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyID::kOverflowWrap:
       return value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kBreakWord;
+    case CSSPropertyID::kOverflowBlock:
+    case CSSPropertyID::kOverflowInline:
     case CSSPropertyID::kOverflowX:
-      return value_id == CSSValueID::kVisible ||
-             value_id == CSSValueID::kHidden ||
-             value_id == CSSValueID::kScroll || value_id == CSSValueID::kAuto ||
-             value_id == CSSValueID::kOverlay;
     case CSSPropertyID::kOverflowY:
       return value_id == CSSValueID::kVisible ||
              value_id == CSSValueID::kHidden ||
@@ -1014,6 +1012,8 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kObjectFit:
     case CSSPropertyID::kOutlineStyle:
     case CSSPropertyID::kOverflowAnchor:
+    case CSSPropertyID::kOverflowBlock:
+    case CSSPropertyID::kOverflowInline:
     case CSSPropertyID::kOverflowWrap:
     case CSSPropertyID::kOverflowX:
     case CSSPropertyID::kOverflowY:

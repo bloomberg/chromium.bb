@@ -753,6 +753,8 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/outline_style.h",
     "$blink_core_output_dir/css/properties/longhands/outline_width.h",
     "$blink_core_output_dir/css/properties/longhands/overflow_anchor.h",
+    "$blink_core_output_dir/css/properties/longhands/overflow_block.h",
+    "$blink_core_output_dir/css/properties/longhands/overflow_inline.h",
     "$blink_core_output_dir/css/properties/longhands/overflow_wrap.h",
     "$blink_core_output_dir/css/properties/longhands/overflow_x.h",
     "$blink_core_output_dir/css/properties/longhands/overflow_y.h",

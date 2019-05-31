@@ -76,6 +76,10 @@ PhysicalGroup<2> CSSDirectionAwareResolver::MinSizeGroup() {
   return PhysicalGroup<2>(kProperties);
 }
 
+PhysicalGroup<2> CSSDirectionAwareResolver::OverflowGroup() {
+  return PhysicalGroup<2>(overflowShorthand());
+}
+
 PhysicalGroup<4> CSSDirectionAwareResolver::PaddingGroup() {
   return PhysicalGroup<4>(paddingShorthand());
 }

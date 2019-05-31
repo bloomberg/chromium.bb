@@ -361,6 +361,10 @@
       settable_from_internals: true,
     },
     {
+      name: "CSSLogicalOverflow",
+      status: "test",
+    },
+    {
       name: "CSSMaskSourceType",
       status: "experimental",
     },
