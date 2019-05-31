@@ -2867,8 +2867,8 @@
   },
   {
     "name": "touch-selection-strategy",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "omrilio" ],
+    "expiry_milestone": 80
   },
   {
     "name": "touchpad-overscroll-history-navigation",
