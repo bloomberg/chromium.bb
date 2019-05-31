@@ -1464,6 +1464,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/suggestions/TileGroup.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileGroupDelegateImpl.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileRenderer.java",
+  "java/src/org/chromium/chrome/browser/suggestions/tile/TopSitesTileView.java",
   "java/src/org/chromium/chrome/browser/survey/ChromeSurveyController.java",
   "java/src/org/chromium/chrome/browser/survey/SurveyController.java",
   "java/src/org/chromium/chrome/browser/sync/GoogleServiceAuthError.java",

@@ -32,6 +32,7 @@ enum class ExploreSitesVariation {
 };
 
 // A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.explore_sites
 enum class MostLikelyVariation { NONE, ICON_ARROW, ICON_DOTS, ICON_GROUPED };
 
 ExploreSitesVariation GetExploreSitesVariation();

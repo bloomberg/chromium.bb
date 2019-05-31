@@ -106,6 +106,15 @@ public class ExploreSitesBridge {
         return nativeGetVariation();
     }
 
+    /**
+     * Gets the current Finch variation for last MostLikely icon that is configured by flag or
+     * experiment.
+     */
+    @MostLikelyVariation
+    public static int getIconVariation() {
+        return nativeGetIconVariation();
+    }
+
     public static boolean isEnabled(@ExploreSitesVariation int variation) {
         return variation == ExploreSitesVariation.ENABLED
                 || variation == ExploreSitesVariation.PERSONALIZED
@@ -154,6 +163,7 @@ public class ExploreSitesBridge {
     }
 
     static native int nativeGetVariation();
+    static native int nativeGetIconVariation();
     private static native void nativeGetEspCatalog(Profile profile,
             List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);
 

@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.LayoutRes;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -20,11 +21,14 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
+import org.chromium.chrome.browser.explore_sites.MostLikelyVariation;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
+import org.chromium.chrome.browser.suggestions.tile.TopSitesTileView;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -44,6 +48,7 @@ public class TileRenderer {
     private final Resources mResources;
     private final ImageFetcher mImageFetcher;
     private final RoundedIconGenerator mIconGenerator;
+    private final Resources.Theme mTheme;
 
     @TileStyle
     private final int mStyle;
@@ -55,6 +60,9 @@ public class TileRenderer {
     @LayoutRes
     private final int mLayout;
 
+    @LayoutRes
+    private final int mTopSitesLayout;
+
     public TileRenderer(
             Context context, @TileStyle int style, int titleLines, ImageFetcher imageFetcher) {
         mImageFetcher = imageFetcher;
@@ -62,6 +70,7 @@ public class TileRenderer {
         mTitleLinesCount = titleLines;
 
         mResources = context.getResources();
+        mTheme = context.getTheme();
         mDesiredIconSize = mResources.getDimensionPixelSize(R.dimen.tile_view_icon_size);
         mIconCornerRadius = mResources.getDimension(R.dimen.tile_view_icon_corner_radius);
         int minIconSize = mResources.getDimensionPixelSize(R.dimen.tile_view_icon_min_size);
@@ -70,6 +79,7 @@ public class TileRenderer {
         mMinIconSize = Math.min(mDesiredIconSize, minIconSize);
 
         mLayout = getLayout();
+        mTopSitesLayout = getTopSitesLayout();
 
         int iconColor = ApiCompatibilityUtils.getColor(
                 mResources, R.color.default_favicon_background_color);
@@ -127,14 +137,46 @@ public class TileRenderer {
     @VisibleForTesting
     SuggestionsTileView buildTileView(
             Tile tile, ViewGroup parentView, TileGroup.TileSetupDelegate setupDelegate) {
-        SuggestionsTileView tileView =
-                (SuggestionsTileView) LayoutInflater.from(parentView.getContext())
-                        .inflate(mLayout, parentView, false);
+        SuggestionsTileView tileView;
+
+        if (tile.getSource() == TileSource.EXPLORE) {
+            tileView = (TopSitesTileView) LayoutInflater.from(parentView.getContext())
+                               .inflate(mTopSitesLayout, parentView, false);
+
+            int iconVariation = ExploreSitesBridge.getIconVariation();
+            if (iconVariation == MostLikelyVariation.ICON_ARROW) {
+                tile.setIcon(VectorDrawableCompat.create(
+                        mResources, R.drawable.ic_arrow_forward_blue_24dp, mTheme));
+                tile.setType(TileVisualType.ICON_REAL);
+            } else if (iconVariation == MostLikelyVariation.ICON_DOTS) {
+                tile.setIcon(VectorDrawableCompat.create(
+                        mResources, R.drawable.ic_apps_blue_24dp, mTheme));
+                tile.setType(TileVisualType.ICON_REAL);
+            } else if (iconVariation == MostLikelyVariation.ICON_GROUPED) {
+                tile.setIcon(VectorDrawableCompat.create(
+                        mResources, R.drawable.ic_apps_blue_24dp, mTheme));
+                tile.setType(TileVisualType.ICON_DEFAULT);
+
+                // One task to load actual icon.
+                LargeIconBridge.LargeIconCallback bridgeCallback =
+                        setupDelegate.createIconLoadCallback(tile);
+                ExploreSitesBridge.getSummaryImage(Profile.getLastUsedProfile(), mDesiredIconSize,
+                        (Bitmap img)
+                                -> bridgeCallback.onLargeIconAvailable(
+                                        img, Color.BLACK, false, IconType.FAVICON));
+            }
+        } else {
+            tileView = (SuggestionsTileView) LayoutInflater.from(parentView.getContext())
+                               .inflate(mLayout, parentView, false);
+        }
+
         tileView.initialize(tile, mTitleLinesCount);
 
         // Note: It is important that the callbacks below don't keep a reference to the tile or
         // modify them as there is no guarantee that the same tile would be used to update the view.
-        fetchIcon(tile.getData(), setupDelegate.createIconLoadCallback(tile));
+        if (tile.getSource() != TileSource.EXPLORE) {
+            fetchIcon(tile.getData(), setupDelegate.createIconLoadCallback(tile));
+        }
 
         TileGroup.TileInteractionDelegate delegate = setupDelegate.createInteractionDelegate(tile);
         if (tile.getSource() == TileSource.HOMEPAGE) {
@@ -182,8 +224,11 @@ public class TileRenderer {
     }
 
     public void setTileIconFromBitmap(Tile tile, Bitmap icon) {
-        RoundedBitmapDrawable roundedIcon = ViewUtils.createRoundedBitmapDrawable(
-                icon, Math.round(mIconCornerRadius * icon.getWidth() / mDesiredIconSize));
+        int radius = Math.round(mIconCornerRadius * icon.getWidth() / mDesiredIconSize);
+        if (tile.getSource() == TileSource.EXPLORE) {
+            radius = mDesiredIconSize / 2;
+        }
+        RoundedBitmapDrawable roundedIcon = ViewUtils.createRoundedBitmapDrawable(icon, radius);
         roundedIcon.setAntiAlias(true);
         roundedIcon.setFilterBitmap(true);
 
@@ -192,6 +237,10 @@ public class TileRenderer {
     }
 
     public void setTileIconFromColor(Tile tile, int fallbackColor, boolean isFallbackColorDefault) {
+        // Explore should not have generated icons.
+        if (tile.getSource() == TileSource.EXPLORE) {
+            return;
+        }
         mIconGenerator.setBackgroundColor(fallbackColor);
         Bitmap icon = mIconGenerator.generateIconForUrl(tile.getUrl());
         tile.setIcon(new BitmapDrawable(mResources, icon));
@@ -206,6 +255,18 @@ public class TileRenderer {
                 return R.layout.suggestions_tile_view;
             case TileStyle.MODERN_CONDENSED:
                 return R.layout.suggestions_tile_view_condensed;
+        }
+        assert false;
+        return 0;
+    }
+
+    @LayoutRes
+    private int getTopSitesLayout() {
+        switch (mStyle) {
+            case TileStyle.MODERN:
+                return R.layout.top_sites_tile_view;
+            case TileStyle.MODERN_CONDENSED:
+                return R.layout.top_sites_tile_view_condensed;
         }
         assert false;
         return 0;

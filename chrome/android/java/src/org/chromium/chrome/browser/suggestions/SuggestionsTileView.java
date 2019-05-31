@@ -60,7 +60,7 @@ public class SuggestionsTileView extends TileWithTextView {
         setOfflineBadgeVisibility(tile.isOfflineAvailable());
     }
 
-    private void setIconViewLayoutParams(Tile tile) {
+    protected void setIconViewLayoutParams(Tile tile) {
         MarginLayoutParams params = (MarginLayoutParams) mIconView.getLayoutParams();
         Resources resources = getResources();
         if (tile.getType() == TileVisualType.ICON_COLOR
