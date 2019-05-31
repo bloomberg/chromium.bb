@@ -43,7 +43,8 @@ recommended.
 
 ## Setting up the build
 
-Assuming you took the advice from above:
+Assuming you took the advice from above, configure GN args (run `gn args
+out/Default`) as follows:
 
 ```gn
 # Minimal
