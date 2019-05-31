@@ -553,12 +553,16 @@ void TabManagerDelegate::SortLifecycleUnitWithTabRanker(
   const uint32_t num_of_tab_to_score = GetNumOldestTabsToScoreWithTabRanker();
   if (num_of_tab_to_score <= 1)
     return;
+
+  const ProcessType process_type =
+      static_cast<ProcessType>(GetProcessTypeToScoreWithTabRanker());
+
   // Put the oldest num_of_tab_to_score lifecycle units into a vector.
   LifecycleUnitVector oldest_lifecycle_units;
   for (auto it = candidates->rbegin(); it != candidates->rend(); ++it) {
     auto& candidate = *it;
     if (oldest_lifecycle_units.size() == num_of_tab_to_score ||
-        candidate.process_type() < ProcessType::BACKGROUND)
+        candidate.process_type() < process_type)
       break;
     if (candidate.lifecycle_unit()) {
       oldest_lifecycle_units.push_back(candidate.lifecycle_unit());
@@ -572,7 +576,7 @@ void TabManagerDelegate::SortLifecycleUnitWithTabRanker(
   for (auto it = candidates->rbegin(); it != candidates->rend(); ++it) {
     const auto& candidate = *it;
     if (oldest_lifecycle_units.empty() ||
-        candidate.process_type() < ProcessType::BACKGROUND)
+        candidate.process_type() < process_type)
       break;
     if (candidate.lifecycle_unit()) {
       *it = Candidate(oldest_lifecycle_units.back());
