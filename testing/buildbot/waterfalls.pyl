@@ -1947,6 +1947,11 @@
           'scripts': 'test_traffic_annotation_auditor_script',
         }
       },
+      'win-pixel-tester-rel': {
+        'test_suites': {
+          'gtest_tests': 'pixel_browser_tests_gtests',
+        }
+      },
       'win10-blink-rel-dummy': {
         'swarming': {
           'dimension_sets': [

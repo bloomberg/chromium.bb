@@ -22357,6 +22357,27 @@
       }
     ]
   },
+  "win-pixel-tester-rel": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--build-revision",
+          "${got_revision}"
+        ],
+        "experiment_percentage": 100,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "pixel_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "pixel_browser_tests"
+      }
+    ]
+  },
   "win10-blink-rel-dummy": {
     "isolated_scripts": [
       {

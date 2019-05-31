@@ -2179,6 +2179,10 @@
     "label": "//base:pickle_fuzzer",
     "type": "fuzzer",
   },
+  "pixel_browser_tests": {
+    "label": "//chrome/test:pixel_browser_tests",
+    "type": "console_test_launcher",
+  },
   "postmortem-metadata": {
     "label": "//v8:postmortem-metadata",
     "type": "additional_compile_target",

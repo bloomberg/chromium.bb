@@ -4088,6 +4088,20 @@
       },
     },
 
+    'pixel_browser_tests_gtests': {
+      'pixel_browser_tests': {
+        'name': 'pixel_browser_tests',
+        'args': [
+          '--build-revision',
+          '${got_revision}',
+        ],
+        'experiment_percentage': 100,
+        'swarming': {
+          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+        },
+      },
+    },
+
     # TODO(dpranke): These are run on the p/chromium waterfall; they should
     # probably be run on other builders, and we should get rid of the p/chromium
     # waterfall.
