@@ -29,13 +29,12 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
  public:
   SigninManagerAndroid(JNIEnv* env, jobject obj);
 
-  void CheckPolicyBeforeSignIn(
+  // Registers a CloudPolicyClient for fetching policy for a user and fetches
+  // the policy if necessary.
+  void RegisterAndFetchPolicyBeforeSignIn(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& username);
-
-  void FetchPolicyBeforeSignIn(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj);
 
   void AbortSignIn(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj);
@@ -91,9 +90,15 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
 
   ~SigninManagerAndroid() override;
 
-  void OnPolicyRegisterDone(const std::string& dm_token,
+  void OnPolicyRegisterDone(const CoreAccountInfo& account_id,
+                            const std::string& dm_token,
                             const std::string& client_id);
-  void OnPolicyFetchDone(bool success);
+
+  void FetchPolicyBeforeSignIn(const CoreAccountInfo& account_id,
+                               const std::string& dm_token,
+                               const std::string& client_id);
+
+  void OnPolicyFetchDone(bool success) const;
 
   void OnBrowsingDataRemoverDone();
 
@@ -107,15 +112,6 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
 
   // Java-side SigninManager object.
   base::android::ScopedJavaGlobalRef<jobject> java_signin_manager_;
-
-  // CloudPolicy credentials stored during a pending sign-in, awaiting user
-  // confirmation before starting to fetch policies.
-  std::string dm_token_;
-  std::string client_id_;
-
-  // Username that is pending sign-in. This is used to extract the domain name
-  // for the policy dialog, when |username_| corresponds to a managed account.
-  std::string username_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

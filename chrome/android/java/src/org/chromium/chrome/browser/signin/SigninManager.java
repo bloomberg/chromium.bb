@@ -451,34 +451,14 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         }
 
         Log.d(TAG, "Checking if account has policy management enabled");
-        // This will call back to onPolicyCheckedBeforeSignIn.
-        SigninManagerJni.get().checkPolicyBeforeSignIn(
+        // This will call back to onPolicyFetchedBeforeSignIn.
+        SigninManagerJni.get().registerAndFetchPolicyBeforeSignIn(
                 this, mNativeSigninManagerAndroid, mSignInState.mAccount.name);
     }
 
     @CalledByNative
     @VisibleForTesting
-    void onPolicyCheckedBeforeSignIn(String managementDomain) {
-        assert mSignInState != null;
-
-        if (managementDomain == null) {
-            Log.d(TAG, "Account doesn't have policy");
-            finishSignIn();
-            return;
-        }
-
-        if (mSignInState.isActivityInvisible()) {
-            abortSignIn();
-            return;
-        }
-
-        // The user has already been notified that they are signing into a managed account.
-        // This will call back to onPolicyFetchedBeforeSignIn.
-        SigninManagerJni.get().fetchPolicyBeforeSignIn(this, mNativeSigninManagerAndroid);
-    }
-
-    @CalledByNative
-    private void onPolicyFetchedBeforeSignIn() {
+    void onPolicyFetchedBeforeSignIn() {
         // Policy has been fetched for the user and is being enforced; features like sync may now
         // be disabled by policy, and the rest of the sign-in flow can be resumed.
         finishSignIn();
@@ -769,10 +749,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         boolean isForceSigninEnabled(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 
-        void checkPolicyBeforeSignIn(
+        void registerAndFetchPolicyBeforeSignIn(
                 @JCaller SigninManager self, long nativeSigninManagerAndroid, String username);
-
-        void fetchPolicyBeforeSignIn(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 
         void abortSignIn(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 

@@ -140,52 +140,6 @@ SigninManagerAndroid::~SigninManagerAndroid() {
   IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
-void SigninManagerAndroid::CheckPolicyBeforeSignIn(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& username) {
-  username_ = base::android::ConvertJavaStringToUTF8(env, username);
-  policy::UserPolicySigninService* service =
-      policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
-  service->RegisterForPolicyWithAccountId(
-      username_,
-      IdentityManagerFactory::GetForProfile(profile_)
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(username_)
-          .value()
-          .account_id,
-      base::Bind(&SigninManagerAndroid::OnPolicyRegisterDone,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void SigninManagerAndroid::FetchPolicyBeforeSignIn(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  if (!dm_token_.empty()) {
-    policy::UserPolicySigninService* service =
-        policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
-        content::BrowserContext::GetDefaultStoragePartition(profile_)
-            ->GetURLLoaderFactoryForBrowserProcess();
-    service->FetchPolicyForSignedInUser(
-        AccountIdFromAccountInfo(
-            IdentityManagerFactory::GetForProfile(profile_)
-                ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
-                    username_)
-                .value()),
-        dm_token_, client_id_, url_loader_factory,
-        base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,
-                   weak_factory_.GetWeakPtr()));
-    dm_token_.clear();
-    client_id_.clear();
-    return;
-  }
-
-  // This shouldn't be called when ShouldLoadPolicyForUser() is false, or when
-  // CheckPolicyBeforeSignIn() failed.
-  NOTREACHED();
-  Java_SigninManager_onPolicyFetchedBeforeSignIn(env, java_signin_manager_);
-}
-
 void SigninManagerAndroid::AbortSignIn(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
   policy::UserPolicySigninService* service =
@@ -256,28 +210,59 @@ void SigninManagerAndroid::WipeGoogleServiceWorkerCaches(
                       weak_factory_.GetWeakPtr()));
 }
 
-void SigninManagerAndroid::OnPolicyRegisterDone(
-    const std::string& dm_token,
-    const std::string& client_id) {
-  dm_token_ = dm_token;
-  client_id_ = client_id;
+void SigninManagerAndroid::RegisterAndFetchPolicyBeforeSignIn(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_username) {
+  std::string username =
+      base::android::ConvertJavaStringToUTF8(env, j_username);
+  DCHECK(!username.empty());
+  // TODO(bsazonov): Remove after migrating the sign-in flow to CoreAccountId.
+  // ExtractDomainName Dchecks that username is a valid email, in practice
+  // this checks that @ is present and is not the last character.
+  gaia::ExtractDomainName(username);
 
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> domain;
-  if (!dm_token_.empty()) {
-    DCHECK(!username_.empty());
-    domain.Reset(
-        base::android::ConvertUTF8ToJavaString(
-            env, gaia::ExtractDomainName(username_)));
-  } else {
-    username_.clear();
-  }
-
-  Java_SigninManager_onPolicyCheckedBeforeSignIn(env, java_signin_manager_,
-                                                 domain);
+  policy::UserPolicySigninService* service =
+      policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
+  CoreAccountInfo account =
+      IdentityManagerFactory::GetForProfile(profile_)
+          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(username)
+          .value();
+  service->RegisterForPolicyWithAccountId(
+      username, account.account_id,
+      base::Bind(&SigninManagerAndroid::OnPolicyRegisterDone,
+                 weak_factory_.GetWeakPtr(), account));
 }
 
-void SigninManagerAndroid::OnPolicyFetchDone(bool success) {
+void SigninManagerAndroid::OnPolicyRegisterDone(const CoreAccountInfo& account,
+                                                const std::string& dm_token,
+                                                const std::string& client_id) {
+  if (dm_token.empty()) {
+    // User's account does not have a policy to fetch.
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_SigninManager_onPolicyFetchedBeforeSignIn(env, java_signin_manager_);
+  } else {
+    FetchPolicyBeforeSignIn(account, dm_token, client_id);
+  }
+}
+
+void SigninManagerAndroid::FetchPolicyBeforeSignIn(
+    const CoreAccountInfo& account,
+    const std::string& dm_token,
+    const std::string& client_id) {
+  policy::UserPolicySigninService* service =
+      policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetURLLoaderFactoryForBrowserProcess();
+  service->FetchPolicyForSignedInUser(
+      AccountIdFromAccountInfo(account), dm_token, client_id,
+      url_loader_factory,
+      base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void SigninManagerAndroid::OnPolicyFetchDone(bool success) const {
   Java_SigninManager_onPolicyFetchedBeforeSignIn(
       base::android::AttachCurrentThread(), java_signin_manager_);
 }

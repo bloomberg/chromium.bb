@@ -213,7 +213,7 @@ public class SigninManagerTest {
         // Request that policy is loaded. It will pause sign-in until onPolicyCheckedBeforeSignIn is
         // invoked.
         doReturn(true).when(mNativeMock).shouldLoadPolicyForUser(any());
-        doNothing().when(mNativeMock).checkPolicyBeforeSignIn(any(), anyLong(), any());
+        doNothing().when(mNativeMock).registerAndFetchPolicyBeforeSignIn(any(), anyLong(), any());
 
         doReturn(true).when(mSigninManager).isSigninSupported();
         doNothing().when(mNativeMock).onSignInCompleted(any(), anyLong(), any());
@@ -228,7 +228,7 @@ public class SigninManagerTest {
         mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);
         assertEquals(0, callCount.get());
 
-        mSigninManager.onPolicyCheckedBeforeSignIn(null); // Test user is unmanaged.
+        mSigninManager.onPolicyFetchedBeforeSignIn();
         assertFalse(mSigninManager.isOperationInProgress());
         assertEquals(1, callCount.get());
     }
