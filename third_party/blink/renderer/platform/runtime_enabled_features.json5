@@ -117,7 +117,7 @@
     },
     {
       name: "AsyncClipboard",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "AudioOutputDevices",
