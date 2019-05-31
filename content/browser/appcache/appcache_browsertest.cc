@@ -9,17 +9,21 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/ssl_status.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/features.h"
+
 namespace content {
 
 // This class currently enables the network service feature, which allows us to
@@ -85,6 +89,37 @@ IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
   EXPECT_GT(request_count, 1);
   EXPECT_EQ(page_no_manifest, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
+}
+
+// Regression test for crbug.com/937761.
+IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
+                       SSLCertificateCachedCorrectly) {
+  net::EmbeddedTestServer embedded_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  embedded_test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK,
+                                    net::SSLServerConfig());
+  embedded_test_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  ASSERT_TRUE(embedded_test_server.Start());
+
+  GURL main_url =
+      embedded_test_server.GetURL("/appcache/simple_page_with_manifest.html");
+  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
+
+  // Load the main page twice. The second navigation should have AppCache
+  // initialized for the page.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_EQ(main_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  content::NavigationEntry* const entry =
+      shell()->web_contents()->GetController().GetVisibleEntry();
+  EXPECT_FALSE(net::IsCertStatusError(entry->GetSSL().cert_status));
+  EXPECT_TRUE(entry->GetSSL().certificate);
 }
 
 }  // namespace content
