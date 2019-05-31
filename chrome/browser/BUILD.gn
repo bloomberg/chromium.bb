@@ -634,8 +634,6 @@ jumbo_split_static_library("browser") {
     "lifetime/browser_shutdown.h",
     "loader/chrome_navigation_data.cc",
     "loader/chrome_navigation_data.h",
-    "loader/chrome_resource_dispatcher_host_delegate.cc",
-    "loader/chrome_resource_dispatcher_host_delegate.h",
     "lookalikes/lookalike_url_allowlist.cc",
     "lookalikes/lookalike_url_allowlist.h",
     "lookalikes/lookalike_url_controller_client.cc",

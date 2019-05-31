@@ -155,7 +155,6 @@ class ChromeContentBrowserClientExtensionsPart
       base::CommandLine* command_line,
       content::RenderProcessHost* process,
       Profile* profile) override;
-  void ResourceDispatcherHostCreated() override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientExtensionsPart);
 };

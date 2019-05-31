@@ -32,7 +32,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -765,48 +764,6 @@ INSTANTIATE_TEST_SUITE_P(
             SandboxOption::kDisallowDownloadsWithoutUserActivation,
             SandboxOption::kAllowDownloadsWithoutUserActivation),
         ::testing::Bool()));
-
-class DefaultBlockSandboxDownloadBrowserTest
-    : public DownloadFramePolicyBrowserTest {
- public:
-  DefaultBlockSandboxDownloadBrowserTest() {
-    scoped_feature_list_.InitAndDisableFeature(
-        network::features::kNetworkService);
-  }
-
-  ~DefaultBlockSandboxDownloadBrowserTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SetRuntimeFeatureCommand(
-        true, "BlockingDownloadsInSandboxWithoutUserActivation", command_line);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// To test PDF works fine when the policy disallows just download, which
-// essentially tests that the appropriate ResourceInterceptPolicy
-// |kAllowPluginOnly| is set for resource handling.
-//
-// When NetworkService is disabled and when ResourceInterceptPolicy has been
-// incorrectly set to |kAllowNone|, no stream interceptor will be set up to
-// handle the PDF content, and the content will instead be sent to the renderer
-// where a UTF-8 GUID is expected to arrive. It'll then hit a DCHECK checking
-// the UTF-8-ness of the GUID.
-//
-// TODO(yaoxia): Use a more straightforward approach to assert that the pdf
-// content displays fine rather than relying on the DCHECK failure that would
-// happen with an incorrect implementation.
-IN_PROC_BROWSER_TEST_F(DefaultBlockSandboxDownloadBrowserTest, PdfNotBlocked) {
-  InitializeOneSubframeSetup(
-      SandboxOption::kDisallowDownloadsWithoutUserActivation,
-      false /* is_ad_frame */, false /* is_cross_origin */);
-  content::TestNavigationObserver navigation_observer(web_contents());
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(GetSubframeRfh(),
-                                              "top.location = 'test.pdf';"));
-  navigation_observer.Wait();
-}
 
 // Download gets blocked when LoadPolicy is DISALLOW for the navigation to
 // download. This test is technically unrelated to policy on frame, but stays

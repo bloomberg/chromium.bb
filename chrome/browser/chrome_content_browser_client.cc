@@ -3108,12 +3108,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // TODO(jam): move this creation elsewhere so we can remove this method.
   safe_browsing_service_ = g_browser_process->safe_browsing_service();
-
-  for (size_t i = 0; i < extra_parts_.size(); ++i)
-    extra_parts_[i]->ResourceDispatcherHostCreated();
-
-  return g_browser_process->ResourceDispatcherHostCreated();
 }
 
 content::SpeechRecognitionManagerDelegate*

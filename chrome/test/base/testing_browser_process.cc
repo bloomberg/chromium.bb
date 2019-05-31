@@ -125,9 +125,6 @@ TestingBrowserProcess::~TestingBrowserProcess() {
   DCHECK_EQ(static_cast<BrowserProcess*>(nullptr), g_browser_process);
 }
 
-void TestingBrowserProcess::ResourceDispatcherHostCreated() {
-}
-
 void TestingBrowserProcess::FlushLocalStateAndReply(base::OnceClosure reply) {
   // This could be implemented the same way as in BrowserProcessImpl but it's
   // not currently expected to be used by TestingBrowserProcess users so we

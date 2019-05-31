@@ -129,9 +129,6 @@ class BrowserProcess {
   BrowserProcess();
   virtual ~BrowserProcess();
 
-  // Called when the ResourceDispatcherHost object is created by content.
-  virtual void ResourceDispatcherHostCreated() = 0;
-
   // Invoked when the user is logging out/shutting down. When logging off we may
   // not have enough time to do a normal shutdown. This method is invoked prior
   // to normal shutdown and saves any state that must be saved before system

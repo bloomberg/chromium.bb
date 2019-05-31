@@ -39,7 +39,6 @@ class BatteryMetrics;
 class ChromeChildProcessWatcher;
 class ChromeFeatureListCreator;
 class ChromeMetricsServicesManagerClient;
-class ChromeResourceDispatcherHostDelegate;
 class DevToolsAutoOpener;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
@@ -136,7 +135,6 @@ class BrowserProcessImpl : public BrowserProcess,
       metrics_services_manager::MetricsServicesManagerClient* client);
 
   // BrowserProcess implementation.
-  void ResourceDispatcherHostCreated() override;
   void EndSession() override;
   void FlushLocalStateAndReply(base::OnceClosure reply) override;
   metrics_services_manager::MetricsServicesManager* GetMetricsServicesManager()
@@ -369,9 +367,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<net_log::ChromeNetLog> net_log_;
 
   std::unique_ptr<BatteryMetrics> battery_metrics_;
-
-  std::unique_ptr<ChromeResourceDispatcherHostDelegate>
-      resource_dispatcher_host_delegate_;
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   base::RepeatingTimer autoupdate_timer_;

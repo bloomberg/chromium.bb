@@ -52,7 +52,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/switch_utils.h"
-#include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
@@ -129,7 +128,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -221,7 +219,6 @@ static constexpr base::TimeDelta kEndSessionTimeout =
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::PluginService;
-using content::ResourceDispatcherHost;
 
 rappor::RapporService* GetBrowserRapporService() {
   if (g_browser_process != nullptr)
@@ -1096,13 +1093,6 @@ BrowserProcessImpl::supervised_user_whitelist_installer() {
             local_state());
   }
   return supervised_user_whitelist_installer_.get();
-}
-
-void BrowserProcessImpl::ResourceDispatcherHostCreated() {
-  resource_dispatcher_host_delegate_ =
-      std::make_unique<ChromeResourceDispatcherHostDelegate>();
-  ResourceDispatcherHost::Get()->SetDelegate(
-      resource_dispatcher_host_delegate_.get());
 }
 
 void BrowserProcessImpl::OnKeepAliveStateChanged(bool is_keeping_alive) {
