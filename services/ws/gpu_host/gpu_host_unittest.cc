@@ -10,8 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/viz/host/gpu_client.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
@@ -113,7 +113,7 @@ class GpuHostTest : public testing::Test {
   int GetChannelRequests();
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   base::Thread io_thread_;
   TestGpuHostDelegate gpu_host_delegate_;
