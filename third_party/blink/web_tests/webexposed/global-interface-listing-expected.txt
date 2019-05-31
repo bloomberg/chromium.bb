@@ -3634,12 +3634,14 @@ interface HTMLPortalElement : HTMLElement
     attribute @@toStringTag
     getter onmessage
     getter onmessageerror
+    getter referrerPolicy
     getter src
     method activate
     method constructor
     method postMessage
     setter onmessage
     setter onmessageerror
+    setter referrerPolicy
     setter src
 interface HTMLPreElement : HTMLElement
     attribute @@toStringTag

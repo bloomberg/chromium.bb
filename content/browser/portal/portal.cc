@@ -18,6 +18,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -162,7 +163,7 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   return proxy_host;
 }
 
-void Portal::Navigate(const GURL& url) {
+void Portal::Navigate(const GURL& url, blink::mojom::ReferrerPtr referrer) {
   if (!url.SchemeIsHTTPOrHTTPS()) {
     mojo::ReportBadMessage("Portal::Navigate tried to use non-HTTP protocol.");
     binding_->Close();  // Also deletes |this|.
@@ -173,6 +174,7 @@ void Portal::Navigate(const GURL& url) {
   // navigating portals. See http://crbug.com/964395.
 
   NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.referrer = mojo::ConvertTo<Referrer>(referrer);
   portal_contents_impl_->GetController().LoadURLWithParams(load_url_params);
 }
 

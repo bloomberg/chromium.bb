@@ -6,6 +6,7 @@
 
 #include <utility>
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/referrer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -36,7 +37,9 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -71,7 +74,15 @@ void HTMLPortalElement::Navigate() {
     return;
   }
 
-  portal_ptr_->Navigate(url);
+  auto referrer_policy_to_use = ReferrerPolicyAttribute();
+  if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
+    referrer_policy_to_use = GetDocument().GetReferrerPolicy();
+  Referrer referrer = SecurityPolicy::GenerateReferrer(
+      referrer_policy_to_use, url, GetDocument().OutgoingReferrer());
+  auto mojo_referrer = mojom::blink::Referrer::New(
+      KURL(NullURL(), referrer.referrer), referrer.referrer_policy);
+
+  portal_ptr_->Navigate(url, std::move(mojo_referrer));
 }
 
 void HTMLPortalElement::ConsumePortal() {
@@ -344,6 +355,16 @@ void HTMLPortalElement::ParseAttribute(
     return;
   }
 
+  if (params.name == html_names::kReferrerpolicyAttr) {
+    referrer_policy_ = network::mojom::ReferrerPolicy::kDefault;
+    if (!params.new_value.IsNull()) {
+      SecurityPolicy::ReferrerPolicyFromString(
+          params.new_value, kDoNotSupportReferrerPolicyLegacyKeywords,
+          &referrer_policy_);
+    }
+    return;
+  }
+
   struct {
     const QualifiedName& name;
     const AtomicString& event_name;
@@ -371,6 +392,10 @@ void HTMLPortalElement::AttachLayoutTree(AttachContext& context) {
 
   if (GetLayoutEmbeddedContent() && ContentFrame())
     SetEmbeddedContentView(ContentFrame()->View());
+}
+
+network::mojom::ReferrerPolicy HTMLPortalElement::ReferrerPolicyAttribute() {
+  return referrer_policy_;
 }
 
 }  // namespace blink

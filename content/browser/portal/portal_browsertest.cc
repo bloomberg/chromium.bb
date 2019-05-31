@@ -60,13 +60,13 @@ class PortalInterceptorForTesting final
     portal_->Activate(std::move(data), std::move(callback));
   }
 
-  void Navigate(const GURL& url) override {
+  void Navigate(const GURL& url, blink::mojom::ReferrerPtr referrer) override {
     if (navigate_callback_) {
-      navigate_callback_.Run(url);
+      navigate_callback_.Run(url, std::move(referrer));
       return;
     }
 
-    portal_->Navigate(url);
+    portal_->Navigate(url, std::move(referrer));
   }
 
   void WaitForActivate() {
@@ -83,7 +83,8 @@ class PortalInterceptorForTesting final
   WebContents* GetPortalContents() { return portal_->GetPortalContents(); }
 
   // IPC callbacks
-  base::RepeatingCallback<void(const GURL&)> navigate_callback_;
+  base::RepeatingCallback<void(const GURL&, blink::mojom::ReferrerPtr)>
+      navigate_callback_;
 
  private:
   PortalInterceptorForTesting(RenderFrameHostImpl* render_frame_host_impl)
@@ -520,9 +521,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigateToChrome) {
 
   // Try to navigate to chrome://settings and wait for the process to die.
   portal_interceptor->navigate_callback_ = base::BindRepeating(
-      [](Portal* portal, const GURL& url) {
+      [](Portal* portal, const GURL& url, blink::mojom::ReferrerPtr referrer) {
         GURL chrome_url("chrome://settings");
-        portal->Navigate(chrome_url);
+        portal->Navigate(chrome_url, std::move(referrer));
       },
       portal);
   RenderProcessHostKillWaiter kill_waiter(

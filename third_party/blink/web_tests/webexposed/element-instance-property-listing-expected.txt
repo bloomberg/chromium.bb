@@ -884,6 +884,7 @@ html element portal
     property onmessage
     property onmessageerror
     property postMessage
+    property referrerPolicy
     property src
 html element pre
     property width

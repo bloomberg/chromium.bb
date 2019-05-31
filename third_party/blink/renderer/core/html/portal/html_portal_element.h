@@ -95,6 +95,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
     return ParsedFeaturePolicy();
   }
   void AttachLayoutTree(AttachContext& context) override;
+  network::mojom::ReferrerPolicy ReferrerPolicyAttribute() override;
 
   // Uniquely identifies the portal, this token is used by the browser process
   // to reference this portal when communicating with the renderer.
@@ -105,6 +106,9 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
   // Set to true after activate() is called on the portal. It is set to false
   // right before the promise returned by activate() is resolved or rejected.
   bool is_activating_ = false;
+
+  network::mojom::ReferrerPolicy referrer_policy_ =
+      network::mojom::ReferrerPolicy::kDefault;
 
   mojom::blink::PortalAssociatedPtr portal_ptr_;
   mojo::AssociatedBinding<mojom::blink::PortalClient> portal_client_binding_;
