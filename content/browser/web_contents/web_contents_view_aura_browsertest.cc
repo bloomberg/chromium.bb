@@ -41,9 +41,12 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_sink.h"
@@ -85,6 +88,12 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     frame_observer_ = std::make_unique<RenderFrameSubmissionObserver>(
         shell()->web_contents());
+  }
+
+  void SetUpOnMainThread() override {
+    // Setup the server to allow serving separate sites, so we can perform
+    // cross-process navigation.
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -485,6 +494,59 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       1);
 
   window->AddChild(shell()->web_contents()->GetContentNativeView());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/overlapping_cross_site_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  WebContentsViewAura* view =
+      static_cast<WebContentsViewAura*>(contents->GetView());
+  ui::OSExchangeData data;
+
+  {
+    gfx::PointF point = {10, 10};
+    ui::DropTargetEvent event(data, point, point, ui::DragDropTypes::DRAG_COPY);
+    // Simulate drag enter on a surface that is handled by synchronous
+    // hittesting.
+    EXPECT_EQ(nullptr, view->current_drop_data_);
+    view->OnDragEntered(event);
+    ASSERT_NE(nullptr, view->current_drop_data_);
+    view->OnPerformDrop(event);
+    EXPECT_EQ(nullptr, view->current_drop_data_);
+  }
+  {
+    int left =
+        EvalJs(contents,
+               "document.getElementById('target').getBoundingClientRect().left")
+            .ExtractInt();
+    int top =
+        EvalJs(contents,
+               "document.getElementById('target').getBoundingClientRect().top")
+            .ExtractInt();
+    gfx::PointF point = {left + 5, top + 5};
+    ui::DropTargetEvent event(data, point, point, ui::DragDropTypes::DRAG_COPY);
+    // Simulate drag enter on a surface that is handled by asynchronous
+    // hittesting.
+    EXPECT_EQ(nullptr, view->current_drop_data_);
+    view->OnDragEntered(event);
+    // Immediately after the function call the drop data on the target view
+    // should still be null as we need to wait for the blink hittest callback.
+    EXPECT_EQ(nullptr, view->current_drop_data_);
+    while (!view->current_drop_data_)
+      GiveItSomeTime();
+
+    view->OnPerformDrop(event);
+    // Immediately after the function call the drop operation is not done as we
+    // need to wait for the blink hittest callback.
+    EXPECT_NE(nullptr, view->current_drop_data_);
+    while (view->current_drop_data_)
+      GiveItSomeTime();
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
