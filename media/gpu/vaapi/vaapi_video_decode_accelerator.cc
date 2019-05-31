@@ -280,10 +280,12 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   if (!client_)
     return;
 
+  Picture client_picture(output_id, input_id, visible_rect,
+                         picture_color_space.ToGfxColorSpace(),
+                         picture->AllowOverlay());
+  client_picture.set_read_lock_fences_enabled(true);
   // Notify the |client_| a picture is ready to be consumed.
-  client_->PictureReady(Picture(output_id, input_id, visible_rect,
-                                picture_color_space.ToGfxColorSpace(),
-                                picture->AllowOverlay()));
+  client_->PictureReady(client_picture);
 }
 
 void VaapiVideoDecodeAccelerator::TryOutputPicture() {
