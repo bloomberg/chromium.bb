@@ -12,16 +12,79 @@
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "mojo/core/embedder/embedder.h"
+#include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/test/test_network_context_client.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
+
+const int kProcessId = 42;
+const int kRoutingId = 43;
+
+class RecordingNetworkContextClient : public network::TestNetworkContextClient {
+ public:
+  struct CookieOp {
+    bool get = false;
+    GURL url;
+    GURL site_for_cookies;
+    net::CookieList cookies;
+    bool blocked_by_policy;
+  };
+
+  RecordingNetworkContextClient() {}
+  ~RecordingNetworkContextClient() override {}
+
+  const std::vector<CookieOp>& recorded_activity() const {
+    return recorded_activity_;
+  }
+
+  void OnCookieChange(bool is_service_worker,
+                      int32_t process_id,
+                      int32_t routing_id,
+                      const GURL& url,
+                      const GURL& site_for_cookies,
+                      const net::CanonicalCookie& cookie,
+                      bool blocked_by_policy) override {
+    EXPECT_EQ(false, is_service_worker);
+    EXPECT_EQ(kProcessId, process_id);
+    EXPECT_EQ(kRoutingId, routing_id);
+    CookieOp set;
+    set.url = url;
+    set.site_for_cookies = site_for_cookies;
+    set.cookies.push_back(cookie);
+    set.blocked_by_policy = blocked_by_policy;
+    recorded_activity_.push_back(set);
+  }
+
+  void OnCookiesRead(bool is_service_worker,
+                     int32_t process_id,
+                     int32_t routing_id,
+                     const GURL& url,
+                     const GURL& site_for_cookies,
+                     const std::vector<net::CanonicalCookie>& cookie_list,
+                     bool blocked_by_policy) override {
+    EXPECT_EQ(false, is_service_worker);
+    EXPECT_EQ(kProcessId, process_id);
+    EXPECT_EQ(kRoutingId, routing_id);
+    CookieOp get;
+    get.get = true;
+    get.url = url;
+    get.site_for_cookies = site_for_cookies;
+    get.cookies = cookie_list;
+    get.blocked_by_policy = blocked_by_policy;
+    recorded_activity_.push_back(get);
+  }
+
+ private:
+  std::vector<CookieOp> recorded_activity_;
+};
 
 // Synchronous proxies to a wrapped RestrictedCookieManager's methods.
 class RestrictedCookieManagerSync {
@@ -88,7 +151,11 @@ class RestrictedCookieManagerTest : public testing::Test {
         service_(std::make_unique<RestrictedCookieManager>(
             &cookie_monster_,
             &cookie_settings_,
-            url::Origin::Create(GURL("http://example.com")))),
+            url::Origin::Create(GURL("http://example.com")),
+            &recording_client_,
+            false /* is_service_worker*/,
+            kProcessId,
+            kRoutingId)),
         binding_(service_.get(), mojo::MakeRequest(&service_ptr_)) {
     sync_service_ =
         std::make_unique<RestrictedCookieManagerSync>(service_ptr_.get());
@@ -152,9 +219,15 @@ class RestrictedCookieManagerTest : public testing::Test {
     received_bad_message_ = true;
   }
 
+  const std::vector<RecordingNetworkContextClient::CookieOp>&
+  recorded_activity() const {
+    return recording_client_.recorded_activity();
+  }
+
   base::MessageLoopForIO message_loop_;
   net::CookieMonster cookie_monster_;
   CookieSettings cookie_settings_;
+  RecordingNetworkContextClient recording_client_;
   std::unique_ptr<RestrictedCookieManager> service_;
   mojom::RestrictedCookieManagerPtr service_ptr_;
   mojo::Binding<mojom::RestrictedCookieManager> binding_;
@@ -295,6 +368,21 @@ TEST_F(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
         std::move(options));
     ASSERT_THAT(cookies, testing::SizeIs(0));
   }
+
+  ASSERT_EQ(2u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[0].get, true);
+  EXPECT_EQ(recorded_activity()[0].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
+  EXPECT_THAT(recorded_activity()[0].cookies,
+              net::MatchesCookieLine("cookie-name=cookie-value"));
+  EXPECT_EQ(recorded_activity()[0].blocked_by_policy, false);
+
+  EXPECT_EQ(recorded_activity()[1].get, true);
+  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
+  EXPECT_THAT(recorded_activity()[1].cookies,
+              net::MatchesCookieLine("cookie-name=cookie-value"));
+  EXPECT_EQ(recorded_activity()[1].blocked_by_policy, true);
 }
 
 TEST_F(RestrictedCookieManagerTest, SetCanonicalCookie) {
@@ -348,10 +436,10 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
         net::CanonicalCookie::Create(GURL("http://example.com"), "A2=B2",
                                      base::Time::Now(), net::CookieOptions());
     EXPECT_FALSE(sync_service_->SetCanonicalCookie(
-        *cookie, GURL("http://example.com"), GURL("http://notexample.com")));
+        *cookie, GURL("http://example.com"), GURL("http://otherexample.com")));
   }
 
-  // Read back, in first-part context
+  // Read back, in first-party context
   auto options = mojom::CookieManagerGetOptions::New();
   options->name = "A";
   options->match_type = mojom::CookieMatchType::STARTS_WITH;
@@ -362,6 +450,26 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   ASSERT_THAT(cookies, testing::SizeIs(1));
   EXPECT_EQ("A", cookies[0].Name());
   EXPECT_EQ("B", cookies[0].Value());
+
+  ASSERT_EQ(3u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[0].get, false);
+  EXPECT_EQ(recorded_activity()[0].url, "http://example.com/");
+  EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
+  EXPECT_THAT(recorded_activity()[0].cookies, net::MatchesCookieLine("A=B"));
+  EXPECT_EQ(recorded_activity()[0].blocked_by_policy, false);
+
+  EXPECT_EQ(recorded_activity()[1].get, false);
+  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/");
+  EXPECT_EQ(recorded_activity()[1].site_for_cookies,
+            "http://otherexample.com/");
+  EXPECT_THAT(recorded_activity()[1].cookies, net::MatchesCookieLine("A2=B2"));
+  EXPECT_EQ(recorded_activity()[1].blocked_by_policy, true);
+
+  EXPECT_EQ(recorded_activity()[2].get, true);
+  EXPECT_EQ(recorded_activity()[2].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[2].site_for_cookies, "http://example.com/");
+  EXPECT_THAT(recorded_activity()[2].cookies, net::MatchesCookieLine("A=B"));
+  EXPECT_EQ(recorded_activity()[2].blocked_by_policy, false);
 }
 
 namespace {

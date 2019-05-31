@@ -572,27 +572,6 @@ void NetworkServiceClient::OnFileUploadRequested(
                      base::SequencedTaskRunnerHandle::Get()));
 }
 
-void NetworkServiceClient::OnCookiesRead(int process_id,
-                                         int routing_id,
-                                         const GURL& url,
-                                         const GURL& first_party_url,
-                                         const net::CookieList& cookie_list,
-                                         bool blocked_by_policy) {
-  GetContentClient()->browser()->OnCookiesRead(process_id, routing_id, url,
-                                               first_party_url, cookie_list,
-                                               blocked_by_policy);
-}
-
-void NetworkServiceClient::OnCookieChange(int process_id,
-                                          int routing_id,
-                                          const GURL& url,
-                                          const GURL& first_party_url,
-                                          const net::CanonicalCookie& cookie,
-                                          bool blocked_by_policy) {
-  GetContentClient()->browser()->OnCookieChange(
-      process_id, routing_id, url, first_party_url, cookie, blocked_by_policy);
-}
-
 void NetworkServiceClient::OnLoadingStateUpdate(
     std::vector<network::mojom::LoadInfoPtr> infos,
     OnLoadingStateUpdateCallback callback) {

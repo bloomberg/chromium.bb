@@ -285,6 +285,66 @@ BrowserContext* GetBrowserContextFromStoragePartition(
   return weak_partition_ptr ? weak_partition_ptr->browser_context() : nullptr;
 }
 
+void OnServiceWorkerCookieChangeOnIO(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const net::CanonicalCookie& cookie,
+    bool blocked_by_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Notify all the frames associated with this service worker of its cookie
+  // activity.
+  std::unique_ptr<std::vector<GlobalFrameRoutingId>> host_ids =
+      service_worker_context->GetProviderHostIds(url.GetOrigin());
+  for (const GlobalFrameRoutingId& id : *host_ids) {
+    GetContentClient()->browser()->OnCookieChange(
+        id.child_id, id.frame_routing_id, url, site_for_cookies, cookie,
+        blocked_by_policy);
+  }
+}
+
+void OnWindowCookieChangeOnIO(int32_t process_id,
+                              int32_t routing_id,
+                              const GURL& url,
+                              const GURL& site_for_cookies,
+                              const net::CanonicalCookie& cookie,
+                              bool blocked_by_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  GetContentClient()->browser()->OnCookieChange(
+      process_id, routing_id, url, site_for_cookies, cookie, blocked_by_policy);
+}
+
+void OnServiceWorkerCookiesReadOnIO(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const std::vector<net::CanonicalCookie>& cookie_list,
+    bool blocked_by_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Notify all the frames associated with this service worker of its cookie
+  // activity.
+  std::unique_ptr<std::vector<GlobalFrameRoutingId>> host_ids =
+      service_worker_context->GetProviderHostIds(url.GetOrigin());
+  for (const GlobalFrameRoutingId& id : *host_ids) {
+    GetContentClient()->browser()->OnCookiesRead(
+        id.child_id, id.frame_routing_id, url, site_for_cookies, cookie_list,
+        blocked_by_policy);
+  }
+}
+
+void OnWindowCookiesReadOnIO(
+    int32_t process_id,
+    int32_t routing_id,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const std::vector<net::CanonicalCookie>& cookie_list,
+    bool blocked_by_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  GetContentClient()->browser()->OnCookiesRead(process_id, routing_id, url,
+                                               site_for_cookies, cookie_list,
+                                               blocked_by_policy);
+}
+
 }  // namespace
 
 // Class to own the NetworkContext wrapping a storage partitions
@@ -1020,6 +1080,50 @@ void StoragePartitionImpl::OnClearSiteData(uint32_t process_id,
   ClearSiteDataHandler::HandleHeader(browser_context_getter,
                                      web_contents_getter, url, header_value,
                                      load_flags, std::move(callback));
+}
+
+void StoragePartitionImpl::OnCookieChange(bool is_service_worker,
+                                          int32_t process_id,
+                                          int32_t routing_id,
+                                          const GURL& url,
+                                          const GURL& site_for_cookies,
+                                          const net::CanonicalCookie& cookie,
+                                          bool blocked_by_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (is_service_worker) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&OnServiceWorkerCookieChangeOnIO,
+                       service_worker_context_, url, site_for_cookies, cookie,
+                       blocked_by_policy));
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&OnWindowCookieChangeOnIO, process_id, routing_id, url,
+                       site_for_cookies, cookie, blocked_by_policy));
+  }
+}
+
+void StoragePartitionImpl::OnCookiesRead(
+    bool is_service_worker,
+    int32_t process_id,
+    int32_t routing_id,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const std::vector<net::CanonicalCookie>& cookie_list,
+    bool blocked_by_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (is_service_worker) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&OnServiceWorkerCookiesReadOnIO, service_worker_context_,
+                       url, site_for_cookies, cookie_list, blocked_by_policy));
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&OnWindowCookiesReadOnIO, process_id, routing_id, url,
+                       site_for_cookies, cookie_list, blocked_by_policy));
+  }
 }
 
 void StoragePartitionImpl::ClearDataImpl(

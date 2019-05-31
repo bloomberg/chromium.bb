@@ -505,6 +505,34 @@ interface NetworkContextClient {
                   url.mojom.Url url,
                   string header_value,
                   int32 load_flags) => ();
+
+  // Called when an attempt has been made to set |cookie|.
+  //
+  // If the cookie is set by a network transfer, |url| is the URL being loaded;
+  // if it's set by a script it's the URL of window or service worker script
+  // making the change.
+  //
+  // If |is_service_worker| is false, |process_id| and |routing_id| identify
+  // the relevant frame. If it's true, the change should be attributed by |url|.
+  OnCookieChange(
+      bool is_service_worker, int32 process_id, int32 routing_id,
+      url.mojom.Url url,
+      url.mojom.Url site_for_cookies, CanonicalCookie cookie,
+      bool blocked_by_policy);
+
+  // Called when an attempt has been made to read the cookies in |cookie_list|.
+  //
+  // If the cookie are accessed by a network transfer, |url| is the URL being
+  // loaded; if they're read by a script, it's the URL of window or service
+  // worker script looking them up.
+  //
+  // If |is_service_worker| is false, |process_id| and |routing_id| identify
+  // the relevant frame. If it's true, the change should be attributed by |url|.
+  OnCookiesRead(
+      bool is_service_worker, int32 process_id, int32 routing_id,
+      url.mojom.Url url, url.mojom.Url site_for_cookies,
+      array<CanonicalCookie> cookie_list,
+      bool blocked_by_policy);
 };
 
 // Represents a distinct context for making network requests, with its own
@@ -532,8 +560,14 @@ interface NetworkContext {
   //
   // This interface can be safely handed out to a process that is known to
   // represent the given origin, such as a renderer process.
-  GetRestrictedCookieManager(RestrictedCookieManager& restricted_cookie_manager,
-                             url.mojom.Origin origin);
+  //
+  // |is_service_worker|, |process_id| and |routing_id| will be passed to
+  // NetworkContextClient::OnCookieChange and OnCookiesRead.
+  GetRestrictedCookieManager(
+      RestrictedCookieManager& restricted_cookie_manager,
+      url.mojom.Origin origin,
+      bool is_service_worker,
+      int32 process_id, int32 routing_id);
 
   // Clears network objects with implicit URL history information. Data related
   // to events that happened prior to |start_time| may be retained. Only applies

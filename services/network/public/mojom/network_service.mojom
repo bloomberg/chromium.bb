@@ -148,17 +148,6 @@ interface NetworkServiceClient {
                         array<mojo_base.mojom.FilePath> file_paths) =>
                         (int32 net_error, array<mojo_base.mojom.File> files);
 
-  // Called when an attempt has been made to set |cookie|.
-  OnCookieChange(
-      int32 process_id, int32 routing_id, url.mojom.Url url,
-      url.mojom.Url frame_url, CanonicalCookie cookie, bool blocked_by_policy);
-
-  // Called when an attempt has been made to read the cookies in |cookie_list|.
-  OnCookiesRead(
-      int32 process_id, int32 routing_id, url.mojom.Url url,
-      url.mojom.Url frame_url, array<CanonicalCookie> cookie_list,
-      bool blocked_by_policy);
-
   // Called periodically to update the client about progress of the current
   // loads. To avoid flooding the client, it has to ack the update before it can
   // receive the next update.

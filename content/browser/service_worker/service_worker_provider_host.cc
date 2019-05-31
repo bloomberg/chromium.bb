@@ -37,6 +37,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
@@ -98,6 +99,19 @@ void GetInterfaceImpl(const std::string& interface_name,
   auto* process = RenderProcessHost::FromID(process_id);
   if (!process)
     return;
+
+  // RestrictedCookieManager creation is different between frames and service
+  // workers, so it's handled here.
+  if (interface_name == network::mojom::RestrictedCookieManager::Name_) {
+    network::mojom::RestrictedCookieManagerRequest request(
+        std::move(interface_pipe));
+    process->GetStoragePartition()
+        ->GetNetworkContext()
+        ->GetRestrictedCookieManager(std::move(request), origin,
+                                     true /* is_service_worker */, process_id,
+                                     MSG_ROUTING_NONE);
+    return;
+  }
 
   BindWorkerInterface(interface_name, std::move(interface_pipe), process,
                       origin);

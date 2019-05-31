@@ -181,7 +181,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ResetURLLoaderFactories() override;
   void GetCookieManager(mojom::CookieManagerRequest request) override;
   void GetRestrictedCookieManager(mojom::RestrictedCookieManagerRequest request,
-                                  const url::Origin& origin) override;
+                                  const url::Origin& origin,
+                                  bool is_service_worker,
+                                  int32_t process_id,
+                                  int32_t routing_id) override;
   void ClearNetworkingHistorySince(
       base::Time time,
       base::OnceClosure completion_callback) override;

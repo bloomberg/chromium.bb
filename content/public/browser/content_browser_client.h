@@ -596,7 +596,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                               int render_frame_id);
 
   // Notifies the embedder that an attempt has been made to read the cookies in
-  // |cookie_list|.
+  // |cookie_list|. This is called on the IO thread.
   virtual void OnCookiesRead(int process_id,
                              int routing_id,
                              const GURL& url,
@@ -605,6 +605,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                              bool blocked_by_policy);
 
   // Notifies the embedder that an attempt has been made to set |cookie|.
+  // This is called on the IO thread.
   virtual void OnCookieChange(int process_id,
                               int routing_id,
                               const GURL& url,

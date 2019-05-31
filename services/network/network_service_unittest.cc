@@ -45,6 +45,7 @@
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -1412,20 +1413,12 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegateTest);
 };
 
-class ClearSiteDataNetworkContextClient : public mojom::NetworkContextClient {
+class ClearSiteDataNetworkContextClient : public TestNetworkContextClient {
  public:
   explicit ClearSiteDataNetworkContextClient(
       mojom::NetworkContextClientRequest request)
       : binding_(this, std::move(request)) {}
   ~ClearSiteDataNetworkContextClient() override = default;
-
-  void OnCanSendReportingReports(
-      const std::vector<url::Origin>& origins,
-      OnCanSendReportingReportsCallback callback) override {}
-
-  void OnCanSendDomainReliabilityUpload(
-      const GURL& origin,
-      OnCanSendDomainReliabilityUploadCallback callback) override {}
 
   void OnClearSiteData(uint32_t process_id,
                        int32_t routing_id,

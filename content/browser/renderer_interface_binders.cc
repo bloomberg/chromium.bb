@@ -32,7 +32,6 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
-#include "services/network/restricted_cookie_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
@@ -101,17 +100,6 @@ void ForwardServiceRequest(const char* service_name,
                            const url::Origin& origin) {
   auto* connector = BrowserContext::GetConnectorFor(host->GetBrowserContext());
   connector->BindInterface(service_name, std::move(request));
-}
-
-void GetRestrictedCookieManager(
-    network::mojom::RestrictedCookieManagerRequest request,
-    RenderProcessHost* render_process_host,
-    const url::Origin& origin) {
-  StoragePartition* storage_partition =
-      render_process_host->GetStoragePartition();
-  network::mojom::NetworkContext* network_context =
-      storage_partition->GetNetworkContext();
-  network_context->GetRestrictedCookieManager(std::move(request), origin);
 }
 
 // Register renderer-exposed interfaces. Each registered interface binder is
@@ -213,8 +201,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
       }));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker));
-  parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(GetRestrictedCookieManager));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(

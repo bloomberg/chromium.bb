@@ -53,25 +53,6 @@ void TestNetworkServiceClient::OnSSLCertificateError(
   NOTREACHED();
 }
 
-void TestNetworkServiceClient::OnCookiesRead(int process_id,
-                                             int routing_id,
-                                             const GURL& url,
-                                             const GURL& first_party_url,
-                                             const net::CookieList& cookie_list,
-                                             bool blocked_by_policy) {
-  NOTREACHED();
-}
-
-void TestNetworkServiceClient::OnCookieChange(
-    int process_id,
-    int routing_id,
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
-  NOTREACHED();
-}
-
 #if defined(OS_CHROMEOS)
 void TestNetworkServiceClient::OnTrustAnchorUsed(
     const std::string& username_hash) {
