@@ -638,7 +638,7 @@
     },
     {
       name: "FormDataEvent",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FractionalMouseEvent",
