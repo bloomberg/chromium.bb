@@ -77,6 +77,11 @@ class AppSearchProvider : public SearchProvider {
       const base::flat_map<std::string, uint16_t>& id_to_app_list_index);
   void UpdateQueriedResults();
 
+  // Publishes either the queried results or recommendation.
+  // |is_queried_search|: true for queried results, false for recommendation.
+  void PublishQueriedResultsOrRecommendation(bool is_queried_search,
+                                             Results* new_results);
+
   // Records the app search provider's latency when user initiates a search or
   // gets the zero state suggestions.
   // If |is_queried_search| is true, record query latency; otherwise, record

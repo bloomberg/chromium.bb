@@ -388,6 +388,13 @@ void SearchResultTileItemView::OnMenuClosed() {
 }
 
 void SearchResultTileItemView::ActivateResult(int event_flags) {
+  if (result()->result_type() == ash::SearchResultType::kPlayStoreApp) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "Apps.AppListPlayStoreAppLaunchedIndex",
+        group_index_in_container_view(),
+        AppListConfig::instance().max_search_result_tiles());
+  }
+
   LogAppLaunchForSuggestedApp();
 
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),

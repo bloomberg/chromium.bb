@@ -17,10 +17,13 @@
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -34,7 +37,6 @@
 namespace {
 
 // Layout constants used when fullscreen app list feature is enabled.
-constexpr size_t kMaxNumSearchResultTiles = 6;
 constexpr int kItemListVerticalSpacing = 16;
 constexpr int kItemListHorizontalSpacing = 12;
 constexpr int kBetweenItemSpacing = 8;
@@ -44,12 +46,22 @@ constexpr int kSeparatorTopPadding = 10;
 
 constexpr SkColor kSeparatorColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
 
+// The Delay before recording play store app results impression, i.e., if the
+// play store results are displayed less than the duration, we assume user
+// won't have chance to see them clearly and click on them, and wont' log
+// the impression.
+constexpr int kPlayStoreImpressionDelayInMs = 1000;
+
 // Returns true if the search result is an installable app.
 bool IsResultAnInstallableApp(app_list::SearchResult* result) {
   app_list::SearchResult::ResultType result_type = result->result_type();
   return result_type == ash::SearchResultType::kPlayStoreApp ||
          result_type == ash::SearchResultType::kPlayStoreReinstallApp ||
          result_type == ash::SearchResultType::kInstantApp;
+}
+
+bool IsPlayStoreApp(app_list::SearchResult* result) {
+  return result->result_type() == ash::SearchResultType::kPlayStoreApp;
 }
 
 }  // namespace
@@ -66,12 +78,14 @@ SearchResultTileItemListView::SearchResultTileItemListView(
       is_play_store_app_search_enabled_(
           app_list_features::IsPlayStoreAppSearchEnabled()),
       is_app_reinstall_recommendation_enabled_(
-          app_list_features::IsAppReinstallZeroStateEnabled()) {
+          app_list_features::IsAppReinstallZeroStateEnabled()),
+      max_search_result_tiles_(
+          AppListConfig::instance().max_search_result_tiles()) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal,
       gfx::Insets(kItemListVerticalSpacing, kItemListHorizontalSpacing),
       kBetweenItemSpacing));
-  for (size_t i = 0; i < kMaxNumSearchResultTiles; ++i) {
+  for (size_t i = 0; i < max_search_result_tiles_; ++i) {
     if (is_app_reinstall_recommendation_enabled_ ||
         is_play_store_app_search_enabled_) {
       views::Separator* separator = new views::Separator;
@@ -129,7 +143,13 @@ int SearchResultTileItemListView::DoUpdate() {
   std::set<std::string> result_id_removed, result_id_added;
   bool is_result_an_installable_app = false;
   bool is_previous_result_installable_app = false;
-  for (size_t i = 0; i < kMaxNumSearchResultTiles; ++i) {
+  int installed_app_index = -1;
+  int playstore_app_index = -1;
+  int reinstall_app_index = -1;
+  int app_group_index = -1;
+  bool found_playstore_results = false;
+
+  for (size_t i = 0; i < max_search_result_tiles_; ++i) {
     // If the current result at i exists, wants to be notified and is a
     // different id, notify it that it is being hidden.
     SearchResult* current_result = tile_views_[i]->result();
@@ -148,8 +168,21 @@ int SearchResultTileItemListView::DoUpdate() {
     }
 
     SearchResult* item = display_results[i];
+    if (IsPlayStoreApp(item)) {
+      ++playstore_app_index;
+      app_group_index = playstore_app_index;
+      found_playstore_results = true;
+    } else if (item->result_type() ==
+               ash::SearchResultType::kPlayStoreReinstallApp) {
+      ++reinstall_app_index;
+      app_group_index = playstore_app_index;
+    } else {
+      ++installed_app_index;
+      app_group_index = installed_app_index;
+    }
 
     GetResultViewAt(i)->SetResult(item);
+    GetResultViewAt(i)->set_group_index_in_container_view(app_group_index);
     result_id_added.insert(item->id());
     is_result_an_installable_app = IsResultAnInstallableApp(item);
 
@@ -167,6 +200,20 @@ int SearchResultTileItemListView::DoUpdate() {
     }
 
     is_previous_result_installable_app = is_result_an_installable_app;
+  }
+
+  // Track play store results and start the timer for recording their impression
+  // UMA metrics.
+  base::string16 user_typed_query = GetUserTypedQuery();
+  if (found_playstore_results && user_typed_query != recent_playstore_query_) {
+    recent_playstore_query_ = user_typed_query;
+    playstore_impression_timer_.Stop();
+    playstore_impression_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kPlayStoreImpressionDelayInMs), this,
+        &SearchResultTileItemListView::OnPlayStoreImpressionTimer);
+  } else {
+    playstore_impression_timer_.Stop();
   }
 
   // notify visibility changes, if needed.
@@ -207,9 +254,9 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
   base::string16 query;
   base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
 
-  // We ask for kMaxNumSearchResultTiles total results, and we prefer reinstall
-  // candidates if appropriate. we fetch |reinstall_results| first, and
-  // front-fill the rest from the regular result types.
+  // We ask for |max_search_result_tiles_| total results, and we prefer
+  // reinstall candidates if appropriate. we fetch |reinstall_results| first,
+  // and front-fill the rest from the regular result types.
   auto reinstall_filter =
       base::BindRepeating([](const SearchResult& r) -> bool {
         return r.display_type() ==
@@ -219,7 +266,7 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
   std::vector<SearchResult*> reinstall_results =
       is_app_reinstall_recommendation_enabled_ && query.empty()
           ? SearchModel::FilterSearchResultsByFunction(
-                results(), reinstall_filter, kMaxNumSearchResultTiles)
+                results(), reinstall_filter, max_search_result_tiles_)
           : std::vector<SearchResult*>();
 
   SearchResult::DisplayType display_type =
@@ -227,7 +274,7 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
           ? (query.empty() ? ash::SearchResultDisplayType::kRecommendation
                            : ash::SearchResultDisplayType::kTile)
           : ash::SearchResultDisplayType::kTile;
-  size_t display_num = kMaxNumSearchResultTiles - reinstall_results.size();
+  size_t display_num = max_search_result_tiles_ - reinstall_results.size();
 
   // Do not display the continue reading app in the search result list.
   auto non_reinstall_filter = base::BindRepeating(
@@ -247,6 +294,36 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
   display_results.insert(display_results.end(), reinstall_results.begin(),
                          reinstall_results.end());
   return display_results;
+}
+
+base::string16 SearchResultTileItemListView::GetUserTypedQuery() {
+  base::string16 search_box_text = search_box_->text();
+  gfx::Range range = search_box_->GetSelectedRange();
+  base::string16 raw_query = range.is_empty()
+                                 ? search_box_text
+                                 : search_box_text.substr(0, range.start());
+  base::string16 query;
+  base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
+  return query;
+}
+
+void SearchResultTileItemListView::OnPlayStoreImpressionTimer() {
+  size_t playstore_app_num = 0;
+  for (const auto* tile_view : tile_views_) {
+    SearchResult* result = tile_view->result();
+    if (result == nullptr)
+      continue;
+    if (IsPlayStoreApp(result))
+      ++playstore_app_num;
+  }
+
+  // Log the UMA metrics of play store impression.
+  base::RecordAction(
+      base::UserMetricsAction("AppList_ShowPlayStoreQueryResults"));
+
+  DCHECK_LE(playstore_app_num, max_search_result_tiles_);
+  UMA_HISTOGRAM_EXACT_LINEAR("Apps.AppListPlayStoreSearchAppsDisplayed",
+                             playstore_app_num, max_search_result_tiles_);
 }
 
 bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -299,6 +376,8 @@ void SearchResultTileItemListView::OnShownChanged() {
       view_delegate()->OnSearchResultVisibilityChanged(result->id(), shown());
     }
   }
+  if (!shown())
+    playstore_impression_timer_.Stop();
 }
 
 void SearchResultTileItemListView::VisibilityChanged(View* starting_from,
@@ -309,6 +388,9 @@ void SearchResultTileItemListView::VisibilityChanged(View* starting_from,
   if (is_visible && shown()) {
     return;
   }
+
+  playstore_impression_timer_.Stop();
+
   for (const auto* tile_view : tile_views_) {
     SearchResult* result = tile_view->result();
     if (result == nullptr) {

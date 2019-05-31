@@ -2245,6 +2245,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AppList_ShowPlayStoreQueryResults">
+  <owner>jennyz@chromium.org</owner>
+  <owner>newcomer@chromium.org</owner>
+  <description>
+    Cros Launcher shows play store apps to user in response for a user typed
+    query with reason time for user to see and take action.
+  </description>
+</action>
+
 <action name="AppList_ShowZeroStateSuggestions">
   <owner>jennyz@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>

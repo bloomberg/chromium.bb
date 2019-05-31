@@ -125,6 +125,8 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   }
   int search_tile_height() const { return search_tile_height_; }
 
+  size_t max_search_result_tiles() const { return max_search_result_tiles_; }
+
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
   }
@@ -350,6 +352,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The height of tiles in search result.
   const int search_tile_height_ = 90;
+
+  // Max number of search result tiles in the launcher suggestion window.
+  const size_t max_search_result_tiles_ = 6;
 };
 
 }  // namespace app_list

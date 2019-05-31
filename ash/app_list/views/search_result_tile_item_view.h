@@ -49,6 +49,13 @@ class APP_LIST_EXPORT SearchResultTileItemView
   // color.
   void SetParentBackgroundColor(SkColor color);
 
+  void set_group_index_in_container_view(int index) {
+    group_index_in_container_view_ = index;
+  }
+  int group_index_in_container_view() const {
+    return group_index_in_container_view_;
+  }
+
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -116,6 +123,12 @@ class APP_LIST_EXPORT SearchResultTileItemView
   views::ImageView* rating_star_ = nullptr;  // Owned by views hierarchy.
 
   SkColor parent_background_color_ = SK_ColorTRANSPARENT;
+
+  // The index of the app in its display group in its container view. Currently,
+  // there are three separately displayed groups for apps in launcher's
+  // suggestion window: Installed apps, play store apps, play store reinstalled
+  // app.
+  int group_index_in_container_view_;
 
   const bool is_play_store_app_search_enabled_;
   const bool is_app_reinstall_recommendation_enabled_;

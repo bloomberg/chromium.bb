@@ -817,11 +817,7 @@ void AppSearchProvider::UpdateRecommendedResults(
 
     MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
   }
-
-  MaybeRecordQueryLatencyHistogram(false /* empty query */);
-
-  SwapResults(&new_results);
-  update_results_factory_.InvalidateWeakPtrs();
+  PublishQueriedResultsOrRecommendation(false, &new_results);
 }
 
 void AppSearchProvider::UpdateQueriedResults() {
@@ -884,10 +880,14 @@ void AppSearchProvider::UpdateQueriedResults() {
     }
     MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
   }
+  PublishQueriedResultsOrRecommendation(true, &new_results);
+}
 
-  MaybeRecordQueryLatencyHistogram(true /* queried search */);
-
-  SwapResults(&new_results);
+void AppSearchProvider::PublishQueriedResultsOrRecommendation(
+    bool is_queried_search,
+    Results* new_results) {
+  MaybeRecordQueryLatencyHistogram(is_queried_search);
+  SwapResults(new_results);
   update_results_factory_.InvalidateWeakPtrs();
 }
 
