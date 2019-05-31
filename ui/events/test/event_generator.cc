@@ -128,6 +128,11 @@ void EventGenerator::ClickLeftButton() {
   ReleaseLeftButton();
 }
 
+void EventGenerator::ClickRightButton() {
+  PressRightButton();
+  ReleaseRightButton();
+}
+
 void EventGenerator::DoubleClickLeftButton() {
   flags_ &= ~ui::EF_IS_DOUBLE_CLICK;
   ClickLeftButton();

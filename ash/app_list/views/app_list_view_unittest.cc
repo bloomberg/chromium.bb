@@ -1837,13 +1837,20 @@ TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
 
   Show();
 
-  // Click on the same empty region, the AppList should close again.
+  // Tap on the same empty region, the AppList should close again.
   ui::MouseEvent mouse_click(ui::ET_MOUSE_PRESSED, empty_region, empty_region,
                              base::TimeTicks(), 0, 0);
-  ui::Event::DispatcherApi mouse_click_dispatcher_api(
+  std::unique_ptr<ui::Event::DispatcherApi> mouse_click_dispatcher_api;
+  mouse_click_dispatcher_api = std::make_unique<ui::Event::DispatcherApi>(
       static_cast<ui::Event*>(&mouse_click));
-  mouse_click_dispatcher_api.set_target(view_);
+  mouse_click_dispatcher_api->set_target(view_);
   view_->OnMouseEvent(&mouse_click);
+  ui::MouseEvent mouse_release(ui::ET_MOUSE_RELEASED, empty_region,
+                               empty_region, base::TimeTicks(), 0, 0);
+  mouse_click_dispatcher_api =
+      std::make_unique<ui::Event::DispatcherApi>(&mouse_release);
+  mouse_click_dispatcher_api->set_target(view_);
+  view_->OnMouseEvent(&mouse_release);
   EXPECT_EQ(ash::AppListViewState::kClosed, view_->app_list_state());
 }
 
@@ -2106,10 +2113,14 @@ TEST_F(AppListViewTest, ShowContextMenuBetweenAppsInTabletMode) {
   EXPECT_TRUE(view_->GetWidget()->IsVisible());
 
   // Click between two apps in tablet mode.
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, middle, middle,
-                             ui::EventTimeForNow(), ui::EF_RIGHT_MOUSE_BUTTON,
-                             ui::EF_RIGHT_MOUSE_BUTTON);
-  view_->OnMouseEvent(&mouse_event);
+  ui::MouseEvent click_mouse_event(
+      ui::ET_MOUSE_PRESSED, middle, middle, ui::EventTimeForNow(),
+      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON);
+  view_->OnMouseEvent(&click_mouse_event);
+  ui::MouseEvent release_mouse_event(
+      ui::ET_MOUSE_RELEASED, middle, middle, ui::EventTimeForNow(),
+      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON);
+  view_->OnMouseEvent(&release_mouse_event);
 
   // The wallpaper context menu should show.
   EXPECT_EQ(2, show_wallpaper_context_menu_count());
@@ -2290,10 +2301,17 @@ TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
   const gfx::Point empty_region = view_->GetBoundsInScreen().origin();
   ui::MouseEvent mouse_click(ui::ET_MOUSE_PRESSED, empty_region, empty_region,
                              base::TimeTicks(), 0, 0);
-  ui::Event::DispatcherApi mouse_click_dispatcher_api(
-      static_cast<ui::Event*>(&mouse_click));
-  mouse_click_dispatcher_api.set_target(view_);
+  std::unique_ptr<ui::Event::DispatcherApi> mouse_click_dispatcher_api;
+  mouse_click_dispatcher_api =
+      std::make_unique<ui::Event::DispatcherApi>(&mouse_click);
+  mouse_click_dispatcher_api->set_target(view_);
   view_->OnMouseEvent(&mouse_click);
+  ui::MouseEvent mouse_release(ui::ET_MOUSE_RELEASED, empty_region,
+                               empty_region, base::TimeTicks(), 0, 0);
+  mouse_click_dispatcher_api =
+      std::make_unique<ui::Event::DispatcherApi>(&mouse_release);
+  mouse_click_dispatcher_api->set_target(view_);
+  view_->OnMouseEvent(&mouse_release);
   EXPECT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
 }
 

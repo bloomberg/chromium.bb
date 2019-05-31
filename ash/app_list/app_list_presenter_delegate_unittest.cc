@@ -5,10 +5,13 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/test/app_list_test_model.h"
 #include "ash/app_list/test/app_list_test_view_delegate.h"
+#include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
@@ -248,7 +251,7 @@ TEST_F(AppListPresenterDelegateZeroStateTest, RightClickSearchBoxInPeeking) {
   EXPECT_EQ(AppListViewState::kPeeking, app_list_view->app_list_state());
 }
 
-// Verifies that clicking on the search box in tablet mode with animation and
+// Verifies that tapping on the search box in tablet mode with animation and
 // zero state enabled should not bring Chrome crash (https://crbug.com/958267).
 TEST_F(AppListPresenterDelegateZeroStateTest, ClickSearchBoxInTabletMode) {
   // Necessary for AppListView::StateAnimationMetricsReporter::Report being
@@ -262,17 +265,15 @@ TEST_F(AppListPresenterDelegateZeroStateTest, ClickSearchBoxInTabletMode) {
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  // Click on the search box.
-  generator->MoveMouseTo(GetPointInsideSearchbox());
-  generator->ClickLeftButton();
+  // Gesture tap on the search box.
+  generator->GestureTapAt(GetPointInsideSearchbox());
 
   // Wait until animation finishes. Verifies AppListView's state.
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
 
-  // Click on the area out of search box.
-  generator->MoveMouseTo(GetPointOutsideSearchbox());
-  generator->ClickLeftButton();
+  // Gesture tap on the area out of search box.
+  generator->GestureTapAt(GetPointOutsideSearchbox());
 
   // Wait until animation finishes. Verifies AppListView's state.
   base::RunLoop().RunUntilIdle();
@@ -1301,6 +1302,35 @@ class AppListPresenterDelegateHomeLauncherTest
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateHomeLauncherTest);
 };
 
+// Verifies that mouse dragging AppListView is enabled.
+TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseDragAppList) {
+  std::unique_ptr<app_list::AppListItem> item(
+      new app_list::AppListItem("fake id"));
+  Shell::Get()->app_list_controller()->GetModel()->AddItem(std::move(item));
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+
+  // Drag AppListView upward by mouse. Before moving the mouse, AppListItems
+  // should be invisible.
+  const gfx::Point start_point = GetAppListView()->GetBoundsInScreen().origin();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(start_point);
+  generator->PressLeftButton();
+  app_list::AppsGridView* apps_grid_view = GetAppListView()
+                                               ->app_list_main_view()
+                                               ->contents_view()
+                                               ->GetAppsContainerView()
+                                               ->apps_grid_view();
+  EXPECT_FALSE(apps_grid_view->view_model()->view_at(0)->layer()->visible());
+
+  // Verifies that the AppListView state after mouse drag should be
+  // FullscreenAllApps.
+  generator->MoveMouseBy(0, -start_point.y());
+  generator->ReleaseLeftButton();
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+}
+
 // Tests that the app list is shown automatically when the tablet mode is on.
 // The app list is dismissed when the tablet mode is off.
 TEST_F(AppListPresenterDelegateHomeLauncherTest, ShowAppListForTabletMode) {
@@ -1389,7 +1419,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, TapOrClickToDismiss) {
   GetAppListTestHelper()->CheckVisibility(true);
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(GetPointOutsideSearchbox());
-  generator->PressLeftButton();
+  generator->ClickLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
 
@@ -1716,13 +1746,13 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, WallpaperContextMenu) {
 
   // Right click to open the context menu.
   generator->MoveMouseTo(onscreen_point);
-  generator->PressRightButton();
+  generator->ClickRightButton();
   GetAppListTestHelper()->WaitUntilIdle();
   EXPECT_TRUE(root_window_controller->IsContextMenuShown());
 
   // Left click to close the context menu.
   generator->MoveMouseTo(onscreen_point);
-  generator->PressLeftButton();
+  generator->ClickLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
   EXPECT_FALSE(root_window_controller->IsContextMenuShown());
 }

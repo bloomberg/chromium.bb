@@ -483,6 +483,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // The rectangle of initial widget's window in screen coordinates.
   gfx::Rect initial_window_bounds_;
 
+  // The location of the initial mouse event in view coordinates.
+  gfx::Point initial_mouse_drag_point_;
+
   // The velocity of the gesture event.
   float last_fling_velocity_ = 0;
   // Whether the background blur is enabled.

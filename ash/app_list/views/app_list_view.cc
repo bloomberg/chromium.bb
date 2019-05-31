@@ -1243,7 +1243,40 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       event->SetHandled();
-      HandleClickOrTap(event);
+      if (is_in_drag_)
+        return;
+      initial_mouse_drag_point_ = event->location();
+      break;
+    case ui::ET_MOUSE_DRAGGED:
+      event->SetHandled();
+      if (is_side_shelf_ || is_tablet_mode_)
+        return;
+      if (!is_in_drag_ && event->IsOnlyLeftMouseButton()) {
+        // Calculate the mouse drag offset to determine whether AppListView is
+        // in drag.
+        gfx::Vector2d drag_distance = event->location() - initial_drag_point_;
+        if (abs(drag_distance.y()) < ash::kMouseDragThreshold)
+          return;
+
+        StartDrag(initial_mouse_drag_point_);
+        SetIsInDrag(true);
+        app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
+      }
+
+      if (!is_in_drag_)
+        return;
+      UpdateDrag(event->location());
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      event->SetHandled();
+      initial_mouse_drag_point_ = gfx::Point();
+      if (!is_in_drag_) {
+        HandleClickOrTap(event);
+        return;
+      }
+      EndDrag(event->location());
+      CloseKeyboardIfVisible();
+      SetIsInDrag(false);
       break;
     case ui::ET_MOUSEWHEEL:
       if (HandleScroll(event->AsMouseWheelEvent()->offset(), ui::ET_MOUSEWHEEL))
