@@ -22,7 +22,18 @@
         <!-- Overriding alertDialogTheme pre-v21 with our custom AlertDialog theme causes bad visual
              states on ListPreference because we don't use the support library ListPreference. -->
         <item name="android:alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
+        <item name="preferenceTheme">@style/Theme.Chromium.PreferenceTheme</item>
     </style>
+
+    <style name="Theme.Chromium.PreferenceFragment">
+        <item name="android:divider">?android:attr/listDivider</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceFragmentList">
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+    </style>
+
     <style name="PreferenceCategoryWithButtonStyle">
         <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
         <item name="android:paddingEnd">4dp</item>

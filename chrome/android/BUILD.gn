@@ -121,6 +121,7 @@ android_resources("chrome_app_java_resources") {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_gridlayout_v7_java",
+    "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
   ]
   custom_package = "org.chromium.chrome"
@@ -818,6 +819,7 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:android_arch_lifecycle_common_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:com_android_support_design_java",
+    "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_deps:com_google_ar_core_java",

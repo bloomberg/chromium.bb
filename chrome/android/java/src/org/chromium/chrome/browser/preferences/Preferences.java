@@ -21,6 +21,8 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceFragment.OnPreferenceStartFragmentCallback;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,8 +54,9 @@ import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
  * 2) an OnScrollChangedListener to the main content's view's view tree observer via
  *    PreferenceUtils.getShowShadowOnScrollListener(...).
  */
-public class Preferences
-        extends ChromeBaseAppCompatActivity implements OnPreferenceStartFragmentCallback {
+public class Preferences extends ChromeBaseAppCompatActivity
+        implements OnPreferenceStartFragmentCallback,
+                   PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
     /**
      * Preference fragments may implement this interface to intercept "Back" button taps in this
      * activity.
@@ -115,10 +118,22 @@ public class Preferences
         // recreated and super.onCreate() has already recreated the fragment.
         if (savedInstanceState == null) {
             if (initialFragment == null) initialFragment = MainPreferences.class.getName();
-            Fragment fragment = Fragment.instantiate(this, initialFragment, initialArguments);
-            getFragmentManager().beginTransaction()
-                    .replace(android.R.id.content, fragment)
-                    .commit();
+
+            if (isCompat(initialFragment)) {
+                android.support.v4.app.Fragment fragment =
+                        android.support.v4.app.Fragment.instantiate(
+                                this, initialFragment, initialArguments);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(android.R.id.content, fragment)
+                        .commit();
+            } else {
+                Fragment fragment = Fragment.instantiate(this, initialFragment, initialArguments);
+                getFragmentManager()
+                        .beginTransaction()
+                        .replace(android.R.id.content, fragment)
+                        .commit();
+            }
         }
 
         if (ApiCompatibilityUtils.checkPermission(
@@ -130,18 +145,45 @@ public class Preferences
             if (nfcAdapter != null) nfcAdapter.setNdefPushMessage(null, this);
         }
 
-
         Resources res = getResources();
         ApiCompatibilityUtils.setTaskDescription(this, res.getString(R.string.app_name),
                 BitmapFactory.decodeResource(res, R.mipmap.app_icon),
                 ApiCompatibilityUtils.getColor(res, R.color.default_primary_color));
     }
 
+    /**
+     * Given a Fragment class name (as a string), determine whether it is a Support Library Fragment
+     * class, as opposed to a Framework Fragment.
+     *
+     * TODO(crbug.com/967022): Remove this method once all fragments are migrated to the Support
+     * Library.
+     *
+     * @param fragmentClass The fully qualified class name of a Fragment.
+     * @return Whether the class represents a Support Library Fragment.
+     */
+    private boolean isCompat(String fragmentClass) {
+        try {
+            return android.support.v4.app.Fragment.class.isAssignableFrom(
+                    Class.forName(fragmentClass));
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     // OnPreferenceStartFragmentCallback:
 
     @Override
-    public boolean onPreferenceStartFragment(PreferenceFragment preferenceFragment,
-            Preference preference) {
+    // TODO(crbug.com/967022): Remove this method once all fragments are migrated to the Support
+    // Library.
+    public boolean onPreferenceStartFragment(
+            PreferenceFragment preferenceFragment, Preference preference) {
+        startFragment(preference.getFragment(), preference.getExtras());
+        return true;
+    }
+
+    @Override
+    public boolean onPreferenceStartFragment(
+            PreferenceFragmentCompat caller, android.support.v7.preference.Preference preference) {
         startFragment(preference.getFragment(), preference.getExtras());
         return true;
     }
@@ -164,15 +206,19 @@ public class Preferences
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         Fragment fragment = getMainFragment();
+        if (fragment == null) {
+            onAttachedToWindowCompat();
+            return;
+        }
+        if (fragment.getView() == null
+                || fragment.getView().findViewById(android.R.id.list) == null) {
+            return;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (fragment instanceof PreferenceFragment && fragment.getView() != null) {
                 // Set list view padding to 0 so dividers are the full width of the screen.
                 fragment.getView().findViewById(android.R.id.list).setPadding(0, 0, 0, 0);
             }
-        }
-        if (fragment == null || fragment.getView() == null
-                || fragment.getView().findViewById(android.R.id.list) == null) {
-            return;
         }
         View contentView = fragment.getActivity().findViewById(android.R.id.content);
         if (contentView == null || !(contentView instanceof FrameLayout)) {
@@ -185,6 +231,36 @@ public class Preferences
         listView.getViewTreeObserver().addOnScrollChangedListener(
                 PreferenceUtils.getShowShadowOnScrollListener(
                         listView, inflatedView.findViewById(R.id.shadow)));
+    }
+
+    /**
+     * This method performs similar actions to {@link #onAttachedToWindow()}, but modified for the
+     * case where the main fragment is a Support Library fragment.
+     *
+     * Differences include:
+     *   * List ID reference is R.id.list instead of android.R.id.list.
+     *   * The {@link ListView} is now a {@link RecyclerView}.
+     *
+     * TODO(crbug.com/967022): Once all fragments are migrated to the Support Library, replace
+     * {@link #onAttachedToWindow()} with this method body.
+     */
+    public void onAttachedToWindowCompat() {
+        super.onAttachedToWindow();
+        android.support.v4.app.Fragment fragment = getMainFragmentCompat();
+        if (fragment == null || fragment.getView() == null
+                || fragment.getView().findViewById(R.id.list) == null) {
+            return;
+        }
+        View contentView = fragment.getActivity().findViewById(android.R.id.content);
+        if (contentView == null || !(contentView instanceof FrameLayout)) {
+            return;
+        }
+        View inflatedView = View.inflate(getApplicationContext(),
+                R.layout.preferences_action_bar_shadow, (ViewGroup) contentView);
+        RecyclerView recyclerView = fragment.getView().findViewById(R.id.list);
+        recyclerView.getViewTreeObserver().addOnScrollChangedListener(
+                PreferenceUtils.getShowShadowOnScrollListener(
+                        recyclerView, inflatedView.findViewById(R.id.shadow)));
     }
 
     @Override
@@ -229,11 +305,27 @@ public class Preferences
     }
 
     /**
-     * Returns the fragment showing as this activity's main content, typically a PreferenceFragment.
-     * This does not include DialogFragments or other Fragments shown on top of the main content.
+     * Returns the fragment showing as this activity's main content, typically a {@link
+     * PreferenceFragment}. This does not include {@link android.app.DialogFragment}s or other
+     * {@link Fragment}s shown on top of the main content.
+     *
+     * This method only returns Framework {@link Fragment}s. If the main fragment is a Support
+     * Library fragment (of type {@link android.support.v4.app.Fragment}), this method returns null.
+     *
+     * TODO(crbug.com/967022): Remove this method once all fragments are migrated to the Support
+     * Library.
      */
     private Fragment getMainFragment() {
         return getFragmentManager().findFragmentById(android.R.id.content);
+    }
+
+    /**
+     * This method should be called to retrieve the activity's main content if {@link
+     * #getMainFragment()} returned null, which may indicate that the main fragment is a Support
+     * Library fragment.
+     */
+    private android.support.v4.app.Fragment getMainFragmentCompat() {
+        return getSupportFragmentManager().findFragmentById(android.R.id.content);
     }
 
     @Override

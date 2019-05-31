@@ -155,6 +155,7 @@
         <item name="android:textAppearanceSmall">@style/TextAppearance.BlackBody</item>
         <item name="android:preferenceCategoryStyle">@style/PreferenceCategory</item>
         <item name="android:windowContentOverlay">@null</item>
+        <item name="preferenceTheme">@style/Theme.Chromium.PreferenceTheme</item>
     </style>
 
     <style name="Theme.Chromium.Preferences.ManageSpace">
@@ -241,6 +242,25 @@
     <style name="OverflowMenuThemeOverlay" parent="Base.OverflowMenuThemeOverlay" />
 
     <!-- Preferences styles -->
+    <style name="Theme.Chromium.PreferenceTheme">
+        <item name="preferenceStyle">@style/Theme.Chromium.PreferenceItem</item>
+        <item name="preferenceFragmentCompatStyle">@style/Theme.Chromium.PreferenceFragment</item>
+        <item name="preferenceFragmentListStyle">@style/Theme.Chromium.PreferenceFragmentList</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceFragment">
+        <item name="android:divider">@drawable/list_divider_compat</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceItem">
+        <item name="android:layout">@layout/preference_compat</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceFragmentList">
+        <item name="android:paddingStart">@dimen/pref_list_padding_kitkat</item>
+        <item name="android:paddingEnd">@dimen/pref_list_padding_kitkat</item>
+    </style>
+
     <style name="PreferenceActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
       <item name="titleTextStyle">@style/TextAppearance.BlackHeadline</item>
     </style>
@@ -266,7 +286,7 @@
     <style name="PreferenceTitle">
         <item name="android:ellipsize">end</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="android:textAppearance">@style/TextAppearance.PreferenceMediumText</item>
     </style>
     <style name="PreferenceSummary">
         <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>

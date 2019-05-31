@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<!-- TODO(chouinard): For now this supports simple text-only preferences, but more children will be
+     added to this layout in the near future as we migrate more complex preferences. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/PreferenceLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:background="?android:attr/selectableItemBackground"
+    android:focusable="true"
+    android:baselineAligned="false">
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView android:id="@android:id/title"
+            style="@style/PreferenceTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView android:id="@android:id/summary"
+            style="@style/PreferenceSummary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@android:id/title"
+            android:layout_alignStart="@android:id/title" />
+
+    </RelativeLayout>
+
+</LinearLayout>

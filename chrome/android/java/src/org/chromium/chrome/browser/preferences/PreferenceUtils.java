@@ -14,6 +14,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.XmlRes;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.ActionMenuView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,11 +32,31 @@ public class PreferenceUtils {
      * A helper that is used to load preferences from XML resources without causing a
      * StrictModeViolation. See http://crbug.com/692125.
      *
-     * @param preferenceFragment A PreferenceFragment.
+     * TODO(crbug.com/967022): Once all {@link PreferenceFragment}s are migrated to the Support
+     * Library {@link PreferenceFragmentCompat}s, remove this method in favor of the below method.
+     *
+     * @param preferenceFragment A Framework {@link PreferenceFragment}.
      * @param preferencesResId   The id of the XML resource to add to the PreferenceFragment.
      */
     public static void addPreferencesFromResource(
             PreferenceFragment preferenceFragment, @XmlRes int preferencesResId) {
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            preferenceFragment.addPreferencesFromResource(preferencesResId);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+    }
+
+    /**
+     * A helper that is used to load preferences from XML resources without causing a
+     * StrictModeViolation. See http://crbug.com/692125.
+     *
+     * @param preferenceFragment A Support Library {@link PreferenceFragmentCompat}.
+     * @param preferencesResId   The id of the XML resource to add to the PreferenceFragment.
+     */
+    public static void addPreferencesFromResource(
+            PreferenceFragmentCompat preferenceFragment, @XmlRes int preferencesResId) {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             preferenceFragment.addPreferencesFromResource(preferencesResId);
