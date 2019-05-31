@@ -141,6 +141,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   float GetDeviceScaleFactor() const final;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
+  void SetRubberbandRect(const gfx::Rect& rect) override;
+  void HideRubberbandRect() override;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
