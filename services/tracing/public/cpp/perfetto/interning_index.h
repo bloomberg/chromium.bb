@@ -13,6 +13,7 @@
 
 namespace tracing {
 
+// Value 0 is an invalid ID.
 using InterningID = uint32_t;
 
 struct COMPONENT_EXPORT(TRACING_CPP) InterningIndexEntry {
@@ -52,15 +53,21 @@ class COMPONENT_EXPORT(TRACING_CPP) InterningIndex {
   // it didn't exist previously or was evicted from the index. Entries may be
   // evicted if they are accessed infrequently and the index for the respective
   // ValueType is at full capacity.
+  //
+  // If the returned entry's |was_emitted| flag is false, the caller should
+  // (re)emit the entry in the current TracePacket's InternedData message.
   template <typename ValueType>
-  InterningIndexEntry* LookupOrAdd(const ValueType& value) {
+  InterningIndexEntry LookupOrAdd(const ValueType& value) {
     IndexCache<ValueType>& cache =
         std::get<IndexCache<ValueType>>(entry_caches_);
     auto it = cache.Get(value);
     if (it == cache.end()) {
       it = cache.Put(value, InterningIndexEntry{next_id_++, false});
     }
-    return &it->second;
+    bool was_emitted = it->second.was_emitted;
+    // The caller will (re)emit the entry, so mark it as emitted.
+    it->second.was_emitted = true;
+    return InterningIndexEntry{it->second.id, was_emitted};
   }
 
   // Marks all entries as "not emitted", so that they will be reemitted when

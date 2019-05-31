@@ -70,13 +70,13 @@ void AddConvertableToTraceFormat(
 void WriteDebugAnnotations(
     base::trace_event::TraceEvent* trace_event,
     TrackEvent* track_event,
-    InterningIndexEntry** current_packet_interning_entries) {
+    InterningIndexEntry* current_packet_interning_entries) {
   for (size_t i = 0; i < trace_event->arg_size() && trace_event->arg_name(i);
        ++i) {
     auto type = trace_event->arg_type(i);
     auto* annotation = track_event->add_debug_annotations();
 
-    annotation->set_name_iid(current_packet_interning_entries[i]->id);
+    annotation->set_name_iid(current_packet_interning_entries[i].id);
 
     if (type == TRACE_VALUE_TYPE_CONVERTABLE) {
       AddConvertableToTraceFormat(trace_event->arg_convertible_value(i),
@@ -213,13 +213,14 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
 
   const char* category_name =
       TraceLog::GetCategoryGroupName(trace_event->category_group_enabled());
-  InterningIndexEntry* interned_category =
+  InterningIndexEntry interned_category =
       interned_event_categories_.LookupOrAdd(category_name);
 
-  InterningIndexEntry* interned_name;
+  InterningIndexEntry interned_name;
   const size_t kMaxSize = base::trace_event::TraceArguments::kMaxSize;
-  InterningIndexEntry* interned_annotation_names[kMaxSize] = {nullptr};
-  InterningIndexEntry* interned_source_location = nullptr;
+  InterningIndexEntry interned_annotation_names[kMaxSize] = {
+      InterningIndexEntry{}};
+  InterningIndexEntry interned_source_location{};
 
   if (copy_strings) {
     if (privacy_filtering_enabled_) {
@@ -303,18 +304,18 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   }
 
   // TODO(eseckler): Split comma-separated category strings.
-  track_event->add_category_iids(interned_category->id);
+  track_event->add_category_iids(interned_category.id);
 
-  if (interned_source_location) {
+  if (interned_source_location.id) {
     track_event->set_task_execution()->set_posted_from_iid(
-        interned_source_location->id);
+        interned_source_location.id);
   } else if (!privacy_filtering_enabled_) {
     WriteDebugAnnotations(trace_event, track_event, interned_annotation_names);
   }
 
   auto* legacy_event = track_event->set_legacy_event();
 
-  legacy_event->set_name_iid(interned_name->id);
+  legacy_event->set_name_iid(interned_name.id);
 
   char phase = trace_event->phase();
   legacy_event->set_phase(phase);
@@ -410,42 +411,38 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
 
   // Emit any new interned data entries into the packet.
   auto* interned_data = trace_packet->set_interned_data();
-  if (!interned_category->was_emitted) {
+  if (!interned_category.was_emitted) {
     auto* category_entry = interned_data->add_event_categories();
-    category_entry->set_iid(interned_category->id);
+    category_entry->set_iid(interned_category.id);
     category_entry->set_name(category_name);
-    interned_category->was_emitted = true;
   }
 
-  if (!interned_name->was_emitted) {
+  if (!interned_name.was_emitted) {
     auto* name_entry = interned_data->add_legacy_event_names();
-    name_entry->set_iid(interned_name->id);
+    name_entry->set_iid(interned_name.id);
     name_entry->set_name(copy_strings && privacy_filtering_enabled_
                              ? kPrivacyFiltered
                              : trace_event->name());
-    interned_name->was_emitted = true;
   }
 
-  if (interned_source_location) {
-    if (!interned_source_location->was_emitted) {
+  if (interned_source_location.id) {
+    if (!interned_source_location.was_emitted) {
       auto* source_location_entry = interned_data->add_source_locations();
-      source_location_entry->set_iid(interned_source_location->id);
+      source_location_entry->set_iid(interned_source_location.id);
       source_location_entry->set_file_name(trace_event->arg_value(0).as_string);
       if (trace_event->arg_size() > 1) {
         source_location_entry->set_function_name(
             trace_event->arg_value(1).as_string);
       }
-      interned_source_location->was_emitted = true;
     }
   } else if (!privacy_filtering_enabled_) {
     for (size_t i = 0; i < trace_event->arg_size() && trace_event->arg_name(i);
          ++i) {
-      DCHECK(interned_annotation_names[i]);
-      if (!interned_annotation_names[i]->was_emitted) {
+      DCHECK(interned_annotation_names[i].id);
+      if (!interned_annotation_names[i].was_emitted) {
         auto* name_entry = interned_data->add_debug_annotation_names();
-        name_entry->set_iid(interned_annotation_names[i]->id);
+        name_entry->set_iid(interned_annotation_names[i].id);
         name_entry->set_name(trace_event->arg_name(i));
-        interned_annotation_names[i]->was_emitted = true;
       }
     }
   }
