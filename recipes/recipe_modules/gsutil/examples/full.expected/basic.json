@@ -190,7 +190,6 @@
     "name": "gsutil cat"
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]

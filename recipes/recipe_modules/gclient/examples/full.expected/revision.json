@@ -237,7 +237,6 @@
     "name": "gclient runhooks"
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]
