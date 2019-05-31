@@ -267,7 +267,15 @@ void ScriptResource::ResponseBodyReceived(
                   WTF::BindRepeating(&ScriptResource::OnDataPipeReadable,
                                      WrapWeakPersistent(this)));
   CHECK(data_pipe_);
-  watcher_->ArmOrNotify();
+
+  MojoResult ready_result;
+  mojo::HandleSignalsState ready_state;
+  MojoResult rv = watcher_->Arm(&ready_result, &ready_state);
+  if (rv == MOJO_RESULT_OK)
+    return;
+
+  DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, rv);
+  OnDataPipeReadable(ready_result, ready_state);
 }
 
 void ScriptResource::OnDataPipeReadable(MojoResult result,
