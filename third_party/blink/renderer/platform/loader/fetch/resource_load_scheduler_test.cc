@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 
 #include <memory>
+#include "base/test/test_mock_time_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
-#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -640,7 +640,8 @@ TEST_F(ResourceLoadSchedulerTest, LoosenThrottlingPolicy) {
 }
 
 TEST_F(ResourceLoadSchedulerTest, ConsoleMessage) {
-  WTF::ScopedMockClock mock_clock;
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  Scheduler()->SetClockForTesting(test_task_runner->GetMockClock());
   Scheduler()->SetOutstandingLimitForTesting(0, 0);
   Scheduler()->OnLifecycleStateChanged(
       scheduler::SchedulingLifecycleState::kThrottled);
@@ -667,7 +668,7 @@ TEST_F(ResourceLoadSchedulerTest, ConsoleMessage) {
 
   // Advance current time a little and triggers an life cycle event, but it
   // still won't awake the warning logic.
-  mock_clock.Advance(WTF::TimeDelta::FromSeconds(50));
+  test_task_runner->FastForwardBy(base::TimeDelta::FromSeconds(50));
   Scheduler()->OnLifecycleStateChanged(
       scheduler::SchedulingLifecycleState::kNotThrottled);
   EXPECT_FALSE(GetConsoleLogger()->HasMessage());
@@ -676,7 +677,7 @@ TEST_F(ResourceLoadSchedulerTest, ConsoleMessage) {
 
   // Modify current time to awake the console warning logic, and the second
   // client should be used for console logging.
-  mock_clock.Advance(WTF::TimeDelta::FromSeconds(15));
+  test_task_runner->FastForwardBy(base::TimeDelta::FromSeconds(15));
   Scheduler()->OnLifecycleStateChanged(
       scheduler::SchedulingLifecycleState::kNotThrottled);
   EXPECT_TRUE(GetConsoleLogger()->HasMessage());

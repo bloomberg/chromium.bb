@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/system/sys_info.h"
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -62,7 +63,8 @@ UserLevelMemoryPressureSignalGenerator::UserLevelMemoryPressureSignalGenerator()
     : delayed_report_timer_(
           Thread::MainThread()->GetTaskRunner(),
           this,
-          &UserLevelMemoryPressureSignalGenerator::OnTimerFired) {
+          &UserLevelMemoryPressureSignalGenerator::OnTimerFired),
+      clock_(base::DefaultTickClock::GetInstance()) {
   int64_t physical_memory = base::SysInfo::AmountOfPhysicalMemory();
   if (physical_memory > 3.1 * 1024 * 1024 * 1024)
     memory_threshold_mb_ = k4GBDeviceMemoryThresholdParam.Get();
@@ -96,6 +98,11 @@ UserLevelMemoryPressureSignalGenerator::
   ThreadScheduler::Current()->RemoveRAILModeObserver(this);
 }
 
+void UserLevelMemoryPressureSignalGenerator::SetTickClockForTesting(
+    const base::TickClock* clock) {
+  clock_ = clock;
+}
+
 void UserLevelMemoryPressureSignalGenerator::OnRAILModeChanged(
     RAILMode rail_mode) {
   is_loading_ = rail_mode == RAILMode::kLoad;
@@ -108,7 +115,7 @@ void UserLevelMemoryPressureSignalGenerator::OnMemoryPing(MemoryUsage usage) {
     return;
   if (usage.private_footprint_bytes / 1024 / 1024 < memory_threshold_mb_)
     return;
-  base::TimeDelta elapsed = WTF::CurrentTimeTicks() - last_generated_;
+  base::TimeDelta elapsed = clock_->NowTicks() - last_generated_;
   if (elapsed >= WTF::TimeDelta::FromSeconds(kMinimumIntervalSeconds.Get()))
     Generate(usage);
 }
@@ -122,7 +129,7 @@ void UserLevelMemoryPressureSignalGenerator::Generate(MemoryUsage usage) {
 
   base::MemoryPressureListener::NotifyMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  last_generated_ = WTF::CurrentTimeTicks();
+  last_generated_ = clock_->NowTicks();
 
   delayed_report_timer_.StartOneShot(TimeDelta::FromSeconds(10), FROM_HERE);
 }

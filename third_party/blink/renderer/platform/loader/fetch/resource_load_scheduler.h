@@ -15,6 +15,10 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
+namespace base {
+class Clock;
+}
+
 namespace blink {
 
 class DetachableConsoleLogger;
@@ -200,6 +204,10 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // FrameScheduler::Observer overrides:
   void OnLifecycleStateChanged(scheduler::SchedulingLifecycleState) override;
 
+  // The caller is the owner of the |clock|. The |clock| must outlive the
+  // ResourceLoadScheduler.
+  void SetClockForTesting(const base::Clock* clock);
+
  private:
   class TrafficMonitor;
 
@@ -341,6 +349,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
       scheduler_observer_handle_;
 
   const Member<DetachableConsoleLogger> console_logger_;
+
+  const base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadScheduler);
 };

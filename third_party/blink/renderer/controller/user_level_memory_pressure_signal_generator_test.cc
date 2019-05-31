@@ -5,11 +5,11 @@
 #include "third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 
 namespace blink {
 namespace user_level_memory_pressure_signal_generator_test {
@@ -75,22 +75,29 @@ class UserLevelMemoryPressureSignalGeneratorTest : public testing::Test {
 
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         blink::features::kUserLevelMemoryPressureSignal, feature_parameters);
+
+    test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  }
+
+  void AdvanceClock(base::TimeDelta delta) {
+    test_task_runner_->FastForwardBy(delta);
   }
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 };
 
 constexpr double kMemoryThresholdBytes = 1024 * 1024 * 1024;
 
 TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GeneratesWhenOverThreshold) {
   {
-    WTF::ScopedMockClock clock;
     std::unique_ptr<MockMemoryUsageMonitor> mock_memory_usage_monitor =
         std::make_unique<MockMemoryUsageMonitor>();
     ScopedMockMemoryUsageMonitor mock_memory_usage_scope(
         mock_memory_usage_monitor.get());
     MockUserLevelMemoryPressureSignalGenerator generator;
+    generator.SetTickClockForTesting(test_task_runner_->GetMockTickClock());
     {
       EXPECT_CALL(generator, Generate(_)).Times(0);
       MemoryUsage usage;
@@ -101,7 +108,7 @@ TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GeneratesWhenOverThreshold) {
       usage.swap_bytes = 0;
       usage.vm_size_bytes = 0;
       mock_memory_usage_monitor->SetMockMemoryUsage(usage);
-      clock.Advance(TimeDelta::FromSeconds(1));
+      AdvanceClock(TimeDelta::FromSeconds(1));
       test::RunDelayedTasks(TimeDelta::FromSeconds(1));
     }
     {
@@ -114,7 +121,7 @@ TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GeneratesWhenOverThreshold) {
       usage.swap_bytes = 0;
       usage.vm_size_bytes = 0;
       mock_memory_usage_monitor->SetMockMemoryUsage(usage);
-      clock.Advance(TimeDelta::FromMinutes(10));
+      AdvanceClock(TimeDelta::FromMinutes(10));
       test::RunDelayedTasks(TimeDelta::FromSeconds(1));
     }
   }
@@ -122,12 +129,12 @@ TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GeneratesWhenOverThreshold) {
 
 TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GenerationPauses) {
   {
-    WTF::ScopedMockClock clock;
     std::unique_ptr<MockMemoryUsageMonitor> mock_memory_usage_monitor =
         std::make_unique<MockMemoryUsageMonitor>();
     ScopedMockMemoryUsageMonitor mock_memory_usage_scope(
         mock_memory_usage_monitor.get());
     MockUserLevelMemoryPressureSignalGenerator generator;
+    generator.SetTickClockForTesting(test_task_runner_->GetMockTickClock());
     {
       MemoryUsage usage;
       usage.v8_bytes = 0;
@@ -137,21 +144,21 @@ TEST_F(UserLevelMemoryPressureSignalGeneratorTest, GenerationPauses) {
       usage.swap_bytes = 0;
       usage.vm_size_bytes = 0;
       mock_memory_usage_monitor->SetMockMemoryUsage(usage);
-      clock.Advance(TimeDelta::FromMinutes(10));
+      AdvanceClock(TimeDelta::FromMinutes(10));
       // Generated
       {
         EXPECT_CALL(generator, Generate(_)).Times(1);
         test::RunDelayedTasks(TimeDelta::FromSeconds(1));
       }
 
-      clock.Advance(TimeDelta::FromMinutes(1));
+      AdvanceClock(TimeDelta::FromMinutes(1));
       // Not generated because too soon
       {
         EXPECT_CALL(generator, Generate(_)).Times(0);
         test::RunDelayedTasks(TimeDelta::FromSeconds(1));
       }
 
-      clock.Advance(TimeDelta::FromMinutes(10));
+      AdvanceClock(TimeDelta::FromMinutes(10));
       generator.OnRAILModeChanged(RAILMode::kLoad);
       // Not generated because loading
       {
