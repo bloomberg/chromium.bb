@@ -1665,11 +1665,8 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
     }
     if (child_needs_relayout || !child.HasOverrideLogicalHeight())
       child.SetOverrideLogicalHeight(flex_item.cross_axis_size);
-    if (child_needs_relayout) {
-      // TODO(cbiesinger): Why is this necessary?
-      child.SetLogicalHeight(LayoutUnit());
+    if (child_needs_relayout)
       child.ForceLayout();
-    }
   } else if (!flex_item.MainAxisIsInlineAxis() &&
              child.StyleRef().LogicalWidth().IsAuto()) {
     if (flex_item.cross_axis_size != child.LogicalWidth()) {
