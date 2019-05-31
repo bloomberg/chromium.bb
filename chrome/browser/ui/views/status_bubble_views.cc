@@ -63,11 +63,11 @@ const int kMousePadding = 20;
 
 // The horizontal offset of the text within the status bubble, not including the
 // outer shadow ring.
-const int kTextPositionX = 3;
+const int kTextPositionX = 5;
 
 // The minimum horizontal space between the (right) end of the text and the edge
 // of the status bubble, not including the outer shadow ring.
-const int kTextHorizPadding = 1;
+const int kTextHorizPadding = 5;
 
 // Delays before we start hiding or showing the bubble after we receive a
 // show or hide request.
