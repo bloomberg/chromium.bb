@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.portals;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.view.View;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -24,14 +25,17 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Tests for the chrome/ layer support of the HTML portal element.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=Portals"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=Portals",
+        "enable-blink-features=OverscrollCustomization"})
 public class PortalsTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
@@ -163,5 +167,32 @@ public class PortalsTest {
         executeScriptAndAwaitSwap(tab, "activatePortal();");
         executeScriptAndAwaitSwap(tab, "reactivatePredecessor();");
         JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(), "removePortal();");
+    }
+
+    /**
+     * Tests that a drag that started in the predecessor page causes a scroll in the activated page
+     * after a scroll triggered activation.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testTouchTransfer() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/portals/touch-transfer.html"));
+
+        ChromeActivity activity = mActivityTestRule.getActivity();
+        View contentView = activity.getActivityTab().getContentView();
+
+        int dragStartX = 30;
+        int dragStartY = contentView.getHeight() / 2;
+        int dragEndX = dragStartX;
+        int dragEndY = 30;
+        long downTime = System.currentTimeMillis();
+        TouchCommon.dragStart(activity, dragStartX, dragStartY, downTime);
+        TouchCommon.dragTo(activity, dragStartX, dragEndX, dragStartY, dragEndY, 100, downTime);
+        TouchCommon.dragEnd(activity, dragEndX, dragEndY, downTime);
+
+        WebContents contents = mActivityTestRule.getWebContents();
+        Assert.assertTrue(Coordinates.createFor(contents).getScrollYPixInt() > 0);
     }
 }
