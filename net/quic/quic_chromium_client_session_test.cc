@@ -1006,6 +1006,37 @@ TEST_P(QuicChromiumClientSessionTest, PushStreamTimedOutWithResponse) {
                     session_.get()));
 }
 
+// Regression test for crbug.com/968621.
+TEST_P(QuicChromiumClientSessionTest, PendingStreamOnRst) {
+  if (!quic::VersionHasStreamType(version_.transport_version))
+    return;
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  std::unique_ptr<quic::QuicEncryptedPacket> settings_packet(
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  std::unique_ptr<quic::QuicEncryptedPacket> client_rst(
+      client_maker_.MakeRstPacket(
+          2, true, GetNthServerInitiatedUnidirectionalStreamId(0),
+          quic::QUIC_RST_ACKNOWLEDGEMENT));
+
+  MockWrite writes[] = {
+      MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1),
+      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 2)};
+  socket_data_.reset(new SequencedSocketData(reads, writes));
+
+  Initialize();
+  CompleteCryptoHandshake();
+
+  quic::QuicStreamFrame data(GetNthServerInitiatedUnidirectionalStreamId(0),
+                             false, 1, quic::QuicStringPiece("SP"));
+  session_->OnStreamFrame(data);
+  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
+  quic::QuicRstStreamFrame rst(quic::kInvalidControlFrameId,
+                               GetNthServerInitiatedUnidirectionalStreamId(0),
+                               quic::QUIC_STREAM_CANCELLED, 0);
+  session_->OnRstStream(rst);
+}
+
 TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<quic::QuicEncryptedPacket> settings_packet(
