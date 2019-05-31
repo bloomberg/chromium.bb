@@ -188,7 +188,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                            // frame_parallel_decoding_mode
   1,                            // enable dual filter
   NO_AQ,                        // aq_mode
-  NO_DELTA_Q,                   // deltaq_mode
+  DELTA_Q_OBJECTIVE,            // deltaq_mode
   0,                            // delta lf mode
   0,                            // frame_periodic_delta_q
   AOM_BITS_8,                   // Bit depth
