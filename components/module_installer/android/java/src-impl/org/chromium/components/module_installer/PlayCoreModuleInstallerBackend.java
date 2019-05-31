@@ -174,6 +174,7 @@ import java.util.Set;
     @Override
     public void onStateUpdate(SplitInstallSessionState state) {
         assert !mIsClosed;
+        Log.i(TAG, "Status for modules '%s' updated to %d", state.moduleNames(), state.status());
         switch (state.status()) {
             case SplitInstallSessionStatus.DOWNLOADING:
             case SplitInstallSessionStatus.DOWNLOADED:
