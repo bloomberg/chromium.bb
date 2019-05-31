@@ -5247,6 +5247,27 @@
             ]
         }
     ],
+    "TabHoverCards": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "setting": "2"
+                    },
+                    "enable_features": [
+                        "TabHoverCards"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabRanker": [
         {
             "platforms": [
