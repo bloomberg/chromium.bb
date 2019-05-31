@@ -105,6 +105,141 @@ enum class RequestFinishedListenerType {
   kEngineListener,      // Add a request finished listener to the Engine.
 };
 
+// Converts a Cronet_DateTimePtr into the int64 number of milliseconds since
+// the UNIX epoch.
+//
+// Returns -1 if |date_time| is nullptr.
+int64_t DateToMillis(Cronet_DateTimePtr date_time) {
+  if (date_time == nullptr) {
+    return -1;
+  }
+  int64_t value = Cronet_DateTime_value_get(date_time);
+  // Cronet_DateTime fields shouldn't be before the UNIX epoch.
+  //
+  // While DateToMillis() callers can easily check this themselves (and
+  // produce more descriptive errors showing which field is violating), they
+  // can't easily distinguish a nullptr vs -1 value, so we check for -1 here.
+  EXPECT_NE(-1, value);
+  return value;
+}
+
+// Sanity check that the date isn't wildly off, somehow (perhaps due to read of
+// used memory, wild pointer, etc.).
+//
+// Interpreted as milliseconds after the UNIX timestamp, this timestamp occurs
+// at 37,648 C.E.
+constexpr int64_t kDateOverrunThreshold = 1LL << 50;
+
+// Basic sanity checking of all Cronet_Metrics fields. For optional fields, we
+// allow the field to be non-present. Start/end pairs should be monotonic (end
+// not less than start).
+//
+// Ordering of events is also checked.
+void VerifyRequestMetrics(Cronet_MetricsPtr metrics) {
+  EXPECT_GE(DateToMillis(Cronet_Metrics_request_start_get(metrics)), 0);
+  EXPECT_LT(DateToMillis(Cronet_Metrics_request_start_get(metrics)),
+            kDateOverrunThreshold);
+  EXPECT_GE(DateToMillis(Cronet_Metrics_request_end_get(metrics)),
+            DateToMillis(Cronet_Metrics_request_start_get(metrics)));
+  EXPECT_LT(DateToMillis(Cronet_Metrics_request_end_get(metrics)),
+            kDateOverrunThreshold);
+
+  EXPECT_GE(DateToMillis(Cronet_Metrics_dns_start_get(metrics)), -1);
+  EXPECT_LT(DateToMillis(Cronet_Metrics_dns_start_get(metrics)),
+            kDateOverrunThreshold);
+  EXPECT_GE(DateToMillis(Cronet_Metrics_dns_end_get(metrics)),
+            DateToMillis(Cronet_Metrics_dns_start_get(metrics)));
+  EXPECT_LT(DateToMillis(Cronet_Metrics_dns_end_get(metrics)),
+            kDateOverrunThreshold);
+
+  EXPECT_GE(DateToMillis(Cronet_Metrics_connect_start_get(metrics)), -1);
+  EXPECT_LT(DateToMillis(Cronet_Metrics_connect_start_get(metrics)),
+            kDateOverrunThreshold);
+  EXPECT_GE(DateToMillis(Cronet_Metrics_connect_end_get(metrics)),
+            DateToMillis(Cronet_Metrics_connect_start_get(metrics)));
+  EXPECT_LT(DateToMillis(Cronet_Metrics_connect_end_get(metrics)),
+            kDateOverrunThreshold);
+
+  EXPECT_GE(DateToMillis(Cronet_Metrics_ssl_start_get(metrics)), -1);
+  EXPECT_LT(DateToMillis(Cronet_Metrics_ssl_start_get(metrics)),
+            kDateOverrunThreshold);
+  EXPECT_GE(DateToMillis(Cronet_Metrics_ssl_end_get(metrics)),
+            DateToMillis(Cronet_Metrics_ssl_start_get(metrics)));
+  EXPECT_LT(DateToMillis(Cronet_Metrics_ssl_end_get(metrics)),
+            kDateOverrunThreshold);
+
+  EXPECT_GE(DateToMillis(Cronet_Metrics_sending_start_get(metrics)), -1);
+  EXPECT_LT(DateToMillis(Cronet_Metrics_sending_start_get(metrics)),
+            kDateOverrunThreshold);
+  EXPECT_GE(DateToMillis(Cronet_Metrics_sending_end_get(metrics)),
+            DateToMillis(Cronet_Metrics_sending_start_get(metrics)));
+  EXPECT_LT(DateToMillis(Cronet_Metrics_sending_end_get(metrics)),
+            kDateOverrunThreshold);
+
+  EXPECT_GE(DateToMillis(Cronet_Metrics_push_start_get(metrics)), -1);
+  EXPECT_LT(DateToMillis(Cronet_Metrics_push_start_get(metrics)),
+            kDateOverrunThreshold);
+  EXPECT_GE(DateToMillis(Cronet_Metrics_push_end_get(metrics)),
+            DateToMillis(Cronet_Metrics_push_start_get(metrics)));
+  EXPECT_LT(DateToMillis(Cronet_Metrics_push_end_get(metrics)),
+            kDateOverrunThreshold);
+
+  EXPECT_GE(DateToMillis(Cronet_Metrics_response_start_get(metrics)), -1);
+  EXPECT_LT(DateToMillis(Cronet_Metrics_response_start_get(metrics)),
+            kDateOverrunThreshold);
+
+  EXPECT_GE(Cronet_Metrics_sent_byte_count_get(metrics), -1);
+  EXPECT_GE(Cronet_Metrics_received_byte_count_get(metrics), -1);
+
+  // Verify order of events.
+  if (Cronet_Metrics_dns_start_get(metrics) != nullptr) {
+    EXPECT_GE(DateToMillis(Cronet_Metrics_dns_start_get(metrics)),
+              DateToMillis(Cronet_Metrics_request_start_get(metrics)));
+  }
+
+  if (Cronet_Metrics_connect_start_get(metrics) != nullptr &&
+      Cronet_Metrics_dns_end_get(metrics) != nullptr) {
+    EXPECT_GE(DateToMillis(Cronet_Metrics_connect_start_get(metrics)),
+              DateToMillis(Cronet_Metrics_dns_end_get(metrics)));
+  }
+
+  if (Cronet_Metrics_ssl_start_get(metrics) != nullptr &&
+      Cronet_Metrics_connect_start_get(metrics) != nullptr) {
+    EXPECT_GE(DateToMillis(Cronet_Metrics_ssl_start_get(metrics)),
+              DateToMillis(Cronet_Metrics_connect_start_get(metrics)));
+  }
+
+  if (Cronet_Metrics_connect_end_get(metrics) != nullptr &&
+      Cronet_Metrics_ssl_end_get(metrics) != nullptr) {
+    EXPECT_GE(DateToMillis(Cronet_Metrics_connect_end_get(metrics)),
+              DateToMillis(Cronet_Metrics_ssl_end_get(metrics)));
+  }
+
+  if (Cronet_Metrics_sending_start_get(metrics) != nullptr &&
+      Cronet_Metrics_connect_end_get(metrics) != nullptr) {
+    EXPECT_GE(DateToMillis(Cronet_Metrics_sending_start_get(metrics)),
+              DateToMillis(Cronet_Metrics_connect_end_get(metrics)));
+  }
+
+  if (Cronet_Metrics_response_start_get(metrics) != nullptr &&
+      Cronet_Metrics_sending_end_get(metrics) != nullptr) {
+    EXPECT_GE(DateToMillis(Cronet_Metrics_response_start_get(metrics)),
+              DateToMillis(Cronet_Metrics_sending_end_get(metrics)));
+  }
+
+  if (Cronet_Metrics_response_start_get(metrics) != nullptr) {
+    EXPECT_GE(DateToMillis(Cronet_Metrics_request_end_get(metrics)),
+              DateToMillis(Cronet_Metrics_response_start_get(metrics)));
+  }
+}
+
+// Basic sanity checking of all Cronet_RequestFinishedInfo fields.
+void VerifyRequestFinishedInfo(Cronet_RequestFinishedInfoPtr request_info) {
+  VerifyRequestMetrics(Cronet_RequestFinishedInfo_metrics_get(request_info));
+  // TODO(crbug.com/879208): Verify non-metrics fields once these have been
+  // added to |request_info|.
+}
+
 // App implementation of Cronet_RequestFinishedInfoListener methods.
 static void TestRequestInfoListener_OnRequestFinished(
     Cronet_RequestFinishedInfoListenerPtr self,
@@ -112,6 +247,8 @@ static void TestRequestInfoListener_OnRequestFinished(
     Cronet_UrlResponseInfoPtr,
     Cronet_ErrorPtr) {
   CHECK(self);
+  Cronet_RequestFinishedInfoListener_Destroy(self);
+  VerifyRequestFinishedInfo(request_info);
 }
 
 // Parameterized off whether to use a direct executor, and whether (if so, how)
@@ -120,10 +257,7 @@ class UrlRequestTest : public ::testing::TestWithParam<
                            std::tuple<bool, RequestFinishedListenerType>> {
  protected:
   UrlRequestTest() {}
-  ~UrlRequestTest() override {
-    if (request_finished_listener_ != nullptr)
-      Cronet_RequestFinishedInfoListener_Destroy(request_finished_listener_);
-  }
+  ~UrlRequestTest() override {}
 
   void SetUp() override { EXPECT_TRUE(cronet::TestServer::Start()); }
 
@@ -296,12 +430,6 @@ class UrlRequestTest : public ::testing::TestWithParam<
                                                           nullptr);
     Cronet_UrlRequestParams_request_finished_executor_set(url_request_params,
                                                           nullptr);
-    // TODO(crbug.com/879208): When we actually call the listeners, we should
-    // move listener destruction to the end of the listener body.
-    if (request_finished_listener_ != nullptr) {
-      Cronet_RequestFinishedInfoListener_Destroy(request_finished_listener_);
-      request_finished_listener_ = nullptr;
-    }
   }
 
   void TestCancel(TestUrlRequestCallback::FailureType failure_type,
@@ -313,6 +441,10 @@ class UrlRequestTest : public ::testing::TestWithParam<
   // Provide a message loop for use by TestExecutor instances.
   base::MessageLoop message_loop_;
 
+  // Not owned, |request_finished_listener_| destroys itself when run. This
+  // pointer is only needed to unregister the listener from the Engine in
+  // CleanupRequestFinishedListener() and to allow tests that never run the
+  // |request_finished_listener_| to be able to destroy it.
   Cronet_RequestFinishedInfoListenerPtr request_finished_listener_ = nullptr;
 
  private:
@@ -462,6 +594,11 @@ TEST_P(UrlRequestTest, InitChecks) {
   Cronet_UrlRequestParams_Destroy(request_params);
   Cronet_UrlRequestCallback_Destroy(callback);
   Cronet_Engine_Destroy(engine);
+  if (request_finished_listener_ != nullptr) {
+    // This test never actually runs |request_finished_listener_|, so we delete
+    // it here.
+    Cronet_RequestFinishedInfoListener_Destroy(request_finished_listener_);
+  }
 }
 
 TEST_P(UrlRequestTest, SimpleGet) {
@@ -1308,8 +1445,14 @@ TEST_P(UrlRequestTest, GetStatus) {
   Cronet_Engine_Destroy(engine);
 }
 
-TEST(UrlRequestTestNoParam,
-     RequestFinishedListenerWithoutExecutorReturnsError) {
+class UrlRequestTestNoParam : public ::testing::Test {
+  void SetUp() override { cronet::TestServer::Start(); }
+
+  void TearDown() override { cronet::TestServer::Shutdown(); }
+};
+
+TEST_F(UrlRequestTestNoParam,
+       RequestFinishedListenerWithoutExecutorReturnsError) {
   Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();
   Cronet_EnginePtr engine = Cronet_Engine_Create();
   // Disable runtime CHECK of the result, so it could be verified.
@@ -1338,12 +1481,145 @@ TEST(UrlRequestTestNoParam,
                 request, engine, "http://fakeurl.example.com", request_params,
                 callback, executor));
 
-  // TODO(crbug.com/879208): When we actually call the listeners, we should move
-  // listener destruction to the end of the listener body.
+  // This test never actually runs |request_finished_listener|, so we delete
+  // it here.
   Cronet_RequestFinishedInfoListener_Destroy(request_finished_listener);
   Cronet_UrlRequestParams_Destroy(request_params);
   Cronet_UrlRequest_Destroy(request);
   Cronet_UrlRequestCallback_Destroy(callback);
   Cronet_Engine_Destroy(engine);
 }
+
+TEST_F(UrlRequestTestNoParam,
+       UseRequestFinishedInfoAfterUrlRequestDestruction) {
+  Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
+  Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
+  std::string url = cronet::TestServer::GetSimpleURL();
+
+  // The UrlRequest executor type doesn't matter, but the
+  // RequestFinishedInfoListener executor type can't be direct.
+  TestUrlRequestCallback test_callback(/* direct_executor= */ false);
+  // Executor provided by the application is owned by |test_callback|.
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor();
+  // Callback provided by the application.
+  Cronet_UrlRequestCallbackPtr callback =
+      test_callback.CreateUrlRequestCallback();
+
+  base::WaitableEvent done_event;
+  struct ListenerContext {
+    TestUrlRequestCallback* test_callback;
+    Cronet_UrlRequestPtr url_request;
+    base::WaitableEvent* done_event;
+  };
+  ListenerContext listener_context = {&test_callback, request, &done_event};
+
+  auto* request_finished_listener =
+      Cronet_RequestFinishedInfoListener_CreateWith(
+          +[](Cronet_RequestFinishedInfoListenerPtr self,
+              Cronet_RequestFinishedInfoPtr request_finished_info,
+              Cronet_UrlResponseInfoPtr, Cronet_ErrorPtr) {
+            auto* listener_context = static_cast<ListenerContext*>(
+                Cronet_RequestFinishedInfoListener_GetClientContext(self));
+            listener_context->test_callback->WaitForDone();
+            Cronet_UrlRequest_Destroy(listener_context->url_request);
+            // The next line shouldn't use-after-free on
+            // |request_finished_info|.
+            EXPECT_NE(nullptr, Cronet_RequestFinishedInfo_metrics_get(
+                                   request_finished_info));
+            Cronet_RequestFinishedInfoListener_Destroy(self);
+            listener_context->done_event->Signal();
+          });
+  Cronet_RequestFinishedInfoListener_SetClientContext(request_finished_listener,
+                                                      &listener_context);
+
+  Cronet_UrlRequestParams_request_finished_listener_set(
+      request_params, request_finished_listener);
+  Cronet_UrlRequestParams_request_finished_executor_set(request_params,
+                                                        executor);
+  Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(), request_params,
+                                   callback, executor);
+  Cronet_UrlRequest_Start(request);
+
+  done_event.Wait();
+  EXPECT_TRUE(test_callback.IsDone());
+  ASSERT_EQ("The quick brown fox jumps over the lazy dog.",
+            test_callback.response_as_string_);
+
+  Cronet_UrlRequestParams_Destroy(request_params);
+  Cronet_UrlRequestCallback_Destroy(callback);
+  Cronet_Engine_Destroy(engine);
+}
+
+TEST_F(UrlRequestTestNoParam,
+       CorrelateCallbackAndRequestInfoWithoutSynchronization) {
+  class TestUrlRequestCallbackWithCorrelation : public TestUrlRequestCallback {
+   public:
+    using TestUrlRequestCallback::TestUrlRequestCallback;
+
+    void OnSucceeded(Cronet_UrlRequestPtr request,
+                     Cronet_UrlResponseInfoPtr info) override {
+      // This method is guaranteed to run after
+      // RequestFinishedInfoListener.OnRequestFinished(), **on the same
+      // thread** (due to the use of a direct executor with the
+      // RequestFinishedInfoListener).
+      //
+      // The following read should therefore not need synchronization -- we rely
+      // on running this test under sanitizers to verify this.
+      EXPECT_NE(nullptr,
+                Cronet_RequestFinishedInfo_metrics_get(request_finished_info_));
+      TestUrlRequestCallback::OnSucceeded(request, info);
+    }
+
+    Cronet_RequestFinishedInfoPtr request_finished_info_;
+  };
+
+  Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
+  Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
+  Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
+  std::string url = cronet::TestServer::GetSimpleURL();
+
+  // The UrlRequest executor type doesn't matter, but the
+  // RequestFinishedInfoListener executor type *must* be direct.
+  TestUrlRequestCallbackWithCorrelation test_callback(
+      /* direct_executor= */ true);
+  // Executor provided by the application is owned by |test_callback|.
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor();
+  // Callback provided by the application.
+  Cronet_UrlRequestCallbackPtr callback =
+      test_callback.CreateUrlRequestCallback();
+
+  auto* request_finished_listener =
+      Cronet_RequestFinishedInfoListener_CreateWith(
+          +[](Cronet_RequestFinishedInfoListenerPtr self,
+              Cronet_RequestFinishedInfoPtr request_finished_info,
+              Cronet_UrlResponseInfoPtr, Cronet_ErrorPtr) {
+            auto* test_callback =
+                static_cast<TestUrlRequestCallbackWithCorrelation*>(
+                    Cronet_RequestFinishedInfoListener_GetClientContext(self));
+            test_callback->request_finished_info_ = request_finished_info;
+            Cronet_RequestFinishedInfoListener_Destroy(self);
+          });
+  Cronet_RequestFinishedInfoListener_SetClientContext(request_finished_listener,
+                                                      &test_callback);
+
+  Cronet_UrlRequestParams_request_finished_listener_set(
+      request_params, request_finished_listener);
+  Cronet_UrlRequestParams_request_finished_executor_set(request_params,
+                                                        executor);
+  Cronet_UrlRequest_InitWithParams(request, engine, url.c_str(), request_params,
+                                   callback, executor);
+  Cronet_UrlRequest_Start(request);
+
+  test_callback.WaitForDone();
+  EXPECT_TRUE(test_callback.IsDone());
+  ASSERT_EQ("The quick brown fox jumps over the lazy dog.",
+            test_callback.response_as_string_);
+
+  Cronet_UrlRequest_Destroy(request);
+  Cronet_UrlRequestParams_Destroy(request_params);
+  Cronet_UrlRequestCallback_Destroy(callback);
+  Cronet_Engine_Destroy(engine);
+}
+
 }  // namespace

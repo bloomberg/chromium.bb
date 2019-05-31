@@ -10,6 +10,9 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "components/cronet/cronet_upload_data_stream.h"
 #include "components/cronet/native/engine.h"
 #include "components/cronet/native/generated/cronet.idl_impl_struct.h"
@@ -22,6 +25,8 @@
 #include "net/base/load_states.h"
 
 namespace {
+
+using RequestFinishedInfo = base::RefCountedData<Cronet_RequestFinishedInfo>;
 
 net::RequestPriority ConvertRequestPriority(
     Cronet_UrlRequestParams_REQUEST_PRIORITY priority) {
@@ -557,6 +562,7 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnSucceeded() {
     return;
   }
   InvokeAllStatusListeners();
+  MaybeReportMetrics();
   Cronet_UrlRequestCallback_OnSucceeded(callback_, this, response_info_.get());
   // |this| may have been deleted here.
 }
@@ -567,6 +573,7 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnFailed() {
     return;
   }
   InvokeAllStatusListeners();
+  MaybeReportMetrics();
   Cronet_UrlRequestCallback_OnFailed(callback_, this, response_info_.get(),
                                      error_.get());
   // |this| may have been deleted here.
@@ -574,6 +581,7 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnFailed() {
 
 void Cronet_UrlRequestImpl::InvokeCallbackOnCanceled() {
   InvokeAllStatusListeners();
+  MaybeReportMetrics();
   Cronet_UrlRequestCallback_OnCanceled(callback_, this, response_info_.get());
   // |this| may have been deleted here.
 }
@@ -596,6 +604,25 @@ void Cronet_UrlRequestImpl::InvokeAllStatusListeners() {
   base::AutoLock lock(lock_);
   DCHECK(status_listeners_.empty());
 #endif  // DCHECK_IS_ON()
+}
+
+void Cronet_UrlRequestImpl::MaybeReportMetrics() {
+  if (request_finished_info_ == nullptr)
+    return;
+  engine_->ReportRequestFinished(request_finished_info_);
+  if (request_finished_listener_ != nullptr) {
+    DCHECK(request_finished_executor_ != nullptr);
+    // Execute() owns and deletes the runnable.
+    request_finished_executor_->Execute(
+        new cronet::OnceClosureRunnable(base::BindOnce(
+            [](scoped_refptr<RequestFinishedInfo> request_finished_info,
+               Cronet_RequestFinishedInfoListenerPtr
+                   request_finished_listener) {
+              request_finished_listener->OnRequestFinished(
+                  &request_finished_info->data, nullptr, nullptr);
+            },
+            request_finished_info_, request_finished_listener_)));
+  }
 }
 
 Cronet_UrlRequestImpl::NetworkTasks::NetworkTasks(
@@ -755,9 +782,12 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnMetricsCollected(
     int64_t received_bytes_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   base::AutoLock lock(url_request_->lock_);
-  DCHECK_EQ(url_request_->metrics_.get(), nullptr)
+  DCHECK_EQ(url_request_->request_finished_info_, nullptr)
       << "Metrics collection should only happen once.";
-  auto metrics = std::make_unique<Cronet_Metrics>();
+  url_request_->request_finished_info_ =
+      base::MakeRefCounted<RequestFinishedInfo>();
+  auto& metrics = url_request_->request_finished_info_->data.metrics;
+  metrics.emplace();
   using native_metrics_util::ConvertTime;
   ConvertTime(request_start, request_start, request_start_time,
               &metrics->request_start);
@@ -785,7 +815,6 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnMetricsCollected(
   metrics->socket_reused = socket_reused;
   metrics->sent_byte_count = sent_bytes_count;
   metrics->received_byte_count = received_bytes_count;
-  url_request_->metrics_ = std::move(metrics);
 }
 
 void Cronet_UrlRequestImpl::NetworkTasks::OnStatus(

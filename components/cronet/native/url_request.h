@@ -90,6 +90,11 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   // and |executor_| may be deleted and so the callbacks cannot be issued.
   void InvokeAllStatusListeners();
 
+  // Reports metrics if metrics were collected. This method should only be
+  // called on Callback's executor thread and before Callback's OnSucceeded,
+  // OnFailed and OnCanceled.
+  void MaybeReportMetrics();
+
   // Synchronize access to |request_| and other objects below from different
   // threads.
   base::Lock lock_;
@@ -105,10 +110,21 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   std::unordered_multiset<Cronet_UrlRequestStatusListenerPtr> status_listeners_
       GUARDED_BY(lock_);
 
-  // Metrics to include in RequestFinishedInfo report sent to attached
-  // RequestFinishedListener(s). A nullptr value indicates that the metrics
-  // haven't been collected.
-  std::unique_ptr<Cronet_Metrics> metrics_ GUARDED_BY(lock_);
+  // Report containing metrics and other information to send to attached
+  // RequestFinishedListener(s). A nullptr value indicates that metrics haven't
+  // been collected.
+  //
+  // Ownership is shared since we guarantee that the RequestFinishedInfo will
+  // be valid if its UrlRequest isn't destroyed. We also guarantee that it's
+  // valid in RequestFinishedListener.OnRequestFinished() even if the
+  // UrlRequest is destroyed (and furthermore, each listener finishes at
+  // different times).
+  //
+  // NOTE: this field isn't protected by |lock_| since we pass this field as a
+  // unowned pointer to OnRequestFinished(). The pointee of this field cannot
+  // be updated after that call is made.
+  scoped_refptr<base::RefCountedData<Cronet_RequestFinishedInfo>>
+      request_finished_info_;
 
   // Optional; allows a listener to receive request info and stats.
   //
