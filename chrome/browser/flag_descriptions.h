@@ -1816,6 +1816,9 @@ extern const char kEnablePlayStoreSearchDescription[];
 extern const char kEnableVideoPlayerNativeControlsName[];
 extern const char kEnableVideoPlayerNativeControlsDescription[];
 
+extern const char kEnableVirtualDesksName[];
+extern const char kEnableVirtualDesksDescription[];
+
 extern const char kEnableZeroStateSuggestionsName[];
 extern const char kEnableZeroStateSuggestionsDescription[];
 

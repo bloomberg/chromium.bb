@@ -33689,6 +33689,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1225198073" label="ReaderModeInCCT:disabled"/>
   <int value="-1224962996" label="PwaImprovedSplashScreen:disabled"/>
   <int value="-1222805155" label="PdfIsolation:enabled"/>
+  <int value="-1222556118" label="VirtualDesks:disabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1217462552"
       label="OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains:disabled"/>
@@ -33886,6 +33887,7 @@ from previous Chrome versions.
   <int value="-933377608"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:enabled"/>
   <int value="-933316841" label="enable-permissions-blacklist"/>
+  <int value="-932474660" label="VirtualDesks:enabled"/>
   <int value="-929944930"
       label="AutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>

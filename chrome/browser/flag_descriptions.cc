@@ -3037,6 +3037,10 @@ const char kEnableVideoPlayerNativeControlsName[] =
 const char kEnableVideoPlayerNativeControlsDescription[] =
     "Enable native controls in video player app";
 
+const char kEnableVirtualDesksName[] = "Enable Virtual Desks";
+const char kEnableVirtualDesksDescription[] =
+    "A preview of the upcoming Virtual Desks features on Chrome OS devices.";
+
 const char kEnableZeroStateSuggestionsName[] = "Enable Zero State Suggetions";
 const char kEnableZeroStateSuggestionsDescription[] =
     "Enable Zero State Suggestions feature in Launcher, which will show "

@@ -1430,6 +1430,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-touch-hud", flag_descriptions::kShowTouchHudName,
      flag_descriptions::kShowTouchHudDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
+    {"enable-virtual-desks", flag_descriptions::kEnableVirtualDesksName,
+     flag_descriptions::kEnableVirtualDesksDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kVirtualDesks)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",

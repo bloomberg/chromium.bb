@@ -2726,6 +2726,12 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-virtual-desks",
+    "owners": [ "afakhry" ],
+    // This is a flag to enable or disable the Virtual Desks feature.
+    "expiry_milestone": 79
+  },
+  {
     "name": "silent-debugger-extension-api",
     "owners": [ "//extensions/OWNERS" ],
     "expiry_milestone": 77
