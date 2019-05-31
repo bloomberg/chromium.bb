@@ -267,8 +267,6 @@ void BrowserProcessImpl::Init() {
 
   net_log_ = std::make_unique<net_log::ChromeNetLog>();
 
-  battery_metrics_ = std::make_unique<BatteryMetrics>();
-
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kChromeSearchScheme);
 
@@ -1192,6 +1190,12 @@ void BrowserProcessImpl::PreCreateThreads(
       local_state(), policy_service(), net_log_.get(),
       extension_event_router_forwarder(),
       SystemNetworkContextManager::GetInstance());
+}
+
+void BrowserProcessImpl::ServiceManagerConnectionStarted(
+    content::ServiceManagerConnection* connection) {
+  // This uses the service manager so it must happen after it's started.
+  battery_metrics_ = std::make_unique<BatteryMetrics>();
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {

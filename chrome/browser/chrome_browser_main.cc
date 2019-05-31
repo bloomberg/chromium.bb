@@ -1178,6 +1178,8 @@ void ChromeBrowserMainParts::ServiceManagerConnectionStarted(
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->ServiceManagerConnectionStarted(connection);
+
+  browser_process_->ServiceManagerConnectionStarted(connection);
 }
 
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
