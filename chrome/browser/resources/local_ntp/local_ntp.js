@@ -46,18 +46,30 @@ function disableIframesAndVoiceSearchForTesting() {
 /**
  * Specifications for an NTP design (not comprehensive).
  *
+ * backgroundColor: The 4-component color of default background,
+ * darkBackgroundColor: The 4-component color of default dark background,
+ * iconBackgroundColor: The 4-component color of default dark icon background,
+ * iconDarkBackgroundColor: The 4-component color of default icon background,
  * numTitleLines: Number of lines to display in titles.
  * titleColor: The 4-component color of title text.
  * titleColorAgainstDark: The 4-component color of title text against a dark
  *   theme.
  *
  * @type {{
+ *   backgroundColor: Array<number>,
+ *   darkBackgroundColor: Array<number>,
+ *   iconBackgroundColor: Array<number>,
+ *   iconDarkBackgroundColor: Array<number>,
  *   numTitleLines: number,
  *   titleColor: Array<number>,
  *   titleColorAgainstDark: Array<number>,
  * }}
  */
 const NTP_DESIGN = {
+  backgroundColor: [255, 255, 255, 255],
+  darkBackgroundColor: [50, 54, 57, 255],
+  iconBackgroundColor: [241, 243, 244, 255],  /** GG100 */
+  iconDarkBackgroundColor: [32, 33, 36, 255], /** GG900 */
   numTitleLines: 1,
   titleColor: [60, 64, 67, 255],               /** GG800 */
   titleColorAgainstDark: [248, 249, 250, 255], /** GG050 */
@@ -332,9 +344,19 @@ function getThemeBackgroundInfo() {
     return {
       alternateLogo: false,
       backgroundColorRgba:
-          (isDarkModeEnabled ? [50, 54, 57, 255] : [255, 255, 255, 255]),
+          (isDarkModeEnabled ? NTP_DESIGN.darkBackgroundColor :
+                               NTP_DESIGN.backgroundColor),
+      customBackgroundConfigured: false,
+      iconBackgroundColor:
+          (isDarkModeEnabled ? NTP_DESIGN.iconDarkBackgroundColor :
+                               NTP_DESIGN.iconBackgroundColor),
+      isNtpBackgroundDark: isDarkModeEnabled,
       textColorLightRgba: [102, 102, 102, 255],
-      textColorRgba: [0, 0, 0, 255],
+      textColorRgba:
+          (isDarkModeEnabled ? NTP_DESIGN.titleColorAgainstDark :
+                               NTP_DESIGN.titleColor),
+      useTitleContainer: false,
+      useWhiteAddIcon: isDarkModeEnabled,
       usingDarkMode: isDarkModeEnabled,
       usingDefaultTheme: true,
     };
