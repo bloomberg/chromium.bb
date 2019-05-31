@@ -9,23 +9,21 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_column_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 namespace {
 
-class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
+class NGColumnLayoutAlgorithmTest
+    : public NGBaseLayoutAlgorithmTest,
+      private ScopedLayoutNGBlockFragmentationForTest {
  protected:
+  NGColumnLayoutAlgorithmTest()
+      : ScopedLayoutNGBlockFragmentationForTest(true) {}
+
   void SetUp() override {
     NGBaseLayoutAlgorithmTest::SetUp();
     style_ = ComputedStyle::Create();
-    was_block_fragmentation_enabled_ =
-        RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled();
-    RuntimeEnabledFeatures::SetLayoutNGBlockFragmentationEnabled(true);
-  }
-
-  void TearDown() override {
-    RuntimeEnabledFeatures::SetLayoutNGBlockFragmentationEnabled(
-        was_block_fragmentation_enabled_);
   }
 
   scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
@@ -52,7 +50,6 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   }
 
   scoped_refptr<ComputedStyle> style_;
-  bool was_block_fragmentation_enabled_ = false;
 };
 
 TEST_F(NGColumnLayoutAlgorithmTest, EmptyMulticol) {

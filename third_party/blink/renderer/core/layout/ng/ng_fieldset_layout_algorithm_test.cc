@@ -8,26 +8,22 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 namespace {
 
-class NGFieldsetLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
+class NGFieldsetLayoutAlgorithmTest
+    : public NGBaseLayoutAlgorithmTest,
+      private ScopedLayoutNGFieldsetForTest,
+      private ScopedLayoutNGBlockFragmentationForTest {
  protected:
+  NGFieldsetLayoutAlgorithmTest()
+      : ScopedLayoutNGFieldsetForTest(true),
+        ScopedLayoutNGBlockFragmentationForTest(true) {}
   void SetUp() override {
     NGBaseLayoutAlgorithmTest::SetUp();
     style_ = ComputedStyle::Create();
-    was_fieldset_enabled_ = RuntimeEnabledFeatures::LayoutNGFieldsetEnabled();
-    was_block_fragmentation_enabled_ =
-        RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled();
-    RuntimeEnabledFeatures::SetLayoutNGFieldsetEnabled(true);
-    RuntimeEnabledFeatures::SetLayoutNGBlockFragmentationEnabled(true);
-  }
-
-  void TearDown() override {
-    RuntimeEnabledFeatures::SetLayoutNGFieldsetEnabled(was_fieldset_enabled_);
-    RuntimeEnabledFeatures::SetLayoutNGBlockFragmentationEnabled(
-        was_block_fragmentation_enabled_);
   }
 
   scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
@@ -75,8 +71,6 @@ class NGFieldsetLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   }
 
   scoped_refptr<ComputedStyle> style_;
-  bool was_fieldset_enabled_ = false;
-  bool was_block_fragmentation_enabled_ = false;
 };
 
 TEST_F(NGFieldsetLayoutAlgorithmTest, Empty) {
