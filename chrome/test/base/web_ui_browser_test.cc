@@ -42,12 +42,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/resource/resource_handle.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/common/chrome_features.h"
-#include "components/prefs/pref_service.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif
@@ -470,12 +464,6 @@ void BaseWebUIBrowserTest::SetUpOnMainThread() {
                                     mock_provider_.Pointer());
   test_factory_->AddFactoryOverride(content::kChromeUIResourcesHost,
                                     mock_provider_.Pointer());
-
-#if defined(OS_CHROMEOS)
-  scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
-  browser()->profile()->GetPrefs()->SetBoolean(
-      crostini::prefs::kCrostiniEnabled, true);
-#endif
 }
 
 void BaseWebUIBrowserTest::TearDownOnMainThread() {

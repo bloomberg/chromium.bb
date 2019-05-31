@@ -7,12 +7,11 @@
  * Chrome OS only.
  */
 
-// SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
-  'settings_accessibility_test.js',
+  'crostini_accessibility_test.js',
 ]);
 
-AccessibilityTest.define('SettingsAccessibilityTest', {
+AccessibilityTest.define('CrostiniAccessibilityTest', {
   /** @override */
   name: 'CROSTINI_SHARED_PATHS',
   /** @override */

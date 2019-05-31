@@ -13,10 +13,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/javascript_browser_test.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/test/scoped_feature_list.h"
-#endif
-
 namespace {
 class WebUITestMessageHandler;
 }
@@ -178,9 +174,6 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   content::WebUI* override_selected_web_ui_;
 
   std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
-#if defined(OS_CHROMEOS)
-  base::test::ScopedFeatureList scoped_feature_list_;
-#endif
 };
 
 class WebUIBrowserTest : public BaseWebUIBrowserTest {

@@ -99,6 +99,7 @@ js2gtest("browser_tests_js_webui") {
       "../chromeos/oobe_webui_browsertest.js",
       "certificate_viewer_dialog_test.js",
       "set_time_dialog_browsertest.js",
+      "settings/a11y/crostini_accessibility_test.js",
       "settings/a11y/crostini_settings_details_a11y_test.js",
       "settings/a11y/crostini_settings_export_import_a11y_test.js",
       "settings/a11y/crostini_settings_shared_paths_a11y_test.js",
