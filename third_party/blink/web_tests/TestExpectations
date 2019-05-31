@@ -1665,7 +1665,14 @@ crbug.com/567837 fast/hidpi/static [ Skip ]
 crbug.com/538697 [ Win Win10 ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
-crbug.com/904592 css3/filters/backdrop-filter-svg.html [ Failure ]
+# ====== Backdrop-filter related tests BEGIN ======
+# These are known failures - this feature is still being implemented
+crbug.com/497522 css3/filters/backdrop-filter-boundary.html [ Failure ]
+crbug.com/497522 css3/filters/backdrop-filter-bleeding.html [ Failure ]
+crbug.com/497522 css3/filters/backdrop-filter-svg.html [ Failure ]
+crbug.com/964417 external/wpt/css/filter-effects/backdrop-filter-clipped.html [ Failure ]
+# ====== Backdrop-filter related tests END ======
+
 
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
