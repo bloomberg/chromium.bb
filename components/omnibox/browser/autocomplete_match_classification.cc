@@ -11,7 +11,7 @@
 namespace {
 
 base::string16 clean(base::string16 text) {
-  const size_t kMaxTextLength = 200;
+  const size_t kMaxTextLength = 2000;
   return base::i18n::ToLower(text.substr(0, kMaxTextLength));
 }
 
