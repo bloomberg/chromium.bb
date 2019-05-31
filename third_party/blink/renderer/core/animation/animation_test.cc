@@ -755,45 +755,55 @@ TEST_F(AnimationAnimationTest, AnimationsReturnTimeToNextEffect) {
   animation = timeline->Play(keyframe_effect);
   animation->setStartTime(0, false);
 
+  // Next effect change at end of start delay.
   SimulateFrame(0);
   EXPECT_EQ(1, animation->TimeToEffectChange());
 
+  // Next effect change at end of start delay.
   SimulateFrame(0.5);
   EXPECT_EQ(0.5, animation->TimeToEffectChange());
 
+  // Start of active phase.
   SimulateFrame(1);
   EXPECT_EQ(0, animation->TimeToEffectChange());
 
+  // Still in active phase.
   SimulateFrame(1.5);
   EXPECT_EQ(0, animation->TimeToEffectChange());
 
+  // Start of the after phase. Next effect change at end of after phase.
   SimulateFrame(2);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation->TimeToEffectChange());
+  EXPECT_EQ(1, animation->TimeToEffectChange());
 
+  // Still in effect if fillmode = forward|both.
   SimulateFrame(3);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             animation->TimeToEffectChange());
 
+  // Reset to start of animation. Next effect at the end of the start delay.
   animation->SetCurrentTimeInternal(0);
   SimulateFrame(3);
   EXPECT_EQ(1, animation->TimeToEffectChange());
 
+  // Start delay is scaled by playback rate.
   animation->setPlaybackRate(2);
   SimulateFrame(3);
   EXPECT_EQ(0.5, animation->TimeToEffectChange());
 
+  // Effectively a paused animation.
   animation->setPlaybackRate(0);
   animation->Update(kTimingUpdateOnDemand);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             animation->TimeToEffectChange());
 
+  // Reversed animation from end time. Next effect after end delay.
   animation->SetCurrentTimeInternal(3);
   animation->setPlaybackRate(-1);
   animation->Update(kTimingUpdateOnDemand);
   SimulateFrame(3);
   EXPECT_EQ(1, animation->TimeToEffectChange());
 
+  // End delay is scaled by playback rate.
   animation->setPlaybackRate(-2);
   animation->Update(kTimingUpdateOnDemand);
   SimulateFrame(3);

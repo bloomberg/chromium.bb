@@ -460,11 +460,14 @@ double KeyframeEffect::CalculateTimeToEffectChange(
       return 0;
     case kPhaseAfter:
       DCHECK_GE(local_time, after_time);
-      // If this KeyframeEffect is still in effect then it will need to update
-      // when its parent goes out of effect. We have no way of knowing when
-      // that will be, however, so the parent will need to supply it.
-      return forwards ? std::numeric_limits<double>::infinity()
-                      : local_time - after_time;
+      if (forwards) {
+        // If an animation has a positive-valued end delay, we need an
+        // additional tick at the end time to ensure that the finished event is
+        // delivered.
+        return end_time > local_time ? end_time - local_time
+                                     : std::numeric_limits<double>::infinity();
+      }
+      return local_time - after_time;
     default:
       NOTREACHED();
       return std::numeric_limits<double>::infinity();
