@@ -54,8 +54,8 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
   // the bookmark bar. Each label is separated by a space.
   std::string GetStringForVisibleButtons() {
     std::string result;
-    for (int i = 0; i < test_helper_->GetBookmarkButtonCount() &&
-                    test_helper_->GetBookmarkButton(i)->GetVisible();
+    for (size_t i = 0; i < test_helper_->GetBookmarkButtonCount() &&
+                       test_helper_->GetBookmarkButton(i)->GetVisible();
          ++i) {
       if (i != 0)
         result += " ";
@@ -69,7 +69,7 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
   // visible.
   // NOTE: if the model has more than |count| buttons this results in
   // |count| + 1 buttons.
-  void SizeUntilButtonsVisible(int count) {
+  void SizeUntilButtonsVisible(size_t count) {
     const int start_width = bookmark_bar_view_->width();
     const int height = bookmark_bar_view_->GetPreferredSize().height();
     for (int i = 0;
@@ -173,7 +173,7 @@ TEST_F(BookmarkBarViewTest, OverflowVisibility) {
   EXPECT_TRUE(test_helper_->overflow_button()->GetVisible());
 
   SizeUntilButtonsVisible(1);
-  EXPECT_EQ(2, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(2u, test_helper_->GetBookmarkButtonCount());
   const int width_for_one = bookmark_bar_view_->bounds().width();
   EXPECT_TRUE(test_helper_->overflow_button()->GetVisible());
 
@@ -181,7 +181,7 @@ TEST_F(BookmarkBarViewTest, OverflowVisibility) {
   bookmark_bar_view_->SetBounds(
       0, 0, 5000, bookmark_bar_view_->bounds().height());
   bookmark_bar_view_->Layout();
-  EXPECT_EQ(6, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
   EXPECT_FALSE(test_helper_->overflow_button()->GetVisible());
 
   bookmark_bar_view_->SetBounds(
@@ -198,21 +198,21 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAddedAfterModelHasNodes) {
   EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile())->loaded());
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   CreateBookmarkBarView();
-  EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   SizeUntilButtonsVisible(1);
-  EXPECT_EQ(2, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(2u, test_helper_->GetBookmarkButtonCount());
 
   // Go really big, which should force all buttons to be added.
   bookmark_bar_view_->SetBounds(
       0, 0, 5000, bookmark_bar_view_->bounds().height());
   bookmark_bar_view_->Layout();
-  EXPECT_EQ(6, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
 
   // Ensure buttons were added in the correct place.
   auto button_iter =
       bookmark_bar_view_->FindChild(test_helper_->managed_bookmarks_button());
-  for (int i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
+  for (size_t i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
     ++button_iter;
     ASSERT_NE(bookmark_bar_view_->children().cend(), button_iter);
     EXPECT_EQ(test_helper_->GetBookmarkButton(i), *button_iter);
@@ -224,19 +224,19 @@ TEST_F(BookmarkBarViewTest, ButtonsDynamicallyAdded) {
   CreateBookmarkModelAndBookmarkBarView();
   EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile())->loaded());
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
-  EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
   SizeUntilButtonsVisible(1);
-  EXPECT_EQ(2, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(2u, test_helper_->GetBookmarkButtonCount());
 
   // Go really big, which should force all buttons to be added.
   bookmark_bar_view_->SetBounds(
       0, 0, 5000, bookmark_bar_view_->bounds().height());
   bookmark_bar_view_->Layout();
-  EXPECT_EQ(6, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
   // Ensure buttons were added in the correct place.
   auto button_iter =
       bookmark_bar_view_->FindChild(test_helper_->managed_bookmarks_button());
-  for (int i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
+  for (size_t i = 0; i < test_helper_->GetBookmarkButtonCount(); ++i) {
     ++button_iter;
     ASSERT_NE(bookmark_bar_view_->children().cend(), button_iter);
     EXPECT_EQ(test_helper_->GetBookmarkButton(i), *button_iter);
@@ -258,9 +258,9 @@ TEST_F(BookmarkBarViewTest, RemoveNode) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
-  EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
   SizeUntilButtonsVisible(1);
-  EXPECT_EQ(2, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(2u, test_helper_->GetBookmarkButtonCount());
 
   // Remove the 2nd node, should still only have 1 visible.
   model->Remove(bookmark_bar_node->GetChild(1));
@@ -277,11 +277,11 @@ TEST_F(BookmarkBarViewTest, MoveNode) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
-  EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   // Move 'c' first resulting in 'c a b d e f'.
   model->Move(bookmark_bar_node->GetChild(2), bookmark_bar_node, 0);
-  EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   // Make enough room for 1 node.
   SizeUntilButtonsVisible(1);
@@ -309,10 +309,10 @@ TEST_F(BookmarkBarViewTest, ChangeTitle) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
-  EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   model->SetTitle(bookmark_bar_node->GetChild(0), base::ASCIIToUTF16("a1"));
-  EXPECT_EQ(0, test_helper_->GetBookmarkButtonCount());
+  EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   // Make enough room for 1 node.
   SizeUntilButtonsVisible(1);
@@ -332,13 +332,13 @@ TEST_F(BookmarkBarViewTest, ChangeTitle) {
   EXPECT_EQ("a1 b1", GetStringForVisibleButtons());
   model->SetTitle(bookmark_bar_node->GetChild(0),
                   base::ASCIIToUTF16("a_really_long_title"));
-  EXPECT_LE(1, test_helper_->GetBookmarkButtonCount());
+  EXPECT_LE(1u, test_helper_->GetBookmarkButtonCount());
 
   // Change the title back and make sure the 2nd button is visible again. Don't
   // use GetStringForVisibleButtons() here as more buttons may have been
   // created.
   model->SetTitle(bookmark_bar_node->GetChild(0), base::ASCIIToUTF16("a1"));
-  ASSERT_LE(2, test_helper_->GetBookmarkButtonCount());
+  ASSERT_LE(2u, test_helper_->GetBookmarkButtonCount());
   EXPECT_TRUE(test_helper_->GetBookmarkButton(0)->GetVisible());
   EXPECT_TRUE(test_helper_->GetBookmarkButton(1)->GetVisible());
 
@@ -394,7 +394,7 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   bookmarks::test::AddNodesFromModelString(model, model->bookmark_bar_node(),
                                            "a b");
   SizeUntilButtonsVisible(1);
-  ASSERT_EQ(1, test_helper_->GetBookmarkButtonCount());
+  ASSERT_EQ(1u, test_helper_->GetBookmarkButtonCount());
 
   views::LabelButton* button = test_helper_->GetBookmarkButton(0);
   ASSERT_TRUE(button);

@@ -253,22 +253,12 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // calculating the preferred height.
   void Init();
 
-  // NOTE: unless otherwise stated all methods that take an int for an index are
-  // in terms of the bookmark bar view. Typically the view index and model index
-  // are the same, but they may differ during animations or drag and drop.
+  // NOTE: unless otherwise stated all methods that take an index are in terms
+  // of the bookmark bar view. Typically the view index and model index are the
+  // same, but they may differ during animations or drag and drop.
   //
   // It's easy to get the mapping wrong. For this reason all these methods are
   // private.
-
-  // Returns the number of bookmark bar url/folder buttons that have been
-  // created. This does not necessarily represent the number of bookmark bar
-  // nodes, nor the number of visible bookmark bar buttons. Buttons are created
-  // lazily to fill available space, and may be hidden for ordering or sizing
-  // changes.
-  int GetBookmarkButtonCount() const;
-
-  // Returns the button at the specified index.
-  views::LabelButton* GetBookmarkButton(int index);
 
   // Returns BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR or
   // BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR based on detached node_data.
@@ -328,6 +318,10 @@ class BookmarkBarView : public views::AccessiblePaneView,
   void CalculateDropLocation(const ui::DropTargetEvent& event,
                              const bookmarks::BookmarkNodeData& data,
                              DropLocation* location);
+
+  // Returns the node corresponding to |sender|, which is one of the
+  // |bookmark_buttons_|.
+  const bookmarks::BookmarkNode* GetNodeForSender(View* sender) const;
 
   // Writes a BookmarkNodeData for node to data.
   void WriteBookmarkDragData(const bookmarks::BookmarkNode* node,
