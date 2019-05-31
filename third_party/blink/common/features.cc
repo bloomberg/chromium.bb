@@ -272,7 +272,7 @@ const base::Feature kAudioWorkletRealtimeThread{
 
 // Use scroll gestures for scrollbar scrolls (see https://crbug.com/954007).
 const base::Feature kScrollbarInjectScrollGestures{
-    "ScrollbarInjectScrollGestures", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ScrollbarInjectScrollGestures", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
   // Off-the-main-thread shared worker script fetch depends on PlzSharedWorker
