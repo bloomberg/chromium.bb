@@ -64,7 +64,7 @@ Polymer({
 
   /** @private */
   hideRipple_: function() {
-    this.getRipple().holdDown = false;
+    this.getRipple().clear();
   },
 
   /** @private */

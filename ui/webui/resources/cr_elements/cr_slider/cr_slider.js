@@ -138,17 +138,16 @@ cr_slider.SliderTick;
       },
 
       /** @private */
-      holdDown_: {
-        type: Boolean,
-        value: false,
-        observer: 'onHoldDownChanged_',
-        reflectToAttribute: true,
-      },
-
-      /** @private */
       label_: {
         type: String,
         value: '',
+      },
+
+      /** @private */
+      showLabel_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
       },
 
       /** @private */
@@ -184,8 +183,8 @@ cr_slider.SliderTick;
     ],
 
     listeners: {
-      focus: 'onFocus_',
-      blur: 'onBlur_',
+      blur: 'hideRipple_',
+      focus: 'showRipple_',
       keydown: 'onKeyDown_',
       keyup: 'onKeyUp_',
       pointerdown: 'onPointerDown_',
@@ -260,36 +259,25 @@ cr_slider.SliderTick;
       this.draggingEventTracker_.removeAll();
       this.releasePointerCapture(pointerId);
       this.dragging = false;
-      // If there is a ripple animation in progress, setTimeout will hold off
-      // on updating |holdDown_|.
-      setTimeout(() => {
-        this.holdDown_ = false;
-      });
+      this.hideRipple_();
     },
 
     /** @private */
-    onBlur_: function() {
-      this.holdDown_ = false;
+    hideRipple_: function() {
+      this.getRipple().clear();
+      this.showLabel_ = false;
+    },
+
+    /** @private */
+    showRipple_: function() {
+      this.getRipple().showAndHoldDown();
+      this.showLabel_ = true;
     },
 
     /** @private */
     onDisabledChanged_: function() {
       this.setAttribute('tabindex', this.disabled_ ? -1 : 0);
       this.blur();
-    },
-
-    /** @private */
-    onFocus_: function() {
-      this.holdDown_ = true;
-
-      if (this.shadowRoot.activeElement == this.$.knob) {
-        return;
-      }
-    },
-
-    /** @private */
-    onHoldDownChanged_: function() {
-      this.getRipple().holdDown = this.holdDown_;
     },
 
     /**
@@ -325,9 +313,7 @@ cr_slider.SliderTick;
       }
       event.preventDefault();
       event.stopPropagation();
-      setTimeout(() => {
-        this.holdDown_ = true;
-      });
+      this.showRipple_();
     },
 
     /**
@@ -358,12 +344,7 @@ cr_slider.SliderTick;
       this.dragging = true;
       this.transiting_ = true;
       this.updateValueFromClientX_(event.clientX);
-      // If there is a ripple animation in progress, setTimeout will hold off on
-      // updating |holdDown_|.
-      setTimeout(() => {
-        this.$.knob.focus();
-        this.holdDown_ = true;
-      });
+      this.showRipple_();
 
       this.setPointerCapture(event.pointerId);
       const stopDragging = this.stopDragging_.bind(this, event.pointerId);

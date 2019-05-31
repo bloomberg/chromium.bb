@@ -38,12 +38,12 @@ Polymer({
   },
 
   listeners: {
-    'pointerdown': 'onPointerDown_',
-    'pointerup': 'onPointerUp_',
-    'click': 'onTap_',
-    'keypress': 'onKeyPress_',
-    'focus': 'onFocus_',
-    'blur': 'onBlur_',
+    blur: 'hideRipple_',
+    click: 'onClick_',
+    focus: 'onFocus_',
+    keypress: 'onKeyPress_',
+    pointerdown: 'onPointerDown_',
+    pointerup: 'onPointerUp_',
   },
 
   /** @private {?Function} */
@@ -101,19 +101,18 @@ Polymer({
 
   /** @private */
   onFocus_: function() {
-    this.ensureRipple();
-    this.$$('paper-ripple').holdDown = true;
+    this.getRipple().showAndHoldDown();
   },
 
   /** @private */
-  onBlur_: function() {
-    this.ensureRipple();
-    this.$$('paper-ripple').holdDown = false;
+  hideRipple_: function() {
+    this.getRipple().clear();
   },
 
   /** @private */
-  onPointerUp_: function(e) {
+  onPointerUp_: function() {
     this.removeEventListener('pointermove', this.boundPointerMove_);
+    this.hideRipple_();
   },
 
   /**
@@ -134,8 +133,11 @@ Polymer({
     this.addEventListener('pointermove', this.boundPointerMove_);
   },
 
-  /** @private */
-  onTap_: function(e) {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onClick_: function(e) {
     // Prevent |click| event from bubbling. It can cause parents of this
     // elements to erroneously re-toggle this control.
     e.stopPropagation();
@@ -166,8 +168,7 @@ Polymer({
     this.checked = !this.checked;
 
     if (!fromKeyboard) {
-      this.ensureRipple();
-      this.$$('paper-ripple').holdDown = false;
+      this.hideRipple_();
     }
 
     this.fire('change', this.checked);
