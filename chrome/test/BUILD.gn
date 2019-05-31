@@ -44,6 +44,10 @@ if (is_android) {
   include_js_tests = !(is_asan || is_msan || is_tsan)
 }
 
+if (is_chromeos) {
+  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
+}
+
 # This target exists to reference other test executables to bring these files
 # into the build.
 group("test") {
@@ -2109,9 +2113,9 @@ if (!is_android) {
         sources +=
             [ "../browser/ui/ash/assistant/assistant_context_browsertest.cc" ]
       }
-      if (is_chrome_branded) {
+      if (enable_kiosk_next) {
         sources += [
-          # The KioskNext app is available in Chrome-branded builds only.
+          "../browser/chromeos/kiosk_next_home/kiosk_next_home_browsertest.cc",
           "../browser/ui/ash/kiosk_next_shell_client_browsertest.cc",
         ]
       }
