@@ -96,8 +96,10 @@ class AppMenuHandlerImpl implements AppMenuHandler, StartStopWithNativeObserver,
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mActivityLifecycleDispatcher.register(this);
 
+        // TODO(twellington): Move overview mode/app menu logic to parent root UI coordinator (to
+        // control interaction between peer components)?
         mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
-        if (mOverviewModeBehavior != null) {
+        if (mOverviewModeBehaviorSupplier != null) {
             mOverviewModeSupplierCallback = overviewModeBehavior -> {
                 if (mOverviewModeBehavior != null) {
                     mOverviewModeBehavior.removeOverviewModeObserver(this);
@@ -305,7 +307,15 @@ class AppMenuHandlerImpl implements AppMenuHandler, StartStopWithNativeObserver,
     }
 
     @Override
-    public void onOverviewModeFinishedShowing() {}
+    public void onOverviewModeFinishedShowing() {
+        // Ideally we wouldn't allow the app menu to show while animating the overview mode. This is
+        // hard to track, however, because in some instances #onOverviewModeStartedShowing is called
+        // after #onOverviewModeFinishedShowing (see https://crbug.com/969047).
+        // Once that bug is fixed, we can remove this call to hide in favor of disallowing app
+        // menu shows during animation. Alternatively, we could expose a way to query whether an
+        // animation is in progress.
+        hideAppMenu();
+    }
 
     @Override
     public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
@@ -313,7 +323,9 @@ class AppMenuHandlerImpl implements AppMenuHandler, StartStopWithNativeObserver,
     }
 
     @Override
-    public void onOverviewModeFinishedHiding() {}
+    public void onOverviewModeFinishedHiding() {
+        hideAppMenu();
+    }
 
     @VisibleForTesting
     public void onOptionsItemSelected(MenuItem item) {
