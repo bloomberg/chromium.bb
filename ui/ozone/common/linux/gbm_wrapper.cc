@@ -175,16 +175,16 @@ class Buffer final : public ui::GbmBuffer {
     buffer->mmap_data_ = nullptr;
   }
 
-  gbm_bo* bo_ = nullptr;
+  gbm_bo* const bo_;
   void* mmap_data_ = nullptr;
 
-  uint32_t format_ = 0;
-  uint64_t format_modifier_ = 0;
-  uint32_t flags_ = 0;
+  const uint32_t format_;
+  const uint64_t format_modifier_;
+  const uint32_t flags_;
 
-  gfx::Size size_;
+  const gfx::Size size_;
 
-  gfx::NativePixmapHandle handle_;
+  const gfx::NativePixmapHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
@@ -304,7 +304,7 @@ class Device final : public ui::GbmDevice {
   }
 
  private:
-  gbm_device* device_;
+  gbm_device* const device_;
 
   DISALLOW_COPY_AND_ASSIGN(Device);
 };
