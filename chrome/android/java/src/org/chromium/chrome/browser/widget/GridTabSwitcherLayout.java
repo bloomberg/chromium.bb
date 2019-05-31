@@ -172,7 +172,8 @@ public class GridTabSwitcherLayout
     @Override
     public void onOverviewModeFinishedShowing() {
         doneShowing();
-        mTabContentManager.cacheTabThumbnail(mTabModelSelector.getCurrentTab());
+        Tab currentTab = mTabModelSelector.getCurrentTab();
+        if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
     }
 
     @Override
