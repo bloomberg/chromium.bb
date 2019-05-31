@@ -464,17 +464,19 @@ void ArcAppReinstallSearchProvider::SetTimerForTesting(
   app_fetch_timer_ = std::move(timer);
 }
 
-void ArcAppReinstallSearchProvider::OnOpened(const std::string& id) {
-  UpdateStateTime(profile_, id, kOpenTime);
+void ArcAppReinstallSearchProvider::OnOpened(const std::string& package_name) {
+  UpdateStateTime(profile_, package_name, kOpenTime);
   int64_t impression_count;
-  if (GetStateInt64(profile_, id, kImpressionCount, &impression_count)) {
+  if (GetStateInt64(profile_, package_name, kImpressionCount,
+                    &impression_count)) {
     UMA_HISTOGRAM_COUNTS_100(kAppListImpressionsBeforeOpen, impression_count);
   }
   UpdateResults();
 }
 
-void ArcAppReinstallSearchProvider::OnVisibilityChanged(const std::string& id,
-                                                        bool visibility) {
+void ArcAppReinstallSearchProvider::OnVisibilityChanged(
+    const std::string& package_name,
+    bool visibility) {
   if (!visibility) {
     // do not update state when showing, update when we hide.
     return;
@@ -485,17 +487,21 @@ void ArcAppReinstallSearchProvider::OnVisibilityChanged(const std::string& id,
   const base::TimeDelta now = base::Time::Now().ToDeltaSinceWindowsEpoch();
   base::TimeDelta latest_impression;
   int64_t impression_count;
-  if (!GetStateInt64(profile_, id, kImpressionCount, &impression_count)) {
+  if (!GetStateInt64(profile_, package_name, kImpressionCount,
+                     &impression_count)) {
     impression_count = 0;
   }
   // Get impression count and time. If neither is set, set them.
   // If they're set, update if appropriate.
-  if (!GetStateTime(profile_, id, kImpressionTime, &latest_impression) ||
+  if (!GetStateTime(profile_, package_name, kImpressionTime,
+                    &latest_impression) ||
       impression_count == 0 ||
       (now - latest_impression >
        base::TimeDelta::FromSeconds(kNewImpressionTime.Get()))) {
-    UpdateStateTime(profile_, id, kImpressionTime);
-    SetStateInt64(profile_, id, kImpressionCount, impression_count + 1);
+    UpdateStateTime(profile_, package_name, kImpressionTime);
+    SetStateInt64(profile_, package_name, kImpressionCount,
+                  impression_count + 1);
+    UpdateResults();
   }
 }
 

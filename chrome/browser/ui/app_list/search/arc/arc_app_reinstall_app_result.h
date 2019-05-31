@@ -22,8 +22,8 @@ class ArcAppReinstallAppResult : public ChromeSearchResult {
  public:
   class Observer {
    public:
-    virtual void OnOpened(const std::string& package_id) = 0;
-    virtual void OnVisibilityChanged(const std::string& package_id,
+    virtual void OnOpened(const std::string& package_name) = 0;
+    virtual void OnVisibilityChanged(const std::string& package_name,
                                      bool visibility) = 0;
 
    protected:
@@ -44,7 +44,7 @@ class ArcAppReinstallAppResult : public ChromeSearchResult {
  private:
   // Observer passed in constructor. not owned.
   Observer* const observer_;
-
+  const std::string package_name_;
   DISALLOW_COPY_AND_ASSIGN(ArcAppReinstallAppResult);
 };
 
