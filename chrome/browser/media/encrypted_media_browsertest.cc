@@ -786,10 +786,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-// Test CDM_9 through CDM_11.
-static_assert(media::CheckSupportedCdmInterfaceVersions(9, 11),
+// Test CDM_10 through CDM_11.
+static_assert(media::CheckSupportedCdmInterfaceVersions(10, 11),
               "Mismatch between implementation and test coverage");
-INSTANTIATE_TEST_SUITE_P(CDM_9, ECKEncryptedMediaTest, Values(9));
 INSTANTIATE_TEST_SUITE_P(CDM_10, ECKEncryptedMediaTest, Values(10));
 INSTANTIATE_TEST_SUITE_P(CDM_11, ECKEncryptedMediaTest, Values(11));
 
@@ -839,9 +838,9 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MessageTypeTest) {
       "document.querySelector('video').receivedMessageTypes.size);",
       &num_received_message_types));
 
-  // CDM_9: expects 2 message types 'license-request' and 'license-renewal'.
-  // CDM_10 and above: one more message type 'individualization-request'.
-  EXPECT_EQ(GetCdmInterfaceVersion() == 9 ? 2 : 3, num_received_message_types);
+  // Expects 3 message types: 'license-request', 'license-renewal' and
+  // 'individualization-request'.
+  EXPECT_EQ(3, num_received_message_types);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadLoadableSession) {

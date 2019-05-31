@@ -122,7 +122,7 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
     return nullptr;
 
   static_assert(
-      CheckSupportedCdmHostVersions(cdm::Host_9::kVersion,
+      CheckSupportedCdmHostVersions(cdm::Host_10::kVersion,
                                     cdm::Host_11::kVersion),
       "Mismatch between GetCdmHost() and IsSupportedCdmHostVersion()");
 
@@ -131,8 +131,6 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
   DVLOG(1) << "Create CDM Host with version " << host_interface_version;
   switch (host_interface_version) {
-    case cdm::Host_9::kVersion:
-      return static_cast<cdm::Host_9*>(cdm_adapter);
     case cdm::Host_10::kVersion:
       return static_cast<cdm::Host_10*>(cdm_adapter);
     case cdm::Host_11::kVersion:
@@ -711,6 +709,22 @@ cdm::Time CdmAdapter::GetCurrentWallTime() {
   return base::Time::Now().ToDoubleT();
 }
 
+void CdmAdapter::OnInitialized(bool success) {
+  DVLOG(3) << __func__ << ": success = " << success;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(init_promise_id_, CdmPromiseAdapter::kInvalidPromiseId);
+
+  if (!success) {
+    cdm_promise_adapter_.RejectPromise(
+        init_promise_id_, CdmPromise::Exception::INVALID_STATE_ERROR, 0,
+        "Unable to create CDM.");
+  } else {
+    cdm_promise_adapter_.ResolvePromise(init_promise_id_);
+  }
+
+  init_promise_id_ = CdmPromiseAdapter::kInvalidPromiseId;
+}
+
 void CdmAdapter::OnResolveKeyStatusPromise(uint32_t promise_id,
                                            cdm::KeyStatus key_status) {
   DVLOG(2) << __func__ << ": promise_id = " << promise_id
@@ -1036,22 +1050,6 @@ void CdmAdapter::RequestStorageId(uint32_t version) {
 
   helper_->GetStorageId(version, base::Bind(&CdmAdapter::OnStorageIdObtained,
                                             weak_factory_.GetWeakPtr()));
-}
-
-void CdmAdapter::OnInitialized(bool success) {
-  DVLOG(3) << __func__ << ": success = " << success;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(init_promise_id_, CdmPromiseAdapter::kInvalidPromiseId);
-
-  if (!success) {
-    cdm_promise_adapter_.RejectPromise(
-        init_promise_id_, CdmPromise::Exception::INVALID_STATE_ERROR, 0,
-        "Unable to create CDM.");
-  } else {
-    cdm_promise_adapter_.ResolvePromise(init_promise_id_);
-  }
-
-  init_promise_id_ = CdmPromiseAdapter::kInvalidPromiseId;
 }
 
 cdm::CdmProxy* CdmAdapter::RequestCdmProxy(cdm::CdmProxyClient* client) {
