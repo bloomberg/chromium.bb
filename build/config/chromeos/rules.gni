@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chrome_build.gni")
-
 assert(is_chromeos)
 
 declare_args() {
@@ -206,14 +204,8 @@ template("tast_test") {
 
   # Default the expression to match any chrome-related test.
   if (!defined(tast_attr_expr) && !defined(tast_tests)) {
-    # The following expression filters out all non-critical tests. See the link
-    # below for more details:
-    # https://chromium.googlesource.com/chromiumos/platform/tast/+/master/docs/test_attributes.md
     tast_attr_expr =
-        "!disabled && !\"group:*\" && !informational && \"dep:chrome\""
-    if (!is_chrome_branded) {
-      tast_attr_expr += " && \"!dep:chrome_internal\""
-    }
+        "!disabled && !\"group:*\" && !informational" + " && (\"dep:chrome\")"
   } else {
     assert(defined(tast_attr_expr) != defined(tast_tests),
            "Specify one of tast_tests or tast_attr_expr.")
