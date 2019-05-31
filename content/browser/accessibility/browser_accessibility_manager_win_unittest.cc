@@ -82,4 +82,61 @@ TEST_F(BrowserAccessibilityManagerWinTest, DynamicallyAddedIFrame) {
             root_document_root_node->GetNativeViewAccessible());
 }
 
+TEST_F(BrowserAccessibilityManagerWinTest, ChildTree) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kEnableExperimentalUIAutomation);
+
+  ui::AXNodeData child_tree_root;
+  child_tree_root.id = 1;
+  child_tree_root.role = ax::mojom::Role::kRootWebArea;
+  ui::AXTreeUpdate child_tree_update = MakeAXTreeUpdate(child_tree_root);
+
+  ui::AXNodeData parent_tree_root;
+  parent_tree_root.id = 1;
+  parent_tree_root.role = ax::mojom::Role::kRootWebArea;
+  parent_tree_root.AddStringAttribute(
+      ax::mojom::StringAttribute::kChildTreeId,
+      child_tree_update.tree_data.tree_id.ToString());
+  ui::AXTreeUpdate parent_tree_update = MakeAXTreeUpdate(parent_tree_root);
+
+  child_tree_update.tree_data.parent_tree_id =
+      parent_tree_update.tree_data.tree_id;
+
+  test_browser_accessibility_delegate_->accelerated_widget_ =
+      gfx::kMockAcceleratedWidget;
+
+  std::unique_ptr<BrowserAccessibilityManager> parent_manager(
+      BrowserAccessibilityManager::Create(
+          parent_tree_update, test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+
+  ui::AXPlatformNode* root_document_root_node =
+      ui::AXPlatformNode::FromNativeViewAccessible(
+          parent_manager->GetRoot()->GetNativeViewAccessible());
+
+  std::unique_ptr<ui::AXPlatformNodeDelegate> fragment_root =
+      std::make_unique<ui::AXFragmentRootWin>(
+          gfx::kMockAcceleratedWidget,
+          static_cast<ui::AXPlatformNodeWin*>(root_document_root_node));
+
+  EXPECT_EQ(fragment_root->GetChildCount(), 1);
+  EXPECT_EQ(fragment_root->ChildAtIndex(0),
+            root_document_root_node->GetNativeViewAccessible());
+
+  // Add the child tree.
+  std::unique_ptr<TestBrowserAccessibilityDelegate> child_tree_delegate =
+      std::make_unique<TestBrowserAccessibilityDelegate>();
+  child_tree_delegate->is_root_frame_ = true;
+  child_tree_delegate->accelerated_widget_ = gfx::kMockAcceleratedWidget;
+  std::unique_ptr<BrowserAccessibilityManager> child_manager(
+      BrowserAccessibilityManager::Create(child_tree_update,
+                                          child_tree_delegate.get(),
+                                          new BrowserAccessibilityFactory()));
+
+  // The fragment root's lone child should still be the same as before.
+  EXPECT_EQ(fragment_root->GetChildCount(), 1);
+  EXPECT_EQ(fragment_root->ChildAtIndex(0),
+            root_document_root_node->GetNativeViewAccessible());
+}
+
 }  // namespace content
