@@ -100,7 +100,6 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
  public:
   GtkButtonImageSource(const char* idr_string, gfx::Size size)
       : width_(size.width()), height_(size.height()) {
-    is_blue_ = !!strstr(idr_string, "IDR_BLUE");
     focus_ = !!strstr(idr_string, "_FOCUSED_");
 
     if (strstr(idr_string, "_DISABLED")) {
@@ -129,9 +128,7 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
         width, height, width * 4);
     cairo_t* cr = cairo_create(surface);
 
-    ScopedStyleContext context = GetStyleContextFromCss(
-        is_blue_ ? "GtkButton#button.default.suggested-action"
-                 : "GtkButton#button");
+    ScopedStyleContext context = GetStyleContextFromCss("GtkButton#button");
     GtkStateFlags state_flags = StateToStateFlags(state_);
     if (focus_) {
       state_flags =
@@ -184,7 +181,6 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
   }
 
  private:
-  bool is_blue_;
   bool focus_;
   ui::NativeTheme::State state_;
   int width_;
