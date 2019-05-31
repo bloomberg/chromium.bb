@@ -3,8 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<resources
-  xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Q: Why put style resources under values-v17/ ?
          A: Problem:
             1. paddingStart causes a crash on Galaxy Tab&Note b/8351339.
@@ -949,11 +948,5 @@
         <item name="android:layout_width">@dimen/min_touch_target_size</item>
         <item name="android:layout_height">@dimen/omnibox_suggestion_edit_url_min_height</item>
         <item name="tint">@color/default_icon_color</item>
-    </style>
-    <style name="RoundedCornerImageViewDefault">
-      <item name="cornerRadiusTopStart">@dimen/default_rounded_corner_radius</item>
-      <item name="cornerRadiusTopEnd">@dimen/default_rounded_corner_radius</item>
-      <item name="cornerRadiusBottomStart">@dimen/default_rounded_corner_radius</item>
-      <item name="cornerRadiusBottomEnd">@dimen/default_rounded_corner_radius</item>
     </style>
 </resources>

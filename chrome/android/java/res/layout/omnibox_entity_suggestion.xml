@@ -20,15 +20,14 @@
         android:focusable="true"
         android:paddingVertical="10dp">
 
-    <org.chromium.ui.widget.RoundedCornerImageView
-            style="@style/RoundedCornerImageViewDefault"
+        <ImageView
             android:id="@+id/omnibox_entity_image"
             android:layout_width="@dimen/omnibox_suggestion_entity_icon_size"
             android:layout_height="@dimen/omnibox_suggestion_entity_icon_size"
             android:layout_centerVertical="true"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="@dimen/omnibox_suggestion_icon_margin_start"
-            android:contentDescription="@null"/>
+            android:contentDescription="@null" />
 
         <TextView
             android:id="@+id/omnibox_entity_subject_text"
