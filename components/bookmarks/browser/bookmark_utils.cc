@@ -477,11 +477,7 @@ const BookmarkNode* GetParentForNewNodes(
   if (index) {
     if (selection.size() == 1 && selection[0]->is_url()) {
       *index = real_parent->GetIndexOf(selection[0]) + 1;
-      if (*index == 0) {
-        // Node doesn't exist in parent, add to end.
-        NOTREACHED();
-        *index = real_parent->child_count();
-      }
+      DCHECK_NE(0, *index);
     } else {
       *index = real_parent->child_count();
     }

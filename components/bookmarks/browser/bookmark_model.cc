@@ -271,17 +271,12 @@ void BookmarkModel::RemoveAllUserBookmarks() {
 void BookmarkModel::Move(const BookmarkNode* node,
                          const BookmarkNode* new_parent,
                          int index) {
-  if (!loaded_ || !node || !IsValidIndex(new_parent, index, true) ||
-      is_root_node(new_parent) || is_permanent_node(node)) {
-    NOTREACHED();
-    return;
-  }
-
-  if (new_parent->HasAncestor(node)) {
-    // Can't make an ancestor of the node be a child of the node.
-    NOTREACHED();
-    return;
-  }
+  DCHECK(loaded_);
+  DCHECK(node);
+  DCHECK(IsValidIndex(new_parent, index, true));
+  DCHECK(!is_root_node(new_parent));
+  DCHECK(!is_permanent_node(node));
+  DCHECK(!new_parent->HasAncestor(node));
 
   const BookmarkNode* old_parent = node->parent();
   int old_index = old_parent->GetIndexOf(node);
@@ -313,17 +308,12 @@ void BookmarkModel::Move(const BookmarkNode* node,
 void BookmarkModel::Copy(const BookmarkNode* node,
                          const BookmarkNode* new_parent,
                          int index) {
-  if (!loaded_ || !node || !IsValidIndex(new_parent, index, true) ||
-      is_root_node(new_parent) || is_permanent_node(node)) {
-    NOTREACHED();
-    return;
-  }
-
-  if (new_parent->HasAncestor(node)) {
-    // Can't make an ancestor of the node be a child of the node.
-    NOTREACHED();
-    return;
-  }
+  DCHECK(loaded_);
+  DCHECK(node);
+  DCHECK(IsValidIndex(new_parent, index, true));
+  DCHECK(!is_root_node(new_parent));
+  DCHECK(!is_permanent_node(node));
+  DCHECK(!new_parent->HasAncestor(node));
 
   SetDateFolderModified(new_parent, Time::Now());
   BookmarkNodeData drag_data(node);
@@ -573,11 +563,9 @@ const BookmarkNode* BookmarkModel::AddFolderWithMetaInfo(
     int index,
     const base::string16& title,
     const BookmarkNode::MetaInfoMap* meta_info) {
-  if (!loaded_ || is_root_node(parent) || !IsValidIndex(parent, index, true)) {
-    // Can't add to the root.
-    NOTREACHED();
-    return nullptr;
-  }
+  DCHECK(loaded_);
+  DCHECK(!is_root_node(parent));
+  DCHECK(IsValidIndex(parent, index, true));
 
   std::unique_ptr<BookmarkNode> new_node =
       std::make_unique<BookmarkNode>(generate_next_node_id(), GURL());
@@ -606,11 +594,10 @@ const BookmarkNode* BookmarkModel::AddURLWithCreationTimeAndMetaInfo(
     const GURL& url,
     const Time& creation_time,
     const BookmarkNode::MetaInfoMap* meta_info) {
-  if (!loaded_ || !url.is_valid() || is_root_node(parent) ||
-      !IsValidIndex(parent, index, true)) {
-    NOTREACHED();
-    return nullptr;
-  }
+  DCHECK(loaded_);
+  DCHECK(url.is_valid());
+  DCHECK(!is_root_node(parent));
+  DCHECK(IsValidIndex(parent, index, true));
 
   // Syncing may result in dates newer than the last modified date.
   if (creation_time > parent->date_folder_modified())
