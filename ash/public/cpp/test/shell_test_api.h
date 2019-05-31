@@ -50,6 +50,8 @@ class ASH_EXPORT ShellTestApi {
   // Chrome starting.
   void ResetPowerButtonControllerForTest();
 
+  void ResetTabletModeController();
+
   // Simulates a modal dialog being open.
   void SimulateModalWindowOpenForTest(bool modal_window_open);
 

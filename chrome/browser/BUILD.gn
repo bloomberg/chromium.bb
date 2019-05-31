@@ -5438,8 +5438,6 @@ static_library("test_support") {
       "chromeos/policy/fake_device_cloud_policy_manager.h",
       "chromeos/settings/device_settings_test_helper.cc",
       "chromeos/settings/device_settings_test_helper.h",
-      "ui/ash/tablet_mode_client_test_util.cc",
-      "ui/ash/tablet_mode_client_test_util.h",
     ]
     configs += [ "//build/config/linux/dbus" ]
     deps += [ "//chromeos:test_support" ]

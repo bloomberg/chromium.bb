@@ -13,7 +13,7 @@
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/kiosk_next/kiosk_next_shell_observer.h"
-#include "ash/public/interfaces/tablet_mode.mojom.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
@@ -24,8 +24,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -65,7 +63,7 @@ class TabletModeWindowManager;
 class ASH_EXPORT TabletModeController
     : public AccelerometerReader::Observer,
       public chromeos::PowerManagerClient::Observer,
-      public mojom::TabletModeController,
+      public TabletMode,
       public ShellObserver,
       public WindowTreeHostManager::Observer,
       public SessionObserver,
@@ -107,9 +105,6 @@ class ASH_EXPORT TabletModeController
   // If the tablet mode is not enabled no action will be performed.
   void AddWindow(aura::Window* window);
 
-  // Binds the mojom::TabletModeController interface request to this object.
-  void BindRequest(mojom::TabletModeControllerRequest request);
-
   void AddObserver(TabletModeObserver* observer);
   void RemoveObserver(TabletModeObserver* observer);
 
@@ -119,15 +114,17 @@ class ASH_EXPORT TabletModeController
   // Whether the events from the internal mouse/keyboard are blocked.
   bool AreInternalInputDeviceEventsBlocked() const;
 
-  // Flushes the mojo message pipe to chrome.
-  void FlushForTesting();
-
   // If |record_lid_angle_timer_| is running, invokes its task and returns true.
   // Otherwise, returns false.
   bool TriggerRecordLidAngleTimerForTesting() WARN_UNUSED_RESULT;
 
   // Called from a WindowState object when the bounds of |window| changes.
   void MaybeObserveBoundsAnimation(aura::Window* window);
+
+  // TabletMode:
+  void SetTabletModeToggleObserver(TabletModeToggleObserver* observer) override;
+  bool IsEnabled() const override;
+  void SetEnabledForTest(bool enabled) override;
 
   // ShellObserver:
   void OnShellInitialized() override;
@@ -238,12 +235,6 @@ class ASH_EXPORT TabletModeController
   // otherwise returns TABLET_MODE_INTERNAL_INACTIVE.
   TabletModeIntervalType CurrentTabletModeIntervalType();
 
-  // mojom::TabletModeController:
-  void SetClient(mojom::TabletModeClientPtr client) override;
-  void SetTabletModeEnabledForTesting(
-      bool enabled,
-      SetTabletModeEnabledForTestingCallback callback) override;
-
   // Checks whether we want to allow change the current ui mode to tablet mode
   // or clamshell mode. This returns false if the user set a flag for the
   // software to behave in a certain way regardless of configuration.
@@ -351,11 +342,9 @@ class ASH_EXPORT TabletModeController
   gfx::Vector3dF base_smoothed_;
   gfx::Vector3dF lid_smoothed_;
 
-  // Binding for the TabletModeController interface.
-  mojo::Binding<mojom::TabletModeController> binding_;
-
-  // Client interface (e.g. in chrome).
-  mojom::TabletModeClientPtr client_;
+  // A simplified observer that only gets notified of entering or exiting tablet
+  // mode.
+  TabletModeToggleObserver* toggle_observer_ = nullptr;
 
   // Tracks whether a flag is used to force ui mode.
   UiMode force_ui_mode_ = UiMode::kNone;
@@ -365,7 +354,7 @@ class ASH_EXPORT TabletModeController
   // Calls RecordLidAngle() periodically.
   base::RepeatingTimer record_lid_angle_timer_;
 
-  ScopedSessionObserver scoped_session_observer_;
+  ScopedSessionObserver scoped_session_observer_{this};
 
   std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>
       occlusion_tracker_pauser_;
@@ -385,7 +374,7 @@ class ASH_EXPORT TabletModeController
 
   base::ObserverList<TabletModeObserver>::Unchecked tablet_mode_observers_;
 
-  base::WeakPtrFactory<TabletModeController> weak_factory_;
+  base::WeakPtrFactory<TabletModeController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeController);
 };

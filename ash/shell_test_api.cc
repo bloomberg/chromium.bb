@@ -171,6 +171,13 @@ void ShellTestApi::ResetPowerButtonControllerForTest() {
       shell_->backlights_forced_off_setter_.get());
 }
 
+void ShellTestApi::ResetTabletModeController() {
+  // Delete the old controller before constructing the new one to avoid
+  // coexistence of two instances of what should be a singleton.
+  shell_->tablet_mode_controller_.reset();
+  shell_->tablet_mode_controller_ = std::make_unique<TabletModeController>();
+}
+
 void ShellTestApi::SimulateModalWindowOpenForTest(bool modal_window_open) {
   shell_->simulate_modal_window_open_for_test_ = modal_window_open;
 }

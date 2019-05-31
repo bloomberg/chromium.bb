@@ -47,7 +47,6 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/chrome_features.h"
@@ -2185,7 +2184,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "enableTabletMode") {
-    ::test::SetAndWaitForTabletMode(true);
+    ash::ShellTestApi().EnableTabletModeWindowManager(true);
     *output = "tabletModeEnabled";
     return;
   }

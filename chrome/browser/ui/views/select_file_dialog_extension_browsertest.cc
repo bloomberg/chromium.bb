@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -372,7 +371,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest,
   ASSERT_NE(nullptr, owning_window);
 
   // Setup tablet mode.
-  test::SetAndWaitForTabletMode(true);
+  ash::ShellTestApi().EnableTabletModeWindowManager(true);
 
   // Open the file dialog on the default path.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
@@ -459,7 +458,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest,
   ASSERT_NE(nullptr, owning_window);
 
   // Setup tablet mode.
-  test::SetAndWaitForTabletMode(true);
+  ash::ShellTestApi().EnableTabletModeWindowManager(true);
 
   // Enable the virtual keyboard.
   ash::ShellTestApi().EnableVirtualKeyboard();

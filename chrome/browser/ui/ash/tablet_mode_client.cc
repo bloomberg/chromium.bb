@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
@@ -21,7 +20,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -29,46 +27,26 @@ TabletModeClient* g_tablet_mode_client_instance = nullptr;
 
 }  // namespace
 
-TabletModeClient::TabletModeClient() : binding_(this) {
+TabletModeClient::TabletModeClient() {
   DCHECK(!g_tablet_mode_client_instance);
   g_tablet_mode_client_instance = this;
-  if (features::IsMultiProcessMash()) {
-    ash::TabletMode::SetCallback(base::BindRepeating(
-        &TabletModeClient::tablet_mode_enabled, base::Unretained(this)));
-  }
 }
 
 TabletModeClient::~TabletModeClient() {
   DCHECK_EQ(this, g_tablet_mode_client_instance);
   g_tablet_mode_client_instance = nullptr;
-  if (features::IsMultiProcessMash())
-    ash::TabletMode::SetCallback({});
+  // The Ash Shell and TabletMode instance should have been destroyed by now.
+  DCHECK(!ash::TabletMode::Get());
 }
 
 void TabletModeClient::Init() {
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &tablet_mode_controller_);
-  BindAndSetClient();
-}
-
-void TabletModeClient::InitForTesting(
-    ash::mojom::TabletModeControllerPtr controller) {
-  tablet_mode_controller_ = std::move(controller);
-  BindAndSetClient();
+  ash::TabletMode::Get()->SetTabletModeToggleObserver(this);
+  OnTabletModeToggled(ash::TabletMode::Get()->IsEnabled());
 }
 
 // static
 TabletModeClient* TabletModeClient::Get() {
   return g_tablet_mode_client_instance;
-}
-
-void TabletModeClient::SetTabletModeEnabledForTesting(
-    bool enabled,
-    ash::mojom::TabletModeController::SetTabletModeEnabledForTestingCallback
-        callback) {
-  tablet_mode_controller_->SetTabletModeEnabledForTesting(enabled,
-                                                          std::move(callback));
 }
 
 void TabletModeClient::AddObserver(TabletModeClientObserver* observer) {
@@ -110,16 +88,6 @@ void TabletModeClient::OnTabStripModelChanged(
   // in tabs and packaged apps.
   for (const auto& contents : change.GetInsert()->contents)
     contents.contents->NotifyPreferencesChanged();
-}
-
-void TabletModeClient::FlushForTesting() {
-  tablet_mode_controller_.FlushForTesting();
-}
-
-void TabletModeClient::BindAndSetClient() {
-  ash::mojom::TabletModeClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  tablet_mode_controller_->SetClient(std::move(client));
 }
 
 void TabletModeClient::SetMobileLikeBehaviorEnabled(bool enabled) {

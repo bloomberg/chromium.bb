@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shelf_item.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
@@ -1586,17 +1587,9 @@ AutotestPrivateSetTabletModeEnabledFunction::Run() {
   std::unique_ptr<api::autotest_private::SetTabletModeEnabled::Params> params(
       api::autotest_private::SetTabletModeEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  TabletModeClient::Get()->SetTabletModeEnabledForTesting(
-      params->enabled,
-      base::BindOnce(
-          &AutotestPrivateSetTabletModeEnabledFunction::OnSetTabletModeEnabled,
-          this));
-  return RespondLater();
-}
-
-void AutotestPrivateSetTabletModeEnabledFunction::OnSetTabletModeEnabled(
-    bool enabled) {
-  Respond(OneArgument(std::make_unique<base::Value>(enabled)));
+  ash::TabletMode::Get()->SetEnabledForTest(params->enabled);
+  return RespondNow(OneArgument(
+      std::make_unique<base::Value>(ash::TabletMode::Get()->IsEnabled())));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

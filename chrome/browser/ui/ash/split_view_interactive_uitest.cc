@@ -11,7 +11,6 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -118,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(SplitViewTest, SplitViewResize) {
     run_loop.Run();
   }
 
-  test::SetAndWaitForTabletMode(true);
+  ash::ShellTestApi().EnableTabletModeWindowManager(true);
 
   views::Widget* browser_widget =
       BrowserView::GetBrowserViewForBrowser(browser())->GetWidget();
