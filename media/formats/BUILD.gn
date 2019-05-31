@@ -188,11 +188,18 @@ static_library("test_support") {
     "//testing/gtest",
   ]
 
-  if (proprietary_codecs && enable_mse_mpeg2ts_stream_parser) {
+  if (proprietary_codecs) {
     sources += [
-      "mp2t/es_parser_test_base.cc",
-      "mp2t/es_parser_test_base.h",
+      "mp4/nalu_test_helper.cc",
+      "mp4/nalu_test_helper.h",
     ]
+
+    if (enable_mse_mpeg2ts_stream_parser) {
+      sources += [
+        "mp2t/es_parser_test_base.cc",
+        "mp2t/es_parser_test_base.h",
+      ]
+    }
   }
 }
 
@@ -251,6 +258,10 @@ source_set("unit_tests") {
 
     if (enable_dolby_vision_demuxing) {
       sources += [ "mp4/dolby_vision_unittest.cc" ]
+    }
+
+    if (enable_hevc_demuxing) {
+      sources += [ "mp4/hevc_unittest.cc" ]
     }
   }
 }

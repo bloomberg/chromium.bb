@@ -353,7 +353,7 @@ TEST_F(MP4StreamParserTest, AVC_KeyAndNonKeyframeness_Match_Container) {
 }
 
 TEST_F(MP4StreamParserTest, AVC_Keyframeness_Mismatches_Container) {
-  // The first AVC video frame's keyframe-ness metadata matches the MP4:
+  // The first AVC video frame's keyframe-ness metadata mismatches the MP4:
   // Frame 0: AVC IDR, trun.first_sample_flags: NOT sync sample, DEPENDS on
   //          others.
   // Frame 1: AVC Non-IDR, tfhd.default_sample_flags: not sync sample, depends
@@ -373,7 +373,7 @@ TEST_F(MP4StreamParserTest, AVC_Keyframeness_Mismatches_Container) {
 }
 
 TEST_F(MP4StreamParserTest, AVC_NonKeyframeness_Mismatches_Container) {
-  // The second AVC video frame's keyframe-ness metadata matches the MP4:
+  // The second AVC video frame's keyframe-ness metadata mismatches the MP4:
   // Frame 0: AVC IDR, trun.first_sample_flags: sync sample that doesn't
   //          depend on others.
   // Frame 1: AVC Non-IDR, tfhd.default_sample_flags: SYNC sample, DOES NOT
@@ -471,6 +471,65 @@ TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
   EXPECT_EQ(HEVCPROFILE_MAIN, video_decoder_config_.profile());
 #endif
 }
+
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+TEST_F(MP4StreamParserTest, HEVC_KeyAndNonKeyframeness_Match_Container) {
+  // Both HEVC video frames' keyframe-ness metadata matches the MP4:
+  // Frame 0: HEVC IDR, trun.first_sample_flags: sync sample that doesn't
+  //          depend on others.
+  // Frame 1: HEVC Non-IDR, tfhd.default_sample_flags: not sync sample, depends
+  //          on others.
+  // This is the base case; see also the "Mismatches" cases, below.
+  InSequence s;  // The EXPECT* sequence matters for this test.
+  auto params = GetDefaultInitParametersExpectations();
+  params.detected_audio_track_count = 0;
+  InitializeParserWithInitParametersExpectations(params);
+  verifying_keyframeness_sequence_ = true;
+  EXPECT_CALL(*this, ParsedKeyframe());
+  EXPECT_CALL(*this, ParsedNonKeyframe());
+  ParseMP4File("bear-320x240-v-2frames_frag-hevc.mp4", 256);
+}
+
+TEST_F(MP4StreamParserTest, HEVC_Keyframeness_Mismatches_Container) {
+  // The first HEVC video frame's keyframe-ness metadata mismatches the MP4:
+  // Frame 0: HEVC IDR, trun.first_sample_flags: NOT sync sample, DEPENDS on
+  //          others.
+  // Frame 1: HEVC Non-IDR, tfhd.default_sample_flags: not sync sample, depends
+  //          on others.
+  InSequence s;  // The EXPECT* sequence matters for this test.
+  auto params = GetDefaultInitParametersExpectations();
+  params.detected_audio_track_count = 0;
+  InitializeParserWithInitParametersExpectations(params);
+  verifying_keyframeness_sequence_ = true;
+  EXPECT_MEDIA_LOG(DebugLog(
+      "ISO-BMFF container metadata for video frame indicates that the frame is "
+      "not a keyframe, but the video frame contents indicate the opposite."));
+  EXPECT_CALL(*this, ParsedKeyframe());
+  EXPECT_CALL(*this, ParsedNonKeyframe());
+  ParseMP4File(
+      "bear-320x240-v-2frames-keyframe-is-non-sync-sample_frag-hevc.mp4", 256);
+}
+
+TEST_F(MP4StreamParserTest, HEVC_NonKeyframeness_Mismatches_Container) {
+  // The second HEVC video frame's keyframe-ness metadata mismatches the MP4:
+  // Frame 0: HEVC IDR, trun.first_sample_flags: sync sample that doesn't
+  //          depend on others.
+  // Frame 1: HEVC Non-IDR, tfhd.default_sample_flags: SYNC sample, DOES NOT
+  //          depend on others.
+  InSequence s;  // The EXPECT* sequence matters for this test.
+  auto params = GetDefaultInitParametersExpectations();
+  params.detected_audio_track_count = 0;
+  InitializeParserWithInitParametersExpectations(params);
+  verifying_keyframeness_sequence_ = true;
+  EXPECT_CALL(*this, ParsedKeyframe());
+  EXPECT_MEDIA_LOG(DebugLog(
+      "ISO-BMFF container metadata for video frame indicates that the frame is "
+      "a keyframe, but the video frame contents indicate the opposite."));
+  EXPECT_CALL(*this, ParsedNonKeyframe());
+  ParseMP4File(
+      "bear-320x240-v-2frames-nonkeyframe-is-sync-sample_frag-hevc.mp4", 256);
+}
+#endif
 
 // Sample encryption information is stored as CencSampleAuxiliaryDataFormat
 // (ISO/IEC 23001-7:2015 8) inside 'mdat' box. No SampleEncryption ('senc') box.

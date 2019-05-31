@@ -926,6 +926,25 @@ HEVC video stream in fragmented MP4 container, generated with
 ffmpeg -i bear-320x240.webm -c:v libx265 -an -movflags faststart+frag_keyframe bear-320x240-v_frag-hevc.mp4
 ```
 
+#### bear-320x240-v-2frames_frag-hevc.mp4
+HEVC video stream in fragmented MP4 container, including the first 2 frames, generated with
+```
+ffmpeg -i bear-320x240.webm -c:v libx265 -an -movflags frag_keyframe+empty_moov+default_base_moof \
+    -vframes 2  bear-320x240-v-2frames_frag-hevc.mp4
+```
+
+#### bear-320x240-v-2frames-keyframe-is-non-sync-sample_frag-hevc.mp4
+This is bear-320x240-v-2frames_frag-hevc.mp4, with manually updated
+trun.first_sample_flags: s/0x02000000/0x01010000 (first frame is
+non-sync-sample, depends on another frame, mismatches compressed h265 first
+frame's keyframe-ness).
+
+#### bear-320x240-v-2frames-nonkeyframe-is-sync-sample_frag-hevc.mp4
+This is bear-320x240-v-2frames_frag-hevc.mp4, with manually updated
+tfhd.default_sample_flags: s/0x01010000/0x02000000 (second frame is sync-sample,
+doesn't depend on other frames, mismatches compressed h265 second frame's
+nonkeyframe-ness).
+
 ### Multi-track MP4 file
 
 (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org
