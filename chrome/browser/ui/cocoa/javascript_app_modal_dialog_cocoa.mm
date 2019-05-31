@@ -18,6 +18,7 @@
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
 #include "components/remote_cocoa/app_shim/alert.h"
+#include "components/remote_cocoa/browser/application_host.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -25,7 +26,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/cocoa/bridge_factory_host.h"
 #include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 
 using remote_cocoa::mojom::AlertDisposition;
@@ -141,18 +141,18 @@ void JavaScriptAppModalDialogCocoa::ShowAppModalDialog() {
       base::BindOnce(&JavaScriptAppModalDialogCocoa::OnConnectionError,
                      weak_factory_.GetWeakPtr()));
   // If the alert is from a window that is out of process then use the
-  // views::BridgeFactoryHost for that window to create the alert. Otherwise
-  // create an AlertBridge in-process (but still communicate with it over
-  // mojo).
+  // remote_cocoa::ApplicationHost for that window to create the alert.
+  // Otherwise create an AlertBridge in-process (but still communicate with it
+  // over mojo).
   auto* bridged_native_widget_host =
       views::BridgedNativeWidgetHostImpl::GetFromNativeView(
           dialog_->web_contents()->GetNativeView());
-  views::BridgeFactoryHost* bridge_factory_host =
+  remote_cocoa::ApplicationHost* application_host =
       bridged_native_widget_host
-          ? bridged_native_widget_host->bridge_factory_host()
+          ? bridged_native_widget_host->application_host()
           : nullptr;
-  if (bridge_factory_host)
-    bridge_factory_host->GetFactory()->CreateAlert(std::move(bridge_request));
+  if (application_host)
+    application_host->GetApplication()->CreateAlert(std::move(bridge_request));
   else
     ignore_result(new remote_cocoa::AlertBridge(std::move(bridge_request)));
   alert_bridge_->Show(

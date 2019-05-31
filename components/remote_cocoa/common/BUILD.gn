@@ -9,7 +9,7 @@ mojom("mojo") {
 
   sources = [
     "alert.mojom",
-    "bridge_factory.mojom",
+    "application.mojom",
     "bridged_native_widget.mojom",
     "bridged_native_widget_host.mojom",
     "text_input_host.mojom",

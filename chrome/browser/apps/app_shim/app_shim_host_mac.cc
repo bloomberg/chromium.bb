@@ -11,11 +11,11 @@
 #include "base/logging.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
-#include "components/remote_cocoa/common/bridge_factory.mojom.h"
+#include "components/remote_cocoa/browser/application_host.h"
+#include "components/remote_cocoa/common/application.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/views/cocoa/bridge_factory_host.h"
 
 AppShimHost::AppShimHost(const std::string& app_id,
                          const base::FilePath& profile_path,
@@ -32,12 +32,12 @@ AppShimHost::AppShimHost(const std::string& app_id,
   if (uses_remote_views_) {
     // Create the interface that will be used by views::NativeWidgetMac to
     // create NSWindows hosted in the app shim process.
-    remote_cocoa::mojom::BridgeFactoryAssociatedRequest
-        views_bridge_factory_request;
-    views_bridge_factory_host_ = std::make_unique<views::BridgeFactoryHost>(
-        &views_bridge_factory_request);
-    app_shim_->CreateViewsBridgeFactory(
-        std::move(views_bridge_factory_request));
+    remote_cocoa::mojom::ApplicationAssociatedRequest views_application_request;
+    remote_cocoa_application_host_ =
+        std::make_unique<remote_cocoa::ApplicationHost>(
+            &views_application_request);
+    app_shim_->CreateRemoteCocoaApplication(
+        std::move(views_application_request));
   }
 }
 
@@ -211,8 +211,9 @@ std::string AppShimHost::GetAppId() const {
   return app_id_;
 }
 
-views::BridgeFactoryHost* AppShimHost::GetViewsBridgeFactoryHost() const {
-  return views_bridge_factory_host_.get();
+remote_cocoa::ApplicationHost* AppShimHost::GetRemoteCocoaApplicationHost()
+    const {
+  return remote_cocoa_application_host_.get();
 }
 
 chrome::mojom::AppShim* AppShimHost::GetAppShim() const {

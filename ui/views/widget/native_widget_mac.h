@@ -17,6 +17,7 @@ class NativeWidgetMacNSWindow;
 #endif
 
 namespace remote_cocoa {
+class ApplicationHost;
 namespace mojom {
 class BridgedNativeWidget;
 class CreateWindowParams;
@@ -31,7 +32,6 @@ class MockNativeWidgetMac;
 class WidgetTest;
 }
 
-class BridgeFactoryHost;
 class BridgedNativeWidgetImpl;
 class BridgedNativeWidgetHostImpl;
 
@@ -199,7 +199,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // Return the BridgeFactoryHost that is to be used for creating this window
   // and all of its child windows. This will return nullptr if the native
   // windows are to be created in the current process.
-  virtual BridgeFactoryHost* GetBridgeFactoryHost();
+  virtual remote_cocoa::ApplicationHost* GetRemoteCocoaApplicationHost();
 
   // Called after the window has been initialized. Allows subclasses to perform
   // additional initialization.

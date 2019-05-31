@@ -15,7 +15,7 @@
 #import "base/message_loop/message_pump_mac.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
-#include "components/remote_cocoa/common/bridge_factory.mojom.h"
+#include "components/remote_cocoa/common/application.mojom.h"
 #include "content/app_shim_remote_cocoa/web_contents_ns_view_bridge.h"
 #import "content/app_shim_remote_cocoa/web_contents_view_cocoa.h"
 #include "content/browser/download/drag_download_file.h"

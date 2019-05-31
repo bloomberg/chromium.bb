@@ -32,7 +32,7 @@
 
 namespace remote_cocoa {
 namespace mojom {
-class BridgeFactory;
+class Application;
 }  // namespace mojom
 }  // namespace remote_cocoa
 
@@ -462,7 +462,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // the other end of |remote_cocoa_application|, and make it a child view of
   // the NSView referred to by |parent_ns_view_id|.
   void MigrateNSViewBridge(
-      remote_cocoa::mojom::BridgeFactory* remote_cocoa_application,
+      remote_cocoa::mojom::Application* remote_cocoa_application,
       uint64_t parent_ns_view_id);
 
   // Specify a ui::Layer into which the renderer's content should be

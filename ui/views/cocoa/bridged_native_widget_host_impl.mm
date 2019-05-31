@@ -306,10 +306,10 @@ BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(NativeWidgetMac* owner)
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   DCHECK(children_.empty());
-  if (bridge_factory_host_) {
+  if (application_host_) {
     bridge_ptr_.reset();
-    bridge_factory_host_->RemoveObserver(this);
-    bridge_factory_host_ = nullptr;
+    application_host_->RemoveObserver(this);
+    application_host_ = nullptr;
   }
 
   // Workaround for https://crbug.com/915572
@@ -372,11 +372,11 @@ void BridgedNativeWidgetHostImpl::CreateLocalBridge(
 }
 
 void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
-    BridgeFactoryHost* bridge_factory_host,
+    remote_cocoa::ApplicationHost* application_host,
     remote_cocoa::mojom::CreateWindowParamsPtr window_create_params) {
   accessibility_focus_overrider_.SetAppIsRemote(true);
-  bridge_factory_host_ = bridge_factory_host;
-  bridge_factory_host_->AddObserver(this);
+  application_host_ = application_host;
+  application_host_->AddObserver(this);
 
   // Create a local invisible window that will be used as the gfx::NativeWindow
   // handle to track this window in this process.
@@ -399,7 +399,7 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
                           ui::WindowResizeHelperMac::Get()->task_runner());
   remote_cocoa::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
   text_input_host_->BindRequest(mojo::MakeRequest(&text_input_host_ptr));
-  bridge_factory_host_->GetFactory()->CreateBridgedNativeWidget(
+  application_host_->GetApplication()->CreateBridgedNativeWidget(
       widget_id_, mojo::MakeRequest(&bridge_ptr_), host_ptr.PassInterface(),
       text_input_host_ptr.PassInterface());
 
@@ -681,9 +681,9 @@ void BridgedNativeWidgetHostImpl::SetParent(
   // same process that we were already hosted by. If this is not the case, just
   // close the Widget.
   // https://crbug.com/957927
-  BridgeFactoryHost* new_bridge_factory_host =
-      new_parent ? new_parent->bridge_factory_host() : bridge_factory_host_;
-  if (new_bridge_factory_host != bridge_factory_host_) {
+  remote_cocoa::ApplicationHost* new_application_host =
+      new_parent ? new_parent->application_host() : application_host_;
+  if (new_application_host != application_host_) {
     DLOG(ERROR) << "Cannot migrate views::NativeWidget to another process, "
                    "closing it instead.";
     bridge()->CloseWindow();
@@ -777,12 +777,12 @@ ui::TextInputClient* BridgedNativeWidgetHostImpl::GetTextInputClient() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BridgedNativeWidgetHostImpl, BridgeFactoryHost::Observer:
-void BridgedNativeWidgetHostImpl::OnBridgeFactoryHostDestroying(
-    BridgeFactoryHost* host) {
-  DCHECK_EQ(host, bridge_factory_host_);
-  bridge_factory_host_->RemoveObserver(this);
-  bridge_factory_host_ = nullptr;
+// BridgedNativeWidgetHostImpl, remote_cocoa::ApplicationHost::Observer:
+void BridgedNativeWidgetHostImpl::OnApplicationHostDestroying(
+    remote_cocoa::ApplicationHost* host) {
+  DCHECK_EQ(host, application_host_);
+  application_host_->RemoveObserver(this);
+  application_host_ = nullptr;
 
   // Because the process hosting this window has ended, close the window by
   // sending the window close messages that the bridge would have sent.
@@ -792,7 +792,7 @@ void BridgedNativeWidgetHostImpl::OnBridgeFactoryHostDestroying(
   // tear-down assumptions). This would have been done by the bridge, had it
   // shut down cleanly.
   while (!children_.empty())
-    children_.front()->OnBridgeFactoryHostDestroying(host);
+    children_.front()->OnApplicationHostDestroying(host);
   OnWindowHasClosed();
 }
 

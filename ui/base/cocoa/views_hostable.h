@@ -13,7 +13,7 @@
 
 namespace remote_cocoa {
 namespace mojom {
-class BridgeFactory;
+class Application;
 }  // namespace mojom
 }  // namespace remote_cocoa
 
@@ -36,7 +36,7 @@ class ViewsHostableView {
     // Return the mojo interface to the application in a remote process in which
     // the host NSView exists. Used to migrate the content::WebContentsView and
     // content::RenderWidgetHostView to that process.
-    virtual remote_cocoa::mojom::BridgeFactory* GetRemoteCocoaApplication()
+    virtual remote_cocoa::mojom::Application* GetRemoteCocoaApplication()
         const = 0;
 
     // The id for the views::View's NSView. Used to add the

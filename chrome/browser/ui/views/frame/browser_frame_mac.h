@@ -62,7 +62,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
       remote_cocoa::mojom::CreateWindowParams* params) override;
   NativeWidgetMacNSWindow* CreateNSWindow(
       const remote_cocoa::mojom::CreateWindowParams* params) override;
-  views::BridgeFactoryHost* GetBridgeFactoryHost() override;
+  remote_cocoa::ApplicationHost* GetRemoteCocoaApplicationHost() override;
   void OnWindowInitialized() override;
   void OnWindowDestroying(gfx::NativeWindow window) override;
 

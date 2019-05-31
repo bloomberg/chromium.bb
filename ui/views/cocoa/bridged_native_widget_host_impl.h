@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
+#include "components/remote_cocoa/browser/application_host.h"
 #include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -20,7 +21,6 @@
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
-#include "ui/views/cocoa/bridge_factory_host.h"
 #include "ui/views/cocoa/drag_drop_client_mac.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
@@ -46,7 +46,7 @@ class TextInputHost;
 // APIs, and which may live in an app shim process.
 class VIEWS_EXPORT BridgedNativeWidgetHostImpl
     : public remote_cocoa::BridgedNativeWidgetHostHelper,
-      public BridgeFactoryHost::Observer,
+      public remote_cocoa::ApplicationHost::Observer,
       public remote_cocoa::mojom::BridgedNativeWidgetHost,
       public DialogObserver,
       public FocusChangeListener,
@@ -84,8 +84,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // The bridge factory that was used to create the true NSWindow for this
   // widget. This is nullptr for in-process windows.
-  BridgeFactoryHost* bridge_factory_host() const {
-    return bridge_factory_host_;
+  remote_cocoa::ApplicationHost* application_host() const {
+    return application_host_;
   }
 
   TextInputHost* text_input_host() const { return text_input_host_.get(); }
@@ -121,7 +121,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // Create and set the bridge object to be potentially in another process.
   void CreateRemoteBridge(
-      BridgeFactoryHost* bridge_factory_host,
+      remote_cocoa::ApplicationHost* application_host,
       remote_cocoa::mojom::CreateWindowParamsPtr window_create_params);
 
   void InitWindow(const Widget::InitParams& params);
@@ -236,8 +236,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   remote_cocoa::DragDropClient* GetDragDropClient() override;
   ui::TextInputClient* GetTextInputClient() override;
 
-  // BridgeFactoryHost::Observer:
-  void OnBridgeFactoryHostDestroying(BridgeFactoryHost* host) override;
+  // remote_cocoa::ApplicationHost::Observer:
+  void OnApplicationHostDestroying(
+      remote_cocoa::ApplicationHost* host) override;
 
   // remote_cocoa::mojom::BridgedNativeWidgetHost:
   void OnVisibilityChanged(bool visible) override;
@@ -380,8 +381,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   std::vector<BridgedNativeWidgetHostImpl*> children_;
 
   // The factory that was used to create |bridge_ptr_|. This must be the same
-  // as |parent_->bridge_factory_host_|.
-  BridgeFactoryHost* bridge_factory_host_ = nullptr;
+  // as |parent_->application_host_|.
+  remote_cocoa::ApplicationHost* application_host_ = nullptr;
 
   Widget::InitParams::Type widget_type_ = Widget::InitParams::TYPE_WINDOW;
 

@@ -36,6 +36,7 @@ source_set("app_shim") {
     "//chrome/common:mojo_bindings",
     "//chrome/common:non_code_constants",
     "//components/crx_file",
+    "//components/remote_cocoa/browser",
     "//components/version_info",
     "//content/public/browser",
     "//content/public/common",

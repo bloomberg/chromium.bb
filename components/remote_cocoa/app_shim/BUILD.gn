@@ -19,8 +19,8 @@ component("app_shim") {
   sources = [
     "alert.h",
     "alert.mm",
-    "bridge_factory_impl.h",
-    "bridge_factory_impl.mm",
+    "application_bridge.h",
+    "application_bridge.mm",
     "bridged_content_view.h",
     "bridged_content_view.mm",
     "bridged_content_view_touch_bar.mm",

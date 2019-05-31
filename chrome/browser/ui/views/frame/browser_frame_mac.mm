@@ -26,7 +26,7 @@
 #import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #import "components/remote_cocoa/app_shim/window_touch_bar_delegate.h"
-#include "components/remote_cocoa/common/bridge_factory.mojom.h"
+#include "components/remote_cocoa/common/application.mojom.h"
 #include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -324,9 +324,10 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
   return ns_window;
 }
 
-views::BridgeFactoryHost* BrowserFrameMac::GetBridgeFactoryHost() {
+remote_cocoa::ApplicationHost*
+BrowserFrameMac::GetRemoteCocoaApplicationHost() {
   if (auto* host = GetHostForBrowser(browser_view_->browser()))
-    return host->GetViewsBridgeFactoryHost();
+    return host->GetRemoteCocoaApplicationHost();
   return nullptr;
 }
 

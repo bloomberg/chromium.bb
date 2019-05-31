@@ -129,8 +129,9 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
       BridgedNativeWidgetHostImpl::GetFromNativeView(params.parent);
 
   // Determine the factory through which to create the bridge
-  BridgeFactoryHost* bridge_factory_host =
-      parent_host ? parent_host->bridge_factory_host() : GetBridgeFactoryHost();
+  remote_cocoa::ApplicationHost* application_host =
+      parent_host ? parent_host->application_host()
+                  : GetRemoteCocoaApplicationHost();
 
   // Compute the parameters to describe the NSWindow.
   auto create_window_params = remote_cocoa::mojom::CreateWindowParams::New();
@@ -141,8 +142,8 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   create_window_params->window_title_hidden = false;
   PopulateCreateWindowParams(params, create_window_params.get());
 
-  if (bridge_factory_host) {
-    bridge_host_->CreateRemoteBridge(bridge_factory_host,
+  if (application_host) {
+    bridge_host_->CreateRemoteBridge(application_host,
                                      std::move(create_window_params));
   } else {
     base::scoped_nsobject<NativeWidgetMacNSWindow> window(
@@ -375,15 +376,14 @@ void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {
 
   if (!sibling_host) {
     // This will only work if |this| is in-process.
-    DCHECK(!bridge_host_->bridge_factory_host());
+    DCHECK(!bridge_host_->application_host());
     NSInteger view_parent = native_view.GetNativeNSView().window.windowNumber;
     [GetNativeWindow().GetNativeNSWindow() orderWindow:NSWindowAbove
                                             relativeTo:view_parent];
     return;
   }
 
-  if (bridge_host_->bridge_factory_host() ==
-      sibling_host->bridge_factory_host()) {
+  if (bridge_host_->application_host() == sibling_host->application_host()) {
     // Check if |native_view|'s BridgedNativeWidgetHostImpl corresponds to the
     // same process as |this|.
     bridge()->StackAbove(sibling_host->bridged_native_widget_id());
@@ -710,7 +710,8 @@ NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
   return BridgedNativeWidgetImpl::CreateNSWindow(params).autorelease();
 }
 
-BridgeFactoryHost* NativeWidgetMac::GetBridgeFactoryHost() {
+remote_cocoa::ApplicationHost*
+NativeWidgetMac::GetRemoteCocoaApplicationHost() {
   return nullptr;
 }
 

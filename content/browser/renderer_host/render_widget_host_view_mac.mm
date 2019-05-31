@@ -20,7 +20,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/remote_cocoa/common/bridge_factory.mojom.h"
+#include "components/remote_cocoa/common/application.mojom.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 #import "content/app_shim_remote_cocoa/render_widget_host_ns_view_bridge_local.h"
@@ -241,7 +241,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 }
 
 void RenderWidgetHostViewMac::MigrateNSViewBridge(
-    remote_cocoa::mojom::BridgeFactory* remote_cocoa_application,
+    remote_cocoa::mojom::Application* remote_cocoa_application,
     uint64_t parent_ns_view_id) {
   // Destroy the previous remote accessibility element.
   remote_window_accessible_.reset();

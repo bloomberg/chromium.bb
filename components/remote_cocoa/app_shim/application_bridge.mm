@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/remote_cocoa/app_shim/bridge_factory_impl.h"
+#include "components/remote_cocoa/app_shim/application_bridge.h"
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
@@ -19,12 +19,13 @@ using views::BridgedNativeWidgetHostHelper;
 
 namespace {
 
-class Bridge : public BridgedNativeWidgetHostHelper {
+class NativeWidgetBridgeOwner : public BridgedNativeWidgetHostHelper {
  public:
-  Bridge(uint64_t bridge_id,
-         mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
-         mojom::BridgedNativeWidgetHostAssociatedPtrInfo host_ptr,
-         mojom::TextInputHostAssociatedPtrInfo text_input_host_ptr) {
+  NativeWidgetBridgeOwner(
+      uint64_t bridge_id,
+      mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
+      mojom::BridgedNativeWidgetHostAssociatedPtrInfo host_ptr,
+      mojom::TextInputHostAssociatedPtrInfo text_input_host_ptr) {
     host_ptr_.Bind(std::move(host_ptr),
                    ui::WindowResizeHelperMac::Get()->task_runner());
     text_input_host_ptr_.Bind(std::move(text_input_host_ptr),
@@ -33,11 +34,12 @@ class Bridge : public BridgedNativeWidgetHostHelper {
         bridge_id, host_ptr_.get(), this, text_input_host_ptr_.get());
     bridge_impl_->BindRequest(
         std::move(bridge_request),
-        base::BindOnce(&Bridge::OnConnectionError, base::Unretained(this)));
+        base::BindOnce(&NativeWidgetBridgeOwner::OnConnectionError,
+                       base::Unretained(this)));
   }
 
  private:
-  ~Bridge() override {}
+  ~NativeWidgetBridgeOwner() override {}
 
   void OnConnectionError() { delete this; }
 
@@ -97,40 +99,41 @@ class Bridge : public BridgedNativeWidgetHostHelper {
 }  // namespace
 
 // static
-BridgeFactoryImpl* BridgeFactoryImpl::Get() {
-  static base::NoDestructor<BridgeFactoryImpl> factory;
-  return factory.get();
+ApplicationBridge* ApplicationBridge::Get() {
+  static base::NoDestructor<ApplicationBridge> application_bridge;
+  return application_bridge.get();
 }
 
-void BridgeFactoryImpl::BindRequest(
-    mojom::BridgeFactoryAssociatedRequest request) {
+void ApplicationBridge::BindRequest(
+    mojom::ApplicationAssociatedRequest request) {
   binding_.Bind(std::move(request),
                 ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
-void BridgeFactoryImpl::SetContentNSViewCreateCallbacks(
+void ApplicationBridge::SetContentNSViewCreateCallbacks(
     RenderWidgetHostNSViewCreateCallback render_widget_host_create_callback,
     WebContentsNSViewCreateCallback web_conents_create_callback) {
   render_widget_host_create_callback_ = render_widget_host_create_callback;
   web_conents_create_callback_ = web_conents_create_callback;
 }
 
-void BridgeFactoryImpl::CreateAlert(mojom::AlertBridgeRequest bridge_request) {
+void ApplicationBridge::CreateAlert(mojom::AlertBridgeRequest bridge_request) {
   // The resulting object manages its own lifetime.
   ignore_result(new AlertBridge(std::move(bridge_request)));
 }
 
-void BridgeFactoryImpl::CreateBridgedNativeWidget(
+void ApplicationBridge::CreateBridgedNativeWidget(
     uint64_t bridge_id,
     mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
     mojom::BridgedNativeWidgetHostAssociatedPtrInfo host,
     mojom::TextInputHostAssociatedPtrInfo text_input_host) {
   // The resulting object will be destroyed when its message pipe is closed.
-  ignore_result(new Bridge(bridge_id, std::move(bridge_request),
-                           std::move(host), std::move(text_input_host)));
+  ignore_result(
+      new NativeWidgetBridgeOwner(bridge_id, std::move(bridge_request),
+                                  std::move(host), std::move(text_input_host)));
 }
 
-void BridgeFactoryImpl::CreateRenderWidgetHostNSView(
+void ApplicationBridge::CreateRenderWidgetHostNSView(
     mojom::StubInterfaceAssociatedPtrInfo host,
     mojom::StubInterfaceAssociatedRequest view_request) {
   if (!render_widget_host_create_callback_)
@@ -139,7 +142,7 @@ void BridgeFactoryImpl::CreateRenderWidgetHostNSView(
                                           view_request.PassHandle());
 }
 
-void BridgeFactoryImpl::CreateWebContentsNSView(
+void ApplicationBridge::CreateWebContentsNSView(
     uint64_t view_id,
     mojom::StubInterfaceAssociatedPtrInfo host,
     mojom::StubInterfaceAssociatedRequest view_request) {
@@ -149,8 +152,8 @@ void BridgeFactoryImpl::CreateWebContentsNSView(
                                    view_request.PassHandle());
 }
 
-BridgeFactoryImpl::BridgeFactoryImpl() : binding_(this) {}
+ApplicationBridge::ApplicationBridge() : binding_(this) {}
 
-BridgeFactoryImpl::~BridgeFactoryImpl() {}
+ApplicationBridge::~ApplicationBridge() {}
 
 }  // namespace remote_cocoa

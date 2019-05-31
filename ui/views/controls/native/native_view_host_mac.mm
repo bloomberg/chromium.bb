@@ -53,11 +53,11 @@ ui::Layer* NativeViewHostMac::GetUiLayer() const {
   return host_->layer();
 }
 
-remote_cocoa::mojom::BridgeFactory*
-NativeViewHostMac::GetRemoteCocoaApplication() const {
+remote_cocoa::mojom::Application* NativeViewHostMac::GetRemoteCocoaApplication()
+    const {
   if (auto* bridge_host = GetBridgedNativeWidgetHost()) {
-    if (bridge_host->bridge_factory_host())
-      return bridge_host->bridge_factory_host()->GetFactory();
+    if (auto* application_host = bridge_host->application_host())
+      return application_host->GetApplication();
   }
   return nullptr;
 }

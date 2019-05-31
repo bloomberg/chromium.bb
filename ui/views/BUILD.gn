@@ -94,7 +94,6 @@ jumbo_component("views") {
     "bubble/info_bubble.h",
     "bubble/tooltip_icon.h",
     "button_drag_utils.h",
-    "cocoa/bridge_factory_host.h",
     "cocoa/bridged_native_widget_host_impl.h",
     "color_chooser/color_chooser_listener.h",
     "color_chooser/color_chooser_view.h",
@@ -479,7 +478,6 @@ jumbo_component("views") {
   # Internal sources. TODO(https://crbug.com/871123): Move more headers from
   # public into this list, along with the implementation file.
   sources += [
-    "cocoa/bridge_factory_host.cc",
     "cocoa/bridged_native_widget_host_impl.mm",
     "cocoa/drag_drop_client_mac.h",
     "cocoa/drag_drop_client_mac.mm",

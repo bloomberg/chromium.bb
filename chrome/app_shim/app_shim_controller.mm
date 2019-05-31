@@ -25,9 +25,9 @@
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
-#include "components/remote_cocoa/app_shim/bridge_factory_impl.h"
+#include "components/remote_cocoa/app_shim/application_bridge.h"
 #include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
-#include "components/remote_cocoa/common/bridge_factory.mojom.h"
+#include "components/remote_cocoa/common/application.mojom.h"
 #include "content/public/browser/remote_cocoa.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/platform/features.h"
@@ -303,10 +303,10 @@ void AppShimController::LaunchAppDone(
   host_bootstrap_.reset();
 }
 
-void AppShimController::CreateViewsBridgeFactory(
-    remote_cocoa::mojom::BridgeFactoryAssociatedRequest request) {
-  remote_cocoa::BridgeFactoryImpl::Get()->BindRequest(std::move(request));
-  remote_cocoa::BridgeFactoryImpl::Get()->SetContentNSViewCreateCallbacks(
+void AppShimController::CreateRemoteCocoaApplication(
+    remote_cocoa::mojom::ApplicationAssociatedRequest request) {
+  remote_cocoa::ApplicationBridge::Get()->BindRequest(std::move(request));
+  remote_cocoa::ApplicationBridge::Get()->SetContentNSViewCreateCallbacks(
       base::BindRepeating(content::CreateRenderWidgetHostNSView),
       base::BindRepeating(content::CreateWebContentsNSView));
 }
