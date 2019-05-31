@@ -1801,6 +1801,8 @@ jumbo_split_static_library("ui") {
       "webui/settings/chromeos/multidevice_handler.h",
       "webui/settings/chromeos/os_settings_ui.cc",
       "webui/settings/chromeos/os_settings_ui.h",
+      "webui/settings/chromeos/parental_controls_handler.cc",
+      "webui/settings/chromeos/parental_controls_handler.h",
       "webui/settings/chromeos/plugin_vm_handler.cc",
       "webui/settings/chromeos/plugin_vm_handler.h",
       "webui/settings/tts_handler.cc",

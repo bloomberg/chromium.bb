@@ -62,6 +62,7 @@
  *   NETWORK_DETAIL: (undefined|!settings.Route),
  *   ON_STARTUP: (undefined|!settings.Route),
  *   PASSWORDS: (undefined|!settings.Route),
+ *   PARENTAL_CONTROLS: (undefined|!settings.Route),
  *   PAYMENTS: (undefined|!settings.Route),
  *   PEOPLE: (undefined|!settings.Route),
  *   PLUGIN_VM: (undefined|!settings.Route),
@@ -252,6 +253,12 @@ cr.define('settings', function() {
     r.MULTIDEVICE_FEATURES = r.MULTIDEVICE.createChild('/multidevice/features');
     r.SMART_LOCK =
         r.MULTIDEVICE_FEATURES.createChild('/multidevice/features/smartLock');
+
+    if (loadTimeData.valueExists('showParentalControls') &&
+        loadTimeData.getBoolean('showParentalControls')) {
+      r.PARENTAL_CONTROLS =
+          r.BASIC.createSection('/parentalControls', 'parentalControls');
+    }
     // </if>
 
     if (pageVisibility.appearance !== false) {

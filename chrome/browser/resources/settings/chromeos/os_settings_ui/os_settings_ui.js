@@ -81,6 +81,9 @@ Polymer({
     showCrostini_: Boolean,
 
     /** @private */
+    showParentalControls_: Boolean,
+
+    /** @private */
     showPluginVm_: Boolean,
 
     /** @private */
@@ -166,6 +169,10 @@ Polymer({
     this.showAndroidApps_ = loadTimeData.getBoolean('androidAppsVisible');
     this.showKioskNextShell_ = loadTimeData.valueExists('showKioskNextShell') &&
         loadTimeData.getBoolean('showKioskNextShell');
+    this.showParentalControls_ =
+        loadTimeData.valueExists('showParentalControls') &&
+        loadTimeData.getBoolean('showParentalControls');
+
     this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
     this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');
     this.havePlayStoreApp_ = loadTimeData.getBoolean('havePlayStoreApp');

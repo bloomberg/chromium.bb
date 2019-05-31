@@ -7,11 +7,23 @@ const proxy = addSupervision.mojom.AddSupervisionHandler.getProxy();
 
 document.addEventListener('DOMContentLoaded', () => {
   proxy.getOAuthToken().then((result) => {
-    const url = loadTimeData.getString('webviewUrl');
+    const webviewUrl = loadTimeData.getString('webviewUrl');
+    if (!webviewUrl.startsWith('https://families.google.com')) {
+      console.error('webviewUrl is not from https://families.google.com');
+      return;
+    }
     const eventOriginFilter = loadTimeData.getString('eventOriginFilter');
     const webview =
         /** @type {!WebView} */ (document.querySelector('#webview'));
-    const oauthToken = result.oauthToken;
+
+    const accessToken = result.oauthToken;
+    const flowType = loadTimeData.getString('flowType');
+    const platformVersion = loadTimeData.getString('platformVersion');
+
+    const url = new URL(webviewUrl);
+    url.searchParams.set('flowType', flowType);
+    url.searchParams.set('platformVersion', platformVersion);
+    url.searchParams.set('accessToken', accessToken);
 
     // Block any requests to URLs other than one specified
     // by eventOriginFilter.
@@ -19,15 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return {cancel: !details.url.startsWith(eventOriginFilter)};
     }, {urls: ['<all_urls>']}, ['blocking']);
 
-    // Add the Authorizaton header, but only for URLs that prefix match the
-    // eventOrigin filter.
-    webview.request.onBeforeSendHeaders.addListener(function(details) {
-      details.requestHeaders.push(
-          {name: 'Authorization', value: 'Bearer ' + oauthToken});
-      return {requestHeaders: details.requestHeaders};
-    }, {urls: [eventOriginFilter + '/*']}, ['blocking', 'requestHeaders']);
-
-    webview.src = url;
+    webview.src = url.toString();
 
     // Set up the server.
     server = new AddSupervisionAPIServer(webview, url, eventOriginFilter);

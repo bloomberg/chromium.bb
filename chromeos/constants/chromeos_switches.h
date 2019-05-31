@@ -242,6 +242,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAccountManagerEnabled();
 // Returns true if Chrome OS Add Child Supervision flow is enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAddSupervisionEnabled();
 
+// Returns true if Parental Controls Settings are enabled.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsParentalControlsSettingsEnabled();
+
 // Returns true if Google Assistant flags are enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantFlagsEnabled();
 

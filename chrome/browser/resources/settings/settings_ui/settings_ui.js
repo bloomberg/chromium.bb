@@ -78,6 +78,9 @@ Polymer({
     showCrostini_: Boolean,
 
     /** @private */
+    showParentalControls_: Boolean,
+
+    /** @private */
     showPluginVm_: Boolean,
 
     /** @private */
@@ -177,6 +180,9 @@ Polymer({
     this.showCrostini_ = showOSSettings &&
         loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini');
+    this.showParentalControls_ = showOSSettings &&
+        loadTimeData.valueExists('showParentalControls') &&
+        loadTimeData.getBoolean('showParentalControls');
     this.showPluginVm_ = showOSSettings &&
         loadTimeData.valueExists('showPluginVm') &&
         loadTimeData.getBoolean('showPluginVm');

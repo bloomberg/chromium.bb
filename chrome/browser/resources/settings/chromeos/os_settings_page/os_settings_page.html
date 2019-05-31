@@ -22,6 +22,7 @@
 <link rel="import" href="../../device_page/device_page.html">
 <link rel="import" href="../../internet_page/internet_page.html">
 <link rel="import" href="../../multidevice_page/multidevice_page.html">
+<link rel="import" href="../../parental_controls_page/parental_controls_page.html">
 
 <dom-module id="os-settings-page">
   <template>
@@ -123,6 +124,13 @@
             <os-settings-people-page prefs="{{prefs}}"
                 page-visibility="[[pageVisibility]]">
             </os-settings-people-page>
+          </settings-section>
+        </template>
+        <template is="dom-if" if="[[showParentalControls]]" restamp>
+          <settings-section page-title="$i18n{parentalControlsPageTitle}"
+              section="parentalControls">
+            <settings-parental-controls-page prefs="{{prefs}}">
+            </settings-parental-controls-page>
           </settings-section>
         </template>
         <!-- TODO(hsuregan): Change from appearance to personalization once

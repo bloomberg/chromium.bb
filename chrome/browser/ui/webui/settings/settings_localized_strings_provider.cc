@@ -577,6 +577,26 @@ void AddAppsStrings(content::WebUIDataSource* html_source) {
 }
 #endif
 
+#if defined(OS_CHROMEOS)
+void AddParentalControlStrings(content::WebUIDataSource* html_source) {
+  html_source->AddBoolean(
+      "isChild", user_manager::UserManager::Get()->IsLoggedInAsChildUser());
+  static constexpr LocalizedString kLocalizedStrings[] = {
+      {"parentalControlsPageTitle", IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_TITLE},
+      {"parentalControlsPageSetUpLabel",
+       IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_SET_UP_LABEL},
+      {"parentalControlsPageViewSettingsLabel",
+       IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_VIEW_SETTINGS_LABEL},
+      {"parentalControlsPageConnectToInternetLabel",
+       IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_CONNECT_TO_INTERNET_LABEL},
+      {"parentalControlsSetUpButtonLabel",
+       IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_LABEL},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
+                          base::size(kLocalizedStrings));
+}
+#endif
+
 void AddAppearanceStrings(content::WebUIDataSource* html_source,
                           Profile* profile) {
   static constexpr LocalizedString kLocalizedStrings[] = {
@@ -2991,6 +3011,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddEasyUnlockStrings(html_source);
   AddInternetStrings(html_source);
   AddMultideviceStrings(html_source);
+  AddParentalControlStrings(html_source);
   AddUsersStrings(html_source);
 #else
   AddDefaultBrowserStrings(html_source);

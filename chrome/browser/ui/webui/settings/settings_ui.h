@@ -38,6 +38,8 @@ class SettingsUI : public content::WebUIController,
   static void InitOSWebUIHandlers(Profile* profile,
                                   content::WebUI* web_ui,
                                   content::WebUIDataSource* html_source);
+
+  static bool ShouldShowParentalControls(Profile* profile);
 #endif  // defined(OS_CHROMEOS)
 
   // content::WebContentsObserver:

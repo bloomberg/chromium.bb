@@ -43,6 +43,10 @@ const base::Feature kAccountManager{"ChromeOSAccountManager",
 const base::Feature kAddSupervision{"ChromeOSAddSupervision",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable the Parental Controls section of settings.
+const base::Feature kParentalControlsSettings{
+    "ChromeOSParentalControlsSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable Google Assistant feature.
 const base::Feature kAssistantFeature{"ChromeOSAssistant",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -566,6 +570,10 @@ bool IsAccountManagerEnabled() {
 
 bool IsAddSupervisionEnabled() {
   return base::FeatureList::IsEnabled(kAddSupervision);
+}
+
+bool IsParentalControlsSettingsEnabled() {
+  return base::FeatureList::IsEnabled(kParentalControlsSettings);
 }
 
 bool IsAssistantFlagsEnabled() {
