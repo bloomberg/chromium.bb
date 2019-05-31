@@ -120,6 +120,14 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @MediumTest
+    @CommandLineFlags.Add({"force-fieldtrial-params=Study.Group:downsampling-scale/1"})
+    public void testTabToGridFromLiveTabWith10TabsNoDownsample() throws InterruptedException {
+        prepareTabs(10, NTP_URL);
+        reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs (no downsample)");
+    }
+
+    @Test
+    @MediumTest
     public void testTabToGridFromLiveTabWith10TabsWithoutThumbnail() throws InterruptedException {
         // Note that most of the tabs won't have thumbnails.
         prepareTabs(10, null);
