@@ -479,8 +479,8 @@
       # after fixing https://crbug.com/106682
       'name': 'ContentSettings',
       'type': 'group',
-      'caption': '''Content Settings''',
-      'desc': '''Content Settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.''',
+      'caption': '''Content settings''',
+      'desc': '''Content settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.''',
       'policies': [
         'DefaultCookiesSetting',
         'DefaultImagesSetting',
@@ -630,7 +630,7 @@
     {
       'name': 'Attestation',
       'type': 'group',
-      'caption': 'Remote Attestation',
+      'caption': 'Remote attestation',
       'desc': 'Configure the remote attestation with TPM mechanism.',
       'policies': [
         'AttestationEnabledForDevice',
