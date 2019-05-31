@@ -366,6 +366,11 @@ class TastTest(RemoteTest):
 
     if not suite_results.DidRunPass():
       return 1
+    elif return_code:
+      logging.warning(
+          'No failed tests found, but exit code of %d was returned from '
+          'cros_run_test.', return_code)
+      return return_code
     return 0
 
 
