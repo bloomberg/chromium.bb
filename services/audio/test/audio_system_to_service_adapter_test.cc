@@ -5,7 +5,6 @@
 #include "services/audio/public/cpp/audio_system_to_service_adapter.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/audio/audio_system_test_util.h"
@@ -70,7 +69,7 @@ class AudioSystemToServiceAdapterTestBase : public testing::Test {
   // AudioSystem conformance tests won't set expecnations.
   NiceMock<MockFunction<void(void)>> system_info_bind_requested_;
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<media::MockAudioManager> audio_manager_;
   std::unique_ptr<mojom::SystemInfo> system_info_impl_;
   std::unique_ptr<mojo::Receiver<mojom::SystemInfo>> system_info_receiver_;
