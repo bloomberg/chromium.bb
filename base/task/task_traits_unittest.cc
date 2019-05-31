@@ -80,6 +80,40 @@ TEST(TaskTraitsTest, WithBaseSyncPrimitives) {
   EXPECT_TRUE(traits.with_base_sync_primitives());
 }
 
+TEST(TaskTraitsTest, UpdatePriority) {
+  {
+    TaskTraits traits = {};
+    EXPECT_FALSE(traits.priority_set_explicitly());
+    traits.UpdatePriority(TaskPriority::BEST_EFFORT);
+    EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
+    EXPECT_TRUE(traits.priority_set_explicitly());
+  }
+
+  {
+    TaskTraits traits = {TaskPriority::USER_VISIBLE};
+    EXPECT_TRUE(traits.priority_set_explicitly());
+    traits.UpdatePriority(TaskPriority::BEST_EFFORT);
+    EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
+    EXPECT_TRUE(traits.priority_set_explicitly());
+  }
+}
+
+TEST(TaskTraitsTest, InheritPriority) {
+  {
+    TaskTraits traits = {};
+    traits.InheritPriority(TaskPriority::BEST_EFFORT);
+    EXPECT_EQ(TaskPriority::BEST_EFFORT, traits.priority());
+    EXPECT_FALSE(traits.priority_set_explicitly());
+  }
+
+  {
+    TaskTraits traits = {TaskPriority::USER_VISIBLE};
+    traits.InheritPriority(TaskPriority::BEST_EFFORT);
+    EXPECT_EQ(TaskPriority::USER_VISIBLE, traits.priority());
+    EXPECT_TRUE(traits.priority_set_explicitly());
+  }
+}
+
 TEST(TaskTraitsTest, MultipleTraits) {
   constexpr TaskTraits traits = {
       TaskPriority::BEST_EFFORT, TaskShutdownBehavior::BLOCK_SHUTDOWN,

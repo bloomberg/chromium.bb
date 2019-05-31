@@ -200,6 +200,7 @@ TEST_F(PostTaskTestWithExecutor, PriorityInherited) {
   TaskTraits traits = {TestExtensionBoolTrait()};
   TaskTraits traits_with_inherited_priority = traits;
   traits_with_inherited_priority.InheritPriority(TaskPriority::BEST_EFFORT);
+  EXPECT_FALSE(traits_with_inherited_priority.priority_set_explicitly());
   EXPECT_CALL(executor_, PostDelayedTaskWithTraitsMock(
                              _, traits_with_inherited_priority, _, _))
       .Times(1);

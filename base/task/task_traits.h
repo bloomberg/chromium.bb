@@ -225,24 +225,26 @@ class BASE_EXPORT TaskTraits {
             trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>{},
             args...)),
         priority_(
-            trait_helpers::GetEnum<TaskPriority, TaskPriority::USER_BLOCKING>(
-                args...)),
+            static_cast<uint8_t>(
+                trait_helpers::GetEnum<TaskPriority,
+                                       TaskPriority::USER_BLOCKING>(args...)) |
+            (trait_helpers::HasTrait<TaskPriority>(args...) ? kIsExplicitFlag
+                                                            : 0)),
         shutdown_behavior_(
-            trait_helpers::HasTrait<TaskShutdownBehavior>(args...)
-                ? static_cast<uint8_t>(
-                      trait_helpers::GetEnum<
-                          TaskShutdownBehavior,
-                          TaskShutdownBehavior::SKIP_ON_SHUTDOWN>(args...))
-                : kUnspecified),
+            static_cast<uint8_t>(
+                trait_helpers::GetEnum<TaskShutdownBehavior,
+                                       TaskShutdownBehavior::SKIP_ON_SHUTDOWN>(
+                    args...)) |
+            (trait_helpers::HasTrait<TaskShutdownBehavior>(args...)
+                 ? kIsExplicitFlag
+                 : 0)),
         thread_policy_(
-            trait_helpers::HasTrait<ThreadPolicy>(args...)
-                ? static_cast<uint8_t>(
-                      trait_helpers::GetEnum<ThreadPolicy,
-                                             ThreadPolicy::PREFER_BACKGROUND>(
-                          args...))
-                : kUnspecified),
-        priority_set_explicitly_(
-            trait_helpers::HasTrait<TaskPriority>(args...)),
+            static_cast<uint8_t>(
+                trait_helpers::GetEnum<ThreadPolicy,
+                                       ThreadPolicy::PREFER_BACKGROUND>(
+                    args...)) |
+            (trait_helpers::HasTrait<ThreadPolicy>(args...) ? kIsExplicitFlag
+                                                            : 0)),
         may_block_(trait_helpers::HasTrait<MayBlock>(args...)),
         with_base_sync_primitives_(
             trait_helpers::HasTrait<WithBaseSyncPrimitives>(args...)),
@@ -253,12 +255,11 @@ class BASE_EXPORT TaskTraits {
 
   // TODO(eseckler): Default the comparison operator once C++20 arrives.
   bool operator==(const TaskTraits& other) const {
-    static_assert(sizeof(TaskTraits) == 16,
+    static_assert(sizeof(TaskTraits) == 15,
                   "Update comparison operator when TaskTraits change");
     return extension_ == other.extension_ && priority_ == other.priority_ &&
            shutdown_behavior_ == other.shutdown_behavior_ &&
            thread_policy_ == other.thread_policy_ &&
-           priority_set_explicitly_ == other.priority_set_explicitly_ &&
            may_block_ == other.may_block_ &&
            with_base_sync_primitives_ == other.with_base_sync_primitives_ &&
            use_thread_pool_ == other.use_thread_pool_;
@@ -266,47 +267,45 @@ class BASE_EXPORT TaskTraits {
 
   // Sets the priority of tasks with these traits to |priority|.
   void UpdatePriority(TaskPriority priority) {
-    priority_ = priority;
-    priority_set_explicitly_ = true;
+    priority_ = static_cast<uint8_t>(priority) | kIsExplicitFlag;
   }
 
   // Sets the priority to |priority| if it wasn't explicitly set before.
   void InheritPriority(TaskPriority priority) {
-    if (priority_set_explicitly_)
+    if (priority_set_explicitly())
       return;
-    priority_ = priority;
+    priority_ = static_cast<uint8_t>(priority);
   }
 
   // Returns true if the priority was set explicitly.
   constexpr bool priority_set_explicitly() const {
-    return priority_set_explicitly_;
+    return priority_ & kIsExplicitFlag;
   }
 
   // Returns the priority of tasks with these traits.
-  constexpr TaskPriority priority() const { return priority_; }
+  constexpr TaskPriority priority() const {
+    return static_cast<TaskPriority>(priority_ & ~kIsExplicitFlag);
+  }
 
   // Returns true if the shutdown behavior was set explicitly.
   constexpr bool shutdown_behavior_set_explicitly() const {
-    return shutdown_behavior_ != kUnspecified;
+    return shutdown_behavior_ & kIsExplicitFlag;
   }
 
   // Returns the shutdown behavior of tasks with these traits.
   constexpr TaskShutdownBehavior shutdown_behavior() const {
-    return shutdown_behavior_set_explicitly()
-               ? static_cast<TaskShutdownBehavior>(shutdown_behavior_)
-               : TaskShutdownBehavior::SKIP_ON_SHUTDOWN;
+    return static_cast<TaskShutdownBehavior>(shutdown_behavior_ &
+                                             ~kIsExplicitFlag);
   }
 
   // Returns true if the thread policy was set explicitly.
   constexpr bool thread_policy_set_explicitly() const {
-    return thread_policy_ != kUnspecified;
+    return thread_policy_ & kIsExplicitFlag;
   }
 
   // Returns the thread policy of tasks with these traits.
   constexpr ThreadPolicy thread_policy() const {
-    return thread_policy_set_explicitly()
-               ? static_cast<ThreadPolicy>(thread_policy_)
-               : ThreadPolicy::PREFER_BACKGROUND;
+    return static_cast<ThreadPolicy>(thread_policy_ & ~kIsExplicitFlag);
   }
 
   // Returns true if tasks with these traits may block.
@@ -340,24 +339,26 @@ class BASE_EXPORT TaskTraits {
              bool use_thread_pool,
              TaskTraitsExtensionStorage extension)
       : extension_(extension),
-        priority_(priority),
-        shutdown_behavior_(kUnspecified),
-        thread_policy_(kUnspecified),
-        priority_set_explicitly_(priority_set_explicitly),
+        priority_(static_cast<uint8_t>(priority) |
+                  (priority_set_explicitly ? kIsExplicitFlag : 0)),
+        shutdown_behavior_(
+            static_cast<uint8_t>(TaskShutdownBehavior::SKIP_ON_SHUTDOWN)),
+        thread_policy_(static_cast<uint8_t>(ThreadPolicy::PREFER_BACKGROUND)),
         may_block_(may_block),
         with_base_sync_primitives_(false),
         use_thread_pool_(use_thread_pool) {
-    static_assert(sizeof(TaskTraits) == 16, "Keep this constructor up to date");
+    static_assert(sizeof(TaskTraits) == 15, "Keep this constructor up to date");
   }
 
-  static constexpr uint8_t kUnspecified = 0xFF;
+  // This bit is set in |priority_|, |shutdown_behavior_| and |thread_policy_|
+  // when the value was set explicitly.
+  static constexpr uint8_t kIsExplicitFlag = 0x80;
 
   // Ordered for packing.
   TaskTraitsExtensionStorage extension_;
-  TaskPriority priority_;
+  uint8_t priority_;
   uint8_t shutdown_behavior_;
   uint8_t thread_policy_;
-  bool priority_set_explicitly_;
   bool may_block_;
   bool with_base_sync_primitives_;
   bool use_thread_pool_;
