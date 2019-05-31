@@ -1544,7 +1544,7 @@
       "--output-dir=${ISOLATED_OUTDIR}",
     ],
     "label": "//chrome/test/media_router:media_router_perf_tests",
-    "script": "//chrome/test/media_router/telemetry/run_benchmark.py",
+    "script": "//tools/perf/contrib/media_router_benchmarks/run_benchmark.py",
     "type": "script",
   },
   "media_service_unittests": {
