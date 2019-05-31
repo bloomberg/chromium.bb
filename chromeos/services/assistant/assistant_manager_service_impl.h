@@ -78,7 +78,7 @@ enum class AssistantQueryResponseType {
 };
 
 // Implementation of AssistantManagerService based on LibAssistant.
-// This is the main class that ineracts with LibAssistant.
+// This is the main class that interacts with LibAssistant.
 // Since LibAssistant is a standalone library, all callbacks come from it
 // running on threads not owned by Chrome. Thus we need to post the callbacks
 // onto the main thread.

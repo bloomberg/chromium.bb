@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/utils.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
@@ -75,6 +77,7 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     input_->RecreateAudioInputStream(true /* use_dsp */);
     stream_state_ = StreamState::HOTWORD;
+    RecordDspHotwordDetection(DspHotwordDetectionStatus::SOFTWARE_REJECTED);
   }
 
   // Runs on audio service thread
@@ -96,6 +99,7 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     if (stream_state_ == StreamState::HOTWORD &&
         !second_phase_timer_.IsRunning()) {
+      RecordDspHotwordDetection(DspHotwordDetectionStatus::HARDWARE_ACCEPTED);
       // 1s from now, if OnConversationTurnStarted is not called, we assume that
       // libassistant has rejected the hotword supplied by DSP. Thus, we reset
       // and reopen the device on hotword state.
@@ -112,6 +116,21 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
     HOTWORD,
     NORMAL,
   };
+
+  // Defines possible detection states of Dsp hotword. These values are
+  // persisted to logs. Entries should not be renumbered and numeric values
+  // should never be reused. Only append to this enum is allowed if the possible
+  // source grows.
+  enum class DspHotwordDetectionStatus {
+    HARDWARE_ACCEPTED = 0,
+    SOFTWARE_REJECTED = 1,
+    kMaxValue = SOFTWARE_REJECTED
+  };
+
+  // Helper function to record UMA metrics for Dsp hotword detection.
+  void RecordDspHotwordDetection(DspHotwordDetectionStatus status) {
+    base::UmaHistogramEnumeration("Assistant.DspHotwordDetection", status);
+  }
 
   StreamState stream_state_ = StreamState::HOTWORD;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -339,6 +358,46 @@ void AudioInputImpl::SetHotwordDeviceId(const std::string& device_id) {
   RecreateStateManager();
   if (source_)
     state_manager_->RecreateAudioInputStream();
+}
+
+void AudioInputImpl::SetDspHotwordLocale(std::string pref_locale) {
+  DCHECK(!hotword_device_id_.empty());
+  // SetHotwordModel will fail if hotword streaming is running.
+  DCHECK(!source_);
+
+  if (!features::IsDspHotwordEnabled())
+    return;
+
+  // Hotword model is expected to have <language>_<region> format with lower
+  // case, while the locale in pref is stored as <language>-<region> with region
+  // code in capital letters. So we need to convert the pref locale to the
+  // correct format.
+  if (!base::ReplaceChars(pref_locale, "-", "_", &pref_locale)) {
+    // If the language code and country code happen to be the same, e.g.
+    // France (FR) and French (fr), the locale will be stored as "fr" instead
+    // of "fr-FR" in the profile on Chrome OS.
+    std::string region_code = pref_locale;
+    pref_locale.append("_").append(region_code);
+  }
+  uint64_t dsp_node_id;
+  base::StringToUint64(hotword_device_id_, &dsp_node_id);
+  chromeos::CrasAudioHandler::Get()->SetHotwordModel(
+      dsp_node_id, /* hotword_model */ base::ToLowerASCII(pref_locale),
+      base::BindOnce(&AudioInputImpl::SetDspHotwordLocaleCallback,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void AudioInputImpl::SetDspHotwordLocaleCallback(bool success) {
+  base::UmaHistogramBoolean("Assistant.SetDspHotwordLocale", success);
+  if (success)
+    return;
+
+  // Reset the locale to the default value "en_us" if we failed to sync it to
+  // the locale stored in user's pref.
+  uint64_t dsp_node_id;
+  base::StringToUint64(hotword_device_id_, &dsp_node_id);
+  chromeos::CrasAudioHandler::Get()->SetHotwordModel(
+      dsp_node_id, "en_us", base::BindOnce([](bool success) {}));
 }
 
 void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {

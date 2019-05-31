@@ -154,7 +154,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   platform_api_ = std::make_unique<PlatformApiImpl>(
       connector, media_session_.get(), std::move(battery_monitor),
       service_->main_task_runner(), background_thread_.task_runner(),
-      network_connection_tracker);
+      network_connection_tracker, service->assistant_state()->locale().value());
   connector->BindInterface(ash::mojom::kServiceName,
                            &ash_message_center_controller_);
 

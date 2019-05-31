@@ -40,7 +40,8 @@ class PlatformApiImpl : public assistant_client::PlatformApi,
       device::mojom::BatteryMonitorPtr battery_monitor,
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
-      network::NetworkConnectionTracker* network_connection_tracker);
+      network::NetworkConnectionTracker* network_connection_tracker,
+      std::string pref_locale);
   ~PlatformApiImpl() override;
 
   // assistant_client::PlatformApi overrides
@@ -99,6 +100,7 @@ class PlatformApiImpl : public assistant_client::PlatformApi,
   FileProviderImpl file_provider_;
   NetworkProviderImpl network_provider_;
   std::unique_ptr<SystemProviderImpl> system_provider_;
+  std::string pref_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformApiImpl);
 };

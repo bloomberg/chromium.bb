@@ -44,5 +44,9 @@ void AudioInputProviderImpl::SetHotwordDeviceId(const std::string& device_id) {
   audio_input_.SetHotwordDeviceId(device_id);
 }
 
+void AudioInputProviderImpl::SetDspHotwordLocale(std::string pref_locale) {
+  audio_input_.SetDspHotwordLocale(pref_locale);
+}
+
 }  // namespace assistant
 }  // namespace chromeos

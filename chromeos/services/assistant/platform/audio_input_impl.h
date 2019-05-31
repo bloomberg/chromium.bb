@@ -78,6 +78,8 @@ class AudioInputImpl : public assistant_client::AudioInput,
 
   void SetDeviceId(const std::string& device_id);
   void SetHotwordDeviceId(const std::string& device_id);
+  void SetDspHotwordLocale(std::string pref_locale);
+  void SetDspHotwordLocaleCallback(bool success);
 
   void RecreateAudioInputStream(bool use_dsp);
 

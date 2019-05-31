@@ -14697,6 +14697,11 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Batch"/>
 </enum>
 
+<enum name="DspHotwordDetectionStatus">
+  <int value="0" label="HARDWARE_ACCEPTED"/>
+  <int value="1" label="SOFTWARE_REJECTED"/>
+</enum>
+
 <enum name="DTLS_SRTPCryptoSuite">
   <summary>
     DTLS/SRTP crypto suites from the IANA registry as specified at
