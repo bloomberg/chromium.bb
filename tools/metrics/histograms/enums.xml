@@ -32290,6 +32290,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="LoginCustomFlags">
+  <int value="-2146979021" label="OmniboxMaxURLMatches:enabled"/>
   <int value="-2146832142" label="SyncPseudoUSSSearchEngines:enabled"/>
   <int value="-2146613579" label="V8Future:disabled"/>
   <int value="-2145472146" label="OfflinePagesResourceBasedSnapshot:disabled"/>
@@ -34943,6 +34944,7 @@ from previous Chrome versions.
   <int value="1949908940" label="disable-zip-archiver-unpacker"/>
   <int value="1951466218" label="enable-data-reduction-proxy-lite-page"/>
   <int value="1951645673" label="PasswordsKeyboardAccessory:disabled"/>
+  <int value="1955238689" label="OmniboxMaxURLMatches:disabled"/>
   <int value="1957273171" label="PageAlmostIdle:disabled"/>
   <int value="1957358530" label="ContextualSearchSecondTap:enabled"/>
   <int value="1957472162"

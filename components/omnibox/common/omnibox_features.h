@@ -18,6 +18,7 @@ extern const base::Feature kOneClickUnelide;
 extern const base::Feature kSimplifyHttpsIndicator;
 extern const base::Feature kOmniboxGroupSuggestionsBySearchVsUrl;
 extern const base::Feature kOmniboxLocalEntitySuggestions;
+extern const base::Feature kOmniboxMaxURLMatches;
 extern const base::Feature kOmniboxRichEntitySuggestions;
 extern const base::Feature kOmniboxNewAnswerLayout;
 extern const base::Feature kOmniboxReverseAnswers;

@@ -179,6 +179,12 @@ void AutocompleteResult::SortAndCull(
   auto it = FindTopMatch(input.current_page_classification(), &matches_);
   if (it != matches_.end())
     std::rotate(matches_.begin(), it, it + 1);
+
+  size_t max_url_count = 0;
+  if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
+      (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
+    LimitNumberOfURLsShown(max_url_count, comparing_object);
+
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
   const size_t max_num_matches = std::min(GetMaxMatches(), matches_.size());
@@ -197,9 +203,8 @@ void AutocompleteResult::SortAndCull(
 
   // There is no default match for chromeOS launcher zero prefix query
   // suggestions.
-  if ((input.text().empty() &&
-       input.current_page_classification() ==
-           metrics::OmniboxEventProto::CHROMEOS_APP_LIST)) {
+  if (input.text().empty() && (input.current_page_classification() ==
+                               metrics::OmniboxEventProto::CHROMEOS_APP_LIST)) {
     default_match_ = end();
     alternate_nav_url_ = GURL();
     return;
@@ -736,4 +741,32 @@ std::pair<GURL, bool> AutocompleteResult::GetMatchComparisonFields(
     const AutocompleteMatch& match) {
   return std::make_pair(match.stripped_destination_url,
                         match.type == ACMatchType::CALCULATOR);
+}
+
+void AutocompleteResult::LimitNumberOfURLsShown(
+    size_t max_url_count,
+    const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
+  size_t search_count = std::count_if(
+      matches_.begin(), matches_.end(), [&](const AutocompleteMatch& m) {
+        return AutocompleteMatch::IsSearchType(m.type) &&
+               // Don't count if would be removed.
+               comparing_object.GetDemotedRelevance(m) > 0;
+      });
+  // Display more than GetMaxURLMatches() if there are no non-URL suggestions
+  // to replace them. Avoid signed math.
+  if (GetMaxMatches() > search_count &&
+      GetMaxMatches() - search_count > max_url_count)
+    max_url_count = GetMaxMatches() - search_count;
+  size_t url_count = 0, total_count = 0;
+  // Erase URL suggestions past the count of allowed ones, or anything past
+  // maximum.
+  matches_.erase(
+      std::remove_if(matches_.begin(), matches_.end(),
+                     [&url_count, max_url_count,
+                      &total_count](const AutocompleteMatch& m) {
+                       return (!AutocompleteMatch::IsSearchType(m.type) &&
+                               ++url_count > max_url_count) ||
+                              ++total_count > GetMaxMatches();
+                     }),
+      matches_.end());
 }

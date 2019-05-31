@@ -80,6 +80,14 @@ const base::Feature kOmniboxGroupSuggestionsBySearchVsUrl{
 const base::Feature kOmniboxLocalEntitySuggestions{
     "OmniboxLocalEntitySuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to cap the number of URL-type matches shown within the
+// Omnibox. If enabled, the number of URL-type matches is limited (unless
+// there are no more non-URL matches available.) If enabled, there is a
+// companion parameter - OmniboxMaxURLMatches - which specifies the maximum
+// desired number of URL-type matches.
+const base::Feature kOmniboxMaxURLMatches{"OmniboxMaxURLMatches",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable entity suggestion images and enhanced presentation
 // showing more context and descriptive text about the entity.
 const base::Feature kOmniboxRichEntitySuggestions{

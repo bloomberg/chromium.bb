@@ -2473,6 +2473,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "omnibox-max-url-matches",
+    "owners": [ "krb", "chromium-omnibox-team" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "omnibox-new-answer-layout",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/match_compare.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "url/gurl.h"
 
@@ -189,6 +190,13 @@ class AutocompleteResult {
   // happen to go to the same destination.
   static std::pair<GURL, bool> GetMatchComparisonFields(
       const AutocompleteMatch& match);
+
+  // This method reduces the number of navigation suggestions to that of
+  // |max_url_matches| but will allow more if there are no other types to
+  // replace them.
+  void LimitNumberOfURLsShown(
+      size_t max_url_count,
+      const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
 
   ACMatches matches_;
 
