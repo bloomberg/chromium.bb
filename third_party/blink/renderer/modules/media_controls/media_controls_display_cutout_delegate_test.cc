@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -36,8 +37,14 @@ class DisplayCutoutMockChromeClient : public EmptyChromeClient {
 
 }  // namespace
 
-class MediaControlsDisplayCutoutDelegateTest : public PageTestBase {
+class MediaControlsDisplayCutoutDelegateTest
+    : public PageTestBase,
+      private ScopedDisplayCutoutAPIForTest,
+      private ScopedMediaControlsExpandGestureForTest {
  public:
+  MediaControlsDisplayCutoutDelegateTest()
+      : ScopedDisplayCutoutAPIForTest(true),
+        ScopedMediaControlsExpandGestureForTest(true) {}
   void SetUp() override {
     chrome_client_ = MakeGarbageCollected<DisplayCutoutMockChromeClient>();
 
@@ -46,10 +53,6 @@ class MediaControlsDisplayCutoutDelegateTest : public PageTestBase {
     clients.chrome_client = chrome_client_.Get();
     SetupPageWithClients(&clients,
                          MakeGarbageCollected<EmptyLocalFrameClient>());
-
-    RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
-    RuntimeEnabledFeatures::SetMediaControlsExpandGestureEnabled(true);
-
     GetDocument().write("<body><video id=video></body>");
   }
 

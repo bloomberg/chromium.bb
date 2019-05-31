@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 using ::testing::AnyNumber;
@@ -315,7 +316,7 @@ TEST_P(HTMLMediaElementTest, AutoplayInitiated_DocumentActivation_Low_Gesture) {
   // - Policy: DocumentUserActivation (aka. unified autoplay)
   // - MEI: low;
   // - Frame received user gesture.
-  RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
+  ScopedMediaEngagementBypassAutoplayPoliciesForTest scoped_feature(true);
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
   LocalFrame::NotifyUserActivation(Media()->GetDocument().GetFrame());
@@ -331,7 +332,7 @@ TEST_P(HTMLMediaElementTest,
   // - Policy: DocumentUserActivation (aka. unified autoplay)
   // - MEI: high;
   // - Frame received user gesture.
-  RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
+  ScopedMediaEngagementBypassAutoplayPoliciesForTest scoped_feature(true);
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
   SimulateHighMediaEngagement();
@@ -348,7 +349,7 @@ TEST_P(HTMLMediaElementTest,
   // - Policy: DocumentUserActivation (aka. unified autoplay)
   // - MEI: high;
   // - Frame did not receive user gesture.
-  RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
+  ScopedMediaEngagementBypassAutoplayPoliciesForTest scoped_feature(true);
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
   SimulateHighMediaEngagement();

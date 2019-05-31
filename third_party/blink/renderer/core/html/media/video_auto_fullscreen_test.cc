@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/testing/wait_for_event.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -52,11 +53,11 @@ class VideoAutoFullscreenFrameClient
   WebWidget* web_widget_;
 };
 
-class VideoAutoFullscreen : public testing::Test {
+class VideoAutoFullscreen : public testing::Test,
+                            private ScopedVideoAutoFullscreenForTest {
  public:
+  VideoAutoFullscreen() : ScopedVideoAutoFullscreenForTest(true) {}
   void SetUp() override {
-    RuntimeEnabledFeatures::SetVideoAutoFullscreenEnabled(true);
-
     web_view_helper_.Initialize(&web_frame_client_);
     GetWebView()->GetSettings()->SetAutoplayPolicy(
         WebSettings::AutoplayPolicy::kUserGestureRequired);
