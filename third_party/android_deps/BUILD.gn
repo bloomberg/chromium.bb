@@ -227,6 +227,17 @@ android_aar_prebuilt("com_android_support_preference_leanback_v17_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("com_android_support_preference_v7_java") {
+  aar_path = "libs/com_android_support_preference_v7/preference-v7-27.0.0.aar"
+  info_path = "libs/com_android_support_preference_v7/com_android_support_preference_v7.info"
+  deps = [
+    ":com_android_support_appcompat_v7_java",
+    ":com_android_support_recyclerview_v7_java",
+    ":com_android_support_support_v4_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_recyclerview_v7_java") {
   aar_path =
       "libs/com_android_support_recyclerview_v7/recyclerview-v7-27.0.0.aar"
@@ -670,21 +681,6 @@ android_aar_prebuilt("com_android_support_preference_v14_java") {
   deps = [
     ":com_android_support_appcompat_v7_java",
     ":com_android_support_preference_v7_java",
-    ":com_android_support_recyclerview_v7_java",
-    ":com_android_support_support_v4_java",
-  ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_android_support_preference_v7_java") {
-  aar_path = "libs/com_android_support_preference_v7/preference-v7-27.0.0.aar"
-  info_path = "libs/com_android_support_preference_v7/com_android_support_preference_v7.info"
-
-  # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
-  visibility = [ ":*" ]
-  deps = [
-    ":com_android_support_appcompat_v7_java",
     ":com_android_support_recyclerview_v7_java",
     ":com_android_support_support_v4_java",
   ]

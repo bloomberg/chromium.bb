@@ -353,6 +353,7 @@ android_library("chrome_java") {
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_gridlayout_v7_java",
     "//third_party/android_deps:com_android_support_mediarouter_v7_java",
+    "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
