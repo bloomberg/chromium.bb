@@ -139,6 +139,7 @@ class CategorizedWorkerPool;
 class DesktopCaptureDevice;
 class DWriteFontLookupTableBuilder;
 class GpuProcessTransportFactory;
+class InProcessUtilityThread;
 class NestedMessagePumpAndroid;
 class RenderWidgetHostViewMac;
 class RTCVideoDecoder;
@@ -455,6 +456,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
   friend class base::StackSamplingProfiler;
   friend class content::DesktopCaptureDevice;
+  friend class content::InProcessUtilityThread;
   friend class content::RTCVideoDecoder;
   friend class content::RTCVideoDecoderAdapter;
   friend class content::RTCVideoEncoder;
