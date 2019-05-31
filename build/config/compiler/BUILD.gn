@@ -1445,6 +1445,10 @@ config("default_warnings") {
       # comments
       # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61638
       cflags += [ "-Wno-comments" ]
+
+      # -Wpacked-not-aligned complains all generated mojom-shared-internal.h
+      # files.
+      cflags += [ "-Wno-packed-not-aligned" ]
     }
   }
 
