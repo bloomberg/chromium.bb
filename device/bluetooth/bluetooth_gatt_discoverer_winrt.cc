@@ -37,12 +37,23 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattDeviceService;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattDeviceServicesResult;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattOpenStatus;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattOpenStatus_AlreadyOpened;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattOpenStatus_Success;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattSharingMode;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattSharingMode_SharedReadAndWrite;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattCharacteristic3;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattCharacteristicsResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDescriptorsResult;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    IGattDeviceService;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDeviceService3;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
@@ -196,15 +207,6 @@ void BluetoothGattDiscovererWinrt::OnGetGattServices(
 
   num_services_ = gatt_services_.size();
   for (const auto& gatt_service : gatt_services_) {
-    uint16_t service_attribute_handle;
-    hr = gatt_service->get_AttributeHandle(&service_attribute_handle);
-    if (FAILED(hr)) {
-      VLOG(2) << "Getting AttributeHandle failed: "
-              << logging::SystemErrorCodeToString(hr);
-      std::move(callback_).Run(false);
-      return;
-    }
-
     ComPtr<IGattDeviceService3> gatt_service_3;
     hr = gatt_service.As(&gatt_service_3);
     if (FAILED(hr)) {
@@ -214,29 +216,72 @@ void BluetoothGattDiscovererWinrt::OnGetGattServices(
       return;
     }
 
-    ComPtr<IAsyncOperation<GattCharacteristicsResult*>> get_characteristics_op;
-    hr = gatt_service_3->GetCharacteristicsAsync(&get_characteristics_op);
+    ComPtr<IAsyncOperation<GattOpenStatus>> open_op;
+    hr =
+        gatt_service_3->OpenAsync(GattSharingMode_SharedReadAndWrite, &open_op);
     if (FAILED(hr)) {
-      VLOG(2) << "GattDeviceService::GetCharacteristicsAsync() failed: "
+      VLOG(2) << "GattDeviceService::OpenAsync() failed: "
               << logging::SystemErrorCodeToString(hr);
       std::move(callback_).Run(false);
-      return;
     }
 
     hr = base::win::PostAsyncResults(
-        std::move(get_characteristics_op),
-        base::BindOnce(&BluetoothGattDiscovererWinrt::OnGetCharacteristics,
+        std::move(open_op),
+        base::BindOnce(&BluetoothGattDiscovererWinrt::OnServiceOpen,
                        weak_ptr_factory_.GetWeakPtr(),
-                       service_attribute_handle));
-
-    if (FAILED(hr)) {
-      VLOG(2) << "PostAsyncResults failed: "
-              << logging::SystemErrorCodeToString(hr);
-      std::move(callback_).Run(false);
-    }
+                       std::move(gatt_service)));
   }
 
   RunCallbackIfDone();
+}
+
+void BluetoothGattDiscovererWinrt::OnServiceOpen(
+    ComPtr<IGattDeviceService> gatt_service,
+    GattOpenStatus status) {
+  if (status != GattOpenStatus_Success &&
+      status != GattOpenStatus_AlreadyOpened) {
+    VLOG(2) << "Failed to open GATT service: " << status;
+    std::move(callback_).Run(false);
+    return;
+  }
+
+  uint16_t service_attribute_handle;
+  HRESULT hr = gatt_service->get_AttributeHandle(&service_attribute_handle);
+  if (FAILED(hr)) {
+    VLOG(2) << "Getting AttributeHandle failed: "
+            << logging::SystemErrorCodeToString(hr);
+    std::move(callback_).Run(false);
+    return;
+  }
+
+  ComPtr<IGattDeviceService3> gatt_service_3;
+  hr = gatt_service.As(&gatt_service_3);
+  if (FAILED(hr)) {
+    VLOG(2) << "Obtaining IGattDeviceService3 failed: "
+            << logging::SystemErrorCodeToString(hr);
+    std::move(callback_).Run(false);
+    return;
+  }
+
+  ComPtr<IAsyncOperation<GattCharacteristicsResult*>> get_characteristics_op;
+  hr = gatt_service_3->GetCharacteristicsAsync(&get_characteristics_op);
+  if (FAILED(hr)) {
+    VLOG(2) << "GattDeviceService::GetCharacteristicsAsync() failed: "
+            << logging::SystemErrorCodeToString(hr);
+    std::move(callback_).Run(false);
+    return;
+  }
+
+  hr = base::win::PostAsyncResults(
+      std::move(get_characteristics_op),
+      base::BindOnce(&BluetoothGattDiscovererWinrt::OnGetCharacteristics,
+                     weak_ptr_factory_.GetWeakPtr(), service_attribute_handle));
+
+  if (FAILED(hr)) {
+    VLOG(2) << "PostAsyncResults failed: "
+            << logging::SystemErrorCodeToString(hr);
+    std::move(callback_).Run(false);
+  }
 }
 
 void BluetoothGattDiscovererWinrt::OnGetCharacteristics(
