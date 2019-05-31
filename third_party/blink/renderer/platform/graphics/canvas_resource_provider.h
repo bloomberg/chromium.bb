@@ -55,7 +55,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kAcceleratedCompositedResourceUsage,
     kAcceleratedDirect2DResourceUsage,
     kAcceleratedDirect3DResourceUsage,
-    kCreateSharedImageForTesting,
   };
 
   enum PresentationMode {
@@ -87,6 +86,16 @@ class PLATFORM_EXPORT CanvasResourceProvider
       base::WeakPtr<CanvasResourceDispatcher>,
       bool is_origin_top_left = true);
 
+  static std::unique_ptr<CanvasResourceProvider> CreateForTesting(
+      const IntSize&,
+      ResourceProviderType,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      unsigned msaa_sample_count,
+      const CanvasColorParams&,
+      PresentationMode,
+      base::WeakPtr<CanvasResourceDispatcher>,
+      bool is_origin_top_left = true);
+
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a
   // TransferableResource should call ProduceCanvasResource() instead.
@@ -105,6 +114,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   const IntSize& Size() const { return size_; }
   virtual bool IsValid() const = 0;
   virtual bool IsAccelerated() const = 0;
+  // Returns true if the resource can be used by the display compositor.
   virtual bool SupportsDirectCompositing() const = 0;
   virtual bool SupportsSingleBuffering() const { return false; }
   uint32_t ContentUniqueID() const;

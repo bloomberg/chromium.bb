@@ -41,11 +41,25 @@ AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     unsigned texture_id,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
-    IntSize mailbox_size,
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
+    IntSize mailbox_size) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size, std::move(release_callback)));
+      mailbox_size));
+}
+
+scoped_refptr<AcceleratedStaticBitmapImage>
+AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
+    const gpu::Mailbox& mailbox,
+    const gpu::SyncToken& sync_token,
+    const SkImageInfo& sk_image_info,
+    GLenum texture_target,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    PlatformThreadId context_thread_id,
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
+  return base::AdoptRef(new AcceleratedStaticBitmapImage(
+      mailbox, sync_token, sk_image_info, texture_target,
+      std::move(context_provider_wrapper), context_thread_id,
+      std::move(release_callback)));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
@@ -64,13 +78,27 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     unsigned texture_id,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
-    IntSize mailbox_size,
+    IntSize mailbox_size)
+    : paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
+  texture_holder_ = std::make_unique<MailboxTextureHolder>(
+      mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
+      mailbox_size);
+}
+
+AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
+    const gpu::Mailbox& mailbox,
+    const gpu::SyncToken& sync_token,
+    const SkImageInfo& sk_image_info,
+    GLenum texture_target,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
+        context_provider_wrapper,
+    PlatformThreadId context_thread_id,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback)
     : paint_image_content_id_(cc::PaintImage::GetNextContentId()),
       release_callback_(std::move(release_callback)) {
   texture_holder_ = std::make_unique<MailboxTextureHolder>(
-      mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size);
+      mailbox, sync_token, std::move(context_provider_wrapper),
+      context_thread_id, sk_image_info, texture_target);
 }
 
 namespace {
@@ -95,7 +123,7 @@ void DestroySkImageOnOriginalThread(
   image.reset();
 }
 
-}  // unnamed namespace
+}  // namespace
 
 AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

@@ -584,8 +584,19 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
     return false;
 
   // Note frame is kept alive via a reference kept in out_release_callback.
-  return frame->PrepareTransferableResource(out_resource, out_release_callback,
-                                            kUnverifiedSyncToken);
+  if (!frame->PrepareTransferableResource(out_resource, out_release_callback,
+                                          kUnverifiedSyncToken) ||
+      *out_resource == previous_frame_resource_) {
+    // If the resource did not change, the release will be handled correctly
+    // when the callback from the previous frame is dispatched. But run the
+    // |out_release_callback| to release the ref acquired above.
+    (*out_release_callback)->Run(gpu::SyncToken(), false /* is_lost */);
+    *out_release_callback = nullptr;
+    return false;
+  }
+
+  previous_frame_resource_ = *out_resource;
+  return true;
 }
 
 cc::Layer* Canvas2DLayerBridge::Layer() {

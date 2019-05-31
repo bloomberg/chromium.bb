@@ -35,6 +35,7 @@ class PLATFORM_EXPORT GraphicsContext3DUtils {
   // when the texture gets recycled by skia for creating a new SkSurface or
   // SkImage with a pre-existing GrTexture backing.
   void GetMailboxForSkImage(gpu::Mailbox&,
+                            GLenum&,
                             const sk_sp<SkImage>&,
                             GLenum filter);
   void RemoveCachedMailbox(GrTexture*);

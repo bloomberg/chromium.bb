@@ -151,8 +151,8 @@ TEST_F(CanvasResourceProviderTest,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kAcceleratedCompositedResourceUsage,
+  auto provider = CanvasResourceProvider::CreateForTesting(
+      kSize, CanvasResourceProvider::kTextureGpuMemoryBuffer,
       context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
@@ -228,9 +228,9 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedImage) {
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kCreateSharedImageForTesting,
-      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+  auto provider = CanvasResourceProvider::CreateForTesting(
+      kSize, CanvasResourceProvider::kSharedImage, context_provider_wrapper_,
+      0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
 
@@ -279,9 +279,9 @@ TEST_F(CanvasResourceProviderTest,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kCreateSharedImageForTesting,
-      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+  auto provider = CanvasResourceProvider::CreateForTesting(
+      kSize, CanvasResourceProvider::kSharedImage, context_provider_wrapper_,
+      0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
   ASSERT_TRUE(provider->IsValid());
@@ -320,9 +320,9 @@ TEST_F(CanvasResourceProviderTest,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kCreateSharedImageForTesting,
-      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+  auto provider = CanvasResourceProvider::CreateForTesting(
+      kSize, CanvasResourceProvider::kSharedImage, context_provider_wrapper_,
+      0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
   ASSERT_TRUE(provider->IsValid());

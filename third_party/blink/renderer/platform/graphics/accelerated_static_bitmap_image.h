@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 class GrContext;
+struct SkImageInfo;
 
 namespace viz {
 class SingleReleaseCallback;
@@ -37,18 +38,26 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   // callers would use this option.
   // The |mailbox| is a name for the texture backing, allowing other contexts to
   // use the same backing.
-  // |mailbox_type| indicates whether |mailbox| is a SharedImage identifier or a
-  // deprecated mailbox (generated via ProduceTextureDirectCHROMIUM).
-  // |release_callback| is an optional callback to be invoked when this image
-  // is destroyed. It can be invoked on any thread.
   static scoped_refptr<AcceleratedStaticBitmapImage>
   CreateFromWebGLContextImage(
       const gpu::Mailbox&,
       const gpu::SyncToken&,
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-      IntSize mailbox_size,
-      std::unique_ptr<viz::SingleReleaseCallback> release_callback = nullptr);
+      IntSize mailbox_size);
+
+  // |release_callback| is an optional callback to be invoked when this image
+  // is destroyed. It can be invoked on any thread.
+  // If the image is created on a different thread than |context_thread_id| then
+  // the provided sync_token must be verified.
+  static scoped_refptr<AcceleratedStaticBitmapImage> CreateFromCanvasMailbox(
+      const gpu::Mailbox&,
+      const gpu::SyncToken&,
+      const SkImageInfo& sk_image_info,
+      GLenum texture_target,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      PlatformThreadId context_thread_id,
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   bool CurrentFrameKnownToBeOpaque() override;
   IntSize Size() const override;
@@ -111,7 +120,14 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       const gpu::SyncToken&,
       unsigned texture_id,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-      IntSize mailbox_size,
+      IntSize mailbox_size);
+  AcceleratedStaticBitmapImage(
+      const gpu::Mailbox&,
+      const gpu::SyncToken&,
+      const SkImageInfo& sk_image_info,
+      GLenum texture_target,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
+      PlatformThreadId context_thread_id,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   void CreateImageFromMailboxIfNeeded();

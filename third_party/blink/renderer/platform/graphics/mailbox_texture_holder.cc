@@ -43,10 +43,32 @@ MailboxTextureHolder::MailboxTextureHolder(
       mailbox_(mailbox),
       sync_token_(sync_token),
       texture_id_(texture_id_to_delete_after_mailbox_consumed),
-      size_(mailbox_size),
       is_converted_from_skia_texture_(false),
-      thread_id_(0) {
+      thread_id_(0),
+      sk_image_info_(SkImageInfo::MakeN32Premul(mailbox_size.Width(),
+                                                mailbox_size.Height())),
+      texture_target_(GL_TEXTURE_2D) {
   InitCommon();
+}
+
+MailboxTextureHolder::MailboxTextureHolder(
+    const gpu::Mailbox& mailbox,
+    const gpu::SyncToken& sync_token,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
+        context_provider_wrapper,
+    PlatformThreadId context_thread_id,
+    const SkImageInfo& sk_image_info,
+    GLenum texture_target)
+    : TextureHolder(std::move(context_provider_wrapper)),
+      mailbox_(mailbox),
+      sync_token_(sync_token),
+      texture_id_(0),
+      is_converted_from_skia_texture_(false),
+      thread_id_(context_thread_id),
+      sk_image_info_(sk_image_info),
+      texture_target_(texture_target) {
+  DCHECK(thread_id_);
+  DCHECK(!IsCrossThread() || sync_token_.verified_flush());
 }
 
 MailboxTextureHolder::MailboxTextureHolder(
@@ -59,13 +81,13 @@ MailboxTextureHolder::MailboxTextureHolder(
   DCHECK(texture_holder->IsSkiaTextureHolder());
   sk_sp<SkImage> image = texture_holder->GetSkImage();
   DCHECK(image);
-  size_ = IntSize(image->width(), image->height());
+  sk_image_info_ = image->imageInfo();
 
   if (!ContextProviderWrapper())
     return;
 
-  ContextProviderWrapper()->Utils()->GetMailboxForSkImage(mailbox_, image,
-                                                          filter);
+  ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
+      mailbox_, texture_target_, image, filter);
 
   InitCommon();
 }
@@ -118,6 +140,7 @@ void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
 }
 
 void MailboxTextureHolder::InitCommon() {
+  DCHECK(!thread_id_);
   Thread* thread = Thread::Current();
   thread_id_ = thread->ThreadId();
   texture_thread_task_runner_ = thread->GetTaskRunner();

@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/mailbox_texture_holder.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -28,7 +29,11 @@ SkiaTextureHolder::SkiaTextureHolder(
   DCHECK(texture_holder->IsMailboxTextureHolder());
   const gpu::Mailbox mailbox = texture_holder->GetMailbox();
   const gpu::SyncToken sync_token = texture_holder->GetSyncToken();
-  const IntSize mailbox_size = texture_holder->Size();
+
+  auto* mailbox_texture_holder =
+      static_cast<MailboxTextureHolder*>(texture_holder.get());
+  const auto& sk_image_info = mailbox_texture_holder->sk_image_info();
+  GLenum texture_target = mailbox_texture_holder->texture_target();
 
   if (!ContextProvider())
     return;
@@ -53,19 +58,17 @@ SkiaTextureHolder::SkiaTextureHolder(
   }
 
   GrGLTextureInfo texture_info;
-  texture_info.fTarget = GL_TEXTURE_2D;
+  texture_info.fTarget = texture_target;
   texture_info.fID = shared_context_texture_id;
-  if (kN32_SkColorType == kRGBA_8888_SkColorType) {
-    texture_info.fFormat = GL_RGBA8_OES;
-  } else {
-    DCHECK(kN32_SkColorType == kBGRA_8888_SkColorType);
-    texture_info.fFormat = GL_BGRA8_EXT;
-  }
-  GrBackendTexture backend_texture(mailbox_size.Width(), mailbox_size.Height(),
-                                   GrMipMapped::kNo, texture_info);
-  image_ = SkImage::MakeFromAdoptedTexture(shared_gr_context, backend_texture,
-                                           kBottomLeft_GrSurfaceOrigin,
-                                           kN32_SkColorType);
+  texture_info.fFormat =
+      CanvasColorParams(sk_image_info).GLSizedInternalFormat();
+  GrBackendTexture backend_texture(sk_image_info.width(),
+                                   sk_image_info.height(), GrMipMapped::kNo,
+                                   texture_info);
+  image_ = SkImage::MakeFromAdoptedTexture(
+      shared_gr_context, backend_texture, kBottomLeft_GrSurfaceOrigin,
+      sk_image_info.colorType(), sk_image_info.alphaType(),
+      sk_image_info.refColorSpace());
 }
 
 SkiaTextureHolder::~SkiaTextureHolder() {

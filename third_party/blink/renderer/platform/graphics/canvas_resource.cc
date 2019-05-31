@@ -677,7 +677,9 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
     : CanvasResource(std::move(provider), filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       is_overlay_candidate_(is_overlay_candidate),
-      size_(size) {
+      size_(size),
+      owning_thread_id_(Thread::Current()->ThreadId()),
+      owning_thread_task_runner_(Thread::Current()->GetTaskRunner()) {
   if (!context_provider_wrapper_)
     return;
 
@@ -688,8 +690,13 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
   uint32_t flags = gpu::SHARED_IMAGE_USAGE_DISPLAY |
                    gpu::SHARED_IMAGE_USAGE_GLES2 |
                    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
-  if (is_overlay_candidate_)
+  if (is_overlay_candidate_) {
     flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+    texture_target_ = gpu::GetBufferTextureTarget(
+        gfx::BufferUsage::SCANOUT,
+        BufferFormat(ColorParams().TransferableResourceFormat()),
+        context_provider_wrapper_->ContextProvider()->GetCapabilities());
+  }
 
   shared_image_mailbox_ = shared_image_interface->CreateSharedImage(
       ColorParams().TransferableResourceFormat(), gfx::Size(size),
@@ -699,8 +706,9 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
   WaitSyncToken(shared_image_interface->GenUnverifiedSyncToken());
 }
 
-GLuint CanvasResourceSharedImage::GetTextureIdForBackendTexture() {
+GLuint CanvasResourceSharedImage::GetTextureIdForBackendTexture() const {
   if (!texture_id_) {
+    DCHECK(!is_cross_thread());
     auto* gl = ContextGL();
     DCHECK(gl);
     texture_id_ =
@@ -732,17 +740,12 @@ CanvasResourceSharedImage::~CanvasResourceSharedImage() {
 }
 
 GLenum CanvasResourceSharedImage::TextureTarget() const {
-  if (is_overlay_candidate_) {
-    return gpu::GetBufferTextureTarget(
-        gfx::BufferUsage::SCANOUT,
-        BufferFormat(ColorParams().TransferableResourceFormat()),
-        context_provider_wrapper_->ContextProvider()->GetCapabilities());
-  } else {
-    return GL_TEXTURE_2D;
-  }
+  return texture_target_;
 }
 
 void CanvasResourceSharedImage::TearDown() {
+  DCHECK(!is_cross_thread());
+
   if (ContextProviderWrapper()) {
     auto* gl = ContextGL();
     auto* shared_image_interface =
@@ -759,29 +762,66 @@ void CanvasResourceSharedImage::TearDown() {
   texture_id_ = 0u;
 }
 
+void CanvasResourceSharedImage::Abandon() {
+  if (auto context_provider = SharedGpuContext::ContextProviderWrapper()) {
+    auto* sii = context_provider->ContextProvider()->SharedImageInterface();
+    if (sii)
+      sii->DestroySharedImage(gpu::SyncToken(), shared_image_mailbox_);
+  }
+}
+
 void CanvasResourceSharedImage::WillDraw() {
+  DCHECK(!is_cross_thread())
+      << "Write access is only allowed on the owning thread";
   mailbox_needs_new_sync_token_ = true;
 }
 
 // static
 void CanvasResourceSharedImage::OnBitmapImageDestroyed(
     scoped_refptr<CanvasResourceSharedImage> resource,
-    scoped_refptr<base::SingleThreadTaskRunner> original_task_runner,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
-  if (!original_task_runner->BelongsToCurrentThread()) {
+  if (resource->is_cross_thread()) {
+    auto& task_runner = *resource->owning_thread_task_runner_;
     PostCrossThreadTask(
-        *original_task_runner, FROM_HERE,
+        task_runner, FROM_HERE,
         CrossThreadBindOnce(&CanvasResourceSharedImage::OnBitmapImageDestroyed,
-                            std::move(resource),
-                            std::move(original_task_runner), sync_token,
-                            is_lost));
+                            std::move(resource), sync_token, is_lost));
     return;
   }
 
+  // The StaticBitmapImage is used for readbacks which may modify the texture
+  // params. Note that this is racy, since the modification and resetting of the
+  // param is not atomic so the display may draw with incorrect params, but its
+  // a good enough fix for now.
+  resource->needs_gl_filter_reset_ = true;
+  resource->SetGLFilterIfNeeded();
   auto weak_provider = resource->WeakProvider();
   ReleaseFrameResources(std::move(weak_provider), std::move(resource),
                         sync_token, is_lost);
+}
+
+void CanvasResourceSharedImage::Transfer() {
+  if (is_cross_thread() || !ContextProviderWrapper())
+    return;
+
+  // Initialize lazy params before transfer to another thread.
+  GetTextureIdForBackendTexture();
+  // Initialize GLFilter first so that the generated sync token includes this
+  // update.
+  SetGLFilterIfNeeded();
+  GetSyncToken();
+
+  // TODO(khushalsagar): This is for consistency with MailboxTextureHolder
+  // transfer path. Its unclear why the verification can not be deferred until
+  // the resource needs to be transferred cross-process.
+  if (!sync_token_.verified_flush()) {
+    int8_t* token_data = sync_token_.GetData();
+    auto* gl = ContextGL();
+    gl->ShallowFlushCHROMIUM();
+    gl->VerifySyncTokensCHROMIUM(&token_data, 1);
+    sync_token_.SetVerifyFlush();
+  }
 }
 
 scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
@@ -791,21 +831,44 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
   // ref-count on the resource as a proxy for a read lock to allow recycling the
   // resource once all refs have been released.
   auto release_callback = viz::SingleReleaseCallback::Create(base::BindOnce(
-      &OnBitmapImageDestroyed, scoped_refptr<CanvasResourceSharedImage>(this),
-      Thread::Current()->GetTaskRunner()));
+      &OnBitmapImageDestroyed, scoped_refptr<CanvasResourceSharedImage>(this)));
 
-  scoped_refptr<StaticBitmapImage> image =
-      AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
-          shared_image_mailbox_, GetSyncToken(), 0, ContextProviderWrapper(),
-          Size(), std::move(release_callback));
+  scoped_refptr<StaticBitmapImage> image;
+  SkImageInfo image_info = SkImageInfo::Make(
+      Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
+      ColorParams().GetSkAlphaType(), ColorParams().GetSkColorSpace());
+  auto sync_token = is_cross_thread() ? sync_token_ : GetSyncToken();
+  image = AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
+      shared_image_mailbox_, sync_token, image_info, texture_target_,
+      context_provider_wrapper_, owning_thread_id_,
+      std::move(release_callback));
+
   DCHECK(image);
   return image;
 }
 
 const gpu::Mailbox& CanvasResourceSharedImage::GetOrCreateGpuMailbox(
     MailboxSyncMode sync_mode) {
-  mailbox_sync_mode_ = sync_mode;
+  if (!is_cross_thread()) {
+    SetGLFilterIfNeeded();
+    mailbox_sync_mode_ = sync_mode;
+  }
   return shared_image_mailbox_;
+}
+
+void CanvasResourceSharedImage::SetGLFilterIfNeeded() {
+  DCHECK(!is_cross_thread());
+
+  if (!needs_gl_filter_reset_ || !ContextGL())
+    return;
+
+  ContextGL()->BindTexture(TextureTarget(), GetTextureIdForBackendTexture());
+  ContextGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLFilter());
+  ContextGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLFilter());
+  ContextGL()->BindTexture(TextureTarget(), 0u);
+  // TODO(khushalsagar): Inform skia about the param modification.
+  mailbox_needs_new_sync_token_ = true;
+  needs_gl_filter_reset_ = false;
 }
 
 bool CanvasResourceSharedImage::HasGpuMailbox() const {
@@ -814,10 +877,13 @@ bool CanvasResourceSharedImage::HasGpuMailbox() const {
 
 const gpu::SyncToken CanvasResourceSharedImage::GetSyncToken() {
   if (mailbox_needs_new_sync_token_) {
+    DCHECK(!is_cross_thread());
+
     auto* gl = ContextGL();
     DCHECK(gl);  // caller should already have early exited if !gl.
     if (mailbox_sync_mode_ == kVerifiedSyncToken) {
       gl->GenSyncTokenCHROMIUM(sync_token_.GetData());
+      DCHECK(sync_token_.verified_flush());
     } else {
       gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());
     }
@@ -828,6 +894,7 @@ const gpu::SyncToken CanvasResourceSharedImage::GetSyncToken() {
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
 CanvasResourceSharedImage::ContextProviderWrapper() const {
+  DCHECK(!is_cross_thread());
   return context_provider_wrapper_;
 }
 

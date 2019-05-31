@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/null_task_runner.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,6 +30,8 @@ template <class GLES2InterfaceType>
 class SharedGpuContextTestBase : public Test {
  public:
   void SetUp() override {
+    task_runner_ = base::MakeRefCounted<base::NullTaskRunner>();
+    handle_ = std::make_unique<base::ThreadTaskRunnerHandle>(task_runner_);
     auto factory = [](GLES2InterfaceType* gl, bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
       *gpu_compositing_disabled = false;
@@ -39,8 +42,14 @@ class SharedGpuContextTestBase : public Test {
         WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
   }
 
-  void TearDown() override { SharedGpuContext::ResetForTesting(); }
+  void TearDown() override {
+    handle_.reset();
+    task_runner_.reset();
+    SharedGpuContext::ResetForTesting();
+  }
 
+  scoped_refptr<base::NullTaskRunner> task_runner_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> handle_;
   GLES2InterfaceType gl_;
 };
 
@@ -62,6 +71,8 @@ class MailboxSharedGpuContextTest
 class BadSharedGpuContextTest : public Test {
  public:
   void SetUp() override {
+    task_runner_ = base::MakeRefCounted<base::NullTaskRunner>();
+    handle_ = std::make_unique<base::ThreadTaskRunnerHandle>(task_runner_);
     auto factory = [](bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
       *gpu_compositing_disabled = false;
@@ -71,7 +82,14 @@ class BadSharedGpuContextTest : public Test {
         WTF::BindRepeating(factory));
   }
 
-  void TearDown() override { SharedGpuContext::ResetForTesting(); }
+  void TearDown() override {
+    handle_.reset();
+    task_runner_.reset();
+    SharedGpuContext::ResetForTesting();
+  }
+
+  scoped_refptr<base::NullTaskRunner> task_runner_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> handle_;
 };
 
 // Test fixure that simulate not using gpu compositing.
@@ -205,6 +223,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
 
   FakeMailboxGenerator mailboxGenerator;
   gpu::Mailbox mailbox;
+  GLenum texture_target;
   mailbox.name[0] = 0;
 
   EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, mailbox.name))
@@ -213,7 +232,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
                                 &FakeMailboxGenerator::ProduceTexture));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
+      mailbox, texture_target, image->PaintImageForCurrentFrame().GetSkImage(),
+      GL_NEAREST);
 
   EXPECT_EQ(mailbox.name[0], 1);
 
@@ -224,7 +244,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
 
   mailbox.name[0] = 0;
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
+      mailbox, texture_target, image->PaintImageForCurrentFrame().GetSkImage(),
+      GL_NEAREST);
   EXPECT_EQ(mailbox.name[0], 1);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -246,6 +267,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
 
   FakeMailboxGenerator mailboxGenerator;
   gpu::Mailbox mailbox;
+  GLenum texture_target;
   mailbox.name[0] = 0;
 
   EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, mailbox.name))
@@ -254,7 +276,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
                                 &FakeMailboxGenerator::ProduceTexture));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
+      mailbox, texture_target, image->PaintImageForCurrentFrame().GetSkImage(),
+      GL_NEAREST);
 
   EXPECT_EQ(mailbox.name[0], 1);
   testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -284,7 +307,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
 
   mailbox.name[0] = 0;
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
+      mailbox, texture_target, image->PaintImageForCurrentFrame().GetSkImage(),
+      GL_NEAREST);
   EXPECT_EQ(mailbox.name[0], 1);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
