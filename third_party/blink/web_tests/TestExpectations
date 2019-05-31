@@ -2421,7 +2421,6 @@ crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.js [ Pa
 # Fails with leak detector.
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/full-screen-frameset.html [ Skip ]
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Skip ]
-crbug.com/936374 [ Linux ] fast/workers/taskqueue/taskWorklet-graph-cancel.html [ Skip ]
 
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failure ]
@@ -5217,7 +5216,6 @@ crbug.com/895777 external/wpt/css/css-transforms/text-perspective-001.html [ Pas
 crbug.com/895777 external/wpt/infrastructure/assumptions/blank.html [ Failure Crash ]
 
 #Sheriff 2018-10-23
-crbug.com/898050 [ Win ] fast/workers/taskqueue/basic.html [ Pass Timeout ]
 crbug.com/898378 [ Mac10.13 ] fast/scroll-behavior/smooth-scroll/keyboard-scroll.html [ Timeout ]
 
 # Sheriff 2018-10-24

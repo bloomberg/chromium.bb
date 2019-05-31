@@ -1335,6 +1335,10 @@
       status: "stable",
     },
     {
+      name: "ScriptedTaskQueue",
+      status: "experimental"
+    },
+    {
       name: "ScriptStreamingOnPreload",
     },
     // Serialize and restore scroll anchors.
@@ -1669,10 +1673,6 @@
     {
       name: "WebXRPlaneDetection",
       // depends_on: ["WebXR"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
-    },
-    {
-      name: "WorkerTaskQueue",
-      status: "experimental"
     },
     {
       name: "XSLT",

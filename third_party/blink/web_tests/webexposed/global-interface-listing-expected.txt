@@ -7597,11 +7597,6 @@ interface SyncManager
     method constructor
     method getTags
     method register
-interface Task
-    attribute @@toStringTag
-    getter result
-    method cancel
-    method constructor
 interface TaskAttributionTiming : PerformanceEntry
     attribute @@toStringTag
     getter containerId
@@ -7610,13 +7605,6 @@ interface TaskAttributionTiming : PerformanceEntry
     getter containerType
     method constructor
     method toJSON
-interface TaskWorklet : Worklet
-    attribute @@toStringTag
-    method constructor
-    method postTask
-interface TaskWorkletGlobalScope : WorkletGlobalScope
-    attribute @@toStringTag
-    method constructor
 interface Text : CharacterData
     attribute @@toStringTag
     getter assignedSlot
@@ -10451,11 +10439,6 @@ interface Worker : EventTarget
     method terminate
     setter onerror
     setter onmessage
-interface WorkerTaskQueue
-    attribute @@toStringTag
-    method constructor
-    method postFunction
-    method postTask
 interface Worklet
     attribute @@toStringTag
     method addModule
@@ -11080,7 +11063,6 @@ interface webkitURL
     getter status
     getter statusbar
     getter styleMedia
-    getter taskWorklet
     getter toolbar
     getter visualViewport
     getter webkitStorageInfo

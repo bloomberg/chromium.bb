@@ -113,7 +113,7 @@ void FrameTaskQueueController::CreateLoadingTaskQueue() {
 
 void FrameTaskQueueController::CreateWebSchedulingTaskQueue(
     WebSchedulingTaskQueueType task_queue_type) {
-  DCHECK(RuntimeEnabledFeatures::WorkerTaskQueueEnabled());
+  DCHECK(RuntimeEnabledFeatures::ScriptedTaskQueueEnabled());
   DCHECK(!web_scheduling_task_queues_[task_queue_type]);
   // |main_thread_scheduler_impl_| can be null in unit tests.
   DCHECK(main_thread_scheduler_impl_);

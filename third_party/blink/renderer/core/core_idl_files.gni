@@ -469,10 +469,6 @@ core_idl_files =
                     "typed_arrays/uint8_array.idl",
                     "typed_arrays/uint8_clamped_array.idl",
                     "url/url_search_params.idl",
-                    "workers/experimental/task.idl",
-                    "workers/experimental/task_worklet.idl",
-                    "workers/experimental/task_worklet_global_scope.idl",
-                    "workers/experimental/worker_task_queue.idl",
                     "workers/shared_worker.idl",
                     "workers/worker.idl",
                     "workers/worker_location.idl",
@@ -569,7 +565,6 @@ core_dependency_idl_files =
                     "timing/window_performance.idl",
                     "timing/worker_global_scope_performance.idl",
                     "workers/abstract_worker.idl",
-                    "workers/experimental/window_task_worklet.idl",
                     "xml/document_xpath_evaluator.idl",
                   ],
                   "abspath")
