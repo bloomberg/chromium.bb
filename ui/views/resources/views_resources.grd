@@ -22,20 +22,6 @@
       <structure type="chrome_scaled_image" name="IDR_BUTTON_HOVER" file="common/button_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_NORMAL" file="common/button.png" />
       <structure type="chrome_scaled_image" name="IDR_BUTTON_PRESSED" file="common/button_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX" file="common/checkbox.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_CHECKED" file="common/checkbox_checked.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_CHECKED_DISABLED" file="common/checkbox_checked_inactive.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_CHECKED_HOVER" file="common/checkbox_checked_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_CHECKED_PRESSED" file="common/checkbox_checked_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED" file="common/checkbox_inactive.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED" file="common/checkbox_focused.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_CHECKED" file="common/checkbox_focused_checked.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_CHECKED_HOVER" file="common/checkbox_focused_checked_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_CHECKED_PRESSED" file="common/checkbox_focused_checked_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_HOVER" file="common/checkbox_focused_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_PRESSED" file="common/checkbox_focused_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_HOVER" file="common/checkbox_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKBOX_PRESSED" file="common/checkbox_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE" file="close.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_H" file="close_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_P" file="close_pressed.png" />

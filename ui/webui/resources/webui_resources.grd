@@ -57,36 +57,6 @@ without changes to the corresponding grd file. -->
                file="../../views/resources/default_100_percent/common/blue_button_focused_pressed.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_FOCUSED_HOVER"
                file="../../views/resources/default_100_percent/common/blue_button_focused_hover.png" type="BINDATA" />
-      <!-- Checkbox (unchecked) -->
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX"
-               file="../../views/resources/default_100_percent/common/checkbox.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_HOVER"
-               file="../../views/resources/default_100_percent/common/checkbox_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_PRESSED"
-               file="../../views/resources/default_100_percent/common/checkbox_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_FOCUSED"
-               file="../../views/resources/default_100_percent/common/checkbox_focused.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_FOCUSED_HOVER"
-               file="../../views/resources/default_100_percent/common/checkbox_focused_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_FOCUSED_PRESSED"
-               file="../../views/resources/default_100_percent/common/checkbox_focused_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_INACTIVE"
-               file="../../views/resources/default_100_percent/common/checkbox_inactive.png" type="BINDATA" />
-      <!-- Checkbox (checked) -->
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_CHECKED"
-               file="../../views/resources/default_100_percent/common/checkbox_checked.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_CHECKED_HOVER"
-               file="../../views/resources/default_100_percent/common/checkbox_checked_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_CHECKED_PRESSED"
-               file="../../views/resources/default_100_percent/common/checkbox_checked_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_FOCUSED_CHECKED"
-               file="../../views/resources/default_100_percent/common/checkbox_focused_checked.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_FOCUSED_CHECKED_HOVER"
-               file="../../views/resources/default_100_percent/common/checkbox_focused_checked_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_FOCUSED_CHECKED_PRESSED"
-               file="../../views/resources/default_100_percent/common/checkbox_focused_checked_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_CHECKED_INACTIVE"
-               file="../../views/resources/default_100_percent/common/checkbox_checked_inactive.png" type="BINDATA" />
       <!-- Misc buttons -->
       <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_CLOSE"
                file="images/apps/topbar_button_close.png" type="BINDATA" />
@@ -132,36 +102,6 @@ without changes to the corresponding grd file. -->
                file="../../views/resources/default_200_percent/common/blue_button_focused_pressed.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_BLUE_BUTTON_2X_FOCUSED_HOVER"
                file="../../views/resources/default_200_percent/common/blue_button_focused_hover.png" type="BINDATA" />
-      <!-- Checkbox (unchecked) -->
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_2X"
-               file="../../views/resources/default_200_percent/common/checkbox.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_2X_HOVER"
-               file="../../views/resources/default_200_percent/common/checkbox_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_2X_PRESSED"
-               file="../../views/resources/default_200_percent/common/checkbox_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_2X_FOCUSED"
-               file="../../views/resources/default_200_percent/common/checkbox_focused.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_2X_FOCUSED_HOVER"
-               file="../../views/resources/default_200_percent/common/checkbox_focused_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_2X_FOCUSED_PRESSED"
-               file="../../views/resources/default_200_percent/common/checkbox_focused_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_INACTIVE_2X"
-               file="../../views/resources/default_200_percent/common/checkbox_inactive.png" type="BINDATA" />
-      <!-- Checkbox (checked) -->
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_CHECKED_2X"
-               file="../../views/resources/default_200_percent/common/checkbox_checked.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_CHECKED_2X_HOVER"
-               file="../../views/resources/default_200_percent/common/checkbox_checked_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_CHECKED_2X_PRESSED"
-               file="../../views/resources/default_200_percent/common/checkbox_checked_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_FOCUSED_CHECKED_2X"
-               file="../../views/resources/default_200_percent/common/checkbox_focused_checked.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_FOCUSED_CHECKED_2X_HOVER"
-               file="../../views/resources/default_200_percent/common/checkbox_focused_checked_hover.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_FOCUSED_CHECKED_2X_PRESSED"
-               file="../../views/resources/default_200_percent/common/checkbox_focused_checked_pressed.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_CHECKBOX_CHECKED_INACTIVE_2X"
-               file="../../views/resources/default_200_percent/common/checkbox_checked_inactive.png" type="BINDATA" />
       <!-- Misc buttons -->
       <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_CLOSE"
                file="images/2x/apps/topbar_button_close.png" type="BINDATA" />
