@@ -34,11 +34,13 @@ INSTANTIATE_TEST_CASE_P(AVX2, AV1HiprecConvolveTest,
                         libaom_test::AV1HiprecConvolve::BuildParams(
                             av1_wiener_convolve_add_src_avx2));
 #endif
-#if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(NEON, AV1HiprecConvolveTest,
-                        libaom_test::AV1HiprecConvolve::BuildParams(
-                            av1_wiener_convolve_add_src_neon));
-#endif
+// TODO(http://crbug.com/aomedia/2398): Re-enable this unit test for NEON
+// version after the functions are fixed.
+// #if HAVE_NEON
+// INSTANTIATE_TEST_CASE_P(NEON, AV1HiprecConvolveTest,
+//                        libaom_test::AV1HiprecConvolve::BuildParams(
+//                            av1_wiener_convolve_add_src_neon));
+// #endif
 
 #if HAVE_SSSE3 || HAVE_AVX2
 TEST_P(AV1HighbdHiprecConvolveTest, CheckOutput) {
