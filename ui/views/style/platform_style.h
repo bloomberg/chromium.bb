@@ -18,16 +18,12 @@ class Range;
 namespace views {
 
 class Border;
-class Label;
 class LabelButton;
 class ScrollBar;
 
 // Cross-platform API for providing platform-specific styling for toolkit-views.
 class VIEWS_EXPORT PlatformStyle {
  public:
-  // Type used by LabelButton to map button states to text colors.
-  using ButtonColorByState = SkColor[Button::STATE_COUNT];
-
   // Whether the ok button is in the leading position (left in LTR) in a
   // typical Cancel/OK button group.
   static const bool kIsOkButtonLeading;
@@ -89,11 +85,6 @@ class VIEWS_EXPORT PlatformStyle {
 
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
-
-  // Applies platform styles to |label| and fills |color_by_state| with the text
-  // colors for normal, pressed, hovered, and disabled states.
-  static void ApplyLabelButtonTextStyle(Label* label,
-                                        ButtonColorByState* color_by_state);
 
   // Applies the current system theme to the default border created by |button|.
   static std::unique_ptr<Border> CreateThemedLabelButtonBorder(

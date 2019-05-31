@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/utf16_indexing.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -23,15 +22,6 @@
 #endif
 
 namespace views {
-namespace {
-
-#if !defined(DESKTOP_LINUX)
-// Default text and shadow colors for STYLE_BUTTON.
-const SkColor kStyleButtonTextColor = SK_ColorBLACK;
-const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
-#endif
-
-}  // namespace
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
 const bool PlatformStyle::kIsOkButtonLeading = true;
@@ -86,21 +76,6 @@ gfx::Range PlatformStyle::RangeToDeleteBackwards(const base::string16& text,
 }
 
 #endif  // OS_MACOSX
-
-#if !defined(DESKTOP_LINUX)
-// static
-void PlatformStyle::ApplyLabelButtonTextStyle(
-    Label* label,
-    ButtonColorByState* color_by_state) {
-  ButtonColorByState& colors = *color_by_state;
-  colors[Button::STATE_NORMAL] = kStyleButtonTextColor;
-  colors[Button::STATE_HOVERED] = kStyleButtonTextColor;
-  colors[Button::STATE_PRESSED] = kStyleButtonTextColor;
-
-  label->SetShadows(gfx::ShadowValues(
-      1, gfx::ShadowValue(gfx::Vector2d(0, 1), 0, kStyleButtonShadowColor)));
-}
-#endif
 
 #if !defined(DESKTOP_LINUX)
 // static
