@@ -38,6 +38,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -323,6 +324,17 @@ TEST_F(ShellSurfaceTest, EmulateOverrideRedirect) {
   EXPECT_TRUE(ash::wm::GetWindowState(child_window)->allow_set_bounds_direct());
   EXPECT_EQ(ash::kShellWindowId_ShelfBubbleContainer,
             child_window->parent()->id());
+
+  // NONE/SHADOW frame type should work on override redirect.
+  child_surface->SetFrame(SurfaceFrameType::SHADOW);
+  child_surface->Commit();
+  EXPECT_EQ(wm::kShadowElevationMenuOrTooltip,
+            wm::GetShadowElevationConvertDefault(child_window));
+
+  child_surface->SetFrame(SurfaceFrameType::NONE);
+  child_surface->Commit();
+  EXPECT_EQ(wm::kShadowElevationNone,
+            wm::GetShadowElevationConvertDefault(child_window));
 }
 
 TEST_F(ShellSurfaceTest, SetStartupId) {

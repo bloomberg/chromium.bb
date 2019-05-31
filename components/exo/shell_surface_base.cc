@@ -588,6 +588,12 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
   }
   if (!widget_)
     return;
+
+  // Override redirect window can request NONE/SHADOW. The shadow
+  // will be updated in next commit.
+  if (!widget_->non_client_view() && !frame_enabled())
+    return;
+
   CustomFrameView* frame_view =
       static_cast<CustomFrameView*>(widget_->non_client_view()->frame_view());
   if (frame_view->GetEnabled() == frame_enabled())
