@@ -13,11 +13,11 @@
 
 namespace blink {
 class WebMediaPlayer;
+class WebAudioSourceProviderImpl;
 }  // namespace blink
 
 namespace media {
 class AudioBus;
-class WebAudioSourceProviderImpl;
 }  // namespace media
 
 namespace content {
@@ -34,7 +34,7 @@ class CONTENT_EXPORT HtmlAudioElementCapturerSource final
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   HtmlAudioElementCapturerSource(
-      media::WebAudioSourceProviderImpl* audio_source,
+      blink::WebAudioSourceProviderImpl* audio_source,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~HtmlAudioElementCapturerSource() override;
 
@@ -49,7 +49,7 @@ class CONTENT_EXPORT HtmlAudioElementCapturerSource final
                   uint32_t frames_delayed,
                   int sample_rate);
 
-  scoped_refptr<media::WebAudioSourceProviderImpl> audio_source_;
+  scoped_refptr<blink::WebAudioSourceProviderImpl> audio_source_;
 
   bool is_started_;
   int last_sample_rate_;

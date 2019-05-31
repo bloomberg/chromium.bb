@@ -10,8 +10,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
-#include "media/blink/webaudiosourceprovider_impl.h"
 #include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 
 namespace content {
 
@@ -22,13 +22,13 @@ HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(player);
   return new HtmlAudioElementCapturerSource(
-      static_cast<media::WebAudioSourceProviderImpl*>(
+      static_cast<blink::WebAudioSourceProviderImpl*>(
           player->GetAudioSourceProvider()),
       std::move(task_runner));
 }
 
 HtmlAudioElementCapturerSource::HtmlAudioElementCapturerSource(
-    media::WebAudioSourceProviderImpl* audio_source,
+    blink::WebAudioSourceProviderImpl* audio_source,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : blink::MediaStreamAudioSource(std::move(task_runner),
                                     true /* is_local_source */),

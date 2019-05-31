@@ -11,13 +11,13 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/fake_audio_render_callback.h"
 #include "media/base/media_util.h"
-#include "media/blink/webaudiosourceprovider_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using ::testing::_;
@@ -63,7 +63,7 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
  public:
   HTMLAudioElementCapturerSourceTest()
       : fake_callback_(0.1, kAudioTrackSampleRate),
-        audio_source_(new media::WebAudioSourceProviderImpl(
+        audio_source_(new blink::WebAudioSourceProviderImpl(
             new media::NullAudioSink(
                 blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
             &media_log_)) {}
@@ -123,7 +123,7 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
 
   media::NullMediaLog media_log_;
   media::FakeAudioRenderCallback fake_callback_;
-  scoped_refptr<media::WebAudioSourceProviderImpl> audio_source_;
+  scoped_refptr<blink::WebAudioSourceProviderImpl> audio_source_;
 };
 
 // Constructs and destructs all objects. This is a non trivial sequence.

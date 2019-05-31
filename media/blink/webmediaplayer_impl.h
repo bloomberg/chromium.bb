@@ -52,6 +52,7 @@ namespace blink {
 class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
+class WebAudioSourceProviderImpl;
 }
 
 namespace base {
@@ -78,7 +79,6 @@ class MediaLog;
 class UrlIndex;
 class VideoFrameCompositor;
 class WatchTimeReporter;
-class WebAudioSourceProviderImpl;
 class WebMediaPlayerDelegate;
 
 // The canonical implementation of blink::WebMediaPlayer that's backed by
@@ -700,7 +700,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   int64_t last_reported_memory_usage_ = 0;
 
   // Routes audio playback to either AudioRendererSink or WebAudio.
-  scoped_refptr<WebAudioSourceProviderImpl> audio_source_provider_;
+  scoped_refptr<blink::WebAudioSourceProviderImpl> audio_source_provider_;
 
   // These two are mutually exclusive:
   //   |data_source_| is used for regular resource loads.

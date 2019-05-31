@@ -2,30 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/blink/webaudiosourceprovider_impl.h"
+#include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 
 #include <atomic>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_log.h"
 #include "third_party/blink/public/platform/web_audio_source_provider_client.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
-using blink::WebVector;
-
-namespace media {
+namespace blink {
 
 namespace {
 
@@ -80,7 +75,7 @@ class WebAudioSourceProviderImpl::TeeFilter
   int Render(base::TimeDelta delay,
              base::TimeTicks delay_timestamp,
              int prior_frames_skipped,
-             AudioBus* dest) override;
+             media::AudioBus* dest) override;
   void OnRenderError() override;
 
   bool initialized() const { return !!renderer_; }
@@ -108,8 +103,8 @@ class WebAudioSourceProviderImpl::TeeFilter
 };
 
 WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
-    scoped_refptr<SwitchableAudioRendererSink> sink,
-    MediaLog* media_log)
+    scoped_refptr<media::SwitchableAudioRendererSink> sink,
+    media::MediaLog* media_log)
     : volume_(1.0),
       state_(kStopped),
       client_(nullptr),
@@ -121,7 +116,7 @@ WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
 WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() = default;
 
 void WebAudioSourceProviderImpl::SetClient(
-    blink::WebAudioSourceProviderClient* client) {
+    WebAudioSourceProviderClient* client) {
   // Skip taking the lock if unnecessary. This function is the only setter for
   // |client_| so it's safe to check |client_| outside of the lock.
   if (client_ == client)
@@ -141,7 +136,7 @@ void WebAudioSourceProviderImpl::SetClient(
     // The client will now take control by calling provideInput() periodically.
     client_ = client;
 
-    set_format_cb_ = BindToCurrentLoop(base::Bind(
+    set_format_cb_ = media::BindToCurrentLoop(WTF::BindRepeating(
         &WebAudioSourceProviderImpl::OnSetFormat, weak_factory_.GetWeakPtr()));
 
     // If |tee_filter_| is Initialize()d - then run |set_format_cb_| to send
@@ -163,7 +158,8 @@ void WebAudioSourceProviderImpl::ProvideInput(
     size_t number_of_frames) {
   if (!bus_wrapper_ ||
       static_cast<size_t>(bus_wrapper_->channels()) != audio_data.size()) {
-    bus_wrapper_ = AudioBus::CreateWrapper(static_cast<int>(audio_data.size()));
+    bus_wrapper_ =
+        media::AudioBus::CreateWrapper(static_cast<int>(audio_data.size()));
   }
 
   const int incoming_number_of_frames = static_cast<int>(number_of_frames);
@@ -190,8 +186,9 @@ void WebAudioSourceProviderImpl::ProvideInput(
   bus_wrapper_->Scale(volume_);
 }
 
-void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
-                                            RenderCallback* renderer) {
+void WebAudioSourceProviderImpl::Initialize(
+    const media::AudioParameters& params,
+    RenderCallback* renderer) {
   base::AutoLock auto_lock(sink_lock_);
   DCHECK_EQ(state_, kStopped);
 
@@ -250,9 +247,9 @@ bool WebAudioSourceProviderImpl::SetVolume(double volume) {
   return true;
 }
 
-OutputDeviceInfo WebAudioSourceProviderImpl::GetOutputDeviceInfo() {
+media::OutputDeviceInfo WebAudioSourceProviderImpl::GetOutputDeviceInfo() {
   NOTREACHED();  // The blocking API is intentionally not supported.
-  return OutputDeviceInfo();
+  return media::OutputDeviceInfo();
 }
 
 void WebAudioSourceProviderImpl::GetOutputDeviceInfoAsync(
@@ -266,9 +263,10 @@ void WebAudioSourceProviderImpl::GetOutputDeviceInfoAsync(
   // Just return empty hardware parameters. When a |client_| is attached, the
   // underlying audio renderer will prefer the media parameters. See
   // IsOptimizedForHardwareParameters() for more details.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(info_cb),
-                                OutputDeviceInfo(OUTPUT_DEVICE_STATUS_OK)));
+  media::BindToCurrentLoop(
+      WTF::Bind(std::move(info_cb),
+                media::OutputDeviceInfo(media::OUTPUT_DEVICE_STATUS_OK)))
+      .Run();
 }
 
 bool WebAudioSourceProviderImpl::IsOptimizedForHardwareParameters() {
@@ -283,10 +281,10 @@ bool WebAudioSourceProviderImpl::CurrentThreadIsRenderingThread() {
 
 void WebAudioSourceProviderImpl::SwitchOutputDevice(
     const std::string& device_id,
-    OutputDeviceStatusCB callback) {
+    media::OutputDeviceStatusCB callback) {
   base::AutoLock auto_lock(sink_lock_);
   if (client_ || !sink_)
-    std::move(callback).Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+    std::move(callback).Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   else
     sink_->SwitchOutputDevice(device_id, std::move(callback));
 }
@@ -300,7 +298,7 @@ void WebAudioSourceProviderImpl::ClearCopyAudioCallback() {
   tee_filter_->SetCopyAudioCallback(CopyAudioCB());
 }
 
-int WebAudioSourceProviderImpl::RenderForTesting(AudioBus* audio_bus) {
+int WebAudioSourceProviderImpl::RenderForTesting(media::AudioBus* audio_bus) {
   return tee_filter_->Render(base::TimeDelta(), base::TimeTicks::Now(), 0,
                              audio_bus);
 }
@@ -318,7 +316,7 @@ int WebAudioSourceProviderImpl::TeeFilter::Render(
     base::TimeDelta delay,
     base::TimeTicks delay_timestamp,
     int prior_frames_skipped,
-    AudioBus* audio_bus) {
+    media::AudioBus* audio_bus) {
   DCHECK(initialized());
 
   const int num_rendered_frames = renderer_->Render(
@@ -329,11 +327,12 @@ int WebAudioSourceProviderImpl::TeeFilter::Render(
     base::AutoLock auto_lock(copy_lock_);
     if (!copy_audio_bus_callback_.is_null()) {
       const int64_t frames_delayed =
-          AudioTimestampHelper::TimeToFrames(delay, sample_rate_);
-      std::unique_ptr<AudioBus> bus_copy =
-          AudioBus::Create(audio_bus->channels(), audio_bus->frames());
+          media::AudioTimestampHelper::TimeToFrames(delay, sample_rate_);
+      std::unique_ptr<media::AudioBus> bus_copy =
+          media::AudioBus::Create(audio_bus->channels(), audio_bus->frames());
       audio_bus->CopyTo(bus_copy.get());
-      copy_audio_bus_callback_.Run(std::move(bus_copy), frames_delayed,
+      copy_audio_bus_callback_.Run(std::move(bus_copy),
+                                   static_cast<uint32_t>(frames_delayed),
                                    sample_rate_);
     }
   }
@@ -346,4 +345,4 @@ void WebAudioSourceProviderImpl::TeeFilter::OnRenderError() {
   renderer_->OnRenderError();
 }
 
-}  // namespace media
+}  // namespace blink

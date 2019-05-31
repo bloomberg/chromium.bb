@@ -46,7 +46,6 @@
 #include "media/blink/url_index.h"
 #include "media/blink/video_decode_stats_reporter.h"
 #include "media/blink/watch_time_reporter.h"
-#include "media/blink/webaudiosourceprovider_impl.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webinbandtexttrack_impl.h"
 #include "media/blink/webmediaplayer_delegate.h"
@@ -70,6 +69,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -94,9 +94,10 @@ namespace media {
 
 namespace {
 
-void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
-                            const std::string& device_id,
-                            OutputDeviceStatusCB callback) {
+void SetSinkIdOnMediaThread(
+    scoped_refptr<blink::WebAudioSourceProviderImpl> sink,
+    const std::string& device_id,
+    OutputDeviceStatusCB callback) {
   sink->SwitchOutputDevice(device_id, std::move(callback));
 }
 
@@ -388,7 +389,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   // TODO(xhwang): When we use an external Renderer, many methods won't work,
   // e.g. GetCurrentFrameFromCompositor(). See http://crbug.com/434861
-  audio_source_provider_ = new WebAudioSourceProviderImpl(
+  audio_source_provider_ = new blink::WebAudioSourceProviderImpl(
       params->audio_renderer_sink(), media_log_.get());
 
   if (observer_)

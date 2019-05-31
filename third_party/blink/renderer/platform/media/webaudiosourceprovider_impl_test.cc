@@ -7,35 +7,35 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/fake_audio_render_callback.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_audio_renderer_sink.h"
-#include "media/blink/webaudiosourceprovider_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_audio_source_provider_client.h"
+#include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 
 using ::testing::_;
 
-namespace media {
+namespace blink {
 
 namespace {
 const float kTestVolume = 0.25;
 const int kSampleRate = 48000;
 }  // namespace
 
-class WebAudioSourceProviderImplTest
-    : public testing::Test,
-      public blink::WebAudioSourceProviderClient {
+class WebAudioSourceProviderImplTest : public testing::Test,
+                                       public WebAudioSourceProviderClient {
  public:
   WebAudioSourceProviderImplTest()
-      : params_(AudioParameters::AUDIO_PCM_LINEAR,
-                CHANNEL_LAYOUT_STEREO,
+      : params_(media::AudioParameters::AUDIO_PCM_LINEAR,
+                media::CHANNEL_LAYOUT_STEREO,
                 kSampleRate,
                 64),
         fake_callback_(0.1, kSampleRate),
-        mock_sink_(new MockAudioRendererSink()),
+        mock_sink_(new media::MockAudioRendererSink()),
         wasp_impl_(new WebAudioSourceProviderImpl(mock_sink_, &media_log_)) {}
 
   virtual ~WebAudioSourceProviderImplTest() = default;
@@ -61,7 +61,7 @@ class WebAudioSourceProviderImplTest
     testing::Mock::VerifyAndClear(mock_sink_.get());
   }
 
-  void SetClient(blink::WebAudioSourceProviderClient* client) {
+  void SetClient(WebAudioSourceProviderClient* client) {
     testing::InSequence s;
 
     if (client) {
@@ -75,7 +75,7 @@ class WebAudioSourceProviderImplTest
     testing::Mock::VerifyAndClear(this);
   }
 
-  bool CompareBusses(const AudioBus* bus1, const AudioBus* bus2) {
+  bool CompareBusses(const media::AudioBus* bus1, const media::AudioBus* bus2) {
     EXPECT_EQ(bus1->channels(), bus2->channels());
     EXPECT_EQ(bus1->frames(), bus2->frames());
     for (int ch = 0; ch < bus1->channels(); ++ch) {
@@ -87,27 +87,31 @@ class WebAudioSourceProviderImplTest
     return true;
   }
 
-  // blink::WebAudioSourceProviderClient implementation.
+  // WebAudioSourceProviderClient implementation.
   MOCK_METHOD2(SetFormat, void(uint32_t numberOfChannels, float sampleRate));
 
   // CopyAudioCB. Added forwarder method due to GMock troubles with scoped_ptr.
   MOCK_METHOD3(DoCopyAudioCB,
-               void(AudioBus*, uint32_t frames_delayed, int sample_rate));
-  void OnAudioBus(std::unique_ptr<AudioBus> bus,
+               void(media::AudioBus*,
+                    uint32_t frames_delayed,
+                    int sample_rate));
+  void OnAudioBus(std::unique_ptr<media::AudioBus> bus,
                   uint32_t frames_delayed,
                   int sample_rate) {
     DoCopyAudioCB(bus.get(), frames_delayed, sample_rate);
   }
 
-  int Render(AudioBus* audio_bus) {
+  int Render(media::AudioBus* audio_bus) {
     return wasp_impl_->RenderForTesting(audio_bus);
   }
 
  protected:
-  AudioParameters params_;
-  FakeAudioRenderCallback fake_callback_;
-  NullMediaLog media_log_;
-  scoped_refptr<MockAudioRendererSink> mock_sink_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  media::AudioParameters params_;
+  media::FakeAudioRenderCallback fake_callback_;
+  media::NullMediaLog media_log_;
+  scoped_refptr<media::MockAudioRendererSink> mock_sink_;
   scoped_refptr<WebAudioSourceProviderImpl> wasp_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAudioSourceProviderImplTest);
@@ -161,11 +165,11 @@ TEST_F(WebAudioSourceProviderImplTest, SinkMethods) {
 
 // Test the AudioRendererSink state machine and its effects on provideInput().
 TEST_F(WebAudioSourceProviderImplTest, ProvideInput) {
-  std::unique_ptr<AudioBus> bus1 = AudioBus::Create(params_);
-  std::unique_ptr<AudioBus> bus2 = AudioBus::Create(params_);
+  auto bus1 = media::AudioBus::Create(params_);
+  auto bus2 = media::AudioBus::Create(params_);
 
   // Point the WebVector into memory owned by |bus1|.
-  blink::WebVector<float*> audio_data(static_cast<size_t>(bus1->channels()));
+  WebVector<float*> audio_data(static_cast<size_t>(bus1->channels()));
   for (size_t i = 0; i < audio_data.size(); ++i)
     audio_data[i] = bus1->channel(static_cast<int>(i));
 
@@ -252,7 +256,7 @@ TEST_F(WebAudioSourceProviderImplTest, CopyAudioCB) {
   wasp_impl_->SetCopyAudioCallback(base::Bind(
       &WebAudioSourceProviderImplTest::OnAudioBus, base::Unretained(this)));
 
-  const std::unique_ptr<AudioBus> bus1 = AudioBus::Create(params_);
+  const auto bus1 = media::AudioBus::Create(params_);
   EXPECT_CALL(*this, DoCopyAudioCB(_, 0, params_.sample_rate())).Times(1);
   Render(bus1.get());
 
@@ -263,4 +267,4 @@ TEST_F(WebAudioSourceProviderImplTest, CopyAudioCB) {
   testing::Mock::VerifyAndClear(mock_sink_.get());
 }
 
-}  // namespace media
+}  // namespace blink
