@@ -188,11 +188,6 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   shadow_page_ = std::make_unique<WorkerShadowPage>(
       this, nullptr /* loader_factory */,
       std::move(worker_start_data_.privacy_preferences));
-  WebSettings* settings = shadow_page_->GetSettings();
-
-  // Currently we block all mixed-content requests from a ServiceWorker.
-  settings->SetStrictMixedContentChecking(true);
-  settings->SetAllowRunningOfInsecureContent(false);
 
   // If we were asked to wait for debugger then now is a good time to do that.
   worker_context_client_->WorkerReadyForInspectionOnMainThread();
@@ -395,8 +390,17 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       worker_context_client_->CreateServiceWorkerFetchContextOnMainThread(
           shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
 
-  std::unique_ptr<WorkerSettings> worker_settings =
-      std::make_unique<WorkerSettings>(document->GetSettings());
+  // Create WorkerSettings. Currently we block all mixed-content requests from
+  // a ServiceWorker.
+  // TODO(bashi): Set some of these settings from WebPreferences. We may want
+  // to propagate and update these settings from the browser process in a way
+  // similar to mojom::RendererPreference{Watcher}.
+  auto worker_settings = std::make_unique<WorkerSettings>(
+      false /* disable_reading_from_canvas */,
+      true /* strict_mixed_content_checking */,
+      false /* allow_running_of_insecure_content */,
+      false /* strictly_block_blockable_mixed_content */,
+      GenericFontFamilySettings());
 
   std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params;
   String source_code;
