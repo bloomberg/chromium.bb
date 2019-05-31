@@ -43,6 +43,22 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
         Bitmap getIconBitmap();
     }
 
+    /**
+     * Empty implementation of Delegate to allow derived classes to only implement methods they
+     * need.
+     */
+    public static class EmptyDelegate extends ContextMenuManager.EmptyDelegate implements Delegate {
+        @Override
+        public String getTitle() {
+            return null;
+        }
+
+        @Override
+        public Bitmap getIconBitmap() {
+            return null;
+        }
+    }
+
     private final Activity mActivity;
     private final ModalDialogManager mDialogManager;
     private PropertyModel mTouchlessMenuModel;

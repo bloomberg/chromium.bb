@@ -32,6 +32,8 @@ class OpenLastTabViewBinder {
             model.set(OpenLastTabProperties.SHOULD_FOCUS_VIEW, false);
         } else if (propertyKey == OpenLastTabProperties.ASYNC_FOCUS_DELEGATE) {
             view.setAsyncFocusDelegate(model.get(OpenLastTabProperties.ASYNC_FOCUS_DELEGATE));
+        } else if (propertyKey == OpenLastTabProperties.CONTEXT_MENU_DELEGATE) {
+            view.setContextMenuDelegate(model.get(OpenLastTabProperties.CONTEXT_MENU_DELEGATE));
         } else {
             assert false : "Unhandled property detected.";
         }
