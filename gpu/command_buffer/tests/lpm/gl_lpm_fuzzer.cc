@@ -30,6 +30,9 @@
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 
+// Enable this to log and crash on unexpected errors during shader compilation.
+#define CHECK_FOR_UNKNOWN_ERRORS false
+
 struct Env {
   Env() {
     CHECK(base::i18n::InitializeICU());
@@ -54,6 +57,7 @@ class ScopedGLManager {
  public:
   ScopedGLManager() {
     gpu::GLManager::Options options;
+    options.context_type = gpu::CONTEXT_TYPE_OPENGLES3;
     gl_.Initialize(options);
   }
   ~ScopedGLManager() { gl_.Destroy(); }
@@ -72,25 +76,45 @@ GLuint CompileShader(GLenum type, const char* shaderSrc) {
   return shader;
 }
 
+// TODO(nedwill): Once the grammar stabilizes, try to remove as many
+// of these as possible by making tweaks to the grammar/code generation.
 const char* acceptable_errors[] = {
     "void function cannot return a value",
     "function already has a body",
     "undeclared identifier",
-    "l-value required (can't modify a const)",
+    "l-value required",
     "cannot convert from",
     "main function cannot return a value",
     "illegal use of type 'void'",
     "boolean expression expected",
     "Missing main()",
     "Divide by zero error during constant folding",
-    // TODO(nedwill): enable GLSL ES 3.00
-    "operator supported in GLSL ES 3.00 and above only",
     "wrong operand types",
     "function must have the same return type in all of its declarations",
     "function return is not matching type",
     "redefinition",
     "WARNING:",
     "can't modify void",
+    "No precision specified for",
+    "exists that takes an operand of type",
+    "Illegal use of reserved word",
+    "'double' : syntax error",
+    "Integer overflow",
+    "dimension mismatch",
+    "undeclared identifier",
+    "comparison operator only defined for scalars",
+    "Local variables can only use the const storage qualifier.",
+    "must use 'flat' interpolation here",
+    "invalid qualifier combination",
+    "No precision specified for",
+    "'out' : cannot be matrix",
+    "non-void function must return a value",
+    "function does not return a value",
+    // Uniform, const, input can't be modified
+    "can't modify a",
+    "global variable initializers must be constant expressions",
+    "must explicitly specify all locations when using multiple fragment "
+    "outputs",
 };
 
 // Filter errors which we don't think interfere with fuzzing everything.
@@ -127,20 +151,47 @@ GLuint LoadShader(GLenum type, const fuzzing::Shader& shader_proto) {
   GLint value = 0;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
   if (value == 0) {
-    char buffer[1024];
-    GLsizei length = 0;
-    glGetShaderInfoLog(shader, sizeof(buffer), &length, buffer);
-    base::StringPiece log(buffer, length);
-    if (value != 1 && !ErrorsOk(log)) {
-      LOG(WARNING) << "Encountered an unexpected failure when translating:\n"
+    if (CHECK_FOR_UNKNOWN_ERRORS) {
+      GLint log_length = 0;
+      glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
+      auto buffer = std::make_unique<GLchar[]>(log_length);
+      glGetShaderInfoLog(shader, log_length, /*length=*/nullptr, buffer.get());
+      base::StringPiece log(buffer.get(), log_length);
+      if (!ErrorsOk(log)) {
+        LOG(FATAL) << "Encountered an unexpected failure when translating:\n"
                    << log << "\nfailed to compile shader:\n"
                    << shader_proto.DebugString() << "converted:\n"
                    << shader_s;
+      }
     }
     glDeleteShader(shader);
     shader = 0;
   }
   return shader;
+}
+
+// Same as GLTestHelper::SetupProgram but does not expect shaders
+// to link successfully.
+GLuint SetupProgram(GLuint vertex_shader, GLuint fragment_shader) {
+  GLuint program =
+      gpu::GLTestHelper::LinkProgram(vertex_shader, fragment_shader);
+  // Check the link status
+  GLint linked = 0;
+  glGetProgramiv(program, GL_LINK_STATUS, &linked);
+  if (linked == 0) {
+    if (CHECK_FOR_UNKNOWN_ERRORS) {
+      GLint log_length = 0;
+      glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
+      auto buffer = std::make_unique<GLchar[]>(log_length);
+      glGetProgramInfoLog(program, log_length, /*length=*/nullptr,
+                          buffer.get());
+      base::StringPiece log(buffer.get(), log_length);
+      LOG(WARNING) << "Error linking program: " << log;
+    }
+    glDeleteProgram(program);
+    program = 0;
+  }
+  return program;
 }
 
 DEFINE_PROTO_FUZZER(const fuzzing::Session& session) {
@@ -159,8 +210,7 @@ DEFINE_PROTO_FUZZER(const fuzzing::Session& session) {
     return;
   }
 
-  GLuint program =
-      gpu::GLTestHelper::SetupProgram(vertex_shader_id, fragment_shader_id);
+  GLuint program = SetupProgram(vertex_shader_id, fragment_shader_id);
   if (!program) {
     return;
   }
