@@ -381,6 +381,12 @@ void RenderWidgetHostViewBase::GestureEventAck(
     InputEventAckState ack_result) {
 }
 
+void RenderWidgetHostViewBase::SetRubberbandRect(const gfx::Rect& rect) {
+}
+
+void RenderWidgetHostViewBase::HideRubberbandRect() {
+}
+
 void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
