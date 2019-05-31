@@ -100,6 +100,7 @@ source_set("common_source_set") {
 
   public_deps = [
     "//ios/third_party/material_components_ios",
+    "//remoting/ios/facade",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

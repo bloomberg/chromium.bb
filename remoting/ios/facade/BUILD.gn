@@ -37,6 +37,7 @@ source_set("facade") {
   ]
 
   public_deps = [
+    "//remoting/base",
     "//remoting/proto/remoting/v1:directory_proto",
   ]
 

@@ -35,8 +35,11 @@ static_library("client") {
     "//remoting/build/config:enable_webrtc_remoting_client",
   ]
 
-  deps = [
+  public_deps = [
     "//remoting/base",
+  ]
+
+  deps = [
     "//remoting/client/audio",
     "//remoting/codec:decoder",
     "//remoting/protocol",
