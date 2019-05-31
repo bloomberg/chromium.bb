@@ -188,16 +188,17 @@ void ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
 
   // Like the trial name, the order that these two groups are added to the trial
   // must be kept in sync with the order that they appear in the server config.
+  // For future sanity purposes, the desired order is:
+  // OutOfReportingSample, InReportingSample
 
-  // 100 per-mille sampling rate group.
-  static const char kInSampleGroup[] = "InReportingSample";
-  AppendSamplingTrialGroup(kInSampleGroup, sampled_in_rate, trial.get());
-
-  // 900 per-mille sampled out.
   static const char kSampledOutGroup[] = "OutOfReportingSample";
   AppendSamplingTrialGroup(kSampledOutGroup, sampled_out_rate, trial.get());
 
-  // Setup the feature.
+  static const char kInSampleGroup[] = "InReportingSample";
+  AppendSamplingTrialGroup(kInSampleGroup, sampled_in_rate, trial.get());
+
+  // Setup the feature. This must be done after all groups are added since
+  // GetGroupNameWithoutActivation() will finalize the group choice.
   const std::string& group_name = trial->GetGroupNameWithoutActivation();
   feature_list->RegisterFieldTrialOverride(
       metrics::internal::kMetricsReportingFeature.name,
