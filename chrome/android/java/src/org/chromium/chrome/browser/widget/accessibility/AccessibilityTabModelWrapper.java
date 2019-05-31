@@ -17,7 +17,6 @@ import android.widget.ListView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -115,10 +114,8 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         mIncognitoButtonIcon = new ChromeImageView(getContext());
         mIncognitoButtonIcon.setImageResource(R.drawable.btn_incognito_tabs);
         mIncognitoButtonIcon.setScaleY(-1.0f);
-        mIncognitoButtonIcon.setContentDescription(getResources().getString(
-                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                        ? R.string.accessibility_tab_switcher_private_stack
-                        : R.string.accessibility_tab_switcher_incognito_stack));
+        mIncognitoButtonIcon.setContentDescription(
+                getResources().getString(R.string.accessibility_tab_switcher_incognito_stack));
 
         setDividerDrawable(null);
         ((ListView) findViewById(R.id.list_view)).setDivider(null);
@@ -200,11 +197,9 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
 
         mAccessibilityView.setContentDescription(incognitoSelected
                         ? getContext().getString(
-                                  ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                                          ? R.string.accessibility_tab_switcher_private_stack
-                                          : R.string.accessibility_tab_switcher_incognito_stack)
+                                R.string.accessibility_tab_switcher_incognito_stack)
                         : getContext().getString(
-                                  R.string.accessibility_tab_switcher_standard_stack));
+                                R.string.accessibility_tab_switcher_standard_stack));
 
         getAdapter().setTabModel(mTabModelSelector.getModel(incognitoSelected));
     }
@@ -228,9 +223,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         setStateBasedOnModel();
 
         int stackAnnouncementId = incognitoSelected
-                ? (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                                  ? R.string.accessibility_tab_switcher_private_stack_selected
-                                  : R.string.accessibility_tab_switcher_incognito_stack_selected)
+                ? R.string.accessibility_tab_switcher_incognito_stack_selected
                 : R.string.accessibility_tab_switcher_standard_stack_selected;
         AccessibilityTabModelWrapper.this.announceForAccessibility(
                 getResources().getString(stackAnnouncementId));

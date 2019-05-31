@@ -15,7 +15,6 @@ import android.text.style.SuperscriptSpan;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -162,18 +161,6 @@ public class ChromeContextMenuItem implements ContextMenuItem {
      */
     private static @StringRes int getStringID(@Item int item) {
         assert STRING_IDS.length == Item.NUM_ENTRIES;
-
-        if (ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)) {
-            switch (item) {
-                case Item.OPEN_IN_CHROME_INCOGNITO_TAB:
-                    return R.string.contextmenu_open_in_chrome_private_tab;
-                case Item.OPEN_IN_INCOGNITO_TAB:
-                    return R.string.contextmenu_open_in_private_tab;
-                case Item.BROWSER_ACTIONS_OPEN_IN_INCOGNITO_TAB:
-                    return R.string.browser_actions_open_in_private_tab;
-            }
-        }
 
         if (FeatureUtilities.isTabGroupsAndroidEnabled() && item == Item.OPEN_IN_NEW_TAB) {
             return R.string.contextmenu_open_in_new_tab_group;

@@ -763,10 +763,4 @@ const base::Feature kWin10AcceleratedDefaultBrowserFlow{
 const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile{
     "WriteBasicSystemProfileToPersistentHistogramsFile",
     base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if defined(OS_ANDROID)
-// Enables showing alternative incognito strings.
-const base::Feature kIncognitoStrings{"IncognitoStrings",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_ANDROID)
 }  // namespace features

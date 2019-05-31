@@ -66,7 +66,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kClearOldBrowsingData,
     &features::kDownloadsLocationChange,
     &features::kGenericSensorExtraClasses,
-    &features::kIncognitoStrings,
     &features::kInstallableAmbientBadgeInfoBar,
     &features::kOverscrollHistoryNavigation,
     &features::kPermissionDelegation,

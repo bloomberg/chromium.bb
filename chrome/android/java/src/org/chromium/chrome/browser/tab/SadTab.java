@@ -21,7 +21,6 @@ import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.ui_metrics.SadTabEvent;
@@ -255,10 +254,7 @@ public class SadTab extends EmptyTabObserver implements UserData {
         SpannableStringBuilder spannableString = new SpannableStringBuilder();
         if (!isIncognito) {
             spannableString
-                    .append(generateBulletedString(context,
-                            ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                                    ? R.string.sad_tab_reload_private
-                                    : R.string.sad_tab_reload_incognito))
+                    .append(generateBulletedString(context, R.string.sad_tab_reload_incognito))
                     .append("\n");
         }
         spannableString

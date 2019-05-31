@@ -16,7 +16,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
@@ -97,12 +96,9 @@ public class IncognitoNewTabPage
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);
         mIncognitoNewTabPageView.setNavigationDelegate(host.createHistoryNavigationDelegate());
 
-        boolean useAlternateIncognitoStrings =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);
         TextView newTabIncognitoHeader =
                 (TextView) mIncognitoNewTabPageView.findViewById(R.id.new_tab_incognito_title);
-        newTabIncognitoHeader.setText(useAlternateIncognitoStrings ? R.string.new_tab_private_title
-                                                                   : R.string.new_tab_otr_title);
+        newTabIncognitoHeader.setText(R.string.new_tab_otr_title);
     }
 
     /**

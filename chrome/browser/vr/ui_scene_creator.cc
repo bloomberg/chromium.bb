@@ -2449,12 +2449,8 @@ void UiSceneCreator::CreateOverflowMenu() {
     button_region->AddChild(std::move(button));
   }
 
-  int new_incognito_tab_res_id = IDS_VR_MENU_NEW_PRIVATE_TAB;
-  int close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_PRIVATE_TABS;
-  if (!model_->use_new_incognito_strings) {
-    new_incognito_tab_res_id = IDS_VR_MENU_NEW_INCOGNITO_TAB;
-    close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_INCOGNITO_TABS;
-  }
+  int new_incognito_tab_res_id = IDS_VR_MENU_NEW_INCOGNITO_TAB;
+  int close_incognito_tabs_res_id = IDS_VR_MENU_CLOSE_INCOGNITO_TABS;
 
   struct MenuItem {
     UiElementName name;

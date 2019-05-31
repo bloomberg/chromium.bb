@@ -52,9 +52,7 @@ public class NewTabButton
     @Override
     public boolean onLongClick(View v) {
         CharSequence description = getResources().getString(mIsIncognito
-                        ? (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                                        ? org.chromium.chrome.R.string.button_new_private_tab
-                                        : org.chromium.chrome.R.string.button_new_incognito_tab)
+                        ? org.chromium.chrome.R.string.button_new_incognito_tab
                         : org.chromium.chrome.R.string.button_new_tab);
         return AccessibilityUtil.showAccessibilityToast(getContext(), v, description);
     }
@@ -70,14 +68,8 @@ public class NewTabButton
         mIsIncognito = isIncognito;
 
         @StringRes
-        int resId;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)) {
-            resId = mIsIncognito ? R.string.accessibility_toolbar_btn_new_private_tab
+        int resId = mIsIncognito ? R.string.accessibility_toolbar_btn_new_incognito_tab
                                  : R.string.accessibility_toolbar_btn_new_tab;
-        } else {
-            resId = mIsIncognito ? R.string.accessibility_toolbar_btn_new_incognito_tab
-                                 : R.string.accessibility_toolbar_btn_new_tab;
-        }
         setContentDescription(getResources().getText(resId));
 
         updateDrawableTint();

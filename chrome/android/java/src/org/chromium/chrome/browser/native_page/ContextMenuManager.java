@@ -14,7 +14,6 @@ import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
@@ -256,10 +255,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
                         ? R.string.contextmenu_open_in_new_tab_group
                         : R.string.contextmenu_open_in_new_tab;
             case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
-                return ChromeFeatureList.isInitialized()
-                                && ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                        ? R.string.contextmenu_open_in_private_tab
-                        : R.string.contextmenu_open_in_incognito_tab;
+                return R.string.contextmenu_open_in_incognito_tab;
             case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
                 return R.string.contextmenu_open_in_other_window;
             case ContextMenuItemId.SAVE_FOR_OFFLINE:

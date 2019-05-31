@@ -267,17 +267,12 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
         // We have to iterate all menu items since same menu item ID may be associated with more
         // than one menu items.
-        boolean useAlternativeIncognitoStrings =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);
         for (int i = 0; i < menu.size(); ++i) {
             MenuItem item = menu.getItem(i);
             if (item.getItemId() == R.id.new_incognito_tab_menu_id) {
-                item.setTitle(useAlternativeIncognitoStrings ? R.string.menu_new_private_tab
-                                                             : R.string.menu_new_incognito_tab);
+                item.setTitle(R.string.menu_new_incognito_tab);
             } else if (item.getItemId() == R.id.close_all_incognito_tabs_menu_id) {
-                item.setTitle(useAlternativeIncognitoStrings
-                                ? R.string.menu_close_all_private_tabs
-                                : R.string.menu_close_all_incognito_tabs);
+                item.setTitle(R.string.menu_close_all_incognito_tabs);
             }
         }
 

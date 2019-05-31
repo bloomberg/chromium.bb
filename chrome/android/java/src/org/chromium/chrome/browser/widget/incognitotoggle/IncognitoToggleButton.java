@@ -12,7 +12,6 @@ import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -83,16 +82,10 @@ public class IncognitoToggleButton extends ChromeImageButton {
     private void updateButtonResource() {
         if (mTabModelSelector == null || mTabModelSelector.getCurrentModel() == null) return;
 
-        boolean useAlternativeIncognitoStrings =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);
         @StringRes
         int resId = mTabModelSelector.isIncognitoSelected()
-                ? (useAlternativeIncognitoStrings
-                                  ? R.string.accessibility_tabstrip_btn_private_toggle_private
-                                  : R.string.accessibility_tabstrip_btn_incognito_toggle_incognito)
-                : (useAlternativeIncognitoStrings
-                                  ? R.string.accessibility_tabstrip_btn_private_toggle_standard
-                                  : R.string.accessibility_tabstrip_btn_incognito_toggle_standard);
+                ? R.string.accessibility_tabstrip_btn_incognito_toggle_incognito
+                : R.string.accessibility_tabstrip_btn_incognito_toggle_standard;
         setContentDescription(getContext().getString(resId));
         setImage(mTabModelSelector.isIncognitoSelected());
     }

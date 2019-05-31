@@ -48,7 +48,6 @@ import java.util.List;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
-@DisableFeatures(ChromeFeatureList.INCOGNITO_STRINGS)
 public class ChromeContextMenuPopulatorTest {
     private static final String PAGE_URL = "http://www.blah.com";
     private static final String LINK_URL = "http://www.blah.com/other_blah";

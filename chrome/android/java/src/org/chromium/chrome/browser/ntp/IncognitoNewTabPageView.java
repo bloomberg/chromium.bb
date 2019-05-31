@@ -23,7 +23,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -82,10 +81,8 @@ public class IncognitoNewTabPageView extends HistoryNavigationLayout {
         mScrollView = (NewTabPageScrollView) findViewById(R.id.ntp_scrollview);
         mScrollView.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.ntp_bg_incognito));
-        setContentDescription(getResources().getText(
-                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                        ? R.string.accessibility_new_private_tab_page
-                        : R.string.accessibility_new_incognito_tab_page));
+        setContentDescription(
+                getResources().getText(R.string.accessibility_new_incognito_tab_page));
 
         // FOCUS_BEFORE_DESCENDANTS is needed to support keyboard shortcuts. Otherwise, pressing
         // any shortcut causes the UrlBar to be focused. See ViewRootImpl.leaveTouchMode().

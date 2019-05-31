@@ -18,7 +18,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
@@ -105,14 +104,8 @@ class BottomToolbarNewTabButton extends ChromeImageButton
     @Override
     public void onIncognitoStateChanged(boolean isIncognito) {
         @StringRes
-        int resId;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)) {
-            resId = isIncognito ? R.string.accessibility_toolbar_btn_new_private_tab
+        int resId = isIncognito ? R.string.accessibility_toolbar_btn_new_incognito_tab
                                 : R.string.accessibility_toolbar_btn_new_tab;
-        } else {
-            resId = isIncognito ? R.string.accessibility_toolbar_btn_new_incognito_tab
-                                : R.string.accessibility_toolbar_btn_new_tab;
-        }
         setContentDescription(getResources().getText(resId));
         updateBackground();
     }

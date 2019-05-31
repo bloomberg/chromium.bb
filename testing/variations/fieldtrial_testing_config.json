@@ -2512,21 +2512,6 @@
             ]
         }
     ],
-    "IncognitoStrings": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IncognitoStrings"
-                    ]
-                }
-            ]
-        }
-    ],
     "IncognitoWindowInProductHelp": [
         {
             "platforms": [

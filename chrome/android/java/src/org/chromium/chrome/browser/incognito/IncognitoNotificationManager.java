@@ -10,7 +10,6 @@ import android.content.Context;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
@@ -33,10 +32,8 @@ public class IncognitoNotificationManager {
      */
     public static void showIncognitoNotification() {
         Context context = ContextUtils.getApplicationContext();
-        String actionMessage = context.getResources().getString(
-                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                        ? R.string.close_all_private_notification
-                        : R.string.close_all_incognito_notification);
+        String actionMessage =
+                context.getResources().getString(R.string.close_all_incognito_notification);
         String title = context.getResources().getString(R.string.app_name);
 
         ChromeNotificationBuilder builder =
