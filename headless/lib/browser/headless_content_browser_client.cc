@@ -33,6 +33,8 @@
 #include "headless/lib/headless_macros.h"
 #include "net/base/url_util.h"
 #include "net/ssl/client_cert_identity.h"
+#include "printing/buildflags/buildflags.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -248,6 +250,14 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
                                             headless_browser_context_impl,
                                             process_type, child_process_id);
   }
+
+#if defined(OS_LINUX)
+  // Processes may only query perf_event_open with the BPF sandbox disabled.
+  if (old_command_line.HasSwitch(::switches::kEnableThreadInstructionCount) &&
+      old_command_line.HasSwitch(service_manager::switches::kNoSandbox)) {
+    command_line->AppendSwitch(::switches::kEnableThreadInstructionCount);
+  }
+#endif
 }
 
 std::string HeadlessContentBrowserClient::GetAcceptLangs(
