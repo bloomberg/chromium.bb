@@ -1722,7 +1722,7 @@ crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delet
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
-crbug.com/771233 [ Win10 ] http/tests/devtools/audits2/ [ Skip ]
+crbug.com/771233 [ Win10 ] http/tests/devtools/audits/ [ Skip ]
 
 crbug.com/923269 virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Failure ]
 crbug.com/923269 fast/canvas/OffscreenCanvas-copyImage.html [ Failure ]
@@ -5375,7 +5375,7 @@ crbug.com/922951 fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Skip ]
 crbug.com/922951 fast/scroll-snap/snaps-for-different-key-granularity.html [ Skip ]
 crbug.com/922951 fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ Skip ]
 crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Skip ]
-crbug.com/922951 http/tests/devtools/audits2/audits2-successful-run.js [ Skip ]
+crbug.com/922951 http/tests/devtools/audits/audits-successful-run.js [ Skip ]
 crbug.com/922951 http/tests/devtools/tracing-session-id.js [ Skip ]
 crbug.com/922951 http/tests/devtools/tracing/console-timeline.js [ Skip ]
 crbug.com/922951 http/tests/devtools/tracing/timeline-network-received-data.js [ Skip ]
