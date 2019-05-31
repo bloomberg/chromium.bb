@@ -229,9 +229,11 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
 
 base::Optional<std::vector<uint8_t>>
 MakeCredentialOperation::GenerateCredentialIdForRequest() const {
-  return SealCredentialId(
-      metadata_secret(), RpId(),
-      UserEntity::FromPublicKeyCredentialUserEntity(request().user));
+  // TODO(martinkr): Handle resident key creation.
+  return SealCredentialId(metadata_secret(), RpId(),
+                          CredentialMetadata::FromPublicKeyCredentialUserEntity(
+                              request().user,
+                              /*is_resident=*/false));
 }
 
 }  // namespace mac

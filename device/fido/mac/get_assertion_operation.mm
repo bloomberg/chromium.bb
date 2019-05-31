@@ -93,9 +93,9 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
   }
 
   // Decrypt the user entity from the credential ID.
-  base::Optional<UserEntity> credential_user =
+  base::Optional<CredentialMetadata> metadata =
       UnsealCredentialId(metadata_secret(), RpId(), credential->credential_id);
-  if (!credential_user) {
+  if (!metadata) {
     // The keychain query already filtered for the RP ID encoded under this
     // operation's metadata secret, so the credential id really should have
     // been decryptable.
@@ -115,11 +115,11 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
         .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
     return;
   }
-  auto response = AuthenticatorGetAssertionResponse(
-      std::move(authenticator_data), std::move(*signature));
+  AuthenticatorGetAssertionResponse response(std::move(authenticator_data),
+                                             std::move(*signature));
   response.SetCredential(PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey, std::move(credential->credential_id)));
-  response.SetUserEntity(credential_user->ToPublicKeyCredentialUserEntity());
+  response.SetUserEntity(metadata->ToPublicKeyCredentialUserEntity());
 
   std::move(callback())
       .Run(CtapDeviceResponseCode::kSuccess, std::move(response));

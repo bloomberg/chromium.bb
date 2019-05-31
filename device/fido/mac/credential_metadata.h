@@ -28,25 +28,36 @@ class PublicKeyCredentialUserEntity;
 namespace fido {
 namespace mac {
 
-// UserEntity loosely corresponds to a PublicKeyCredentialUserEntity
-// (https://www.w3.org/TR/webauthn/#sctn-user-credential-params). Values of
-// this type should be moved whenever possible.
-struct COMPONENT_EXPORT(DEVICE_FIDO) UserEntity {
+// CredentialMetadata is the metadata for a Touch ID credential stored, in an
+// encrypted/authenticated format, in the macOS keychain.  Values of this type
+// should be moved whenever possible.
+struct COMPONENT_EXPORT(DEVICE_FIDO) CredentialMetadata {
  public:
-  static UserEntity FromPublicKeyCredentialUserEntity(
-      const PublicKeyCredentialUserEntity&);
+  static CredentialMetadata FromPublicKeyCredentialUserEntity(
+      const PublicKeyCredentialUserEntity&,
+      bool is_resident);
 
-  UserEntity(std::vector<uint8_t> id_, std::string name_, std::string display_);
-  UserEntity(const UserEntity&);
-  UserEntity(UserEntity&&);
-  UserEntity& operator=(UserEntity&&);
-  ~UserEntity();
+  CredentialMetadata(std::vector<uint8_t> user_id_,
+                     std::string user_name_,
+                     std::string user_display_name_,
+                     bool is_resident_);
+  CredentialMetadata(const CredentialMetadata&);
+  CredentialMetadata(CredentialMetadata&&);
+  CredentialMetadata& operator=(CredentialMetadata&&);
+  ~CredentialMetadata();
 
   PublicKeyCredentialUserEntity ToPublicKeyCredentialUserEntity();
 
-  std::vector<uint8_t> id;
-  std::string name;
-  std::string display_name;
+  // The following correspond to the fields of the same name in
+  // PublicKeyCredentialUserEntity
+  // (https://www.w3.org/TR/webauthn/#sctn-user-credential-params).
+  std::vector<uint8_t> user_id;
+  std::string user_name;
+  std::string user_display_name;
+
+  // Whether this credential has the resident key (rk) bit and may be returned
+  // in response to GetAssertion requests with an empty allowList.
+  bool is_resident;
 };
 
 // Generates a random secret for encrypting and authenticating credential
@@ -61,7 +72,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) UserEntity {
 COMPONENT_EXPORT(DEVICE_FIDO)
 std::string GenerateCredentialMetadataSecret();
 
-// SealCredentialId encrypts the given UserEntity into a credential id.
+// SealCredentialId encrypts the given CredentialMetadata into a credential id.
 //
 // Credential IDs have following format:
 //
@@ -72,13 +83,15 @@ std::string GenerateCredentialMetadataSecret();
 // with version as 0x00, a random 12-byte nonce, and using AES-256-GCM as the
 // AEAD.
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::vector<uint8_t>> SealCredentialId(const std::string& secret,
-                                                      const std::string& rp_id,
-                                                      const UserEntity& user);
+base::Optional<std::vector<uint8_t>> SealCredentialId(
+    const std::string& secret,
+    const std::string& rp_id,
+    const CredentialMetadata& user);
 
-// UnsealCredentialId attempts to decrypt a UserEntity from a credential id.
+// UnsealCredentialId attempts to decrypt a CredentialMetadata from a credential
+// id.
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<UserEntity> UnsealCredentialId(
+base::Optional<CredentialMetadata> UnsealCredentialId(
     const std::string& secret,
     const std::string& rp_id,
     base::span<const uint8_t> credential_id);
@@ -107,6 +120,15 @@ base::Optional<std::string> EncodeRpId(const std::string& secret,
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::string> DecodeRpId(const std::string& secret,
                                        const std::string& ciphertext);
+
+// Seals a legacy V0 credential ID.
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::Optional<std::vector<uint8_t>> SealLegacyV0CredentialIdForTestingOnly(
+    const std::string& secret,
+    const std::string& rp_id,
+    const std::vector<uint8_t>& user_id,
+    const std::string& user_name,
+    const std::string& user_display_name);
 
 }  // namespace mac
 }  // namespace fido

@@ -24,16 +24,19 @@ using cbor::Value;
 using cbor::Writer;
 
 // The version tag encoded into encrypted credential metadata.
-static constexpr uint8_t kVersion = 0x00;
+static constexpr uint8_t kVersionLegacy0 = 0x00;
+
+// The version tag encoded into encrypted credential metadata.
+static constexpr uint8_t kVersion = 0x01;
 
 static constexpr size_t kNonceLength = 12;
 
 namespace {
 
-// MakeAad returns the concatenation of |kVersion| and |rp_id|,
+// MakeAad returns the concatenation of |version| and |rp_id|,
 // which is used as the additional authenticated data (AAD) input to the AEAD.
-std::string MakeAad(const std::string& rp_id) {
-  return std::string(1, kVersion) + rp_id;
+std::string MakeAad(const uint8_t version, const std::string& rp_id) {
+  return std::string(1, version) + rp_id;
 }
 
 // Cryptor provides methods for encrypting and authenticating credential
@@ -173,33 +176,38 @@ std::string Cryptor::DeriveKey(Algorithm alg) const {
 }  // namespace
 
 // static
-UserEntity UserEntity::FromPublicKeyCredentialUserEntity(
-    const PublicKeyCredentialUserEntity& user) {
-  return UserEntity(user.id, user.name.value_or(""),
-                    user.display_name.value_or(""));
+CredentialMetadata CredentialMetadata::FromPublicKeyCredentialUserEntity(
+    const PublicKeyCredentialUserEntity& user,
+    bool is_resident) {
+  return CredentialMetadata(user.id, user.name.value_or(""),
+                            user.display_name.value_or(""), is_resident);
 }
 
-PublicKeyCredentialUserEntity UserEntity::ToPublicKeyCredentialUserEntity() {
-  auto user_entity = PublicKeyCredentialUserEntity(id);
-  if (!name.empty()) {
-    user_entity.name = name;
+PublicKeyCredentialUserEntity
+CredentialMetadata::ToPublicKeyCredentialUserEntity() {
+  PublicKeyCredentialUserEntity user_entity(user_id);
+  if (!user_name.empty()) {
+    user_entity.name = user_name;
   }
-  if (!display_name.empty()) {
-    user_entity.display_name = display_name;
+  if (!user_display_name.empty()) {
+    user_entity.display_name = user_display_name;
   }
   return user_entity;
 }
 
-UserEntity::UserEntity(std::vector<uint8_t> id_,
-                       std::string name_,
-                       std::string display_name_)
-    : id(std::move(id_)),
-      name(std::move(name_)),
-      display_name(std::move(display_name_)) {}
-UserEntity::UserEntity(const UserEntity&) = default;
-UserEntity::UserEntity(UserEntity&&) = default;
-UserEntity& UserEntity::operator=(UserEntity&&) = default;
-UserEntity::~UserEntity() = default;
+CredentialMetadata::CredentialMetadata(std::vector<uint8_t> user_id_,
+                                       std::string user_name_,
+                                       std::string user_display_name_,
+                                       bool is_resident_)
+    : user_id(std::move(user_id_)),
+      user_name(std::move(user_name_)),
+      user_display_name(std::move(user_display_name_)),
+      is_resident(is_resident_) {}
+CredentialMetadata::CredentialMetadata(const CredentialMetadata&) = default;
+CredentialMetadata::CredentialMetadata(CredentialMetadata&&) = default;
+CredentialMetadata& CredentialMetadata::operator=(CredentialMetadata&&) =
+    default;
+CredentialMetadata::~CredentialMetadata() = default;
 
 std::string GenerateCredentialMetadataSecret() {
   static constexpr size_t kSecretSize = 32u;
@@ -210,9 +218,10 @@ std::string GenerateCredentialMetadataSecret() {
   return secret;
 }
 
-base::Optional<std::vector<uint8_t>> SealCredentialId(const std::string& secret,
-                                                      const std::string& rp_id,
-                                                      const UserEntity& user) {
+base::Optional<std::vector<uint8_t>> SealCredentialId(
+    const std::string& secret,
+    const std::string& rp_id,
+    const CredentialMetadata& metadata) {
   // The first 13 bytes are the version and nonce.
   std::vector<uint8_t> result(1 + kNonceLength);
   result[0] = kVersion;
@@ -223,19 +232,22 @@ base::Optional<std::vector<uint8_t>> SealCredentialId(const std::string& secret,
   base::span<uint8_t> nonce(result.data() + 1, kNonceLength);
   RAND_bytes(nonce.data(), nonce.size());  // RAND_bytes always returns 1.
 
-  // The remaining bytes are the CBOR-encoded UserEntity, encrypted with
+  // The remaining bytes are the CBOR-encoded CredentialMetadata, encrypted with
   // AES-256-GCM and authenticated with the version and RP ID.
   Value::ArrayValue cbor_user;
-  cbor_user.emplace_back(Value(user.id));
-  cbor_user.emplace_back(Value(user.name, Value::Type::BYTE_STRING));
-  cbor_user.emplace_back(Value(user.display_name, Value::Type::BYTE_STRING));
+  cbor_user.emplace_back(Value(metadata.user_id));
+  cbor_user.emplace_back(Value(metadata.user_name, Value::Type::BYTE_STRING));
+  cbor_user.emplace_back(
+      Value(metadata.user_display_name, Value::Type::BYTE_STRING));
+  // TODO(martinkr): Allow creation of resident keys.
+  cbor_user.emplace_back(Value(false));
   base::Optional<std::vector<uint8_t>> pt =
       Writer::Write(Value(std::move(cbor_user)));
   if (!pt) {
     return base::nullopt;
   }
   base::Optional<std::string> ciphertext = Cryptor(secret).Seal(
-      Cryptor::Algorithm::kAes256Gcm, nonce, *pt, MakeAad(rp_id));
+      Cryptor::Algorithm::kAes256Gcm, nonce, *pt, MakeAad(kVersion, rp_id));
   if (!ciphertext) {
     return base::nullopt;
   }
@@ -245,25 +257,31 @@ base::Optional<std::vector<uint8_t>> SealCredentialId(const std::string& secret,
   return result;
 }
 
-base::Optional<UserEntity> UnsealCredentialId(
+// UnsealLegacyCredentialId attempts to decrypt a credential ID that has been
+// encrypted under the scheme for version 0x00, which is:
+//    | version  |    nonce   | AEAD(pt=CBOR(user_entity), |
+//    | (1 byte) | (12 bytes) |      nonce=nonce,          |
+//    |          |            |      ad=(version, rpID))   |
+// Note the absence of the rk bit, which is always false.
+static base::Optional<CredentialMetadata> UnsealLegacyCredentialId(
     const std::string& secret,
     const std::string& rp_id,
     base::span<const uint8_t> credential_id) {
   // Recover the nonce and check for the correct version byte. Then try to
   // decrypt the remaining bytes.
   if (credential_id.size() <= 1 + kNonceLength ||
-      credential_id[0] != kVersion) {
+      credential_id[0] != kVersionLegacy0) {
     return base::nullopt;
   }
 
   base::Optional<std::string> plaintext = Cryptor(secret).Unseal(
       Cryptor::Algorithm::kAes256Gcm, credential_id.subspan(1, kNonceLength),
-      credential_id.subspan(1 + kNonceLength), MakeAad(rp_id));
+      credential_id.subspan(1 + kNonceLength), MakeAad(kVersionLegacy0, rp_id));
   if (!plaintext) {
     return base::nullopt;
   }
 
-  // The recovered plaintext should decode into the UserEntity struct.
+  // The recovered plaintext should decode into the CredentialMetadata struct.
   base::Optional<Value> maybe_array = Reader::Read(base::make_span(
       reinterpret_cast<const uint8_t*>(plaintext->data()), plaintext->size()));
   if (!maybe_array || !maybe_array->is_array()) {
@@ -274,9 +292,47 @@ base::Optional<UserEntity> UnsealCredentialId(
       !array[1].is_bytestring() || !array[2].is_bytestring()) {
     return base::nullopt;
   }
-  return UserEntity(array[0].GetBytestring(),
-                    array[1].GetBytestringAsString().as_string(),
-                    array[2].GetBytestringAsString().as_string());
+  return CredentialMetadata(array[0].GetBytestring(),
+                            array[1].GetBytestringAsString().as_string(),
+                            array[2].GetBytestringAsString().as_string(),
+                            /*is_resident=*/false);
+}
+
+base::Optional<CredentialMetadata> UnsealCredentialId(
+    const std::string& secret,
+    const std::string& rp_id,
+    base::span<const uint8_t> credential_id) {
+  if (!credential_id.empty() && credential_id[0] == kVersionLegacy0) {
+    return UnsealLegacyCredentialId(secret, rp_id, credential_id);
+  }
+
+  if (credential_id.size() <= 1 + kNonceLength ||
+      credential_id[0] != kVersion) {
+    return base::nullopt;
+  }
+
+  base::Optional<std::string> plaintext = Cryptor(secret).Unseal(
+      Cryptor::Algorithm::kAes256Gcm, credential_id.subspan(1, kNonceLength),
+      credential_id.subspan(1 + kNonceLength), MakeAad(kVersion, rp_id));
+  if (!plaintext) {
+    return base::nullopt;
+  }
+
+  // The recovered plaintext should decode into the CredentialMetadata struct.
+  base::Optional<Value> maybe_array = Reader::Read(base::make_span(
+      reinterpret_cast<const uint8_t*>(plaintext->data()), plaintext->size()));
+  if (!maybe_array || !maybe_array->is_array()) {
+    return base::nullopt;
+  }
+  const Value::ArrayValue& array = maybe_array->GetArray();
+  if (array.size() != 4 || !array[0].is_bytestring() ||
+      !array[1].is_bytestring() || !array[2].is_bytestring() ||
+      !array[3].is_bool()) {
+    return base::nullopt;
+  }
+  return CredentialMetadata(
+      array[0].GetBytestring(), array[1].GetBytestringAsString().as_string(),
+      array[2].GetBytestringAsString().as_string(), array[3].GetBool());
 }
 
 base::Optional<std::string> EncodeRpIdAndUserId(
@@ -320,6 +376,42 @@ base::Optional<std::string> DecodeRpId(const std::string& secret,
   std::string empty_ad;
   return Cryptor(secret).Unseal(Cryptor::Algorithm::kAes256GcmSiv,
                                 fixed_zero_nonce, ct, empty_ad);
+}
+
+base::Optional<std::vector<uint8_t>> SealLegacyV0CredentialIdForTestingOnly(
+    const std::string& secret,
+    const std::string& rp_id,
+    const std::vector<uint8_t>& user_id,
+    const std::string& user_name,
+    const std::string& user_display_name) {
+  constexpr uint8_t version = 0x00;
+  //    | version  |    nonce   | AEAD(pt=CBOR(user_entity), |
+  //    | (1 byte) | (12 bytes) |      nonce=nonce,          |
+  //    |          |            |      ad=(version, rpID))   |
+  std::vector<uint8_t> result(13);
+  result[0] = version;
+  base::span<uint8_t> nonce(result.data() + 1, 12);
+  RAND_bytes(nonce.data(), nonce.size());  // RAND_bytes always returns 1.
+
+  Value::ArrayValue cbor_user;
+  cbor_user.emplace_back(Value(user_id));
+  cbor_user.emplace_back(Value(user_name, Value::Type::BYTE_STRING));
+  cbor_user.emplace_back(Value(user_display_name, Value::Type::BYTE_STRING));
+  base::Optional<std::vector<uint8_t>> pt =
+      Writer::Write(Value(std::move(cbor_user)));
+  if (!pt) {
+    return base::nullopt;
+  }
+  std::string aad = std::string(1, version) + rp_id;
+  base::Optional<std::string> ciphertext =
+      Cryptor(secret).Seal(Cryptor::Algorithm::kAes256Gcm, nonce, *pt, aad);
+  if (!ciphertext) {
+    return base::nullopt;
+  }
+  base::span<const char> cts(reinterpret_cast<const char*>(ciphertext->data()),
+                             ciphertext->size());
+  result.insert(result.end(), cts.begin(), cts.end());
+  return result;
 }
 
 }  // namespace mac

@@ -4,6 +4,9 @@
 
 #include "device/fido/mac/credential_metadata.h"
 
+#include "base/logging.h"
+#include "components/cbor/values.h"
+#include "components/cbor/writer.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -13,9 +16,10 @@ namespace fido {
 namespace mac {
 namespace {
 
-bool UserEqual(const UserEntity& lhs, const UserEntity& rhs) {
-  return lhs.id == rhs.id && lhs.name == rhs.name &&
-         lhs.display_name == rhs.display_name;
+bool MetadataEq(const CredentialMetadata& lhs, const CredentialMetadata& rhs) {
+  return lhs.user_id == rhs.user_id && lhs.user_name == rhs.user_name &&
+         lhs.user_display_name == rhs.user_display_name &&
+         lhs.is_resident == rhs.is_resident;
 }
 
 base::span<const uint8_t> to_bytes(base::StringPiece in) {
@@ -25,15 +29,17 @@ base::span<const uint8_t> to_bytes(base::StringPiece in) {
 
 class CredentialMetadataTest : public ::testing::Test {
  protected:
-  UserEntity DefaultUser() {
-    return UserEntity(default_id_, "user", "user@acme.com");
+  CredentialMetadata DefaultUser() {
+    return CredentialMetadata(default_id_, "user", "user@acme.com",
+                              /*is_resident=*/false);
   }
 
-  std::vector<uint8_t> SealCredentialId(UserEntity user) {
+  std::vector<uint8_t> SealCredentialId(CredentialMetadata user) {
     return *device::fido::mac::SealCredentialId(key_, rp_id_, std::move(user));
   }
 
-  UserEntity UnsealCredentialId(base::span<const uint8_t> credential_id) {
+  CredentialMetadata UnsealCredentialId(
+      base::span<const uint8_t> credential_id) {
     return *device::fido::mac::UnsealCredentialId(key_, rp_id_, credential_id);
   }
 
@@ -57,9 +63,18 @@ class CredentialMetadataTest : public ::testing::Test {
 
 TEST_F(CredentialMetadataTest, CredentialId) {
   std::vector<uint8_t> id = SealCredentialId(DefaultUser());
-  EXPECT_EQ(0, (id)[0]);
-  EXPECT_EQ(54u, id.size());
-  EXPECT_TRUE(UserEqual(UnsealCredentialId(id), DefaultUser()));
+  EXPECT_EQ(1, (id)[0]);
+  EXPECT_EQ(55u, id.size());
+  EXPECT_TRUE(MetadataEq(UnsealCredentialId(id), DefaultUser()));
+}
+
+TEST_F(CredentialMetadataTest, LegacyCredentialId) {
+  auto user = DefaultUser();
+  auto id = SealLegacyV0CredentialIdForTestingOnly(
+      key_, rp_id_, user.user_id, user.user_name, user.user_display_name);
+  EXPECT_EQ(0, (*id)[0]);
+  EXPECT_EQ(54u, id->size());
+  EXPECT_TRUE(MetadataEq(UnsealCredentialId(*id), DefaultUser()));
 }
 
 TEST_F(CredentialMetadataTest, CredentialId_IsRandom) {
@@ -128,15 +143,19 @@ TEST(CredentialMetadata, FromPublicKeyCredentialUserEntity) {
   in.name = "username";
   in.display_name = "display name";
   in.icon_url = GURL("http://rp.foo/user.png");
-  UserEntity out = UserEntity::FromPublicKeyCredentialUserEntity(std::move(in));
-  EXPECT_EQ(user_id, out.id);
-  EXPECT_EQ("username", out.name);
-  EXPECT_EQ("display name", out.display_name);
+  CredentialMetadata out =
+      CredentialMetadata::FromPublicKeyCredentialUserEntity(
+          std::move(in), /*is_resident=*/false);
+  EXPECT_EQ(user_id, out.user_id);
+  EXPECT_EQ("username", out.user_name);
+  EXPECT_EQ("display name", out.user_display_name);
+  EXPECT_FALSE(out.is_resident);
 }
 
 TEST(CredentialMetadata, ToPublicKeyCredentialUserEntity) {
   std::vector<uint8_t> user_id = {{1, 2, 3}};
-  UserEntity in(user_id, "username", "display name");
+  CredentialMetadata in(user_id, "username", "display name",
+                        /*is_resident=*/false);
   PublicKeyCredentialUserEntity out = in.ToPublicKeyCredentialUserEntity();
   EXPECT_EQ(user_id, out.id);
   EXPECT_EQ("username", out.name.value());
