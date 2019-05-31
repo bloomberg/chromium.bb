@@ -136,6 +136,15 @@ typedef struct {
   double first_bit_arrival_time;
   double last_bit_arrival_time;
   size_t coded_bits;
+
+  // Information for the frame being processed.
+  double removal_time;
+  double presentation_time;
+  int decode_samples;
+  int display_samples;
+
+  double max_display_rate;
+  double max_decode_rate;
 } DECODER_MODEL;
 
 typedef struct {

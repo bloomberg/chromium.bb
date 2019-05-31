@@ -473,6 +473,13 @@ void av1_decoder_model_init(const AV1_COMP *const cpi, AV1_LEVEL level,
   decoder_model->last_bit_arrival_time = 0.0;
   decoder_model->coded_bits = 0;
 
+  decoder_model->removal_time = INVALID_TIME;
+  decoder_model->presentation_time = INVALID_TIME;
+  decoder_model->decode_samples = 0;
+  decoder_model->display_samples = 0;
+  decoder_model->max_decode_rate = 0.0;
+  decoder_model->max_display_rate = 0.0;
+
   decoder_model->num_frame = -1;
   decoder_model->num_decoded_frame = -1;
   decoder_model->num_shown_frame = -1;
@@ -510,6 +517,7 @@ void av1_decoder_model_process_frame(const AV1_COMP *const cpi,
   aom_clear_system_state();
 
   const AV1_COMMON *const cm = &cpi->common;
+  const int luma_pic_size = cm->superres_upscaled_width * cm->height;
   const int show_existing_frame = cm->show_existing_frame;
   const int show_frame = cm->show_frame || show_existing_frame;
   ++decoder_model->num_frame;
@@ -533,6 +541,16 @@ void av1_decoder_model_process_frame(const AV1_COMP *const cpi,
       decoder_model->status = DECODE_FRAME_BUF_UNAVAILABLE;
       return;
     }
+
+    const int previous_decode_samples = decoder_model->decode_samples;
+    const double previous_removal_time = decoder_model->removal_time;
+    assert(previous_removal_time < removal_time);
+    decoder_model->removal_time = removal_time;
+    decoder_model->decode_samples = luma_pic_size;
+    const double this_decode_rate =
+        previous_decode_samples / (removal_time - previous_removal_time);
+    decoder_model->max_decode_rate =
+        AOMMAX(decoder_model->max_decode_rate, this_decode_rate);
 
     // A frame with show_existing_frame being false indicates the end of a DFG.
     // Update the bits arrival time of this DFG.
@@ -637,6 +655,19 @@ void av1_decoder_model_process_frame(const AV1_COMP *const cpi,
         decoder_model->current_time > presentation_time) {
       decoder_model->status = DISPLAY_FRAME_LATE;
       return;
+    }
+
+    const int previous_display_samples = decoder_model->display_samples;
+    const double previous_presentation_time = decoder_model->presentation_time;
+    decoder_model->display_samples = luma_pic_size;
+    decoder_model->presentation_time = presentation_time;
+    if (presentation_time >= 0.0 && previous_presentation_time >= 0.0) {
+      assert(previous_presentation_time < presentation_time);
+      const double this_display_rate =
+          previous_display_samples /
+          (presentation_time - previous_presentation_time);
+      decoder_model->max_display_rate =
+          AOMMAX(decoder_model->max_display_rate, this_display_rate);
     }
   }
 }
