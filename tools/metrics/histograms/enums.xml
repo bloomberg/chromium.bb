@@ -32537,6 +32537,23 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Used no map executable support fallback">obsolete</int>
 </enum>
 
+<enum name="LiftoffBailoutReason">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kDecodeError"/>
+  <int value="2" label="kUnsupportedArchitecture"/>
+  <int value="3" label="kMissingCPUFeature"/>
+  <int value="4" label="kComplexOperation"/>
+  <int value="5" label="kSimd"/>
+  <int value="6" label="kAnyRef"/>
+  <int value="7" label="kExceptionHandling"/>
+  <int value="8" label="kMultiValue"/>
+  <int value="9" label="kTailCall"/>
+  <int value="10" label="kAtomics"/>
+  <int value="11" label="kBulkMemory"/>
+  <int value="12" label="kNonTrappingFloatToInt"/>
+  <int value="20" label="kOtherReason"/>
+</enum>
+
 <enum name="LinkMonitorFailureType">
   <int value="0" label="Local MAC Address Not Found"/>
   <int value="1" label="Client Startup Failure"/>
