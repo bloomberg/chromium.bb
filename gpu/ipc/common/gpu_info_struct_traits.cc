@@ -363,9 +363,6 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
 
 #if defined(OS_WIN)
   out->direct_composition = data.direct_composition();
-  out->bgra_format_support = data.bgra_format_support();
-  out->yuy2_format_support = data.yuy2_format_support();
-  out->nv12_format_support = data.nv12_format_support();
   out->supports_overlays = data.supports_overlays();
 #endif
 

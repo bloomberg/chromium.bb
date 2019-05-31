@@ -67,6 +67,18 @@ void DestroySurface(scoped_refptr<DirectCompositionSurfaceWin> surface) {
   base::RunLoop().RunUntilIdle();
 }
 
+bool CheckFormatSupport(DXGI_FORMAT format) {
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device)
+    return false;
+  UINT support_flags = 0;
+  if (FAILED(d3d11_device->CheckFormatSupport(format, &support_flags)))
+    return false;
+  LOG(ERROR) << "support_flag = 0x" << std::hex << support_flags;
+  return true;
+}
+
 Microsoft::WRL::ComPtr<ID3D11Texture2D> CreateNV12Texture(
     const Microsoft::WRL::ComPtr<ID3D11Device>& d3d11_device,
     const gfx::Size& size,
@@ -915,6 +927,11 @@ TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
   // Swap chain size is overridden to content rect size only if scaled overlays
   // are supported.
   DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
+
+  // TODO(zmo): These are to collect format supports on Win10/AMD bot,
+  // and should be removed after the info is obtained.
+  EXPECT_TRUE(CheckFormatSupport(DXGI_FORMAT_NV12));
+  EXPECT_TRUE(CheckFormatSupport(DXGI_FORMAT_YUY2));
 
   gfx::Size window_size(100, 100);
   gfx::Size texture_size(50, 50);

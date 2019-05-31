@@ -277,18 +277,6 @@ UINT DirectCompositionSurfaceWin::GetOverlaySupportFlags(DXGI_FORMAT format) {
 }
 
 // static
-UINT DirectCompositionSurfaceWin::GetFormatSupportFlags(DXGI_FORMAT format) {
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
-  if (!d3d11_device)
-    return 0;
-  UINT support_flags = 0;
-  if (FAILED(d3d11_device->CheckFormatSupport(format, &support_flags)))
-    return 0;
-  return support_flags;
-}
-
-// static
 gfx::Size DirectCompositionSurfaceWin::GetOverlayMonitorSize() {
   return g_overlay_monitor_size;
 }

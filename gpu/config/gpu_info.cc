@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#include "base/strings/stringprintf.h"
 #include "gpu/config/gpu_info.h"
 
 namespace {
@@ -237,9 +236,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool can_support_threaded_texture_mailbox;
 #if defined(OS_WIN)
     bool direct_composition;
-    uint32_t bgra_format_support;
-    uint32_t yuy2_format_support;
-    uint32_t nv12_format_support;
     bool supports_overlays;
     OverlaySupport yuy2_overlay_support;
     OverlaySupport nv12_overlay_support;
@@ -305,12 +301,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   // TODO(kbr): add dx_diagnostics on Windows.
 #if defined(OS_WIN)
   enumerator->AddBool("directComposition", direct_composition);
-  enumerator->AddString("bgraFormatSupport",
-                        base::StringPrintf("0x%08x", bgra_format_support));
-  enumerator->AddString("yuy2FormatSupport",
-                        base::StringPrintf("0x%08x", yuy2_format_support));
-  enumerator->AddString("nv12FormatSupport",
-                        base::StringPrintf("0x%08x", nv12_format_support));
   enumerator->AddBool("supportsOverlays", supports_overlays);
   enumerator->AddString("yuy2OverlaySupport",
                         OverlaySupportToString(yuy2_overlay_support));

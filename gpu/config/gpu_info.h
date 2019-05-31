@@ -310,10 +310,6 @@ struct GPU_EXPORT GPUInfo {
 #if defined(OS_WIN)
   // True if we use direct composition surface on Windows.
   bool direct_composition = false;
-  // The information returned by ID3D11Device::CheckFormatSupport().
-  uint32_t bgra_format_support = 0;
-  uint32_t yuy2_format_support = 0;
-  uint32_t nv12_format_support = 0;
 
   // True if we use direct composition surface overlays on Windows.
   bool supports_overlays = false;

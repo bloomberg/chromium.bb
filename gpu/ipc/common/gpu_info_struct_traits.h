@@ -322,18 +322,6 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.direct_composition;
   }
 
-  static uint32_t bgra_format_support(const gpu::GPUInfo& input) {
-    return input.bgra_format_support;
-  }
-
-  static uint32_t yuy2_format_support(const gpu::GPUInfo& input) {
-    return input.yuy2_format_support;
-  }
-
-  static uint32_t nv12_format_support(const gpu::GPUInfo& input) {
-    return input.nv12_format_support;
-  }
-
   static bool supports_overlays(const gpu::GPUInfo& input) {
     return input.supports_overlays;
   }

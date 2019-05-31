@@ -144,12 +144,6 @@ struct GpuInfo {
   [EnableIf=is_win]
   bool direct_composition;
   [EnableIf=is_win]
-  uint32 bgra_format_support;
-  [EnableIf=is_win]
-  uint32 yuy2_format_support;
-  [EnableIf=is_win]
-  uint32 nv12_format_support;
-  [EnableIf=is_win]
   bool supports_overlays;
   [EnableIf=is_win]
   OverlaySupport yuy2_overlay_support;
