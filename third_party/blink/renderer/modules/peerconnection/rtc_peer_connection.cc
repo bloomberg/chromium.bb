@@ -2883,6 +2883,15 @@ void RTCPeerConnection::DidModifyTransceivers(
     transceiver->receiver()->track()->Component()->Source()->SetReadyState(
         MediaStreamSource::kReadyStateLive);
   }
+
+  // Transceiver modifications can cause changes in the set of ICE
+  // transports, which may affect ICE transport state.
+  // Note - this must be done every time the set of ICE transports happens.
+  // At the moment this only happens in SLD/SRD, and this function is called
+  // whenever these functions complete.
+  if (sdp_semantics_ == webrtc::SdpSemantics::kUnifiedPlan) {
+    UpdateIceConnectionState();
+  }
 }
 
 void RTCPeerConnection::SetAssociatedMediaStreams(
