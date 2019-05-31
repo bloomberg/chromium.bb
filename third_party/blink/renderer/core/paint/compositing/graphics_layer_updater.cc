@@ -41,7 +41,8 @@ class GraphicsLayerUpdater::UpdateContext {
  public:
   UpdateContext()
       : compositing_stacking_context_(nullptr),
-        compositing_ancestor_(nullptr) {}
+        compositing_ancestor_(nullptr),
+        use_slow_path(false) {}
 
   UpdateContext(const UpdateContext& other, const PaintLayer& layer)
       : compositing_stacking_context_(other.compositing_stacking_context_),
@@ -53,18 +54,23 @@ class GraphicsLayerUpdater::UpdateContext {
       if (layer.GetLayoutObject().StyleRef().IsStackingContext())
         compositing_stacking_context_ = &layer;
 
-      // Any composited content under SVG must be a descendant of (but not
-      // equal to, see PaintLayerCompositor::CanBeComposited)
-      // a <foreignObject> element. The SVG root element amounts to a
-      // compositing stacking ancestor to such an element, if the SVG
-      // root is composited, because <foreignObject> is a replaced normal-flow
-      // stacking element (see PaintLayer::IsReplacedNormalFlowStacking).
-      if (layer.GetLayoutObject().IsSVGRoot())
-        compositing_stacking_context_ = &layer;
     }
+    // Any composited content under SVG must be a descendant of (but not
+    // equal to, see PaintLayerCompositor::CanBeComposited)
+    // a <foreignObject> element. The rules for compositing ancestors are
+    // complicated for this situation, due to <foreignObject> being a replaced
+    // nornmal-flow stacking element
+    // (see PaintLayer::IsReplacedNormalFlowStacking). Use a slow path
+    // for these situations, to simplify the logic.
+    if (layer.GetLayoutObject().IsSVGRoot() ||
+        layer.IsReplacedNormalFlowStacking())
+      use_slow_path = true;
   }
 
   const PaintLayer* CompositingContainer(const PaintLayer& layer) const {
+    if (use_slow_path)
+      return layer.EnclosingLayerWithCompositedLayerMapping(kExcludeSelf);
+
     const PaintLayer* compositing_container;
     if (layer.GetLayoutObject().StyleRef().IsStacked() &&
         !layer.IsReplacedNormalFlowStacking()) {
@@ -94,6 +100,7 @@ class GraphicsLayerUpdater::UpdateContext {
  private:
   const PaintLayer* compositing_stacking_context_;
   const PaintLayer* compositing_ancestor_;
+  bool use_slow_path;
 };
 
 GraphicsLayerUpdater::GraphicsLayerUpdater() : needs_rebuild_tree_(false) {}
