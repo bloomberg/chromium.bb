@@ -23,7 +23,7 @@ void CreditCardCVCAuthenticator::Authenticate(
     const base::TimeTicks& form_parsed_timestamp) {
   requester_ = requester;
   if (!card)
-    OnFullCardRequestFailed();
+    return OnFullCardRequestFailed();
   full_card_request_.reset(new payments::FullCardRequest(
       client_, client_->GetPaymentsClient(), personal_data_manager,
       form_parsed_timestamp));
