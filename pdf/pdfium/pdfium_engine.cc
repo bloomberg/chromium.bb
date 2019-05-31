@@ -1838,8 +1838,10 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
 
   // If StartFind() gets called before we have any page information (i.e.
   // before the first call to LoadDocument has happened). Handle this case.
-  if (pages_.empty())
+  if (pages_.empty()) {
+    client_->NotifyNumberOfFindResultsChanged(0, true);
     return;
+  }
 
   bool first_search = (current_find_text_ != text);
   int character_to_start_searching_from = 0;
