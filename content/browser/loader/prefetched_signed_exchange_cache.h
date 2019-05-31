@@ -95,6 +95,8 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
     DISALLOW_COPY_AND_ASSIGN(Entry);
   };
 
+  using EntryMap = std::map<GURL /* outer_url */, std::unique_ptr<const Entry>>;
+
   PrefetchedSignedExchangeCache();
 
   void Store(std::unique_ptr<const Entry> cached_exchange);
@@ -102,11 +104,10 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
   std::unique_ptr<NavigationLoaderInterceptor> MaybeCreateInterceptor(
       const GURL& outer_url);
 
+  const EntryMap& GetExchanges();
+
  private:
   friend class base::RefCountedThreadSafe<PrefetchedSignedExchangeCache>;
-  friend class SignedExchangeSubresourcePrefetchBrowserTest;
-
-  using EntryMap = std::map<GURL /* outer_url */, std::unique_ptr<const Entry>>;
 
   ~PrefetchedSignedExchangeCache();
   std::vector<PrefetchedSignedExchangeInfo> GetInfoListForNavigation(

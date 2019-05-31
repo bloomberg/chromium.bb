@@ -35234,6 +35234,8 @@ from previous Chrome versions.
   <int value="1139363314" label="disable-supervised-user-blacklist"/>
   <int value="1142515376" label="enable-nacl"/>
   <int value="1142788238" label="FontCacheScaling:disabled"/>
+  <int value="1142970266"
+      label="SignedExchangePrefetchCacheForNavigations:disabled"/>
   <int value="1148284632" label="NewTabPageUIMd:disabled"/>
   <int value="1149417604" label="StreamlinedUsbPrinterSetup:disabled"/>
   <int value="1149823105" label="enable-input-ime-api"/>
@@ -35783,6 +35785,8 @@ from previous Chrome versions.
   <int value="1950191981" label="OverlayNewLayout:enabled"/>
   <int value="1951466218" label="enable-data-reduction-proxy-lite-page"/>
   <int value="1951645673" label="PasswordsKeyboardAccessory:disabled"/>
+  <int value="1952339754"
+      label="SignedExchangePrefetchCacheForNavigations:enabled"/>
   <int value="1955238689" label="OmniboxMaxURLMatches:disabled"/>
   <int value="1957273171" label="PageAlmostIdle:disabled"/>
   <int value="1957358530" label="ContextualSearchSecondTap:enabled"/>

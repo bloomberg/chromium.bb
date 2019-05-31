@@ -66,7 +66,9 @@ PrefetchURLLoader::PrefetchURLLoader(
 
     if (prefetched_signed_exchange_cache) {
       DCHECK(base::FeatureList::IsEnabled(
-          features::kSignedExchangeSubresourcePrefetch));
+                 features::kSignedExchangeSubresourcePrefetch) ||
+             base::FeatureList::IsEnabled(
+                 features::kSignedExchangePrefetchCacheForNavigations));
       prefetched_signed_exchange_cache_adapter_ =
           std::make_unique<PrefetchedSignedExchangeCacheAdapter>(
               std::move(prefetched_signed_exchange_cache),

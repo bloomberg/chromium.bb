@@ -613,7 +613,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     if (prefetched_signed_exchange_cache) {
       DCHECK(base::FeatureList::IsEnabled(
-          features::kSignedExchangeSubresourcePrefetch));
+                 features::kSignedExchangeSubresourcePrefetch) ||
+             base::FeatureList::IsEnabled(
+                 features::kSignedExchangePrefetchCacheForNavigations));
       std::unique_ptr<NavigationLoaderInterceptor>
           prefetched_signed_exchange_interceptor =
               prefetched_signed_exchange_cache->MaybeCreateInterceptor(

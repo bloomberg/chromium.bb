@@ -451,6 +451,12 @@ const base::Feature kSharedArrayBuffer {
 #endif
 };
 
+// Signed HTTP Exchange prefetch cache for navigations
+// https://crbug.com/968427
+const base::Feature kSignedExchangePrefetchCacheForNavigations{
+    "SignedExchangePrefetchCacheForNavigations",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Signed Exchange Reporting for distributors
 // https://www.chromestatus.com/features/5687904902840320
 const base::Feature kSignedExchangeReportingForDistributors{

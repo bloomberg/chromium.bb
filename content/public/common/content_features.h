@@ -105,6 +105,8 @@ CONTENT_EXPORT extern const base::Feature kServiceWorkerLongRunningMessage;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature
+    kSignedExchangePrefetchCacheForNavigations;
+CONTENT_EXPORT extern const base::Feature
     kSignedExchangeReportingForDistributors;
 CONTENT_EXPORT extern const base::Feature kSignedExchangeSubresourcePrefetch;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;

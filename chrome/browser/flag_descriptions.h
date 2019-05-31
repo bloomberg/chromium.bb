@@ -58,6 +58,9 @@ extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
 extern const char kEnableSignedExchangeSubresourcePrefetchName[];
 extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
 
+extern const char kEnableSignedExchangePrefetchCacheForNavigationsName[];
+extern const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[];
+
 extern const char kAllowStartingServiceManagerOnlyName[];
 extern const char kAllowStartingServiceManagerOnlyDescription[];
 

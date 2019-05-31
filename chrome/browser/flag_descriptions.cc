@@ -47,6 +47,14 @@ const char kEnableSignedExchangeSubresourcePrefetchDescription[] =
     "\"allowed-alt-sxg\" link header in the signed inner response of the "
     "main signed exchange.";
 
+const char kEnableSignedExchangePrefetchCacheForNavigationsName[] =
+    "Enable Signed Exchange prefetch cache for navigations";
+const char kEnableSignedExchangePrefetchCacheForNavigationsDescription[] =
+    "When enabled, the prefetched signed exchanges is stored to a prefetch "
+    "cache attached to the frame. The body of the inner response is stored as "
+    "a blob and the verification process of the signed exchange is skipped for "
+    "the succeeding navigation.";
+
 const char kAllowStartingServiceManagerOnlyName[] =
     "Allow starting service manager only";
 const char kAllowStartingServiceManagerOnlyDescription[] =

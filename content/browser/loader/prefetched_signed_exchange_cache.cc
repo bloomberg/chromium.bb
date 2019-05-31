@@ -507,7 +507,9 @@ PrefetchedSignedExchangeCache::Entry::Clone() const {
 
 PrefetchedSignedExchangeCache::PrefetchedSignedExchangeCache() {
   DCHECK(base::FeatureList::IsEnabled(
-      features::kSignedExchangeSubresourcePrefetch));
+             features::kSignedExchangeSubresourcePrefetch) ||
+         base::FeatureList::IsEnabled(
+             features::kSignedExchangePrefetchCacheForNavigations));
 }
 
 PrefetchedSignedExchangeCache::~PrefetchedSignedExchangeCache() {}
@@ -539,11 +541,25 @@ PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
       GetInfoListForNavigation(outer_url, it->second->inner_url()));
 }
 
+const PrefetchedSignedExchangeCache::EntryMap&
+PrefetchedSignedExchangeCache::GetExchanges() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return exchanges_;
+}
+
 std::vector<PrefetchedSignedExchangeInfo>
 PrefetchedSignedExchangeCache::GetInfoListForNavigation(
     const GURL& outer_url,
     const GURL& inner_url) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!base::FeatureList::IsEnabled(
+          features::kSignedExchangeSubresourcePrefetch)) {
+    DCHECK(base::FeatureList::IsEnabled(
+        features::kSignedExchangePrefetchCacheForNavigations));
+    return std::vector<PrefetchedSignedExchangeInfo>();
+  }
+
   std::vector<PrefetchedSignedExchangeInfo> info_list;
   const url::Origin outer_url_origin = url::Origin::Create(outer_url);
   const url::Origin inner_url_origin = url::Origin::Create(inner_url);

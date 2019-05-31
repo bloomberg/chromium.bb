@@ -6967,7 +6967,9 @@ bool RenderFrameHostImpl::IsTestRenderFrameHost() const {
 scoped_refptr<PrefetchedSignedExchangeCache>
 RenderFrameHostImpl::EnsurePrefetchedSignedExchangeCache() {
   if (!base::FeatureList::IsEnabled(
-          features::kSignedExchangeSubresourcePrefetch)) {
+          features::kSignedExchangeSubresourcePrefetch) &&
+      !base::FeatureList::IsEnabled(
+          features::kSignedExchangePrefetchCacheForNavigations)) {
     return nullptr;
   }
   if (!prefetched_signed_exchange_cache_) {
