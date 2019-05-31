@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 
+#include <utility>
+
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
@@ -326,6 +328,14 @@ void WebRemoteFrameImpl::DidStartLoading() {
 
 void WebRemoteFrameImpl::DidStopLoading() {
   GetFrame()->SetIsLoading(false);
+
+  // When a subframe finishes loading, the parent should check if *all*
+  // subframes have finished loading (which may mean that the parent can declare
+  // that the parent itself has finished loading).  This remote-subframe-focused
+  // code has a local-subframe equivalent in FrameLoader::DidFinishNavigation.
+  Frame* parent = GetFrame()->Tree().Parent();
+  if (parent)
+    parent->CheckCompleted();
 }
 
 bool WebRemoteFrameImpl::IsIgnoredForHitTest() const {

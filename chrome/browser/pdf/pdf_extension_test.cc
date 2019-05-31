@@ -19,8 +19,10 @@
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -71,6 +73,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/test/result_catcher.h"
@@ -2174,4 +2177,93 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_EmbeddedPdfGetsFocus) {
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
+}
+
+// A helper for waiting for the first request for |url_to_intercept|.
+class RequestWaiter {
+ public:
+  // Start intercepting requests to |url_to_intercept|.
+  explicit RequestWaiter(const GURL& url_to_intercept)
+      : url_to_intercept_(url_to_intercept),
+        interceptor_(base::BindRepeating(&RequestWaiter::InterceptorCallback,
+                                         base::Unretained(this))) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(url_to_intercept.is_valid());
+  }
+
+  void WaitForRequest() {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!IsAlreadyIntercepted())
+      run_loop_.Run();
+    DCHECK(IsAlreadyIntercepted());
+  }
+
+ private:
+  bool InterceptorCallback(
+      content::URLLoaderInterceptor::RequestParams* params) {
+    // This method may be called either on the IO or UI thread.
+    DCHECK(params);
+
+    base::AutoLock lock(lock_);
+    if (url_to_intercept_ != params->url_request.url || already_intercepted_)
+      return false;
+
+    already_intercepted_ = true;
+    run_loop_.Quit();
+    return false;
+  }
+
+  bool IsAlreadyIntercepted() {
+    base::AutoLock lock(lock_);
+    return already_intercepted_;
+  }
+
+  const GURL url_to_intercept_;
+  content::URLLoaderInterceptor interceptor_;
+  base::RunLoop run_loop_;
+
+  base::Lock lock_;
+  bool already_intercepted_ GUARDED_BY(lock_) = false;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestWaiter);
+};
+
+// This is a regression test for a problem where DidStopLoading didn't get
+// propagated from a remote frame into the main frame.  See also
+// https://crbug.com/964364.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DidStopLoading) {
+  // Prepare to wait for requests for the main page of the MimeHandlerView for
+  // PDFs.
+  RequestWaiter interceptor(
+      GURL("chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html"));
+
+  // Navigate to a page with:
+  //   <embed type="application/pdf" src="test.pdf"></embed>
+  //   <iframe src="/hung"></iframe>
+  // Afterwards, the main page should be still loading because of the hung
+  // subframe (but the subframe for the OOPIF-based PDF MimeHandlerView might or
+  // might not be created at this point).
+  GURL url = embedded_test_server()->GetURL(
+      "/pdf/pdf_embed_with_hung_sibling_subframe.html");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);  // Don't wait for completion.
+
+  // Wait for the request for the MimeHandlerView extension.  Afterwards, the
+  // main page should be still loading because of
+  // 1) the MimeHandlerView frame is loading
+  // 2) the hung subframe is loading.
+  interceptor.WaitForRequest();
+
+  // Remove the hung subframe.  Afterwards the main page should stop loading as
+  // soon as the MimeHandlerView frame stops loading (assumming we have not bugs
+  // similar to https://crbug.com/964364).
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecJs(
+      web_contents, "document.getElementById('hung_subframe').remove();"));
+
+  // MAIN VERIFICATION: Wait for the main frame to report that is has stopped
+  // loading.
+  content::WaitForLoadStop(web_contents);
 }
