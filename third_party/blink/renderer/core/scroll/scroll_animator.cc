@@ -66,7 +66,10 @@ ScrollAnimator::ScrollAnimator(ScrollableArea* scrollable_area,
       time_function_(time_function),
       last_granularity_(ScrollGranularity::kScrollByPixel) {}
 
-ScrollAnimator::~ScrollAnimator() = default;
+ScrollAnimator::~ScrollAnimator() {
+  if (on_finish_)
+    std::move(on_finish_).Run();
+}
 
 ScrollOffset ScrollAnimator::DesiredTargetOffset() const {
   if (run_state_ == RunState::kWaitingToCancelOnCompositor)
@@ -95,21 +98,31 @@ void ScrollAnimator::ResetAnimationState() {
   if (animation_curve_)
     animation_curve_.reset();
   start_time_ = 0.0;
+  if (on_finish_)
+    std::move(on_finish_).Run();
 }
 
-ScrollResult ScrollAnimator::UserScroll(ScrollGranularity granularity,
-                                        const ScrollOffset& delta) {
-  if (!scrollable_area_->ScrollAnimatorEnabled())
-    return ScrollAnimatorBase::UserScroll(granularity, delta);
+ScrollResult ScrollAnimator::UserScroll(
+    ScrollGranularity granularity,
+    const ScrollOffset& delta,
+    ScrollableArea::ScrollCallback on_finish) {
+  // We only store on_finish_ when running an animation, and it should be
+  // invoked as soon as the animation is finished. If we don't animate the
+  // scroll, the callback is invoked immediately without being stored.
+  DCHECK(HasRunningAnimation() || on_finish_.is_null());
 
-  TRACE_EVENT0("blink", "ScrollAnimator::scroll");
+  base::ScopedClosureRunner run_on_return(std::move(on_finish));
 
-  if (granularity == ScrollGranularity::kScrollByPrecisePixel) {
+  if (!scrollable_area_->ScrollAnimatorEnabled() ||
+      granularity == ScrollGranularity::kScrollByPrecisePixel) {
     // Cancel scroll animation because asked to instant scroll.
     if (HasRunningAnimation())
       CancelAnimation();
-    return ScrollAnimatorBase::UserScroll(granularity, delta);
+    return ScrollAnimatorBase::UserScroll(granularity, delta,
+                                          run_on_return.Release());
   }
+
+  TRACE_EVENT0("blink", "ScrollAnimator::scroll");
 
   bool needs_post_animation_cleanup =
       run_state_ == RunState::kPostAnimationCleanup;
@@ -122,6 +135,9 @@ ScrollResult ScrollAnimator::UserScroll(ScrollGranularity granularity,
 
   if (WillAnimateToOffset(target_offset)) {
     last_granularity_ = granularity;
+    if (on_finish_)
+      std::move(on_finish_).Run();
+    on_finish_ = run_on_return.Release();
     // Report unused delta only if there is no animation running. See
     // comment below regarding scroll latching.
     // TODO(bokan): Need to standardize how ScrollAnimators report
@@ -138,6 +154,8 @@ ScrollResult ScrollAnimator::UserScroll(ScrollGranularity granularity,
   // Report unused delta only if there is no animation and we are not
   // starting one. This ensures we latch for the duration of the
   // animation rather than animating multiple scrollers at the same time.
+  if (on_finish_)
+    std::move(on_finish_).Run();
   return ScrollResult(false, false, delta.Width(), delta.Height());
 }
 
@@ -245,10 +263,13 @@ void ScrollAnimator::TickAnimation(double monotonic_time) {
 
   current_offset_ = offset;
 
-  if (is_finished)
+  if (is_finished) {
     run_state_ = RunState::kPostAnimationCleanup;
-  else
+    if (on_finish_)
+      std::move(on_finish_).Run();
+  } else {
     GetScrollableArea()->ScheduleAnimation();
+  }
 
   TRACE_EVENT0("blink", "ScrollAnimator::notifyOffsetChanged");
   NotifyOffsetChanged();
@@ -399,10 +420,14 @@ void ScrollAnimator::NotifyCompositorAnimationAborted(int group_id) {
   // An animation aborted by the compositor is treated as a finished
   // animation.
   ScrollAnimatorCompositorCoordinator::CompositorAnimationFinished(group_id);
+  if (on_finish_)
+    std::move(on_finish_).Run();
 }
 
 void ScrollAnimator::NotifyCompositorAnimationFinished(int group_id) {
   ScrollAnimatorCompositorCoordinator::CompositorAnimationFinished(group_id);
+  if (on_finish_)
+    std::move(on_finish_).Run();
 }
 
 void ScrollAnimator::NotifyAnimationTakeover(
@@ -427,6 +452,8 @@ void ScrollAnimator::NotifyAnimationTakeover(
 
 void ScrollAnimator::CancelAnimation() {
   ScrollAnimatorCompositorCoordinator::CancelAnimation();
+  if (on_finish_)
+    std::move(on_finish_).Run();
 }
 
 void ScrollAnimator::TakeOverCompositorAnimation() {

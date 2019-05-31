@@ -156,9 +156,12 @@ float ScrollableArea::ScrollStep(ScrollGranularity granularity,
 }
 
 ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
-                                        const ScrollOffset& delta) {
+                                        const ScrollOffset& delta,
+                                        ScrollCallback on_finish) {
   TRACE_EVENT2("input", "ScrollableArea::UserScroll", "x", delta.Width(), "y",
                delta.Height());
+
+  base::ScopedClosureRunner run_on_return(std::move(on_finish));
 
   float step_x = ScrollStep(granularity, kHorizontalScrollbar);
   float step_y = ScrollStep(granularity, kVerticalScrollbar);
@@ -179,8 +182,8 @@ ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
   if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer())
     sequencer->AbortAnimations();
 
-  ScrollResult result =
-      GetScrollAnimator().UserScroll(granularity, scrollable_axis_delta);
+  ScrollResult result = GetScrollAnimator().UserScroll(
+      granularity, scrollable_axis_delta, run_on_return.Release());
 
   // Delta that wasn't scrolled because the axis is !userInputScrollable
   // should count as unusedScrollDelta.
@@ -195,18 +198,15 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
                                      ScrollType scroll_type,
                                      ScrollBehavior behavior,
                                      ScrollCallback on_finish) {
+  base::ScopedClosureRunner run_on_return(std::move(on_finish));
   if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer()) {
     if (sequencer->FilterNewScrollOrAbortCurrent(scroll_type)) {
-      if (on_finish)
-        std::move(on_finish).Run();
       return;
     }
   }
 
   ScrollOffset clamped_offset = ClampScrollOffset(offset);
   if (clamped_offset == GetScrollOffset()) {
-    if (on_finish)
-      std::move(on_finish).Run();
     return;
   }
 
@@ -224,11 +224,11 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
       break;
     case kProgrammaticScroll:
       ProgrammaticScrollHelper(clamped_offset, behavior, false,
-                               std::move(on_finish));
+                               run_on_return.Release());
       break;
     case kSequencedScroll:
       ProgrammaticScrollHelper(clamped_offset, behavior, true,
-                               std::move(on_finish));
+                               run_on_return.Release());
       break;
     case kUserScroll:
       UserScrollHelper(clamped_offset, behavior);
@@ -236,8 +236,6 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
     default:
       NOTREACHED();
   }
-  if (on_finish)
-    std::move(on_finish).Run();
 }
 
 void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,

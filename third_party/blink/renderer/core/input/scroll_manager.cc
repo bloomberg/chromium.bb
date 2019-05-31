@@ -317,7 +317,8 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     }
 
     ScrollResult result = scrollable_area->UserScroll(
-        granularity, ToScrollDelta(physical_direction, 1));
+        granularity, ToScrollDelta(physical_direction, 1),
+        ScrollableArea::ScrollCallback());
 
     if (result.DidScroll())
       return true;

@@ -541,7 +541,7 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
 
   ScrollResult result = scrollable_area->UserScroll(
       ScrollGranularity(static_cast<int>(scroll_state.deltaGranularity())),
-      delta);
+      delta, ScrollableArea::ScrollCallback());
 
   if (!result.DidScroll())
     return;

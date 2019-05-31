@@ -203,7 +203,8 @@ void Scrollbar::AutoscrollPressedPart(TimeDelta delay) {
   } else {
     scrollable_area_->UserScroll(
         PressedPartScrollGranularity(),
-        ToScrollDelta(PressedPartScrollDirectionPhysical(), 1));
+        ToScrollDelta(PressedPartScrollDirectionPhysical(), 1),
+        ScrollableArea::ScrollCallback());
   }
 
   // Always start timer when user press on button since scrollable area maybe
@@ -450,7 +451,8 @@ bool Scrollbar::HandleTapGesture() {
       } else {
         scrollable_area_->UserScroll(
             PressedPartScrollGranularity(),
-            ToScrollDelta(PressedPartScrollDirectionPhysical(), 1));
+            ToScrollDelta(PressedPartScrollDirectionPhysical(), 1),
+            ScrollableArea::ScrollCallback());
       }
       return true;
     }

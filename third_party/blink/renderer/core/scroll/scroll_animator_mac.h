@@ -141,7 +141,8 @@ class CORE_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
   ScrollOffset content_area_scrolled_timer_scroll_delta_;
 
   ScrollResult UserScroll(ScrollGranularity,
-                          const ScrollOffset& delta) override;
+                          const ScrollOffset& delta,
+                          ScrollableArea::ScrollCallback on_finish) override;
   void ScrollToOffsetWithoutAnimation(const ScrollOffset&) override;
 
   void CancelAnimation() override;

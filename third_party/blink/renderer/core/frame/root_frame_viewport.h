@@ -102,7 +102,9 @@ class CORE_EXPORT RootFrameViewport final
   int VerticalScrollbarWidth(
       OverlayScrollbarClipBehavior =
           kIgnorePlatformOverlayScrollbarSize) const override;
-  ScrollResult UserScroll(ScrollGranularity, const FloatSize&) override;
+  ScrollResult UserScroll(ScrollGranularity,
+                          const FloatSize&,
+                          ScrollableArea::ScrollCallback on_finish) override;
   CompositorElementId GetCompositorElementId() const override;
   CompositorElementId GetScrollbarElementId(
       ScrollbarOrientation orientation) override;

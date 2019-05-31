@@ -106,8 +106,12 @@ class CORE_EXPORT ScrollAnimator : public ScrollAnimatorBase {
   bool HasRunningAnimation() const override;
   ScrollOffset ComputeDeltaToConsume(const ScrollOffset& delta) const override;
 
+  // The callback will be run if the animation is updated by another
+  // UserScroll, otherwise it is called when the animation is finished,
+  // cancelled or reset.
   ScrollResult UserScroll(ScrollGranularity,
-                          const ScrollOffset& delta) override;
+                          const ScrollOffset& delta,
+                          ScrollableArea::ScrollCallback on_finish) override;
   void ScrollToOffsetWithoutAnimation(const ScrollOffset&) override;
   ScrollOffset DesiredTargetOffset() const override;
 
@@ -157,6 +161,10 @@ class CORE_EXPORT ScrollAnimator : public ScrollAnimatorBase {
 
   ScrollOffset target_offset_;
   ScrollGranularity last_granularity_;
+
+  // on_finish_ is a callback to call on animation finished, cancelled, or
+  // otherwise interrupted in any way.
+  ScrollableArea::ScrollCallback on_finish_;
 };
 
 }  // namespace blink

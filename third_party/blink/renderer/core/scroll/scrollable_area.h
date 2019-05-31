@@ -70,6 +70,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   DISALLOW_COPY_AND_ASSIGN(ScrollableArea);
 
  public:
+  using ScrollCallback = base::OnceClosure;
+
   static int PixelsPerLineStep(ChromeClient*);
   static float MinFractionToStepWhenPaging();
   int MaxOverlapBetweenPages() const;
@@ -86,9 +88,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return nullptr;
   }
 
-  virtual ScrollResult UserScroll(ScrollGranularity, const ScrollOffset&);
+  virtual ScrollResult UserScroll(ScrollGranularity,
+                                  const ScrollOffset&,
+                                  ScrollCallback on_finish);
 
-  using ScrollCallback = base::OnceClosure;
   virtual void SetScrollOffset(const ScrollOffset&,
                                ScrollType,
                                ScrollBehavior,

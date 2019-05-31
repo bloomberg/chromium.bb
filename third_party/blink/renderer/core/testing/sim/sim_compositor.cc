@@ -23,6 +23,7 @@ namespace blink {
 
 SimCompositor::SimCompositor() {
   LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(true);
+  last_frame_time_ = WTF::CurrentTimeTicks();
 }
 
 SimCompositor::~SimCompositor() {

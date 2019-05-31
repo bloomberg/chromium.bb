@@ -2229,7 +2229,10 @@ jumbo_source_set("unit_tests") {
   }
 
   if (!is_mac) {
-    sources += [ "scroll/scroll_animator_test.cc" ]
+    sources += [
+      "scroll/scroll_animator_test.cc",
+      "scroll/scrolling_test.cc",
+    ]
   }
 
   if (use_aura) {

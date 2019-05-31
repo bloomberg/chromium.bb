@@ -166,6 +166,10 @@ class CORE_EXPORT ScrollAnimatorCompositorCoordinator
   FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingAnimationResetsState);
   FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingCompositorAnimation);
   FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared);
+  FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest,
+                           UserScrollCallBackAtAnimationFinishOnMainThread);
+  FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest,
+                           UserScrollCallBackAtAnimationFinishOnCompositor);
 
   std::unique_ptr<CompositorAnimation> compositor_animation_;
   // The element id to which the compositor animation is attached when

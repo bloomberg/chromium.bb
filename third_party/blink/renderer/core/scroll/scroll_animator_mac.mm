@@ -740,16 +740,23 @@ void ScrollAnimatorMac::Dispose() {
   send_content_area_scrolled_task_handle_.Cancel();
 }
 
-ScrollResult ScrollAnimatorMac::UserScroll(ScrollGranularity granularity,
-                                           const ScrollOffset& delta) {
+ScrollResult ScrollAnimatorMac::UserScroll(
+    ScrollGranularity granularity,
+    const ScrollOffset& delta,
+    ScrollableArea::ScrollCallback on_finish) {
   have_scrolled_since_page_load_ = true;
 
-  if (!scrollable_area_->ScrollAnimatorEnabled())
-    return ScrollAnimatorBase::UserScroll(granularity, delta);
+  if (!scrollable_area_->ScrollAnimatorEnabled() ||
+      granularity == ScrollGranularity::kScrollByPixel ||
+      granularity == ScrollGranularity::kScrollByPrecisePixel) {
+    return ScrollAnimatorBase::UserScroll(granularity, delta,
+                                          std::move(on_finish));
+  }
 
-  if (granularity == ScrollGranularity::kScrollByPixel ||
-      granularity == ScrollGranularity::kScrollByPrecisePixel)
-    return ScrollAnimatorBase::UserScroll(granularity, delta);
+  // TODO(lanwei): we should find when the animation finishes and run the
+  // callback after the animation finishes, see https://crbug.com/967842.
+  if (on_finish)
+    std::move(on_finish).Run();
 
   ScrollOffset consumed_delta = ComputeDeltaToConsume(delta);
   ScrollOffset new_offset = current_offset_ + consumed_delta;

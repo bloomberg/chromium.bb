@@ -476,8 +476,12 @@ GraphicsLayer* RootFrameViewport::LayerForScrollCorner() const {
   return LayoutViewport().LayerForScrollCorner();
 }
 
-ScrollResult RootFrameViewport::UserScroll(ScrollGranularity granularity,
-                                           const FloatSize& delta) {
+ScrollResult RootFrameViewport::UserScroll(
+    ScrollGranularity granularity,
+    const FloatSize& delta,
+    ScrollableArea::ScrollCallback on_finish) {
+  base::ScopedClosureRunner run_on_return(std::move(on_finish));
+
   // TODO(bokan/ymalik): Once smooth scrolling is permanently enabled we
   // should be able to remove this method override and use the base class
   // version: ScrollableArea::userScroll.
@@ -525,14 +529,21 @@ ScrollResult RootFrameViewport::UserScroll(ScrollGranularity granularity,
 
   // TODO(bokan): Why do we call userScroll on the animators directly and
   // not through the ScrollableAreas?
-  ScrollResult visual_result = VisualViewport().GetScrollAnimator().UserScroll(
-      granularity, visual_consumed_delta);
-
-  if (visual_consumed_delta == pixel_delta)
+  if (visual_consumed_delta == pixel_delta) {
+    ScrollResult visual_result =
+        VisualViewport().GetScrollAnimator().UserScroll(
+            granularity, visual_consumed_delta, run_on_return.Release());
     return visual_result;
+  }
+
+  ScrollableArea::ScrollCallback callback = run_on_return.Release();
+  auto all_done = callback ? base::BarrierClosure(2, std::move(callback))
+                           : base::RepeatingClosure();
+  ScrollResult visual_result = VisualViewport().GetScrollAnimator().UserScroll(
+      granularity, visual_consumed_delta, all_done);
 
   ScrollResult layout_result = LayoutViewport().GetScrollAnimator().UserScroll(
-      granularity, scrollable_axis_delta);
+      granularity, scrollable_axis_delta, all_done);
 
   // Remember to add any delta not used because of !userInputScrollable to the
   // unusedScrollDelta in the result.
