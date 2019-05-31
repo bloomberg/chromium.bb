@@ -214,7 +214,9 @@ void DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt(
     StartValidation();
 
   // Announce the token.
-  FireRefreshTokenAvailable(GetRobotAccountId());
+  if (!GetRobotAccountId().empty()) {
+    FireRefreshTokenAvailable(GetRobotAccountId());
+  }
   FireRefreshTokensLoaded();
 }
 
