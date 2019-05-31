@@ -15,9 +15,8 @@ if (current_cpu == "arm") {
 
 declare_args() {
   # If true, use PFFFT for WebAudio FFT support.  This can be used for
-  # any Android architecture and also Linux and Windows.  We only use
-  # it on Android.
-  use_webaudio_pffft = is_android
+  # any Android architecture and also Linux and Windows.
+  use_webaudio_pffft = is_android || target_os == "linux"
 }
 
 declare_args() {
