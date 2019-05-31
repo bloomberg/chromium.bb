@@ -25,9 +25,9 @@
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
-#include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/display/mac/display_link_mac.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
 namespace remote_cocoa {

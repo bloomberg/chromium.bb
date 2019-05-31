@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/accelerated_widget_mac/display_link_mac.h"
+#include "ui/display/mac/display_link_mac.h"
 
 #include <stdint.h>
 
@@ -17,15 +17,13 @@
 
 namespace base {
 
-template<>
+template <>
 struct ScopedTypeRefTraits<CVDisplayLinkRef> {
   static CVDisplayLinkRef InvalidValue() { return nullptr; }
   static CVDisplayLinkRef Retain(CVDisplayLinkRef object) {
     return CVDisplayLinkRetain(object);
   }
-  static void Release(CVDisplayLinkRef object) {
-    CVDisplayLinkRelease(object);
-  }
+  static void Release(CVDisplayLinkRef object) { CVDisplayLinkRelease(object); }
 };
 
 }  // namespace base
@@ -40,6 +38,10 @@ namespace {
 // is initialized with the very first DisplayLinkMac instance, and is never
 // changed (even, e.g, in tests that re-initialize the main thread task runner).
 // https://885329
+// TODO(ccameron): crbug.com/969157 - Save this ask_runner to DisaplayLinkMac.
+// configs += [ "//build/config/compiler:wexit_time_destructors" ] in
+// ui/display/BUILD.gn has to be removed because GetMainThreadTaskRunner()
+// causes a compiler error.
 scoped_refptr<base::SingleThreadTaskRunner> GetMainThreadTaskRunner() {
   static scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
@@ -80,9 +82,8 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
   CVReturn ret = kCVReturnSuccess;
 
   base::ScopedTypeRef<CVDisplayLinkRef> display_link;
-  ret = CVDisplayLinkCreateWithCGDisplay(
-      display_id,
-      display_link.InitializeInto());
+  ret = CVDisplayLinkCreateWithCGDisplay(display_id,
+                                         display_link.InitializeInto());
   if (ret != kCVReturnSuccess) {
     LOG(ERROR) << "CVDisplayLinkCreateWithActiveCGDisplays failed: " << ret;
     return nullptr;
@@ -111,8 +112,7 @@ DisplayLinkMac::DisplayLinkMac(
     CGError register_error = CGDisplayRegisterReconfigurationCallback(
         DisplayReconfigurationCallBack, nullptr);
     DPLOG_IF(ERROR, register_error != kCGErrorSuccess)
-        << "CGDisplayRegisterReconfigurationCallback: "
-        << register_error;
+        << "CGDisplayRegisterReconfigurationCallback: " << register_error;
   }
   all_display_links.insert(std::make_pair(display_id_, this));
 }
@@ -129,13 +129,12 @@ DisplayLinkMac::~DisplayLinkMac() {
     CGError remove_error = CGDisplayRemoveReconfigurationCallback(
         DisplayReconfigurationCallBack, nullptr);
     DPLOG_IF(ERROR, remove_error != kCGErrorSuccess)
-        << "CGDisplayRemoveReconfigurationCallback: "
-        << remove_error;
+        << "CGDisplayRemoveReconfigurationCallback: " << remove_error;
   }
 }
 
-bool DisplayLinkMac::GetVSyncParameters(
-    base::TimeTicks* timebase, base::TimeDelta* interval) {
+bool DisplayLinkMac::GetVSyncParameters(base::TimeTicks* timebase,
+                                        base::TimeDelta* interval) {
   if (!timebase_and_interval_valid_) {
     StartOrContinueDisplayLink();
     return false;
@@ -200,8 +199,7 @@ void DisplayLinkMac::UpdateVSyncParameters(const CVTimeStamp& cv_time) {
   timebase_and_interval_valid_ = true;
 
   // Don't restart the display link for 10 seconds.
-  recalculate_time_ = base::TimeTicks::Now() +
-                      base::TimeDelta::FromSeconds(10);
+  recalculate_time_ = base::TimeTicks::Now() + base::TimeDelta::FromSeconds(10);
   StopDisplayLink();
 }
 
@@ -224,13 +222,12 @@ void DisplayLinkMac::StopDisplayLink() {
 }
 
 // static
-CVReturn DisplayLinkMac::DisplayLinkCallback(
-    CVDisplayLinkRef display_link,
-    const CVTimeStamp* now,
-    const CVTimeStamp* output_time,
-    CVOptionFlags flags_in,
-    CVOptionFlags* flags_out,
-    void* context) {
+CVReturn DisplayLinkMac::DisplayLinkCallback(CVDisplayLinkRef display_link,
+                                             const CVTimeStamp* now,
+                                             const CVTimeStamp* output_time,
+                                             CVOptionFlags flags_in,
+                                             CVOptionFlags* flags_out,
+                                             void* context) {
   TRACE_EVENT0("ui", "DisplayLinkMac::DisplayLinkCallback");
   CGDirectDisplayID display =
       static_cast<CGDirectDisplayID>(reinterpret_cast<uintptr_t>(context));
@@ -254,4 +251,4 @@ void DisplayLinkMac::DisplayReconfigurationCallBack(
   display_link_mac->timebase_and_interval_valid_ = false;
 }
 
-}  // ui
+}  // namespace ui

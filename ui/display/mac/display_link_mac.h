@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ACCELERATED_WIDGET_MAC_DISPLAY_LINK_MAC_H_
-#define UI_ACCELERATED_WIDGET_MAC_DISPLAY_LINK_MAC_H_
+#ifndef UI_DISPLAY_MAC_DISPLAY_LINK_MAC_H_
+#define UI_DISPLAY_MAC_DISPLAY_LINK_MAC_H_
 
 #include <QuartzCore/CVDisplayLink.h>
 
@@ -12,11 +12,11 @@
 #include "base/mac/scoped_typeref.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
+#include "ui/display/display_export.h"
 
 namespace ui {
 
-class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac
+class DISPLAY_EXPORT DisplayLinkMac
     : public base::RefCountedThreadSafe<DisplayLinkMac> {
  public:
   // This must only be called from the main thread.
@@ -25,16 +25,13 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac
 
   // Get vsync scheduling parameters. Returns false if the populated parameters
   // are invalid.
-  bool GetVSyncParameters(
-      base::TimeTicks* timebase,
-      base::TimeDelta* interval);
+  bool GetVSyncParameters(base::TimeTicks* timebase, base::TimeDelta* interval);
 
  private:
   friend class base::RefCountedThreadSafe<DisplayLinkMac>;
 
-  DisplayLinkMac(
-      CGDirectDisplayID display_id,
-      base::ScopedTypeRef<CVDisplayLinkRef> display_link);
+  DisplayLinkMac(CGDirectDisplayID display_id,
+                 base::ScopedTypeRef<CVDisplayLinkRef> display_link);
   virtual ~DisplayLinkMac();
 
   void StartOrContinueDisplayLink();
@@ -50,20 +47,18 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac
 
   // Called by the system on the display link thread, and posts a call to
   // DoUpdateVSyncParameters() to the UI thread.
-  static CVReturn DisplayLinkCallback(
-      CVDisplayLinkRef display_link,
-      const CVTimeStamp* now,
-      const CVTimeStamp* output_time,
-      CVOptionFlags flags_in,
-      CVOptionFlags* flags_out,
-      void* context);
+  static CVReturn DisplayLinkCallback(CVDisplayLinkRef display_link,
+                                      const CVTimeStamp* now,
+                                      const CVTimeStamp* output_time,
+                                      CVOptionFlags flags_in,
+                                      CVOptionFlags* flags_out,
+                                      void* context);
 
   // This is called whenever the display is reconfigured, and marks that the
   // vsync parameters must be recalculated.
-  static void DisplayReconfigurationCallBack(
-      CGDirectDisplayID display,
-      CGDisplayChangeSummaryFlags flags,
-      void* user_info);
+  static void DisplayReconfigurationCallBack(CGDirectDisplayID display,
+                                             CGDisplayChangeSummaryFlags flags,
+                                             void* user_info);
 
   // The display that this display link is attached to.
   CGDirectDisplayID display_id_;
@@ -81,6 +76,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac
   base::TimeTicks recalculate_time_;
 };
 
-}  // ui
+}  // namespace ui
 
-#endif  // UI_ACCELERATED_WIDGET_MAC_DISPLAY_LINK_MAC_H_
+#endif  // UI_DISPLAY_MAC_DISPLAY_LINK_MAC_H_

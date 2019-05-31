@@ -29,6 +29,8 @@ jumbo_component("display") {
     "display_switches.cc",
     "display_switches.h",
     "ios/screen_ios.mm",
+    "mac/display_link_mac.cc",
+    "mac/display_link_mac.h",
     "mac/screen_mac.mm",
     "screen.cc",
     "screen.h",
@@ -53,8 +55,6 @@ jumbo_component("display") {
     "win/uwp_text_scale_factor.cc",
     "win/uwp_text_scale_factor.h",
   ]
-
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   defines = [ "DISPLAY_IMPLEMENTATION" ]
 
@@ -85,6 +85,7 @@ jumbo_component("display") {
     libs = [
       "AppKit.framework",
       "CoreGraphics.framework",
+      "QuartzCore.framework",
     ]
   }
 }
