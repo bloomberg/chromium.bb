@@ -558,6 +558,9 @@ source_set("unit_tests") {
     "h264_decoder_unittest.cc",
   ]
 
+  if (is_linux) {
+    deps += [ "//media/gpu/linux:unit_tests" ]
+  }
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi:unit_test" ]
   }

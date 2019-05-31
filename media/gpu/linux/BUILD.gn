@@ -10,8 +10,12 @@ assert(is_linux)
 source_set("linux") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
+    "dmabuf_video_frame_pool.cc",
+    "dmabuf_video_frame_pool.h",
     "mailbox_video_frame_converter.cc",
     "mailbox_video_frame_converter.h",
+    "platform_video_frame_pool.cc",
+    "platform_video_frame_pool.h",
     "platform_video_frame_utils.cc",
     "platform_video_frame_utils.h",
   ]
@@ -44,5 +48,19 @@ source_set("video_frame_mapper") {
     "//media/gpu:command_buffer_helper",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "platform_video_frame_pool_unittest.cc",
+  ]
+  deps = [
+    ":linux",
+    "//base",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
   ]
 }
