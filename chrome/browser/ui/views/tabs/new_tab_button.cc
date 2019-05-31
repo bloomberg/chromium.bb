@@ -24,6 +24,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/view_class_properties.h"
@@ -60,6 +61,9 @@ int GetNewTabPromoStringSpecifier() {
 }  // namespace
 
 // static
+constexpr char NewTabButton::kClassName[];
+
+// static
 const gfx::Size NewTabButton::kButtonSize{28, 28};
 
 NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
@@ -69,6 +73,9 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
   set_triggerable_event_flags(triggerable_event_flags() |
                               ui::EF_MIDDLE_MOUSE_BUTTON);
 #endif
+
+  ink_drop_container =
+      AddChildView(std::make_unique<views::InkDropContainerView>());
 
   SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(0.08f);
@@ -119,6 +126,22 @@ void NewTabButton::FrameColorsChanged() {
 
 void NewTabButton::AnimateInkDropToStateForTesting(views::InkDropState state) {
   GetInkDrop()->AnimateToState(state);
+}
+
+const char* NewTabButton::GetClassName() const {
+  return kClassName;
+}
+
+void NewTabButton::Layout() {
+  ink_drop_container->SetBoundsRect(GetLocalBounds());
+}
+
+void NewTabButton::AddLayerBeneathView(ui::Layer* new_layer) {
+  ink_drop_container->AddLayerBeneathView(new_layer);
+}
+
+void NewTabButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
+  ink_drop_container->RemoveLayerBeneathView(old_layer);
 }
 
 #if defined(OS_WIN)

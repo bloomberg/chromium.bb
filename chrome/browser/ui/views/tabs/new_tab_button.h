@@ -14,6 +14,10 @@
 
 class FeaturePromoBubbleView;
 
+namespace views {
+class InkDropContainerView;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabButton
 //
@@ -25,6 +29,8 @@ class NewTabButton : public views::ImageButton,
                      public views::MaskedTargeterDelegate,
                      public views::WidgetObserver {
  public:
+  static constexpr char kClassName[] = "NewTabButton";
+
   static const gfx::Size kButtonSize;
 
   NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener);
@@ -58,6 +64,12 @@ class NewTabButton : public views::ImageButton,
   void AnimateInkDropToStateForTesting(views::InkDropState state);
 
   FeaturePromoBubbleView* new_tab_promo() { return new_tab_promo_; }
+
+  // views::View:
+  const char* GetClassName() const override;
+  void Layout() override;
+  void AddLayerBeneathView(ui::Layer* new_layer) override;
+  void RemoveLayerBeneathView(ui::Layer* old_layer) override;
 
  private:
 // views::ImageButton:
@@ -97,6 +109,9 @@ class NewTabButton : public views::ImageButton,
 
   // Tab strip that contains this button.
   TabStrip* tab_strip_;
+
+  // Contains our ink drop layer so it can paint above our background.
+  views::InkDropContainerView* ink_drop_container;
 
   // Promotional UI that appears next to the NewTabButton and encourages its
   // use. Owned by its NativeWidget.
