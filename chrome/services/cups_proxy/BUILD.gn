@@ -18,6 +18,7 @@ source_set("cups_proxy") {
 
   deps = [
     "//base",
+    "//chrome/services/cups_proxy/public/cpp",
     "//chrome/services/cups_proxy/public/mojom",
     "//chromeos/dbus",
     "//net",
@@ -28,6 +29,10 @@ source_set("cups_proxy") {
   # We stub this service if libCUPS is not present.
   if (use_cups) {
     configs += [ "//printing:cups" ]
+    sources += [
+      "printer_installer.cc",
+      "printer_installer.h",
+    ]
   }
 
   public_deps = [
@@ -45,4 +50,21 @@ static_library("test_support") {
   public_deps = [
     ":cups_proxy",
   ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  if (use_cups) {
+    sources = [
+      "printer_installer_unittest.cc",
+    ]
+
+    deps = [
+      ":cups_proxy",
+      ":test_support",
+      "//base",
+      "//testing/gtest",
+    ]
+  }
 }
