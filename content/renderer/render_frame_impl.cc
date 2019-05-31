@@ -5518,9 +5518,10 @@ void RenderFrameImpl::DidObserveNewCssPropertyUsage(int css_property,
     observer.DidObserveNewCssPropertyUsage(css_property, is_animated);
 }
 
-void RenderFrameImpl::DidObserveLayoutJank(double jank_fraction) {
+void RenderFrameImpl::DidObserveLayoutJank(double jank_fraction,
+                                           bool after_input_or_scroll) {
   for (auto& observer : observers_)
-    observer.DidObserveLayoutJank(jank_fraction);
+    observer.DidObserveLayoutJank(jank_fraction, after_input_or_scroll);
 }
 
 void RenderFrameImpl::DidObserveLazyLoadBehavior(

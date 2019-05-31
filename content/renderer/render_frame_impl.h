@@ -814,7 +814,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) override;
   void DidObserveNewCssPropertyUsage(int css_property,
                                      bool is_animated) override;
-  void DidObserveLayoutJank(double jank_fraction) override;
+  void DidObserveLayoutJank(double jank_fraction,
+                            bool after_input_or_scroll) override;
   void DidObserveLazyLoadBehavior(
       blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
   bool ShouldTrackUseCounter(const blink::WebURL& url) override;

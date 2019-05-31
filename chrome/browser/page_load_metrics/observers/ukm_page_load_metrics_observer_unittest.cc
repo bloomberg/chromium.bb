@@ -1021,13 +1021,14 @@ TEST_F(UkmPageLoadMetricsObserverTest, CpuTimeMetrics) {
 TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
   NavigateAndCommit(GURL(kTestUrl1));
 
-  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0);
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
   SimulateRenderDataUpdate(render_data);
 
   // Simulate hiding the tab (the report should include jank after hide).
   web_contents()->WasHidden();
 
   render_data.layout_jank_delta = 1.5;
+  render_data.layout_jank_delta_before_input_or_scroll = 0.0;
   SimulateRenderDataUpdate(render_data);
 
   // Simulate closing the tab.
@@ -1043,6 +1044,10 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
     ukm_recorder.ExpectEntrySourceHasUrl(ukm_entry, GURL(kTestUrl1));
     ukm_recorder.ExpectEntryMetric(
         ukm_entry, PageLoad::kLayoutStability_JankScoreName, 250);
+    ukm_recorder.ExpectEntryMetric(
+        ukm_entry,
+        PageLoad::kLayoutStability_JankScore_MainFrame_BeforeInputOrScrollName,
+        100);
   }
 
   EXPECT_THAT(histogram_tester().GetAllSamples(
@@ -1066,7 +1071,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
   NavigateAndCommit(GURL(kTestUrl1));
 
   // Simulate jank in the main frame.
-  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0);
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
   SimulateRenderDataUpdate(render_data);
 
   RenderFrameHost* subframe =

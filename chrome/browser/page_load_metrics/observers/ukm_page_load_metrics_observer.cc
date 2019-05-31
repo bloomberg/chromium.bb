@@ -551,6 +551,9 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability(
           LayoutJankUkmValue(info.page_render_data.layout_jank_score))
       .SetLayoutStability_JankScore_MainFrame(
           LayoutJankUkmValue(info.main_frame_render_data.layout_jank_score))
+      .SetLayoutStability_JankScore_MainFrame_BeforeInputOrScroll(
+          LayoutJankUkmValue(info.main_frame_render_data
+                                 .layout_jank_score_before_input_or_scroll))
       .Record(ukm::UkmRecorder::Get());
 
   UMA_HISTOGRAM_COUNTS_100(

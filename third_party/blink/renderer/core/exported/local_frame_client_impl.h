@@ -150,7 +150,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
   void DidObserveNewFeatureUsage(mojom::WebFeature) override;
   void DidObserveNewCssPropertyUsage(int, bool) override;
-  void DidObserveLayoutJank(double jank_fraction) override;
+  void DidObserveLayoutJank(double jank_fraction,
+                            bool after_input_or_scroll) override;
   void DidObserveLazyLoadBehavior(
       WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
   bool ShouldTrackUseCounter(const KURL&) override;

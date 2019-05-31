@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
@@ -374,6 +375,11 @@ void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,
       GetLayoutBox()->GetFrameView()->GetPaintTimingDetector().NotifyScroll(
           scroll_type);
     }
+  }
+
+  if (GetScrollOffset() != old_offset && GetLayoutBox() &&
+      GetLayoutBox()->GetFrameView()) {
+    GetLayoutBox()->GetFrameView()->GetJankTracker().NotifyScroll(scroll_type);
   }
 
   GetScrollAnimator().SetCurrentOffset(offset);

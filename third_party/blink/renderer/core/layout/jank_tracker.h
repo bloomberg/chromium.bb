@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/jank_region.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -36,11 +37,13 @@ class CORE_EXPORT JankTracker {
                                   FloatRect new_layer_rect);
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
+  void NotifyScroll(ScrollType);
   bool IsActive();
   double Score() const { return score_; }
   double ScoreWithMoveDistance() const { return score_with_move_distance_; }
   double WeightedScore() const { return weighted_score_; }
   float OverallMaxDistance() const { return overall_max_distance_; }
+  bool ObservedInputOrScroll() const { return observed_input_or_scroll_; }
   void Dispose() { timer_.Stop(); }
 
  private:
@@ -95,6 +98,9 @@ class CORE_EXPORT JankTracker {
   // The maximum distance any layout object has moved, across all animation
   // frames.
   float overall_max_distance_;
+
+  // Whether either a user input or document scroll have been observed.
+  bool observed_input_or_scroll_;
 };
 
 }  // namespace blink

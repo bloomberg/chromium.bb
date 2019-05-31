@@ -94,9 +94,12 @@ void PageTimingMetricsSender::DidObserveNewCssPropertyUsage(int css_property,
   }
 }
 
-void PageTimingMetricsSender::DidObserveLayoutJank(double jank_fraction) {
+void PageTimingMetricsSender::DidObserveLayoutJank(double jank_fraction,
+                                                   bool after_input_or_scroll) {
   DCHECK(jank_fraction > 0);
   render_data_.layout_jank_delta += jank_fraction;
+  if (!after_input_or_scroll)
+    render_data_.layout_jank_delta_before_input_or_scroll += jank_fraction;
   EnsureSendTimer();
 }
 
@@ -244,6 +247,7 @@ void PageTimingMetricsSender::SendNow() {
   last_cpu_timing_->task_time = base::TimeDelta();
   modified_resources_.clear();
   render_data_.layout_jank_delta = 0;
+  render_data_.layout_jank_delta_before_input_or_scroll = 0;
 }
 
 }  // namespace page_load_metrics
