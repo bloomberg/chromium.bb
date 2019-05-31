@@ -1142,6 +1142,20 @@
       'ToTWinThinLTO64',
     ],
   },
+  'ozone_unittests': {
+    'modifications': {
+      'chromeos-betty-google-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
+        ],
+      },
+      'linux-chromeos-google-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
+        ],
+      },
+    },
+  },
   'perfetto_unittests': {
     'remove_from': [
       'android-kitkat-arm-rel',
