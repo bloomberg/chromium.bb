@@ -4318,6 +4318,7 @@ crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/s
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-twice-manual.html [ Failure ]
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-elements-manual.html [ Failure ]
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Failure Timeout ]
+crbug.com/852645 virtual/android/fullscreen/api/document-exit-fullscreen-vs-request.html [ Failure ]
 
 # Sheriff failures 2017-02-21
 crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
