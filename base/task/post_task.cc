@@ -98,16 +98,13 @@ bool PostTaskWithTraitsAndReply(const Location& from_here,
 }
 
 scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(const TaskTraits& traits) {
-  const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
-  return GetTaskExecutorForTraits(adjusted_traits)
-      ->CreateTaskRunnerWithTraits(adjusted_traits);
+  return GetTaskExecutorForTraits(traits)->CreateTaskRunnerWithTraits(traits);
 }
 
 scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
     const TaskTraits& traits) {
-  const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
-  return GetTaskExecutorForTraits(adjusted_traits)
-      ->CreateSequencedTaskRunnerWithTraits(adjusted_traits);
+  return GetTaskExecutorForTraits(traits)->CreateSequencedTaskRunnerWithTraits(
+      traits);
 }
 
 scoped_refptr<UpdateableSequencedTaskRunner>
@@ -131,18 +128,16 @@ CreateUpdateableSequencedTaskRunnerWithTraits(const TaskTraits& traits) {
 scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
-  return GetTaskExecutorForTraits(adjusted_traits)
-      ->CreateSingleThreadTaskRunnerWithTraits(adjusted_traits, thread_mode);
+  return GetTaskExecutorForTraits(traits)
+      ->CreateSingleThreadTaskRunnerWithTraits(traits, thread_mode);
 }
 
 #if defined(OS_WIN)
 scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
     const TaskTraits& traits,
     SingleThreadTaskRunnerThreadMode thread_mode) {
-  const TaskTraits adjusted_traits = GetTaskTraitsWithExplicitPriority(traits);
-  return GetTaskExecutorForTraits(adjusted_traits)
-      ->CreateCOMSTATaskRunnerWithTraits(adjusted_traits, thread_mode);
+  return GetTaskExecutorForTraits(traits)->CreateCOMSTATaskRunnerWithTraits(
+      traits, thread_mode);
 }
 #endif  // defined(OS_WIN)
 
