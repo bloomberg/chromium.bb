@@ -4650,6 +4650,10 @@ crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesi
 crbug.com/961439 external/wpt/cookies/samesite-none-secure/ [ Failure ]
 crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite-none-secure/ [ Failure ]
 
+# Deprecation messages for SameSite cookie changes cause flakes in cookies tests using document.cookie.
+crbug.com/969144 [ Mac ] http/tests/security/cookies/base-tag.html [ Pass Failure ]
+crbug.com/969144 [ Mac ] http/tests/security/cookies/base-about-blank.html [ Pass Failure ]
+
 # Client hint tests that fail in content_shell but pass when run manually using
 # full browser.
 crbug.com/856700 external/wpt/client-hints/accept_ch_lifetime_same_origin_iframe.tentative.https.html [ Skip ]
