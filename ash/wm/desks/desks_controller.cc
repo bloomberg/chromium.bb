@@ -204,6 +204,13 @@ void DesksController::RemoveDesk(const Desk* desk) {
 
   available_container_ids_.push(removed_desk->container_id());
 
+  // Avoid having stale backdrop state as a desk is removed while in overview
+  // mode, since the backdrop controller won't update the backdrop window as
+  // the removed desk's windows move out from the container. Therefore, we need
+  // to update it manually.
+  if (in_overview)
+    removed_desk->UpdateDeskBackdrops();
+
   DCHECK_LE(available_container_ids_.size(), desks_util::kMaxNumberOfDesks);
 }
 

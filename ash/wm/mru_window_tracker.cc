@@ -69,13 +69,6 @@ bool IsWindowConsideredActivatable(aura::Window* window) {
   return window->CanFocus();
 }
 
-// A predicate that determines whether |window| can be included in the MRU
-// window list.
-bool CanIncludeWindowInMruList(aura::Window* window) {
-  return ::wm::CanActivateWindow(window) &&
-         !wm::GetWindowState(window)->IsPip();
-}
-
 // A predicate that determines whether |window| can be included in the list
 // built for cycling through windows (alt + tab).
 bool CanIncludeWindowInCycleList(aura::Window* window) {
@@ -175,6 +168,11 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 }
 
 }  // namespace
+
+bool CanIncludeWindowInMruList(aura::Window* window) {
+  return ::wm::CanActivateWindow(window) &&
+         !wm::GetWindowState(window)->IsPip();
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // MruWindowTracker, public:

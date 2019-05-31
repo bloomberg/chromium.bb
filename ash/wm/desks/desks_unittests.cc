@@ -22,8 +22,12 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/backdrop_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -104,6 +108,15 @@ void DragItemToPoint(OverviewItem* item,
   event_generator->MoveMouseTo(screen_location);
   if (drop)
     event_generator->ReleaseLeftButton();
+}
+
+BackdropController* GetDeskBackdropController(const Desk* desk,
+                                              aura::Window* root) {
+  auto* workspace_controller =
+      GetWorkspaceController(desk->GetDeskContainerForRoot(root));
+  WorkspaceLayoutManager* layout_manager =
+      workspace_controller->layout_manager();
+  return layout_manager->backdrop_controller();
 }
 
 // Defines an observer to test DesksController notifications.
@@ -1030,6 +1043,130 @@ TEST_F(DesksTest, NextActivatable) {
   EXPECT_EQ(win0.get(), wm::GetActiveWindow());
   win0.reset();
   EXPECT_EQ(nullptr, wm::GetActiveWindow());
+}
+
+TEST_F(DesksTest, TabletModeBackdrops) {
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  const Desk* desk_1 = controller->desks()[0].get();
+  const Desk* desk_2 = controller->desks()[1].get();
+
+  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  // Enter tablet mode and expect that the backdrop is created only for desk_1,
+  // since it's the one that has a window in it.
+  // Avoid TabletModeController::OnGetSwitchStates() from disabling tablet mode.
+  base::RunLoop().RunUntilIdle();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  auto* desk_1_backdrop_controller =
+      GetDeskBackdropController(desk_1, Shell::GetPrimaryRootWindow());
+  auto* desk_2_backdrop_controller =
+      GetDeskBackdropController(desk_2, Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(desk_1_backdrop_controller->backdrop_window());
+  EXPECT_TRUE(desk_1_backdrop_controller->backdrop_window()->IsVisible());
+  EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window());
+
+  // Enter overview and expect that the backdrop is still present for desk_1 but
+  // hidden.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  ASSERT_TRUE(desk_1_backdrop_controller->backdrop_window());
+  EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window()->IsVisible());
+
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(1u, overview_grid->size());
+
+  auto* overview_session = overview_controller->overview_session();
+  auto* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(overview_item);
+  const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
+  ASSERT_TRUE(desks_bar_view);
+
+  // Now drag it to desk_2's mini_view, so that it moves to desk_2. Expect that
+  // desk_1's backdrop is destroyed, while created (but still hidden) for
+  // desk_2.
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  EXPECT_EQ(desk_2, desk_2_mini_view->desk());
+  DragItemToPoint(overview_item,
+                  desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
+                  GetEventGenerator());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(desk_2->windows().contains(window.get()));
+  EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window());
+  ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());
+  EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window()->IsVisible());
+
+  // Exit overview, and expect that desk_2's backdrop remains hidden since the
+  // desk is not activated yet.
+  overview_controller->ToggleOverview(
+      OverviewSession::EnterExitOverviewType::kImmediateExit);
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window());
+  ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());
+  EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window()->IsVisible());
+
+  // Activate desk_2 and expect that its backdrop is now visible.
+  ActivateDesk(desk_2);
+  EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window());
+  ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());
+  EXPECT_TRUE(desk_2_backdrop_controller->backdrop_window()->IsVisible());
+
+  // No backdrops after exiting tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window());
+  EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window());
+}
+
+TEST_F(DesksTest, TabletModeDesksCreationRemovalCycle) {
+  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  // Enter tablet mode. Avoid TabletModeController::OnGetSwitchStates() from
+  // disabling tablet mode.
+  base::RunLoop().RunUntilIdle();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->ToggleOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  auto* desks_controller = DesksController::Get();
+
+  // Create and remove desks in a cycle while in overview mode. Expect as the
+  // containers are reused for new desks, their backdrop state are always
+  // correct, and there are no crashes as desks are removed.
+  for (size_t i = 0; i < 2 * desks_util::kMaxNumberOfDesks; ++i) {
+    desks_controller->NewDesk();
+    ASSERT_EQ(2u, desks_controller->desks().size());
+    const Desk* desk_1 = desks_controller->desks()[0].get();
+    const Desk* desk_2 = desks_controller->desks()[1].get();
+    auto* desk_1_backdrop_controller =
+        GetDeskBackdropController(desk_1, Shell::GetPrimaryRootWindow());
+    auto* desk_2_backdrop_controller =
+        GetDeskBackdropController(desk_2, Shell::GetPrimaryRootWindow());
+    {
+      SCOPED_TRACE("Check backdrops after desk creation");
+      ASSERT_TRUE(desk_1_backdrop_controller->backdrop_window());
+      EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window()->IsVisible());
+      EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window());
+    }
+    // Remove the active desk, and expect that now desk_2 should have a hidden
+    // backdrop, while the container of the removed desk_1 should have none.
+    desks_controller->RemoveDesk(desk_1);
+    {
+      SCOPED_TRACE("Check backdrops after desk removal");
+      EXPECT_TRUE(desk_2->is_active());
+      EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
+      EXPECT_FALSE(desk_1_backdrop_controller->backdrop_window());
+      ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());
+      EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window()->IsVisible());
+    }
+  }
 }
 
 class DesksWithSplitViewTest : public AshTestBase {

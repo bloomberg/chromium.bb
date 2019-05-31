@@ -24,6 +24,10 @@ enum DesksMruType {
   kActiveDesk,
 };
 
+// A predicate that determines whether |window| can be included in the MRU
+// window list.
+bool CanIncludeWindowInMruList(aura::Window* window);
+
 // Maintains a most recently used list of windows. This is used for window
 // cycling using Alt+Tab and overview mode.
 class ASH_EXPORT MruWindowTracker : public ::wm::ActivationChangeObserver,

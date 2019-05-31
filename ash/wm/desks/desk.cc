@@ -12,9 +12,33 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/backdrop_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
+
+namespace {
+
+void UpdateBackdropController(aura::Window* desk_container) {
+  auto* workspace_controller = GetWorkspaceController(desk_container);
+  DCHECK(workspace_controller);
+  WorkspaceLayoutManager* layout_manager =
+      workspace_controller->layout_manager();
+  BackdropController* backdrop_controller =
+      layout_manager->backdrop_controller();
+  backdrop_controller->OnDeskContentChanged();
+}
+
+// Returns true if |window| can be managed by the desk, and therefore can be
+// moved out of the desk when the desk is removed.
+bool CanMoveWindowOutOfDeskContainer(aura::Window* window) {
+  // TODO(afakhry): Is there a better way to filter windows?
+  return CanIncludeWindowInMruList(window);
+}
+
+}  // namespace
 
 class DeskContainerObserver : public aura::WindowObserver {
  public:
@@ -62,7 +86,12 @@ Desk::Desk(int associated_container_id)
 }
 
 Desk::~Desk() {
-  DCHECK(windows_.empty()) << "DesksController should remove my windows first.";
+  for (auto* window : windows_) {
+    DCHECK(!CanMoveWindowOutOfDeskContainer(window))
+        << "DesksController should remove this desk's application windows "
+           "first.";
+    window->RemoveObserver(this);
+  }
 
   for (auto& observer : observers_) {
     observers_.RemoveObserver(&observer);
@@ -173,10 +202,18 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
     auto target_desk_throttled =
         target_desk->GetScopedNotifyContentChangedDisabler();
 
-    for (auto* window : windows_)
-      MoveWindowToDeskInternal(window, target_desk);
+    auto iter = windows_.begin();
+    while (iter != windows_.end()) {
+      aura::Window* window = *iter;
+      // Do not move non-desk windows.
+      if (!CanMoveWindowOutOfDeskContainer(window)) {
+        ++iter;
+        continue;
+      }
 
-    windows_.clear();
+      MoveWindowToDeskInternal(window, target_desk);
+      iter = windows_.erase(iter);
+    }
   }
 
   NotifyContentChanged();
@@ -237,12 +274,24 @@ void Desk::NotifyContentChanged() {
   if (!should_notify_content_changed_)
     return;
 
+  // Update the backdrop availability and visibility first before notifying
+  // observers.
+  UpdateDeskBackdrops();
+
   for (auto& observer : observers_)
     observer.OnContentChanged();
 }
 
+void Desk::UpdateDeskBackdrops() {
+  for (auto* root : Shell::GetAllRootWindows())
+    UpdateBackdropController(GetDeskContainerForRoot(root));
+}
+
 void Desk::MoveWindowToDeskInternal(aura::Window* window, Desk* target_desk) {
   DCHECK(windows_.contains(window));
+
+  DCHECK(CanMoveWindowOutOfDeskContainer(window))
+      << "Non-desk windows are not allowed to move out of the container.";
 
   window->RemoveObserver(this);
 
