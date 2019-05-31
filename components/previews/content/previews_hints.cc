@@ -422,10 +422,18 @@ bool PreviewsHints::IsWhitelisted(
       return false;
     }
     // |type| is the first whitelisted optimization this client supports.
-    *out_inflation_percent = optimization.inflation_percent();
-    if (matched_page_hint->has_max_ect_trigger()) {
+    // Extract any applicable metadata for it.
+    if (optimization.has_previews_metadata()) {
+      *out_inflation_percent =
+          optimization.previews_metadata().inflation_percent();
       *out_ect_threshold = ConvertProtoEffectiveConnectionType(
-          matched_page_hint->max_ect_trigger());
+          optimization.previews_metadata().max_ect_trigger());
+    } else {
+      *out_inflation_percent = optimization.inflation_percent();
+      if (matched_page_hint->has_max_ect_trigger()) {
+        *out_ect_threshold = ConvertProtoEffectiveConnectionType(
+            matched_page_hint->max_ect_trigger());
+      }
     }
 
     *out_serialized_hint_version_string = hint->version();
@@ -498,8 +506,17 @@ bool PreviewsHints::GetResourceLoadingHints(
       continue;
     }
 
-    for (const auto& resource_loading_hint :
-         optimization.resource_loading_hints()) {
+    google::protobuf::RepeatedPtrField<
+        optimization_guide::proto::ResourceLoadingHint>
+        resource_loading_hints;
+    if (optimization.has_previews_metadata()) {
+      resource_loading_hints =
+          optimization.previews_metadata().resource_loading_hints();
+    } else {
+      resource_loading_hints = optimization.resource_loading_hints();
+    }
+
+    for (const auto& resource_loading_hint : resource_loading_hints) {
       if (!resource_loading_hint.resource_pattern().empty() &&
           resource_loading_hint.loading_optimization_type() ==
               optimization_guide::proto::LOADING_BLOCK_RESOURCE) {
