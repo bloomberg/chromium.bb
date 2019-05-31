@@ -9,7 +9,9 @@
 #include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/favicon_service.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -17,6 +19,26 @@
 #include "url/gurl.h"
 
 namespace {
+
+void DisplayFavicon(scoped_refptr<cc::UIResourceLayer> layer,
+                    scoped_refptr<cc::UIResourceLayer> icon_layer,
+                    const SkBitmap& favicon,
+                    const float dp_to_px,
+                    const float panel_width,
+                    const float bar_height,
+                    const float padding) {
+  const float icon_width =
+      android::OverlayPanelLayer::kDefaultIconWidthDp * dp_to_px;
+  layer->SetBitmap(favicon);
+  layer->SetBounds(gfx::Size(icon_width, icon_width));
+
+  bool is_rtl = l10n_util::IsLayoutRtl();
+  float icon_x = is_rtl ? panel_width - icon_width - padding : padding;
+  float icon_y = (bar_height - layer->bounds().height()) / 2;
+  icon_layer->SetIsDrawable(false);
+  layer->SetIsDrawable(true);
+  layer->SetPosition(gfx::PointF(icon_x, icon_y));
+}
 
 void OnLocalFaviconAvailable(
     scoped_refptr<cc::UIResourceLayer> layer,
@@ -33,18 +55,9 @@ void OnLocalFaviconAvailable(
                         &favicon_bitmap);
   if (favicon_bitmap.isNull())
     return;
-  const float icon_width =
-      android::OverlayPanelLayer::kDefaultIconWidthDp * dp_to_px;
   favicon_bitmap.setImmutable();
-  layer->SetBitmap(favicon_bitmap);
-  layer->SetBounds(gfx::Size(icon_width, icon_width));
-
-  bool is_rtl = l10n_util::IsLayoutRtl();
-  float icon_x = is_rtl ? panel_width - icon_width - padding : padding;
-  float icon_y = (bar_height - layer->bounds().height()) / 2;
-  icon_layer->SetIsDrawable(false);
-  layer->SetIsDrawable(true);
-  layer->SetPosition(gfx::PointF(icon_x, icon_y));
+  DisplayFavicon(layer, icon_layer, favicon_bitmap, dp_to_px, panel_width,
+                 bar_height, padding);
 }
 
 }  // namespace
@@ -57,6 +70,7 @@ scoped_refptr<EphemeralTabLayer> EphemeralTabLayer::Create(
 }
 
 void EphemeralTabLayer::SetProperties(
+    content::WebContents* web_contents,
     int title_view_resource_id,
     int caption_view_resource_id,
     jfloat caption_animation_percentage,
@@ -85,6 +99,18 @@ void EphemeralTabLayer::SetProperties(
     float progress_bar_height,
     float progress_bar_opacity,
     int progress_bar_completion) {
+  if (web_contents_ != web_contents) {
+    web_contents_ = web_contents;
+    if (web_contents_) {
+      auto* favicon_driver =
+          favicon::ContentFaviconDriver::FromWebContents(web_contents_);
+      if (favicon_driver)
+        favicon_driver->AddObserver(this);
+      // No need to remove the observer from the previous WebContents since
+      // it is already destroyed by the time it reaches this point.
+    }
+  }
+
   // Round values to avoid pixel gap between layers.
   bar_height = floor(bar_height);
   float bar_top = 0.f;
@@ -213,6 +239,26 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
 
   title_->SetPosition(gfx::PointF(0.f, title_top));
   caption_->SetPosition(gfx::PointF(0.f, caption_top));
+}
+
+void EphemeralTabLayer::OnFaviconUpdated(
+    favicon::FaviconDriver* favicon_driver,
+    NotificationIconType notification_icon_type,
+    const GURL& icon_url,
+    bool icon_url_changed,
+    const gfx::Image& image) {
+  if (notification_icon_type != NON_TOUCH_LARGEST &&
+      notification_icon_type != TOUCH_LARGEST) {
+    return;
+  }
+
+  SkBitmap favicon_bitmap =
+      image.AsImageSkia().GetRepresentation(1.0f).GetBitmap();
+  if (favicon_bitmap.empty())
+    return;
+  favicon_bitmap.setImmutable();
+  DisplayFavicon(favicon_layer_, panel_icon_, favicon_bitmap, dp_to_px_,
+                 panel_width_, bar_height_, bar_margin_side_);
 }
 
 void EphemeralTabLayer::GetLocalFaviconImageForURL(Profile* profile,

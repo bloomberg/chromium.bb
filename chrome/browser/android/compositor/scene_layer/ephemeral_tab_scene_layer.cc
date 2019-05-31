@@ -124,7 +124,7 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
   // Move the base page contents up.
   content_container_->SetPosition(gfx::PointF(0.0f, base_page_offset));
   ephemeral_tab_layer_->SetProperties(
-      title_view_resource_id, caption_view_resource_id,
+      web_contents, title_view_resource_id, caption_view_resource_id,
       caption_animation_percentage, text_layer_min_height,
       title_caption_spacing, caption_visible,
       progress_bar_background_resource_id, progress_bar_resource_id, dp_to_px,

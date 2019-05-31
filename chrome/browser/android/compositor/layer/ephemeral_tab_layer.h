@@ -7,6 +7,8 @@
 
 #include "chrome/browser/android/compositor/layer/overlay_panel_layer.h"
 
+#include "components/favicon/core/favicon_driver_observer.h"
+
 class Profile;
 
 namespace base {
@@ -17,16 +19,26 @@ namespace cc {
 class Layer;
 }
 
+namespace content {
+class WebContents;
+}
+
+namespace favicon {
+class FaviconDriver;
+}
+
 namespace ui {
 class ResourceManager;
 }
 
 namespace android {
-class EphemeralTabLayer : public OverlayPanelLayer {
+class EphemeralTabLayer : public OverlayPanelLayer,
+                          public favicon::FaviconDriverObserver {
  public:
   static scoped_refptr<EphemeralTabLayer> Create(
       ui::ResourceManager* resource_manager);
-  void SetProperties(int title_view_resource_id,
+  void SetProperties(content::WebContents* web_contents,
+                     int title_view_resource_id,
                      int caption_view_resource_id,
                      jfloat caption_animation_percentage,
                      jfloat text_layer_min_height,
@@ -67,11 +79,19 @@ class EphemeralTabLayer : public OverlayPanelLayer {
                                   const std::string& url,
                                   int size);
 
+  // favicon::FaviconDriverObserver
+  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                        NotificationIconType notification_icon_type,
+                        const GURL& icon_url,
+                        bool icon_url_changed,
+                        const gfx::Image& image) override;
+
  protected:
   explicit EphemeralTabLayer(ui::ResourceManager* resource_manager);
   ~EphemeralTabLayer() override;
 
  private:
+  content::WebContents* web_contents_ = nullptr;
   float dp_to_px_;
   float panel_width_;
   float bar_height_;

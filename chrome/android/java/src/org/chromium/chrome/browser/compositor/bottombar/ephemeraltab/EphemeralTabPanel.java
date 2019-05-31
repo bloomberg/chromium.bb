@@ -107,11 +107,18 @@ public class EphemeralTabPanel extends OverlayPanel {
         stopListeningForCloseConditions();
     }
 
+    private class EphemeralTabPanelContentDelegate extends OverlayContentDelegate {
+        @Override
+        public void onMainFrameNavigation(String url, boolean isExternalUrl, boolean isFailure) {
+            if (!isFailure) mUrl = url;
+        }
+    }
+
     @Override
     public OverlayPanelContent createNewOverlayPanelContent() {
         if (mTabModelObserver == null) startListeningForCloseConditions();
-        return new OverlayPanelContent(new OverlayContentDelegate(), new PanelProgressObserver(),
-                mActivity, mIsIncognito, getBarHeight());
+        return new OverlayPanelContent(new EphemeralTabPanelContentDelegate(),
+                new PanelProgressObserver(), mActivity, mIsIncognito, getBarHeight());
     }
 
     private void startListeningForCloseConditions() {
