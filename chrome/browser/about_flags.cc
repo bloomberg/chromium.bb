@@ -2486,6 +2486,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxRichEntitySuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxRichEntitySuggestions)},
 
+    {"omnibox-group-suggestions-by-search-vs-url",
+     flag_descriptions::kOmniboxGroupSuggestionsBySearchVsUrlName,
+     flag_descriptions::kOmniboxGroupSuggestionsBySearchVsUrlDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxGroupSuggestionsBySearchVsUrl)},
+
     {"omnibox-local-entity-suggestions",
      flag_descriptions::kOmniboxLocalEntitySuggestionsName,
      flag_descriptions::kOmniboxLocalEntitySuggestionsDescription, kOsDesktop,

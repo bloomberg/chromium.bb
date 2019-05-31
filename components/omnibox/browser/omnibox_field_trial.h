@@ -414,6 +414,10 @@ base::Optional<int> GetSuggestionVerticalMarginFieldTrialOverride();
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
 
+// Returns whether the group suggestions by type feature is enabled,
+// which "bunches" search suggestions (except for the default match).
+bool IsGroupSuggestionsBySearchVsUrlFeatureEnabled();
+
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
 

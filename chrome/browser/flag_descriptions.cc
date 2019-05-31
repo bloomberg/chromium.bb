@@ -1379,6 +1379,12 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
 
+const char kOmniboxGroupSuggestionsBySearchVsUrlName[] =
+    "Omnibox Group Suggestions By Search vs URL";
+const char kOmniboxGroupSuggestionsBySearchVsUrlDescription[] =
+    "Group suggestions by major type, search then navigation, except for "
+    "the default match which must be first.";
+
 const char kOmniboxLocalEntitySuggestionsName[] =
     "Omnibox Local Entity Suggestions";
 const char kOmniboxLocalEntitySuggestionsDescription[] =

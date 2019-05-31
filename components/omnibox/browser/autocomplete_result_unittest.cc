@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -25,6 +26,7 @@
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -999,6 +1001,51 @@ TEST_F(AutocompleteResultTest, SortAndCullPromoteDuplicateSearchURLs) {
   EXPECT_EQ("http://www.foo.com/",
             result.match_at(2)->destination_url.spec());
   EXPECT_EQ(900, result.match_at(2)->relevance);
+}
+
+TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
+  TestData data[] = {
+    { 0, 1,  500, false },
+    { 1, 2,  600, false },
+    { 2, 1,  700, false },
+    { 3, 2,  800, true  },
+    { 4, 1,  900, false },
+    { 5, 2, 1000, false },
+    { 6, 3, 1100, false },
+  };
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+  AutocompleteMatchType::Type match_types[] = {
+      AutocompleteMatchType::SEARCH_SUGGEST,
+      AutocompleteMatchType::HISTORY_URL,
+      AutocompleteMatchType::SEARCH_HISTORY,
+      AutocompleteMatchType::HISTORY_TITLE,
+      AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+      AutocompleteMatchType::HISTORY_BODY,
+      AutocompleteMatchType::BOOKMARK_TITLE};
+  for (size_t i = 0; i < base::size(data); ++i)
+    matches[i].type = match_types[i];
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      omnibox::kOmniboxGroupSuggestionsBySearchVsUrl);
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  TestData expected_data[] = {
+    { 3, 2,  800, true  },  // default match unmoved
+    { 4, 1,  900, false },  // search types
+    { 2, 1,  700, false },
+    { 6, 3, 1100, false },  // other types
+    { 5, 2, 1000, false },
+    { 1, 2,  600, false },
+  };
+  AssertResultMatches(result, expected_data, base::size(expected_data));
 }
 
 TEST_F(AutocompleteResultTest, TopMatchIsStandaloneVerbatimMatch) {

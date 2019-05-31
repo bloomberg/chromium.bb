@@ -844,6 +844,9 @@ extern const char kOfflineAutoReloadVisibleOnlyDescription[];
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+extern const char kOmniboxGroupSuggestionsBySearchVsUrlName[];
+extern const char kOmniboxGroupSuggestionsBySearchVsUrlDescription[];
+
 extern const char kOmniboxLocalEntitySuggestionsName[];
 extern const char kOmniboxLocalEntitySuggestionsDescription[];
 
