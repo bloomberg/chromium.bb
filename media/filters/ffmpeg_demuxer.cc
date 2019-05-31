@@ -601,14 +601,12 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
       buffer->discard_padding() == DecoderBuffer::DiscardPadding()) {
     buffer->set_discard_padding(
         std::make_pair(kInfiniteDuration, base::TimeDelta()));
-    if (buffer->timestamp() < base::TimeDelta()) {
-      // These timestamps should never be used, but to ensure they are dropped
-      // correctly give them unique timestamps.
-      buffer->set_timestamp(last_packet_timestamp_ == kNoTimestamp
-                                ? base::TimeDelta()
-                                : last_packet_timestamp_ +
-                                      base::TimeDelta::FromMicroseconds(1));
-    }
+    // These timestamps should never be used, but to ensure they are dropped
+    // correctly give them unique timestamps.
+    buffer->set_timestamp(last_packet_timestamp_ == kNoTimestamp
+                              ? base::TimeDelta()
+                              : last_packet_timestamp_ +
+                                    base::TimeDelta::FromMicroseconds(1));
   }
 
   // Only allow negative timestamps past if we know they'll be fixed up by the
