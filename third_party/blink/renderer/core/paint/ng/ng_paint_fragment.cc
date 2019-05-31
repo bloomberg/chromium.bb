@@ -493,34 +493,6 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
   return FragmentRange(nullptr, false);
 }
 
-void NGPaintFragment::InlineFragmentsIncludingCulledFor(
-    const LayoutObject& layout_object,
-    Callback callback,
-    void* context) {
-  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
-
-  auto fragments = InlineFragmentsFor(&layout_object);
-  if (!fragments.IsEmpty()) {
-    for (NGPaintFragment* fragment : fragments)
-      callback(fragment, context);
-    return;
-  }
-
-  // This is a culled LayoutInline. Iterate children's fragments.
-  if (const LayoutInline* layout_inline =
-          ToLayoutInlineOrNull(&layout_object)) {
-    for (LayoutObject* child = layout_inline->FirstChild(); child;
-         child = child->NextSibling()) {
-      // |layout_inline| may still have non-inline children, e.g.,
-      // 'position:absolute'. Skip them as they don't contribute to the culled
-      // rects of |layout_inline|.
-      if (!child->IsInline())
-        continue;
-      InlineFragmentsIncludingCulledFor(*child, callback, context);
-    }
-  }
-}
-
 const NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() const {
   return const_cast<NGPaintFragment*>(this)->LastForSameLayoutObject();
 }

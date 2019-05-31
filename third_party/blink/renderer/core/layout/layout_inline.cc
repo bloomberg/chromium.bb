@@ -1292,14 +1292,11 @@ PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     PhysicalRect result;
     NGPaintFragment::InlineFragmentsIncludingCulledFor(
-        *this,
-        [](NGPaintFragment* fragment, void* context) {
-          PhysicalRect* result = static_cast<PhysicalRect*>(context);
+        *this, [&result](const NGPaintFragment* fragment) {
           PhysicalRect child_rect = fragment->InkOverflow();
           child_rect.offset += fragment->InlineOffsetToContainerBox();
-          result->Unite(child_rect);
-        },
-        &result);
+          result.Unite(child_rect);
+        });
     return result;
   }
 

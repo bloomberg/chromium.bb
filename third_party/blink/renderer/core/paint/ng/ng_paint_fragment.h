@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
@@ -258,10 +259,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // Same as |InlineFragmentsFor()| but this function includes descendants if
   // the |layout_object| is culled (i.e., did not generate fragments.)
-  typedef void (*Callback)(NGPaintFragment*, void*);
+  template <typename Callback>
   static void InlineFragmentsIncludingCulledFor(const LayoutObject&,
-                                                Callback callback,
-                                                void* context);
+                                                Callback callback);
 
   const NGPaintFragment* LastForSameLayoutObject() const;
   NGPaintFragment* LastForSameLayoutObject();
@@ -374,6 +374,34 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // every time.
   unsigned is_dirty_inline_ : 1;
 };
+
+template <typename Callback>
+void NGPaintFragment::InlineFragmentsIncludingCulledFor(
+    const LayoutObject& layout_object,
+    Callback callback) {
+  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
+
+  auto fragments = InlineFragmentsFor(&layout_object);
+  if (!fragments.IsEmpty()) {
+    for (const NGPaintFragment* fragment : fragments)
+      callback(fragment);
+    return;
+  }
+
+  // This is a culled LayoutInline. Iterate children's fragments.
+  if (const LayoutInline* layout_inline =
+          ToLayoutInlineOrNull(&layout_object)) {
+    for (LayoutObject* child = layout_inline->FirstChild(); child;
+         child = child->NextSibling()) {
+      // |layout_inline| may still have non-inline children, e.g.,
+      // 'position:absolute'. Skip them as they don't contribute to the culled
+      // rects of |layout_inline|.
+      if (!child->IsInline())
+        continue;
+      InlineFragmentsIncludingCulledFor(*child, callback);
+    }
+  }
+}
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     NGPaintFragment::List<NGPaintFragment::TraverseNextForSameLayoutObject>;
