@@ -125,19 +125,14 @@ class AppListViewTest : public views::ViewsTestBase,
   }
 
  protected:
-  void Show() { view_->ShowWhenReady(); }
+  void Show(bool is_tablet_mode = false, bool is_side_shelf = false) {
+    view_->Show(is_side_shelf, is_tablet_mode);
+  }
 
-  void Initialize(int initial_apps_page,
-                  bool is_tablet_mode,
-                  bool is_side_shelf) {
+  void Initialize(bool is_tablet_mode) {
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     view_ = new AppListView(delegate_.get());
-    AppListView::InitParams params;
-    params.parent = GetContext();
-    params.initial_apps_page = initial_apps_page;
-    params.is_tablet_mode = is_tablet_mode;
-    params.is_side_shelf = is_side_shelf;
-    view_->Initialize(params);
+    view_->InitView(is_tablet_mode, GetContext());
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
     EXPECT_FALSE(view_->GetWidget()->IsVisible());
   }
@@ -184,7 +179,7 @@ class AppListViewTest : public views::ViewsTestBase,
     views::View::ConvertPointToScreen(contents_view, &point);
 
     return gfx::Rect(point, expected_with_shadow.size()) ==
-           view_->search_box_widget()->GetWindowBoundsInScreen();
+           view_->search_box_view()->GetWidget()->GetWindowBoundsInScreen();
   }
 
   // Gets the PaginationModel owned by |view_|.
@@ -253,9 +248,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
             "weather", "Unimportant Title"));
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     view_ = new AppListView(delegate_.get());
-    AppListView::InitParams params;
-    params.parent = GetContext();
-    view_->Initialize(params);
+    view_->InitView(false /*is_tablet_mode*/, GetContext());
+    Show();
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
     suggestions_container_ = contents_view()
                                  ->GetAppsContainerView()
@@ -303,7 +297,9 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     view_->SetState(state);
   }
 
-  void Show() { view_->ShowWhenReady(); }
+  void Show(bool is_tablet_mode = false, bool is_side_shelf = false) {
+    view_->Show(is_side_shelf, is_tablet_mode);
+  }
 
   AppsGridViewTestApi* test_api() { return test_api_.get(); }
 
@@ -619,7 +615,6 @@ INSTANTIATE_TEST_SUITE_P(, AppListViewFocusTest, testing::Bool());
 
 // Tests that the initial focus is on search box.
 TEST_F(AppListViewFocusTest, InitialFocus) {
-  Show();
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
 }
 
@@ -1529,7 +1524,7 @@ TEST_F(AppListViewFocusTest, SelectionGoesIntoFolderIfSelected) {
 
 // Tests that opening the app list opens in peeking mode by default.
 TEST_F(AppListViewTest, ShowPeekingByDefault) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
 
   Show();
 
@@ -1540,32 +1535,27 @@ TEST_F(AppListViewTest, ShowPeekingByDefault) {
 // and verifies that the top rounded corners of the app list background are
 // hidden (see https://crbug.com/920082).
 TEST_F(AppListViewTest, ShowFullscreenWhenInSideShelfMode) {
-  Initialize(0, false, true);
+  Initialize(false /*is_tablet_mode*/);
 
-  Show();
-
+  Show(false /*is_tablet_mode*/, true /*is_side_shelf*/);
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
-
-  // Get the end point of the rounded corner and transform it into screen
-  // coordinates. It should be on the screen's bottom line.
-  gfx::PointF end_of_rounded_corner(0, view_->get_background_radius_for_test());
-  view_->GetAppListBackgroundShieldForTest()->GetTransform().TransformPoint(
-      &end_of_rounded_corner);
-  EXPECT_EQ(0.0f, end_of_rounded_corner.y());
+  // The rounded corners should be off screen in side shelf.
+  EXPECT_EQ(gfx::Transform(),
+            view_->GetAppListBackgroundShieldForTest()->GetTransform());
 }
 
 // Tests that in tablet mode, the app list opens in fullscreen by default.
 TEST_F(AppListViewTest, ShowFullscreenWhenInTabletMode) {
-  Initialize(0, true, false);
+  Initialize(true /*is_tablet_mode*/);
 
-  Show();
+  Show(true /*is_tablet_mode*/);
 
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
 // Tests that setting empty text in the search box does not change the state.
 TEST_F(AppListViewTest, EmptySearchTextStillPeeking) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
 
@@ -1578,7 +1568,7 @@ TEST_F(AppListViewTest, EmptySearchTextStillPeeking) {
 TEST_F(AppListViewTest, MouseWheelScrollTransitionsToFullscreen) {
   base::HistogramTester histogram_tester;
 
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
@@ -1592,7 +1582,7 @@ TEST_F(AppListViewTest, MouseWheelScrollTransitionsToFullscreen) {
 
 TEST_F(AppListViewTest, GestureScrollTransitionsToFullscreen) {
   base::HistogramTester histogram_tester;
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
@@ -1606,7 +1596,7 @@ TEST_F(AppListViewTest, GestureScrollTransitionsToFullscreen) {
 
 // Tests that typing text after opening transitions from peeking to half.
 TEST_F(AppListViewTest, TypingPeekingToHalf) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
 
@@ -1619,12 +1609,13 @@ TEST_F(AppListViewTest, TypingPeekingToHalf) {
 
 // Tests that typing when in fullscreen changes the state to fullscreen search.
 TEST_F(AppListViewTest, TypingFullscreenToFullscreenSearch) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
+  Show();
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
 
-  Show();
   search_box->SetText(base::string16());
   search_box->InsertText(base::UTF8ToUTF16("https://youtu.be/dQw4w9WgXcQ"));
 
@@ -1633,11 +1624,11 @@ TEST_F(AppListViewTest, TypingFullscreenToFullscreenSearch) {
 
 // Tests that in tablet mode, typing changes the state to fullscreen search.
 TEST_F(AppListViewTest, TypingTabletModeFullscreenSearch) {
-  Initialize(0, true, false);
+  Initialize(true /*is_tablet_mode*/);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
 
-  Show();
+  Show(true /*is_tablet_mode*/);
   search_box->SetText(base::string16());
   search_box->InsertText(base::UTF8ToUTF16("cool!"));
 
@@ -1646,7 +1637,7 @@ TEST_F(AppListViewTest, TypingTabletModeFullscreenSearch) {
 
 // Tests that pressing escape when in peeking closes the app list.
 TEST_F(AppListViewTest, EscapeKeyPeekingToClosed) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
 
   Show();
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -1656,7 +1647,7 @@ TEST_F(AppListViewTest, EscapeKeyPeekingToClosed) {
 
 // Tests that pressing escape when in half screen changes the state to peeking.
 TEST_F(AppListViewTest, EscapeKeyHalfToPeeking) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
 
@@ -1670,7 +1661,7 @@ TEST_F(AppListViewTest, EscapeKeyHalfToPeeking) {
 
 // Tests that pressing escape when in fullscreen changes the state to closed.
 TEST_F(AppListViewTest, EscapeKeyFullscreenToClosed) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   Show();
@@ -1682,7 +1673,7 @@ TEST_F(AppListViewTest, EscapeKeyFullscreenToClosed) {
 // Tests that pressing escape when in fullscreen side-shelf closes the app list.
 TEST_F(AppListViewTest, EscapeKeySideShelfFullscreenToClosed) {
   // Put into fullscreen by using side-shelf.
-  Initialize(0, false, true);
+  Initialize(false /*is_tablet_mode*/);
 
   Show();
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -1693,9 +1684,9 @@ TEST_F(AppListViewTest, EscapeKeySideShelfFullscreenToClosed) {
 // Tests that pressing escape when in tablet mode closes the app list.
 TEST_F(AppListViewTest, EscapeKeyTabletModeStayFullscreen) {
   // Put into fullscreen by using tablet mode.
-  Initialize(0, true, false);
+  Initialize(true /*is_tablet_mode*/);
 
-  Show();
+  Show(true /*is_tablet_mode*/);
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
@@ -1703,12 +1694,12 @@ TEST_F(AppListViewTest, EscapeKeyTabletModeStayFullscreen) {
 
 // Tests that pressing escape when in fullscreen search changes to fullscreen.
 TEST_F(AppListViewTest, EscapeKeyFullscreenSearchToFullscreen) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
+  Show();
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
 
-  Show();
   search_box->SetText(base::string16());
   search_box->InsertText(base::UTF8ToUTF16("https://youtu.be/dQw4w9WgXcQ"));
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -1719,11 +1710,11 @@ TEST_F(AppListViewTest, EscapeKeyFullscreenSearchToFullscreen) {
 // Tests that pressing escape when in sideshelf search changes to fullscreen.
 TEST_F(AppListViewTest, EscapeKeySideShelfSearchToFullscreen) {
   // Put into fullscreen using side-shelf.
-  Initialize(0, false, true);
+  Initialize(false /*is_tablet_mode*/);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
 
-  Show();
+  Show(false /*is_tablet_mode*/, true /*is_side_shelf*/);
   search_box->SetText(base::string16());
   search_box->InsertText(base::UTF8ToUTF16("kitty"));
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -1733,7 +1724,7 @@ TEST_F(AppListViewTest, EscapeKeySideShelfSearchToFullscreen) {
 
 // Tests that in fullscreen, the app list has multiple pages with enough apps.
 TEST_F(AppListViewTest, PopulateAppsCreatesAnotherPage) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
   Show();
@@ -1741,34 +1732,14 @@ TEST_F(AppListViewTest, PopulateAppsCreatesAnotherPage) {
   ASSERT_EQ(2, GetPaginationModel()->total_pages());
 }
 
-// Tests that even if initialize is called again with a different initial page,
-// that for fullscreen we always select the first page.
-TEST_F(AppListViewTest, MultiplePagesAlwaysReinitializeOnFirstPage) {
-  Initialize(0, false, false);
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
-
-  // Show and close the widget once.
-  Show();
-  view_->GetWidget()->Close();
-  // Set it up again with a nonzero initial page.
-  view_ = new AppListView(delegate_.get());
-  AppListView::InitParams params;
-  params.parent = GetContext();
-  params.initial_apps_page = 1;
-  view_->Initialize(params);
-  Show();
-
-  ASSERT_EQ(0, view_->GetAppsPaginationModel()->selected_page());
-}
-
 // Tests that pressing escape when in tablet search changes to fullscreen.
 TEST_F(AppListViewTest, EscapeKeyTabletModeSearchToFullscreen) {
   // Put into fullscreen using tablet mode.
-  Initialize(0, true, false);
+  Initialize(true /*is_tablet_mode*/);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
 
-  Show();
+  Show(true /*is_tablet_mode*/);
   search_box->SetText(base::string16());
   search_box->InsertText(base::UTF8ToUTF16("yay"));
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -1776,24 +1747,9 @@ TEST_F(AppListViewTest, EscapeKeyTabletModeSearchToFullscreen) {
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
-// Tests that leaving tablet mode when in tablet search closes launcher.
-TEST_F(AppListViewTest, LeaveTabletModeClosed) {
-  // Put into fullscreen using tablet mode.
-  Initialize(0, true, false);
-  views::Textfield* search_box =
-      view_->app_list_main_view()->search_box_view()->search_box();
-
-  Show();
-  search_box->SetText(base::string16());
-  search_box->InsertText(base::UTF8ToUTF16("something"));
-  view_->OnTabletModeChanged(false);
-
-  ASSERT_EQ(ash::AppListViewState::kClosed, view_->app_list_state());
-}
-
 // Tests that opening in peeking mode sets the correct height.
 TEST_P(AppListViewTest, OpenInPeekingCorrectHeight) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
 
   Show();
   view_->SetState(ash::AppListViewState::kPeeking);
@@ -1803,31 +1759,30 @@ TEST_P(AppListViewTest, OpenInPeekingCorrectHeight) {
 
 // Tests that opening in peeking mode sets the correct height.
 TEST_F(AppListViewTest, OpenInFullscreenCorrectHeight) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
 
   Show();
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
-  const views::Widget* widget = view_->get_fullscreen_widget_for_test();
-  const int y = widget->GetWindowBoundsInScreen().y();
-
+  const int y = view_->GetWidget()->GetWindowBoundsInScreen().y();
   ASSERT_EQ(0, y);
 }
 
-// Tests that AppListView::SetState fails when the state has been set to CLOSED.
+// Tests that AppListView::SetState succeeds when the state has been set to
+// CLOSED.
 TEST_F(AppListViewTest, SetStateFailsWhenClosing) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   Show();
   view_->SetState(ash::AppListViewState::kClosed);
 
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
-  ASSERT_EQ(ash::AppListViewState::kClosed, view_->app_list_state());
+  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
 // Tests that going into a folder view, then setting the AppListState to PEEKING
 // hides the folder view.
 TEST_F(AppListViewTest, FolderViewToPeeking) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   AppListTestModel* model = delegate_->GetTestModel();
   model->PopulateApps(kInitialItems);
   const std::string folder_id =
@@ -1856,7 +1811,7 @@ TEST_F(AppListViewTest, FolderViewToPeeking) {
 // Tests that a tap or click in an empty region of the AppsGridView closes the
 // AppList.
 TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   // Populate the AppList with a small number of apps so there is an empty
   // region to click.
   delegate_->GetTestModel()->PopulateApps(6);
@@ -1895,7 +1850,7 @@ TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
 // Tests that search box should not become a rectangle during drag.
 TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   base::HistogramTester histogram_tester;
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
@@ -1906,9 +1861,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   // Send SCROLL_START and SCROLL_UPDATE events, simulating dragging the
   // launcher.
   base::TimeTicks timestamp = base::TimeTicks::Now();
-  gfx::Point start = view_->get_fullscreen_widget_for_test()
-                         ->GetWindowBoundsInScreen()
-                         .top_right();
+  gfx::Point start = view_->GetWidget()->GetWindowBoundsInScreen().top_right();
   int delta_y = 1;
   ui::GestureEvent start_event = ui::GestureEvent(
       start.x(), start.y(), ui::EF_NONE, timestamp,
@@ -1967,7 +1920,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
 // Tests displaying the app list and performs a standard set of checks on its
 // top level views. Then closes the window.
 TEST_F(AppListViewTest, DisplayTest) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   EXPECT_EQ(-1, GetPaginationModel()->total_pages());
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
@@ -1991,7 +1944,8 @@ TEST_F(AppListViewTest, DisplayTest) {
 
 // Tests switching rapidly between multiple pages of the launcher.
 TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
+  Show();
   AppListMainView* main_view = view_->app_list_main_view();
   // Checks on the main view.
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
@@ -2020,7 +1974,7 @@ TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
 
 // Tests that the correct views are displayed for showing search results.
 TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
@@ -2083,7 +2037,7 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
 
 // Tests that the back button navigates through the app list correctly.
 TEST_F(AppListViewTest, DISABLED_BackTest) {
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
@@ -2135,33 +2089,11 @@ TEST_F(AppListViewTest, DISABLED_BackTest) {
   EXPECT_FALSE(search_box_view->back_button()->GetVisible());
 }
 
-// Tests that even if initialize is called again with a different initial page,
-// that different initial page is respected.
-TEST_F(AppListViewTest, DISABLED_MultiplePagesReinitializeOnInputPage) {
-  Initialize(0, false, false);
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
-
-  // Show and close the widget once.
-  Show();
-  view_->GetWidget()->Close();
-  // Set it up again with a nonzero initial page.
-  view_ = new AppListView(delegate_.get());
-  AppListView::InitParams params;
-  params.parent = GetContext();
-  params.initial_apps_page = 1;
-  view_->Initialize(params);
-  Show();
-
-  ASSERT_EQ(1, view_->GetAppsPaginationModel()->selected_page());
-}
-
 // Tests that a context menu can be shown between app icons in tablet mode.
 TEST_F(AppListViewTest, ShowContextMenuBetweenAppsInTabletMode) {
-  Initialize(0, true /* enable tablet mode */, false);
+  Initialize(true /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
-  Show();
+  Show(true /*is_tablet_mode*/);
 
   // Tap between two apps in tablet mode.
   const gfx::Point middle = GetPointBetweenTwoApps();
@@ -2186,7 +2118,7 @@ TEST_F(AppListViewTest, ShowContextMenuBetweenAppsInTabletMode) {
 
 // Tests that context menus are not shown between app icons in clamshell mode.
 TEST_F(AppListViewTest, DontShowContextMenuBetweenAppsInClamshellMode) {
-  Initialize(0, false /* disable tablet mode */, false);
+  Initialize(false /* disable tablet mode */);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
@@ -2214,7 +2146,7 @@ TEST_F(AppListViewTest, DontShowContextMenuBetweenAppsInClamshellMode) {
 // Tests the back action in home launcher.
 TEST_F(AppListViewTest, BackAction) {
   // Put into fullscreen using tablet mode.
-  Initialize(0, true, false);
+  Initialize(true /*is_tablet_mode*/);
 
   // Populate apps to fill up the first page and add a folder in the second
   // page.
@@ -2225,7 +2157,7 @@ TEST_F(AppListViewTest, BackAction) {
   model->CreateAndPopulateFolderWithApps(kItemNumInFolder);
 
   // Show the app list
-  Show();
+  Show(true /*is_tablet_mode*/);
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
   EXPECT_EQ(2, apps_grid_view()->pagination_model()->total_pages());
 
@@ -2304,13 +2236,14 @@ TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
       {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   Show();
 
   EXPECT_FALSE(contents_view()->search_result_answer_card_view_for_test());
 }
 
-// Tests that pressing escape when in embedded Assistant UI to search page view.
+// Tests that pressing escape when in embedded Assistant UI results in showing
+// the search page view.
 TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
@@ -2319,7 +2252,7 @@ TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
       {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   Show();
 
   // Set search_box_view active.
@@ -2343,7 +2276,7 @@ TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
       {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   Show();
 
   // Set search_box_view active.
@@ -2373,7 +2306,7 @@ TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
       {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
-  Initialize(0, false, false);
+  Initialize(false /*is_tablet_mode*/);
   Show();
 
   // Set search_box_view active.

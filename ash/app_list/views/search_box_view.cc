@@ -99,14 +99,17 @@ SearchBoxView::SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
       app_list_view_(app_list_view),
       is_app_list_search_autocomplete_enabled_(
           app_list_features::IsAppListSearchAutocompleteEnabled()),
-      weak_ptr_factory_(this) {
-  set_is_tablet_mode(app_list_view->is_tablet_mode());
-  if (app_list_features::IsZeroStateSuggestionsEnabled())
-    set_show_close_button_when_active(true);
-}
+      weak_ptr_factory_(this) {}
 
 SearchBoxView::~SearchBoxView() {
   search_model_->search_box()->RemoveObserver(this);
+}
+
+void SearchBoxView::Init(bool is_tablet_mode) {
+  set_is_tablet_mode(is_tablet_mode);
+  if (app_list_features::IsZeroStateSuggestionsEnabled())
+    set_show_close_button_when_active(true);
+  SearchBoxViewBase::Init();
 }
 
 void SearchBoxView::ClearSearch() {

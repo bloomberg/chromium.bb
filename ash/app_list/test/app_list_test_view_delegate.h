@@ -94,6 +94,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void GetNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
+  int GetTargetYForAppListHide(aura::Window* root_window) override;
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;

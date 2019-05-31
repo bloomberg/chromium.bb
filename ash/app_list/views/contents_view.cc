@@ -138,6 +138,25 @@ void ContentsView::Init(AppListModel* model) {
   ActivePageChanged();
 }
 
+void ContentsView::ResetForShow() {
+  SetActiveState(ash::AppListState::kStateApps);
+  GetAppsContainerView()->ResetForShowApps();
+  // We clear the search when hiding so when app list appears it is not showing
+  // search results.
+  GetSearchBoxView()->ClearSearch();
+
+  // In side shelf, the opacity of the contents is not animated so set it to the
+  // final state. In tablet mode, opacity of the elements is controlled by the
+  // HomeLauncherGestureHandler which expects these elements to be opaque.
+  // Otherwise the contents animate from 0 to 1 so set the initial opacity to 0.
+  const float initial_opacity =
+      app_list_view_->is_side_shelf() || app_list_view()->is_tablet_mode()
+          ? 1.0f
+          : 0.0f;
+  GetSearchBoxView()->layer()->SetOpacity(initial_opacity);
+  layer()->SetOpacity(initial_opacity);
+}
+
 void ContentsView::CancelDrag() {
   if (GetAppsContainerView()->apps_grid_view()->has_dragged_view())
     GetAppsContainerView()->apps_grid_view()->EndDrag(true);
@@ -572,8 +591,6 @@ void ContentsView::FadeOutOnClose(base::TimeDelta animation_duration) {
 }
 
 void ContentsView::FadeInOnOpen(base::TimeDelta animation_duration) {
-  GetSearchBoxView()->layer()->SetOpacity(0.0f);
-  layer()->SetOpacity(0.0f);
   DoAnimation(animation_duration, layer(), 1.0f);
   DoAnimation(animation_duration, GetSearchBoxView()->layer(), 1.0f);
 }
@@ -584,8 +601,7 @@ views::View* ContentsView::GetSelectedView() const {
 
 void ContentsView::UpdateYPositionAndOpacity() {
   ash::AppListViewState state = app_list_view_->app_list_state();
-  if (state == ash::AppListViewState::kClosed ||
-      state == ash::AppListViewState::kFullscreenSearch ||
+  if (state == ash::AppListViewState::kFullscreenSearch ||
       state == ash::AppListViewState::kHalf) {
     return;
   }

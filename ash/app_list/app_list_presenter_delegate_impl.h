@@ -47,14 +47,10 @@ class ASH_EXPORT AppListPresenterDelegateImpl
 
   // app_list::AppListPresenterDelegate:
   void SetPresenter(app_list::AppListPresenterImpl* presenter) override;
-  void Init(app_list::AppListView* view,
-            int64_t display_id,
-            int current_apps_page) override;
-  void OnShown(int64_t display_id) override;
+  void Init(app_list::AppListView* view, int64_t display_id) override;
+  void ShowForDisplay(int64_t display_id) override;
   void OnClosing() override;
   void OnClosed() override;
-  gfx::Vector2d GetVisibilityAnimationOffset(
-      aura::Window* root_window) override;
   base::TimeDelta GetVisibilityAnimationDuration(aura::Window* root_window,
                                                  bool is_visible) override;
   bool IsTabletMode() const override;

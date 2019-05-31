@@ -17,10 +17,6 @@ namespace base {
 class TimeDelta;
 }  // namespace base
 
-namespace gfx {
-class Vector2d;
-}  // namespace gfx
-
 namespace app_list {
 
 class AppListPresenterImpl;
@@ -38,23 +34,14 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
   virtual void SetPresenter(AppListPresenterImpl* presenter) = 0;
 
   // Called to initialize the layout of the app list.
-  virtual void Init(AppListView* view,
-                    int64_t display_id,
-                    int current_apps_page) = 0;
-
-  // Called when app list is shown.
-  virtual void OnShown(int64_t display_id) = 0;
+  virtual void Init(AppListView* view, int64_t display_id) = 0;
+  virtual void ShowForDisplay(int64_t display_id) = 0;
 
   // Called when app list is closing.
   virtual void OnClosing() = 0;
 
   // Called when app list is closed.
   virtual void OnClosed() = 0;
-
-  // Returns the offset vector by which the app list window should animate
-  // when it gets shown or hidden.
-  virtual gfx::Vector2d GetVisibilityAnimationOffset(
-      aura::Window* root_window) = 0;
 
   // Returns the animation duration in ms the app list window should animate
   // when shown or hidden.

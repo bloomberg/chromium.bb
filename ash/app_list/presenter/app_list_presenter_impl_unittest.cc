@@ -35,7 +35,6 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   ~AppListPresenterDelegateTest() override {}
 
   bool init_called() const { return init_called_; }
-  bool on_shown_called() const { return on_shown_called_; }
   bool on_dismissed_called() const { return on_dismissed_called_; }
 
   AppListViewDelegate* GetAppListViewDelegate() override {
@@ -47,22 +46,14 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   void SetPresenter(AppListPresenterImpl* presenter) override {
     presenter_ = presenter;
   }
-  void Init(AppListView* view,
-            int64_t display_id,
-            int current_apps_page) override {
+  void Init(AppListView* view, int64_t display_id) override {
     init_called_ = true;
     view_ = view;
-    AppListView::InitParams params;
-    params.parent = container_;
-    params.initial_apps_page = current_apps_page;
-    view->Initialize(params);
+    view->InitView(/*is_tablet_mode*/ false, container_);
   }
-  void OnShown(int64_t display_id) override { on_shown_called_ = true; }
+  void ShowForDisplay(int64_t display_id) override {}
   void OnClosing() override { on_dismissed_called_ = true; }
   void OnClosed() override {}
-  gfx::Vector2d GetVisibilityAnimationOffset(aura::Window*) override {
-    return gfx::Vector2d(0, 0);
-  }
   base::TimeDelta GetVisibilityAnimationDuration(aura::Window* root_window,
                                                  bool is_visible) override {
     return base::TimeDelta::FromMilliseconds(0);
@@ -80,7 +71,6 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   AppListPresenterImpl* presenter_ = nullptr;
   AppListView* view_ = nullptr;
   bool init_called_ = false;
-  bool on_shown_called_ = false;
   bool on_dismissed_called_ = false;
   views::TestViewsDelegate view_delegate_;
   test::AppListTestViewDelegate app_list_view_delegate_;
@@ -141,7 +131,6 @@ TEST_F(AppListPresenterImplTest, HideOnFocusOut) {
       aura::client::GetFocusClient(root_window());
   presenter()->Show(GetDisplayId(), base::TimeTicks());
   EXPECT_TRUE(delegate()->init_called());
-  EXPECT_TRUE(delegate()->on_shown_called());
   EXPECT_FALSE(delegate()->on_dismissed_called());
   focus_client->FocusWindow(presenter()->GetWindow());
   EXPECT_TRUE(presenter()->GetTargetVisibility());
@@ -164,7 +153,6 @@ TEST_F(AppListPresenterImplTest, RemainVisibleWhenFocusingToSibling) {
   focus_client->FocusWindow(presenter()->GetWindow());
   EXPECT_TRUE(presenter()->GetTargetVisibility());
   EXPECT_TRUE(delegate()->init_called());
-  EXPECT_TRUE(delegate()->on_shown_called());
   EXPECT_FALSE(delegate()->on_dismissed_called());
 
   // Create a sibling window.

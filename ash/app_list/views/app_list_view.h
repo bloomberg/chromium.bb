@@ -15,6 +15,7 @@
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/color_palette.h"
@@ -31,6 +32,7 @@ class Display;
 
 namespace ui {
 class AnimationMetricsReporter;
+class ImplicitAnimationObserver;
 }  // namespace ui
 
 namespace ash {
@@ -51,10 +53,9 @@ class AppListBackgroundShieldView;
 class AppListMainView;
 class AppListModel;
 class AppsGridView;
-class HideViewAnimationObserver;
+class BoundsAnimationObserver;
 class SearchBoxView;
 class SearchModel;
-class TransitionAnimationObserver;
 
 namespace {
 
@@ -119,14 +120,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // next state, measured in DIPs/event.
   static constexpr int kDragVelocityThreshold = 6;
 
-  struct InitParams {
-    gfx::NativeView parent = nullptr;
-    int initial_apps_page = 0;
-    bool is_tablet_mode = false;
-    // Whether the shelf alignment is on the side of the display.
-    bool is_side_shelf = false;
-  };
-
   // Does not take ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
   ~AppListView() override;
@@ -138,9 +131,20 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   static void SetShortAnimationForTesting(bool enabled);
   static bool ShortAnimationsForTesting();
 
-  // Initializes the widget as a bubble or fullscreen view depending on if the
-  // fullscreen app list feature is set.
-  void Initialize(const InitParams& params);
+  // Initializes the view, only done once per session.
+  void InitView(bool is_tablet_mode, gfx::NativeView parent);
+
+  // Initializes the contents of the view.
+  void InitContents(bool is_tablet_mode);
+
+  // Initializes this view's widget.
+  void InitWidget(gfx::NativeView parent);
+
+  // Initializes the SearchBox's widget.
+  void InitChildWidget();
+
+  // Sets the state of all child views to be re-shown, then shows the view.
+  void Show(bool is_side_shelf, bool is_tablet_mode);
 
   // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
   // operations outside the application list. This has to be called after
@@ -148,10 +152,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // it can set the host.
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
-
-  // Shows the UI when there are no pending icon loads. Otherwise, starts a
-  // timer to show the UI when a maximum allowed wait time has expired.
-  void ShowWhenReady();
 
   // Dismisses the UI, cleans up and sets the state to CLOSED.
   void Dismiss();
@@ -201,7 +201,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void SetState(ash::AppListViewState new_state);
 
   // Starts the close animation.
-  void StartCloseAnimation(base::TimeDelta animation_duration);
+  void StartCloseAnimation(base::TimeDelta animation_duration,
+                           ui::ImplicitAnimationObserver* observer);
 
   // Changes the app list state depending on the current |app_list_state_| and
   // whether the search box is empty.
@@ -235,6 +236,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Sets |is_in_drag_| and updates the visibility of app list items.
   void SetIsInDrag(bool is_in_drag);
+
+  // Home launcher can become the focused window without being reset when all
+  // open windows are closed in tablet mode. Reset the view in this case.
+  void OnHomeLauncherGainingFocusWithoutAnimation();
 
   // Gets the PaginationModel owned by this view's apps grid.
   ash::PaginationModel* GetAppsPaginationModel();
@@ -290,15 +295,12 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Called at the end of dragging AppList from Shelf.
   void EndDragFromShelf(ash::AppListViewState app_list_state);
 
-  views::Widget* get_fullscreen_widget_for_test() const {
-    return fullscreen_widget_;
-  }
+  // Moves the AppListView off screen and calls a layout if needed.
+  void OnBoundsAnimationCompleted();
 
   gfx::NativeView parent_window() const { return parent_window_; }
 
   ash::AppListViewState app_list_state() const { return app_list_state_; }
-
-  views::Widget* search_box_widget() const { return search_box_widget_; }
 
   SearchBoxView* search_box_view() const { return search_box_view_; }
 
@@ -337,20 +339,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplMetricsTest,
                            PresentationTimeRecordedForDragInTabletMode);
 
-  // A widget observer that is responsible for keeping the AppListView state up
-  // to date on closing.
-  // TODO(newcomer): Merge this class into AppListView once the old app list
-  // view code is removed.
-  class FullscreenWidgetObserver;
-
   class StateAnimationMetricsReporter;
 
-  void InitContents(int initial_apps_page);
-
-  void InitChildWidgets();
-
-  // Initializes the widget for fullscreen mode.
-  void InitializeFullscreen(gfx::NativeView parent);
+  // Updates the widget to be shown.
+  void UpdateWidget();
 
   // Closes the AppListView when a click or tap event propogates to the
   // AppListView.
@@ -380,11 +372,20 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void MaybeIncreaseAssistantPrivacyInfoRowShownCount(
       ash::AppListViewState new_state);
 
+  // Applies a bounds animation on this views layer.
+  void ApplyBoundsAnimation(ash::AppListViewState target_state,
+                            base::TimeDelta duration_ms,
+                            ui::ImplicitAnimationObserver* observer);
+
   // Records the state transition for UMA.
   void RecordStateTransitionForUma(ash::AppListViewState new_state);
 
   // Creates an Accessibility Event if the state transition warrants one.
   void MaybeCreateAccessibilityEvent(ash::AppListViewState new_state);
+
+  // Returns the remaining vertical distance for the bounds movement
+  // animation.
+  int GetRemainingBoundsAnimationDistance() const;
 
   // Gets the display nearest to the parent window.
   display::Display GetDisplayNearestView() const;
@@ -444,17 +445,17 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   SearchModel* const search_model_;  // Not Owned.
 
   AppListMainView* app_list_main_view_ = nullptr;
-  views::Widget* fullscreen_widget_ = nullptr;  // Owned by AppListView.
   gfx::NativeView parent_window_ = nullptr;
 
-  views::View* search_box_focus_host_ =
-      nullptr;  // Owned by the views hierarchy.
   views::Widget* search_box_widget_ =
       nullptr;                                // Owned by the app list's widget.
   SearchBoxView* search_box_view_ = nullptr;  // Owned by |search_box_widget_|.
-  // Owned by the app list's widget. Null if the fullscreen app list is not
-  // enabled.
+  // Owned by the app list's widget. Used to show the darkened AppList
+  // background.
   AppListBackgroundShieldView* app_list_background_shield_ = nullptr;
+
+  // The time the AppListView was requested to be shown. Used for metrics.
+  base::Optional<base::Time> time_shown_;
 
   // Whether tablet mode is active.
   bool is_tablet_mode_ = false;
@@ -464,6 +465,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // True if the user is in the process of gesture-dragging on opened app list,
   // or dragging the app list from shelf.
   bool is_in_drag_ = false;
+
+  // Whether the view is being built.
+  bool is_building_ = false;
 
   // Y position of the app list in screen space coordinate during dragging.
   int app_list_y_position_in_screen_ = 0;
@@ -486,16 +490,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // The state of the app list, controlled via SetState().
   ash::AppListViewState app_list_state_ = ash::AppListViewState::kPeeking;
 
-  // A widget observer that sets the AppListView state when the widget is
-  // closed.
-  std::unique_ptr<FullscreenWidgetObserver> widget_observer_;
-
-  std::unique_ptr<HideViewAnimationObserver> hide_view_animation_observer_;
-
-  std::unique_ptr<TransitionAnimationObserver> transition_animation_observer_;
-
-  // The mask used to clip the |app_list_background_shield_|.
-  std::unique_ptr<ui::LayerOwner> app_list_background_shield_mask_;
+  // An observer to notify AppListView of bounds animation completion.
+  std::unique_ptr<BoundsAnimationObserver> bounds_animation_observer_;
 
   // For UMA and testing. If non-null, triggered when the app list is painted.
   base::Closure next_paint_callback_;

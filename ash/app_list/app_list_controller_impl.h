@@ -191,6 +191,7 @@ class ASH_EXPORT AppListControllerImpl
   void GetNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
+  int GetTargetYForAppListHide(aura::Window* root_window) override;
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
@@ -303,6 +304,20 @@ class ASH_EXPORT AppListControllerImpl
       base::Optional<AppListViewState> recorded_app_list_view_state,
       base::Optional<bool> home_launcher_shown);
 
+  // Updates which container the launcher window should be in.
+  void UpdateLauncherContainer(
+      base::Optional<int64_t> display_id = base::nullopt);
+
+  // Gets the container which should contain the AppList.
+  int GetContainerId() const;
+
+  // Returns whether the launcher should show behinds apps or infront of them.
+  bool ShouldLauncherShowBehindApps() const;
+
+  // Returns the parent window of the applist for a |display_id|.
+  aura::Window* GetContainerForDisplayId(
+      base::Optional<int64_t> display_id = base::nullopt);
+
  private:
   // HomeScreenDelegate:
   void OnHomeLauncherDragStart() override;
@@ -323,9 +338,6 @@ class ASH_EXPORT AppListControllerImpl
   int64_t GetDisplayIdToShowAppListOn();
 
   void ResetHomeLauncherIfShown();
-
-  // Updates which container the launcher window should be in.
-  void UpdateLauncherContainer();
 
   // Returns the length of the most recent query.
   int GetLastQueryLength();

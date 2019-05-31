@@ -81,7 +81,7 @@ void DismissAppListNow() {
 }
 
 aura::Window* GetAppListViewNativeWindow() {
-  return GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
+  return GetAppListView()->GetWidget()->GetNativeView();
 }
 
 void SetSearchText(AppListControllerImpl* controller, const std::string& text) {
@@ -158,8 +158,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
   // (1) AppListView is at the top of the screen.
   // (2) AppListView's state is HALF.
   // (3) AppListBackgroundShield is translated to hide the rounded corners.
-  aura::Window* native_window =
-      GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
+  aura::Window* native_window = GetAppListView()->GetWidget()->GetNativeView();
   gfx::Rect app_list_screen_bounds = native_window->GetBoundsInScreen();
   EXPECT_EQ(0, app_list_screen_bounds.y());
   EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
@@ -392,10 +391,8 @@ TEST_F(AppListControllerImplMetricsTest,
             GetAppListView()->app_list_state());
 
   int delta_y = 1;
-  gfx::Point start = GetAppListView()
-                         ->get_fullscreen_widget_for_test()
-                         ->GetWindowBoundsInScreen()
-                         .top_right();
+  gfx::Point start =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen().top_right();
   base::TimeTicks timestamp = base::TimeTicks::Now();
 
   // Emulate to drag the launcher downward.
@@ -466,10 +463,8 @@ TEST_F(AppListControllerImplMetricsTest,
   EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 
-  gfx::Point start = GetAppListView()
-                         ->get_fullscreen_widget_for_test()
-                         ->GetWindowBoundsInScreen()
-                         .top_right();
+  gfx::Point start =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen().top_right();
   base::TimeTicks timestamp = base::TimeTicks::Now();
 
   // Emulate to drag the launcher downward.
@@ -483,7 +478,7 @@ TEST_F(AppListControllerImplMetricsTest,
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_FALSE(IsTabletMode());
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(GetAppListView());
+  EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
 
   // Check metrics initial values.
   histogram_tester_.ExpectTotalCount(

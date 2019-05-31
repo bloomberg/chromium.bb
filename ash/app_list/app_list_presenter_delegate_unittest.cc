@@ -198,9 +198,8 @@ class PopulatedAppListTest : public AshTestBase,
  protected:
   void CreateAndOpenAppList() {
     app_list_view_ = new app_list::AppListView(app_list_test_delegate_.get());
-    app_list::AppListView::InitParams params;
-    params.parent = CurrentContext();
-    app_list_view_->Initialize(params);
+    app_list_view_->InitView(false /*is_tablet_mode*/, CurrentContext());
+    app_list_view_->Show(false /*is_side_shelf*/, false /*is_tablet_mode*/);
   }
 
   void InitializeAppsGrid() {
@@ -512,6 +511,32 @@ TEST_F(AppListPresenterDelegateTest, TabletModeTextStateTransitions) {
   generator->PressKey(ui::KeyboardCode::VKEY_BACK, 0);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+}
+
+// Tests that the app list closes when tablet mode deactivates.
+TEST_F(AppListPresenterDelegateTest, AppListClosesWhenLeavingTabletMode) {
+  EnableTabletMode(true);
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
+
+  EnableTabletMode(false);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+
+  EnableTabletMode(true);
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
+
+  // Enter text in the searchbox, the app list should transition to fullscreen
+  // search.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenSearch);
+
+  EnableTabletMode(false);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
 }
 
 // Tests that the app list state responds correctly to tablet mode being
@@ -1187,13 +1212,15 @@ TEST_F(AppListPresenterDelegateTest, TapAutoHideShelfWithAppListOpened) {
   generator->GestureTapAt(gfx::Point(0, 0));
   EXPECT_FALSE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
 
-  // Tap the auto-hide shelf area with app list opened should keep both app list
-  // and shelf visible.
+  // Show the AppList again.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Test that tapping the auto-hidden shelf keeps the app list and shelf
+  // visible.
   generator->GestureTapAt(
       shelf->GetShelfViewForTesting()->GetBoundsInScreen().CenterPoint());
   GetAppListTestHelper()->CheckVisibility(true);
@@ -1318,9 +1345,10 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundOpacity) {
   EXPECT_EQ(SkColorSetA(app_list::AppListView::kDefaultBackgroundColor,
                         clamshell_background_opacity),
             GetAppListView()->GetAppListBackgroundShieldColorForTest());
-  const ui::Layer* background_layer =
-      GetAppListView()->GetAppListBackgroundShieldForTest()->layer();
-  EXPECT_EQ(1, background_layer->opacity());
+  EXPECT_EQ(1, GetAppListView()
+                   ->GetAppListBackgroundShieldForTest()
+                   ->layer()
+                   ->opacity());
 
   // Turn on tablet mode. The background shield should be transparent.
   EnableTabletMode(true);
@@ -1329,7 +1357,10 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundOpacity) {
   EXPECT_EQ(SkColorSetA(app_list::AppListView::kDefaultBackgroundColor,
                         tablet_background_opacity),
             GetAppListView()->GetAppListBackgroundShieldColorForTest());
-  EXPECT_EQ(1, background_layer->opacity());
+  EXPECT_EQ(1, GetAppListView()
+                   ->GetAppListBackgroundShieldForTest()
+                   ->layer()
+                   ->opacity());
 }
 
 // Tests that the background blur which is present in clamshell mode does not
@@ -1337,13 +1368,18 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundOpacity) {
 TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundBlur) {
   // Show app list in non-tablet mode. The background blur should be enabled.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  ui::Layer* background_layer =
-      GetAppListView()->GetAppListBackgroundShieldForTest()->layer();
-  EXPECT_GT(background_layer->background_blur(), 0.0f);
+  EXPECT_GT(GetAppListView()
+                ->GetAppListBackgroundShieldForTest()
+                ->layer()
+                ->background_blur(),
+            0.0f);
 
   // Turn on tablet mode. The background blur should be disabled.
   EnableTabletMode(true);
-  EXPECT_EQ(0.0f, background_layer->background_blur());
+  EXPECT_EQ(0.0f, GetAppListView()
+                      ->GetAppListBackgroundShieldForTest()
+                      ->layer()
+                      ->background_blur());
 }
 
 // Tests that tapping or clicking on background cannot dismiss the app list.
@@ -1482,14 +1518,6 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   generator->MoveMouseWheel(0, -1);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
-  GetAppListTestHelper()->CheckVisibility(true);
-
-  // Show app list in tablet mode. Mouse-scroll up.
-  EnableTabletMode(true);
-  GetAppListTestHelper()->CheckVisibility(true);
-  generator->MoveMouseTo(GetPointOutsideSearchbox());
-  generator->MoveMouseWheel(0, 1);
-  GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
 }
 

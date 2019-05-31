@@ -77,10 +77,8 @@ class SearchResultPageViewTest
     // Setting up views.
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     app_list_view_ = new AppListView(delegate_.get());
-    AppListView::InitParams params;
-    params.parent = GetContext();
-    app_list_view_->Initialize(params);
-    app_list_view_->GetWidget()->Show();
+    app_list_view_->InitView(false /*is_tablet_mode*/, GetContext());
+    app_list_view_->Show(false /*is_side_shelf*/, false /*is_tablet_mode*/);
 
     ContentsView* contents_view =
         app_list_view_->app_list_main_view()->contents_view();

@@ -133,6 +133,10 @@ void AppListTestViewDelegate::GetNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
   fake_navigable_contents_factory_.BindReceiver(std::move(receiver));
 }
+int AppListTestViewDelegate::GetTargetYForAppListHide(
+    aura::Window* root_window) {
+  return 0;
+}
 
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(
     const std::string& result_id,

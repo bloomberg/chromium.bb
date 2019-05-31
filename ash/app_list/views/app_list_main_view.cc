@@ -103,18 +103,6 @@ void AppListMainView::ShowAppListWhenReady() {
     GetWidget()->Show();
 }
 
-void AppListMainView::ResetForShow() {
-  contents_view_->SetActiveState(ash::AppListState::kStateApps);
-  contents_view_->GetAppsContainerView()->ResetForShowApps();
-  // We clear the search when hiding so when app list appears it is not showing
-  // search results.
-  search_box_view_->ClearSearch();
-}
-
-void AppListMainView::Close() {
-  contents_view_->CancelDrag();
-}
-
 void AppListMainView::ModelChanged() {
   model_->RemoveObserver(this);
   model_ = delegate_->GetModel();

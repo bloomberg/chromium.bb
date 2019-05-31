@@ -73,40 +73,33 @@ void AppListPresenterDelegateImpl::SetPresenter(
 }
 
 void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
-                                        int64_t display_id,
-                                        int current_apps_page) {
+                                        int64_t display_id) {
+  view_ = view;
+  view->InitView(IsTabletMode(),
+                 controller_->GetContainerForDisplayId(display_id));
+
+  SnapAppListBoundsToDisplayEdge();
+
+  // By setting us as DnD recipient, the app list knows that we can
+  // handle items.
+  Shelf* shelf = Shelf::ForWindow(Shell::GetRootWindowForDisplayId(display_id));
+  view->SetDragAndDropHostOfCurrentAppList(
+      shelf->shelf_widget()->GetDragAndDropHostForAppList());
+}
+
+void AppListPresenterDelegateImpl::ShowForDisplay(int64_t display_id) {
+  is_visible_ = true;
+
+  controller_->UpdateLauncherContainer(display_id);
+
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
   Shell::GetPrimaryRootWindowController()
       ->GetShelfLayoutManager()
       ->UpdateAutoHideState();
-  view_ = view;
-  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
-
-  app_list::AppListView::InitParams params;
-  const bool is_tablet_mode = IsTabletMode();
-  aura::Window* parent_window =
-      RootWindowController::ForWindow(root_window)
-          ->GetContainer(is_tablet_mode ? kShellWindowId_HomeScreenContainer
-                                        : kShellWindowId_AppListContainer);
-  params.parent = parent_window;
-  params.initial_apps_page = current_apps_page;
-  params.is_tablet_mode = is_tablet_mode;
-  params.is_side_shelf = IsSideShelf(root_window);
-  view->Initialize(params);
-
-  SnapAppListBoundsToDisplayEdge();
+  view_->Show(IsSideShelf(view_->GetWidget()->GetNativeView()->GetRootWindow()),
+              IsTabletMode());
   Shell::Get()->AddPreTargetHandler(this);
-
-  // By setting us as DnD recipient, the app list knows that we can
-  // handle items.
-  Shelf* shelf = Shelf::ForWindow(root_window);
-  view->SetDragAndDropHostOfCurrentAppList(
-      shelf->shelf_widget()->GetDragAndDropHostForAppList());
-}
-
-void AppListPresenterDelegateImpl::OnShown(int64_t display_id) {
-  is_visible_ = true;
   controller_->ViewShown(display_id);
 }
 
@@ -120,20 +113,6 @@ void AppListPresenterDelegateImpl::OnClosing() {
 
 void AppListPresenterDelegateImpl::OnClosed() {
   controller_->ViewClosed();
-}
-
-gfx::Vector2d AppListPresenterDelegateImpl::GetVisibilityAnimationOffset(
-    aura::Window* root_window) {
-  DCHECK(Shell::HasInstance());
-
-  Shelf* shelf = Shelf::ForWindow(root_window);
-
-  // App list needs to know the new shelf layout in order to calculate its
-  // UI layout when AppListView visibility changes.
-  int app_list_y = view_->GetBoundsInScreen().y();
-  return gfx::Vector2d(0, IsSideShelf(root_window)
-                              ? 0
-                              : shelf->GetIdealBounds().y() - app_list_y);
 }
 
 base::TimeDelta AppListPresenterDelegateImpl::GetVisibilityAnimationDuration(

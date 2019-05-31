@@ -148,6 +148,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
           receiver) = 0;
 
+  // Gets the ideal y position for the close animation, which depends on
+  // autohide state.
+  virtual int GetTargetYForAppListHide(aura::Window* root_window) = 0;
+
   // Returns the AssistantViewDelegate.
   virtual ash::AssistantViewDelegate* GetAssistantViewDelegate() = 0;
 

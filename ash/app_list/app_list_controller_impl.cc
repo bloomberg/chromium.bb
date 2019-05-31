@@ -432,22 +432,19 @@ void AppListControllerImpl::GetAppInfoDialogBounds(
 void AppListControllerImpl::ShowAppListAndSwitchToState(
     ash::AppListState state) {
   bool app_list_was_open = true;
-  app_list::AppListView* app_list_view = presenter_.GetView();
-  if (!app_list_view) {
+  if (!presenter_.IsVisible()) {
     // TODO(calamity): This may cause the app list to show briefly before the
     // state change. If this becomes an issue, add the ability to ash::Shell to
     // load the app list without showing it.
-    presenter_.Show(GetDisplayIdToShowAppListOn(), base::TimeTicks());
+    ShowAppList();
     app_list_was_open = false;
-    app_list_view = presenter_.GetView();
-    DCHECK(app_list_view);
   }
 
   if (state == ash::AppListState::kInvalidState)
     return;
 
   app_list::ContentsView* contents_view =
-      app_list_view->app_list_main_view()->contents_view();
+      presenter_.GetView()->app_list_main_view()->contents_view();
   contents_view->SetActiveState(state, app_list_was_open /* animate */);
 }
 
@@ -537,11 +534,6 @@ void AppListControllerImpl::Show(int64_t display_id,
                                  base::TimeTicks event_time_stamp) {
   UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
                             show_source);
-  if (!presenter_.GetTargetVisibility() && IsVisible()) {
-    // The launcher is running close animation, so close it immediately before
-    // reshow the launcher in tablet mode.
-    presenter_.GetView()->GetWidget()->CloseNow();
-  }
 
   presenter_.Show(display_id, event_time_stamp);
 
@@ -579,6 +571,7 @@ ash::ShelfAction AppListControllerImpl::ToggleAppList(
     base::TimeTicks event_time_stamp) {
   ash::ShelfAction action =
       presenter_.ToggleAppList(display_id, show_source, event_time_stamp);
+  UpdateExpandArrowVisibility();
   if (action == SHELF_ACTION_APP_LIST_SHOWN) {
     UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
                               show_source);
@@ -713,7 +706,10 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       // in Launcher and make the Ui flashing.
       if (IsHomeScreenAvailable()) {
         presenter_.ShowEmbeddedAssistantUI(false);
-        presenter_.GetView()->app_list_main_view()->ResetForShow();
+        presenter_.GetView()
+            ->app_list_main_view()
+            ->contents_view()
+            ->ResetForShow();
         presenter_.GetView()->SetState(
             ash::AppListViewState::kFullscreenAllApps);
       } else if (exit_point != AssistantExitPoint::kBackInLauncher) {
@@ -1105,6 +1101,11 @@ void AppListControllerImpl::GetNavigableContentsFactory(
     client_->GetNavigableContentsFactory(std::move(receiver));
 }
 
+int AppListControllerImpl::GetTargetYForAppListHide(aura::Window* root_window) {
+  DCHECK(Shell::HasInstance());
+  return Shelf::ForWindow(root_window)->GetIdealBounds().y();
+}
+
 ash::AssistantViewDelegate* AppListControllerImpl::GetAssistantViewDelegate() {
   return Shell::Get()->assistant_controller()->view_delegate();
 }
@@ -1316,21 +1317,13 @@ void AppListControllerImpl::ResetHomeLauncherIfShown() {
   StartSearch(base::string16());
 }
 
-void AppListControllerImpl::UpdateLauncherContainer() {
-  bool launcher_should_show_behind_apps =
-      IsHomeScreenAvailable() &&
-      model_->state() != ash::AppListState::kStateEmbeddedAssistant;
-
+void AppListControllerImpl::UpdateLauncherContainer(
+    base::Optional<int64_t> display_id) {
   aura::Window* window = presenter_.GetWindow();
   if (!window)
     return;
 
-  auto container_id = launcher_should_show_behind_apps
-                          ? ash::kShellWindowId_HomeScreenContainer
-                          : ash::kShellWindowId_AppListContainer;
-
-  aura::Window* root_window = window->GetRootWindow();
-  aura::Window* parent_window = root_window->GetChildById(container_id);
+  aura::Window* parent_window = GetContainerForDisplayId(display_id);
   if (parent_window && !parent_window->Contains(window)) {
     parent_window->AddChild(window);
     bool is_showing_app_window = false;
@@ -1343,12 +1336,32 @@ void AppListControllerImpl::UpdateLauncherContainer() {
         break;
       }
     }
-    if (launcher_should_show_behind_apps && is_showing_app_window) {
+    if (ShouldLauncherShowBehindApps() && is_showing_app_window) {
       // When move launcher back to behind apps, and there is app window
       // showing, we release focus.
       Shell::Get()->activation_client()->DeactivateWindow(window);
     }
   }
+}
+
+int AppListControllerImpl::GetContainerId() const {
+  return ShouldLauncherShowBehindApps()
+             ? ash::kShellWindowId_HomeScreenContainer
+             : ash::kShellWindowId_AppListContainer;
+}
+
+aura::Window* AppListControllerImpl::GetContainerForDisplayId(
+    base::Optional<int64_t> display_id) {
+  aura::Window* root_window =
+      display_id.has_value()
+          ? Shell::GetRootWindowForDisplayId(display_id.value())
+          : presenter_.GetWindow()->GetRootWindow();
+  return root_window->GetChildById(GetContainerId());
+}
+
+bool AppListControllerImpl::ShouldLauncherShowBehindApps() const {
+  return IsHomeScreenAvailable() &&
+         model_->state() != ash::AppListState::kStateEmbeddedAssistant;
 }
 
 int AppListControllerImpl::GetLastQueryLength() {

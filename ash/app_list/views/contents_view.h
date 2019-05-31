@@ -69,6 +69,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // set_contents_switcher_view().
   void Init(AppListModel* model);
 
+  // Resets the state of the view so it is ready to be shown.
+  void ResetForShow();
+
   // The app list gets closed and drag and drop operations need to be cancelled.
   void CancelDrag();
 

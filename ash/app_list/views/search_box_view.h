@@ -37,6 +37,8 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
                 AppListView* app_list_view = nullptr);
   ~SearchBoxView() override;
 
+  void Init(bool is_tablet_mode);
+
   // Returns the total focus ring spacing for use in folders.
   static int GetFocusRingSpacing();
 

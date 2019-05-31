@@ -69,14 +69,12 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     views::test::WidgetTest::SetUp();
 
     app_list_view_ = new AppListView(&view_delegate_);
-    AppListView::InitParams params;
-    params.parent = GetContext();
-    app_list_view_->Initialize(params);
+    app_list_view_->InitView(false /*is_tablet_mode*/, GetContext());
 
     widget_ = CreateTopLevelPlatformWidget();
     view_ =
         std::make_unique<SearchBoxView>(this, &view_delegate_, app_list_view());
-    view_->Init();
+    view_->Init(false /*is_tablet_mode*/);
     widget_->SetBounds(gfx::Rect(0, 0, 300, 200));
     counter_view_ = new KeyPressCounterView(app_list_view_);
     widget_->GetContentsView()->AddChildView(view());
