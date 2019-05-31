@@ -94,19 +94,12 @@ StorageArea* DOMWindowStorage::sessionStorage(
   StorageNamespace* storage_namespace = StorageNamespace::From(page);
   if (!storage_namespace)
     return nullptr;
-  if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
-    auto storage_area =
-        storage_namespace->GetCachedArea(document->GetSecurityOrigin());
-    session_storage_ =
-        StorageArea::Create(document->GetFrame(), std::move(storage_area),
-                            StorageArea::StorageType::kSessionStorage);
-  } else {
-    auto storage_area =
-        storage_namespace->GetWebStorageArea(document->GetSecurityOrigin());
-    session_storage_ =
-        StorageArea::Create(document->GetFrame(), std::move(storage_area),
-                            StorageArea::StorageType::kSessionStorage);
-  }
+  auto storage_area =
+      storage_namespace->GetCachedArea(document->GetSecurityOrigin());
+  session_storage_ =
+      StorageArea::Create(document->GetFrame(), std::move(storage_area),
+                          StorageArea::StorageType::kSessionStorage);
+
   if (!session_storage_->CanAccessStorage()) {
     exception_state.ThrowSecurityError(access_denied_message);
     return nullptr;
@@ -149,20 +142,12 @@ StorageArea* DOMWindowStorage::localStorage(
   Page* page = document->GetPage();
   if (!page || !page->GetSettings().GetLocalStorageEnabled())
     return nullptr;
-  if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
-    auto storage_area = StorageController::GetInstance()->GetLocalStorageArea(
-        document->GetSecurityOrigin());
-    local_storage_ =
-        StorageArea::Create(document->GetFrame(), std::move(storage_area),
-                            StorageArea::StorageType::kLocalStorage);
-  } else {
-    auto storage_area =
-        StorageController::GetInstance()->GetWebLocalStorageArea(
-            document->GetSecurityOrigin());
-    local_storage_ =
-        StorageArea::Create(document->GetFrame(), std::move(storage_area),
-                            StorageArea::StorageType::kLocalStorage);
-  }
+  auto storage_area = StorageController::GetInstance()->GetLocalStorageArea(
+      document->GetSecurityOrigin());
+  local_storage_ =
+      StorageArea::Create(document->GetFrame(), std::move(storage_area),
+                          StorageArea::StorageType::kLocalStorage);
+
   if (!local_storage_->CanAccessStorage()) {
     exception_state.ThrowSecurityError(access_denied_message);
     return nullptr;

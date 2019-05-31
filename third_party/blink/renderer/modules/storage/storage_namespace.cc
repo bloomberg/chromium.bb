@@ -33,8 +33,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_storage_area.h"
-#include "third_party/blink/public/platform/web_storage_namespace.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
@@ -47,22 +45,10 @@ namespace blink {
 const char StorageNamespace::kSupplementName[] = "SessionStorageNamespace";
 
 StorageNamespace::StorageNamespace(StorageController* controller)
-    : controller_(controller) {
-  CHECK(base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage));
-}
+    : controller_(controller) {}
 StorageNamespace::StorageNamespace(StorageController* controller,
                                    const String& namespace_id)
-    : controller_(controller), namespace_id_(namespace_id) {
-  CHECK(base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage));
-}
-
-StorageNamespace::StorageNamespace(
-    std::unique_ptr<WebStorageNamespace> web_storage_namespace)
-    : controller_(nullptr),
-      namespace_id_(web_storage_namespace->GetNamespaceId()),
-      web_storage_namespace_(std::move(web_storage_namespace)) {
-  CHECK(!base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage));
-}
+    : controller_(controller), namespace_id_(namespace_id) {}
 
 StorageNamespace::~StorageNamespace() = default;
 
@@ -131,7 +117,6 @@ scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
 }
 
 void StorageNamespace::CloneTo(const String& target) {
-  CHECK(base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage));
   DCHECK(IsSessionStorage()) << "Cannot clone a local storage namespace.";
   EnsureConnected();
   namespace_->Clone(target);
@@ -178,12 +163,6 @@ void StorageNamespace::DidDispatchStorageEvent(const SecurityOrigin* origin,
                            : StorageArea::StorageType::kLocalStorage,
         origin);
   }
-}
-std::unique_ptr<WebStorageArea> StorageNamespace::GetWebStorageArea(
-    const SecurityOrigin* origin) {
-  CHECK(!base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage));
-  return base::WrapUnique(
-      web_storage_namespace_->CreateStorageArea(WebSecurityOrigin(origin)));
 }
 
 void StorageNamespace::EnsureConnected() {

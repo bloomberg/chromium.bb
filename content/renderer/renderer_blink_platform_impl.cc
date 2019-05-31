@@ -41,10 +41,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/blob_storage/webblobregistry_impl.h"
-#include "content/renderer/dom_storage/local_storage_cached_areas.h"
-#include "content/renderer/dom_storage/local_storage_namespace.h"
-#include "content/renderer/dom_storage/session_web_storage_namespace_impl.h"
-#include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_dispatcher.h"
@@ -130,7 +126,6 @@ using blink::WebMediaStreamTrack;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
 using blink::WebSize;
-using blink::WebStorageNamespace;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
@@ -455,48 +450,6 @@ void RendererBlinkPlatformImpl::SuddenTerminationChanged(bool enabled) {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   if (thread)  // NULL in unittests.
     thread->GetRendererHost()->SuddenTerminationChanged(enabled);
-}
-
-std::unique_ptr<WebStorageNamespace>
-RendererBlinkPlatformImpl::CreateLocalStorageNamespace() {
-  if (!local_storage_cached_areas_) {
-    local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
-        RenderThreadImpl::current()->GetStoragePartitionService(),
-        main_thread_scheduler_));
-  }
-  return std::make_unique<LocalStorageNamespace>(
-      local_storage_cached_areas_.get());
-}
-
-std::unique_ptr<blink::WebStorageNamespace>
-RendererBlinkPlatformImpl::CreateSessionStorageNamespace(
-    base::StringPiece namespace_id) {
-  if (base::FeatureList::IsEnabled(blink::features::kOnionSoupDOMStorage)) {
-    if (!local_storage_cached_areas_) {
-      local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
-          RenderThreadImpl::current()->GetStoragePartitionService(),
-          main_thread_scheduler_));
-    }
-    return std::make_unique<SessionWebStorageNamespaceImpl>(
-        namespace_id.as_string(), local_storage_cached_areas_.get());
-  }
-
-  return std::make_unique<WebStorageNamespaceImpl>(namespace_id.as_string());
-}
-
-void RendererBlinkPlatformImpl::CloneSessionStorageNamespace(
-    const std::string& source_namespace,
-    const std::string& destination_namespace) {
-  if (!local_storage_cached_areas_) {
-    // Some browser tests don't have a RenderThreadImpl.
-    RenderThreadImpl* render_thread = RenderThreadImpl::current();
-    if (!render_thread)
-      return;
-    local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
-        render_thread->GetStoragePartitionService(), main_thread_scheduler_));
-  }
-  local_storage_cached_areas_->CloneNamespace(source_namespace,
-                                              destination_namespace);
 }
 
 //------------------------------------------------------------------------------

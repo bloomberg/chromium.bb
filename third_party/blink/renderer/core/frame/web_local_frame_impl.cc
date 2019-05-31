@@ -2527,6 +2527,7 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
         PictureInPictureController::From(node->GetDocument())
             .ExitPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
       }
+
       break;
   }
 }

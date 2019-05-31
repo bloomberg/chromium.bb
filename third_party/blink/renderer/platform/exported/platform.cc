@@ -46,7 +46,6 @@
 #include "third_party/blink/public/platform/web_prerendering_support.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
-#include "third_party/blink/public/platform/web_storage_namespace.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -256,15 +255,6 @@ service_manager::Connector* Platform::GetConnector() {
 
 InterfaceProvider* Platform::GetInterfaceProvider() {
   return InterfaceProvider::GetEmptyInterfaceProvider();
-}
-
-std::unique_ptr<WebStorageNamespace> Platform::CreateLocalStorageNamespace() {
-  return nullptr;
-}
-
-std::unique_ptr<WebStorageNamespace> Platform::CreateSessionStorageNamespace(
-    base::StringPiece namespace_id) {
-  return nullptr;
 }
 
 std::unique_ptr<Thread> Platform::CreateThread(

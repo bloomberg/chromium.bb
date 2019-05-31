@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/bindings/modules/v8/module_bindings_initializer.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"

@@ -27,7 +27,6 @@ class InspectorDOMStorageAgent;
 class LocalFrame;
 class SecurityOrigin;
 class StorageNamespace;
-class WebStorageArea;
 
 // Singleton that manages the creation & accounting for DOMStorage objects. It
 // does this by holding weak references to all session storage namespaces, and
@@ -76,11 +75,8 @@ class MODULES_EXPORT StorageController {
   // LocalStorage:
 
   scoped_refptr<CachedStorageArea> GetLocalStorageArea(const SecurityOrigin*);
-  // TODO(dmurph): Remove this once DOMStorage is Onion Soupified.
-  std::unique_ptr<WebStorageArea> GetWebLocalStorageArea(const SecurityOrigin*);
   void AddLocalStorageInspectorStorageAgent(InspectorDOMStorageAgent* agent);
   void RemoveLocalStorageInspectorStorageAgent(InspectorDOMStorageAgent* agent);
-  // TODO(dmurph): Remove this once DOMStorage is Onion Soupified.
   void DidDispatchLocalStorageEvent(const SecurityOrigin* origin,
                                     const String& key,
                                     const String& old_value,
@@ -102,7 +98,6 @@ class MODULES_EXPORT StorageController {
   Persistent<StorageNamespace> local_storage_namespace_;
   size_t total_cache_limit_;
 
-  // Onion-soup state.
   mojom::blink::StoragePartitionServicePtr storage_partition_service_;
 
   SEQUENCE_CHECKER(sequence_checker_);

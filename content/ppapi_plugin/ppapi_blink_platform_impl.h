@@ -35,8 +35,6 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebString DefaultLocale() override;
   blink::WebThemeEngine* ThemeEngine() override;
   blink::WebData GetDataResource(const char* name) override;
-  std::unique_ptr<blink::WebStorageNamespace> CreateLocalStorageNamespace()
-      override;
   int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
                          bool sync_dir) override;
 

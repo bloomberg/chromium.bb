@@ -61,7 +61,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/dom_storage/dom_storage_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/view_messages.h"
@@ -82,9 +81,6 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/categorized_worker_pool.h"
-#include "content/renderer/dom_storage/dom_storage_dispatcher.h"
-#include "content/renderer/dom_storage/webstoragearea_impl.h"
-#include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/frame_swap_message_queue.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
@@ -746,8 +742,6 @@ void RenderThreadImpl::Init() {
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   InitializeWebKit(registry.get());
 
-  dom_storage_dispatcher_.reset(new DomStorageDispatcher());
-
   vc_manager_.reset(new VideoCaptureImplManager());
 
   browser_plugin_manager_.reset(new BrowserPluginManager());
@@ -936,9 +930,6 @@ void RenderThreadImpl::Init() {
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_shared_memory_manager_.get());
 
-  GetConnector()->BindInterface(mojom::kBrowserServiceName,
-                                mojo::MakeRequest(&storage_partition_service_));
-
 #if defined(OS_LINUX)
   render_message_filter()->SetThreadPriority(
       ChildProcess::current()->io_thread_id(), base::ThreadPriority::DISPLAY);
@@ -1096,11 +1087,6 @@ void RenderThreadImpl::RegisterPendingFrameCreate(
           routing_id, base::MakeRefCounted<PendingFrameCreate>(
                           browser_info, routing_id, std::move(frame_request))));
   CHECK(result.second) << "Inserting a duplicate item.";
-}
-
-blink::mojom::StoragePartitionService*
-RenderThreadImpl::GetStoragePartitionService() {
-  return storage_partition_service_.get();
 }
 
 mojom::RendererHost* RenderThreadImpl::GetRendererHost() {
@@ -1613,10 +1599,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
       return true;
   }
 
-  // Some messages are handled by delegates.
-  if (dom_storage_dispatcher_->OnMessageReceived(msg)) {
-    return true;
-  }
   return false;
 }
 

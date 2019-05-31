@@ -121,7 +121,6 @@ class WebSandboxSupport;
 class WebSecurityOrigin;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
-class WebStorageNamespace;
 class WebThemeEngine;
 class WebTransmissionEncodingInfoHandler;
 class WebURLLoaderMockFactory;
@@ -253,15 +252,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       const WebSecurityOrigin& origin) {
     return WebString();
   }
-
-  // DOM Storage --------------------------------------------------
-
-  // Return a LocalStorage namespace
-  virtual std::unique_ptr<WebStorageNamespace> CreateLocalStorageNamespace();
-
-  // Return a SessionStorage namespace
-  virtual std::unique_ptr<WebStorageNamespace> CreateSessionStorageNamespace(
-      base::StringPiece namespace_id);
 
   // FileSystem ----------------------------------------------------------
 

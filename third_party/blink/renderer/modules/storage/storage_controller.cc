@@ -10,8 +10,6 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
-#include "third_party/blink/public/platform/web_storage_area.h"
-#include "third_party/blink/public/platform/web_storage_namespace.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
@@ -74,17 +72,8 @@ StorageNamespace* StorageController::CreateSessionStorageNamespace(
   auto it = namespaces_->find(namespace_id);
   if (it != namespaces_->end())
     return it->value;
-  StorageNamespace* ns = nullptr;
-  if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
-    ns = MakeGarbageCollected<StorageNamespace>(this, namespace_id);
-  } else {
-    auto namespace_str = StringUTF8Adaptor(namespace_id);
-    auto web_namespace = Platform::Current()->CreateSessionStorageNamespace(
-        namespace_str.AsStringPiece());
-    if (!web_namespace)
-      return nullptr;
-    ns = MakeGarbageCollected<StorageNamespace>(std::move(web_namespace));
-  }
+  StorageNamespace* ns =
+      MakeGarbageCollected<StorageNamespace>(this, namespace_id);
   namespaces_->insert(namespace_id, ns);
   return ns;
 }
@@ -112,17 +101,8 @@ void StorageController::ClearAreasIfNeeded() {
 scoped_refptr<CachedStorageArea> StorageController::GetLocalStorageArea(
     const SecurityOrigin* origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage));
   EnsureLocalStorageNamespaceCreated();
   return local_storage_namespace_->GetCachedArea(origin);
-}
-
-std::unique_ptr<WebStorageArea> StorageController::GetWebLocalStorageArea(
-    const SecurityOrigin* origin) {
-  DCHECK(IsMainThread());
-  CHECK(!base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage));
-  EnsureLocalStorageNamespaceCreated();
-  return local_storage_namespace_->GetWebStorageArea(origin);
 }
 
 void StorageController::AddLocalStorageInspectorStorageAgent(
@@ -153,12 +133,7 @@ void StorageController::DidDispatchLocalStorageEvent(
 void StorageController::EnsureLocalStorageNamespaceCreated() {
   if (local_storage_namespace_)
     return;
-  if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
-    local_storage_namespace_ = MakeGarbageCollected<StorageNamespace>(this);
-  } else {
-    local_storage_namespace_ = MakeGarbageCollected<StorageNamespace>(
-        Platform::Current()->CreateLocalStorageNamespace());
-  }
+  local_storage_namespace_ = MakeGarbageCollected<StorageNamespace>(this);
 }
 
 }  // namespace blink

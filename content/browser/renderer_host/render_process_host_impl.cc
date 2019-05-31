@@ -90,7 +90,6 @@
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
-#include "content/browser/dom_storage/dom_storage_message_filter.h"
 #include "content/browser/field_trial_recorder.h"
 #include "content/browser/fileapi/file_system_manager_impl.h"
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup_service.h"
@@ -1898,9 +1897,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
     AddFilter(resource_message_filter_.get());
   }
-
-  AddFilter(new DOMStorageMessageFilter(
-      storage_partition_impl_->GetDOMStorageContext()));
 
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
   AddFilter(peer_connection_tracker_host_.get());

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -18,7 +17,6 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/uuid.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 namespace {
@@ -46,8 +44,6 @@ class MockStoragePartitionService
 }  // namespace
 
 TEST(StorageControllerTest, CacheLimit) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kOnionSoupDOMStorage);
   const auto kOrigin = SecurityOrigin::CreateFromString("http://dom_storage1/");
   const auto kOrigin2 =
       SecurityOrigin::CreateFromString("http://dom_storage2/");
@@ -98,8 +94,6 @@ TEST(StorageControllerTest, CacheLimit) {
 }
 
 TEST(StorageControllerTest, CacheLimitSessionStorage) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kOnionSoupDOMStorage);
   const String kNamespace1 = CreateCanonicalUUIDString();
   const String kNamespace2 = CreateCanonicalUUIDString();
   const auto kOrigin = SecurityOrigin::CreateFromString("http://dom_storage1/");

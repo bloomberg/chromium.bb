@@ -38,9 +38,6 @@
 
 namespace content {
 
-constexpr const char kTestSessionStorageId[] =
-    "574d2d70-24ca-4d8c-ae23-c7e1e39d07be";
-
 // This browser test is aimed towards exercising the DOMStorage system
 // from end-to-end.
 class DOMStorageBrowserTest : public ContentBrowserTest {
@@ -219,81 +216,6 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DataMigrates) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_FALSE(base::PathExists(db_path));
   }
-}
-
-class DOMStorageMigrationBrowserTest : public DOMStorageBrowserTest {
- public:
-  DOMStorageMigrationBrowserTest() : DOMStorageBrowserTest() {
-    if (IsPreTest())
-      feature_list_.InitAndDisableFeature(
-          blink::features::kOnionSoupDOMStorage);
-    else
-      feature_list_.InitAndEnableFeature(blink::features::kOnionSoupDOMStorage);
-  }
-
-  void SessionStorageTest(const GURL& test_url) {
-    // The test page will perform tests then navigate to either
-    // a #pass or #fail ref.
-    context_wrapper()->SetSaveSessionStorageOnDisk();
-    scoped_refptr<SessionStorageNamespaceImpl> ss_namespace =
-        SessionStorageNamespaceImpl::Create(context_wrapper(),
-                                            kTestSessionStorageId);
-    ss_namespace->SetShouldPersist(true);
-    Shell* the_browser = Shell::CreateNewWindowWithSessionStorageNamespace(
-        ShellContentBrowserClient::Get()->browser_context(),
-        GURL(url::kAboutBlankURL), nullptr, gfx::Size(),
-        std::move(ss_namespace));
-    NavigateToURLBlockUntilNavigationsComplete(the_browser, test_url, 2);
-    context_wrapper()->Flush();
-    std::string result =
-        the_browser->web_contents()->GetLastCommittedURL().ref();
-    if (result != "pass") {
-      std::string js_result;
-      ASSERT_TRUE(ExecuteScriptAndExtractString(
-          the_browser, "window.domAutomationController.send(getLog())",
-          &js_result));
-      FAIL() << "Failed: " << js_result;
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(DOMStorageMigrationBrowserTest, PRE_DataMigrates) {
-  SessionStorageTest(
-      GetTestUrl("dom_storage", "store_session_storage_data.html"));
-}
-
-// http://crbug.com/654704 PRE_ tests aren't supported on Android.
-#if defined(OS_ANDROID)
-#define MAYBE_DataMigrates DISABLED_DataMigrates
-#else
-#define MAYBE_DataMigrates DataMigrates
-#endif
-IN_PROC_BROWSER_TEST_F(DOMStorageMigrationBrowserTest, MAYBE_DataMigrates) {
-  EXPECT_TRUE(session_storage_context());
-  EnsureSessionStorageConnected();
-  SessionStorageTest(
-      GetTestUrl("dom_storage", "verify_session_storage_data.html"));
-
-  // Check that we migrated from v0 (no version) to v1.
-  base::RunLoop loop;
-  leveldb::mojom::LevelDBDatabase* database =
-      session_storage_context()->DatabaseForTesting();
-  mojo_task_runner()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting([&]() {
-        database->Get(
-            leveldb::StringPieceToUint8Vector("version"),
-            base::BindLambdaForTesting([&](leveldb::mojom::DatabaseError error,
-                                           const std::vector<uint8_t>& value) {
-              EXPECT_EQ(leveldb::mojom::DatabaseError::OK, error);
-              EXPECT_EQ(base::StringPiece("1"),
-                        leveldb::Uint8VectorToStringPiece(value));
-              loop.Quit();
-            }));
-      }));
-  loop.Run();
 }
 
 }  // namespace content

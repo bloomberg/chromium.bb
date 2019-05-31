@@ -51,7 +51,6 @@ class SharedURLLoaderFactory;
 namespace content {
 class BlinkInterfaceProviderImpl;
 class ChildURLLoaderFactoryBundle;
-class LocalStorageCachedAreas;
 class ThreadSafeSender;
 class WebDatabaseObserverImpl;
 
@@ -98,10 +97,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& cacheStorageCacheName) override;
   blink::WebString DefaultLocale() override;
   void SuddenTerminationChanged(bool enabled) override;
-  std::unique_ptr<blink::WebStorageNamespace> CreateLocalStorageNamespace()
-      override;
-  std::unique_ptr<blink::WebStorageNamespace> CreateSessionStorageNamespace(
-      base::StringPiece namespace_id) override;
   base::File DatabaseOpenFile(const blink::WebString& vfs_file_name,
                               int desired_flags) override;
   int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
@@ -229,10 +224,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
   CreateNetworkURLLoaderFactory();
 
-  // Clones the source namespace to the destination namespace.
-  void CloneSessionStorageNamespace(const std::string& source_namespace,
-                                    const std::string& destination_namespace);
-
   // Tells this platform that the renderer is locked to a site (i.e., a scheme
   // plus eTLD+1, such as https://google.com), or to a more specific origin.
   void SetIsLockedToSite();
@@ -276,8 +267,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::scheduler::WebThreadScheduler* main_thread_scheduler_;
 
   TopLevelBlameContext top_level_blame_context_;
-
-  std::unique_ptr<LocalStorageCachedAreas> local_storage_cached_areas_;
 
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
 

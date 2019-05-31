@@ -221,19 +221,11 @@ Response InspectorDOMStorageAgent::FindStorageArea(
   if (is_local_storage) {
     if (!frame->GetDocument()->GetSecurityOrigin()->CanAccessLocalStorage())
       return Response::Error("Security origin cannot access local storage");
-    if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
-      storage_area = StorageArea::CreateForInspectorAgent(
-          frame,
-          StorageController::GetInstance()->GetLocalStorageArea(
-              frame->GetDocument()->GetSecurityOrigin()),
-          StorageArea::StorageType::kLocalStorage);
-    } else {
-      storage_area = StorageArea::Create(
-          frame,
-          StorageController::GetInstance()->GetWebLocalStorageArea(
-              frame->GetDocument()->GetSecurityOrigin()),
-          StorageArea::StorageType::kLocalStorage);
-    }
+    storage_area = StorageArea::CreateForInspectorAgent(
+        frame,
+        StorageController::GetInstance()->GetLocalStorageArea(
+            frame->GetDocument()->GetSecurityOrigin()),
+        StorageArea::StorageType::kLocalStorage);
     return Response::OK();
   }
 
@@ -245,19 +237,11 @@ Response InspectorDOMStorageAgent::FindStorageArea(
     return Response::Error("SessionStorage is not supported");
   DCHECK(session_namespace->IsSessionStorage());
 
-  if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
-    storage_area = StorageArea::CreateForInspectorAgent(
-        frame,
-        session_namespace->GetCachedArea(
-            frame->GetDocument()->GetSecurityOrigin()),
-        StorageArea::StorageType::kSessionStorage);
-  } else {
-    storage_area =
-        StorageArea::Create(frame,
-                            session_namespace->GetWebStorageArea(
-                                frame->GetDocument()->GetSecurityOrigin()),
-                            StorageArea::StorageType::kSessionStorage);
-  }
+  storage_area = StorageArea::CreateForInspectorAgent(
+      frame,
+      session_namespace->GetCachedArea(
+          frame->GetDocument()->GetSecurityOrigin()),
+      StorageArea::StorageType::kSessionStorage);
   return Response::OK();
 }
 

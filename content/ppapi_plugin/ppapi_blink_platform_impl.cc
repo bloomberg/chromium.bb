@@ -15,7 +15,6 @@
 #include "content/child/child_thread_impl.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
-#include "third_party/blink/public/platform/web_storage_namespace.h"
 #include "third_party/blink/public/platform/web_string.h"
 
 #if defined(OS_MACOSX)
@@ -89,12 +88,6 @@ blink::WebThemeEngine* PpapiBlinkPlatformImpl::ThemeEngine() {
 blink::WebData PpapiBlinkPlatformImpl::GetDataResource(const char* name) {
   NOTREACHED();
   return blink::WebData();
-}
-
-std::unique_ptr<blink::WebStorageNamespace>
-PpapiBlinkPlatformImpl::CreateLocalStorageNamespace() {
-  NOTREACHED();
-  return nullptr;
 }
 
 int PpapiBlinkPlatformImpl::DatabaseDeleteFile(

@@ -56,8 +56,8 @@
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/web/web_memory_statistics.h"
 #include "ui/gfx/native_widget_types.h"
@@ -119,7 +119,6 @@ class AecDumpMessageFilter;
 class AudioRendererMixerManager;
 class BrowserPluginManager;
 class CategorizedWorkerPool;
-class DomStorageDispatcher;
 class GpuVideoAcceleratorFactoriesImpl;
 class LowMemoryModeController;
 class P2PSocketDispatcher;
@@ -291,10 +290,6 @@ class CONTENT_EXPORT RenderThreadImpl
     return compositor_task_runner_;
   }
 
-  DomStorageDispatcher* dom_storage_dispatcher() const {
-    return dom_storage_dispatcher_.get();
-  }
-
   ResourceDispatcher* resource_dispatcher() const {
     return resource_dispatcher_.get();
   }
@@ -438,7 +433,6 @@ class CONTENT_EXPORT RenderThreadImpl
       int routing_id,
       mojom::FrameRequest frame);
 
-  blink::mojom::StoragePartitionService* GetStoragePartitionService();
   mojom::RendererHost* GetRendererHost();
 
   struct RendererMemoryMetrics {
@@ -561,7 +555,6 @@ class CONTENT_EXPORT RenderThreadImpl
       discardable_shared_memory_manager_;
 
   // These objects live solely on the render thread.
-  std::unique_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
@@ -701,7 +694,6 @@ class CONTENT_EXPORT RenderThreadImpl
       std::map<int, scoped_refptr<PendingFrameCreate>>;
   PendingFrameCreateMap pending_frame_creates_;
 
-  blink::mojom::StoragePartitionServicePtr storage_partition_service_;
   mojom::RendererHostAssociatedPtr renderer_host_;
 
   blink::AssociatedInterfaceRegistry associated_interfaces_;
